@@ -147,11 +147,23 @@ export class ProductsUnifiedService {
     if (error) throw error
 
     return (data || []).map(p => ({
-      ...p,
-      name: p.name || 'Produit sans nom', // Garder le nom vide visible pour correction
-      status: p.status as 'active' | 'inactive',
+      id: p.id,
+      name: p.name || 'Produit sans nom',
+      description: p.description || undefined,
+      price: p.price || 0,
+      cost_price: p.cost_price || undefined,
+      status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+      stock_quantity: p.stock_quantity || undefined,
+      sku: p.sku || undefined,
+      category: p.category || undefined,
+      image_url: p.image_url || undefined,
+      images: p.image_url ? [p.image_url] : [],
+      profit_margin: (p as any).profit_margin || undefined,
+      user_id: p.user_id,
       source: 'products' as const,
-      images: p.image_url ? [p.image_url] : []
+      variants: [] as ProductVariant[],
+      created_at: p.created_at || new Date().toISOString(),
+      updated_at: p.updated_at || new Date().toISOString()
     }))
   }
 
@@ -163,7 +175,7 @@ export class ProductsUnifiedService {
     
     try {
       // D'abord essayer avec le user_id de l'utilisateur
-      let query = supabase.from('imported_products').select('*')
+      let query = (supabase as any).from('imported_products').select('*')
       
       if (!options?.includeGlobalProducts) {
         query = query.eq('user_id', userId)
@@ -185,23 +197,24 @@ export class ProductsUnifiedService {
 
       console.log(`✓ imported_products loaded: ${data?.length || 0} products for user ${userId}`)
       
-      return (data || []).map(p => ({
+      return (data || []).map((p: any) => ({
         id: p.id,
-        name: p.name || 'Produit sans nom',
-        description: p.description,
+        name: p.name || p.product_id || 'Produit sans nom',
+        description: p.description || undefined,
         price: p.price || 0,
-        cost_price: p.cost_price,
-        status: (p.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
-        stock_quantity: p.stock_quantity,
-        sku: p.sku,
-        category: p.category,
+        cost_price: p.cost_price || undefined,
+        status: (p.status === 'published' || p.status === 'imported' ? 'active' : 'inactive') as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity || undefined,
+        sku: p.sku || undefined,
+        category: p.category || undefined,
         image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
         images: Array.isArray(p.image_urls) ? p.image_urls : [],
-        profit_margin: p.cost_price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
+        profit_margin: p.cost_price && p.price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
         user_id: p.user_id,
         source: 'imported' as const,
-        created_at: p.created_at,
-        updated_at: p.updated_at
+        variants: [] as ProductVariant[],
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || p.created_at || new Date().toISOString()
       }))
     } catch (error) {
       console.error('getImportedProducts failed:', error)
@@ -213,40 +226,37 @@ export class ProductsUnifiedService {
    * Table premium_products - Produits premium depuis fournisseurs premium
    */
   private static async getPremiumProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    const { data, error } = await supabase
-      .from('premium_products')
-      .select(`
-        *,
-        supplier:premium_suppliers!inner(
-          id,
-          connections:premium_supplier_connections!inner(
-            user_id
-          )
-        )
-      `)
-      .eq('supplier.connections.user_id', userId)
-      .eq('is_active', true)
+    try {
+      const { data, error } = await (supabase as any)
+        .from('premium_products')
+        .select('*')
+        .limit(options?.limit || PRODUCT_FETCH_LIMIT)
 
-    if (error) throw error
+      if (error) throw error
 
-    return (data || []).map(p => ({
-      id: p.id,
-      name: p.name || 'Produit sans nom',
-      description: p.description,
-      price: p.price || 0,
-      cost_price: p.cost_price,
-      status: 'active' as const,
-      stock_quantity: p.stock_quantity,
-      sku: p.sku,
-      category: p.category,
-      image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : undefined,
-      images: Array.isArray(p.images) ? p.images : [],
-      profit_margin: p.profit_margin,
-      user_id: userId,
-      source: 'premium' as const,
-      created_at: p.created_at || new Date().toISOString(),
-      updated_at: p.updated_at || new Date().toISOString()
-    }))
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.name || p.title || 'Produit sans nom',
+        description: p.description || undefined,
+        price: p.price || 0,
+        cost_price: p.cost_price || p.wholesale_price || undefined,
+        status: 'active' as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity || undefined,
+        sku: p.sku || undefined,
+        category: p.category || undefined,
+        image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image_url || undefined),
+        images: Array.isArray(p.images) ? p.images : (p.image_url ? [p.image_url] : []),
+        profit_margin: p.profit_margin || undefined,
+        user_id: userId,
+        source: 'premium' as const,
+        variants: [] as ProductVariant[],
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || new Date().toISOString()
+      }))
+    } catch (error) {
+      console.error('Error loading premium_products:', error)
+      return []
+    }
   }
 
   /**
@@ -265,21 +275,22 @@ export class ProductsUnifiedService {
     const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
     if (error) throw error
 
-    return (data || []).map(p => ({
+    return (data || []).map((p: any) => ({
       id: p.id,
-      name: p.name || 'Produit sans nom',
-      description: p.description,
+      name: p.title || p.name || 'Produit sans nom',
+      description: p.description || undefined,
       price: p.price || 0,
-      cost_price: p.cost_price,
-      status: 'active' as const,
-      stock_quantity: p.stock_quantity,
-      sku: p.sku,
-      category: p.category,
-      image_url: p.image_url,
-      images: p.image_url ? [p.image_url] : [],
-      profit_margin: p.profit_margin,
-      user_id: 'catalog',
+      cost_price: p.cost_price || undefined,
+      status: 'active' as 'active' | 'inactive',
+      stock_quantity: p.stock_quantity || undefined,
+      sku: p.sku || undefined,
+      category: p.category || undefined,
+      image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
+      images: Array.isArray(p.image_urls) ? p.image_urls : [],
+      profit_margin: p.profit_margin || undefined,
+      user_id: p.user_id || 'catalog',
       source: 'catalog' as const,
+      variants: [] as ProductVariant[],
       created_at: p.created_at || new Date().toISOString(),
       updated_at: p.updated_at || new Date().toISOString()
     }))
@@ -445,7 +456,7 @@ export class ProductsUnifiedService {
    * Créer/Mettre à jour un produit
    */
   static async upsertProduct(userId: string, product: Partial<UnifiedProduct>): Promise<UnifiedProduct> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('products')
       .upsert({
         id: product.id,
@@ -464,11 +475,24 @@ export class ProductsUnifiedService {
       .single()
 
     if (error) throw error
+    
     return { 
-      ...data, 
-      status: data.status as 'active' | 'inactive',
-      source: 'products', 
-      images: data.image_url ? [data.image_url] : [] 
+      id: data.id,
+      name: data.name || 'Produit sans nom',
+      description: data.description || undefined,
+      price: data.price || 0,
+      cost_price: data.cost_price || undefined,
+      status: (data.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+      stock_quantity: data.stock_quantity || undefined,
+      sku: data.sku || undefined,
+      category: data.category || undefined,
+      image_url: data.image_url || undefined,
+      images: data.image_url ? [data.image_url] : [],
+      user_id: data.user_id,
+      source: 'products' as const,
+      variants: [] as ProductVariant[],
+      created_at: data.created_at || new Date().toISOString(),
+      updated_at: data.updated_at || new Date().toISOString()
     }
   }
 
@@ -592,30 +616,30 @@ export class ProductsUnifiedService {
    * Importer des produits en masse depuis imported_products vers products
    */
   static async consolidateProducts(userId: string): Promise<number> {
-    const { data: imported, error } = await supabase
+    const { data: imported, error } = await (supabase as any)
       .from('imported_products')
       .select('*')
       .eq('user_id', userId)
 
     if (error) throw error
 
-    const toInsert = (imported || []).map(p => ({
+    const toInsert = (imported || []).map((p: any) => ({
       id: p.id,
-      name: p.name || 'Produit',
-      description: p.description,
+      name: p.name || p.product_id || 'Produit',
+      description: p.description || undefined,
       price: p.price || 0,
-      cost_price: p.cost_price,
-      status: (p.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
-      stock_quantity: p.stock_quantity,
-      sku: p.sku,
-      category: p.category,
+      cost_price: p.cost_price || undefined,
+      status: (p.status === 'published' || p.status === 'imported' ? 'active' : 'inactive') as 'active' | 'inactive',
+      stock_quantity: p.stock_quantity || undefined,
+      sku: p.sku || undefined,
+      category: p.category || undefined,
       image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : null,
       user_id: userId
     }))
 
     if (toInsert.length === 0) return 0
 
-    const { error: insertError } = await supabase
+    const { error: insertError } = await (supabase as any)
       .from('products')
       .upsert(toInsert, { onConflict: 'id' })
 

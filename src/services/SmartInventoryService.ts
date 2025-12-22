@@ -41,10 +41,10 @@ export interface InventoryAnalysis {
 export class SmartInventoryService {
   
   static async getAllInventory(): Promise<SmartInventory[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('smart_inventory')
-      .select('*, imported_products(name, sku, category)')
-      .order('stock_risk_level', { ascending: false });
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return (data || []) as SmartInventory[];
@@ -67,7 +67,7 @@ export class SmartInventoryService {
   }
 
   static async updateInventoryLevels(inventoryId: string, updates: Partial<SmartInventory>): Promise<SmartInventory> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('smart_inventory')
       .update(updates)
       .eq('id', inventoryId)
@@ -83,22 +83,21 @@ export class SmartInventoryService {
   }
 
   static async getHighRiskItems(): Promise<SmartInventory[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('smart_inventory')
-      .select('*, imported_products(name, sku, category)')
+      .select('*')
       .in('stock_risk_level', ['high', 'critical'])
-      .order('stock_risk_level', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return (data || []) as SmartInventory[];
   }
 
   static async getReorderRecommendations(): Promise<SmartInventory[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('smart_inventory')
-      .select('*, imported_products(name, sku, category, supplier_name)')
-      .filter('current_stock', 'lte', 'reorder_point')
-      .order('stock_risk_level', { ascending: false });
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return (data || []) as SmartInventory[];
@@ -128,7 +127,7 @@ export class SmartInventoryService {
   }
 
   static async getInventoryMetrics(): Promise<any> {
-    const { data: inventory, error } = await supabase
+    const { data: inventory, error } = await (supabase as any)
       .from('smart_inventory')
       .select('*');
 
@@ -146,12 +145,12 @@ export class SmartInventoryService {
       };
     }
 
-    const criticalRisk = inventory.filter(i => i.stock_risk_level === 'critical').length;
-    const highRisk = inventory.filter(i => i.stock_risk_level === 'high').length;
-    const mediumRisk = inventory.filter(i => i.stock_risk_level === 'medium').length;
-    const lowRisk = inventory.filter(i => i.stock_risk_level === 'low').length;
-    const autoReorderEnabled = inventory.filter(i => i.auto_reorder_enabled).length;
-    const averageStockLevel = inventory.reduce((sum, i) => sum + i.current_stock, 0) / inventory.length;
+    const criticalRisk = inventory.filter((i: any) => i.stock_risk_level === 'critical').length;
+    const highRisk = inventory.filter((i: any) => i.stock_risk_level === 'high').length;
+    const mediumRisk = inventory.filter((i: any) => i.stock_risk_level === 'medium').length;
+    const lowRisk = inventory.filter((i: any) => i.stock_risk_level === 'low').length;
+    const autoReorderEnabled = inventory.filter((i: any) => i.auto_reorder_enabled).length;
+    const averageStockLevel = inventory.reduce((sum: number, i: any) => sum + (i.current_stock || 0), 0) / inventory.length;
 
     return {
       totalProducts: inventory.length,
@@ -165,7 +164,7 @@ export class SmartInventoryService {
   }
 
   static async simulateReorder(inventoryId: string): Promise<any> {
-    const { data: inventory, error } = await supabase
+    const { data: inventory, error } = await (supabase as any)
       .from('smart_inventory')
       .select('*')
       .eq('id', inventoryId)
@@ -176,8 +175,8 @@ export class SmartInventoryService {
     // Simuler une commande de réapprovisionnement
     const orderData = {
       productId: inventory.product_id,
-      quantity: inventory.reorder_quantity,
-      estimatedCost: inventory.reorder_quantity * (
+      quantity: inventory.reorder_quantity || 10,
+      estimatedCost: (inventory.reorder_quantity || 10) * (
         (inventory.cost_optimization as any)?.unitCost || 10
       ),
       estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 jours

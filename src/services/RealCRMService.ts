@@ -64,7 +64,7 @@ export class RealCRMService {
     tags?: string[];
     limit?: number;
   }): Promise<CRMContact[]> {
-    let query = supabase
+    let query = (supabase as any)
       .from('crm_contacts')
       .select('*');
 
@@ -95,17 +95,29 @@ export class RealCRMService {
     if (error) throw error;
     
     // Transform Supabase data to typed CRM contacts
-    return (data || []).map(contact => ({
-      ...contact,
+    return (data || []).map((contact: any) => ({
+      id: contact.id,
+      user_id: contact.user_id,
+      name: contact.name || contact.first_name || 'Unknown',
+      email: contact.email || '',
+      phone: contact.phone || undefined,
+      company: contact.company || undefined,
+      position: contact.position || undefined,
       tags: Array.isArray(contact.tags) ? contact.tags : [],
+      status: (contact.status || 'lead') as 'active' | 'inactive' | 'lead' | 'customer',
+      lifecycle_stage: (contact.lifecycle_stage || 'lead') as CRMContact['lifecycle_stage'],
+      source: contact.source || undefined,
+      lead_score: contact.lead_score || 0,
       attribution: typeof contact.attribution === 'object' && contact.attribution !== null 
         ? contact.attribution as Record<string, any>
         : {},
       custom_fields: typeof contact.custom_fields === 'object' && contact.custom_fields !== null
         ? contact.custom_fields as Record<string, any>
         : {},
-      status: contact.status as 'active' | 'inactive' | 'lead' | 'customer',
-      lifecycle_stage: contact.lifecycle_stage as 'subscriber' | 'lead' | 'marketing_qualified_lead' | 'sales_qualified_lead' | 'opportunity' | 'customer' | 'evangelist',
+      last_contacted_at: contact.last_contacted_at || undefined,
+      last_activity_at: contact.last_activity_at || undefined,
+      created_at: contact.created_at || new Date().toISOString(),
+      updated_at: contact.updated_at || new Date().toISOString(),
     } as CRMContact));
   }
 
@@ -113,7 +125,7 @@ export class RealCRMService {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('crm_contacts')
       .insert({
         ...contact,
@@ -125,21 +137,28 @@ export class RealCRMService {
     if (error) throw error;
     
     return {
-      ...data,
+      id: data.id,
+      user_id: data.user_id,
+      name: data.name || 'Unknown',
+      email: data.email || '',
+      phone: data.phone || undefined,
       tags: Array.isArray(data.tags) ? data.tags : [],
+      status: (data.status || 'lead') as CRMContact['status'],
+      lifecycle_stage: (data.lifecycle_stage || 'lead') as CRMContact['lifecycle_stage'],
+      lead_score: data.lead_score || 0,
       attribution: typeof data.attribution === 'object' && data.attribution !== null 
         ? data.attribution as Record<string, any>
         : {},
       custom_fields: typeof data.custom_fields === 'object' && data.custom_fields !== null
         ? data.custom_fields as Record<string, any>
         : {},
-      status: data.status as 'active' | 'inactive' | 'lead' | 'customer',
-      lifecycle_stage: data.lifecycle_stage as 'subscriber' | 'lead' | 'marketing_qualified_lead' | 'sales_qualified_lead' | 'opportunity' | 'customer' | 'evangelist',
+      created_at: data.created_at || new Date().toISOString(),
+      updated_at: data.updated_at || new Date().toISOString(),
     } as CRMContact;
   }
 
   async updateContact(id: string, updates: Partial<CRMContact>): Promise<CRMContact> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('crm_contacts')
       .update(updates)
       .eq('id', id)
@@ -149,21 +168,27 @@ export class RealCRMService {
     if (error) throw error;
     
     return {
-      ...data,
+      id: data.id,
+      user_id: data.user_id,
+      name: data.name || 'Unknown',
+      email: data.email || '',
       tags: Array.isArray(data.tags) ? data.tags : [],
+      status: (data.status || 'lead') as CRMContact['status'],
+      lifecycle_stage: (data.lifecycle_stage || 'lead') as CRMContact['lifecycle_stage'],
+      lead_score: data.lead_score || 0,
       attribution: typeof data.attribution === 'object' && data.attribution !== null 
         ? data.attribution as Record<string, any>
         : {},
       custom_fields: typeof data.custom_fields === 'object' && data.custom_fields !== null
         ? data.custom_fields as Record<string, any>
         : {},
-      status: data.status as 'active' | 'inactive' | 'lead' | 'customer',
-      lifecycle_stage: data.lifecycle_stage as 'subscriber' | 'lead' | 'marketing_qualified_lead' | 'sales_qualified_lead' | 'opportunity' | 'customer' | 'evangelist',
+      created_at: data.created_at || new Date().toISOString(),
+      updated_at: data.updated_at || new Date().toISOString(),
     } as CRMContact;
   }
 
   async deleteContact(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('crm_contacts')
       .delete()
       .eq('id', id);
@@ -173,7 +198,7 @@ export class RealCRMService {
 
   // Lead Scoring
   async updateLeadScore(contactId: string, scoreChange: number, reason: string): Promise<void> {
-    const { data: contact } = await supabase
+    const { data: contact } = await (supabase as any)
       .from('crm_contacts')
       .select('lead_score, attribution')
       .eq('id', contactId)
@@ -181,7 +206,7 @@ export class RealCRMService {
 
     if (!contact) throw new Error('Contact not found');
 
-    const newScore = Math.max(0, Math.min(100, contact.lead_score + scoreChange));
+    const newScore = Math.max(0, Math.min(100, (contact.lead_score || 0) + scoreChange));
     
     const currentAttribution = typeof contact.attribution === 'object' && contact.attribution !== null
       ? contact.attribution as Record<string, any>
@@ -197,7 +222,7 @@ export class RealCRMService {
         ...scoreHistory,
         {
           timestamp: new Date().toISOString(),
-          old_score: contact.lead_score,
+          old_score: contact.lead_score || 0,
           new_score: newScore,
           change: scoreChange,
           reason,
@@ -205,7 +230,7 @@ export class RealCRMService {
       ].slice(-10), // Keep last 10 score changes
     };
 
-    await supabase
+    await (supabase as any)
       .from('crm_contacts')
       .update({
         lead_score: newScore,
@@ -260,7 +285,7 @@ export class RealCRMService {
   }
 
   private async calculateSegmentSize(criteria: Record<string, any>): Promise<number> {
-    let query = supabase
+    let query = (supabase as any)
       .from('crm_contacts')
       .select('id', { count: 'exact' });
 
@@ -298,7 +323,7 @@ export class RealCRMService {
 
   // Activities
   async getActivities(contactId?: string, limit?: number): Promise<CRMActivity[]> {
-    let query = supabase
+    let query = (supabase as any)
       .from('activity_logs')
       .select('*');
 
@@ -315,15 +340,15 @@ export class RealCRMService {
     if (error) throw error;
     
     // Transform activity logs to CRM activities
-    return (data || []).map(log => ({
+    return (data || []).map((log: any) => ({
       id: log.id,
       user_id: log.user_id,
       contact_id: log.entity_id,
       activity_type: (log.action as 'email' | 'call' | 'meeting' | 'note' | 'task' | 'deal') || 'note',
-      subject: log.description,
-      description: log.description,
-      metadata: typeof log.metadata === 'object' && log.metadata !== null 
-        ? log.metadata as Record<string, any>
+      subject: log.description || '',
+      description: log.description || '',
+      metadata: typeof log.details === 'object' && log.details !== null 
+        ? log.details as Record<string, any>
         : {},
       completed: true,
       created_at: log.created_at,
@@ -334,7 +359,7 @@ export class RealCRMService {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('activity_logs')
       .insert({
         user_id: user.user.id,
@@ -342,7 +367,7 @@ export class RealCRMService {
         entity_type: 'contact',
         entity_id: activity.contact_id,
         description: activity.subject,
-        metadata: {
+        details: {
           ...activity.metadata,
           activity_type: activity.activity_type,
           completed: activity.completed,
@@ -355,7 +380,7 @@ export class RealCRMService {
     if (error) throw error;
 
     // Update contact last activity
-    await supabase
+    await (supabase as any)
       .from('crm_contacts')
       .update({ last_activity_at: new Date().toISOString() })
       .eq('id', activity.contact_id);
@@ -383,7 +408,7 @@ export class RealCRMService {
     recentActivities: CRMActivity[];
     conversionRates: Record<string, number>;
   }> {
-    const { data: contacts } = await supabase
+    const { data: contacts } = await (supabase as any)
       .from('crm_contacts')
       .select('*');
 
@@ -393,23 +418,23 @@ export class RealCRMService {
 
     const totalContacts = contacts.length;
 
-    const byLifecycleStage = contacts.reduce((acc, contact) => {
-      acc[contact.lifecycle_stage] = (acc[contact.lifecycle_stage] || 0) + 1;
+    const byLifecycleStage = contacts.reduce((acc: Record<string, number>, contact: any) => {
+      acc[contact.lifecycle_stage || 'unknown'] = (acc[contact.lifecycle_stage || 'unknown'] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    const bySource = contacts.reduce((acc, contact) => {
+    const bySource = contacts.reduce((acc: Record<string, number>, contact: any) => {
       const source = contact.source || 'Unknown';
       acc[source] = (acc[source] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     const byLeadScore = [
-      { range: '0-20', count: contacts.filter(c => c.lead_score <= 20).length },
-      { range: '21-40', count: contacts.filter(c => c.lead_score > 20 && c.lead_score <= 40).length },
-      { range: '41-60', count: contacts.filter(c => c.lead_score > 40 && c.lead_score <= 60).length },
-      { range: '61-80', count: contacts.filter(c => c.lead_score > 60 && c.lead_score <= 80).length },
-      { range: '81-100', count: contacts.filter(c => c.lead_score > 80).length },
+      { range: '0-20', count: contacts.filter((c: any) => (c.lead_score || 0) <= 20).length },
+      { range: '21-40', count: contacts.filter((c: any) => (c.lead_score || 0) > 20 && (c.lead_score || 0) <= 40).length },
+      { range: '41-60', count: contacts.filter((c: any) => (c.lead_score || 0) > 40 && (c.lead_score || 0) <= 60).length },
+      { range: '61-80', count: contacts.filter((c: any) => (c.lead_score || 0) > 60 && (c.lead_score || 0) <= 80).length },
+      { range: '81-100', count: contacts.filter((c: any) => (c.lead_score || 0) > 80).length },
     ];
 
     const recentActivities = await this.getActivities(undefined, 10);
@@ -441,7 +466,7 @@ export class RealCRMService {
 
   // Bulk Operations
   async bulkUpdateContacts(contactIds: string[], updates: Partial<CRMContact>): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('crm_contacts')
       .update(updates)
       .in('id', contactIds);
@@ -450,7 +475,7 @@ export class RealCRMService {
   }
 
   async bulkDeleteContacts(contactIds: string[]): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('crm_contacts')
       .delete()
       .in('id', contactIds);
