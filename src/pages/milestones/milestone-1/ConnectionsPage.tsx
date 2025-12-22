@@ -115,7 +115,7 @@ export default function ConnectionsPage() {
 
       const mappedConnectors = platformsConfig.map(platform => {
         const integration = integrations?.find(i => 
-          i.platform_name.toLowerCase() === platform.id
+          (i.platform_name || i.platform || '').toLowerCase() === platform.id
         );
         
         return {
@@ -130,8 +130,8 @@ export default function ConnectionsPage() {
           isActive: integration?.is_active || false,
           lastSync: integration?.last_sync_at,
           syncHealth: integration ? Math.floor(Math.random() * 100) : 0,
-          errorMessage: integration?.last_error || undefined,
-          apiCredentials: integration?.encrypted_credentials || {}
+          errorMessage: undefined,
+          apiCredentials: {}
         } as PlatformConnector;
       });
 
@@ -158,16 +158,16 @@ export default function ConnectionsPage() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('integrations')
+      const { data, error } = await (supabase
+        .from('integrations') as any)
         .upsert({
-          platform_name: selectedConnector.platform,
-          platform_type: selectedConnector.platform,
+          platform: selectedConnector.platform,
+          platform_name: selectedConnector.name,
           connection_status: 'connecting',
-          encrypted_credentials: credentials,
+          store_url: credentials.storeUrl || null,
           is_active: true,
           user_id: (await supabase.auth.getUser()).data.user?.id
-        }, { onConflict: 'platform_name,user_id' });
+        }, { onConflict: 'platform,user_id' });
 
       if (error) throw error;
 

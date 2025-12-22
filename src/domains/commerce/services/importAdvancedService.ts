@@ -185,7 +185,12 @@ export const importAdvancedService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      // Map to include name and provider for Connector type
+      return (data || []).map((d: any) => ({
+        ...d,
+        name: d.platform_name || d.platform || 'Connector',
+        provider: d.platform || 'unknown'
+      }));
     } catch (error) {
       console.error('Import connectors error:', error);
       throw error;

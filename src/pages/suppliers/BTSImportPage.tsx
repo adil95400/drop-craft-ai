@@ -45,13 +45,19 @@ export default function BTSImportPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('import_jobs')
-        .select('id, created_at, status, processed_products, total_products, supplier_id')
-        .or(`supplier_id.eq.${btsSupplierUUID},supplier_id.eq.btswholesaler`)
+        .select('id, created_at, status, successful_imports, total_products, source_platform')
         .order('created_at', { ascending: false })
         .limit(5);
       
       if (error) throw error;
-      return (data || []).map(d => ({ ...d, source: d.supplier_id })) as ImportJob[];
+      return (data || []).map(d => ({ 
+        id: d.id,
+        created_at: d.created_at,
+        status: d.status,
+        processed_products: d.successful_imports || 0,
+        total_products: d.total_products || 0,
+        source: d.source_platform || ''
+      })) as ImportJob[];
     }
   });
 

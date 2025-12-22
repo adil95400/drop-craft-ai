@@ -86,16 +86,19 @@ export default function SupplierSettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const { data, error } = await supabase
-        .from('supplier_credentials_vault')
+      const { data, error } = await (supabase
+        .from('supplier_credentials_vault') as any)
         .insert({
           user_id: user.id,
           supplier_id: cred.supplier_type,
-          connection_type: 'api',
-          api_key_encrypted: cred.api_key,
-          api_secret_encrypted: cred.api_secret || null,
-          connection_status: 'pending',
-          metadata: { name: cred.supplier_name, endpoint: cred.endpoint }
+          credential_type: 'api',
+          credentials_encrypted: JSON.stringify({
+            api_key: cred.api_key,
+            api_secret: cred.api_secret || null,
+            name: cred.supplier_name,
+            endpoint: cred.endpoint
+          }),
+          is_valid: false
         })
         .select()
         .single()

@@ -41,13 +41,22 @@ export default function SyncManagerPage() {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('marketplace_connections')
+        .from('integrations')
         .select('*')
         .eq('user_id', user.id);
 
       if (error) throw error;
       
-      setConnections(data || []);
+      // Map integrations to SyncConnection format
+      const mapped: SyncConnection[] = (data || []).map((d: any) => ({
+        id: d.id,
+        platform: d.platform_name || d.platform || 'unknown',
+        status: d.connection_status || 'disconnected',
+        last_sync_at: d.last_sync_at || '',
+        sync_stats: d.config?.sync_stats || {},
+        error_message: ''
+      }));
+      setConnections(mapped);
     } catch (error: any) {
       toast({
         title: "Erreur de chargement",
@@ -105,10 +114,10 @@ export default function SyncManagerPage() {
 
   const handleToggleAutoSync = async (connectionId: string, enabled: boolean) => {
     try {
-      const { error } = await supabase
-        .from('marketplace_connections')
+      const { error } = await (supabase
+        .from('integrations') as any)
         .update({ 
-          sync_settings: { auto_sync: enabled }
+          config: { auto_sync: enabled }
         })
         .eq('id', connectionId);
 

@@ -76,23 +76,23 @@ export default function ProductRulesPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const { data, error } = await supabase
-        .from('product_rules')
+      const { data, error } = await (supabase
+        .from('pricing_rules') as any)
         .select('*')
         .eq('user_id', user.id)
         .order('priority', { ascending: true })
 
       if (error) throw error
-      return data.map(mapDbToProductRule)
+      return (data || []).map(mapDbToProductRule)
     }
   })
 
   // Toggle enabled/disabled
   const toggleRuleMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
-      const { error } = await supabase
-        .from('product_rules')
-        .update({ enabled })
+      const { error } = await (supabase
+        .from('pricing_rules') as any)
+        .update({ is_active: enabled })
         .eq('id', id)
 
       if (error) throw error
@@ -110,8 +110,8 @@ export default function ProductRulesPage() {
   // Supprimer une règle
   const deleteRuleMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('product_rules')
+      const { error } = await (supabase
+        .from('pricing_rules') as any)
         .delete()
         .eq('id', id)
 
@@ -132,18 +132,17 @@ export default function ProductRulesPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const dbRule = mapProductRuleToDb({
-        ...rule,
-        name: `${rule.name} (copie)`,
-        executionCount: 0,
-        successCount: 0,
-        errorCount: 0,
-        lastExecutedAt: undefined
-      })
-
-      const { error } = await supabase
-        .from('product_rules')
-        .insert({ ...dbRule, user_id: user.id })
+      const { error } = await (supabase
+        .from('pricing_rules') as any)
+        .insert({
+          name: `${rule.name} (copie)`,
+          description: rule.description,
+          is_active: false,
+          priority: rule.priority,
+          conditions: rule.conditionGroup,
+          actions: rule.actions,
+          user_id: user.id
+        })
 
       if (error) throw error
     },
@@ -160,16 +159,17 @@ export default function ProductRulesPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const dbRule = mapProductRuleToDb({
-      ...template.rule,
-      executionCount: 0,
-      successCount: 0,
-      errorCount: 0
-    } as ProductRule)
-
-    const { error } = await supabase
-      .from('product_rules')
-      .insert({ ...dbRule, user_id: user.id })
+    const { error } = await (supabase
+      .from('pricing_rules') as any)
+      .insert({
+        name: template.rule.name,
+        description: template.rule.description,
+        is_active: false,
+        priority: template.rule.priority || 0,
+        conditions: template.rule.conditionGroup,
+        actions: template.rule.actions,
+        user_id: user.id
+      })
 
     if (error) {
       toast.error('Erreur lors de la création')

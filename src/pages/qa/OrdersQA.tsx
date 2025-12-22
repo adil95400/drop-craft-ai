@@ -96,9 +96,9 @@ export default function OrdersQA() {
       .from('customers')
       .insert({
         user_id: user!.id,
-        name: `Test Customer ${Date.now()}`,
+        first_name: 'Test',
+        last_name: `Customer ${Date.now()}`,
         email: `test${Date.now()}@example.com`,
-        status: 'active',
         total_orders: 0,
         total_spent: 0
       })
@@ -189,7 +189,7 @@ export default function OrdersQA() {
   const testExportOrders = async () => {
     const { data, error } = await supabase
       .from('orders')
-      .select('*, customers(name)')
+      .select('*, customers(first_name, last_name)')
       .eq('user_id', user!.id)
       .limit(10);
 
@@ -199,9 +199,11 @@ export default function OrdersQA() {
     }
 
     // Simuler export CSV
-    const csv = data.map(o => 
-      `${o.order_number},${o.customers?.name || 'N/A'},${o.status},${o.total_amount}`
-    ).join('\n');
+    const csv = data.map(o => {
+      const customer = o.customers as any;
+      const customerName = customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() : 'N/A';
+      return `${o.order_number},${customerName},${o.status},${o.total_amount}`;
+    }).join('\n');
     
     console.log('✅ Export CSV généré:', csv.split('\n').length, 'lignes');
   };

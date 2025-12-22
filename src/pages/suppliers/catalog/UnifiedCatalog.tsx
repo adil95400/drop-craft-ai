@@ -73,8 +73,8 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
   const { data: products = [], isLoading, refetch } = useQuery({
     queryKey: ['unified-catalog', searchQuery, selectedCategory, stockFilter, sortBy, supplierId],
     queryFn: async () => {
-      let query = supabase
-        .from('supplier_products')
+      let query = (supabase
+        .from('supplier_products') as any)
         .select('*, suppliers(name, country, rating)');
 
       if (supplierId) {
@@ -291,7 +291,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
     });
   };
 
-  const categories = ["all", ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  const categories = ["all", ...Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(c => String(c))];
 
   const getStockBadge = (status: string, quantity: number) => {
     switch (status) {

@@ -143,18 +143,17 @@ export function PlatformConfigPage() {
 
     try {
       // Créer l'intégration - utiliser les champs disponibles
-      const { data, error } = await supabase
-        .from('integrations')
+      const { data, error } = await (supabase
+        .from('integrations') as any)
         .insert({
+          platform: config.platform,
           platform_name: config.displayName,
-          platform_type: config.platform,
-          platform_url: formData.platform_url || null,
-          shop_domain: formData.shop_domain || null,
-          store_config: { 
+          store_url: formData.platform_url || formData.shop_domain || null,
+          config: { 
             platform: config.platform,
-            shop_name: formData.shop_domain || formData.platform_url || config.displayName 
+            shop_name: formData.shop_domain || formData.platform_url || config.displayName,
+            credentials: formData
           },
-          encrypted_credentials: formData,
           connection_status: 'disconnected',
           user_id: (await supabase.auth.getUser()).data.user?.id
         })
