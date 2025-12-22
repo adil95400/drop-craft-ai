@@ -24,9 +24,9 @@ export default function CouponsManagementPage() {
   const stats = {
     total: coupons.length,
     active: coupons.filter((c) => c.is_active).length,
-    totalUsage: coupons.reduce((sum, c) => sum + c.usage_count, 0),
+    totalUsage: coupons.reduce((sum, c) => sum + ((c as any).usage_count || 0), 0),
     totalDiscount: coupons
-      .reduce((sum, c) => sum + c.discount_value * c.usage_count, 0)
+      .reduce((sum, c) => sum + c.discount_value * ((c as any).usage_count || 0), 0)
       .toFixed(2),
   }
 
@@ -147,31 +147,32 @@ export default function CouponsManagementPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={getTypeColor(coupon.coupon_type)}>
-                      {getTypeLabel(coupon.coupon_type)}
+                    <Badge className={getTypeColor(coupon.discount_type || 'percentage')}>
+                      {getTypeLabel(coupon.discount_type || 'percentage')}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {coupon.coupon_type === 'percentage' && `${coupon.discount_value}%`}
-                    {coupon.coupon_type === 'fixed_amount' &&
-                      `${coupon.discount_value}${coupon.currency}`}
-                    {coupon.coupon_type === 'free_trial' &&
-                      `${coupon.trial_days} jours`}
+                    {coupon.discount_type === 'percentage' && `${coupon.discount_value}%`}
+                    {coupon.discount_type === 'fixed_amount' &&
+                      `${coupon.discount_value}€`}
+                    {coupon.discount_type === 'free_trial' &&
+                      `${(coupon as any).trial_days || 0} jours`}
+                    {!coupon.discount_type && `${coupon.discount_value}%`}
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">{coupon.usage_count}</span>
-                    {coupon.usage_limit && (
+                    <span className="font-medium">{(coupon as any).usage_count || 0}</span>
+                    {(coupon as any).usage_limit && (
                       <span className="text-muted-foreground">
                         {' '}
-                        / {coupon.usage_limit}
+                        / {(coupon as any).usage_limit}
                       </span>
                     )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="w-3 h-3" />
-                      {coupon.valid_until
-                        ? formatDistanceToNow(new Date(coupon.valid_until), {
+                      {coupon.expires_at
+                        ? formatDistanceToNow(new Date(coupon.expires_at), {
                             addSuffix: true,
                             locale: fr,
                           })

@@ -19,6 +19,7 @@ export default function EmailMarketing() {
   const [emailContent, setEmailContent] = useState('')
   const [segmentType, setSegmentType] = useState('all')
 
+  // Utilise marketing_campaigns au lieu de automated_campaigns
   const { data: campaigns } = useQuery({
     queryKey: ['email-campaigns'],
     queryFn: async () => {
@@ -26,10 +27,10 @@ export default function EmailMarketing() {
       if (!user) throw new Error('Non authentifié')
 
       const { data, error } = await supabase
-        .from('automated_campaigns')
+        .from('marketing_campaigns')
         .select('*')
         .eq('user_id', user.id)
-        .eq('campaign_type', 'email')
+        .eq('type', 'email')
         .order('created_at', { ascending: false })
       
       if (error) throw error
@@ -37,6 +38,7 @@ export default function EmailMarketing() {
     }
   })
 
+  // Utilise customers au lieu de crm_contacts
   const { data: contacts } = useQuery({
     queryKey: ['email-contacts'],
     queryFn: async () => {
@@ -44,10 +46,9 @@ export default function EmailMarketing() {
       if (!user) throw new Error('Non authentifié')
 
       const { data, error } = await supabase
-        .from('crm_contacts')
+        .from('customers')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'active')
       
       if (error) throw error
       return data || []
@@ -60,14 +61,13 @@ export default function EmailMarketing() {
       if (!user) throw new Error('Non authentifié')
 
       const { error } = await supabase
-        .from('automated_campaigns')
+        .from('marketing_campaigns')
         .insert({
           user_id: user.id,
-          campaign_name: campaignData.name,
-          campaign_type: 'email',
-          trigger_type: 'manual',
+          name: campaignData.name,
+          type: 'email',
           status: 'draft',
-          content_templates: {
+          metrics: {
             subject: campaignData.subject,
             body: campaignData.content,
             segment: campaignData.segment
@@ -128,7 +128,7 @@ export default function EmailMarketing() {
   const stats = {
     totalContacts: contacts?.length || 0,
     totalCampaigns: campaigns?.length || 0,
-    activeCampaigns: campaigns?.filter(c => c.status === 'active').length || 0,
+    activeCampaigns: campaigns?.filter((c: any) => c.status === 'active').length || 0,
     avgOpenRate: 24.5
   }
 
@@ -300,12 +300,12 @@ export default function EmailMarketing() {
         </TabsContent>
 
         <TabsContent value="campaigns" className="space-y-4">
-          {campaigns?.map((campaign) => (
+          {campaigns?.map((campaign: any) => (
             <Card key={campaign.id}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold">{campaign.campaign_name}</h3>
+                    <h3 className="font-semibold">{campaign.name}</h3>
                     <p className="text-sm text-muted-foreground">
                       Créée le {new Date(campaign.created_at).toLocaleDateString()}
                     </p>

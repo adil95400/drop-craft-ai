@@ -45,25 +45,26 @@ export default function CRMEmails() {
   const loadCampaigns = async () => {
     try {
       setLoading(true)
+      // Utiliser marketing_campaigns au lieu de automated_campaigns
       const { data, error } = await supabase
-        .from('automated_campaigns')
+        .from('marketing_campaigns')
         .select('*')
         .eq('user_id', user?.id)
-        .eq('campaign_type', 'email')
+        .eq('type', 'email')
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
       const mappedCampaigns: EmailCampaign[] = (data || []).map(camp => ({
         id: camp.id,
-        subject: camp.campaign_name,
+        subject: camp.name,
         status: camp.status === 'active' ? 'sent' : camp.status === 'draft' ? 'draft' : 'scheduled',
-        recipients: (camp.current_metrics as any)?.sent || 0,
-        openRate: (camp.current_metrics as any)?.open_rate || 0,
-        clickRate: (camp.current_metrics as any)?.click_rate || 0,
-        sentAt: camp.last_executed_at || undefined,
-        scheduledAt: camp.next_execution_at || undefined,
-        content: (camp.content_templates as any)?.body || 'Contenu de la campagne...'
+        recipients: (camp.metrics as any)?.sent || 0,
+        openRate: (camp.metrics as any)?.open_rate || 0,
+        clickRate: (camp.metrics as any)?.click_rate || 0,
+        sentAt: camp.start_date || undefined,
+        scheduledAt: camp.end_date || undefined,
+        content: (camp.metrics as any)?.body || 'Contenu de la campagne...'
       }))
 
       setCampaigns(mappedCampaigns)

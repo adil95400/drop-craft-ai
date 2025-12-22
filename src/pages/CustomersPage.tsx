@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -33,10 +33,14 @@ export default function CustomersPage() {
     },
   })
 
+  // Helper pour obtenir le nom complet
+  const getCustomerName = (customer: any) => 
+    `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email
+
   const filteredCustomers = customers?.filter(
     (customer) =>
       customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      getCustomerName(customer).toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
@@ -76,7 +80,7 @@ export default function CustomersPage() {
             <div className="min-w-0">
               <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Actifs</p>
               <p className="text-lg sm:text-2xl font-bold">
-                {customers?.filter((c) => c.status === 'active').length || 0}
+                {customers?.length || 0}
               </p>
             </div>
           </div>
@@ -138,17 +142,17 @@ export default function CustomersPage() {
                 <TableBody>
                   {filteredCustomers?.map((customer) => (
                     <TableRow key={customer.id}>
-                      <TableCell className="font-medium">{customer.name}</TableCell>
+                      <TableCell className="font-medium">{getCustomerName(customer)}</TableCell>
                       <TableCell>{customer.email}</TableCell>
                       <TableCell>{customer.total_orders}</TableCell>
                       <TableCell>€{customer.total_spent?.toFixed(2)}</TableCell>
                       <TableCell>
-                        <Badge variant={customer.status === 'active' ? 'default' : 'secondary'}>
-                          {customer.status}
+                        <Badge variant="default">
+                          Actif
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {formatDistanceToNow(new Date(customer.created_at), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(customer.created_at || new Date()), { addSuffix: true })}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -172,14 +176,14 @@ export default function CustomersPage() {
                 <Card key={customer.id} className="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm truncate">{customer.name}</p>
+                      <p className="font-medium text-sm truncate">{getCustomerName(customer)}</p>
                       <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
                     </div>
                     <Badge 
-                      variant={customer.status === 'active' ? 'default' : 'secondary'}
+                      variant="default"
                       className="text-[10px] flex-shrink-0"
                     >
-                      {customer.status}
+                      Actif
                     </Badge>
                   </div>
                   <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
