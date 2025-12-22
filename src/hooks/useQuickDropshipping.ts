@@ -25,7 +25,7 @@ export function useQuickDropshipping() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Récupérer la config actuelle
+  // Récupérer la config actuelle - use integrations table
   const { data: config, isLoading: isLoadingConfig } = useQuery({
     queryKey: ['dropshipping-config'],
     queryFn: async () => {
@@ -33,9 +33,10 @@ export function useQuickDropshipping() {
       if (!user) throw new Error('Not authenticated')
 
       const { data, error } = await supabase
-        .from('dropshipping_configs')
+        .from('integrations')
         .select('*')
         .eq('user_id', user.id)
+        .eq('platform', 'dropshipping')
         .single()
 
       if (error && error.code !== 'PGRST116') throw error
@@ -55,17 +56,17 @@ export function useQuickDropshipping() {
           .from('imported_products')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
-          .eq('status', 'active'),
+          .eq('status', 'imported'),
         supabase
-          .from('marketplace_orders')
+          .from('orders')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .eq('fulfillment_status', 'ordered'),
         supabase
-          .from('platform_sync_logs')
+          .from('activity_logs')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
-          .eq('status', 'success')
+          .eq('action', 'sync')
       ])
 
       return {
@@ -110,7 +111,7 @@ export function useQuickDropshipping() {
       
       toast({
         title: 'Store configuré ! 🎉',
-        description: `${data.data.products_imported} produits importés avec succès`
+        description: `${data?.data?.products_imported || 0} produits importés avec succès`
       })
     },
     onError: (error: any) => {
@@ -169,7 +170,7 @@ export function useQuickDropshipping() {
       queryClient.invalidateQueries({ queryKey: ['dropshipping-stats'] })
       toast({
         title: 'Synchronisation terminée',
-        description: `${data.stats.synced} produits synchronisés`
+        description: `${data?.stats?.synced || 0} produits synchronisés`
       })
     }
   })
@@ -194,7 +195,7 @@ export function useQuickDropshipping() {
       queryClient.invalidateQueries({ queryKey: ['imported-products'] })
       toast({
         title: 'Prix optimisés',
-        description: `${data.stats.optimized} produits mis à jour`
+        description: `${data?.stats?.optimized || 0} produits mis à jour`
       })
     }
   })
