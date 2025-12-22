@@ -43,32 +43,32 @@ export function useUnifiedStores() {
       const { data, error } = await supabase
         .from('integrations')
         .select('*')
-        .eq('platform_type', 'ecommerce')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
       // Transform integrations to Store format
+      // Use config column (Json) for additional store info
       return (data || []).map(integration => {
-        const config = integration.store_config && typeof integration.store_config === 'object' 
-          ? integration.store_config as Record<string, any>
+        const config = integration.config && typeof integration.config === 'object' 
+          ? integration.config as Record<string, any>
           : {};
         
         return {
           id: integration.id,
           user_id: integration.user_id,
-          name: config.name || integration.platform_name || 'Boutique',
-          domain: integration.shop_domain || integration.platform_url,
-          country: 'FR',
-          currency: 'EUR',
-          timezone: 'Europe/Paris',
-          logo_url: null,
-          is_main: false,
+          name: config.name || integration.platform_name || integration.platform || 'Boutique',
+          domain: integration.store_url || config.shop_domain || config.platform_url || null,
+          country: config.country || 'FR',
+          currency: config.currency || 'EUR',
+          timezone: config.timezone || 'Europe/Paris',
+          logo_url: config.logo_url || null,
+          is_main: config.is_main || false,
           is_active: integration.is_active ?? true,
-          store_type: 'primary' as const,
+          store_type: (config.store_type || 'primary') as 'primary' | 'secondary' | 'marketplace',
           settings: config || {},
-          created_at: integration.created_at,
-          updated_at: integration.updated_at,
+          created_at: integration.created_at || new Date().toISOString(),
+          updated_at: integration.updated_at || new Date().toISOString(),
         };
       }) as Store[];
     },
@@ -80,26 +80,25 @@ export function useUnifiedStores() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('integrations')
-        .select('*')
-        .eq('platform_type', 'ecommerce');
+        .select('*');
 
       if (error) throw error;
       
       // Transform to StoreStats format
       return (data || []).map(integration => {
-        const config = integration.store_config && typeof integration.store_config === 'object' 
-          ? integration.store_config as Record<string, any>
+        const config = integration.config && typeof integration.config === 'object' 
+          ? integration.config as Record<string, any>
           : {};
         
         return {
           store_id: integration.id,
-          store_name: config.name || integration.platform_name || 'Boutique',
-          domain: integration.shop_domain || integration.platform_url,
+          store_name: config.name || integration.platform_name || integration.platform || 'Boutique',
+          domain: integration.store_url || config.shop_domain || null,
           is_active: integration.is_active ?? true,
           total_integrations: 1,
           active_integrations: integration.connection_status === 'connected' ? 1 : 0,
           integrations_summary: [{
-            platform: integration.platform_name,
+            platform: integration.platform_name || integration.platform,
             status: integration.connection_status || 'unknown',
             last_sync: integration.last_sync_at
           }]
@@ -130,7 +129,7 @@ export function useUnifiedStores() {
         .from('integrations')
         .update({
           is_active: updates.is_active,
-          store_config: {
+          config: {
             ...updates.settings,
             name: updates.name
           }
