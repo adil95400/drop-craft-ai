@@ -65,52 +65,22 @@ export function usePushNotifications() {
       return null;
     }
 
-    // Vérifier si le token existe déjà
-    const { data: existingToken } = await supabase
-      .from('device_tokens')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('token', deviceToken)
+    // Store device token in notifications table as a registration record
+    const { data, error } = await (supabase
+      .from('notifications') as any)
+      .insert({
+        user_id: user.id,
+        title: 'Device Registration',
+        type: 'device_token',
+        message: deviceToken,
+        metadata: { platform, active: true, last_used_at: new Date().toISOString() }
+      })
+      .select()
       .single();
 
-    let result;
-
-    if (existingToken) {
-      // Mettre à jour le token existant
-      const { data, error } = await supabase
-        .from('device_tokens')
-        .update({
-          active: true,
-          last_used_at: new Date().toISOString()
-        })
-        .eq('id', existingToken.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating device token:', error);
-        return null;
-      }
-      result = data;
-    } else {
-      // Insérer un nouveau token
-      const { data, error } = await supabase
-        .from('device_tokens')
-        .insert({
-          user_id: user.id,
-          token: deviceToken,
-          platform,
-          active: true,
-          last_used_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error registering device:', error);
-        return null;
-      }
-      result = data;
+    if (error) {
+      console.error('Error registering device:', error);
+      return null;
     }
 
     toast({
@@ -118,7 +88,7 @@ export function usePushNotifications() {
       description: "Vous recevrez des notifications push"
     });
 
-    return result;
+    return data;
   };
 
   return {
