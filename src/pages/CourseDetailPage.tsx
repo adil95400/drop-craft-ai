@@ -246,7 +246,14 @@ export default function CourseDetailPage() {
 
                   {showQuiz && currentQuiz && (
                     <QuizComponent
-                      quiz={currentQuiz}
+                      quiz={{
+                        id: (currentQuiz as any).id || '',
+                        lesson_id: currentLesson?.id || '',
+                        course_id: course?.id || '',
+                        passing_score: (currentQuiz as any).passing_score || 70,
+                        questions: (currentQuiz as any).questions || [],
+                        title: (currentQuiz as any).title || '',
+                      }}
                       onComplete={(score, passed) => {
                         if (passed) {
                           handleLessonComplete();

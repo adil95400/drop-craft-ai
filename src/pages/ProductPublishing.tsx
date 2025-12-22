@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Package,
   Search,
@@ -20,6 +19,19 @@ import { PublishProductButton } from '@/components/products/PublishProductButton
 import { PublishStatsCard } from '@/components/products/PublishStatsCard';
 import { usePublishProducts } from '@/hooks/usePublishProducts';
 
+interface PublishProduct {
+  id: string;
+  name: string;
+  sku?: string;
+  price: number;
+  category?: string;
+  stock_quantity?: number;
+  image_url?: string;
+  status: string;
+  published_product_id?: string;
+  sync_status?: 'pending' | 'synced' | 'error' | 'outdated';
+}
+
 export default function ProductPublishing() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,18 +40,29 @@ export default function ProductPublishing() {
   const { bulkPublish } = usePublishProducts();
 
   const { data: products = [], isLoading, refetch } = useQuery({
-    queryKey: ['imported-products-publishing', user?.id],
+    queryKey: ['products-publishing', user?.id],
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
-        .from('imported_products')
+        .from('products')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return (data || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        price: p.price,
+        category: p.category,
+        stock_quantity: p.stock_quantity,
+        image_url: p.image_url,
+        status: p.status,
+        published_product_id: (p as any).shopify_id || null,
+        sync_status: p.status === 'active' ? 'synced' : 'pending'
+      })) as PublishProduct[];
     },
     enabled: !!user?.id,
   });
@@ -83,7 +106,7 @@ export default function ProductPublishing() {
     setSelectedProducts([]);
   };
 
-  const getStatusBadge = (product: any) => {
+  const getStatusBadge = (product: PublishProduct) => {
     if (!product.published_product_id) {
       return (
         <Badge variant="secondary">
@@ -150,7 +173,7 @@ export default function ProductPublishing() {
             Publication des Produits
           </h1>
           <p className="text-muted-foreground">
-            Gérez la publication de vos produits importés vers votre catalogue principal
+            Gérez la publication de vos produits vers votre catalogue principal
           </p>
         </div>
         <Button onClick={() => refetch()}>
@@ -315,10 +338,10 @@ export default function ProductPublishing() {
                           className="mt-1"
                         />
 
-                        {product.image_urls?.[0] && (
+                        {product.image_url && (
                           <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                             <img
-                              src={product.image_urls[0]}
+                              src={product.image_url}
                               alt={product.name}
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -353,7 +376,7 @@ export default function ProductPublishing() {
                                   {product.category}
                                 </Badge>
                               )}
-                              {product.stock_quantity !== null && (
+                              {product.stock_quantity !== undefined && product.stock_quantity !== null && (
                                 <span className="text-muted-foreground">
                                   Stock: {product.stock_quantity}
                                 </span>
@@ -363,14 +386,7 @@ export default function ProductPublishing() {
                             <PublishProductButton
                               productId={product.id}
                               isPublished={!!product.published_product_id}
-                              syncStatus={
-                                product.sync_status as
-                                  | 'pending'
-                                  | 'synced'
-                                  | 'error'
-                                  | 'outdated'
-                                  | null
-                              }
+                              syncStatus={product.sync_status || null}
                               compact={true}
                             />
                           </div>

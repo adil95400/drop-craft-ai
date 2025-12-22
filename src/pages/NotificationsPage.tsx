@@ -32,27 +32,35 @@ export default function NotificationsPage() {
       if (!user) throw new Error('Non authentifié');
 
       let query = supabase
-        .from('user_notifications')
+        .from('notifications')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (filter === 'unread') {
-        query = query.eq('read', false);
+        query = query.eq('is_read', false);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Notification[];
+      return (data || []).map(n => ({
+        id: n.id,
+        type: (n.type || 'info') as 'success' | 'error' | 'info' | 'warning',
+        title: n.title,
+        message: n.message || '',
+        read: n.is_read || false,
+        created_at: n.created_at,
+        metadata: n.metadata
+      })) as Notification[];
     },
   });
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
       const { error } = await supabase
-        .from('user_notifications')
-        .update({ read: true })
+        .from('notifications')
+        .update({ is_read: true })
         .eq('id', notificationId);
 
       if (error) throw error;
@@ -68,10 +76,10 @@ export default function NotificationsPage() {
       if (!user) throw new Error('Non authentifié');
 
       const { error } = await supabase
-        .from('user_notifications')
-        .update({ read: true })
+        .from('notifications')
+        .update({ is_read: true })
         .eq('user_id', user.id)
-        .eq('read', false);
+        .eq('is_read', false);
 
       if (error) throw error;
     },
@@ -84,7 +92,7 @@ export default function NotificationsPage() {
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: string) => {
       const { error } = await supabase
-        .from('user_notifications')
+        .from('notifications')
         .delete()
         .eq('id', notificationId);
 

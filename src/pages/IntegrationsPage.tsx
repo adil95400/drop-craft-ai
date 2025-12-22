@@ -17,10 +17,10 @@ export default function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   
   const { data: integrationsData = [], isLoading } = useQuery({
-    queryKey: ['marketplace-integrations'],
+    queryKey: ['integrations'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('marketplace_integrations')
+        .from('integrations')
         .select('*')
         .order('created_at', { ascending: false });
       
@@ -42,7 +42,7 @@ export default function IntegrationsPage() {
     }
   });
 
-  const activeIntegrations = integrationsData.filter(i => i.status === 'connected').length;
+  const activeIntegrations = integrationsData.filter(i => i.connection_status === 'connected').length;
   const totalApiCalls = apiLogs.length;
   const webhooksCount = integrationsData.length;
 

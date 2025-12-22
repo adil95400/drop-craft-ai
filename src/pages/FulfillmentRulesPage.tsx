@@ -15,9 +15,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { Database } from '@/integrations/supabase/types'
 
-type FulfillmentRule = Database['public']['Tables']['fulfillment_automation_rules']['Row']
+interface FulfillmentRule {
+  id: string;
+  name: string;
+  is_active: boolean;
+  priority: number;
+  conditions: any;
+  actions: any;
+  created_at: string;
+}
 
 export default function FulfillmentRulesPage() {
   const { toast } = useToast()
@@ -27,19 +34,19 @@ export default function FulfillmentRulesPage() {
     queryKey: ['fulfillment-rules'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('fulfillment_automation_rules')
+        .from('fulfilment_rules')
         .select('*')
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as FulfillmentRule[]
+      return (data || []) as FulfillmentRule[]
     },
   })
 
   const toggleRuleMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
       const { error } = await supabase
-        .from('fulfillment_automation_rules')
+        .from('fulfilment_rules')
         .update({ is_active })
         .eq('id', id)
       
@@ -64,7 +71,7 @@ export default function FulfillmentRulesPage() {
   const deleteRuleMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('fulfillment_automation_rules')
+        .from('fulfilment_rules')
         .delete()
         .eq('id', id)
       
@@ -129,9 +136,9 @@ export default function FulfillmentRulesPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total exécutions</p>
+              <p className="text-sm text-muted-foreground">Total règles</p>
               <p className="text-2xl font-bold">
-                {rules?.reduce((sum, r) => sum + r.execution_count, 0) || 0}
+                {rules?.length || 0}
               </p>
             </div>
             <Settings className="w-8 h-8 text-blue-500" />
@@ -159,10 +166,7 @@ export default function FulfillmentRulesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nom de la règle</TableHead>
-                <TableHead>Déclenchement</TableHead>
-                <TableHead>Conditions</TableHead>
-                <TableHead>Actions auto</TableHead>
-                <TableHead>Exécutions</TableHead>
+                <TableHead>Priorité</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -172,37 +176,10 @@ export default function FulfillmentRulesPage() {
                 <TableRow key={rule.id}>
                   <TableCell className="font-medium">{rule.name}</TableCell>
                   <TableCell>
-                    <Badge className={getTriggerBadge(rule.trigger_on)}>
-                      {rule.trigger_on}
+                    <Badge variant="secondary">
+                      {rule.priority}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                      {rule.min_order_value && (
-                        <span>Min: {rule.min_order_value}€</span>
-                      )}
-                      {rule.max_order_value && (
-                        <span>Max: {rule.max_order_value}€</span>
-                      )}
-                      {rule.destination_countries && rule.destination_countries.length > 0 && (
-                        <span>Pays: {rule.destination_countries.join(', ')}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {rule.auto_select_carrier && (
-                        <Badge variant="secondary" className="text-xs">Auto transporteur</Badge>
-                      )}
-                      {rule.auto_generate_label && (
-                        <Badge variant="secondary" className="text-xs">Étiquette</Badge>
-                      )}
-                      {rule.auto_send_tracking && (
-                        <Badge variant="secondary" className="text-xs">Suivi</Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>{rule.execution_count}</TableCell>
                   <TableCell>
                     <Switch
                       checked={rule.is_active}

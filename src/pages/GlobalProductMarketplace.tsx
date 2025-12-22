@@ -61,7 +61,7 @@ export default function GlobalProductMarketplace() {
       }
 
       if (selectedCategory !== 'all') {
-        query = query.eq('category', selectedCategory);
+        query = query.eq('category', selectedCategory as string);
       }
 
       if (selectedSupplier !== 'all') {
@@ -151,9 +151,9 @@ export default function GlobalProductMarketplace() {
         sku: `IMP-${product.id.slice(0, 8)}`,
         stock_quantity: product.stock_quantity,
         category: product.category,
-        images: product.images,
+        image_url: product.images?.[0] || null,
         status: 'draft'
-      });
+      } as any);
 
       toast({
         title: "Produit importé",

@@ -258,7 +258,7 @@ export default function MarketplaceSyncDashboard() {
               <Store className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{syncStats?.total_connections || 0}</div>
+              <div className="text-2xl font-bold">{syncStats?.totalConnections || 0}</div>
               <p className="text-xs text-muted-foreground">Marketplaces connectées</p>
             </CardContent>
           </Card>
@@ -269,35 +269,35 @@ export default function MarketplaceSyncDashboard() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{syncStats?.total_products_mapped || 0}</div>
+              <div className="text-2xl font-bold">{syncStats?.activeConnections || 0}</div>
               <p className="text-xs text-muted-foreground">
-                {syncStats?.synced || 0} synchronisés
+                Actifs
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">À Synchroniser</CardTitle>
+              <CardTitle className="text-sm font-medium">Dernière Sync</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{syncStats?.out_of_sync || 0}</div>
+              <div className="text-sm font-bold">{syncStats?.lastSync || 'N/A'}</div>
               <p className="text-xs text-muted-foreground">
-                {syncStats?.pending || 0} en attente
+                Date
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Syncs 24h</CardTitle>
+              <CardTitle className="text-sm font-medium">Connexions</CardTitle>
               <RefreshCw className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{syncStats?.syncs_24h || 0}</div>
+              <div className="text-2xl font-bold">{connections.length}</div>
               <p className="text-xs text-muted-foreground">
-                {syncStats?.successful_syncs_24h || 0} réussies
+                Total
               </p>
             </CardContent>
           </Card>
@@ -415,17 +415,12 @@ export default function MarketplaceSyncDashboard() {
                             )}
                             <div>
                               <div className="font-medium capitalize">
-                                {log.sync_type} - {log.direction}
+                                {log.sync_type}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {log.success_items}/{log.total_items} réussi
+                                {log.success_items}/{(log as any).total_items || 0} réussi
                                 {log.error_items > 0 && `, ${log.error_items} erreurs`}
                               </div>
-                              {log.duration_ms && (
-                                <div className="text-xs text-muted-foreground">
-                                  Durée: {(log.duration_ms / 1000).toFixed(2)}s
-                                </div>
-                              )}
                             </div>
                           </div>
                           <div className="text-right text-sm text-muted-foreground">
