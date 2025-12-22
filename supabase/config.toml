@@ -1,11 +1,5 @@
 project_id = "dtozyrmmekdnvekissuh"
 
-[functions.unified-channel-webhooks]
-verify_jwt = false
-
-[functions.auto-sync-channels]
-verify_jwt = false
-
 [api]
 enabled = true
 port = 54321
@@ -55,10 +49,16 @@ enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
 
+[functions.unified-channel-webhooks]
+verify_jwt = false
+
+[functions.auto-sync-channels]
+verify_jwt = false
+
 [functions.test-integration]
 verify_jwt = true
 
-[functions.sync-integration] 
+[functions.sync-integration]
 verify_jwt = true
 
 [functions.unified-ai]
@@ -157,7 +157,7 @@ verify_jwt = true
 [functions.backup-supplier-finder]
 verify_jwt = true
 
-[functions.bulk-stock-updater] 
+[functions.bulk-stock-updater]
 verify_jwt = true
 
 [functions.stock-predictor]
@@ -253,9 +253,6 @@ verify_jwt = true
 [functions.ai-chatbot-support]
 verify_jwt = true
 
-[functions.multi-tenant]
-verify_jwt = true
-
 [functions.public-api]
 verify_jwt = false
 
@@ -263,9 +260,6 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.ai-pricing-optimizer]
-verify_jwt = true
-
-[functions.ai-sentiment-analysis]
 verify_jwt = true
 
 [functions.shipping-rate-calculator]
@@ -497,6 +491,9 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.process-import]
+verify_jwt = true
+
+[functions.import-products]
 verify_jwt = true
 
 [functions.system-health-check]
