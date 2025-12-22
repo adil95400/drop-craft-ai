@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -60,8 +60,9 @@ export default function APIManagementPage() {
   })
 
   const totalRequests = analytics?.reduce((sum, a) => sum + (a.total_requests || 0), 0) || 0
-  const successfulRequests = analytics?.reduce((sum, a) => sum + (a.successful_requests || 0), 0) || 0
+  // successful_requests n'existe pas, on calcule: total - failed
   const failedRequests = analytics?.reduce((sum, a) => sum + (a.failed_requests || 0), 0) || 0
+  const successfulRequests = totalRequests - failedRequests
 
   const toggleKeyVisibility = (keyId: string) => {
     setVisibleKeys((prev) => {

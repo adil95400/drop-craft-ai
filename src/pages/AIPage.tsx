@@ -11,11 +11,12 @@ export default function AIPage() {
   const { stats: automationStats } = useRealAutomation();
   const { analytics, isLoading: analyticsLoading } = useRealAnalytics();
   
+  // Utilise ai_optimization_jobs car ai_tasks n'existe pas
   const { data: aiTasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['ai-tasks-count'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('ai_tasks')
+        .from('ai_optimization_jobs')
         .select('*')
         .order('created_at', { ascending: false });
       
