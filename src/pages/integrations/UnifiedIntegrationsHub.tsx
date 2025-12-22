@@ -86,19 +86,19 @@ export default function UnifiedIntegrationsHub() {
     // Store connections (Shopify, WooCommerce, etc.)
     ...storeConnections.map(s => ({
       id: `store-${s.id}`,
-      name: s.platform_name || s.platform_type || 'Boutique',
+      name: s.platform_name || s.platform || 'Boutique',
       type: 'marketplace' as const,
       status: s.connection_status === 'connected' ? 'connected' as const : 
               s.connection_status === 'error' ? 'error' as const : 'available' as const,
-      logo: getStoreLogo(s.platform_type || ''),
-      description: `Boutique ${s.platform_type || 'e-commerce'}`,
+      logo: getStoreLogo(s.platform || ''),
+      description: `Boutique ${s.platform || 'e-commerce'}`,
       productsCount: 0,
       lastSync: s.last_sync_at || undefined,
-      category: s.platform_type || undefined
+      category: s.platform || undefined
     })),
     // Available marketplaces (not connected)
     ...getAvailableMarketplaces().filter(m => 
-      !storeConnections.some(s => s.platform_type?.toLowerCase() === m.id.toLowerCase())
+      !storeConnections.some(s => s.platform?.toLowerCase() === m.id.toLowerCase())
     )
   ]
 

@@ -138,7 +138,18 @@ export default function StoresAndChannelsHub() {
         .select('*')
         .order('created_at', { ascending: false })
       if (error) throw error
-      return (data || []) as ChannelConnection[]
+      // Map to ChannelConnection format
+      return (data || []).map(d => ({
+        id: d.id,
+        platform_type: d.platform,
+        platform_name: d.platform_name || d.platform,
+        shop_domain: d.store_url,
+        connection_status: d.connection_status as any,
+        last_sync_at: d.last_sync_at,
+        products_synced: 0,
+        orders_synced: 0,
+        created_at: d.created_at || ''
+      })) as ChannelConnection[]
     }
   })
 

@@ -124,8 +124,8 @@ export default function CreateProduct() {
       }
 
       // Insertion dans la base de données
-      const { data, error } = await supabase
-        .from('products')
+      const { data, error } = await (supabase
+        .from('products') as any)
         .insert({
           user_id: user.id,
           name: formData.name,

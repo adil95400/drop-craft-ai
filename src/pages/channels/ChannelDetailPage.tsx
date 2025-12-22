@@ -59,18 +59,27 @@ export default function ChannelDetailPage() {
     enabled: !!channelId
   })
 
-  // Fetch synced products from shopify_products table
+  // Fetch synced products from products table
   const { data: syncedProducts, isLoading: productsLoading, refetch: refetchProducts } = useQuery({
     queryKey: ['channel-products', channelId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('shopify_products')
-        .select('id, title, image_url, price, inventory_quantity, status, sku, vendor')
-        .eq('store_integration_id', channelId)
+        .from('products')
+        .select('id, name, image_url, price, stock_quantity, status, sku')
         .order('created_at', { ascending: false })
         .limit(50)
       if (error) throw error
-      return data || []
+      // Map to expected format
+      return (data || []).map(p => ({
+        id: p.id,
+        title: p.name,
+        image_url: p.image_url,
+        price: p.price,
+        inventory_quantity: p.stock_quantity,
+        status: p.status,
+        sku: p.sku,
+        vendor: null as string | null
+      }))
     },
     enabled: !!channelId
   })
@@ -80,9 +89,8 @@ export default function ChannelDetailPage() {
     queryKey: ['channel-product-count', channelId],
     queryFn: async () => {
       const { count, error } = await supabase
-        .from('shopify_products')
+        .from('products')
         .select('*', { count: 'exact', head: true })
-        .eq('store_integration_id', channelId)
       if (error) throw error
       return count || 0
     },
@@ -120,9 +128,8 @@ export default function ChannelDetailPage() {
       
       // Update with real product count
       const { count } = await supabase
-        .from('shopify_products')
+        .from('products')
         .select('*', { count: 'exact', head: true })
-        .eq('store_integration_id', channelId)
       
       await supabase
         .from('integrations')
@@ -223,7 +230,7 @@ export default function ChannelDetailPage() {
                 {getStatusBadge()}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {channel.shop_domain || 'Non configuré'}
+                {channel.store_url || 'Non configuré'}
               </p>
             </div>
           </div>
@@ -238,9 +245,9 @@ export default function ChannelDetailPage() {
               <RefreshCw className={cn("h-4 w-4", syncMutation.isPending && "animate-spin")} />
               Synchroniser
             </Button>
-            {channel.shop_domain && (
+            {channel.store_url && (
               <Button variant="outline" asChild>
-                <a href={`https://${channel.shop_domain}`} target="_blank" rel="noopener noreferrer">
+                <a href={channel.store_url.startsWith('http') ? channel.store_url : `https://${channel.store_url}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Ouvrir
                 </a>
@@ -348,7 +355,7 @@ export default function ChannelDetailPage() {
               {/* Auto-Sync Settings */}
               <AutoSyncSettings 
                 channelId={channelId || ''}
-                platform={channel.platform_type?.toLowerCase() || 'default'}
+                platform={channel.platform?.toLowerCase() || 'default'}
                 onConfigChange={(config) => {
                   console.log('Auto-sync config:', config)
                   toast({ title: 'Paramètres de sync enregistrés' })
@@ -520,7 +527,7 @@ export default function ChannelDetailPage() {
               {/* Visual Mapping Editor */}
               <VisualMappingEditor 
                 channelId={channelId || ''}
-                platform={channel.platform_type?.toLowerCase() || 'default'}
+                platform={channel.platform?.toLowerCase() || 'default'}
                 mappings={[]}
                 onSave={async (mappings) => {
                   console.log('Visual mappings:', mappings)
@@ -530,7 +537,7 @@ export default function ChannelDetailPage() {
               
               {/* Standard Mapping Editor */}
               <ProductMappingEditor
-                platform={channel.platform_type?.toLowerCase() || 'default'}
+                platform={channel.platform?.toLowerCase() || 'default'}
                 platformName={channel.platform_name || 'Canal'}
                 onSave={(mappings) => {
                   console.log('Saving mappings:', mappings)
