@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
@@ -34,7 +33,10 @@ export const useProductsDemo = () => {
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data || []
+      return (data || []).map((p: any) => ({
+        ...p,
+        profit_margin: p.cost_price ? ((p.price - p.cost_price) / p.cost_price * 100) : 0
+      }))
     }
   })
 
@@ -43,7 +45,11 @@ export const useProductsDemo = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
+      const profitMargin = productData.cost_price 
+        ? ((productData.price || 0) - productData.cost_price) / productData.cost_price * 100 
+        : 0
+
+      const { data, error } = await (supabase as any)
         .from('products')
         .insert({
           user_id: user.id,
@@ -57,14 +63,13 @@ export const useProductsDemo = () => {
           supplier: productData.supplier,
           sku: productData.sku,
           tags: productData.tags,
-          stock_quantity: productData.stock_quantity || 0,
-          profit_margin: productData.cost_price ? ((productData.price || 0) - productData.cost_price) / productData.cost_price * 100 : 0
+          stock_quantity: productData.stock_quantity || 0
         })
         .select()
         .single()
       
       if (error) throw error
-      return data
+      return { ...data, profit_margin: profitMargin }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products-real'] })
@@ -74,9 +79,10 @@ export const useProductsDemo = () => {
 
   const updateProduct = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Product> }) => {
+      const { profit_margin, ...cleanUpdates } = updates
       const { error } = await supabase
         .from('products')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update({ ...cleanUpdates, updated_at: new Date().toISOString() })
         .eq('id', id)
       
       if (error) throw error
@@ -107,11 +113,11 @@ export const useProductsDemo = () => {
   // Calculer les statistiques
   const stats = {
     total: products.length,
-    active: products.filter(p => p.status === 'active').length,
-    inactive: products.filter(p => p.status === 'inactive').length,
-    lowStock: products.filter(p => (p.stock_quantity || 0) < 20).length,
-    totalValue: products.reduce((sum, product) => sum + (product.price * (product.stock_quantity || 0)), 0),
-    averageMargin: products.length > 0 ? products.reduce((sum, product) => sum + (product.profit_margin || 0), 0) / products.length : 0
+    active: products.filter((p: any) => p.status === 'active').length,
+    inactive: products.filter((p: any) => p.status === 'inactive').length,
+    lowStock: products.filter((p: any) => (p.stock_quantity || 0) < 20).length,
+    totalValue: products.reduce((sum: number, product: any) => sum + (product.price * (product.stock_quantity || 0)), 0),
+    averageMargin: products.length > 0 ? products.reduce((sum: number, product: any) => sum + (product.profit_margin || 0), 0) / products.length : 0
   }
 
   return {

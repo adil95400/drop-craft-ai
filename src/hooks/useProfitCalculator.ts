@@ -34,32 +34,50 @@ export function useProfitCalculator() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch user configuration
+  // Fetch user configuration - using analytics_insights with metric_type = 'profit_config'
   const { data: config, isLoading: isLoadingConfig } = useQuery({
     queryKey: ['profit-config'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profit_configurations')
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await (supabase as any)
+        .from('analytics_insights')
         .select('*')
+        .eq('user_id', user.id)
+        .eq('metric_type', 'profit_config')
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data as any;
+      
+      if (data?.metadata) {
+        return {
+          id: data.id,
+          user_id: data.user_id,
+          ...data.metadata
+        } as ProfitConfig;
+      }
+      return null;
     },
   });
 
-  // Fetch calculation history
+  // Fetch calculation history - using analytics_insights with metric_type = 'profit_calculation'
   const { data: calculations, isLoading: isLoadingCalculations } = useQuery({
     queryKey: ['profit-calculations'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profit_calculations')
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await (supabase as any)
+        .from('analytics_insights')
         .select('*')
+        .eq('user_id', user.id)
+        .eq('metric_type', 'profit_calculation')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      return data as any;
+      return (data || []).map((item: any) => item.metadata);
     },
   });
 
@@ -73,17 +91,22 @@ export function useProfitCalculator() {
       defaultVatPercent: number;
       currency: string;
     }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const metadata = {
+        default_shipping_cost: params.defaultShippingCost,
+        default_packaging_cost: params.defaultPackagingCost,
+        default_transaction_fee_percent: params.defaultTransactionFeePercent,
+        default_ad_cost_percent: params.defaultAdCostPercent,
+        default_vat_percent: params.defaultVatPercent,
+        currency: params.currency
+      };
+
       if (config?.id) {
-        const { data, error } = await supabase
-          .from('profit_configurations')
-          .update({
-            default_shipping_cost: params.defaultShippingCost,
-            default_packaging_cost: params.defaultPackagingCost,
-            default_transaction_fee_percent: params.defaultTransactionFeePercent,
-            default_ad_cost_percent: params.defaultAdCostPercent,
-            default_vat_percent: params.defaultVatPercent,
-            currency: params.currency
-          } as any)
+        const { data, error } = await (supabase as any)
+          .from('analytics_insights')
+          .update({ metadata })
           .eq('id', config.id)
           .select()
           .single();
@@ -91,16 +114,14 @@ export function useProfitCalculator() {
         if (error) throw error;
         return data;
       } else {
-        const { data, error } = await supabase
-          .from('profit_configurations')
+        const { data, error } = await (supabase as any)
+          .from('analytics_insights')
           .insert({
-            default_shipping_cost: params.defaultShippingCost,
-            default_packaging_cost: params.defaultPackagingCost,
-            default_transaction_fee_percent: params.defaultTransactionFeePercent,
-            default_ad_cost_percent: params.defaultAdCostPercent,
-            default_vat_percent: params.defaultVatPercent,
-            currency: params.currency
-          } as any)
+            user_id: user.id,
+            metric_name: 'profit_config',
+            metric_type: 'profit_config',
+            metadata
+          })
           .select()
           .single();
 
@@ -124,24 +145,18 @@ export function useProfitCalculator() {
   // Save calculation
   const saveCalculation = useMutation({
     mutationFn: async (params: ProfitCalculation) => {
-      const { data, error } = await supabase
-        .from('profit_calculations')
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await (supabase as any)
+        .from('analytics_insights')
         .insert({
-          product_name: params.productName,
-          selling_price: params.sellingPrice,
-          product_cost: params.productCost,
-          shipping_cost: params.shippingCost,
-          packaging_cost: params.packagingCost,
-          transaction_fee: params.transactionFee,
-          ad_cost: params.adCost,
-          vat: params.vat,
-          other_costs: params.otherCosts,
-          net_profit: params.netProfit,
-          profit_margin_percent: params.profitMarginPercent,
-          roi_percent: params.roiPercent,
-          breakeven_units: params.breakevenUnits,
-          ai_suggestions: params.aiSuggestions || []
-        } as any)
+          user_id: user.id,
+          metric_name: params.productName,
+          metric_type: 'profit_calculation',
+          metric_value: params.netProfit,
+          metadata: params
+        })
         .select()
         .single();
 
@@ -164,8 +179,8 @@ export function useProfitCalculator() {
   // Delete calculation
   const deleteCalculation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('profit_calculations')
+      const { error } = await (supabase as any)
+        .from('analytics_insights')
         .delete()
         .eq('id', id);
 

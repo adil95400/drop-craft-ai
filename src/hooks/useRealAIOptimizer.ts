@@ -70,7 +70,7 @@ export const useRealAIOptimizer = () => {
 
       // 2. SEO Optimization Task
       const needsSeoUpdate = products?.filter(p => 
-        !p.seo_description || !p.seo_title || p.seo_description?.length < 50
+        !p.seo_description || !p.seo_title || (p.seo_description?.length || 0) < 50
       ).length || 0
 
       if (needsSeoUpdate > 0) {
@@ -112,7 +112,7 @@ export const useRealAIOptimizer = () => {
 
       // 4. Marketing Campaign Task
       const activeCustomers = customers?.filter(c => 
-        c.status === 'active' && c.total_orders > 0
+        c.total_orders && c.total_orders > 0
       ).length || 0
 
       if (activeCustomers > 5) {
