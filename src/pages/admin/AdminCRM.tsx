@@ -35,10 +35,10 @@ const AdminCRM = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('crm_contacts')
+        .from('customers')
         .select('*')
         .eq('user_id', user?.id)
-        .order('lead_score', { ascending: false });
+        .order('total_spent', { ascending: false });
 
       if (error) throw error;
       setContacts(data || []);

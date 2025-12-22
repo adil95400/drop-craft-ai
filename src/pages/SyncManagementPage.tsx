@@ -37,12 +37,16 @@ export default function SyncManagementPage() {
 
       const { data, error } = await supabase
         .from('store_integrations')
-        .select('id, platform, store_name, store_url, connection_status, is_active, last_sync_at, sync_frequency, sync_settings, product_count')
+        .select('id, platform, store_name, store_url, is_active, last_sync_at, sync_frequency, sync_settings, product_count')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data as StoreIntegration[]
+      // Map is_active to connection_status for compatibility
+      return (data || []).map((d: any) => ({
+        ...d,
+        connection_status: d.is_active ? 'connected' : 'disconnected'
+      })) as StoreIntegration[]
     }
   })
 

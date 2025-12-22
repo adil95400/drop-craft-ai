@@ -54,14 +54,14 @@ export default function GlobalProductMarketplace() {
         .from('supplier_products')
         .select('*')
         .gte('supplier_price', priceRange[0])
-        .lte('supplier_price', priceRange[1]);
+        .lte('supplier_price', priceRange[1]) as any;
 
       if (searchQuery) {
         query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
       }
 
       if (selectedCategory !== 'all') {
-        query = query.eq('category', selectedCategory as string);
+        query = query.eq('category', selectedCategory);
       }
 
       if (selectedSupplier !== 'all') {

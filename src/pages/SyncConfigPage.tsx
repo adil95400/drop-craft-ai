@@ -161,7 +161,7 @@ export default function SyncConfigPage() {
                   <SelectItem key={integration.id} value={integration.id}>
                     <div className="flex items-center gap-2">
                       <span className="capitalize">{integration.platform}</span>
-                      {integration.connection_status === 'connected' || integration.is_active ? (
+                      {integration.is_active ? (
                         <CheckCircle className="h-4 w-4 text-green-500" />
                       ) : (
                         <AlertCircle className="h-4 w-4 text-yellow-500" />

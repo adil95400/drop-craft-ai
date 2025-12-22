@@ -112,10 +112,17 @@ export default function UnifiedAnalyticsDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('supplier_products')
-        .select('id, name, price, stock_quantity, supplier_id')
+        .select('id, title, supplier_price, stock_quantity, supplier_id')
         .limit(10000)
       if (error) throw error
-      return data || []
+      // Map to expected format
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.title,
+        price: p.supplier_price,
+        stock_quantity: p.stock_quantity,
+        supplier_id: p.supplier_id
+      }))
     },
   })
 
@@ -137,7 +144,7 @@ export default function UnifiedAnalyticsDashboard() {
     queryKey: ['unified-analytics-suppliers-count'],
     queryFn: async () => {
       const { count, error } = await supabase
-        .from('supplier_credentials_vault')
+        .from('supplier_credentials_vault' as any)
         .select('*', { count: 'exact', head: true })
         .eq('connection_status', 'active')
       if (error) return 0
