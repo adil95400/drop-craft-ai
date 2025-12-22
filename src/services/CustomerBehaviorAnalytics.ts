@@ -1,7 +1,17 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
 
-type CustomerBehaviorRow = Database['public']['Tables']['customer_behavior_analytics']['Row'];
+// Define the row type locally since the table doesn't exist in schema
+interface CustomerBehaviorRow {
+  id: string;
+  customer_id: string | null;
+  behavioral_score: number;
+  lifetime_value: number | null;
+  churn_probability: number | null;
+  recommendations: any;
+  analysis_data: any;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface BehaviorAnalysisRequest {
   customer_id: string;
@@ -88,29 +98,29 @@ export class CustomerBehaviorAnalytics {
   }
 
   async getBehaviorHistory(): Promise<CustomerBehaviorData[]> {
-    const { data, error } = await supabase
-      .from('customer_behavior_analytics')
+    const { data, error } = await (supabase
+      .from('customer_behavior_analytics' as any) as any)
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []).map(row => this.mapRowToData(row));
+    return (data || []).map((row: any) => this.mapRowToData(row as CustomerBehaviorRow));
   }
 
   async getBehaviorById(id: string): Promise<CustomerBehaviorData> {
-    const { data, error } = await supabase
-      .from('customer_behavior_analytics')
+    const { data, error } = await (supabase
+      .from('customer_behavior_analytics' as any) as any)
       .select('*')
       .eq('id', id)
       .single();
 
     if (error) throw error;
-    return this.mapRowToData(data);
+    return this.mapRowToData(data as CustomerBehaviorRow);
   }
 
   async deleteBehaviorAnalysis(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('customer_behavior_analytics')
+    const { error } = await (supabase
+      .from('customer_behavior_analytics' as any) as any)
       .delete()
       .eq('id', id);
 

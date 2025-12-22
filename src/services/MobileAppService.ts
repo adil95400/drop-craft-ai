@@ -76,7 +76,7 @@ class MobileAppService {
 
       // Transform activity logs to mobile apps format
       return apps?.map(app => {
-        const meta = app.metadata as any;
+        const meta = (app.details || {}) as any;
         return {
           id: app.id,
           name: meta?.name || 'Mobile App',
@@ -102,8 +102,8 @@ class MobileAppService {
             crash_rate: 0,
             retention_rate: 0
           },
-          created_at: app.created_at,
-          updated_at: app.created_at
+          created_at: app.created_at || '',
+          updated_at: app.created_at || ''
         };
       }) || [];
     } catch (error) {
@@ -153,7 +153,7 @@ class MobileAppService {
           user_id: user.id,
           action: 'mobile_app_created',
           description: `Mobile app "${appData.name}" created`,
-          metadata: {
+          details: {
             name: appData.name,
             platform: appData.platform,
             status: appData.status,
@@ -186,18 +186,21 @@ class MobileAppService {
 
       if (error) throw error;
 
-      return builds?.map(build => ({
-        id: build.id,
-        app_id: appId,
-        version: (build.metadata as any)?.version || '1.0.0',
-        build_number: (build.metadata as any)?.build_number || 1,
-        status: (build.metadata as any)?.status || 'building',
-        platform: (build.metadata as any)?.platform || 'android',
-        build_logs: (build.metadata as any)?.build_logs || [],
-        download_url: (build.metadata as any)?.download_url,
-        size_mb: (build.metadata as any)?.size_mb || 0,
-        created_at: build.created_at
-      })) || [];
+      return builds?.map(build => {
+        const meta = (build.details || {}) as any;
+        return {
+          id: build.id,
+          app_id: appId,
+          version: meta?.version || '1.0.0',
+          build_number: meta?.build_number || 1,
+          status: meta?.status || 'building',
+          platform: meta?.platform || 'android',
+          build_logs: meta?.build_logs || [],
+          download_url: meta?.download_url,
+          size_mb: meta?.size_mb || 0,
+          created_at: build.created_at || ''
+        };
+      }) || [];
     } catch (error) {
       console.error('Error fetching app builds:', error);
       return [];
@@ -216,7 +219,7 @@ class MobileAppService {
           action: 'app_build_started',
           entity_id: appId,
           description: `Build started for ${platform} v${version}`,
-          metadata: {
+          details: {
             platform,
             version,
             build_number: Date.now(),
@@ -244,16 +247,19 @@ class MobileAppService {
 
       if (error) throw error;
 
-      return members?.map(member => ({
-        id: member.id,
-        name: (member.metadata as any)?.name || 'Team Member',
-        email: (member.metadata as any)?.email || '',
-        role: (member.metadata as any)?.role || 'viewer',
-        avatar_url: (member.metadata as any)?.avatar_url,
-        permissions: (member.metadata as any)?.permissions || [],
-        last_active: (member.metadata as any)?.last_active || member.created_at,
-        status: (member.metadata as any)?.status || 'active'
-      })) || [];
+      return members?.map(member => {
+        const meta = (member.details || {}) as any;
+        return {
+          id: member.id,
+          name: meta?.name || 'Team Member',
+          email: meta?.email || '',
+          role: meta?.role || 'viewer',
+          avatar_url: meta?.avatar_url,
+          permissions: meta?.permissions || [],
+          last_active: meta?.last_active || member.created_at || '',
+          status: meta?.status || 'active'
+        };
+      }) || [];
     } catch (error) {
       console.error('Error fetching team members:', error);
       // Return mock data
@@ -297,7 +303,7 @@ class MobileAppService {
           user_id: user.id,
           action: 'team_member_added',
           description: `Team member ${memberData.name} invited`,
-          metadata: {
+          details: {
             name: memberData.name,
             email: memberData.email,
             role: memberData.role,
@@ -336,7 +342,7 @@ class MobileAppService {
           user_id: user.id,
           action: 'white_label_generated',
           description: `White-label app generated for ${config.brand_name}`,
-          metadata: config
+          details: config
         })
         .select()
         .single();
@@ -369,14 +375,17 @@ class MobileAppService {
 
       if (error) throw error;
 
-      return keys?.map(key => ({
-        id: key.id,
-        name: (key.metadata as any)?.name || 'Enterprise API Key',
-        key: (key.metadata as any)?.key || 'sk_****',
-        permissions: (key.metadata as any)?.permissions || [],
-        last_used: (key.metadata as any)?.last_used || 'Never',
-        created_at: key.created_at
-      })) || [];
+      return keys?.map(key => {
+        const meta = (key.details || {}) as any;
+        return {
+          id: key.id,
+          name: meta?.name || 'Enterprise API Key',
+          key: meta?.key || 'sk_****',
+          permissions: meta?.permissions || [],
+          last_used: meta?.last_used || 'Never',
+          created_at: key.created_at || ''
+        };
+      }) || [];
     } catch (error) {
       console.error('Error fetching enterprise API keys:', error);
       return [];
@@ -399,7 +408,7 @@ class MobileAppService {
           user_id: user.id,
           action: 'api_key_created',
           description: `Enterprise API key "${keyData.name}" created`,
-          metadata: {
+          details: {
             name: keyData.name,
             key: apiKey,
             permissions: keyData.permissions,

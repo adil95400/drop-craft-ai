@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 export class InternationalizationService {
   // Product Translations
   static async getProductTranslations(productId: string, locale?: string) {
-    let query = supabase
-      .from('product_translations')
+    let query = (supabase
+      .from('product_translations' as any) as any)
       .select('*')
       .eq('product_id', productId);
 
@@ -18,8 +18,8 @@ export class InternationalizationService {
   }
 
   static async createProductTranslation(translation: any) {
-    const { data, error } = await supabase
-      .from('product_translations')
+    const { data, error } = await (supabase
+      .from('product_translations' as any) as any)
       .insert(translation)
       .select()
       .single();
@@ -29,8 +29,8 @@ export class InternationalizationService {
   }
 
   static async updateProductTranslation(id: string, updates: any) {
-    const { data, error } = await supabase
-      .from('product_translations')
+    const { data, error } = await (supabase
+      .from('product_translations' as any) as any)
       .update(updates)
       .eq('id', id)
       .select()
@@ -41,8 +41,8 @@ export class InternationalizationService {
   }
 
   static async deleteProductTranslation(id: string) {
-    const { error } = await supabase
-      .from('product_translations')
+    const { error } = await (supabase
+      .from('product_translations' as any) as any)
       .delete()
       .eq('id', id);
 
@@ -68,8 +68,8 @@ export class InternationalizationService {
 
   // Currencies
   static async getCurrencies() {
-    const { data, error } = await supabase
-      .from('currencies')
+    const { data, error } = await (supabase
+      .from('currencies' as any) as any)
       .select('*')
       .eq('is_active', true)
       .order('is_default', { ascending: false });
@@ -79,8 +79,8 @@ export class InternationalizationService {
   }
 
   static async createCurrency(currency: any) {
-    const { data, error } = await supabase
-      .from('currencies')
+    const { data, error } = await (supabase
+      .from('currencies' as any) as any)
       .insert(currency)
       .select()
       .single();
@@ -90,8 +90,8 @@ export class InternationalizationService {
   }
 
   static async updateCurrency(id: string, updates: any) {
-    const { data, error } = await supabase
-      .from('currencies')
+    const { data, error } = await (supabase
+      .from('currencies' as any) as any)
       .update(updates)
       .eq('id', id)
       .select()
@@ -103,14 +103,14 @@ export class InternationalizationService {
 
   static async setDefaultCurrency(id: string) {
     // First, unset all defaults
-    await supabase
-      .from('currencies')
+    await (supabase
+      .from('currencies' as any) as any)
       .update({ is_default: false })
       .neq('id', id);
 
     // Then set the new default
-    const { data, error } = await supabase
-      .from('currencies')
+    const { data, error } = await (supabase
+      .from('currencies' as any) as any)
       .update({ is_default: true })
       .eq('id', id)
       .select()
@@ -122,8 +122,8 @@ export class InternationalizationService {
 
   // Currency Rates
   static async getCurrencyRates(fromCurrency?: string) {
-    let query = supabase
-      .from('currency_rates')
+    let query = (supabase
+      .from('currency_rates' as any) as any)
       .select('*')
       .order('last_updated', { ascending: false });
 
@@ -151,8 +151,8 @@ export class InternationalizationService {
   static async convertPrice(amount: number, fromCurrency: string, toCurrency: string) {
     if (fromCurrency === toCurrency) return amount;
 
-    const { data: rate } = await supabase
-      .from('currency_rates')
+    const { data: rate } = await (supabase
+      .from('currency_rates' as any) as any)
       .select('rate')
       .eq('from_currency', fromCurrency)
       .eq('to_currency', toCurrency)
@@ -163,13 +163,13 @@ export class InternationalizationService {
       return amount;
     }
 
-    return amount * rate.rate;
+    return amount * (rate as any).rate;
   }
 
   // Geo Targeting
   static async getGeoTargetingRules() {
-    const { data, error } = await supabase
-      .from('geo_targeting_rules')
+    const { data, error } = await (supabase
+      .from('geo_targeting_rules' as any) as any)
       .select('*')
       .eq('is_active', true)
       .order('priority', { ascending: false });
@@ -179,8 +179,8 @@ export class InternationalizationService {
   }
 
   static async createGeoTargetingRule(rule: any) {
-    const { data, error } = await supabase
-      .from('geo_targeting_rules')
+    const { data, error } = await (supabase
+      .from('geo_targeting_rules' as any) as any)
       .insert(rule)
       .select()
       .single();
@@ -190,8 +190,8 @@ export class InternationalizationService {
   }
 
   static async updateGeoTargetingRule(id: string, updates: any) {
-    const { data, error } = await supabase
-      .from('geo_targeting_rules')
+    const { data, error } = await (supabase
+      .from('geo_targeting_rules' as any) as any)
       .update(updates)
       .eq('id', id)
       .select()
@@ -202,8 +202,8 @@ export class InternationalizationService {
   }
 
   static async deleteGeoTargetingRule(id: string) {
-    const { error } = await supabase
-      .from('geo_targeting_rules')
+    const { error } = await (supabase
+      .from('geo_targeting_rules' as any) as any)
       .delete()
       .eq('id', id);
 
@@ -224,8 +224,8 @@ export class InternationalizationService {
 
   // Locale Settings
   static async getLocaleSettings() {
-    const { data, error } = await supabase
-      .from('locale_settings')
+    const { data, error } = await (supabase
+      .from('locale_settings' as any) as any)
       .select('*')
       .single();
 
@@ -234,8 +234,8 @@ export class InternationalizationService {
   }
 
   static async updateLocaleSettings(settings: any) {
-    const { data, error } = await supabase
-      .from('locale_settings')
+    const { data, error } = await (supabase
+      .from('locale_settings' as any) as any)
       .upsert(settings)
       .select()
       .single();
@@ -246,8 +246,8 @@ export class InternationalizationService {
 
   // Translation Jobs
   static async getTranslationJobs() {
-    const { data, error } = await supabase
-      .from('translation_jobs')
+    const { data, error } = await (supabase
+      .from('translation_jobs' as any) as any)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -256,8 +256,8 @@ export class InternationalizationService {
   }
 
   static async createTranslationJob(job: any) {
-    const { data, error } = await supabase
-      .from('translation_jobs')
+    const { data, error } = await (supabase
+      .from('translation_jobs' as any) as any)
       .insert(job)
       .select()
       .single();

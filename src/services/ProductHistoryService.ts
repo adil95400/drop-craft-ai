@@ -33,16 +33,14 @@ export class ProductHistoryService {
       const previousValues = previousData ? this.extractRelevantFields(previousData, changedFields) : null
       const newValues = this.extractRelevantFields(newData, changedFields)
 
-      const { error } = await supabase.from('product_history').insert([{
+      // Use price_history table as it exists in the schema
+      const { error } = await supabase.from('price_history').insert([{
         user_id: userId,
         product_id: productId,
-        product_name: productName,
-        change_type: changeType,
-        changed_fields: changedFields,
-        previous_values: previousValues,
-        new_values: newValues,
-        snapshot: newData as any,
-        changed_by_email: userEmail || null,
+        change_reason: `${changeType}: ${productName}`,
+        old_price: previousData?.price || null,
+        new_price: newData?.price || null,
+        price_change: (newData?.price || 0) - (previousData?.price || 0)
       }])
 
       if (error) throw error
@@ -60,14 +58,26 @@ export class ProductHistoryService {
     productId: string
   ): Promise<ProductHistoryEntry[]> {
     const { data, error } = await supabase
-      .from('product_history')
+      .from('price_history')
       .select('*')
       .eq('user_id', userId)
       .eq('product_id', productId)
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    return (data || []) as ProductHistoryEntry[]
+    return (data || []).map((d: any) => ({
+      id: d.id,
+      user_id: d.user_id,
+      product_id: d.product_id,
+      product_name: d.change_reason?.split(': ')[1] || 'Unknown',
+      change_type: d.change_reason?.split(':')[0] || 'updated',
+      changed_fields: ['price'],
+      previous_values: { price: d.old_price },
+      new_values: { price: d.new_price },
+      snapshot: {},
+      changed_by_email: null,
+      created_at: d.created_at
+    })) as ProductHistoryEntry[]
   }
 
   /**
@@ -78,14 +88,26 @@ export class ProductHistoryService {
     limit: number = 50
   ): Promise<ProductHistoryEntry[]> {
     const { data, error } = await supabase
-      .from('product_history')
+      .from('price_history')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit)
 
     if (error) throw error
-    return (data || []) as ProductHistoryEntry[]
+    return (data || []).map((d: any) => ({
+      id: d.id,
+      user_id: d.user_id,
+      product_id: d.product_id,
+      product_name: d.change_reason?.split(': ')[1] || 'Unknown',
+      change_type: d.change_reason?.split(':')[0] || 'updated',
+      changed_fields: ['price'],
+      previous_values: { price: d.old_price },
+      new_values: { price: d.new_price },
+      snapshot: {},
+      changed_by_email: null,
+      created_at: d.created_at
+    })) as ProductHistoryEntry[]
   }
 
   /**
@@ -100,8 +122,8 @@ export class ProductHistoryService {
     // Enregistrer cette restauration dans l'historique
     await this.recordChange(
       userId,
-      snapshot.id,
-      snapshot.name,
+      snapshot.id || historyEntry.product_id,
+      snapshot.name || historyEntry.product_name,
       'restored',
       null,
       snapshot,

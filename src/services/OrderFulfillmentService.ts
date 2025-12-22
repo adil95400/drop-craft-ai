@@ -11,9 +11,9 @@ export class OrderFulfillmentService {
   }
 
   async getFulfillmentRules(userId: string) {
-    const { data, error } = await supabase
-      .from('order_fulfillment_rules')
-      .select('*, supplier_network:supplier_network_id(*)')
+    const { data, error } = await (supabase
+      .from('fulfilment_rules') as any)
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -30,10 +30,13 @@ export class OrderFulfillmentService {
     notification_settings?: any;
   }) {
     const { data, error } = await supabase
-      .from('order_fulfillment_rules')
+      .from('fulfilment_rules')
       .insert({
         user_id: userId,
-        ...rule
+        name: rule.rule_name,
+        conditions: rule.trigger_conditions,
+        actions: rule.fulfillment_actions,
+        is_active: true
       })
       .select()
       .single();
@@ -44,7 +47,7 @@ export class OrderFulfillmentService {
 
   async updateFulfillmentRule(ruleId: string, updates: any) {
     const { data, error } = await supabase
-      .from('order_fulfillment_rules')
+      .from('fulfilment_rules')
       .update({
         ...updates,
         updated_at: new Date().toISOString()
@@ -59,7 +62,7 @@ export class OrderFulfillmentService {
 
   async deleteFulfillmentRule(ruleId: string) {
     const { error } = await supabase
-      .from('order_fulfillment_rules')
+      .from('fulfilment_rules')
       .delete()
       .eq('id', ruleId);
 
@@ -87,18 +90,10 @@ export class OrderFulfillmentService {
     limit?: number;
   }) {
     let query = supabase
-      .from('order_fulfillment_logs')
-      .select('*, rule:rule_id(*), order:order_id(*)')
+      .from('automation_execution_logs')
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-
-    if (filters?.orderId) {
-      query = query.eq('order_id', filters.orderId);
-    }
-
-    if (filters?.ruleId) {
-      query = query.eq('rule_id', filters.ruleId);
-    }
 
     if (filters?.status) {
       query = query.eq('status', filters.status);
