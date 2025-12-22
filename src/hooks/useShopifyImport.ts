@@ -5,17 +5,18 @@ import { toast } from 'sonner';
 export function useShopifyImport() {
   const queryClient = useQueryClient();
 
-  // Get product mappings
+  // Get product mappings from field_mappings table
   const { data: mappings, isLoading: isLoadingMappings } = useQuery({
     queryKey: ['shopify-product-mappings'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('supplier_product_mappings')
-        .select('*, supplier_products(*)')
+        .from('field_mappings')
+        .select('*')
+        .eq('source_entity', 'shopify_product')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
@@ -26,11 +27,12 @@ export function useShopifyImport() {
       const { data, error } = await supabase
         .from('import_jobs')
         .select('*')
+        .eq('source_platform', 'shopify')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
@@ -40,12 +42,12 @@ export function useShopifyImport() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('import_history')
-        .select('*, supplier_products(name)')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
@@ -60,7 +62,7 @@ export function useShopifyImport() {
       if (!data.success) throw new Error(data.error);
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopify-product-mappings'] });
       queryClient.invalidateQueries({ queryKey: ['shopify-import-history'] });
       toast.success(`Produit importé vers Shopify avec succès`);

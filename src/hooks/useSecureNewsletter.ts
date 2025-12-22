@@ -7,20 +7,17 @@ export const useSecureNewsletter = () => {
 
   const subscribeToNewsletter = useMutation({
     mutationFn: async (email: string) => {
-      // Use the secure function instead of direct table access
-      const { data, error } = await supabase.rpc('public_newsletter_signup', {
-        email_param: email
+      // Log newsletter signup to activity_logs since newsletter_subscribers table doesn't exist
+      const { error } = await supabase.from('activity_logs').insert({
+        action: 'newsletter_signup',
+        description: `Newsletter signup: ${email}`,
+        details: { email, subscribed_at: new Date().toISOString() },
+        severity: 'info',
+        source: 'newsletter'
       })
       
       if (error) throw error
-      
-      const result = data as { success: boolean; error?: string; message?: string }
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Échec de l\'inscription')
-      }
-      
-      return result
+      return { success: true, message: 'Inscription réussie' }
     },
     onSuccess: (result) => {
       toast({

@@ -14,12 +14,20 @@ export const useSecureCredentials = () => {
     credentials: Record<string, string>
   ): Promise<SecureCredentialsResult> => {
     try {
-      const { error } = await supabase.rpc('log_credential_access', {
-        integration_id: integrationId,
-        access_type: 'store'
-      })
+      // Log access via activity_logs table instead of non-existent RPC
+      const { data: { user } } = await supabase.auth.getUser()
       
-      if (error) console.error('Failed to log credential access:', error)
+      if (user) {
+        await supabase.from('activity_logs').insert({
+          user_id: user.id,
+          action: 'credential_store',
+          entity_type: 'integration',
+          entity_id: integrationId,
+          description: 'Credentials stored for integration',
+          severity: 'info'
+        })
+      }
+      
       return { success: true }
     } catch (error) {
       return { 
@@ -31,12 +39,20 @@ export const useSecureCredentials = () => {
 
   const retrieveCredentials = async (integrationId: string): Promise<SecureCredentialsResult & { credentials?: Record<string, string> }> => {
     try {
-      const { error } = await supabase.rpc('log_credential_access', {
-        integration_id: integrationId,
-        access_type: 'retrieve'
-      })
+      // Log access via activity_logs table
+      const { data: { user } } = await supabase.auth.getUser()
       
-      if (error) console.error('Failed to log credential access:', error)
+      if (user) {
+        await supabase.from('activity_logs').insert({
+          user_id: user.id,
+          action: 'credential_retrieve',
+          entity_type: 'integration',
+          entity_id: integrationId,
+          description: 'Credentials retrieved for integration',
+          severity: 'info'
+        })
+      }
+      
       return { success: true, credentials: {} }
     } catch (error) {
       return { 
@@ -48,12 +64,20 @@ export const useSecureCredentials = () => {
 
   const deleteCredentials = async (integrationId: string): Promise<SecureCredentialsResult> => {
     try {
-      const { error } = await supabase.rpc('log_credential_access', {
-        integration_id: integrationId,
-        access_type: 'delete'
-      })
+      // Log access via activity_logs table
+      const { data: { user } } = await supabase.auth.getUser()
       
-      if (error) console.error('Failed to log credential access:', error)
+      if (user) {
+        await supabase.from('activity_logs').insert({
+          user_id: user.id,
+          action: 'credential_delete',
+          entity_type: 'integration',
+          entity_id: integrationId,
+          description: 'Credentials deleted for integration',
+          severity: 'warning'
+        })
+      }
+      
       return { success: true }
     } catch (error) {
       return { 
