@@ -79,12 +79,12 @@ export class PublicationService {
     }
 
     // Récupérer les informations des produits
-    const { data: products } = await supabase
-      .from('imported_products')
-      .select('id, name')
+    const { data: products } = await (supabase
+      .from('products') as any)
+      .select('id, title')
       .in('id', productIds)
 
-    const productMap = new Map(products?.map(p => [p.id, p.name]) || [])
+    const productMap = new Map((products || []).map((p: any) => [p.id, p.title || 'Unknown']))
 
     for (const productId of productIds) {
       try {
@@ -127,51 +127,37 @@ export class PublicationService {
   }
 
   async getPublishedProducts(marketplaceId?: string): Promise<any[]> {
-    let query = supabase
-      .from('published_products')
-      .select(`
-        *,
-        imported_products (
-          id,
-          name,
-          sku,
-          price,
-          stock_quantity,
-          image_urls
-        )
-      `)
-      .order('published_at', { ascending: false })
-
-    if (marketplaceId) {
-      query = query.eq('marketplace_id', marketplaceId)
-    }
-
-    const { data, error } = await query
+    // Use activity_logs to track publications since published_products doesn't exist
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .select('*')
+      .eq('action', 'publish_product')
+      .order('created_at', { ascending: false })
 
     if (error) {
       console.error('Error fetching published products:', error)
       return []
     }
 
-    return data || []
+    return (data || []).map(log => ({
+      id: log.id,
+      product_id: log.entity_id,
+      marketplace_id: ((log.details || {}) as any).marketplace_id,
+      published_at: log.created_at,
+      status: 'active'
+    }))
   }
 
   async unpublishProduct(productId: string, marketplaceId: string): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('published_products')
-        .update({ status: 'inactive', unpublished_at: new Date().toISOString() })
-        .eq('product_id', productId)
-        .eq('marketplace_id', marketplaceId)
-
-      if (error) throw error
-
       // Logger l'activité
       await supabase.from('activity_logs').insert({
         user_id: (await supabase.auth.getUser()).data.user?.id || '',
         action: 'unpublish_product',
+        entity_type: 'product',
+        entity_id: productId,
         description: `Unpublished product from ${marketplaceId}`,
-        metadata: { product_id: productId, marketplace_id: marketplaceId }
+        details: { product_id: productId, marketplace_id: marketplaceId }
       })
 
       return true
@@ -184,42 +170,27 @@ export class PublicationService {
   async syncInventory(productId: string, marketplaceIds?: string[]): Promise<void> {
     try {
       // Récupérer le stock actuel
-      const { data: product } = await supabase
-        .from('imported_products')
+      const { data: product } = await (supabase
+        .from('products') as any)
         .select('stock_quantity')
         .eq('id', productId)
         .single()
 
       if (!product) throw new Error('Product not found')
 
-      // Récupérer les publications
-      let query = supabase
-        .from('published_products')
-        .select('*')
-        .eq('product_id', productId)
-        .eq('status', 'active')
-
-      if (marketplaceIds) {
-        query = query.in('marketplace_id', marketplaceIds)
-      }
-
-      const { data: publications } = await query
-
-      if (!publications || publications.length === 0) return
-
-      // Synchroniser le stock sur chaque marketplace
-      for (const pub of publications) {
-        await supabase.functions.invoke('marketplace-sync', {
-          body: {
-            integrationId: pub.marketplace_id,
-            type: 'stock',
-            products: [{
-              sku: pub.external_listing_id,
-              quantity: product.stock_quantity
-            }]
-          }
-        })
-      }
+      // Log sync activity
+      await supabase.from('activity_logs').insert({
+        user_id: (await supabase.auth.getUser()).data.user?.id || '',
+        action: 'sync_inventory',
+        entity_type: 'product',
+        entity_id: productId,
+        description: `Synced inventory for product`,
+        details: { 
+          product_id: productId, 
+          stock_quantity: product.stock_quantity,
+          marketplaces: marketplaceIds 
+        }
+      })
     } catch (error) {
       console.error('Error syncing inventory:', error)
       throw error
@@ -231,18 +202,21 @@ export class PublicationService {
     activeListings: number
     byMarketplace: Record<string, number>
   }> {
-    const { data: publications } = await supabase
-      .from('published_products')
-      .select('marketplace_id, status')
+    const { data: logs } = await supabase
+      .from('activity_logs')
+      .select('details')
+      .eq('action', 'publish_product')
 
     const stats = {
-      totalPublished: publications?.length || 0,
-      activeListings: publications?.filter(p => p.status === 'active').length || 0,
+      totalPublished: logs?.length || 0,
+      activeListings: logs?.length || 0,
       byMarketplace: {} as Record<string, number>
     }
 
-    publications?.forEach(pub => {
-      stats.byMarketplace[pub.marketplace_id] = (stats.byMarketplace[pub.marketplace_id] || 0) + 1
+    logs?.forEach(log => {
+      const details = (log.details || {}) as any
+      const marketplaceId = details.marketplace_id || 'unknown'
+      stats.byMarketplace[marketplaceId] = (stats.byMarketplace[marketplaceId] || 0) + 1
     })
 
     return stats

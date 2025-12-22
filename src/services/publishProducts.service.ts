@@ -1,141 +1,72 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
 
-type ImportedProduct = Database['public']['Tables']['imported_products']['Row'];
-type Product = Database['public']['Tables']['products']['Row'];
-type ProductInsert = Database['public']['Tables']['products']['Insert'];
+interface ProductData {
+  id: string;
+  user_id: string;
+  title?: string;
+  description?: string;
+  price?: number;
+  cost_price?: number;
+  sku?: string;
+  category?: string;
+  stock_quantity?: number;
+  status?: string;
+  image_url?: string;
+  tags?: string[];
+  supplier?: string;
+  profit_margin?: number;
+  seo_title?: string;
+  seo_description?: string;
+  seo_keywords?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
 
 export class PublishProductsService {
   /**
-   * Publie un produit importé vers la table products
+   * Publie un produit (active le statut)
    */
-  static async publishProduct(importedProductId: string, userId: string) {
-    // Récupérer le produit importé
-    const { data: importedProduct, error: fetchError } = await supabase
-      .from('imported_products')
+  static async publishProduct(productId: string, userId: string) {
+    const { data: product, error: fetchError } = await (supabase
+      .from('products') as any)
       .select('*')
-      .eq('id', importedProductId)
+      .eq('id', productId)
       .eq('user_id', userId)
       .single();
 
-    if (fetchError || !importedProduct) {
-      throw new Error('Produit importé non trouvé');
+    if (fetchError || !product) {
+      throw new Error('Produit non trouvé');
     }
 
-    // Vérifier si déjà publié
-    if (importedProduct.published_product_id) {
-      return this.updatePublishedProduct(importedProduct);
-    }
-
-    // Créer le nouveau produit dans products
-    const productData: ProductInsert = {
-      user_id: userId,
-      name: importedProduct.name,
-      description: importedProduct.description,
-      price: importedProduct.price,
-      cost_price: importedProduct.cost_price,
-      sku: importedProduct.sku,
-      category: importedProduct.category,
-      stock_quantity: importedProduct.stock_quantity || 0,
-      status: importedProduct.status === 'published' ? 'active' : 'inactive',
-      image_url: importedProduct.image_urls?.[0],
-      tags: importedProduct.tags,
-      supplier: importedProduct.supplier_name,
-      profit_margin: this.calculateProfitMargin(
-        importedProduct.price,
-        importedProduct.cost_price
-      ),
-      seo_title: importedProduct.meta_title,
-      seo_description: importedProduct.meta_description,
-      seo_keywords: importedProduct.keywords,
-    };
-
-    const { data: newProduct, error: insertError } = await supabase
-      .from('products')
-      .insert(productData)
+    // Mettre à jour le statut
+    const { data: updatedProduct, error: updateError } = await (supabase
+      .from('products') as any)
+      .update({
+        status: 'active',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', productId)
+      .eq('user_id', userId)
       .select()
       .single();
-
-    if (insertError || !newProduct) {
-      throw new Error('Erreur lors de la création du produit');
-    }
-
-    // Mettre à jour imported_products avec la référence
-    const { error: updateError } = await supabase
-      .from('imported_products')
-      .update({
-        published_product_id: newProduct.id,
-        last_synced_at: new Date().toISOString(),
-        sync_status: 'synced',
-      })
-      .eq('id', importedProductId);
 
     if (updateError) {
-      throw new Error('Erreur lors de la mise à jour du statut de synchronisation');
+      throw new Error('Erreur lors de la publication du produit');
     }
 
-    return newProduct;
-  }
-
-  /**
-   * Met à jour un produit déjà publié
-   */
-  static async updatePublishedProduct(importedProduct: ImportedProduct) {
-    if (!importedProduct.published_product_id) {
-      throw new Error('Produit non publié');
-    }
-
-    const { data: updatedProduct, error } = await supabase
-      .from('products')
-      .update({
-        name: importedProduct.name,
-        description: importedProduct.description,
-        price: importedProduct.price,
-        cost_price: importedProduct.cost_price,
-        stock_quantity: importedProduct.stock_quantity || 0,
-        status: importedProduct.status === 'published' ? 'active' : 'inactive',
-        image_url: importedProduct.image_urls?.[0],
-        tags: importedProduct.tags,
-        profit_margin: this.calculateProfitMargin(
-          importedProduct.price,
-          importedProduct.cost_price
-        ),
-        seo_title: importedProduct.meta_title,
-        seo_description: importedProduct.meta_description,
-        seo_keywords: importedProduct.keywords,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', importedProduct.published_product_id)
-      .eq('user_id', importedProduct.user_id)
-      .select()
-      .single();
-
-    if (error || !updatedProduct) {
-      throw new Error('Erreur lors de la mise à jour du produit publié');
-    }
-
-    // Mettre à jour le statut de synchronisation
-    await supabase
-      .from('imported_products')
-      .update({
-        last_synced_at: new Date().toISOString(),
-        sync_status: 'synced',
-      })
-      .eq('id', importedProduct.id);
-
-    return updatedProduct;
+    return updatedProduct as ProductData;
   }
 
   /**
    * Publication en masse
    */
-  static async bulkPublish(importedProductIds: string[], userId: string) {
+  static async bulkPublish(productIds: string[], userId: string) {
     const results = {
       success: [] as string[],
       errors: [] as { id: string; error: string }[],
     };
 
-    for (const id of importedProductIds) {
+    for (const id of productIds) {
       try {
         await this.publishProduct(id, userId);
         results.success.push(id);
@@ -151,79 +82,39 @@ export class PublishProductsService {
   }
 
   /**
-   * Synchronise le stock d'un produit publié
+   * Synchronise le stock d'un produit
    */
-  static async syncStock(importedProductId: string, userId: string) {
-    const { data: importedProduct, error: fetchError } = await supabase
-      .from('imported_products')
-      .select('published_product_id, stock_quantity')
-      .eq('id', importedProductId)
-      .eq('user_id', userId)
-      .single();
-
-    if (fetchError || !importedProduct?.published_product_id) {
-      throw new Error('Produit non trouvé ou non publié');
-    }
-
-    const { error: updateError } = await supabase
-      .from('products')
+  static async syncStock(productId: string, userId: string, newQuantity: number) {
+    const { error: updateError } = await (supabase
+      .from('products') as any)
       .update({
-        stock_quantity: importedProduct.stock_quantity || 0,
+        stock_quantity: newQuantity,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', importedProduct.published_product_id)
+      .eq('id', productId)
       .eq('user_id', userId);
 
     if (updateError) {
       throw new Error('Erreur lors de la synchronisation du stock');
     }
-
-    // Mettre à jour last_synced_at
-    await supabase
-      .from('imported_products')
-      .update({
-        last_synced_at: new Date().toISOString(),
-        sync_status: 'synced',
-      })
-      .eq('id', importedProductId);
   }
 
   /**
-   * Dépublie un produit (le garde dans products mais inactive)
+   * Dépublie un produit
    */
-  static async unpublishProduct(importedProductId: string, userId: string) {
-    const { data: importedProduct, error: fetchError } = await supabase
-      .from('imported_products')
-      .select('published_product_id')
-      .eq('id', importedProductId)
-      .eq('user_id', userId)
-      .single();
-
-    if (fetchError || !importedProduct?.published_product_id) {
-      throw new Error('Produit non trouvé ou non publié');
-    }
-
-    // Désactiver le produit dans products
-    const { error: updateError } = await supabase
-      .from('products')
+  static async unpublishProduct(productId: string, userId: string) {
+    const { error: updateError } = await (supabase
+      .from('products') as any)
       .update({
         status: 'archived',
         updated_at: new Date().toISOString(),
       })
-      .eq('id', importedProduct.published_product_id)
+      .eq('id', productId)
       .eq('user_id', userId);
 
     if (updateError) {
       throw new Error('Erreur lors de la dépublication');
     }
-
-    // Mettre à jour imported_products
-    await supabase
-      .from('imported_products')
-      .update({
-        sync_status: 'pending',
-      })
-      .eq('id', importedProductId);
   }
 
   /**
@@ -241,22 +132,21 @@ export class PublishProductsService {
    * Récupère les statistiques de publication
    */
   static async getPublishStats(userId: string) {
-    const { data: products, error } = await supabase
-      .from('imported_products')
-      .select('published_product_id, sync_status, status')
+    const { data: products, error } = await (supabase
+      .from('products') as any)
+      .select('status')
       .eq('user_id', userId);
 
     if (error || !products) {
       throw new Error('Erreur lors de la récupération des statistiques');
     }
 
+    const productList = products as ProductData[];
     return {
-      total: products.length,
-      published: products.filter((p) => p.published_product_id).length,
-      pending: products.filter((p) => p.sync_status === 'pending').length,
-      synced: products.filter((p) => p.sync_status === 'synced').length,
-      errors: products.filter((p) => p.sync_status === 'error').length,
-      outdated: products.filter((p) => p.sync_status === 'outdated').length,
+      total: productList.length,
+      published: productList.filter((p) => p.status === 'active').length,
+      draft: productList.filter((p) => p.status === 'draft').length,
+      archived: productList.filter((p) => p.status === 'archived').length,
     };
   }
 }
