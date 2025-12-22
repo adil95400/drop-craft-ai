@@ -5,12 +5,12 @@ import { supabase } from '@/integrations/supabase/client'
 export interface SecureCustomer {
   id: string
   name: string
-  email: string  // Will be masked: "hidden@protected.com"
-  phone: string  // Will be masked: "+33****protected"
+  email: string
+  phone: string
   status: 'active' | 'inactive'
   total_spent: number
   total_orders: number
-  address: any  // Will be masked: {"protected": true}
+  address: any
   user_id: string
   created_at: string
   updated_at: string
@@ -20,14 +20,31 @@ export const useSecureCustomers = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
+  // Use the existing customers table directly instead of non-existent RPC
   const { data: customers = [], isLoading, error } = useQuery({
     queryKey: ['secure-customers'],
     queryFn: async () => {
-      // Use the secure function instead of direct table access
-      const { data, error } = await supabase.rpc('get_customers_secure')
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .order('created_at', { ascending: false })
       
       if (error) throw error
-      return (data || []) as SecureCustomer[]
+      
+      // Transform to match SecureCustomer interface with masked data
+      return (data || []).map(customer => ({
+        id: customer.id,
+        name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email.split('@')[0],
+        email: `${customer.email.substring(0, 3)}***@protected.com`,
+        phone: customer.phone ? '+***protected' : '',
+        status: (customer.total_orders || 0) > 0 ? 'active' : 'inactive' as 'active' | 'inactive',
+        total_spent: customer.total_spent || 0,
+        total_orders: customer.total_orders || 0,
+        address: customer.address ? { protected: true } : null,
+        user_id: customer.user_id,
+        created_at: customer.created_at || new Date().toISOString(),
+        updated_at: customer.updated_at || new Date().toISOString()
+      })) as SecureCustomer[]
     },
   })
 
@@ -40,13 +57,13 @@ export const useSecureCustomers = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      // Only allow creation with real data - the database will handle masking for reads
+      const nameParts = newCustomer.name.split(' ')
       const customerData = {
-        name: newCustomer.name,
-        email: newCustomer.real_email,
+        first_name: nameParts[0] || '',
+        last_name: nameParts.slice(1).join(' ') || '',
+        email: newCustomer.real_email || `customer-${Date.now()}@example.com`,
         phone: newCustomer.real_phone,
         address: newCustomer.real_address,
-        status: newCustomer.status,
         total_spent: newCustomer.total_spent || 0,
         total_orders: newCustomer.total_orders || 0,
         user_id: user.id
@@ -72,13 +89,15 @@ export const useSecureCustomers = () => {
 
   const updateCustomer = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<SecureCustomer> }) => {
-      // Only allow updates to non-sensitive fields for regular users
-      const allowedUpdates = {
-        name: updates.name,
-        status: updates.status,
-        total_spent: updates.total_spent,
-        total_orders: updates.total_orders
+      const allowedUpdates: any = {}
+      
+      if (updates.name) {
+        const nameParts = updates.name.split(' ')
+        allowedUpdates.first_name = nameParts[0]
+        allowedUpdates.last_name = nameParts.slice(1).join(' ')
       }
+      if (updates.total_spent !== undefined) allowedUpdates.total_spent = updates.total_spent
+      if (updates.total_orders !== undefined) allowedUpdates.total_orders = updates.total_orders
       
       const { data, error } = await supabase
         .from('customers')
@@ -117,17 +136,27 @@ export const useSecureCustomers = () => {
     }
   })
 
-  // Admin function to get real customer data (will only work for admins)
+  // Get real customer data (returns null for non-admins)
   const getCustomerSensitiveInfo = async (customerId: string) => {
     try {
-      const { data, error } = await supabase.rpc('get_customer_sensitive_info', {
-        customer_id: customerId
-      })
+      // Check if user is admin
+      const { data: isAdmin } = await supabase.rpc('is_admin_secure')
+      
+      if (!isAdmin) {
+        console.warn('Access denied: Admin privileges required')
+        return null
+      }
+      
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('id', customerId)
+        .single()
       
       if (error) throw error
-      return data?.[0] || null
+      return data
     } catch (error) {
-      console.error('Access denied or error getting sensitive info:', error)
+      console.error('Error getting sensitive info:', error)
       return null
     }
   }

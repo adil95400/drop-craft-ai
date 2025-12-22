@@ -13,24 +13,36 @@ export interface SecureApiKey {
   last_used_at?: string
   usage_count?: number
   created_ip?: string
-  // Note: encrypted_value is never exposed for security
 }
 
 export const useSecureApiKeys = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
+  // Use the existing api_keys table instead of non-existent user_api_keys
   const { data: apiKeys = [], isLoading, error } = useQuery({
     queryKey: ['secure-api-keys'],
     queryFn: async () => {
-      // Use regular select but the encrypted_value field will be hidden by RLS
       const { data, error } = await supabase
-        .from('user_api_keys')
-        .select('id, user_id, key_name, platform, is_active, created_at, updated_at, last_used_at, usage_count, created_ip')
+        .from('api_keys')
+        .select('id, user_id, name, key_prefix, is_active, created_at, last_used_at, scopes, environment')
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return (data || []) as SecureApiKey[]
+      
+      // Transform to match SecureApiKey interface
+      return (data || []).map(key => ({
+        id: key.id,
+        user_id: key.user_id,
+        key_name: key.name,
+        platform: key.environment || 'production',
+        is_active: key.is_active ?? true,
+        created_at: key.created_at || new Date().toISOString(),
+        updated_at: key.created_at || new Date().toISOString(),
+        last_used_at: key.last_used_at,
+        usage_count: 0,
+        created_ip: undefined
+      })) as SecureApiKey[]
     },
   })
 
@@ -38,24 +50,18 @@ export const useSecureApiKeys = () => {
     mutationFn: async (apiKeyData: {
       key_name: string
       platform: string
-      encrypted_value: string
     }) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      const { data, error } = await supabase
-        .from('user_api_keys')
-        .insert([{
-          ...apiKeyData,
-          user_id: user.id,
-          is_active: true,
-          usage_count: 0
-        }])
-        .select('id, user_id, key_name, platform, is_active, created_at, updated_at')
-        .single()
+      // Use the existing generate_api_key function
+      const { data, error } = await supabase.rpc('generate_api_key', {
+        key_name: apiKeyData.key_name,
+        key_scopes: [apiKeyData.platform]
+      })
       
       if (error) throw error
-      return data
+      return { key: data }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['secure-api-keys'] })
@@ -68,18 +74,21 @@ export const useSecureApiKeys = () => {
 
   const rotateApiKey = useMutation({
     mutationFn: async (keyId: string) => {
-      const { data, error } = await supabase.rpc('rotate_api_key', {
-        key_id: keyId
+      // Delete old key and create new one
+      const oldKey = apiKeys.find(k => k.id === keyId)
+      if (!oldKey) throw new Error('Clé non trouvée')
+      
+      // Delete old
+      await supabase.from('api_keys').delete().eq('id', keyId)
+      
+      // Create new with same name
+      const { data, error } = await supabase.rpc('generate_api_key', {
+        key_name: oldKey.key_name,
+        key_scopes: [oldKey.platform]
       })
       
       if (error) throw error
-      
-      const result = data as { success: boolean; message?: string }
-      if (!result.success) {
-        throw new Error('Échec de la rotation de la clé')
-      }
-      
-      return result
+      return { success: true, key: data }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['secure-api-keys'] })
@@ -93,7 +102,7 @@ export const useSecureApiKeys = () => {
   const deleteApiKey = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('user_api_keys')
+        .from('api_keys')
         .delete()
         .eq('id', id)
       
@@ -111,7 +120,7 @@ export const useSecureApiKeys = () => {
   const toggleApiKey = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
       const { data, error } = await supabase
-        .from('user_api_keys')
+        .from('api_keys')
         .update({ is_active })
         .eq('id', id)
         .select()

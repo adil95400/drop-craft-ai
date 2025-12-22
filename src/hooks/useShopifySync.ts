@@ -2,63 +2,141 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Database } from '@/integrations/supabase/types'
 
-type ShopifySyncConfig = Database['public']['Tables']['shopify_sync_configs']['Row']
-type ShopifySyncConfigInsert = Database['public']['Tables']['shopify_sync_configs']['Insert']
-type ShopifySyncLog = Database['public']['Tables']['shopify_sync_logs']['Row']
+// Define types locally since tables don't exist
+interface ShopifySyncConfig {
+  id: string
+  user_id: string
+  store_url: string
+  sync_products: boolean
+  sync_orders: boolean
+  sync_customers: boolean
+  sync_frequency: string
+  sync_direction: 'import' | 'export' | 'both'
+  sync_status: 'idle' | 'syncing' | 'error'
+  auto_sync_enabled: boolean
+  next_sync_at?: string
+  last_sync_at?: string
+  last_sync_result?: {
+    products_created: number
+    products_updated: number
+    products_skipped: number
+    errors: string[]
+  }
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+interface ShopifySyncLog {
+  id: string
+  user_id: string
+  config_id: string
+  sync_type: string
+  sync_direction: 'import' | 'export'
+  status: string
+  products_synced: number
+  products_created: number
+  products_updated: number
+  products_skipped: number
+  orders_synced: number
+  customers_synced: number
+  errors: any[]
+  duration_ms: number
+  started_at: string
+  completed_at?: string
+}
 
 export const useShopifySync = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { user } = useAuth()
 
-  // Get sync configs
+  // Get sync configs from integrations table (Shopify platform)
   const { data: configs, isLoading: configsLoading } = useQuery({
     queryKey: ['shopify-sync-configs', user?.id],
     queryFn: async () => {
       if (!user?.id) return []
       
       const { data, error } = await supabase
-        .from('shopify_sync_configs')
+        .from('integrations')
         .select('*')
         .eq('user_id', user.id)
+        .eq('platform', 'shopify')
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data as ShopifySyncConfig[]
+      
+      // Transform to match ShopifySyncConfig interface
+      return (data || []).map(integration => ({
+        id: integration.id,
+        user_id: integration.user_id,
+        store_url: integration.store_url || '',
+        sync_products: (integration.config as any)?.sync_products ?? true,
+        sync_orders: (integration.config as any)?.sync_orders ?? true,
+        sync_customers: (integration.config as any)?.sync_customers ?? true,
+        sync_frequency: integration.sync_frequency || 'manual',
+        last_sync_at: integration.last_sync_at,
+        is_active: integration.is_active ?? true,
+        created_at: integration.created_at || new Date().toISOString(),
+        updated_at: integration.updated_at || new Date().toISOString()
+      })) as ShopifySyncConfig[]
     },
     enabled: !!user?.id
   })
 
-  // Get sync logs
+  // Get sync logs from activity_logs
   const { data: logs, isLoading: logsLoading } = useQuery({
     queryKey: ['shopify-sync-logs', user?.id],
     queryFn: async () => {
       if (!user?.id) return []
       
       const { data, error } = await supabase
-        .from('shopify_sync_logs')
+        .from('activity_logs')
         .select('*')
         .eq('user_id', user.id)
-        .order('started_at', { ascending: false })
+        .eq('entity_type', 'shopify_sync')
+        .order('created_at', { ascending: false })
         .limit(50)
 
       if (error) throw error
-      return data as ShopifySyncLog[]
+      
+      // Transform to match ShopifySyncLog interface
+      return (data || []).map(log => ({
+        id: log.id,
+        user_id: log.user_id || '',
+        config_id: log.entity_id || '',
+        sync_type: (log.details as any)?.sync_type || 'manual',
+        status: (log.details as any)?.status || 'completed',
+        products_synced: (log.details as any)?.products_synced || 0,
+        orders_synced: (log.details as any)?.orders_synced || 0,
+        customers_synced: (log.details as any)?.customers_synced || 0,
+        errors: (log.details as any)?.errors || [],
+        started_at: log.created_at || new Date().toISOString(),
+        completed_at: (log.details as any)?.completed_at
+      })) as ShopifySyncLog[]
     },
     enabled: !!user?.id
   })
 
   // Create sync config
   const createConfig = useMutation({
-    mutationFn: async (config: Omit<ShopifySyncConfigInsert, 'user_id'>) => {
+    mutationFn: async (config: Partial<ShopifySyncConfig>) => {
       if (!user?.id) throw new Error('User not authenticated')
 
       const { data, error } = await supabase
-        .from('shopify_sync_configs')
+        .from('integrations')
         .insert([{
-          ...config,
+          platform: 'shopify',
+          platform_name: 'Shopify',
+          store_url: config.store_url,
+          sync_frequency: config.sync_frequency || 'manual',
+          is_active: config.is_active ?? true,
+          config: {
+            sync_products: config.sync_products ?? true,
+            sync_orders: config.sync_orders ?? true,
+            sync_customers: config.sync_customers ?? true
+          },
           user_id: user.id
         }])
         .select()
@@ -87,8 +165,17 @@ export const useShopifySync = () => {
   const updateConfig = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<ShopifySyncConfig> }) => {
       const { data, error } = await supabase
-        .from('shopify_sync_configs')
-        .update(updates)
+        .from('integrations')
+        .update({
+          store_url: updates.store_url,
+          sync_frequency: updates.sync_frequency,
+          is_active: updates.is_active,
+          config: {
+            sync_products: updates.sync_products,
+            sync_orders: updates.sync_orders,
+            sync_customers: updates.sync_customers
+          }
+        })
         .eq('id', id)
         .select()
         .single()
@@ -109,7 +196,7 @@ export const useShopifySync = () => {
   const deleteConfig = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('shopify_sync_configs')
+        .from('integrations')
         .delete()
         .eq('id', id)
 
@@ -136,14 +223,14 @@ export const useShopifySync = () => {
       if (error) throw error
       return data
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['shopify-sync-configs'] })
       queryClient.invalidateQueries({ queryKey: ['shopify-sync-logs'] })
       queryClient.invalidateQueries({ queryKey: ['unified-products'] })
       
       toast({
         title: "Synchronisation terminée",
-        description: `${data.products_synced} produits traités (${data.products_created} créés, ${data.products_updated} mis à jour)`
+        description: `${data?.products_synced || 0} produits traités (${data?.products_created || 0} créés, ${data?.products_updated || 0} mis à jour)`
       })
     },
     onError: (error: Error) => {

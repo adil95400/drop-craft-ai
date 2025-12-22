@@ -64,16 +64,17 @@ export const useSecurityMonitoring = () => {
       const clientIP = await getClientIP();
       const userAgent = navigator.userAgent;
 
+      // Use activity_logs table since security_events doesn't have user_agent column
       const { error } = await supabase
-        .from('security_events')
+        .from('activity_logs')
         .insert([{
           user_id: currentUser?.id || null,
-          event_type: eventType,
+          action: eventType,
           severity,
           description,
-          metadata: metadata || {},
+          details: { ...metadata, user_agent: userAgent },
           ip_address: clientIP,
-          user_agent: userAgent
+          source: 'security_monitoring'
         }]);
 
       if (error) {
@@ -105,9 +106,11 @@ export const useSecurityMonitoring = () => {
 
     setLoading(true);
     try {
+      // Use activity_logs with security source filter
       const { data: eventsData, error: eventsError } = await supabase
-        .from('security_events')
+        .from('activity_logs')
         .select('*')
+        .eq('source', 'security_monitoring')
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -116,13 +119,13 @@ export const useSecurityMonitoring = () => {
       const formattedEvents: SecurityEvent[] = (eventsData || []).map(event => ({
         id: event.id,
         user_id: event.user_id,
-        event_type: event.event_type,
-        severity: event.severity as 'info' | 'warning' | 'error' | 'critical',
-        description: event.description,
-        metadata: (event.metadata as Record<string, any>) || {},
+        event_type: event.action,
+        severity: (event.severity as 'info' | 'warning' | 'error' | 'critical') || 'info',
+        description: event.description || '',
+        metadata: (event.details as Record<string, any>) || {},
         ip_address: event.ip_address,
-        user_agent: event.user_agent,
-        created_at: event.created_at
+        user_agent: (event.details as any)?.user_agent || event.user_agent,
+        created_at: event.created_at || new Date().toISOString()
       }));
 
       setEvents(formattedEvents);
