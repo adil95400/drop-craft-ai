@@ -28,37 +28,41 @@ export const importRateLimiter = {
         return false
       }
 
-      const { data, error } = await supabase.rpc('check_import_rate_limit', {
-        p_user_id: user.id,
-        p_action_type: actionType,
-        p_max_requests: maxRequests,
-        p_window_minutes: windowMinutes
-      })
+      // Simulate rate limiting without RPC function
+      // Count recent imports from activity_logs
+      const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString()
+      
+      const { data: recentImports, error } = await supabase
+        .from('activity_logs')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('action', actionType)
+        .gte('created_at', windowStart)
 
       if (error) {
         console.error('[RateLimiter] Error checking limit:', error)
-        // En cas d'erreur, on autorise par défaut (fail-open)
         return true
       }
 
-      const result = data as unknown as RateLimitResult
+      const currentCount = recentImports?.length || 0
+      const allowed = currentCount < maxRequests
 
-      if (!result.allowed) {
-        const resetDate = new Date(result.reset_at)
-        const minutesLeft = Math.ceil((resetDate.getTime() - Date.now()) / 60000)
+      if (!allowed) {
+        const resetAt = new Date(Date.now() + windowMinutes * 60 * 1000)
+        const minutesLeft = windowMinutes
         
         toast.error(
           `Limite d'imports atteinte`,
           {
-            description: `Vous avez effectué ${result.current_count}/${result.max_requests} imports. Réessayez dans ${minutesLeft} minutes.`
+            description: `Vous avez effectué ${currentCount}/${maxRequests} imports. Réessayez dans ${minutesLeft} minutes.`
           }
         )
       }
 
-      return result.allowed
+      return allowed
+
     } catch (error) {
       console.error('[RateLimiter] Unexpected error:', error)
-      // En cas d'erreur, on autorise par défaut
       return true
     }
   },
@@ -71,20 +75,30 @@ export const importRateLimiter = {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return null
 
-      // Vérifier sans incrémenter en passant max_requests à un nombre très élevé
-      const { data, error } = await supabase.rpc('check_import_rate_limit', {
-        p_user_id: user.id,
-        p_action_type: actionType,
-        p_max_requests: 999999,
-        p_window_minutes: 60
-      })
+      const windowMinutes = 60
+      const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString()
+      
+      const { data: recentImports, error } = await supabase
+        .from('activity_logs')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('action', actionType)
+        .gte('created_at', windowStart)
 
       if (error) {
         console.error('[RateLimiter] Error getting status:', error)
         return null
       }
 
-      return data as unknown as RateLimitResult
+      const currentCount = recentImports?.length || 0
+
+      return {
+        allowed: currentCount < 10,
+        current_count: currentCount,
+        max_requests: 10,
+        window_minutes: windowMinutes,
+        reset_at: new Date(Date.now() + windowMinutes * 60 * 1000).toISOString()
+      }
     } catch (error) {
       console.error('[RateLimiter] Unexpected error:', error)
       return null
