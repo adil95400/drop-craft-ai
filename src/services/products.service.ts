@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows, fetchPage, batchInsert, batchUpsert, type PaginatedResult } from '@/utils/supabasePagination';
 
 interface ProductData {
   id: string;
@@ -19,18 +20,23 @@ interface ProductData {
 
 export class ProductsService {
   /**
-   * Récupère tous les produits de l'utilisateur
+   * Récupère tous les produits de l'utilisateur (avec pagination automatique)
+   * Gère les catalogues de plus de 1000 produits
    */
-  static async getProducts(userId: string) {
-    const { data, error } = await (supabase
-      .from('products') as any)
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(100000);
+  static async getProducts(userId: string, onProgress?: (loaded: number) => void): Promise<ProductData[]> {
+    return fetchAllRows<ProductData>('products', userId, {
+      pageSize: 500,
+      orderBy: 'created_at',
+      ascending: false,
+      onProgress
+    });
+  }
 
-    if (error) throw error;
-    return data as ProductData[];
+  /**
+   * Récupère une page de produits (pour affichage paginé)
+   */
+  static async getProductsPage(userId: string, page: number = 0, pageSize: number = 50): Promise<PaginatedResult<ProductData>> {
+    return fetchPage<ProductData>('products', userId, page, { pageSize, orderBy: 'created_at', ascending: false });
   }
 
   /**
@@ -164,14 +170,32 @@ export class ProductsService {
   /**
    * Import en masse de produits
    */
-  static async bulkImport(products: Partial<ProductData>[]) {
-    const { data, error } = await (supabase
-      .from('products') as any)
-      .insert(products)
-      .select();
+  /**
+   * Import en masse de produits avec gestion des gros volumes
+   */
+  static async bulkImport(
+    products: Partial<ProductData>[], 
+    onProgress?: (inserted: number, total: number) => void
+  ): Promise<{ success: number; failed: number; errors: string[] }> {
+    return batchInsert<Partial<ProductData>>('products', products, { 
+      batchSize: 100, 
+      onProgress 
+    });
+  }
 
-    if (error) throw error;
-    return data as ProductData[];
+  /**
+   * Upsert en masse (mise à jour ou insertion)
+   */
+  static async bulkUpsert(
+    products: Partial<ProductData>[],
+    onProgress?: (processed: number, total: number) => void
+  ): Promise<{ success: number; failed: number; errors: string[] }> {
+    return batchUpsert<Partial<ProductData>>(
+      'products', 
+      products, 
+      ['user_id', 'sku'], 
+      { batchSize: 50, onProgress }
+    );
   }
 
   /**

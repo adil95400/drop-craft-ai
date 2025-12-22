@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useCallback, useRef, useEffect } from 'react'
+import { fetchPage, type PaginatedResult } from '@/utils/supabasePagination'
 
 export interface Product {
   id: string
@@ -75,14 +77,32 @@ export const useRealProducts = (filters?: any) => {
     }
   ]
 
-  const { data: realProducts = [], isLoading, error } = useQuery({
+  // Use abort controller to cancel ongoing requests
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const { data: realProducts = [], isLoading, error, refetch } = useQuery({
     queryKey: ['real-products', filters],
     queryFn: async () => {
+      // Cancel previous request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      // Query products table
-      let query = supabase.from('products').select('*').eq('user_id', user.id)
+      // Query products table with filters
+      let query = supabase.from('products').select('*', { count: 'exact' }).eq('user_id', user.id)
       
       if (filters?.status) {
         query = query.eq('status', filters.status)
@@ -97,24 +117,17 @@ export const useRealProducts = (filters?: any) => {
         query = query.lt('stock_quantity', 10)
       }
       
-      const { data: productsData, error: productsError } = await query.order('created_at', { ascending: false })
+      // Use pagination to avoid hitting 1000 row limit
+      const page = filters?.page || 0;
+      const pageSize = filters?.pageSize || 100;
+      
+      const { data: productsData, error: productsError, count } = await query
+        .order('created_at', { ascending: false })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+        
       if (productsError) throw productsError
 
-      // Also get imported products
-      const { data: importedData } = await (supabase
-        .from('imported_products')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false }) as any)
-
-      // Also get catalog products  
-      const { data: catalogData } = await (supabase
-        .from('catalog_products')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false }) as any)
-
-      // Normalize products from main table - use 'title' from DB
+      // Normalize products from main table
       const normalizedProducts = (productsData || []).map((p: any) => ({
         id: p.id,
         name: p.title || p.name || 'Produit sans nom',
@@ -129,54 +142,14 @@ export const useRealProducts = (filters?: any) => {
         profit_margin: p.cost_price && p.price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
         user_id: p.user_id,
         created_at: p.created_at,
-        updated_at: p.updated_at
+        updated_at: p.updated_at,
+        _totalCount: count // Attach total count for pagination info
       }))
 
-      // Normalize imported products
-      const normalizedImported = (importedData || []).map((p: any) => ({
-        id: p.id,
-        name: 'Produit importé',
-        description: '',
-        price: p.price || 0,
-        cost_price: undefined,
-        status: 'active' as 'active' | 'inactive',
-        stock_quantity: 0,
-        sku: undefined,
-        category: p.category,
-        image_url: undefined,
-        profit_margin: undefined,
-        user_id: p.user_id,
-        created_at: p.created_at,
-        updated_at: p.created_at
-      }))
-
-      // Normalize catalog products
-      const normalizedCatalog = (catalogData || []).map((p: any) => ({
-        id: p.id,
-        name: p.title || 'Produit catalogue',
-        description: p.description,
-        price: p.price || 0,
-        cost_price: undefined,
-        status: (p.status === 'available' ? 'active' : 'inactive') as 'active' | 'inactive',
-        stock_quantity: 0,
-        sku: undefined,
-        category: p.category,
-        image_url: p.image_urls?.[0],
-        profit_margin: p.compare_at_price && p.price ? ((p.compare_at_price - p.price) / p.compare_at_price * 100) : undefined,
-        user_id: p.user_id,
-        created_at: p.created_at,
-        updated_at: p.updated_at
-      }))
-
-      // Combine all products
-      const allProducts = [
-        ...normalizedProducts,
-        ...normalizedImported,
-        ...normalizedCatalog
-      ]
-
-      return allProducts as Product[]
+      return normalizedProducts as Product[]
     },
+    staleTime: 30000, // Cache for 30 seconds to reduce requests
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   })
 
   // Use demo data only if no real products exist
@@ -289,7 +262,8 @@ export const useRealProducts = (filters?: any) => {
     active: products.filter(p => p.status === 'active').length,
     inactive: products.filter(p => p.status === 'inactive').length,
     lowStock: products.filter(p => (p.stock_quantity || 0) < 10).length,
-    totalValue: products.reduce((sum, p) => sum + (p.price * (p.stock_quantity || 0)), 0)
+    totalValue: products.reduce((sum, p) => sum + (p.price * (p.stock_quantity || 0)), 0),
+    totalCount: (realProducts[0] as any)?._totalCount || products.length
   }
 
   return {
@@ -297,6 +271,7 @@ export const useRealProducts = (filters?: any) => {
     stats,
     isLoading,
     error,
+    refetch,
     addProduct: addProduct.mutate,
     updateProduct: updateProduct.mutate,
     deleteProduct: deleteProduct.mutate,
