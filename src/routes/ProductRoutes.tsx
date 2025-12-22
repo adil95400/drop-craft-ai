@@ -1,5 +1,6 @@
 /**
- * Routes Products - Catalogue, Import, Suppliers, Winners
+ * Routes Products - Catalogue, Import, Winners
+ * Suppliers routes are handled separately in SupplierRoutes.tsx
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -9,40 +10,13 @@ const ModernProductsPage = lazy(() => import('@/pages/products/ProductsMainPage'
 const EnhancedCatalog = lazy(() => import('@/pages/products/EnhancedCatalog'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
-const Catalogue = lazy(() => import('@/pages/products/EnhancedCatalog'));
 
-// Import
+// Import - Redirects to /import module
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'));
-const QuickImport = lazy(() => import('@/pages/import/QuickImport'));
-const URLImportPage = lazy(() => import('@/pages/import/URLImportPage'));
-const ShopifyStoreImportPage = lazy(() => import('@/pages/ShopifyStoreImportPage'));
-const AdvancedImport = lazy(() => import('@/pages/import/AdvancedImport'));
-const ImportManagement = lazy(() => import('@/pages/import/ImportManagement'));
-const ImportedProductsList = lazy(() => import('@/pages/import/manage/ImportedProductsList'));
-const ImportHistoryPage = lazy(() => import('@/pages/import/history/SimpleHistoryPage'));
-const ImportResults = lazy(() => import('@/pages/import/ImportResults'));
-const ImportSources = lazy(() => import('@/pages/import/ImportSources'));
-const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPublishingPage'));
-const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMarketplacePage'));
-
-// Suppliers - Nouvelle structure unifiée
-const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHubUnified'));
-const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
-const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
-const SupplierMarketplace = lazy(() => import('@/pages/suppliers/marketplace'));
-const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'));
-const SupplierAnalyticsDashboard = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsDashboard'));
-const SupplierCatalogPage = lazy(() => import('@/pages/suppliers/catalog/SupplierCatalogPage'));
-const SupplierSettingsPage = lazy(() => import('@/pages/suppliers/settings/SupplierSettingsPage'));
-const UnifiedCatalog = lazy(() => import('@/pages/suppliers/catalog'));
 
 // Winners & Research
 const WinnersPage = lazy(() => import('@/pages/WinnersPage'));
 const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
-const AIMarketplacePage = lazy(() => import('@/pages/AIMarketplacePage'));
-
-const PremiumNetworkPage = lazy(() => import('@/pages/PremiumNetworkPage'));
-const GlobalProductMarketplace = lazy(() => import('@/pages/GlobalProductMarketplace'));
 
 // Tools
 const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
@@ -58,7 +32,7 @@ const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 // Advanced Products
 const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProductsPage'));
 
-// New Product Module Routes
+// Product Module Routes
 const ProductRulesPage = lazy(() => import('@/pages/products/ProductRulesPage'));
 const ProductAuditPage = lazy(() => import('@/pages/products/ProductAuditPage'));
 const ProductResearchPageNew = lazy(() => import('@/pages/products/ProductResearchPage'));
@@ -74,10 +48,10 @@ export function ProductRoutes() {
       <Route path="enhanced-catalog" element={<EnhancedCatalog />} />
       <Route path=":id" element={<ProductDetailsPage />} />
       <Route path="publish" element={<ProductPublishing />} />
-      <Route path="catalogue" element={<Catalogue />} />
+      <Route path="catalogue" element={<EnhancedCatalog />} />
       <Route path="advanced" element={<AdvancedProductsPage />} />
       
-      {/* New Product Module Structure */}
+      {/* Product Module Structure */}
       <Route path="rules" element={<ProductRulesPage />} />
       <Route path="audit" element={<ProductAuditPage />} />
       <Route path="research" element={<ProductResearchPageNew />} />
@@ -85,39 +59,15 @@ export function ProductRoutes() {
       <Route path="qa" element={<ProductQAPage />} />
       <Route path="sourcing" element={<ProductSourcingPage />} />
       
-      {/* Import Hub */}
-      <Route path="import" element={<ImportHub />} />
-      <Route path="import/quick" element={<QuickImport />} />
-      <Route path="import/url" element={<URLImportPage />} />
-      <Route path="import/shopify-store" element={<ShopifyStoreImportPage />} />
-      <Route path="import/advanced" element={<AdvancedImport />} />
-      <Route path="import/manage" element={<ImportManagement />} />
-      <Route path="import/manage/products" element={<ImportedProductsList />} />
-      <Route path="import/manage/history" element={<ImportHistoryPage />} />
-      <Route path="import/manage/publishing" element={<ImportPublishingPage />} />
-      <Route path="import/manage/marketplace" element={<ImportMarketplacePage />} />
-      <Route path="import/results" element={<ImportResults />} />
-      <Route path="import/sources" element={<ImportSources />} />
+      {/* Import - Redirect to dedicated module */}
+      <Route path="import/*" element={<Navigate to="/import" replace />} />
       
-      {/* Suppliers - Structure unifiée */}
-      <Route path="suppliers" element={<SuppliersHub />} />
-      <Route path="suppliers/marketplace" element={<SupplierMarketplace />} />
-      <Route path="suppliers/my" element={<MySuppliersPage />} />
-      <Route path="suppliers/analytics" element={<SupplierAnalyticsDashboard />} />
-      <Route path="suppliers/settings" element={<SupplierSettingsPage />} />
-      <Route path="suppliers/catalog" element={<UnifiedCatalog />} />
-      <Route path="suppliers/create" element={<CreateSupplier />} />
-      <Route path="suppliers/:id" element={<SupplierDetails />} />
-      <Route path="suppliers/:id/catalog" element={<SupplierCatalogPage />} />
-      <Route path="suppliers/:id/edit" element={<CreateSupplier />} />
+      {/* Suppliers - Redirect to dedicated module */}
+      <Route path="suppliers/*" element={<Navigate to="/suppliers" replace />} />
       
       {/* Product Research & Marketplace */}
       <Route path="winners" element={<WinnersPage />} />
-      <Route path="research" element={<ProductResearchPage />} />
-      <Route path="ai-marketplace" element={<AIMarketplacePage />} />
-      
-      <Route path="premium-network" element={<PremiumNetworkPage />} />
-      <Route path="global-marketplace" element={<GlobalProductMarketplace />} />
+      <Route path="research-legacy" element={<ProductResearchPage />} />
       
       {/* Tools */}
       <Route path="profit-calculator" element={<ProfitCalculatorPage />} />
@@ -132,7 +82,10 @@ export function ProductRoutes() {
       
       {/* Legacy redirects */}
       <Route path="catalogue-ultra-pro" element={<Navigate to="/products/catalogue" replace />} />
-      <Route path="import-advanced" element={<Navigate to="/products/import/advanced" replace />} />
+      <Route path="import-advanced" element={<Navigate to="/import/advanced" replace />} />
+      <Route path="premium-network" element={<Navigate to="/suppliers/marketplace" replace />} />
+      <Route path="global-marketplace" element={<Navigate to="/suppliers/marketplace" replace />} />
+      <Route path="ai-marketplace" element={<Navigate to="/suppliers/marketplace" replace />} />
     </Routes>
   );
 }
