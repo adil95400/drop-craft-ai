@@ -22,7 +22,7 @@ const EnterpriseObservability = lazy(() => import('@/pages/EnterpriseObservabili
 const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
 const DocumentationPage = lazy(() => import('@/pages/public/DocumentationPage'));
 const TestimonialsPage = lazy(() => import('@/pages/public/TestimonialsPage'));
-const Integrations = lazy(() => import('@/pages/Integrations'));
+const Integrations = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));

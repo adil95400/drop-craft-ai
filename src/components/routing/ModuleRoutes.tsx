@@ -11,7 +11,7 @@ const CrmPage = lazy(() => import('@/pages/CrmPage'));
 const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
-const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
+const IntegrationsPage = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 // Composant de chargement

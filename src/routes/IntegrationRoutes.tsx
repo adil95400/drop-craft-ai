@@ -1,25 +1,18 @@
 /**
- * Routes Integrations - APIs, Marketplace, Extensions
+ * Routes Integrations - APIs, Marketplace, Extensions (consolidées)
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-// Integrations
-const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
-const Integrations = lazy(() => import('@/pages/Integrations'));
+// Main integrations hub
 const UnifiedIntegrationsHub = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 const TikTokShopPage = lazy(() => import('@/pages/integrations/TikTokShopPage'));
 
-// Marketplace
-const Marketplace = lazy(() => import('@/pages/Marketplace'));
+// Marketplace (consolidated)
 const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
-const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegrationsPage'));
-const MarketplaceIntegrationGuidesPage = lazy(() => import('@/pages/MarketplaceIntegrationGuidesPage'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
-const MultiStoreCentralDashboard = lazy(() => import('@/pages/MultiStoreCentralDashboard'));
 
 // Extensions
-const Extension = lazy(() => import('@/pages/Extension'));
 const ExtensionsHub = lazy(() => import('@/pages/ExtensionsHub'));
 const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 const ChromeExtensionConfigPage = lazy(() => import('@/pages/ChromeExtensionConfigPage'));
@@ -33,7 +26,6 @@ const Support = lazy(() => import('@/pages/Support'));
 const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
 const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
 const LiveChatSupportPage = lazy(() => import('@/pages/LiveChatSupportPage'));
-const QAPage = lazy(() => import('@/pages/QAPage'));
 
 // Sync Configuration
 const SyncConfigPage = lazy(() => import('@/pages/SyncConfigPage'));
@@ -44,24 +36,24 @@ const ContentManagementPage = lazy(() => import('@/pages/ContentManagementPage')
 export function IntegrationRoutes() {
   return (
     <Routes>
-      {/* Integrations Hub */}
-      <Route index element={<IntegrationsPage />} />
-      <Route path="hub" element={<Integrations />} />
-      <Route path="unified" element={<UnifiedIntegrationsHub />} />
+      {/* Integrations Hub - Point d'entrée unique */}
+      <Route index element={<UnifiedIntegrationsHub />} />
+      <Route path="hub" element={<Navigate to="/integrations" replace />} />
+      <Route path="unified" element={<Navigate to="/integrations" replace />} />
       <Route path="sync-config" element={<SyncConfigPage />} />
       <Route path="tiktok-shop" element={<TikTokShopPage />} />
       
-      {/* Marketplace */}
-      <Route path="marketplace" element={<Marketplace />} />
-      <Route path="marketplace/hub" element={<MarketplaceHubPage />} />
-      <Route path="marketplace/integrations" element={<MarketplaceIntegrationsPage />} />
-      <Route path="marketplace/integration-guides" element={<MarketplaceIntegrationGuidesPage />} />
+      {/* Marketplace - Consolidated */}
+      <Route path="marketplace" element={<MarketplaceHubPage />} />
+      <Route path="marketplace/hub" element={<Navigate to="/integrations/marketplace" replace />} />
+      <Route path="marketplace/integrations" element={<Navigate to="/integrations/marketplace" replace />} />
+      <Route path="marketplace/integration-guides" element={<Navigate to="/integrations/marketplace" replace />} />
       <Route path="marketplace/feed-manager" element={<FeedManagerPage />} />
-      <Route path="marketplace/multi-store" element={<MultiStoreCentralDashboard />} />
+      <Route path="marketplace/multi-store" element={<Navigate to="/stores-channels" replace />} />
       
       {/* Extensions */}
-      <Route path="extensions" element={<Extension />} />
-      <Route path="extensions/hub" element={<ExtensionsHub />} />
+      <Route path="extensions" element={<ExtensionsHub />} />
+      <Route path="extensions/hub" element={<Navigate to="/integrations/extensions" replace />} />
       <Route path="extensions/api" element={<ExtensionAPIPage />} />
       <Route path="extensions/chrome-config" element={<ChromeExtensionConfigPage />} />
       
@@ -72,7 +64,6 @@ export function IntegrationRoutes() {
       {/* Support & Learning */}
       <Route path="support" element={<Support />} />
       <Route path="support/live-chat" element={<LiveChatSupportPage />} />
-      <Route path="support/qa" element={<QAPage />} />
       <Route path="academy" element={<AcademyPage />} />
       <Route path="academy/course/:id" element={<CourseDetailPage />} />
       

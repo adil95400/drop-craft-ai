@@ -52,7 +52,7 @@ export const LazySettings = lazyWithRetry(() => import('@/pages/Settings'));
 export const LazyProfile = lazyWithRetry(() => import('@/pages/Profile'));
 
 // Pages d'intégrations - Lazy load
-export const LazyIntegrationsPage = lazyWithRetry(() => import('@/pages/IntegrationsPage'));
+export const LazyIntegrationsPage = lazyWithRetry(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 
 // AI Studio - Lazy load (composant lourd)
 export const LazyAIStudio = lazyWithRetry(() => import('@/pages/AIStudio'));
@@ -73,9 +73,9 @@ export const LazyAuthPage = lazyWithRetry(() => import('@/pages/AuthPage'));
 // Additional pages from App.tsx
 export const LazySEO = lazyWithRetry(() => import('@/pages/SEO'));
 export const LazyAutomations = lazyWithRetry(() => import('@/pages/AutomationPage'));
-export const LazyIntegrations = lazyWithRetry(() => import('@/pages/Integrations'));
+export const LazyIntegrations = lazyWithRetry(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 export const LazyCatalog = lazyWithRetry(() => import('@/pages/products/EnhancedCatalog'));
 export const LazyReports = lazyWithRetry(() => import('@/pages/Reports'));
-export const LazyMarketplace = lazyWithRetry(() => import('@/pages/Marketplace'));
+export const LazyMarketplace = lazyWithRetry(() => import('@/pages/MarketplaceHubPage'));
 export const LazyOrders = lazyWithRetry(() => import('@/pages/OrdersPage'));
 export const LazyCustomers = lazyWithRetry(() => import('@/pages/CustomersPage'));
