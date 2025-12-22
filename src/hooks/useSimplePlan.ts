@@ -31,7 +31,7 @@ export const useSimplePlan = (user?: User | null) => {
         
         const { data, error } = await supabase
           .from('profiles')
-          .select('plan')
+          .select('subscription_plan')
           .eq('id', user.id)
           .maybeSingle()
 
@@ -39,7 +39,16 @@ export const useSimplePlan = (user?: User | null) => {
 
         if (error) throw error
 
-        const userPlan = (data?.plan as PlanType) || 'standard'
+        // Map subscription_plan to PlanType
+        const planMapping: Record<string, PlanType> = {
+          'pro': 'pro',
+          'ultra_pro': 'ultra_pro',
+          'ultra-pro': 'ultra_pro',
+          'standard': 'standard',
+          'free': 'standard'
+        }
+        
+        const userPlan = planMapping[data?.subscription_plan || ''] || 'standard'
         setState({ plan: userPlan, loading: false, error: null })
       } catch (error: any) {
         if (!mounted) return
@@ -56,7 +65,7 @@ export const useSimplePlan = (user?: User | null) => {
     return () => {
       mounted = false
     }
-  }, [user?.id]) // Seul user.id dans les deps
+  }, [user?.id])
 
   const isPro = () => state.plan === 'pro' || state.plan === 'ultra_pro'
   const isUltraPro = () => state.plan === 'ultra_pro'

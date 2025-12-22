@@ -28,7 +28,7 @@ export const useStoreIntegrations = () => {
 
   const { data: integrations = [], isLoading, error } = useQuery({
     queryKey: ['store-integrations'],
-    queryFn: async () => {
+    queryFn: async (): Promise<StoreIntegration[]> => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
@@ -39,7 +39,27 @@ export const useStoreIntegrations = () => {
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as StoreIntegration[]
+      
+      // Transform data to match StoreIntegration interface
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        user_id: item.user_id,
+        platform_name: item.platform_name || item.platform || '',
+        platform_type: item.platform || 'ecommerce',
+        platform_url: item.store_url,
+        shop_domain: item.store_url,
+        store_config: item.config,
+        encrypted_credentials: null,
+        sync_settings: item.config?.sync_settings || null,
+        is_active: item.is_active,
+        connection_status: item.connection_status,
+        sync_status: item.connection_status,
+        last_sync_at: item.last_sync_at,
+        sync_frequency: item.sync_frequency,
+        last_error: null,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      }))
     },
   })
 
@@ -184,7 +204,7 @@ export const useStoreIntegrations = () => {
   const stats = {
     total: integrations.length,
     active: integrations.filter(i => i.is_active).length,
-    connected: integrations.filter(i => i.connection_status === 'active').length,
+    connected: integrations.filter(i => i.connection_status === 'connected').length,
     disconnected: integrations.filter(i => i.connection_status === 'disconnected' || i.connection_status === 'error').length,
     lastSync: integrations.reduce((latest, integration) => {
       const syncDate = new Date(integration.last_sync_at || 0)
@@ -192,7 +212,7 @@ export const useStoreIntegrations = () => {
     }, new Date(0))
   }
 
-  const connectedIntegrations = integrations.filter(i => i.connection_status === 'active')
+  const connectedIntegrations = integrations.filter(i => i.connection_status === 'connected')
 
   return {
     integrations,

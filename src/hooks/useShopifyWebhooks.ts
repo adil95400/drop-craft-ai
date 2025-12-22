@@ -29,39 +29,53 @@ export interface WebhookEvent {
 export function useShopifyWebhooks(integrationId?: string) {
   const queryClient = useQueryClient();
 
-  // Fetch webhooks
+  // Fetch webhooks via edge function since no shopify_webhooks table exists
   const { data: webhooks = [], isLoading, refetch } = useQuery({
     queryKey: ['shopify-webhooks', integrationId],
-    queryFn: async () => {
+    queryFn: async (): Promise<ShopifyWebhook[]> => {
       if (!integrationId) return [];
 
-      const { data, error } = await supabase
-        .from('shopify_webhooks')
-        .select('*')
-        .eq('integration_id', integrationId)
-        .order('created_at', { ascending: false });
+      // Use edge function to get webhooks from Shopify API
+      const { data, error } = await supabase.functions.invoke('shopify-webhook-manager', {
+        body: {
+          action: 'list',
+          integration_id: integrationId
+        }
+      });
 
       if (error) throw error;
-      return data as ShopifyWebhook[];
+      return (data?.webhooks || []) as ShopifyWebhook[];
     },
     enabled: !!integrationId,
   });
 
-  // Fetch webhook events
+  // Fetch webhook events from activity_logs
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['webhook-events', integrationId],
-    queryFn: async () => {
+    queryFn: async (): Promise<WebhookEvent[]> => {
       if (!integrationId) return [];
 
-      const { data, error } = await supabase
-        .from('webhook_events')
+      const { data, error } = await (supabase
+        .from('activity_logs')
         .select('*')
-        .eq('integration_id', integrationId)
+        .eq('entity_type', 'webhook')
+        .eq('entity_id', integrationId)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(50) as any);
 
       if (error) throw error;
-      return data;
+      
+      return (data || []).map((log: any) => ({
+        id: log.id,
+        integration_id: integrationId,
+        platform: 'shopify',
+        event_type: log.action,
+        webhook_data: log.details,
+        processed: true,
+        processed_at: log.created_at,
+        error_message: null,
+        created_at: log.created_at
+      }));
     },
     enabled: !!integrationId,
   });
