@@ -163,15 +163,15 @@ export function useSupplierAdmin() {
       if (!suppliers) throw new Error('No suppliers to export')
 
       // Créer un CSV
-      const headers = ['Nom', 'Pays', 'Catégories', 'Tier', 'Min Order', 'Livraison', 'Actif']
+      const headers = ['Nom', 'Pays', 'Catégorie', 'Min Order', 'Livraison', 'Vérifié', 'Recommandé']
       const rows = suppliers.map(s => [
         s.name,
-        s.country,
-        s.categories?.join(';') || '',
-        s.tier,
-        s.minimum_order_value,
-        s.avg_delivery_days,
-        s.is_active ? 'Oui' : 'Non'
+        s.country || '',
+        s.category || '',
+        s.min_order_value || 0,
+        s.avg_shipping_days || 0,
+        s.is_verified ? 'Oui' : 'Non',
+        s.is_featured ? 'Oui' : 'Non'
       ])
 
       const csv = [headers, ...rows].map(row => row.join(',')).join('\n')

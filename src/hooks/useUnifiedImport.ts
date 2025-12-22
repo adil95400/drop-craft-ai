@@ -54,7 +54,7 @@ export const useUnifiedImport = () => {
   const [progress, setProgress] = useState(0)
   const [currentImportId, setCurrentImportId] = useState<string | null>(null)
 
-  // Fetch imported products
+  // Fetch imported products - transform imported_products table data
   const { 
     data: importedProducts = [], 
     isLoading: isLoadingProducts,
@@ -62,13 +62,33 @@ export const useUnifiedImport = () => {
   } = useQuery({
     queryKey: ['imported-products'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+
       const { data, error } = await supabase
         .from('imported_products')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data as ImportedProduct[]
+      
+      // Transform to ImportedProduct interface
+      return (data || []).map((item: any): ImportedProduct => ({
+        id: item.id,
+        user_id: item.user_id,
+        name: item.product_id || 'Produit importé',
+        description: '',
+        price: item.price || 0,
+        currency: 'EUR',
+        category: item.category,
+        status: (item.status as any) || 'draft',
+        supplier_name: item.source_platform,
+        image_urls: [],
+        tags: [],
+        created_at: item.created_at,
+        updated_at: item.created_at
+      }))
     }
   })
 
@@ -80,9 +100,13 @@ export const useUnifiedImport = () => {
   } = useQuery({
     queryKey: ['import-history'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+
       const { data, error } = await supabase
         .from('import_jobs')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50)
 
@@ -123,7 +147,7 @@ export const useUnifiedImport = () => {
       queryClient.invalidateQueries({ queryKey: ['import-history'] })
       toast({
         title: "Import CSV réussi",
-        description: `${data.successCount || 0} produits importés`
+        description: `${data?.successCount || 0} produits importés`
       })
       setTimeout(() => setProgress(0), 2000)
     },
@@ -163,7 +187,7 @@ export const useUnifiedImport = () => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
       toast({
         title: "Import Shopify réussi",
-        description: `${data.imported} produits importés (${data.variantsImported || 0} variantes)`
+        description: `${data?.imported || 0} produits importés (${data?.variantsImported || 0} variantes)`
       })
       setTimeout(() => setProgress(0), 2000)
     },
@@ -234,7 +258,11 @@ export const useUnifiedImport = () => {
   const updateProduct = useCallback(async (productId: string, updates: Partial<ImportedProduct>) => {
     const { error } = await supabase
       .from('imported_products')
-      .update(updates)
+      .update({
+        category: updates.category,
+        price: updates.price,
+        status: updates.status
+      })
       .eq('id', productId)
 
     if (error) throw error

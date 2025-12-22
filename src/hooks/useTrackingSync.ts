@@ -2,21 +2,48 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface TrackingUpdate {
+  id: string;
+  order_id: string;
+  tracking_number: string;
+  carrier: string;
+  status: string;
+  created_at: string;
+  order?: any;
+}
+
 export function useTrackingSync() {
   const queryClient = useQueryClient();
 
+  // Use orders table for tracking data
   const { data: trackingData, isLoading } = useQuery({
     queryKey: ['tracking-auto-updates'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       const { data, error } = await supabase
-        .from('tracking_auto_updates')
-        .select('*, order:orders(*)')
-        .order('created_at', { ascending: false });
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .not('tracking_number', 'is', null)
+        .order('updated_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
-      return data;
+
+      // Transform to tracking updates format
+      return (data || []).map((order: any): TrackingUpdate => ({
+        id: order.id,
+        order_id: order.id,
+        tracking_number: order.tracking_number || '',
+        carrier: order.carrier || '',
+        status: order.fulfillment_status || 'pending',
+        created_at: order.updated_at || order.created_at,
+        order
+      }));
     },
-    refetchInterval: 30000 // Auto-refresh every 30s
+    refetchInterval: 30000
   });
 
   const syncAll = useMutation({
@@ -30,7 +57,7 @@ export function useTrackingSync() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['tracking-auto-updates'] });
-      toast.success(`${data.synced} numéros de tracking synchronisés`);
+      toast.success(`${data?.synced || 0} numéros de tracking synchronisés`);
     }
   });
 
