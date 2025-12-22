@@ -1,5 +1,6 @@
 /**
  * Category Mapper - Gère le mapping automatique des catégories entre votre système et les plateformes
+ * NOTE: Uses field_mappings table as category_mappings doesn't exist
  */
 
 import { supabase } from '@/integrations/supabase/client'
@@ -90,6 +91,9 @@ export const PLATFORM_CATEGORIES: Record<string, string[]> = {
   ]
 }
 
+// Local cache for category mappings (since table doesn't exist)
+const categoryMappingsCache: Map<string, CategoryMapping> = new Map()
+
 /**
  * Trouve automatiquement la meilleure catégorie cible basée sur la catégorie source
  */
@@ -150,22 +154,47 @@ export function findBestCategoryMatch(
 }
 
 /**
- * Récupère le mapping de catégorie depuis la base de données
+ * Récupère le mapping de catégorie depuis le cache local ou field_mappings
  */
 export async function getCategoryMapping(
   sourceCategory: string,
   platform: string
 ): Promise<CategoryMapping | null> {
+  const cacheKey = `${sourceCategory}:${platform}`
+  
+  // Check local cache first
+  if (categoryMappingsCache.has(cacheKey)) {
+    return categoryMappingsCache.get(cacheKey) || null
+  }
+  
   try {
-    const { data, error } = await supabase
-      .from('category_mappings')
-      .select('*')
-      .eq('source_category', sourceCategory)
-      .eq('platform', platform)
-      .single()
+    // Try to find in field_mappings table
+    const { data: user } = await supabase.auth.getUser()
+    if (!user?.user) return null
     
-    if (error) throw error
-    return data
+    const { data, error } = await supabase
+      .from('field_mappings')
+      .select('*')
+      .eq('user_id', user.user.id)
+      .eq('source_entity', 'category')
+      .eq('source_field', sourceCategory)
+      .eq('target_entity', platform)
+      .maybeSingle()
+    
+    if (error || !data) return null
+    
+    const mapping: CategoryMapping = {
+      id: data.id,
+      user_id: data.user_id,
+      source_category: data.source_field,
+      platform: data.target_entity,
+      target_category: data.target_field,
+      confidence_score: 1.0,
+      is_verified: true
+    }
+    
+    categoryMappingsCache.set(cacheKey, mapping)
+    return mapping
   } catch {
     return null
   }
@@ -181,21 +210,38 @@ export async function saveCategoryMapping(
     const { data: user } = await supabase.auth.getUser()
     if (!user?.user) throw new Error('User not authenticated')
     
+    // Save to field_mappings table
     const { data, error } = await supabase
-      .from('category_mappings')
+      .from('field_mappings')
       .upsert({
         user_id: user.user.id,
-        source_category: mapping.source_category,
-        platform: mapping.platform,
-        target_category: mapping.target_category,
-        confidence_score: mapping.confidence_score,
-        is_verified: mapping.is_verified
-      })
+        source_entity: 'category',
+        source_field: mapping.source_category,
+        target_entity: mapping.platform,
+        target_field: mapping.target_category,
+        is_required: mapping.is_verified,
+        default_value: String(mapping.confidence_score)
+      } as any)
       .select()
       .single()
     
     if (error) throw error
-    return data
+    
+    const result: CategoryMapping = {
+      id: data.id,
+      user_id: data.user_id,
+      source_category: mapping.source_category,
+      platform: mapping.platform,
+      target_category: mapping.target_category,
+      confidence_score: mapping.confidence_score,
+      is_verified: mapping.is_verified
+    }
+    
+    // Update cache
+    const cacheKey = `${mapping.source_category}:${mapping.platform}`
+    categoryMappingsCache.set(cacheKey, result)
+    
+    return result
   } catch {
     return null
   }
@@ -252,13 +298,23 @@ export async function getUserCategoryMappings(): Promise<CategoryMapping[]> {
     if (!user?.user) return []
     
     const { data, error } = await supabase
-      .from('category_mappings')
+      .from('field_mappings')
       .select('*')
       .eq('user_id', user.user.id)
+      .eq('source_entity', 'category')
       .order('created_at', { ascending: false })
     
     if (error) throw error
-    return data || []
+    
+    return (data || []).map(item => ({
+      id: item.id,
+      user_id: item.user_id,
+      source_category: item.source_field,
+      platform: item.target_entity,
+      target_category: item.target_field,
+      confidence_score: parseFloat(item.default_value || '0.8'),
+      is_verified: item.is_required || false
+    }))
   } catch {
     return []
   }
