@@ -39,7 +39,7 @@ export class QueueService {
         user_id: (await supabase.auth.getUser()).data.user?.id || '',
         action: `queue_${type}`,
         description: `Queue job: ${type}`,
-        metadata: {
+        details: {
           job_id: jobId,
           type,
           payload,
@@ -60,7 +60,7 @@ export class QueueService {
   async getQueueStats(): Promise<any> {
     const { data, error } = await supabase
       .from('activity_logs')
-      .select('metadata')
+      .select('details')
       .like('action', 'queue_%')
 
     if (error) return null
@@ -72,12 +72,12 @@ export class QueueService {
     }
 
     data?.forEach(log => {
-      const metadata = log.metadata as any
-      if (metadata?.status) {
-        stats.by_status[metadata.status] = (stats.by_status[metadata.status] || 0) + 1
+      const details = (log.details || {}) as any
+      if (details?.status) {
+        stats.by_status[details.status] = (stats.by_status[details.status] || 0) + 1
       }
-      if (metadata?.type) {
-        stats.by_type[metadata.type] = (stats.by_type[metadata.type] || 0) + 1
+      if (details?.type) {
+        stats.by_type[details.type] = (stats.by_type[details.type] || 0) + 1
       }
     })
 
