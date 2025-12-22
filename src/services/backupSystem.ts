@@ -118,17 +118,20 @@ export class BackupSystem {
       if (error) throw error;
       
       // Transform activity logs to BackupInfo format
-      return (data || []).map(log => ({
-        id: log.entity_id || log.id,
-        name: `backup_${log.created_at}`,
-        description: log.description,
-        size: 0,
-        tables: (log.metadata as any)?.tables || [],
-        createdAt: log.created_at,
-        type: (log.metadata as any)?.type || 'manual',
-        status: (log.metadata as any)?.status || 'completed',
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      })) as BackupInfo[];
+      return (data || []).map(log => {
+        const details = (log.details || {}) as any;
+        return {
+          id: log.entity_id || log.id,
+          name: `backup_${log.created_at}`,
+          description: log.description || '',
+          size: 0,
+          tables: details?.tables || [],
+          createdAt: log.created_at || '',
+          type: details?.type || 'manual',
+          status: details?.status || 'completed',
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        };
+      }) as BackupInfo[];
     } catch (error) {
       console.error('Failed to fetch backups:', error);
       return [];
@@ -284,7 +287,7 @@ export class BackupSystem {
       const totalBackups = backups?.length || 0;
       const totalSize = 0; // Size not available in activity logs
       const lastBackup = backups?.[0]?.created_at || null;
-      const successfulBackups = backups?.filter(b => (b.metadata as any)?.status === 'completed').length || 0;
+      const successfulBackups = backups?.filter(b => ((b.details || {}) as any)?.status === 'completed').length || 0;
       const successRate = totalBackups > 0 ? (successfulBackups / totalBackups) * 100 : 0;
 
       let nextScheduledBackup = null;

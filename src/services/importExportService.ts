@@ -219,14 +219,14 @@ class ImportExportService {
       const deletePromises = [
         supabase.from('products').delete().in('id', productIds).eq('user_id', user.id),
         supabase.from('imported_products').delete().in('id', productIds).eq('user_id', user.id),
-        supabase.from('premium_products').delete().in('id', productIds)
+        (supabase.from('catalog_products') as any).delete().in('id', productIds).eq('user_id', user.id)
       ]
 
       const results = await Promise.allSettled(deletePromises)
       
       // Compter et logger les résultats
       let totalDeleted = 0
-      const tableNames = ['products', 'imported_products', 'premium_products']
+      const tableNames = ['products', 'imported_products', 'catalog_products']
       
       results.forEach((result, index) => {
         if (result.status === 'fulfilled' && !result.value.error) {
@@ -344,7 +344,7 @@ class ImportExportService {
       const products = Array.isArray(data) ? data : [data]
       const productsToInsert = products.map(p => ({
         user_id: userId,
-        name: p.name || 'Produit importé',
+        title: p.name || 'Produit importé',
         description: p.description || '',
         price: parseFloat(p.price) || 0,
         sku: p.sku || '',
@@ -355,7 +355,7 @@ class ImportExportService {
       
       const { error } = await supabase
         .from('products')
-        .insert(productsToInsert)
+        .insert(productsToInsert as any)
       
       if (error) throw error
       
@@ -423,18 +423,17 @@ class ImportExportService {
       // Copier dans la table products de l'utilisateur
       const productsToInsert = catalogProducts?.map(p => ({
         user_id: userId,
-        name: p.name,
-        description: p.description,
-        price: p.price,
-        sku: p.sku,
-        category: p.category,
-        image_url: p.image_url,
+        title: p.title || 'Sans nom',
+        description: p.description || '',
+        price: p.price || 0,
+        category: p.category || '',
+        image_url: p.image_urls?.[0] || '',
         status: 'active' as const
       })) || []
       
       const { error: insertError } = await supabase
         .from('products')
-        .insert(productsToInsert)
+        .insert(productsToInsert as any)
       
       if (insertError) throw insertError
       

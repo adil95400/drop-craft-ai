@@ -105,7 +105,7 @@ export class CustomersService {
   static async getCustomerStats(userId: string) {
     const { data: customers, error: customersError } = await supabase
       .from('customers')
-      .select('id, status, total_spent, total_orders, created_at')
+      .select('id, total_spent, total_orders, created_at')
       .eq('user_id', userId);
 
     if (customersError) throw customersError;
@@ -114,19 +114,23 @@ export class CustomersService {
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const customersThisMonth = customers.filter(c => new Date(c.created_at) >= thisMonth);
+    const customersThisMonth = customers.filter(c => new Date(c.created_at || '') >= thisMonth);
     const customersLastMonth = customers.filter(c => 
-      new Date(c.created_at) >= lastMonth && new Date(c.created_at) < thisMonth
+      new Date(c.created_at || '') >= lastMonth && new Date(c.created_at || '') < thisMonth
     );
+
+    // Estimate active/inactive based on order history
+    const activeCustomers = customers.filter(c => (c.total_orders || 0) > 0);
+    const inactiveCustomers = customers.filter(c => (c.total_orders || 0) === 0);
 
     const stats = {
       total: customers.length,
-      active: customers.filter(c => c.status === 'active').length,
-      inactive: customers.filter(c => c.status === 'inactive').length,
+      active: activeCustomers.length,
+      inactive: inactiveCustomers.length,
       totalRevenue: customers.reduce((sum, c) => sum + (c.total_spent || 0), 0),
       avgOrderValue: customers.length > 0
         ? customers.reduce((sum, c) => sum + (c.total_spent || 0), 0) / 
-          customers.reduce((sum, c) => sum + (c.total_orders || 0), 0)
+          Math.max(customers.reduce((sum, c) => sum + (c.total_orders || 0), 0), 1)
         : 0,
       avgLifetimeValue: customers.length > 0
         ? customers.reduce((sum, c) => sum + (c.total_spent || 0), 0) / customers.length
@@ -175,7 +179,7 @@ export class CustomersService {
       vip: customers.filter(c => (c.total_spent || 0) > 1000),
       regular: customers.filter(c => (c.total_spent || 0) >= 100 && (c.total_spent || 0) <= 1000),
       new: customers.filter(c => (c.total_orders || 0) < 2),
-      inactive: customers.filter(c => c.status === 'inactive')
+      inactive: customers.filter(c => (c.total_orders || 0) === 0)
     };
 
     return segments;
@@ -203,8 +207,7 @@ export class CustomersService {
 
     await this.updateCustomer(customerId, userId, {
       total_spent: totalSpent,
-      total_orders: totalOrders,
-      status: totalOrders > 0 ? 'active' : 'inactive'
+      total_orders: totalOrders
     });
   }
 }

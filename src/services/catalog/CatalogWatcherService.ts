@@ -207,20 +207,31 @@ export class CatalogWatcherService {
       await this.watchProductChange(userId, product, 'product_updated', undefined, rules)
     }
 
-    // Récupérer les événements récents pour ce batch
-    const { data: events } = await supabase
-      .from('catalog_events')
+    // Récupérer les événements récents depuis activity_logs
+    const { data: logs } = await (supabase
+      .from('activity_logs') as any)
       .select('*')
       .eq('user_id', userId)
-      .in('product_id', products.map(p => p.id))
-      .gte('created_at', new Date(Date.now() - 60000).toISOString()) // dernière minute
+      .eq('entity_type', 'catalog_event')
+      .gte('created_at', new Date(Date.now() - 60000).toISOString())
       .order('created_at', { ascending: false })
+
+    const events: CatalogEvent[] = (logs || []).map((log: any) => ({
+      id: log.id,
+      user_id: log.user_id,
+      product_id: log.entity_id,
+      product_name: log.description || '',
+      event_type: log.action as CatalogEventType,
+      severity: log.severity as 'info' | 'warning' | 'critical',
+      details: log.details || {},
+      created_at: log.created_at
+    }))
 
     return {
       totalProcessed: products.length,
-      criticalCount: (events || []).filter(e => e.severity === 'critical').length,
-      warningCount: (events || []).filter(e => e.severity === 'warning').length,
-      events: (events || []) as CatalogEvent[]
+      criticalCount: events.filter(e => e.severity === 'critical').length,
+      warningCount: events.filter(e => e.severity === 'warning').length,
+      events
     }
   }
 
@@ -238,10 +249,11 @@ export class CatalogWatcherService {
   ): Promise<CatalogEvent[]> {
     const { limit = 100, severity, eventType, productId } = options
 
-    let query = supabase
-      .from('catalog_events')
+    let query = (supabase
+      .from('activity_logs') as any)
       .select('*')
       .eq('user_id', userId)
+      .eq('entity_type', 'catalog_event')
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -250,11 +262,11 @@ export class CatalogWatcherService {
     }
 
     if (eventType) {
-      query = query.eq('event_type', eventType)
+      query = query.eq('action', eventType)
     }
 
     if (productId) {
-      query = query.eq('product_id', productId)
+      query = query.eq('entity_id', productId)
     }
 
     const { data, error } = await query
@@ -264,7 +276,16 @@ export class CatalogWatcherService {
       return []
     }
 
-    return (data || []) as CatalogEvent[]
+    return (data || []).map((log: any) => ({
+      id: log.id,
+      user_id: log.user_id,
+      product_id: log.entity_id,
+      product_name: log.description || '',
+      event_type: log.action as CatalogEventType,
+      severity: log.severity as 'info' | 'warning' | 'critical',
+      details: log.details || {},
+      created_at: log.created_at
+    }))
   }
 
   /**
@@ -278,10 +299,11 @@ export class CatalogWatcherService {
   }> {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
 
-    const { data, error } = await supabase
-      .from('catalog_events')
-      .select('severity, event_type')
+    const { data, error } = await (supabase
+      .from('activity_logs') as any)
+      .select('severity, action')
       .eq('user_id', userId)
+      .eq('entity_type', 'catalog_event')
       .gte('created_at', since)
 
     if (error || !data) {
@@ -297,8 +319,10 @@ export class CatalogWatcherService {
     const byType: Record<string, number> = {}
 
     for (const event of data) {
-      bySeverity[event.severity] = (bySeverity[event.severity] || 0) + 1
-      byType[event.event_type] = (byType[event.event_type] || 0) + 1
+      const sev = event.severity || 'info'
+      const typ = event.action || 'unknown'
+      bySeverity[sev] = (bySeverity[sev] || 0) + 1
+      byType[typ] = (byType[typ] || 0) + 1
     }
 
     return {
@@ -313,9 +337,20 @@ export class CatalogWatcherService {
    * Méthodes privées
    */
   private static async logEvents(events: CatalogEvent[]): Promise<void> {
+    // Store catalog events in activity_logs table
+    const logsToInsert = events.map(event => ({
+      user_id: event.user_id,
+      action: event.event_type,
+      entity_type: 'catalog_event',
+      entity_id: event.product_id,
+      description: event.product_name,
+      severity: event.severity,
+      details: event.details
+    }))
+
     const { error } = await supabase
-      .from('catalog_events')
-      .insert(events)
+      .from('activity_logs')
+      .insert(logsToInsert)
 
     if (error) {
       console.error('[CatalogWatcher] Error logging events:', error)

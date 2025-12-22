@@ -109,10 +109,10 @@ export class DashboardService {
   static async getAlerts(userId: string) {
     const alerts = [];
 
-    // Vérifier les stocks faibles
-    const { data: lowStockProducts } = await supabase
-      .from('imported_products')
-      .select('name, stock_quantity')
+    // Vérifier les stocks faibles - use products table
+    const { data: lowStockProducts } = await (supabase
+      .from('products') as any)
+      .select('title, stock_quantity')
       .eq('user_id', userId)
       .lt('stock_quantity', 10)
       .gt('stock_quantity', 0);
@@ -142,13 +142,13 @@ export class DashboardService {
       });
     }
 
-    // Vérifier les produits non optimisés
-    const { data: unoptimizedProducts } = await supabase
-      .from('imported_products')
+    // Vérifier les produits non optimisés - use products table
+    const { data: unoptimizedProducts } = await (supabase
+      .from('products') as any)
       .select('id')
       .eq('user_id', userId)
       .eq('ai_optimized', false)
-      .eq('status', 'published');
+      .eq('status', 'active');
 
     if (unoptimizedProducts && unoptimizedProducts.length > 0) {
       alerts.push({
@@ -181,10 +181,10 @@ export class DashboardService {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    // Récupérer les derniers produits ajoutés
+    // Récupérer les derniers produits ajoutés - use products table
     const { data: recentProducts } = await supabase
-      .from('imported_products')
-      .select('id, name, price, created_at')
+      .from('products')
+      .select('id, title, price, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -201,7 +201,7 @@ export class DashboardService {
       ...(recentProducts || []).map(product => ({
         type: 'product' as const,
         id: product.id,
-        title: `Produit ajouté: ${product.name}`,
+        title: `Produit ajouté: ${product.title || 'Sans nom'}`,
         description: `Prix: ${product.price}€`,
         date: product.created_at,
         metadata: product

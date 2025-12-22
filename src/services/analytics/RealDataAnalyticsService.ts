@@ -62,7 +62,6 @@ export class RealDataAnalyticsService {
         customers: customers.map(c => ({
           total_spent: c.total_spent,
           total_orders: c.total_orders,
-          status: c.status,
           created_at: c.created_at
         })),
         revenueSummary: {
@@ -102,7 +101,8 @@ export class RealDataAnalyticsService {
       }).length || 1;
       const currentCAC = totalMarketingSpend / newCustomers;
       const totalCustomers = customers.length || 1;
-      const inactiveCustomers = customers.filter(c => c.status === 'inactive').length;
+      // Estimate inactive customers based on those without recent orders
+      const inactiveCustomers = customers.filter(c => (c.total_orders || 0) === 0).length;
       const churnRate = (inactiveCustomers / totalCustomers) * 100;
       const avgOrderValue = totalRevenue / (orders.length || 1);
       const avgOrderFrequency = orders.length / (customers.length || 1);
@@ -182,11 +182,10 @@ export class RealDataAnalyticsService {
         })),
         customers: customers.map(c => ({
           total_spent: c.total_spent,
-          total_orders: c.total_orders,
-          status: c.status
+          total_orders: c.total_orders
         })),
         products: products.map(p => ({
-          name: p.name,
+          name: 'title' in p ? (p as any).title : (p as any).name || 'Unknown',
           price: p.price,
           stock: 'stock' in p ? (p as any).stock : 0
         }))
@@ -349,8 +348,8 @@ export class RealDataAnalyticsService {
       });
     }
 
-    // Insight 2: Risque de churn
-    const inactiveCustomers = customers.filter(c => c.status === 'inactive' || c.status === 'at_risk');
+    // Insight 2: Risque de churn - based on customers with no orders
+    const inactiveCustomers = customers.filter(c => (c.total_orders || 0) === 0);
     if (inactiveCustomers.length > 0) {
       insights.push({
         id: crypto.randomUUID(),
