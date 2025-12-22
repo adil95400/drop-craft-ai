@@ -40,7 +40,7 @@ export const useRealTracking = () => {
           carrier,
           status,
           created_at,
-          customers(name),
+          customer_id,
           shipping_address
         `)
         .not('tracking_number', 'is', null)
@@ -48,14 +48,32 @@ export const useRealTracking = () => {
       
       if (error) throw error
       
-      return data.map(order => ({
+      // Get customer names separately
+      const customerIds = [...new Set(data?.map(o => o.customer_id).filter(Boolean))]
+      let customerMap: Record<string, string> = {}
+      
+      if (customerIds.length > 0) {
+        const { data: customers } = await supabase
+          .from('customers')
+          .select('id, first_name, last_name, email')
+          .in('id', customerIds)
+        
+        if (customers) {
+          customerMap = customers.reduce((acc, c) => {
+            acc[c.id] = `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email
+            return acc
+          }, {} as Record<string, string>)
+        }
+      }
+      
+      return (data || []).map(order => ({
         id: order.id,
         order_number: order.order_number,
         tracking_number: order.tracking_number || '',
         carrier: order.carrier || 'auto',
         status: order.status || 'pending',
         created_at: order.created_at,
-        customer_name: order.customers?.name,
+        customer_name: order.customer_id ? customerMap[order.customer_id] : undefined,
         shipping_address: order.shipping_address
       })) as TrackingOrder[]
     }

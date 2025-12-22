@@ -23,7 +23,7 @@ export const useRealProducts = (filters?: any) => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Données de démonstration réalistes
+  // Demo products for display when no real data exists
   const mockProducts: Product[] = [
     {
       id: '1',
@@ -72,54 +72,6 @@ export const useRealProducts = (filters?: any) => {
       user_id: '',
       created_at: '2024-01-13T10:00:00Z',
       updated_at: '2024-01-13T10:00:00Z'
-    },
-    {
-      id: '4',
-      name: 'Samsung Galaxy S24 Ultra',
-      description: 'Smartphone Samsung avec S Pen, écran Dynamic AMOLED 6.8"',
-      price: 1299.00,
-      cost_price: 979.00,
-      status: 'active',
-      stock_quantity: 18,
-      sku: 'SAM-GS24U-512-TIT',
-      category: 'Électronique',
-      image_url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400',
-      profit_margin: 24.6,
-      user_id: '',
-      created_at: '2024-01-12T10:00:00Z',
-      updated_at: '2024-01-12T10:00:00Z'
-    },
-    {
-      id: '5',
-      name: 'Canapé Scandinave 3 Places',
-      description: 'Canapé en tissu beige, style scandinave, pieds en bois massif',
-      price: 899.00,
-      cost_price: 549.00,
-      status: 'active',
-      stock_quantity: 8,
-      sku: 'FURN-SCAN-3P-BEIGE',
-      category: 'Maison',
-      image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400',
-      profit_margin: 38.9,
-      user_id: '',
-      created_at: '2024-01-11T10:00:00Z',
-      updated_at: '2024-01-11T10:00:00Z'
-    },
-    {
-      id: '6',
-      name: 'Casque Sony WH-1000XM5',
-      description: 'Casque audio sans fil avec réduction de bruit active, autonomie 30h',
-      price: 399.99,
-      cost_price: 249.99,
-      status: 'active',
-      stock_quantity: 0,
-      sku: 'SONY-WH1000XM5-BLK',
-      category: 'Audio',
-      image_url: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400',
-      profit_margin: 37.5,
-      user_id: '',
-      created_at: '2024-01-10T10:00:00Z',
-      updated_at: '2024-01-10T10:00:00Z'
     }
   ]
 
@@ -129,7 +81,7 @@ export const useRealProducts = (filters?: any) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      // 1. Récupérer les produits de la table 'products'
+      // Query products table
       let query = supabase.from('products').select('*').eq('user_id', user.id)
       
       if (filters?.status) {
@@ -139,7 +91,7 @@ export const useRealProducts = (filters?: any) => {
         query = query.eq('category', filters.category)
       }
       if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
+        query = query.or(`title.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
       }
       if (filters?.low_stock) {
         query = query.lt('stock_quantity', 10)
@@ -148,90 +100,108 @@ export const useRealProducts = (filters?: any) => {
       const { data: productsData, error: productsError } = await query.order('created_at', { ascending: false })
       if (productsError) throw productsError
 
-      // 2. Récupérer les produits importés
-      const { data: importedData, error: importedError } = await supabase
+      // Also get imported products
+      const { data: importedData } = await (supabase
         .from('imported_products')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-      
-      if (importedError) console.error('Erreur imported_products:', importedError)
+        .order('created_at', { ascending: false }) as any)
 
-      // 3. Récupérer les produits premium via les connexions
-      const { data: premiumData, error: premiumError } = await supabase
-        .from('premium_products')
-        .select(`
-          *,
-          supplier:premium_suppliers!inner(
-            id,
-            connections:premium_supplier_connections!inner(
-              user_id
-            )
-          )
-        `)
-        .eq('supplier.connections.user_id', user.id)
-        .eq('is_active', true)
-      
-      if (premiumError) console.error('Erreur premium_products:', premiumError)
+      // Also get catalog products  
+      const { data: catalogData } = await (supabase
+        .from('catalog_products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false }) as any)
 
-      // Normaliser les produits importés
-      const normalizedImported = (importedData || []).map(p => ({
+      // Normalize products from main table - use 'title' from DB
+      const normalizedProducts = (productsData || []).map((p: any) => ({
         id: p.id,
-        name: p.name || 'Produit sans nom',
+        name: p.title || p.name || 'Produit sans nom',
         description: p.description,
         price: p.price || 0,
         cost_price: p.cost_price,
-        status: (p.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
+        status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
         stock_quantity: p.stock_quantity,
         sku: p.sku,
         category: p.category,
-        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : null,
-        profit_margin: p.cost_price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
+        image_url: p.image_url,
+        profit_margin: p.cost_price && p.price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
         user_id: p.user_id,
         created_at: p.created_at,
         updated_at: p.updated_at
       }))
 
-      // Normaliser les produits premium
-      const normalizedPremium = (premiumData || []).map(p => ({
+      // Normalize imported products
+      const normalizedImported = (importedData || []).map((p: any) => ({
         id: p.id,
-        name: p.name || 'Produit sans nom',
-        description: p.description,
+        name: 'Produit importé',
+        description: '',
         price: p.price || 0,
-        cost_price: p.cost_price,
+        cost_price: undefined,
         status: 'active' as 'active' | 'inactive',
-        stock_quantity: p.stock_quantity,
-        sku: p.sku,
+        stock_quantity: 0,
+        sku: undefined,
         category: p.category,
-        image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
-        profit_margin: p.profit_margin,
-        user_id: user.id,
-        created_at: p.created_at || new Date().toISOString(),
-        updated_at: p.updated_at || new Date().toISOString()
+        image_url: undefined,
+        profit_margin: undefined,
+        user_id: p.user_id,
+        created_at: p.created_at,
+        updated_at: p.created_at
       }))
 
-      // Combiner tous les produits
+      // Normalize catalog products
+      const normalizedCatalog = (catalogData || []).map((p: any) => ({
+        id: p.id,
+        name: p.title || 'Produit catalogue',
+        description: p.description,
+        price: p.price || 0,
+        cost_price: undefined,
+        status: (p.status === 'available' ? 'active' : 'inactive') as 'active' | 'inactive',
+        stock_quantity: 0,
+        sku: undefined,
+        category: p.category,
+        image_url: p.image_urls?.[0],
+        profit_margin: p.compare_at_price && p.price ? ((p.compare_at_price - p.price) / p.compare_at_price * 100) : undefined,
+        user_id: p.user_id,
+        created_at: p.created_at,
+        updated_at: p.updated_at
+      }))
+
+      // Combine all products
       const allProducts = [
-        ...(productsData || []),
+        ...normalizedProducts,
         ...normalizedImported,
-        ...normalizedPremium
+        ...normalizedCatalog
       ]
 
       return allProducts as Product[]
     },
   })
 
-  // Utiliser des données de démo uniquement si aucun produit n'existe
-  const products = realProducts.length > 0 ? realProducts : mockProducts.slice(0, 3) // Limiter à 3 produits de démo
+  // Use demo data only if no real products exist
+  const products = realProducts.length > 0 ? realProducts : mockProducts.slice(0, 3)
 
   const addProduct = useMutation({
     mutationFn: async (newProduct: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
+      // Use 'title' instead of 'name' for DB insert
       const { data, error } = await supabase
         .from('products')
-        .insert([{ ...newProduct, user_id: user.id }])
+        .insert([{ 
+          title: newProduct.name,
+          description: newProduct.description,
+          price: newProduct.price,
+          cost_price: newProduct.cost_price,
+          status: newProduct.status,
+          stock_quantity: newProduct.stock_quantity,
+          sku: newProduct.sku,
+          category: newProduct.category,
+          image_url: newProduct.image_url,
+          user_id: user.id 
+        }])
         .select()
         .single()
       
@@ -249,9 +219,17 @@ export const useRealProducts = (filters?: any) => {
 
   const updateProduct = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Product> }) => {
+      // Transform 'name' to 'title' for DB
+      const dbUpdates: any = { ...updates }
+      if (updates.name) {
+        dbUpdates.title = updates.name
+        delete dbUpdates.name
+      }
+      delete dbUpdates.profit_margin // Computed field
+      
       const { data, error } = await supabase
         .from('products')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single()
@@ -273,25 +251,21 @@ export const useRealProducts = (filters?: any) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      console.log(`Tentative de suppression du produit ${id}`)
-
-      // Essayer de supprimer de toutes les tables
+      // Try to delete from all product tables
       const deletePromises = [
         supabase.from('products').delete().eq('id', id).eq('user_id', user.id),
-        supabase.from('imported_products').delete().eq('id', id).eq('user_id', user.id),
-        supabase.from('premium_products').delete().eq('id', id)
+        (supabase.from('imported_products').delete().eq('id', id).eq('user_id', user.id) as any),
+        (supabase.from('catalog_products').delete().eq('id', id).eq('user_id', user.id) as any)
       ]
 
       const results = await Promise.allSettled(deletePromises)
       
-      // Vérifier si au moins une suppression a réussi
-      const successCount = results.filter(r => r.status === 'fulfilled' && !r.value.error).length
+      // Check if at least one deletion succeeded
+      const successCount = results.filter(r => r.status === 'fulfilled' && !(r.value as any).error).length
       
       if (successCount === 0) {
         throw new Error('Impossible de supprimer le produit')
       }
-      
-      console.log(`✓ Produit ${id} supprimé avec succès`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-products'] })

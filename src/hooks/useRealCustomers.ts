@@ -30,17 +30,35 @@ export const useRealCustomers = (filters?: any) => {
       
       let query = supabase.from('customers').select('*')
       
-      if (filters?.status) {
-        query = query.eq('status', filters.status)
-      }
       if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+        query = query.or(`first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
       }
       
       const { data, error } = await query.order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as Customer[]
+      
+      // Transform DB schema to Customer interface
+      return (data || []).map((c: any) => ({
+        id: c.id,
+        name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email,
+        email: c.email,
+        phone: c.phone,
+        status: (c.total_orders > 0 ? 'active' : 'inactive') as 'active' | 'inactive',
+        total_spent: c.total_spent || 0,
+        total_orders: c.total_orders || 0,
+        address: c.address || {
+          line1: c.address_line1,
+          line2: c.address_line2,
+          city: c.city,
+          state: c.state,
+          postal_code: c.postal_code,
+          country: c.country
+        },
+        user_id: c.user_id,
+        created_at: c.created_at,
+        updated_at: c.updated_at
+      })) as Customer[]
     },
   })
 
@@ -52,9 +70,22 @@ export const useRealCustomers = (filters?: any) => {
       // Log security access
       await monitorCustomerAccess('create')
       
+      // Split name into first_name and last_name
+      const nameParts = newCustomer.name.split(' ')
+      const first_name = nameParts[0] || ''
+      const last_name = nameParts.slice(1).join(' ') || ''
+      
       const { data, error } = await supabase
         .from('customers')
-        .insert([{ ...newCustomer, user_id: user.id }])
+        .insert([{ 
+          first_name,
+          last_name,
+          email: newCustomer.email,
+          phone: newCustomer.phone,
+          total_spent: newCustomer.total_spent || 0,
+          total_orders: newCustomer.total_orders || 0,
+          user_id: user.id 
+        }])
         .select()
         .single()
       
@@ -75,9 +106,21 @@ export const useRealCustomers = (filters?: any) => {
       // Log security access
       await monitorCustomerAccess('update', id)
       
+      // Transform updates to DB schema
+      const dbUpdates: any = {}
+      if (updates.name) {
+        const nameParts = updates.name.split(' ')
+        dbUpdates.first_name = nameParts[0] || ''
+        dbUpdates.last_name = nameParts.slice(1).join(' ') || ''
+      }
+      if (updates.email) dbUpdates.email = updates.email
+      if (updates.phone) dbUpdates.phone = updates.phone
+      if (updates.total_spent !== undefined) dbUpdates.total_spent = updates.total_spent
+      if (updates.total_orders !== undefined) dbUpdates.total_orders = updates.total_orders
+      
       const { data, error } = await supabase
         .from('customers')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single()

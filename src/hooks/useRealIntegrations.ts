@@ -17,24 +17,42 @@ export interface Integration {
   seller_id?: string
   platform_url?: string
   encrypted_credentials?: Record<string, any>
-  // Legacy fields - no longer used for security
-  api_key?: never
-  api_secret?: never
 }
 
 export const useRealIntegrations = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { storeCredentials, retrieveCredentials, deleteCredentials } = useSecureCredentials()
+  const { storeCredentials, deleteCredentials } = useSecureCredentials()
 
   const { data: integrations = [], isLoading, error } = useQuery({
     queryKey: ['real-integrations'],
     queryFn: async () => {
-      // Use the secure function that doesn't expose credentials
-      const { data, error } = await supabase.rpc('get_safe_integrations')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+      
+      // Query integrations table directly
+      const { data, error } = await (supabase
+        .from('integrations')
+        .select('*')
+        .eq('user_id', user.id) as any)
       
       if (error) throw error
-      return data as Integration[]
+      
+      // Transform to Integration interface
+      return (data || []).map((i: any) => ({
+        id: i.id,
+        platform_name: i.platform_name || i.platform || 'Unknown',
+        platform_type: i.platform || 'unknown',
+        connection_status: (i.connection_status || 'disconnected') as 'connected' | 'disconnected' | 'error',
+        is_active: i.is_active ?? false,
+        last_sync_at: i.last_sync_at,
+        user_id: i.user_id,
+        created_at: i.created_at,
+        updated_at: i.updated_at,
+        shop_domain: i.store_url,
+        seller_id: i.store_id,
+        platform_url: i.store_url
+      })) as Integration[]
     },
   })
 
@@ -46,11 +64,19 @@ export const useRealIntegrations = () => {
       // Separate credentials from integration data
       const { credentials, ...integrationData } = newIntegration
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('integrations')
-        .insert([{ ...integrationData, user_id: user.id }])
+        .insert([{ 
+          platform: integrationData.platform_type,
+          platform_name: integrationData.platform_name,
+          connection_status: integrationData.connection_status,
+          is_active: integrationData.is_active,
+          store_url: integrationData.shop_domain || integrationData.platform_url,
+          store_id: integrationData.seller_id,
+          user_id: user.id 
+        }])
         .select()
-        .single()
+        .single() as any)
       
       if (error) throw error
       
@@ -77,12 +103,20 @@ export const useRealIntegrations = () => {
 
   const updateIntegration = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Integration> }) => {
-      const { data, error } = await supabase
+      const dbUpdates: any = {}
+      if (updates.platform_name) dbUpdates.platform_name = updates.platform_name
+      if (updates.platform_type) dbUpdates.platform = updates.platform_type
+      if (updates.connection_status) dbUpdates.connection_status = updates.connection_status
+      if (updates.is_active !== undefined) dbUpdates.is_active = updates.is_active
+      if (updates.shop_domain) dbUpdates.store_url = updates.shop_domain
+      if (updates.seller_id) dbUpdates.store_id = updates.seller_id
+      
+      const { data, error } = await (supabase
         .from('integrations')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
-        .single()
+        .single() as any)
       
       if (error) throw error
       return data

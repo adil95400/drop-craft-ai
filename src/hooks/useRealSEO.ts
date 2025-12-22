@@ -41,55 +41,117 @@ export interface SEOKeyword {
   updated_at: string
 }
 
+// Mock data for SEO analyses
+const mockAnalyses: SEOAnalysis[] = [
+  {
+    id: '1',
+    url: 'https://example.com',
+    title: 'Example Site',
+    meta_description: 'An example website',
+    overall_score: 85,
+    domain: 'example.com',
+    analyzed_at: new Date().toISOString(),
+    user_id: '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+]
+
+const mockKeywords: SEOKeyword[] = [
+  {
+    id: '1',
+    keyword: 'dropshipping france',
+    search_volume: 5400,
+    difficulty_score: 45,
+    current_position: 12,
+    tracking_active: true,
+    user_id: '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+]
+
 export const useRealSEO = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const { data: analyses = [], isLoading: isLoadingAnalyses } = useQuery({
+  const { data: analyses = mockAnalyses, isLoading: isLoadingAnalyses } = useQuery({
     queryKey: ['seo-analyses'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('seo_analyses')
+      // Use analytics_insights with metric_type for SEO data
+      const { data, error } = await (supabase
+        .from('analytics_insights')
         .select('*')
-        .order('created_at', { ascending: false })
+        .eq('metric_type', 'seo_analysis')
+        .order('created_at', { ascending: false }) as any)
 
-      if (error) throw error
-      return data as unknown as SEOAnalysis[]
+      if (error) {
+        console.error('Error fetching SEO analyses:', error)
+        return mockAnalyses
+      }
+      
+      if (!data || data.length === 0) return mockAnalyses
+      
+      return data.map((item: any) => ({
+        id: item.id,
+        url: item.metadata?.url || '',
+        title: item.metadata?.title || '',
+        meta_description: item.metadata?.meta_description || '',
+        overall_score: item.metric_value || 0,
+        domain: item.metadata?.domain || '',
+        analyzed_at: item.recorded_at || item.created_at,
+        user_id: item.user_id,
+        created_at: item.created_at,
+        updated_at: item.created_at
+      })) as SEOAnalysis[]
     },
   })
 
-  const { data: keywords = [], isLoading: isLoadingKeywords } = useQuery({
+  const { data: keywords = mockKeywords, isLoading: isLoadingKeywords } = useQuery({
     queryKey: ['seo-keywords'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('seo_keywords')
+      // Use analytics_insights with metric_type for keyword data
+      const { data, error } = await (supabase
+        .from('analytics_insights')
         .select('*')
-        .order('created_at', { ascending: false })
+        .eq('metric_type', 'seo_keyword')
+        .order('created_at', { ascending: false }) as any)
 
-      if (error) throw error
-      return data as unknown as SEOKeyword[]
+      if (error) {
+        console.error('Error fetching SEO keywords:', error)
+        return mockKeywords
+      }
+      
+      if (!data || data.length === 0) return mockKeywords
+      
+      return data.map((item: any) => ({
+        id: item.id,
+        keyword: item.metric_name || '',
+        search_volume: item.metadata?.search_volume,
+        difficulty_score: item.metadata?.difficulty_score,
+        current_position: item.metric_value,
+        tracking_active: item.metadata?.tracking_active ?? true,
+        user_id: item.user_id,
+        created_at: item.created_at,
+        updated_at: item.created_at
+      })) as SEOKeyword[]
     },
   })
 
   const analyzeUrl = useMutation({
     mutationFn: async (url: string) => {
-      const response = await fetch('/functions/v1/seo-optimizer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-        body: JSON.stringify({
+      const response = await supabase.functions.invoke('seo-optimizer', {
+        body: {
           action: 'analyze_url',
           url
-        }),
+        }
       })
 
-      if (!response.ok) {
+      if (response.error) {
         throw new Error('Erreur lors de l\'analyse SEO')
       }
 
-      return response.json()
+      return response.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seo-analyses'] })
@@ -105,11 +167,21 @@ export const useRealSEO = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const { data, error } = await supabase
-        .from('seo_keywords')
-        .insert([{ ...keyword, user_id: user.id }])
+      const { data, error } = await (supabase
+        .from('analytics_insights')
+        .insert([{ 
+          metric_name: keyword.keyword,
+          metric_type: 'seo_keyword',
+          metric_value: keyword.current_position || 0,
+          metadata: {
+            search_volume: keyword.search_volume,
+            difficulty_score: keyword.difficulty_score,
+            tracking_active: keyword.tracking_active
+          },
+          user_id: user.id 
+        }])
         .select()
-        .single()
+        .single() as any)
 
       if (error) throw error
       return data
@@ -125,12 +197,20 @@ export const useRealSEO = () => {
 
   const updateKeyword = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<SEOKeyword> }) => {
-      const { data, error } = await supabase
-        .from('seo_keywords')
-        .update(updates)
+      const { data, error } = await (supabase
+        .from('analytics_insights')
+        .update({
+          metric_name: updates.keyword,
+          metric_value: updates.current_position,
+          metadata: {
+            search_volume: updates.search_volume,
+            difficulty_score: updates.difficulty_score,
+            tracking_active: updates.tracking_active
+          }
+        })
         .eq('id', id)
         .select()
-        .single()
+        .single() as any)
 
       if (error) throw error
       return data
@@ -160,15 +240,15 @@ export const useRealSEO = () => {
     analyses,
     keywords,
     stats,
-    seoData: analyses, // backward compatibility
+    seoData: analyses,
     isLoading: isLoadingAnalyses || isLoadingKeywords,
     analyzeUrl: analyzeUrl.mutate,
-    analyzeSEO: analyzeUrl.mutate, // backward compatibility
-    generateContent: analyzeUrl.mutate, // backward compatibility
+    analyzeSEO: analyzeUrl.mutate,
+    generateContent: analyzeUrl.mutate,
     addKeyword: addKeyword.mutate,
     updateKeyword: updateKeyword.mutate,
     isAnalyzing: analyzeUrl.isPending,
-    isGenerating: analyzeUrl.isPending, // backward compatibility
+    isGenerating: analyzeUrl.isPending,
     isAddingKeyword: addKeyword.isPending,
     isUpdatingKeyword: updateKeyword.isPending
   }

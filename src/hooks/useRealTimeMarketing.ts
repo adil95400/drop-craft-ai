@@ -90,7 +90,7 @@ export interface MarketingStats {
   totalClicks: number
 }
 
-// Mock data for marketing campaigns (tables don't exist in database)
+// Mock data for marketing campaigns
 const mockCampaigns: MarketingCampaign[] = [
   {
     id: '1',
@@ -180,31 +180,28 @@ export const useRealTimeMarketing = () => {
   const queryClient = useQueryClient()
   const [lastActivity, setLastActivity] = useState<Date>(new Date())
 
-  // Use mock campaigns (marketing_campaigns table doesn't exist)
+  // Use mock campaigns
   const { data: campaigns = mockCampaigns, isLoading: isLoadingCampaigns } = useQuery({
     queryKey: ['marketing-campaigns-realtime'],
     queryFn: async () => {
-      // Return mock data since table doesn't exist
       return mockCampaigns
     },
     refetchInterval: 30000,
   })
 
-  // Use mock segments (marketing_segments table doesn't exist)
+  // Use mock segments
   const { data: segments = mockSegments, isLoading: isLoadingSegments } = useQuery({
     queryKey: ['marketing-segments-realtime'],
     queryFn: async () => {
-      // Return mock data since table doesn't exist
       return mockSegments
     },
     refetchInterval: 45000,
   })
 
-  // Use mock contacts (crm_contacts table doesn't exist)
+  // Use mock contacts
   const { data: contacts = mockContacts, isLoading: isLoadingContacts } = useQuery({
     queryKey: ['crm-contacts-realtime'],
     queryFn: async () => {
-      // Return mock data since table doesn't exist
       return mockContacts
     },
     refetchInterval: 60000,
@@ -221,7 +218,21 @@ export const useRealTimeMarketing = () => {
         .limit(50)
 
       if (error) return []
-      return data as AIOptimizationJob[]
+      
+      // Transform to match interface with progress field
+      return (data || []).map((job: any) => ({
+        id: job.id,
+        job_type: job.job_type,
+        status: job.status,
+        progress: job.metrics?.progress || (job.status === 'completed' ? 100 : job.status === 'pending' ? 0 : 50),
+        input_data: job.input_data,
+        output_data: job.output_data,
+        started_at: job.started_at,
+        completed_at: job.completed_at,
+        error_message: job.error_message,
+        user_id: job.user_id,
+        created_at: job.created_at
+      })) as AIOptimizationJob[]
     },
     refetchInterval: 15000,
   })
