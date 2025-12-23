@@ -111,9 +111,7 @@ const mobileNavGroups = [
     label: 'Fournisseurs',
     icon: 'Truck',
     items: [
-      { id: 'suppliers', name: 'Hub Fournisseurs', route: '/suppliers', icon: 'Truck', minPlan: 'standard' },
-      { id: 'marketplace', name: 'Marketplace', route: '/suppliers/marketplace', icon: 'Store', minPlan: 'standard' },
-      { id: 'my-suppliers', name: 'Mes Fournisseurs', route: '/suppliers/my', icon: 'CheckCircle', minPlan: 'standard' },
+      { id: 'suppliers', name: 'Fournisseurs', route: '/suppliers', icon: 'Truck', minPlan: 'standard' },
       { id: 'premium-suppliers', name: 'Premium', route: '/suppliers/premium', icon: 'Crown', minPlan: 'pro' },
     ]
   },
