@@ -22,7 +22,6 @@ import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
 import { MobileGlobalOptimizer } from '@/components/mobile/MobileGlobalOptimizer';
 import { AdaptiveBottomNav } from '@/components/mobile/AdaptiveBottomNav';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
-import { NavigationProvider } from '@/contexts/NavigationContext';
 
 const AppContent = memo(() => {
   useAutoTheme();
@@ -51,9 +50,7 @@ const AppContent = memo(() => {
       <OfflineIndicator variant="banner" />
       
       <main id="main-content" className="pb-20 md:pb-0">
-        <NavigationProvider>
-          <AppRoutes />
-        </NavigationProvider>
+        <AppRoutes />
       </main>
       
       <GlobalModals />
