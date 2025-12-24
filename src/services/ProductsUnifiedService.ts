@@ -300,39 +300,9 @@ export class ProductsUnifiedService {
    * Table shopify_products - Produits synchronisés depuis Shopify
    */
   private static async getShopifyProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
-    try {
-      const { data, error } = await (supabase as any)
-        .from('shopify_products')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit)
-
-      if (error) throw error
-
-      return (data || []).map((p: any) => ({
-        id: p.id,
-        name: p.title || p.name || 'Produit sans nom',
-        description: p.description || p.body_html,
-        price: p.price || p.variants?.[0]?.price || 0,
-        cost_price: undefined,
-        status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
-        stock_quantity: p.inventory_quantity || p.variants?.[0]?.inventory_quantity,
-        sku: p.sku || p.variants?.[0]?.sku,
-        category: p.product_type || p.category,
-        image_url: p.image_url || p.image?.src,
-        images: Array.isArray(p.images) ? (p.images as any[]).map((img: any) => img?.src || img).filter(Boolean) : [],
-        profit_margin: undefined,
-        user_id: userId,
-        source: 'shopify' as const,
-        created_at: p.created_at || new Date().toISOString(),
-        updated_at: p.updated_at || new Date().toISOString()
-      }))
-    } catch (error) {
-      console.error('Error loading shopify_products:', error)
-      return []
-    }
+    // Table shopify_products n'existe pas - retourner un tableau vide silencieusement
+    // Les produits Shopify sont gérés via l'API Shopify directement
+    return []
   }
 
   /**

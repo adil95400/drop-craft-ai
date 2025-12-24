@@ -24,6 +24,7 @@ interface ProductCardEnhancedProps {
   onDelete?: (productId: string) => void
   onDuplicate?: (product: any) => void
   onOptimize?: (productId: string) => void
+  onView?: (product: any) => void
   onClick?: () => void
   selected?: boolean
   onSelect?: (selected: boolean) => void
@@ -35,6 +36,7 @@ export function ProductCardEnhanced({
   onDelete,
   onDuplicate,
   onOptimize,
+  onView,
   onClick,
   selected,
   onSelect
@@ -237,17 +239,63 @@ export function ProductCardEnhanced({
 
         {/* Actions Footer */}
         <div className="flex items-center gap-2 pt-2 border-t">
-          {hasMultipleSuppliers && (
+          {/* Bouton Voir */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation()
+              onView?.(product)
+            }}
+            className="flex-1 text-xs"
+          >
+            <Eye className="h-3 w-3 mr-1" />
+            Voir
+          </Button>
+          
+          {/* Bouton Modifier */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit?.(product)
+            }}
+            className="flex-1 text-xs"
+          >
+            <Edit className="h-3 w-3 mr-1" />
+            Modifier
+          </Button>
+          
+          {/* Bouton Supprimer */}
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (window.confirm(`Supprimer "${product.name}" ?`)) {
+                onDelete?.(product.id)
+              }
+            }}
+            className="text-xs"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+
+        {/* Multi-supplier comparison */}
+        {hasMultipleSuppliers && (
+          <div className="pt-2">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="ghost"
                   onClick={(e) => e.stopPropagation()}
-                  className="gap-1 flex-1 text-xs"
+                  className="gap-1 w-full text-xs"
                 >
                   <Package className="h-3 w-3" />
-                  Comparer ({comparisonData?.comparisons?.length})
+                  Comparer {comparisonData?.comparisons?.length} fournisseurs
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-96" onClick={(e) => e.stopPropagation()}>
@@ -257,8 +305,8 @@ export function ProductCardEnhanced({
                 />
               </PopoverContent>
             </Popover>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Category & Status */}
         <div className="flex items-center justify-between pt-2 border-t">

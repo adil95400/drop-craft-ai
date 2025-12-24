@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useUnifiedProducts } from '@/hooks/useUnifiedProducts'
+import { useUnifiedProducts, UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { useProductScores } from '@/hooks/useProductScores'
 import { ProductCardEnhanced } from '@/components/products/ProductCardEnhanced'
+import { ProductViewModal } from '@/components/modals/ProductViewModal'
+import { ProductEditModal } from '@/components/modals/ProductEditModal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -31,10 +33,17 @@ export default function EnhancedCatalog() {
   const [category, setCategory] = useState<string>('all')
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
   const [view, setView] = useState<'all' | 'winners' | 'trending' | 'bestsellers'>('all')
+  
+  // Modal states
+  const [viewModalOpen, setViewModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<UnifiedProduct | null>(null)
 
   const { 
     products, 
-    isLoading
+    isLoading,
+    deleteProduct,
+    updateProduct
   } = useUnifiedProducts({ 
     search: search || undefined,
     category: category !== 'all' ? category : undefined
@@ -119,6 +128,25 @@ export default function EnhancedCatalog() {
       }
       return next
     })
+  }
+
+  // Handlers pour les modals
+  const handleViewProduct = (product: UnifiedProduct) => {
+    setSelectedProduct(product)
+    setViewModalOpen(true)
+  }
+
+  const handleEditProduct = (product: UnifiedProduct) => {
+    setSelectedProduct(product)
+    setEditModalOpen(true)
+  }
+
+  const handleDeleteProduct = (productId: string) => {
+    deleteProduct(productId)
+  }
+
+  const handleDuplicateProduct = (product: UnifiedProduct) => {
+    toast.info(`Duplication de "${product.name}" - Fonctionnalité en cours de développement`)
   }
 
   return (
@@ -297,7 +325,11 @@ export default function EnhancedCatalog() {
               selected={selectedProducts.has(product.id)}
               onSelect={(selected) => toggleSelection(product.id)}
               onOptimize={handleOptimizeProduct}
-              onClick={() => handleRecommendPrice(product.id)}
+              onView={handleViewProduct}
+              onEdit={handleEditProduct}
+              onDelete={handleDeleteProduct}
+              onDuplicate={handleDuplicateProduct}
+              onClick={() => handleViewProduct(product)}
             />
           ))}
         </div>
@@ -329,6 +361,36 @@ export default function EnhancedCatalog() {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* View Product Modal */}
+      {selectedProduct && (
+        <ProductViewModal
+          open={viewModalOpen}
+          onOpenChange={setViewModalOpen}
+          product={selectedProduct}
+          onEdit={() => {
+            setViewModalOpen(false)
+            setEditModalOpen(true)
+          }}
+          onDelete={() => {
+            if (window.confirm(`Supprimer "${selectedProduct.name}" ?`)) {
+              deleteProduct(selectedProduct.id)
+              setViewModalOpen(false)
+              setSelectedProduct(null)
+            }
+          }}
+          onDuplicate={() => handleDuplicateProduct(selectedProduct)}
+        />
+      )}
+
+      {/* Edit Product Modal */}
+      {selectedProduct && (
+        <ProductEditModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          product={selectedProduct as any}
+        />
       )}
     </div>
   )
