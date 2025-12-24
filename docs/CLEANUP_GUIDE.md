@@ -2,6 +2,13 @@
 
 Ce document identifie les éléments potentiellement redondants à consolider.
 
+## ✅ Nettoyages effectués
+
+### Navigation Mobile (FAIT)
+- ~~`src/components/layout/MobileNav.tsx`~~ → Supprimé (doublon de mobile/)
+- ~~`src/components/layout/MobileBottomNav.tsx`~~ → Recréé en version minimale
+- Navigation principale: `src/components/mobile/MobileNav.tsx`
+
 ## Composants Analytics (Doublons identifiés)
 
 ### À conserver (principaux)
@@ -38,7 +45,7 @@ Ce document identifie les éléments potentiellement redondants à consolider.
 
 ## Utilitaires créés pour uniformisation
 
-### Labels en français (NOUVEAU)
+### Labels en français
 ```typescript
 import { getStatusLabel, getStatusColorClass } from '@/utils/statusLabels'
 import { StatusBadge } from '@/components/ui/status-badge'
@@ -47,19 +54,26 @@ import { StatusBadge } from '@/components/ui/status-badge'
 <StatusBadge status="delivered" category="order" />
 ```
 
-### Composants de chargement (AMÉLIORÉ)
+### Composants de chargement
 ```typescript
-import { LoadingSpinner, LoadingOverlay, LoadingSkeleton } from '@/components/ui/loading-spinner'
+import { LoadingSpinner, LoadingOverlay, LoadingSkeleton, CardSkeleton, CardSkeletonGrid } from '@/components/ui/loading-spinner'
 
 // Overlay sur opérations longues
 <LoadingOverlay isLoading={isLoading} text="Chargement des données...">
   {children}
 </LoadingOverlay>
+
+// Skeleton pour listes
+<LoadingSkeleton rows={5} />
+
+// Skeleton pour grilles de cards
+<CardSkeletonGrid count={4} />
 ```
 
-## Navigation mobile (AMÉLIORÉE)
-- `src/components/layout/MobileNav.tsx` - Menu drawer amélioré avec groupes
-- `src/components/layout/MobileBottomNav.tsx` - Barre inférieure améliorée
+## Navigation mobile
+- `src/components/mobile/MobileNav.tsx` - Navigation complète avec bottom bar et drawer
+- `src/components/mobile/MobileDrawerNav.tsx` - Drawer de navigation complet
+- `src/components/layout/MobileBottomNav.tsx` - Barre de navigation inférieure
 
 ## Prochaines étapes recommandées
 
