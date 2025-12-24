@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLocation } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -79,10 +80,13 @@ const onboardingSteps: OnboardingStep[] = [
   }
 ]
 
+const ONBOARDING_DISMISSED_KEY = 'shopopti_onboarding_dismissed'
+
 export function InteractiveOnboarding() {
+  const location = useLocation()
   const [currentStep, setCurrentStep] = useState(0)
   const [steps, setSteps] = useState(onboardingSteps)
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const { toast } = useToast()
 
@@ -90,15 +94,26 @@ export function InteractiveOnboarding() {
   const completedSteps = steps.filter(step => step.completed).length
   const progress = (completedSteps / totalSteps) * 100
 
+  // Check if onboarding was already dismissed
+  useEffect(() => {
+    const isDismissed = localStorage.getItem(ONBOARDING_DISMISSED_KEY)
+    // Only show on main dashboard, not on detail pages
+    const isDetailPage = /\/products\/[a-f0-9-]+/.test(location.pathname)
+    
+    if (!isDismissed && location.pathname === '/' && !isDetailPage) {
+      setIsVisible(true)
+    }
+  }, [location.pathname])
+
   useEffect(() => {
     // Animation automatique pour l'étape de bienvenue
-    if (currentStep === 0 && !isPlaying) {
+    if (currentStep === 0 && !isPlaying && isVisible) {
       const timer = setTimeout(() => {
         setIsPlaying(true)
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [currentStep, isPlaying])
+  }, [currentStep, isPlaying, isVisible])
 
   const nextStep = () => {
     if (currentStep < totalSteps - 1) {
@@ -128,9 +143,10 @@ export function InteractiveOnboarding() {
   }
 
   const skipOnboarding = () => {
+    localStorage.setItem(ONBOARDING_DISMISSED_KEY, 'true')
     setIsVisible(false)
     toast({
-      title: "Onboarding ignoré",
+      title: "Onboarding terminé",
       description: "Vous pouvez toujours y accéder depuis les paramètres.",
     })
   }
