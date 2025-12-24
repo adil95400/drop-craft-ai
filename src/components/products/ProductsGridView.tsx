@@ -1,11 +1,13 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
-import { Eye, Edit, Trash2, Package } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { EnhancedProductCard } from './EnhancedProductCard';
+import { ProductsPagination } from './ProductsPagination';
+import { ProductViewModal } from '@/components/modals/ProductViewModal';
+import { Package } from 'lucide-react';
 
 interface ProductsGridViewProps {
   products: UnifiedProduct[];
@@ -14,6 +16,7 @@ interface ProductsGridViewProps {
   onView: (product: UnifiedProduct) => void;
   selectedProducts?: string[];
   onSelectionChange?: (ids: string[]) => void;
+  itemsPerPage?: number;
 }
 
 export const ProductsGridView = memo(function ProductsGridView({
@@ -22,8 +25,18 @@ export const ProductsGridView = memo(function ProductsGridView({
   onDelete,
   onView,
   selectedProducts = [],
-  onSelectionChange
+  onSelectionChange,
+  itemsPerPage: initialItemsPerPage = 24
 }: ProductsGridViewProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
+  const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null);
+
+  // Pagination
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
+
   const handleSelectProduct = (productId: string, checked: boolean) => {
     if (!onSelectionChange) return;
     
@@ -34,138 +47,130 @@ export const ProductsGridView = memo(function ProductsGridView({
     }
   };
 
+  const handleSelectAll = () => {
+    if (!onSelectionChange) return;
+    
+    const currentPageIds = paginatedProducts.map(p => p.id);
+    const allSelected = currentPageIds.every(id => selectedProducts.includes(id));
+    
+    if (allSelected) {
+      onSelectionChange(selectedProducts.filter(id => !currentPageIds.includes(id)));
+    } else {
+      const newSelection = [...new Set([...selectedProducts, ...currentPageIds])];
+      onSelectionChange(newSelection);
+    }
+  };
+
+  const handleViewProduct = (product: UnifiedProduct) => {
+    setViewModalProduct(product);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Package className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Aucun produit</h3>
-        <p className="text-sm text-muted-foreground">
-          Commencez par créer ou importer des produits
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="h-24 w-24 rounded-full bg-muted/50 flex items-center justify-center mb-6">
+          <Package className="h-12 w-12 text-muted-foreground" />
+        </div>
+        <h3 className="text-xl font-semibold mb-2">Aucun produit</h3>
+        <p className="text-sm text-muted-foreground max-w-md">
+          Commencez par créer ou importer des produits pour les voir apparaître ici
         </p>
       </div>
     );
   }
 
+  const currentPageIds = paginatedProducts.map(p => p.id);
+  const allCurrentSelected = currentPageIds.every(id => selectedProducts.includes(id));
+  const someCurrentSelected = currentPageIds.some(id => selectedProducts.includes(id));
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {products.map((product) => {
-        const isSelected = selectedProducts.includes(product.id);
-        const imageUrl = product.image_url;
-        const uniqueKey = `${product.source}-${product.id}`;
+    <div className="space-y-4">
+      {/* Sélection en masse de la page */}
+      {onSelectionChange && (
+        <div className="flex items-center justify-between pb-2 border-b">
+          <div className="flex items-center gap-3">
+            <Checkbox
+              checked={allCurrentSelected}
+              onCheckedChange={handleSelectAll}
+              className="data-[state=indeterminate]:bg-primary"
+              {...(someCurrentSelected && !allCurrentSelected ? { 'data-state': 'indeterminate' } : {})}
+            />
+            <span className="text-sm text-muted-foreground">
+              {allCurrentSelected 
+                ? `Tous sélectionnés (${currentPageIds.length})`
+                : someCurrentSelected
+                  ? `${selectedProducts.filter(id => currentPageIds.includes(id)).length} sélectionné(s)`
+                  : 'Sélectionner tout'
+              }
+            </span>
+          </div>
+          {selectedProducts.length > 0 && (
+            <Badge variant="secondary">
+              {selectedProducts.length} au total
+            </Badge>
+          )}
+        </div>
+      )}
 
-        return (
-          <Card 
-            key={uniqueKey}
-            className={cn(
-              "relative group transition-all duration-300",
-              "hover:shadow-xl hover:scale-[1.02]",
-              "border-border/50 bg-card/50 backdrop-blur",
-              isSelected && "ring-2 ring-primary shadow-lg"
-            )}
-          >
-            {onSelectionChange && (
-              <div className="absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Checkbox
-                  checked={isSelected}
-                  onCheckedChange={(checked) => handleSelectProduct(product.id, checked as boolean)}
-                  className="bg-background shadow-lg border-2"
-                />
-              </div>
-            )}
+      {/* Grille de produits */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        {paginatedProducts.map((product) => {
+          const isSelected = selectedProducts.includes(product.id);
+          const uniqueKey = `${product.source}-${product.id}`;
 
-            <CardHeader className="p-0">
-              <div 
-                className="aspect-square w-full overflow-hidden rounded-t-lg bg-gradient-to-br from-muted/50 to-muted cursor-pointer relative group"
-                onClick={() => onView(product)}
-              >
-                {imageUrl ? (
-                  <img
-                    src={imageUrl}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="h-16 w-16 text-muted-foreground/30" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            </CardHeader>
+          return (
+            <EnhancedProductCard
+              key={uniqueKey}
+              product={product}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onView={handleViewProduct}
+              isSelected={isSelected}
+              onSelectChange={(checked) => handleSelectProduct(product.id, checked)}
+              showSelection={!!onSelectionChange}
+            />
+          );
+        })}
+      </div>
 
-            <CardContent className="p-5 space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <h3 
-                  className="font-semibold line-clamp-2 cursor-pointer hover:text-primary transition-colors leading-snug"
-                  onClick={() => onView(product)}
-                >
-                  {product.name}
-                </h3>
-                <Badge 
-                  variant={product.status === 'active' ? 'default' : 'secondary'}
-                  className="shrink-0"
-                >
-                  {product.status}
-                </Badge>
-              </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <ProductsPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={products.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={(items) => {
+            setItemsPerPage(items);
+            setCurrentPage(1);
+          }}
+        />
+      )}
 
-              <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
-                {product.description || 'Aucune description'}
-              </p>
-
-              <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  {product.price.toFixed(2)} €
-                </span>
-                {product.stock_quantity !== undefined && (
-                  <div className="text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">{product.stock_quantity}</span> en stock
-                  </div>
-                )}
-              </div>
-
-              {product.sku && (
-                <div className="text-xs text-muted-foreground font-mono bg-muted/30 px-2 py-1 rounded">
-                  SKU: {product.sku}
-                </div>
-              )}
-            </CardContent>
-
-            <CardFooter className="p-4 pt-0 flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="flex-1 bg-background/50 hover:bg-accent"
-                onClick={() => onView(product)}
-              >
-                <Eye className="h-4 w-4 mr-1" />
-                Voir
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="bg-background/50 hover:bg-accent"
-                onClick={() => onEdit(product)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                className="hover:bg-destructive/90"
-                onClick={() => {
-                  if (confirm('Supprimer ce produit ?')) {
-                    onDelete(product.id);
-                  }
-                }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        );
-      })}
+      {/* Modal de visualisation */}
+      <ProductViewModal
+        open={!!viewModalProduct}
+        onOpenChange={(open) => !open && setViewModalProduct(null)}
+        product={viewModalProduct}
+        onEdit={() => {
+          if (viewModalProduct) {
+            onEdit(viewModalProduct);
+            setViewModalProduct(null);
+          }
+        }}
+        onDelete={() => {
+          if (viewModalProduct) {
+            onDelete(viewModalProduct.id);
+            setViewModalProduct(null);
+          }
+        }}
+      />
     </div>
   );
 });
