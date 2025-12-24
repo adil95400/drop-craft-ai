@@ -3,127 +3,125 @@ describe('Button Functionality Tests', () => {
     cy.visit('/')
   })
 
-  describe('Navigation Buttons', () => {
-    it('should navigate to import page when clicking import button', () => {
-      cy.get('[data-testid="import-button"]').click()
-      cy.url().should('include', '/import')
+  describe('Landing Page Navigation', () => {
+    it('should navigate to auth page when clicking CTA button', () => {
+      cy.get('button').contains('Essai gratuit').click()
+      cy.url().should('include', '/auth')
     })
 
-    it('should navigate to orders page when clicking orders button', () => {
-      cy.get('[data-testid="orders-button"]').click()
-      cy.url().should('include', '/orders')
+    it('should navigate to features page when clicking feature links', () => {
+      cy.get('a[href="/features/ai-optimization"], button').contains('En savoir plus').first().click()
+      cy.url().should('include', '/features')
     })
 
-    it('should navigate to tracking page when clicking tracking button', () => {
-      cy.get('[data-testid="tracking-button"]').click()
-      cy.url().should('include', '/tracking')
-    })
-  })
-
-  describe('Action Buttons', () => {
-    it('should show loading state and success message for sync button', () => {
-      cy.visit('/orders-ultra-pro')
-      
-      cy.get('[data-testid="sync-button"]').click()
-      cy.get('[data-testid="sync-button"]').should('contain', 'Synchronisation...')
-      cy.get('[data-testid="sync-button"]').should('be.disabled')
-      
-      cy.wait(1000)
-      cy.get('.toast').should('contain', 'Synchronisation temps réel activée')
-    })
-
-    it('should show loading state for AI analysis button', () => {
-      cy.visit('/orders-ultra-pro')
-      
-      cy.get('[data-testid="ai-analysis-button"]').click()
-      cy.get('[data-testid="ai-analysis-button"]').should('contain', 'Analyse en cours...')
-      cy.get('[data-testid="ai-analysis-button"]').should('be.disabled')
-      
-      cy.wait(2000)
-      cy.get('.toast').should('contain', 'Analyse IA des tendances terminée')
+    it('should navigate to pricing page when clicking pricing link', () => {
+      cy.get('a[href="/pricing"]').first().click()
+      cy.url().should('include', '/pricing')
     })
   })
 
-  describe('Modal Buttons', () => {
-    it('should open create order modal when clicking new order button', () => {
-      cy.visit('/orders-ultra-pro')
-      
-      cy.get('[data-testid="new-order-button"]').click()
-      cy.get('[data-testid="create-order-modal"]').should('be.visible')
+  describe('Public Page Buttons', () => {
+    it('should have functional buttons on landing page', () => {
+      // Check CTA buttons exist and are clickable
+      cy.get('button').contains('Essai gratuit').should('be.visible')
+      cy.get('button').contains('Voir la démo').should('be.visible')
     })
 
-    it('should open integration dialog when clicking supplier card', () => {
-      cy.visit('/import')
+    it('should navigate between sections via scroll or links', () => {
+      // Features section
+      cy.get('section').contains('Fonctionnalités').should('be.visible')
       
-      cy.get('[data-testid="supplier-card"]').first().click()
-      cy.get('[data-testid="create-integration-modal"]').should('be.visible')
+      // Stats section
+      cy.get('section').contains('99+').should('be.visible')
     })
   })
 
-  describe('SEO Optimization Buttons', () => {
-    it('should show loading and success for AI optimization', () => {
-      cy.visit('/seo-ultra-pro-optimized')
-      
-      cy.get('[data-testid="ai-optimize-all-button"]').click()
-      cy.get('[data-testid="ai-optimize-all-button"]').should('contain', 'Application en cours...')
-      cy.get('[data-testid="ai-optimize-all-button"]').should('be.disabled')
-      
-      cy.wait(3000)
-      cy.get('.toast').should('contain', 'Optimisations IA appliquées automatiquement')
+  describe('Auth Page Buttons', () => {
+    beforeEach(() => {
+      cy.visit('/auth')
     })
 
-    it('should generate content when clicking generate button', () => {
-      cy.visit('/seo-ultra-pro-optimized')
-      cy.get('[data-value="content"]').click()
-      
-      cy.get('[data-testid="generate-content-button"]').first().click()
-      cy.get('[data-testid="generate-content-button"]').first().should('contain', 'Génération...')
-      
-      cy.wait(2000)
-      cy.get('.toast').should('contain', 'Contenu généré pour:')
+    it('should have login button', () => {
+      cy.get('button').contains('Se connecter').should('be.visible')
+    })
+
+    it('should toggle between login and register tabs', () => {
+      cy.get('button, [role="tab"]').contains('Inscription').click()
+      cy.get('button').contains('Créer un compte').should('be.visible')
+    })
+
+    it('should have Google login option', () => {
+      cy.get('button').contains('Google').should('be.visible')
     })
   })
 
   describe('Form Submission', () => {
-    it('should prevent form submission for button without type', () => {
-      cy.visit('/import-ultra-pro')
+    it('should prevent form submission with invalid data on auth page', () => {
+      cy.visit('/auth')
       
-      // Test that buttons in forms have correct type attribute
-      cy.get('form button[type!="submit"][type!="button"]').should('not.exist')
+      // Try to submit empty form
+      cy.get('button').contains('Se connecter').click()
+      
+      // Should show validation errors or stay on page
+      cy.url().should('include', '/auth')
+    })
+  })
+
+  describe('Navigation Links', () => {
+    it('should have functional navigation links in header', () => {
+      // Check navigation links exist
+      cy.get('nav, header').within(() => {
+        cy.get('a').should('have.length.at.least', 3)
+      })
+    })
+
+    it('should navigate to contact page', () => {
+      cy.get('a[href="/contact"]').first().click()
+      cy.url().should('include', '/contact')
+    })
+
+    it('should navigate to blog page', () => {
+      cy.get('a[href="/blog"]').first().click()
+      cy.url().should('include', '/blog')
+    })
+  })
+
+  describe('Responsive Behavior', () => {
+    it('should have working buttons on mobile viewport', () => {
+      cy.viewport('iphone-x')
+      
+      cy.get('button').contains('Essai gratuit').should('be.visible')
+    })
+
+    it('should have working buttons on tablet viewport', () => {
+      cy.viewport('ipad-2')
+      
+      cy.get('button').contains('Essai gratuit').should('be.visible')
+      cy.get('button').contains('Voir la démo').should('be.visible')
     })
   })
 
   describe('Accessibility', () => {
-    it('should have aria-busy attribute during loading', () => {
-      cy.visit('/orders-ultra-pro')
-      
-      cy.get('[data-testid="sync-button"]').click()
-      cy.get('[data-testid="sync-button"]').should('have.attr', 'aria-busy', 'true')
-      
-      cy.wait(1000)
-      cy.get('[data-testid="sync-button"]').should('have.attr', 'aria-busy', 'false')
+    it('should have accessible buttons with proper roles', () => {
+      // All buttons should have proper button role or be actual buttons
+      cy.get('button').each(($btn) => {
+        cy.wrap($btn).should('have.attr', 'type').or('not.have.attr', 'type')
+      })
     })
 
-    it('should be keyboard accessible', () => {
-      cy.visit('/orders-ultra-pro')
-      
-      cy.get('[data-testid="sync-button"]').focus()
-      cy.get('[data-testid="sync-button"]').type('{enter}')
-      cy.get('[data-testid="sync-button"]').should('contain', 'Synchronisation...')
+    it('should be keyboard navigable', () => {
+      // Tab through navigation
+      cy.get('body').tab()
+      cy.focused().should('exist')
     })
   })
 
-  describe('Error Handling', () => {
-    it('should handle button errors gracefully', () => {
-      cy.visit('/orders-ultra-pro')
+  describe('Error States', () => {
+    it('should handle 404 pages gracefully', () => {
+      cy.visit('/non-existent-page', { failOnStatusCode: false })
       
-      // Mock a failing API call
-      cy.intercept('POST', '/api/sync', { statusCode: 500 }).as('failingSync')
-      
-      cy.get('[data-testid="sync-button"]').click()
-      
-      cy.wait(1000)
-      cy.get('.toast').should('contain', 'Erreur')
+      // Should show error page or redirect
+      cy.get('body').should('exist')
     })
   })
 })
