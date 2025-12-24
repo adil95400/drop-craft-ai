@@ -1,11 +1,12 @@
 /**
  * Hook simplifié pour la gestion unifiée des données
- * Version optimisée avec gestion d'erreurs robuste
+ * Version optimisée avec gestion d'erreurs robuste et pagination illimitée
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { fetchAllWithQuery } from '@/utils/supabaseUnlimited'
 
 export interface UnifiedProduct {
   id: string
@@ -96,15 +97,16 @@ export function useUnifiedProducts(filters?: any) {
       
       const results: UnifiedProduct[] = []
       
-      // 1. Products table (primary source)
-      const productsData = await safeQuery(() => 
-        supabase
+      // 1. Products table (primary source) - NO LIMIT
+      const { data: productsData } = await fetchAllWithQuery(async (offset, limit) => {
+        const { data, error } = await supabase
           .from('products')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(500) // Reduced limit for performance
-      )
+          .range(offset, offset + limit - 1)
+        return { data, error }
+      })
       
       if (productsData && Array.isArray(productsData)) {
         results.push(...productsData.map((item: any): UnifiedProduct => ({
@@ -132,15 +134,16 @@ export function useUnifiedProducts(filters?: any) {
         })))
       }
       
-      // 2. Imported products table
-      const importedData = await safeQuery(() =>
-        supabase
+      // 2. Imported products table - NO LIMIT
+      const { data: importedData } = await fetchAllWithQuery(async (offset, limit) => {
+        const { data, error } = await supabase
           .from('imported_products')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(500)
-      )
+          .range(offset, offset + limit - 1)
+        return { data, error }
+      })
       
       if (importedData && Array.isArray(importedData)) {
         results.push(...importedData.map((item: any): UnifiedProduct => ({
@@ -168,15 +171,16 @@ export function useUnifiedProducts(filters?: any) {
         })))
       }
       
-      // 3. Catalog products table
-      const catalogData = await safeQuery(() =>
-        supabase
+      // 3. Catalog products table - NO LIMIT
+      const { data: catalogData } = await fetchAllWithQuery(async (offset, limit) => {
+        const { data, error } = await supabase
           .from('catalog_products')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(500)
-      )
+          .range(offset, offset + limit - 1)
+        return { data, error }
+      })
       
       if (catalogData && Array.isArray(catalogData)) {
         results.push(...catalogData.map((item: any): UnifiedProduct => ({
@@ -344,13 +348,15 @@ export function useUnifiedSuppliers(filters?: any) {
     queryFn: async () => {
       if (!user) return []
       
-      const suppliersData = await safeQuery(() =>
-        supabase
+      // Suppliers - NO LIMIT
+      const { data: suppliersData } = await fetchAllWithQuery(async (offset, limit) => {
+        const { data, error } = await supabase
           .from('premium_suppliers')
           .select('*')
           .order('name')
-          .limit(100)
-      )
+          .range(offset, offset + limit - 1)
+        return { data, error }
+      })
 
       if (!suppliersData || !Array.isArray(suppliersData)) {
         return []
@@ -408,14 +414,16 @@ export function useUnifiedCustomers(filters?: any) {
     queryFn: async () => {
       if (!user) return []
       
-      const customersData = await safeQuery(() =>
-        supabase
+      // Customers - NO LIMIT
+      const { data: customersData } = await fetchAllWithQuery(async (offset, limit) => {
+        const { data, error } = await supabase
           .from('customers')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(500)
-      )
+          .range(offset, offset + limit - 1)
+        return { data, error }
+      })
       
       if (!customersData || !Array.isArray(customersData)) {
         return []
