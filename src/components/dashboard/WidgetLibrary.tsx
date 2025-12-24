@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { DollarSign, ShoppingCart, Users, Package, AlertCircle, BarChart3, Target, Globe, Wallet, Activity, Megaphone, Truck, ArrowLeftRight } from 'lucide-react';
+import { DollarSign, ShoppingCart, Users, Package, AlertCircle, BarChart3, Target, Globe, Wallet, Activity, Megaphone, Truck, ArrowLeftRight, Store, ShoppingBag } from 'lucide-react';
 import { useDashboardConfig, DashboardWidgetConfig } from '@/hooks/useDashboardConfig';
 
 interface WidgetLibraryProps {
@@ -137,6 +137,24 @@ const availableWidgets = [
     icon: ArrowLeftRight,
     color: 'text-indigo-500',
     defaultSize: 'lg' as const,
+  },
+  {
+    id: 'connectedStores',
+    type: 'connectedStores' as const,
+    title: 'Boutiques connectées',
+    description: 'Statut de vos boutiques Shopify, WooCommerce...',
+    icon: Store,
+    color: 'text-teal-500',
+    defaultSize: 'md' as const,
+  },
+  {
+    id: 'marketplaces',
+    type: 'marketplaces' as const,
+    title: 'Marketplaces',
+    description: 'Vos connexions Amazon, eBay, Cdiscount...',
+    icon: ShoppingBag,
+    color: 'text-rose-500',
+    defaultSize: 'md' as const,
   },
 ];
 

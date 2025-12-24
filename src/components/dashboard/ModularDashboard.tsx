@@ -23,6 +23,8 @@ import { GoalsWidget } from './widgets/GoalsWidget';
 import { MarketingWidget } from './widgets/MarketingWidget';
 import { ShippingWidget } from './widgets/ShippingWidget';
 import { ComparisonWidget } from './widgets/ComparisonWidget';
+import { ConnectedStoresWidget } from './widgets/ConnectedStoresWidget';
+import { MarketplacesWidget } from './widgets/MarketplacesWidget';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -111,6 +113,10 @@ export function ModularDashboard() {
         return <ShippingWidget {...commonProps} />;
       case 'comparison':
         return <ComparisonWidget {...commonProps} />;
+      case 'connectedStores':
+        return <ConnectedStoresWidget {...commonProps} />;
+      case 'marketplaces':
+        return <MarketplacesWidget {...commonProps} />;
       default:
         return null;
     }

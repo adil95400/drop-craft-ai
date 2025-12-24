@@ -7,7 +7,8 @@ export type TimeRange = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custo
 export type WidgetType = 
   | 'sales' | 'revenue' | 'orders' | 'customers' | 'inventory' | 'alerts' 
   | 'chart' | 'kpi' | 'conversion' | 'topProducts'
-  | 'traffic' | 'profit' | 'recentActivity' | 'goals' | 'marketing' | 'shipping' | 'comparison';
+  | 'traffic' | 'profit' | 'recentActivity' | 'goals' | 'marketing' | 'shipping' | 'comparison'
+  | 'connectedStores' | 'marketplaces';
 
 export interface DashboardWidgetConfig {
   id: string;
@@ -29,6 +30,7 @@ export interface DashboardWidgetConfig {
     maxItems?: number;
     showTimestamp?: boolean;
     comparisonType?: 'period' | 'year';
+    showStats?: boolean;
   };
 }
 
@@ -70,6 +72,8 @@ const defaultWidgets: DashboardWidgetConfig[] = [
   { id: 'marketing', type: 'marketing', title: 'Marketing', enabled: false, position: 11, size: 'lg', settings: { showChart: true, showCampaigns: true } },
   { id: 'shipping', type: 'shipping', title: 'Expéditions', enabled: false, position: 12, size: 'md', settings: { showDetails: true, showRecent: true } },
   { id: 'comparison', type: 'comparison', title: 'Comparaison', enabled: false, position: 13, size: 'lg', settings: { showChart: true, comparisonType: 'period' } },
+  { id: 'connectedStores', type: 'connectedStores', title: 'Boutiques connectées', enabled: true, position: 14, size: 'md', settings: { showDetails: true } },
+  { id: 'marketplaces', type: 'marketplaces', title: 'Marketplaces', enabled: true, position: 15, size: 'md', settings: { showDetails: true, showStats: true } },
 ];
 
 export const useDashboardConfig = create<DashboardState>()(
