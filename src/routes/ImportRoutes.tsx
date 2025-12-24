@@ -11,6 +11,7 @@ const ImportConfigPage = lazy(() => import('@/pages/import/ImportConfigPage'))
 const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMarketplacePage'))
 const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPublishingPage'))
 const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'))
+const AliExpressImportPage = lazy(() => import('@/pages/import/AliExpressImportPage'))
 
 export function ImportRoutes() {
   return (
@@ -25,6 +26,7 @@ export function ImportRoutes() {
       <Route path="marketplace" element={<ImportMarketplacePage />} />
       <Route path="publishing" element={<ImportPublishingPage />} />
       <Route path="shopify" element={<ShopifyImportHub />} />
+      <Route path="aliexpress" element={<AliExpressImportPage />} />
     </Routes>
   )
 }

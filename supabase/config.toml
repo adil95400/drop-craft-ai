@@ -669,3 +669,6 @@ verify_jwt = true
 
 [functions.shopify-complete-sync]
 verify_jwt = true
+
+[functions.aliexpress-scraper]
+verify_jwt = true
