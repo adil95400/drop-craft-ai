@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { DollarSign, ShoppingCart, Users, TrendingUp, Package, AlertCircle, BarChart3, Target } from 'lucide-react';
+import { DollarSign, ShoppingCart, Users, Package, AlertCircle, BarChart3, Target, Globe, Wallet, Activity, Megaphone, Truck, ArrowLeftRight } from 'lucide-react';
 import { useDashboardConfig, DashboardWidgetConfig } from '@/hooks/useDashboardConfig';
 
 interface WidgetLibraryProps {
@@ -74,6 +74,69 @@ const availableWidgets = [
     icon: AlertCircle,
     color: 'text-red-500',
     defaultSize: 'md' as const,
+  },
+  {
+    id: 'traffic',
+    type: 'traffic' as const,
+    title: 'Trafic',
+    description: 'Visiteurs, pages vues et sources de trafic',
+    icon: Globe,
+    color: 'text-cyan-500',
+    defaultSize: 'lg' as const,
+  },
+  {
+    id: 'profit',
+    type: 'profit' as const,
+    title: 'Marges & Profits',
+    description: 'Analyse des marges et rentabilité',
+    icon: Wallet,
+    color: 'text-emerald-500',
+    defaultSize: 'md' as const,
+  },
+  {
+    id: 'recentActivity',
+    type: 'recentActivity' as const,
+    title: 'Activité récente',
+    description: 'Flux en temps réel des événements',
+    icon: Activity,
+    color: 'text-pink-500',
+    defaultSize: 'md' as const,
+  },
+  {
+    id: 'goals',
+    type: 'goals' as const,
+    title: 'Objectifs',
+    description: 'Suivi de vos objectifs commerciaux',
+    icon: Target,
+    color: 'text-yellow-500',
+    defaultSize: 'md' as const,
+  },
+  {
+    id: 'marketing',
+    type: 'marketing' as const,
+    title: 'Marketing',
+    description: 'Performance des campagnes publicitaires',
+    icon: Megaphone,
+    color: 'text-violet-500',
+    defaultSize: 'lg' as const,
+  },
+  {
+    id: 'shipping',
+    type: 'shipping' as const,
+    title: 'Expéditions',
+    description: 'Suivi des livraisons et retours',
+    icon: Truck,
+    color: 'text-sky-500',
+    defaultSize: 'md' as const,
+  },
+  {
+    id: 'comparison',
+    type: 'comparison' as const,
+    title: 'Comparaison',
+    description: 'Comparez les périodes pour analyser la croissance',
+    icon: ArrowLeftRight,
+    color: 'text-indigo-500',
+    defaultSize: 'lg' as const,
   },
 ];
 
