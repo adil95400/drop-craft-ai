@@ -25,10 +25,15 @@ export interface UnifiedOrder {
 export function useUnifiedOrders(filters?: {
   status?: UnifiedOrder['status']
   search?: string
+  page?: number
+  pageSize?: number
 }) {
   const { user } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  
+  const page = filters?.page || 0
+  const pageSize = filters?.pageSize || 50
 
   const { data = [], isLoading, error } = useQuery({
     queryKey: ['unified-orders', user?.id, filters],
@@ -40,7 +45,7 @@ export function useUnifiedOrders(filters?: {
         .select(`
           *,
           order_items(*)
-        `)
+        `, { count: 'exact' })
         .eq('user_id', user.id)
 
       if (filters?.status) {
@@ -51,16 +56,18 @@ export function useUnifiedOrders(filters?: {
         query = query.or(`order_number.ilike.%${filters.search}%,tracking_number.ilike.%${filters.search}%`)
       }
 
-      query = query.order('created_at', { ascending: false })
+      query = query
+        .order('created_at', { ascending: false })
+        .range(page * pageSize, (page + 1) * pageSize - 1)
 
-      const { data, error } = await query
+      const { data, error, count } = await query
 
       if (error) {
         console.warn('Orders query error:', error)
         return []
       }
 
-      return (data || []).map((item: any): UnifiedOrder => ({
+      const orders = (data || []).map((item: any): UnifiedOrder & { _totalCount?: number } => ({
         id: item.id,
         user_id: item.user_id,
         customer_id: item.customer_id,
@@ -76,10 +83,15 @@ export function useUnifiedOrders(filters?: {
         platform_order_id: item.platform_order_id,
         items: item.order_items || [],
         created_at: item.created_at,
-        updated_at: item.updated_at
+        updated_at: item.updated_at,
+        _totalCount: count || 0
       }))
+      
+      return orders
     },
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+    gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
   })
 
   const updateMutation = useMutation({
@@ -111,15 +123,21 @@ export function useUnifiedOrders(filters?: {
     }
   })
 
+  const totalCount = (data[0] as any)?._totalCount || data.length
+  
   const stats = {
     total: data.length,
+    totalCount,
     pending: data.filter(o => o.status === 'pending').length,
     processing: data.filter(o => o.status === 'processing').length,
     shipped: data.filter(o => o.status === 'shipped').length,
     delivered: data.filter(o => o.status === 'delivered').length,
     cancelled: data.filter(o => o.status === 'cancelled').length,
     revenue: data.reduce((sum, order) => sum + order.total_amount, 0),
-    avgOrderValue: data.length > 0 ? data.reduce((sum, order) => sum + order.total_amount, 0) / data.length : 0
+    avgOrderValue: data.length > 0 ? data.reduce((sum, order) => sum + order.total_amount, 0) / data.length : 0,
+    hasMore: (page + 1) * pageSize < totalCount,
+    currentPage: page,
+    pageSize
   }
 
   return {
