@@ -31,6 +31,7 @@ interface ProductActionButtonsProps {
   onDuplicate?: (product: Product) => void;
   onToggleFavorite?: (productId: string) => void;
   onViewAnalytics?: (productId: string) => void;
+  onView?: (product: Product) => void;
   isFavorite?: boolean;
   compact?: boolean;
 }
@@ -42,17 +43,21 @@ export const ProductActionButtons = ({
   onDuplicate,
   onToggleFavorite,
   onViewAnalytics,
+  onView,
   isFavorite = false,
   compact = false
 }: ProductActionButtonsProps) => {
   const { toast } = useToast();
 
   const handleViewProduct = () => {
-    // Ouvrir modal de détails ou naviguer vers page produit
-    toast({
-      title: "Détails du produit",
-      description: `Ouverture des détails pour ${product.name}`,
-    });
+    if (onView) {
+      onView(product);
+    } else {
+      toast({
+        title: "Détails du produit",
+        description: `${product.name} - ${product.price}€`,
+      });
+    }
   };
 
   const handleEditProduct = () => {

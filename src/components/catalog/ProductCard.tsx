@@ -11,6 +11,7 @@ interface ProductCardProps {
   onDuplicate?: (product: Product) => void;
   onToggleFavorite?: (productId: string) => void;
   onViewAnalytics?: (productId: string) => void;
+  onView?: (product: Product) => void;
   isFavorite?: boolean;
   variant?: 'default' | 'compact';
 }
@@ -22,6 +23,7 @@ export const ProductCard = ({
   onDuplicate,
   onToggleFavorite,
   onViewAnalytics,
+  onView,
   isFavorite = false,
   variant = 'default'
 }: ProductCardProps) => {
@@ -178,6 +180,7 @@ export const ProductCard = ({
           onDuplicate={onDuplicate}
           onToggleFavorite={onToggleFavorite}
           onViewAnalytics={onViewAnalytics}
+          onView={onView}
           isFavorite={isFavorite}
           compact={variant === 'compact'}
         />
