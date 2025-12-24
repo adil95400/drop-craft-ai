@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DollarSign, TrendingUp, Calculator, Users } from 'lucide-react';
 import { usePricingAutomation } from '@/hooks/usePricingAutomation';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RepricingDashboard } from '@/components/repricing/RepricingDashboard';
 
 export function PricingAutomationHub() {
   const { analytics, isLoadingAnalytics } = usePricingAutomation();
@@ -81,14 +82,7 @@ export function PricingAutomationHub() {
         </TabsList>
         
         <TabsContent value="rules">
-          <Card>
-            <CardHeader>
-              <CardTitle>Règles de Tarification Automatique</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Configurez des règles pour automatiser vos prix</p>
-            </CardContent>
-          </Card>
+          <RepricingDashboard />
         </TabsContent>
         
         <TabsContent value="profit">
