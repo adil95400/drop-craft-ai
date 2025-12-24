@@ -672,3 +672,12 @@ verify_jwt = true
 
 [functions.aliexpress-scraper]
 verify_jwt = true
+
+[functions.woocommerce-connector]
+verify_jwt = true
+
+[functions.amazon-connector]
+verify_jwt = true
+
+[functions.ebay-connector]
+verify_jwt = true
