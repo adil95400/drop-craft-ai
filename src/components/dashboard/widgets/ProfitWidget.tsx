@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Wallet, TrendingUp, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useProductionData } from '@/hooks/useProductionData';
+import { useMemo } from 'react';
 
 interface ProfitWidgetProps {
   timeRange: string;
@@ -10,23 +12,55 @@ interface ProfitWidgetProps {
   };
 }
 
-const profitData = [
-  { month: 'Jan', revenue: 45000, costs: 32000, profit: 13000 },
-  { month: 'Fév', revenue: 52000, costs: 35000, profit: 17000 },
-  { month: 'Mar', revenue: 48000, costs: 33000, profit: 15000 },
-  { month: 'Avr', revenue: 61000, costs: 38000, profit: 23000 },
-  { month: 'Mai', revenue: 55000, costs: 36000, profit: 19000 },
-  { month: 'Juin', revenue: 67000, costs: 41000, profit: 26000 },
-];
-
 export function ProfitWidget({ settings }: ProfitWidgetProps) {
   const showChart = settings?.showChart ?? true;
   const showBreakdown = settings?.showBreakdown ?? true;
+  const { orders, isLoadingOrders, products } = useProductionData();
+
+  const profitData = useMemo(() => {
+    if (!orders || orders.length === 0) return [];
+
+    // Group orders by month
+    const monthlyData: Record<string, { revenue: number; costs: number }> = {};
+    
+    orders.forEach(order => {
+      const date = new Date(order.created_at || '');
+      const monthKey = date.toLocaleDateString('fr-FR', { month: 'short' });
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { revenue: 0, costs: 0 };
+      }
+      
+      const revenue = Number(order.total_amount || 0);
+      // Estimate costs as 60% of revenue (you can adjust based on your business model)
+      const costs = revenue * 0.6;
+      
+      monthlyData[monthKey].revenue += revenue;
+      monthlyData[monthKey].costs += costs;
+    });
+
+    return Object.entries(monthlyData).slice(-6).map(([month, data]) => ({
+      month,
+      revenue: Math.round(data.revenue),
+      costs: Math.round(data.costs),
+      profit: Math.round(data.revenue - data.costs)
+    }));
+  }, [orders]);
 
   const totalRevenue = profitData.reduce((sum, d) => sum + d.revenue, 0);
   const totalCosts = profitData.reduce((sum, d) => sum + d.costs, 0);
   const totalProfit = profitData.reduce((sum, d) => sum + d.profit, 0);
-  const profitMargin = ((totalProfit / totalRevenue) * 100).toFixed(1);
+  const profitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : '0';
+
+  if (isLoadingOrders) {
+    return (
+      <Card className="h-full">
+        <CardContent className="flex items-center justify-center h-full">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="h-full">
@@ -72,7 +106,7 @@ export function ProfitWidget({ settings }: ProfitWidgetProps) {
           </div>
         )}
 
-        {showChart && (
+        {showChart && profitData.length > 0 && (
           <div className="h-32">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={profitData}>
@@ -90,13 +124,19 @@ export function ProfitWidget({ settings }: ProfitWidgetProps) {
                   {profitData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={entry.profit > 20000 ? 'hsl(142 76% 36%)' : 'hsl(142 76% 50%)'} 
+                      fill={entry.profit > 0 ? 'hsl(142 76% 36%)' : 'hsl(0 84% 60%)'} 
                     />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+        )}
+
+        {profitData.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            Aucune donnée de profit disponible
+          </p>
         )}
       </CardContent>
     </Card>

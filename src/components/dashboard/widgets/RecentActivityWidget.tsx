@@ -1,7 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, ShoppingCart, UserPlus, Package, CreditCard, AlertTriangle } from 'lucide-react';
+import { Activity, ShoppingCart, UserPlus, Package, CreditCard, AlertTriangle, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { useProductionData } from '@/hooks/useProductionData';
+import { useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface RecentActivityWidgetProps {
   timeRange: string;
@@ -11,29 +15,82 @@ interface RecentActivityWidgetProps {
   };
 }
 
-const activities = [
-  { id: 1, type: 'order', message: 'Nouvelle commande #1247', time: 'Il y a 2 min', icon: ShoppingCart, color: 'text-blue-500' },
-  { id: 2, type: 'customer', message: 'Nouveau client inscrit', time: 'Il y a 15 min', icon: UserPlus, color: 'text-green-500' },
-  { id: 3, type: 'payment', message: 'Paiement reçu 89.99€', time: 'Il y a 23 min', icon: CreditCard, color: 'text-purple-500' },
-  { id: 4, type: 'shipping', message: 'Commande #1245 expédiée', time: 'Il y a 45 min', icon: Package, color: 'text-orange-500' },
-  { id: 5, type: 'alert', message: 'Stock bas: iPhone Case', time: 'Il y a 1h', icon: AlertTriangle, color: 'text-red-500' },
-  { id: 6, type: 'order', message: 'Nouvelle commande #1246', time: 'Il y a 1h30', icon: ShoppingCart, color: 'text-blue-500' },
-  { id: 7, type: 'customer', message: '2 nouveaux clients', time: 'Il y a 2h', icon: UserPlus, color: 'text-green-500' },
-  { id: 8, type: 'payment', message: 'Paiement reçu 156.50€', time: 'Il y a 3h', icon: CreditCard, color: 'text-purple-500' },
-];
-
 const typeLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   order: { label: 'Commande', variant: 'default' },
   customer: { label: 'Client', variant: 'secondary' },
-  payment: { label: 'Paiement', variant: 'outline' },
-  shipping: { label: 'Livraison', variant: 'secondary' },
-  alert: { label: 'Alerte', variant: 'destructive' },
+  shipping: { label: 'Livraison', variant: 'outline' },
 };
 
 export function RecentActivityWidget({ settings }: RecentActivityWidgetProps) {
-  const maxItems = settings?.maxItems ?? 6;
+  const maxItems = settings?.maxItems ?? 8;
   const showTimestamp = settings?.showTimestamp ?? true;
-  const displayedActivities = activities.slice(0, maxItems);
+  const { orders, customers, shipmentsData, isLoadingOrders, isLoadingCustomers, isLoadingShipments } = useProductionData();
+
+  const activities = useMemo(() => {
+    const allActivities: Array<{
+      id: string;
+      type: string;
+      message: string;
+      time: string;
+      timestamp: Date;
+      icon: typeof ShoppingCart;
+      color: string;
+    }> = [];
+
+    // Add orders
+    (orders || []).slice(0, 10).forEach(order => {
+      allActivities.push({
+        id: `order-${order.id}`,
+        type: 'order',
+        message: `Commande ${order.order_number} - ${Number(order.total_amount || 0).toLocaleString('fr-FR')}€`,
+        time: formatDistanceToNow(new Date(order.created_at || ''), { addSuffix: true, locale: fr }),
+        timestamp: new Date(order.created_at || ''),
+        icon: ShoppingCart,
+        color: 'text-blue-500'
+      });
+    });
+
+    // Add customers
+    (customers || []).slice(0, 5).forEach(customer => {
+      allActivities.push({
+        id: `customer-${customer.id}`,
+        type: 'customer',
+        message: `Nouveau client: ${customer.first_name || ''} ${customer.last_name || customer.email}`,
+        time: formatDistanceToNow(new Date(customer.created_at || ''), { addSuffix: true, locale: fr }),
+        timestamp: new Date(customer.created_at || ''),
+        icon: UserPlus,
+        color: 'text-green-500'
+      });
+    });
+
+    // Add shipments
+    (shipmentsData || []).slice(0, 5).forEach(shipment => {
+      allActivities.push({
+        id: `shipment-${shipment.id}`,
+        type: 'shipping',
+        message: `Expédition ${shipment.tracking_number || shipment.id.slice(0, 8)} - ${shipment.status}`,
+        time: formatDistanceToNow(new Date(shipment.created_at || ''), { addSuffix: true, locale: fr }),
+        timestamp: new Date(shipment.created_at || ''),
+        icon: Package,
+        color: 'text-orange-500'
+      });
+    });
+
+    // Sort by timestamp desc
+    return allActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, maxItems);
+  }, [orders, customers, shipmentsData, maxItems]);
+
+  const isLoading = isLoadingOrders || isLoadingCustomers || isLoadingShipments;
+
+  if (isLoading) {
+    return (
+      <Card className="h-full">
+        <CardContent className="flex items-center justify-center h-full">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="h-full">
@@ -46,32 +103,38 @@ export function RecentActivityWidget({ settings }: RecentActivityWidgetProps) {
       <CardContent>
         <ScrollArea className="h-[280px] pr-4">
           <div className="space-y-3">
-            {displayedActivities.map((activity) => {
-              const Icon = activity.icon;
-              const typeInfo = typeLabels[activity.type];
-              
-              return (
-                <div 
-                  key={activity.id}
-                  className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className={`p-2 rounded-full bg-muted ${activity.color}`}>
-                    <Icon className="h-3 w-3" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium truncate">{activity.message}</p>
-                      <Badge variant={typeInfo.variant} className="text-[10px] px-1.5 py-0">
-                        {typeInfo.label}
-                      </Badge>
+            {activities.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Aucune activité récente
+              </p>
+            ) : (
+              activities.map((activity) => {
+                const Icon = activity.icon;
+                const typeInfo = typeLabels[activity.type] || { label: activity.type, variant: 'outline' as const };
+                
+                return (
+                  <div 
+                    key={activity.id}
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className={`p-2 rounded-full bg-muted ${activity.color}`}>
+                      <Icon className="h-3 w-3" />
                     </div>
-                    {showTimestamp && (
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">{activity.message}</p>
+                        <Badge variant={typeInfo.variant} className="text-[10px] px-1.5 py-0 shrink-0">
+                          {typeInfo.label}
+                        </Badge>
+                      </div>
+                      {showTimestamp && (
+                        <p className="text-xs text-muted-foreground">{activity.time}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </ScrollArea>
       </CardContent>
