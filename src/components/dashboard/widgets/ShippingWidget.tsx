@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Truck, Package, Clock, CheckCircle, AlertCircle, MapPin } from 'lucide-react';
+import { Truck, Package, Clock, CheckCircle, AlertCircle, MapPin, Loader2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { useProductionData } from '@/hooks/useProductionData';
+import { useMemo } from 'react';
 
 interface ShippingWidgetProps {
   timeRange: string;
@@ -11,32 +13,68 @@ interface ShippingWidgetProps {
   };
 }
 
-const shippingStats = {
-  pending: 12,
-  shipped: 45,
-  delivered: 156,
-  returned: 3,
-};
-
-const recentShipments = [
-  { id: '#1247', status: 'transit', destination: 'Paris, FR', eta: '2 jours', carrier: 'Colissimo' },
-  { id: '#1246', status: 'delivered', destination: 'Lyon, FR', eta: 'Livré', carrier: 'Chronopost' },
-  { id: '#1245', status: 'pending', destination: 'Marseille, FR', eta: '3 jours', carrier: 'DHL' },
-];
-
 const statusConfig: Record<string, { color: string; label: string; icon: typeof Package }> = {
   pending: { color: 'text-orange-500', label: 'En attente', icon: Clock },
-  transit: { color: 'text-blue-500', label: 'En transit', icon: Truck },
+  processing: { color: 'text-blue-500', label: 'En cours', icon: Package },
+  shipped: { color: 'text-blue-500', label: 'Expédié', icon: Truck },
+  in_transit: { color: 'text-blue-500', label: 'En transit', icon: Truck },
   delivered: { color: 'text-green-500', label: 'Livré', icon: CheckCircle },
   returned: { color: 'text-red-500', label: 'Retourné', icon: AlertCircle },
+  failed: { color: 'text-red-500', label: 'Échoué', icon: AlertCircle },
 };
 
 export function ShippingWidget({ settings }: ShippingWidgetProps) {
   const showDetails = settings?.showDetails ?? true;
   const showRecent = settings?.showRecent ?? true;
+  const { shipmentsData, isLoadingShipments } = useProductionData();
+
+  const shippingStats = useMemo(() => {
+    const stats = {
+      pending: 0,
+      shipped: 0,
+      delivered: 0,
+      returned: 0,
+    };
+
+    (shipmentsData || []).forEach(shipment => {
+      const status = shipment.status?.toLowerCase() || 'pending';
+      if (status === 'pending' || status === 'processing') {
+        stats.pending++;
+      } else if (status === 'shipped' || status === 'in_transit') {
+        stats.shipped++;
+      } else if (status === 'delivered') {
+        stats.delivered++;
+      } else if (status === 'returned' || status === 'failed') {
+        stats.returned++;
+      }
+    });
+
+    return stats;
+  }, [shipmentsData]);
+
+  const recentShipments = useMemo(() => {
+    return (shipmentsData || []).slice(0, 3).map(shipment => ({
+      id: shipment.tracking_number || `#${shipment.id.slice(0, 6)}`,
+      status: shipment.status?.toLowerCase() || 'pending',
+      carrier: shipment.carrier_code || 'N/A',
+      eta: shipment.estimated_delivery 
+        ? new Date(shipment.estimated_delivery).toLocaleDateString('fr-FR')
+        : 'Non défini'
+    }));
+  }, [shipmentsData]);
 
   const total = shippingStats.pending + shippingStats.shipped + shippingStats.delivered + shippingStats.returned;
-  const deliveryRate = ((shippingStats.delivered / total) * 100).toFixed(1);
+  const deliveryRate = total > 0 ? ((shippingStats.delivered / total) * 100).toFixed(1) : '0';
+
+  if (isLoadingShipments) {
+    return (
+      <Card className="h-full">
+        <CardContent className="flex items-center justify-center h-full">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="h-full">
@@ -83,29 +121,32 @@ export function ShippingWidget({ settings }: ShippingWidgetProps) {
         {showRecent && (
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">Expéditions récentes</p>
-            {recentShipments.map((shipment) => {
-              const config = statusConfig[shipment.status];
-              const StatusIcon = config.icon;
-              
-              return (
-                <div key={shipment.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <StatusIcon className={`h-4 w-4 ${config.color}`} />
-                    <div>
-                      <p className="text-sm font-medium">{shipment.id}</p>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        {shipment.destination}
+            {recentShipments.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Aucune expédition
+              </p>
+            ) : (
+              recentShipments.map((shipment) => {
+                const config = statusConfig[shipment.status] || statusConfig.pending;
+                const StatusIcon = config.icon;
+                
+                return (
+                  <div key={shipment.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <StatusIcon className={`h-4 w-4 ${config.color}`} />
+                      <div>
+                        <p className="text-sm font-medium">{shipment.id}</p>
+                        <p className="text-xs text-muted-foreground">{config.label}</p>
                       </div>
                     </div>
+                    <div className="text-right">
+                      <Badge variant="outline" className="text-[10px]">{shipment.carrier}</Badge>
+                      <p className={`text-xs ${config.color}`}>{shipment.eta}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className="text-[10px]">{shipment.carrier}</Badge>
-                    <p className={`text-xs ${config.color}`}>{shipment.eta}</p>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         )}
       </CardContent>
