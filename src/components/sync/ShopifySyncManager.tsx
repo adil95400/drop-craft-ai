@@ -62,15 +62,15 @@ export const ShopifySyncManager = () => {
   }
 
   const handleTriggerSync = (configId: string, direction: 'import' | 'export' | 'both') => {
-    if (direction === 'both') {
-      // Trigger both import and export
-      triggerSync({ configId, direction: 'import' })
-      setTimeout(() => {
-        triggerSync({ configId, direction: 'export' })
-      }, 1000)
-    } else {
-      triggerSync({ configId, direction })
-    }
+    const syncProducts = direction === 'import' || direction === 'both'
+    const syncOrders = direction === 'import' || direction === 'both'
+    
+    triggerSync({ 
+      configId, 
+      syncProducts, 
+      syncOrders,
+      syncCustomers: false 
+    })
   }
 
   const getDirectionIcon = (direction: string) => {

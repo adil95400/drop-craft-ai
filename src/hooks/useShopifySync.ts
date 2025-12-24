@@ -213,11 +213,27 @@ export const useShopifySync = () => {
 
   // Trigger manual sync
   const triggerSync = useMutation({
-    mutationFn: async ({ configId, direction }: { configId: string; direction: 'import' | 'export' }) => {
-      const functionName = direction === 'import' ? 'shopify-sync-import' : 'shopify-sync-export'
-      
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: { config_id: configId, sync_type: 'manual' }
+    mutationFn: async ({ 
+      configId, 
+      syncProducts = true, 
+      syncOrders = true, 
+      syncCustomers = false,
+      daysBack = 30 
+    }: { 
+      configId: string
+      syncProducts?: boolean
+      syncOrders?: boolean
+      syncCustomers?: boolean
+      daysBack?: number
+    }) => {
+      const { data, error } = await supabase.functions.invoke('shopify-complete-sync', {
+        body: { 
+          integrationId: configId,
+          syncProducts,
+          syncOrders,
+          syncCustomers,
+          daysBack
+        }
       })
 
       if (error) throw error
@@ -227,10 +243,12 @@ export const useShopifySync = () => {
       queryClient.invalidateQueries({ queryKey: ['shopify-sync-configs'] })
       queryClient.invalidateQueries({ queryKey: ['shopify-sync-logs'] })
       queryClient.invalidateQueries({ queryKey: ['unified-products'] })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
       
       toast({
         title: "Synchronisation terminée",
-        description: `${data?.products_synced || 0} produits traités (${data?.products_created || 0} créés, ${data?.products_updated || 0} mis à jour)`
+        description: `${data?.products_synced || 0} produits, ${data?.orders_synced || 0} commandes synchronisés`
       })
     },
     onError: (error: Error) => {
