@@ -23,7 +23,7 @@ const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNoti
 const CustomersPage = lazy(() => import('@/pages/CustomersPage'));
 
 // Quick actions
-const SyncManagerPage = lazy(() => import('@/pages/SyncManagerPage'));
+const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
 const MarketplaceSyncDashboard = lazy(() => import('@/pages/MarketplaceSyncDashboard'));
 const MultiStoreCentralDashboard = lazy(() => import('@/pages/MultiStoreCentralDashboard'));
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
@@ -40,7 +40,7 @@ const PrintOnDemandHub = lazy(() => import('@/pages/pod/PrintOnDemandHub'));
 const CompetitiveIntelligenceHub = lazy(() => import('@/pages/research/CompetitiveIntelligenceHub'));
 
 // Stock & Reports
-const StockManagement = lazy(() => import('@/pages/StockManagement'));
+const StockManagement = lazy(() => import('@/pages/stock/StockManagementPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 
 // Analytics & Products

@@ -36,9 +36,7 @@ export const LazyMarketingAutomation = lazyWithRetry(() => import('@/pages/Marke
 
 // Pages d'import - Lazy load
 export const LazyImportHub = lazyWithRetry(() => import('@/pages/import/ImportHub'));
-export const LazyCSVImportPage = lazyWithRetry(() => import('@/pages/import/CSVImportPage'));
-export const LazyWebScrapingPage = lazyWithRetry(() => import('@/pages/import/WebScrapingPage'));
-export const LazyAPIImportPage = lazyWithRetry(() => import('@/pages/import/APIImportPage'));
+export const LazyAdvancedImportPage = lazyWithRetry(() => import('@/pages/import/AdvancedImportPage'));
 
 // Pages de marketing - Lazy load
 export const LazyAdsMarketingPage = lazyWithRetry(() => import('@/pages/AdsMarketingPage'));

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import DOMPurify from 'dompurify'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -283,18 +284,25 @@ results.forEach(result => {
     toast.success('Documentation publiée sur le portail développeur!')
   }
 
-  const previewDocumentation = () => {
-    // Ouvrir dans un nouvel onglet une prévisualisation
+  const previewDocumentation = async () => {
+    // Ouvrir dans un nouvel onglet une prévisualisation avec sanitization
     const content = sections
       .sort((a, b) => a.order - b.order)
       .map(section => section.content)
       .join('\n\n')
     
+    // Sanitize title to prevent XSS
+    const sanitizedTitle = DOMPurify.sanitize(docConfig.title, { ALLOWED_TAGS: [] })
+    
+    // Convert markdown to HTML safely using marked and then sanitize
+    // Load marked dynamically to parse markdown, then sanitize the output
     const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>${docConfig.title} - Documentation</title>
+          <title>${sanitizedTitle} - Documentation</title>
+          <meta charset="UTF-8">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';">
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
             code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
@@ -305,8 +313,16 @@ results.forEach(result => {
         <body>
           <div id="content"></div>
           <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
           <script>
-            document.getElementById('content').innerHTML = marked.parse(\`${content.replace(/`/g, '\\`')}\`);
+            // Parse markdown and sanitize the output to prevent XSS
+            const rawContent = ${JSON.stringify(content)};
+            const parsedHtml = marked.parse(rawContent);
+            const sanitizedHtml = DOMPurify.sanitize(parsedHtml, {
+              ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'ul', 'ol', 'li', 'a', 'blockquote', 'hr'],
+              ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+            });
+            document.getElementById('content').innerHTML = sanitizedHtml;
           </script>
         </body>
       </html>

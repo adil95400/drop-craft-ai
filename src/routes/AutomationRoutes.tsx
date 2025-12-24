@@ -23,7 +23,7 @@ const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomation
 // Optimization
 const OptimizationHub = lazy(() => import('@/pages/OptimizationHub'));
 const FeedOptimizationPage = lazy(() => import('@/pages/FeedOptimizationPage'));
-const StockSyncDashboard = lazy(() => import('@/pages/StockSyncDashboard'));
+const StockSyncDashboard = lazy(() => import('@/pages/StockManagementDashboard'));
 const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssistant'));
 
 // Advanced Automation

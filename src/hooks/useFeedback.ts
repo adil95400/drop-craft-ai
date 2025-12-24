@@ -22,11 +22,11 @@ export function useFeedback() {
       
       // Store feedback in activity_logs table
       const { error } = await supabase.from('activity_logs').insert({
-        user_id: userData.user?.id || 'anonymous',
+        user_id: userData.user?.id,
         action: 'feedback_submitted',
         description: `${feedback.type}: ${feedback.message.substring(0, 100)}`,
         entity_type: 'feedback',
-        metadata: {
+        details: {
           feedback_type: feedback.type,
           rating: feedback.rating,
           message: feedback.message,
@@ -70,11 +70,11 @@ export function useFeedback() {
       const { data: userData } = await supabase.auth.getUser();
       
       await supabase.from('activity_logs').insert({
-        user_id: userData.user?.id || 'anonymous',
+        user_id: userData.user?.id,
         action: 'action_abandoned',
         description: `Abandoned ${action} at step ${step}/${totalSteps}`,
         entity_type: 'workflow',
-        metadata: {
+        details: {
           action,
           step,
           totalSteps,
