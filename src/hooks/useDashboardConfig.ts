@@ -4,9 +4,14 @@ import { persist } from 'zustand/middleware';
 export type WidgetSize = 'sm' | 'md' | 'lg' | 'xl';
 export type TimeRange = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
+export type WidgetType = 
+  | 'sales' | 'revenue' | 'orders' | 'customers' | 'inventory' | 'alerts' 
+  | 'chart' | 'kpi' | 'conversion' | 'topProducts'
+  | 'traffic' | 'profit' | 'recentActivity' | 'goals' | 'marketing' | 'shipping' | 'comparison';
+
 export interface DashboardWidgetConfig {
   id: string;
-  type: 'sales' | 'revenue' | 'orders' | 'customers' | 'inventory' | 'alerts' | 'chart' | 'kpi' | 'conversion' | 'topProducts';
+  type: WidgetType;
   title: string;
   enabled: boolean;
   position: number;
@@ -16,6 +21,14 @@ export interface DashboardWidgetConfig {
     showTrend?: boolean;
     chartType?: 'line' | 'bar' | 'area' | 'pie';
     color?: string;
+    showSources?: boolean;
+    showBreakdown?: boolean;
+    showDetails?: boolean;
+    showCampaigns?: boolean;
+    showRecent?: boolean;
+    maxItems?: number;
+    showTimestamp?: boolean;
+    comparisonType?: 'period' | 'year';
   };
 }
 
@@ -50,6 +63,13 @@ const defaultWidgets: DashboardWidgetConfig[] = [
   { id: 'topProducts', type: 'topProducts', title: 'Top Produits', enabled: true, position: 4, size: 'lg', settings: { showChart: true, chartType: 'bar' } },
   { id: 'inventory', type: 'inventory', title: 'Inventaire', enabled: true, position: 5, size: 'md', settings: { showTrend: true } },
   { id: 'alerts', type: 'alerts', title: 'Alertes', enabled: true, position: 6, size: 'md', settings: {} },
+  { id: 'traffic', type: 'traffic', title: 'Trafic', enabled: false, position: 7, size: 'lg', settings: { showChart: true, showSources: true } },
+  { id: 'profit', type: 'profit', title: 'Marges & Profits', enabled: false, position: 8, size: 'md', settings: { showChart: true, showBreakdown: true } },
+  { id: 'recentActivity', type: 'recentActivity', title: 'Activité récente', enabled: false, position: 9, size: 'md', settings: { maxItems: 6, showTimestamp: true } },
+  { id: 'goals', type: 'goals', title: 'Objectifs', enabled: false, position: 10, size: 'md', settings: { showDetails: true } },
+  { id: 'marketing', type: 'marketing', title: 'Marketing', enabled: false, position: 11, size: 'lg', settings: { showChart: true, showCampaigns: true } },
+  { id: 'shipping', type: 'shipping', title: 'Expéditions', enabled: false, position: 12, size: 'md', settings: { showDetails: true, showRecent: true } },
+  { id: 'comparison', type: 'comparison', title: 'Comparaison', enabled: false, position: 13, size: 'lg', settings: { showChart: true, comparisonType: 'period' } },
 ];
 
 export const useDashboardConfig = create<DashboardState>()(

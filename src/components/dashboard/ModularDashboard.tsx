@@ -16,6 +16,13 @@ import { ConversionWidget } from './widgets/ConversionWidget';
 import { TopProductsWidget } from './widgets/TopProductsWidget';
 import { InventoryWidgetAdvanced } from './widgets/InventoryWidgetAdvanced';
 import { AlertsWidgetAdvanced } from './widgets/AlertsWidgetAdvanced';
+import { TrafficWidget } from './widgets/TrafficWidget';
+import { ProfitWidget } from './widgets/ProfitWidget';
+import { RecentActivityWidget } from './widgets/RecentActivityWidget';
+import { GoalsWidget } from './widgets/GoalsWidget';
+import { MarketingWidget } from './widgets/MarketingWidget';
+import { ShippingWidget } from './widgets/ShippingWidget';
+import { ComparisonWidget } from './widgets/ComparisonWidget';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -90,6 +97,20 @@ export function ModularDashboard() {
         return <InventoryWidgetAdvanced {...commonProps} />;
       case 'alerts':
         return <AlertsWidgetAdvanced {...commonProps} />;
+      case 'traffic':
+        return <TrafficWidget {...commonProps} />;
+      case 'profit':
+        return <ProfitWidget {...commonProps} />;
+      case 'recentActivity':
+        return <RecentActivityWidget {...commonProps} />;
+      case 'goals':
+        return <GoalsWidget {...commonProps} />;
+      case 'marketing':
+        return <MarketingWidget {...commonProps} />;
+      case 'shipping':
+        return <ShippingWidget {...commonProps} />;
+      case 'comparison':
+        return <ComparisonWidget {...commonProps} />;
       default:
         return null;
     }
