@@ -502,9 +502,13 @@ export class ProductsUnifiedService {
     userId: string
   ): Promise<UnifiedProduct | null> {
     try {
+      // Pour catalog_products, ne pas filtrer par user_id
+      const isCatalog = table === 'catalog_products';
+      
       let query = (supabase as any).from(table).select('*').eq('id', productId);
       
-      if (userId !== 'catalog') {
+      // Ne pas appliquer le filtre user_id pour le catalog
+      if (!isCatalog && userId !== 'catalog') {
         query = query.eq('user_id', userId);
       }
       
