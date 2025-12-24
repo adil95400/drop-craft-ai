@@ -1,24 +1,29 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { fetchAllWithQuery } from '@/utils/supabaseUnlimited';
 
-// Generic API service with real Supabase integration
+// Generic API service with real Supabase integration - NO PAGINATION LIMITS
 export class ApiService {
-  // Products API
+  // Products API - fetches ALL products without limits
   static async getProducts(filters?: any) {
     try {
-      let query = supabase.from('products').select('*');
-      
-      if (filters?.search) {
-        query = query.ilike('name', `%${filters.search}%`);
-      }
-      if (filters?.category) {
-        query = query.eq('category', filters.category);
-      }
-      if (filters?.status) {
-        query = query.eq('status', filters.status);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await fetchAllWithQuery(async (offset, limit) => {
+        let query = supabase.from('products').select('*');
+        
+        if (filters?.search) {
+          query = query.ilike('name', `%${filters.search}%`);
+        }
+        if (filters?.category) {
+          query = query.eq('category', filters.category);
+        }
+        if (filters?.status) {
+          query = query.eq('status', filters.status);
+        }
+        
+        query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+        
+        return query;
+      });
       
       if (error) throw error;
       return data || [];
@@ -112,22 +117,26 @@ export class ApiService {
     }
   }
 
-  // Orders API
+  // Orders API - fetches ALL orders without limits
   static async getOrders(filters?: any) {
     try {
-      let query = supabase.from('orders').select('*, order_items(*)');
-      
-      if (filters?.status) {
-        query = query.eq('status', filters.status);
-      }
-      if (filters?.dateFrom) {
-        query = query.gte('created_at', filters.dateFrom);
-      }
-      if (filters?.dateTo) {
-        query = query.lte('created_at', filters.dateTo);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await fetchAllWithQuery(async (offset, limit) => {
+        let query = supabase.from('orders').select('*, order_items(*)');
+        
+        if (filters?.status) {
+          query = query.eq('status', filters.status);
+        }
+        if (filters?.dateFrom) {
+          query = query.gte('created_at', filters.dateFrom);
+        }
+        if (filters?.dateTo) {
+          query = query.lte('created_at', filters.dateTo);
+        }
+        
+        query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+        
+        return query;
+      });
       
       if (error) throw error;
       return data || [];
@@ -175,16 +184,20 @@ export class ApiService {
     }
   }
 
-  // Customers API
+  // Customers API - fetches ALL customers without limits
   static async getCustomers(filters?: any) {
     try {
-      let query = (supabase.from('customers') as any).select('*');
-      
-      if (filters?.search) {
-        query = query.or(`email.ilike.%${filters.search}%,first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%`);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await fetchAllWithQuery(async (offset, limit) => {
+        let query = (supabase.from('customers') as any).select('*');
+        
+        if (filters?.search) {
+          query = query.or(`email.ilike.%${filters.search}%,first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%`);
+        }
+        
+        query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+        
+        return query;
+      });
       
       if (error) throw error;
       return data || [];
