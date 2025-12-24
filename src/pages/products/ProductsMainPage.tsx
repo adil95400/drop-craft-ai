@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
 import { useProductFilters } from '@/hooks/useProductFilters';
@@ -16,6 +15,9 @@ import { AdvancedFiltersPanel } from '@/components/products/AdvancedFiltersPanel
 import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 import { BulkEnrichmentDialog } from '@/components/enrichment';
 import { ProductsDebugPanel } from '@/components/debug/ProductsDebugPanel';
+import { ProductsStatsHeader } from '@/components/products/ProductsStatsHeader';
+import { ProductsQuickFilters } from '@/components/products/ProductsQuickFilters';
+import { ProductViewModal } from '@/components/modals/ProductViewModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -26,13 +28,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
 
 /**
  * Page principale de gestion des produits
  * Utilise le hook unifié et le wrapper pour toutes les actions
  */
 export default function ProductsMainPage() {
-  const navigate = useNavigate();
   const { products, stats, isLoading, error, refetch } = useUnifiedProducts();
   const { filters, filteredProducts, categories, updateFilter, resetFilters, hasActiveFilters } = useProductFilters(products);
   const { 
@@ -55,6 +57,9 @@ export default function ProductsMainPage() {
   const [showBulkEdit, setShowBulkEdit] = useState(false);
   const [showBulkEnrichment, setShowBulkEnrichment] = useState(false);
   const [expertMode, setExpertMode] = useState<boolean>(false);
+  const [quickFilter, setQuickFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null);
 
   const handleEdit = (product: any) => {
     openModal('createProduct', { productId: product.id });
@@ -98,8 +103,8 @@ export default function ProductsMainPage() {
     }
   };
 
-  const handleView = (product: any) => {
-    navigate(`/products/${product.id}`);
+  const handleView = (product: UnifiedProduct) => {
+    setViewModalProduct(product);
   };
 
   if (isLoading) {
@@ -637,6 +642,25 @@ export default function ProductsMainPage() {
       
       {/* Panneau de diagnostic - affiche en mode développement */}
       <ProductsDebugPanel />
+      
+      {/* Modal de visualisation produit */}
+      <ProductViewModal
+        open={!!viewModalProduct}
+        onOpenChange={(open) => !open && setViewModalProduct(null)}
+        product={viewModalProduct}
+        onEdit={() => {
+          if (viewModalProduct) {
+            handleEdit(viewModalProduct);
+            setViewModalProduct(null);
+          }
+        }}
+        onDelete={() => {
+          if (viewModalProduct) {
+            handleDelete(viewModalProduct.id);
+            setViewModalProduct(null);
+          }
+        }}
+      />
     </div>
   );
 }
