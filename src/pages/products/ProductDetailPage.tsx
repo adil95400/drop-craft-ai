@@ -21,38 +21,58 @@ export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const { data: userData } = useQuery({
+  const { data: userData, isLoading: isLoadingUser } = useQuery({
     queryKey: ['user'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       return user
-    }
+    },
   })
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ['product', id, userData?.id],
-    queryFn: () => ProductsUnifiedService.getProductById(id!, userData!.id),
-    enabled: !!id && !!userData?.id
+  const userId = userData?.id
+
+  const { data: product, isLoading: isLoadingProduct } = useQuery({
+    queryKey: ['product', id, userId],
+    queryFn: async () => {
+      if (!id || !userId) return null
+      return ProductsUnifiedService.getProductById(id, userId)
+    },
+    enabled: !!id && !!userId,
   })
 
   const { data: analytics } = useQuery({
-    queryKey: ['product-analytics', id, userData?.id],
-    queryFn: () => ProductAnalyticsService.getProductMetrics(id!, userData!.id),
-    enabled: !!id && !!userData?.id
+    queryKey: ['product-analytics', id, userId],
+    queryFn: () => ProductAnalyticsService.getProductMetrics(id!, userId!),
+    enabled: !!id && !!userId,
   })
 
   // Hook d'enrichissement
-  const { 
-    enrichments, 
+  const {
+    enrichments,
     isLoading: isLoadingEnrichment,
-    enrich, 
-    enrichAI, 
+    enrich,
+    enrichAI,
     applyEnrichment,
     isEnriching,
-    isApplying
+    isApplying,
   } = useProductEnrichment(id || '')
 
-  if (isLoading) {
+  if (isLoadingUser || (id && !userId)) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="text-center py-12">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">Chargement de votre session...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (isLoadingProduct) {
     return (
       <div className="container mx-auto p-6">
         <Card>
