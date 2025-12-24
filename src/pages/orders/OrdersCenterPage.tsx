@@ -215,11 +215,16 @@ export default function OrdersCenterPage() {
             Vue unifiée de toutes vos commandes avec gestion avancée
           </p>
         </div>
-        <Button onClick={loadOrders} disabled={isLoading}>
+        <Button 
+          onClick={loadOrders} 
+          disabled={isLoading}
+          data-testid="sync-button"
+          aria-busy={isLoading}
+        >
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Actualiser
+          {isLoading ? 'Synchronisation...' : 'Actualiser'}
         </Button>
-        <Button onClick={handleExport}>
+        <Button onClick={handleExport} data-testid="export-button">
           <Download className="w-4 h-4 mr-2" />
           Exporter
         </Button>
