@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { 
   AlertTriangle, Package, TrendingDown, RefreshCw, Plus, Edit, Trash2,
-  Bell, Settings, Filter, Search, Eye, BarChart3
+  Bell, Settings, Search, Eye, Loader2, CheckCircle
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
@@ -21,14 +21,19 @@ import { fr } from 'date-fns/locale'
 
 interface StockAlert {
   id: string
-  product_id: string
-  product_name: string
-  current_stock: number
-  threshold: number
-  alert_type: 'low_stock' | 'out_of_stock' | 'overstock'
-  status: 'active' | 'resolved' | 'dismissed'
+  product_id: string | null
+  alert_type: string
+  severity: string
+  message: string | null
+  threshold_value: number | null
+  current_value: number | null
+  is_resolved: boolean
+  resolved_at: string | null
   created_at: string
-  updated_at: string
+  product?: {
+    name: string
+    stock_quantity: number
+  }
 }
 
 export default function StockAlerts() {
@@ -38,19 +43,44 @@ export default function StockAlerts() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [selectedAlert, setSelectedAlert] = useState<StockAlert | null>(null)
+  const [newAlert, setNewAlert] = useState({
+    product_id: '',
+    alert_type: 'low_stock',
+    threshold_value: 10
+  })
 
-  // Fetch products with low stock
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['products-stock', user?.id],
+  // Fetch stock alerts from database
+  const { data: alerts = [], isLoading: isLoadingAlerts } = useQuery({
+    queryKey: ['stock-alerts', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+      
+      const { data, error } = await supabase
+        .from('stock_alerts')
+        .select(`
+          *,
+          product:products(name, stock_quantity)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data as StockAlert[]
+    },
+    enabled: !!user?.id
+  })
+
+  // Fetch products for creating new alerts
+  const { data: products = [], isLoading: isLoadingProducts } = useQuery({
+    queryKey: ['products-for-alerts', user?.id],
     queryFn: async () => {
       if (!user?.id) return []
       
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, stock_quantity, category, price, sku')
+        .select('id, name, stock_quantity, sku')
         .eq('user_id', user.id)
-        .order('stock_quantity', { ascending: true })
+        .order('name')
       
       if (error) throw error
       return data
@@ -58,53 +88,116 @@ export default function StockAlerts() {
     enabled: !!user?.id
   })
 
-  // Generate mock stock alerts based on products
-  const stockAlerts: StockAlert[] = products?.map((product, index) => ({
-    id: `alert-${product.id}`,
-    product_id: product.id,
-    product_name: product.name,
-    current_stock: product.stock_quantity,
-    threshold: 10,
-    alert_type: (product.stock_quantity === 0 ? 'out_of_stock' : 
-                product.stock_quantity < 5 ? 'low_stock' : 'overstock') as StockAlert['alert_type'],
-    status: (product.stock_quantity === 0 ? 'active' : 
-            product.stock_quantity < 10 ? 'active' : 'resolved') as StockAlert['status'],
-    created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date().toISOString()
-  })).filter(alert => alert.status === 'active' || filterStatus === 'all') || []
+  // Create alert mutation
+  const createAlert = useMutation({
+    mutationFn: async (alertData: typeof newAlert) => {
+      if (!user?.id) throw new Error('Non authentifié')
+      
+      const product = products.find(p => p.id === alertData.product_id)
+      
+      const { data, error } = await supabase
+        .from('stock_alerts')
+        .insert([{
+          user_id: user.id,
+          product_id: alertData.product_id,
+          alert_type: alertData.alert_type,
+          severity: alertData.alert_type === 'out_of_stock' ? 'critical' : 'warning',
+          message: `Alerte stock pour ${product?.name || 'produit'}`,
+          threshold_value: alertData.threshold_value,
+          current_value: product?.stock_quantity || 0,
+          is_resolved: false
+        }])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock-alerts'] })
+      toast({ title: "Alerte créée", description: "L'alerte de stock a été créée" })
+      setIsCreateModalOpen(false)
+      setNewAlert({ product_id: '', alert_type: 'low_stock', threshold_value: 10 })
+    },
+    onError: () => {
+      toast({ title: "Erreur", description: "Impossible de créer l'alerte", variant: "destructive" })
+    }
+  })
 
-  const filteredAlerts = stockAlerts.filter(alert => {
+  // Resolve alert mutation
+  const resolveAlert = useMutation({
+    mutationFn: async (alertId: string) => {
+      const { error } = await supabase
+        .from('stock_alerts')
+        .update({ 
+          is_resolved: true, 
+          resolved_at: new Date().toISOString(),
+          resolved_by: user?.id
+        })
+        .eq('id', alertId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock-alerts'] })
+      toast({ title: "Alerte résolue" })
+    }
+  })
+
+  // Delete alert mutation
+  const deleteAlert = useMutation({
+    mutationFn: async (alertId: string) => {
+      const { error } = await supabase
+        .from('stock_alerts')
+        .delete()
+        .eq('id', alertId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock-alerts'] })
+      toast({ title: "Alerte supprimée" })
+    }
+  })
+
+  // Filter alerts
+  const filteredAlerts = alerts.filter(alert => {
+    const productName = alert.product?.name || ''
     const matchesSearch = !searchTerm || 
-      alert.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+      productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alert.message?.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesFilter = filterStatus === 'all' || 
-      alert.status === filterStatus ||
+      (filterStatus === 'active' && !alert.is_resolved) ||
+      (filterStatus === 'resolved' && alert.is_resolved) ||
       alert.alert_type === filterStatus
 
     return matchesSearch && matchesFilter
   })
 
+  // Stats
   const alertStats = {
-    total: stockAlerts.length,
-    active: stockAlerts.filter(a => a.status === 'active').length,
-    lowStock: stockAlerts.filter(a => a.alert_type === 'low_stock').length,
-    outOfStock: stockAlerts.filter(a => a.alert_type === 'out_of_stock').length
+    total: alerts.length,
+    active: alerts.filter(a => !a.is_resolved).length,
+    lowStock: alerts.filter(a => a.alert_type === 'low_stock' && !a.is_resolved).length,
+    outOfStock: alerts.filter(a => a.alert_type === 'out_of_stock' && !a.is_resolved).length
   }
 
-  const getAlertColor = (type: string): any => {
+  const getAlertColor = (type: string, isResolved: boolean): any => {
+    if (isResolved) return 'secondary'
     switch (type) {
       case 'out_of_stock': return 'destructive'
-      case 'low_stock': return 'secondary'
-      case 'overstock': return 'default'
+      case 'low_stock': return 'default'
+      case 'overstock': return 'outline'
       default: return 'outline'
     }
   }
 
   const getAlertIcon = (type: string) => {
     switch (type) {
-      case 'out_of_stock': return <AlertTriangle className="w-4 h-4" />
-      case 'low_stock': return <TrendingDown className="w-4 h-4" />
-      case 'overstock': return <Package className="w-4 h-4" />
+      case 'out_of_stock': return <AlertTriangle className="w-4 h-4 text-red-500" />
+      case 'low_stock': return <TrendingDown className="w-4 h-4 text-yellow-500" />
+      case 'overstock': return <Package className="w-4 h-4 text-blue-500" />
       default: return <Bell className="w-4 h-4" />
     }
   }
@@ -118,6 +211,8 @@ export default function StockAlerts() {
     }
   }
 
+  const isLoading = isLoadingAlerts || isLoadingProducts
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -128,10 +223,6 @@ export default function StockAlerts() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline">
-            <Settings className="w-4 h-4 mr-2" />
-            Paramètres
-          </Button>
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -149,14 +240,17 @@ export default function StockAlerts() {
               <div className="space-y-4">
                 <div>
                   <Label>Produit</Label>
-                  <Select>
+                  <Select 
+                    value={newAlert.product_id} 
+                    onValueChange={(value) => setNewAlert({ ...newAlert, product_id: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner un produit" />
                     </SelectTrigger>
                     <SelectContent>
-                      {products?.map(product => (
+                      {products.map(product => (
                         <SelectItem key={product.id} value={product.id}>
-                          {product.name} (Stock: {product.stock_quantity})
+                          {product.name} (Stock: {product.stock_quantity ?? 0})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -164,11 +258,19 @@ export default function StockAlerts() {
                 </div>
                 <div>
                   <Label>Seuil d'alerte</Label>
-                  <Input type="number" placeholder="10" />
+                  <Input 
+                    type="number" 
+                    value={newAlert.threshold_value}
+                    onChange={(e) => setNewAlert({ ...newAlert, threshold_value: parseInt(e.target.value) || 0 })}
+                    placeholder="10" 
+                  />
                 </div>
                 <div>
                   <Label>Type d'alerte</Label>
-                  <Select>
+                  <Select 
+                    value={newAlert.alert_type}
+                    onValueChange={(value) => setNewAlert({ ...newAlert, alert_type: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Type d'alerte" />
                     </SelectTrigger>
@@ -179,12 +281,15 @@ export default function StockAlerts() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Switch id="notifications" />
-                  <Label htmlFor="notifications">Notifications email</Label>
-                </div>
                 <div className="flex gap-2 pt-4">
-                  <Button className="flex-1">Créer l'alerte</Button>
+                  <Button 
+                    className="flex-1" 
+                    onClick={() => createAlert.mutate(newAlert)}
+                    disabled={!newAlert.product_id || createAlert.isPending}
+                  >
+                    {createAlert.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Créer l'alerte
+                  </Button>
                   <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                     Annuler
                   </Button>
@@ -202,7 +307,11 @@ export default function StockAlerts() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Alertes</p>
-                <p className="text-2xl font-bold">{alertStats.total}</p>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mt-2" />
+                ) : (
+                  <p className="text-2xl font-bold">{alertStats.total}</p>
+                )}
               </div>
               <Bell className="w-8 h-8 text-muted-foreground" />
             </div>
@@ -213,7 +322,11 @@ export default function StockAlerts() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Alertes Actives</p>
-                <p className="text-2xl font-bold text-red-600">{alertStats.active}</p>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mt-2" />
+                ) : (
+                  <p className="text-2xl font-bold text-red-600">{alertStats.active}</p>
+                )}
               </div>
               <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
@@ -224,7 +337,11 @@ export default function StockAlerts() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Stock Faible</p>
-                <p className="text-2xl font-bold text-yellow-600">{alertStats.lowStock}</p>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mt-2" />
+                ) : (
+                  <p className="text-2xl font-bold text-yellow-600">{alertStats.lowStock}</p>
+                )}
               </div>
               <TrendingDown className="w-8 h-8 text-yellow-500" />
             </div>
@@ -235,7 +352,11 @@ export default function StockAlerts() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Ruptures</p>
-                <p className="text-2xl font-bold text-red-600">{alertStats.outOfStock}</p>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mt-2" />
+                ) : (
+                  <p className="text-2xl font-bold text-red-600">{alertStats.outOfStock}</p>
+                )}
               </div>
               <Package className="w-8 h-8 text-red-500" />
             </div>
@@ -245,8 +366,7 @@ export default function StockAlerts() {
 
       <Tabs defaultValue="alerts" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="alerts">Alertes</TabsTrigger>
-          <TabsTrigger value="rules">Règles d'alerte</TabsTrigger>
+          <TabsTrigger value="alerts">Alertes ({filteredAlerts.length})</TabsTrigger>
           <TabsTrigger value="history">Historique</TabsTrigger>
         </TabsList>
 
@@ -284,14 +404,28 @@ export default function StockAlerts() {
 
           {/* Alerts List */}
           <div className="space-y-4">
-            {filteredAlerts.length === 0 ? (
+            {isLoading ? (
+              <Card>
+                <CardContent className="p-8 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </CardContent>
+              </Card>
+            ) : filteredAlerts.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-medium mb-2">Aucune alerte</h3>
-                  <p className="text-muted-foreground">
-                    Aucune alerte de stock ne correspond à vos critères.
+                  <p className="text-muted-foreground mb-4">
+                    {alerts.length === 0 
+                      ? "Créez votre première alerte de stock"
+                      : "Aucune alerte ne correspond à vos critères"}
                   </p>
+                  {alerts.length === 0 && (
+                    <Button onClick={() => setIsCreateModalOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Nouvelle alerte
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -303,34 +437,48 @@ export default function StockAlerts() {
                         {getAlertIcon(alert.alert_type)}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-medium">{alert.product_name}</h4>
-                            <Badge variant={getAlertColor(alert.alert_type)}>
+                            <h4 className="font-medium">{alert.product?.name || 'Produit inconnu'}</h4>
+                            <Badge variant={getAlertColor(alert.alert_type, alert.is_resolved)}>
                               {getAlertLabel(alert.alert_type)}
                             </Badge>
-                            <Badge variant={alert.status === 'active' ? 'destructive' : 'secondary'}>
-                              {alert.status === 'active' ? 'Actif' : 'Résolu'}
-                            </Badge>
+                            {alert.is_resolved ? (
+                              <Badge variant="secondary" className="flex items-center gap-1">
+                                <CheckCircle className="w-3 h-3" />
+                                Résolu
+                              </Badge>
+                            ) : (
+                              <Badge variant="destructive">Actif</Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Stock actuel: <strong>{alert.current_stock}</strong></span>
-                            <span>Seuil: <strong>{alert.threshold}</strong></span>
+                            <span>Stock actuel: <strong>{alert.current_value ?? alert.product?.stock_quantity ?? 0}</strong></span>
+                            <span>Seuil: <strong>{alert.threshold_value ?? 10}</strong></span>
                             <span>Créé le {format(new Date(alert.created_at), 'PPp', { locale: fr })}</span>
                           </div>
+                          {alert.message && (
+                            <p className="text-sm text-muted-foreground mt-1">{alert.message}</p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="w-4 h-4 mr-2" />
-                          Voir
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <RefreshCw className="w-4 h-4 mr-2" />
-                          Réapprovisionner
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="text-destructive">
+                        {!alert.is_resolved && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => resolveAlert.mutate(alert.id)}
+                            disabled={resolveAlert.isPending}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Résoudre
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-destructive"
+                          onClick={() => deleteAlert.mutate(alert.id)}
+                          disabled={deleteAlert.isPending}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -342,71 +490,43 @@ export default function StockAlerts() {
           </div>
         </TabsContent>
 
-        <TabsContent value="rules" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Règles d'alerte automatiques</CardTitle>
-              <CardDescription>
-                Configurez des règles pour générer automatiquement des alertes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">Stock faible général</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Alerte quand le stock passe sous 10 unités
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">Rupture imminente</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Alerte 3 jours avant rupture prévue
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">Surstock détecté</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Alerte quand le stock dépasse 100 unités
-                  </p>
-                </div>
-                <Switch />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="history" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Historique des alertes</CardTitle>
+              <CardTitle>Historique des alertes résolues</CardTitle>
               <CardDescription>
-                Consultez l'historique complet de vos alertes de stock
+                Consultez les alertes qui ont été résolues
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {[...Array(5)].map((_, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div>
-                        <p className="font-medium">Alerte résolue: Produit {index + 1}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Stock réapprovisionné - {format(new Date(Date.now() - index * 24 * 60 * 60 * 1000), 'PPp', { locale: fr })}
-                        </p>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {alerts.filter(a => a.is_resolved).length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      Aucune alerte résolue pour le moment
+                    </p>
+                  ) : (
+                    alerts.filter(a => a.is_resolved).map((alert) => (
+                      <div key={alert.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <div>
+                            <p className="font-medium">Alerte résolue: {alert.product?.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {alert.resolved_at && format(new Date(alert.resolved_at), 'PPp', { locale: fr })}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant="secondary">Résolu</Badge>
                       </div>
-                    </div>
-                    <Badge variant="secondary">Résolu</Badge>
-                  </div>
-                ))}
-              </div>
+                    ))
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
