@@ -6,7 +6,11 @@ import {
   BarChart3, Package, Truck, TrendingUp, Zap, Users, Search, 
   Brain, Shield, Plug, Settings, Crown, Sparkles, Upload, Trophy,
   Building, Building2, GraduationCap, LucideIcon, HelpCircle, Calculator,
-  Megaphone, FileText, ShoppingCart, Globe, Store, Puzzle, GitCompare
+  Megaphone, FileText, ShoppingCart, Globe, Store, Puzzle, GitCompare,
+  Mail, FlaskConical, Share2, Ticket, Award, Timer, Calendar, Palette,
+  Workflow, Target, DollarSign, RefreshCw, Lightbulb, PieChart, Eye,
+  Activity, Receipt, Server, CreditCard, MessageCircle, Bell, Video,
+  Code, Chrome, FileEdit, Rss, Database, Tag, Star, CheckCircle, Boxes
 } from 'lucide-react';
 
 export interface SidebarSubItem {
@@ -59,6 +63,7 @@ export const userActivityConfig = {
 };
 
 // Map des icônes pour éviter les erreurs de référence
+
 const iconMap: Record<string, any> = {
   'BarChart3': BarChart3,
   'Package': Package,
@@ -86,7 +91,38 @@ const iconMap: Record<string, any> = {
   'Globe': Globe,
   'Store': Store,
   'PuzzlePiece': Puzzle,
-  'GitCompare': GitCompare
+  'GitCompare': GitCompare,
+  'Mail': Mail,
+  'FlaskConical': FlaskConical,
+  'Share2': Share2,
+  'Ticket': Ticket,
+  'Award': Award,
+  'Timer': Timer,
+  'Calendar': Calendar,
+  'Palette': Palette,
+  'Workflow': Workflow,
+  'Target': Target,
+  'DollarSign': DollarSign,
+  'RefreshCw': RefreshCw,
+  'Lightbulb': Lightbulb,
+  'PieChart': PieChart,
+  'Eye': Eye,
+  'Activity': Activity,
+  'Receipt': Receipt,
+  'Server': Server,
+  'CreditCard': CreditCard,
+  'MessageCircle': MessageCircle,
+  'Bell': Bell,
+  'Video': Video,
+  'Code': Code,
+  'Chrome': Chrome,
+  'FileEdit': FileEdit,
+  'Rss': Rss,
+  'Database': Database,
+  'Tag': Tag,
+  'Star': Star,
+  'CheckCircle': CheckCircle,
+  'Boxes': Boxes
 };
 
 // Génération dynamique des éléments de sidebar basée sur la configuration des modules
