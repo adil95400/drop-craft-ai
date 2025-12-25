@@ -19,6 +19,7 @@ import { useTheme } from "next-themes";
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
 import { BackButton } from '@/components/navigation/BackButton';
+import { useApiKeys } from '@/hooks/useApiKeys';
 import { 
   Settings as SettingsIcon,
   User, 
@@ -103,19 +104,9 @@ const Settings = () => {
     google: false
   });
 
-  const [apiKeys, setApiKeys] = useState([{
-    id: 1,
-    name: "Production API",
-    key: "sk_live_***************************",
-    visible: false,
-    created: "2024-01-15"
-  }, {
-    id: 2,
-    name: "Development API",
-    key: "sk_test_***************************",
-    visible: false,
-    created: "2024-01-10"
-  }]);
+  // Use real API keys from database
+  const { apiKeys: realApiKeys, generateApiKey, deleteApiKey: removeApiKey, loading: apiKeysLoading } = useApiKeys();
+  const [keyVisibility, setKeyVisibility] = useState<Record<string, boolean>>({});
 
   // Use store values and local state for appearance
   const [compactMode, setCompactMode] = useState(sidebarCollapsed);
@@ -176,33 +167,16 @@ const Settings = () => {
     );
   };
 
-  const handleApiKeyGenerate = () => {
-    toast.promise(
-      new Promise(resolve => {
-        setTimeout(() => {
-          const newKey = {
-            id: Date.now(),
-            name: "Nouvelle API Key",
-            key: `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
-            visible: false,
-            created: new Date().toISOString().split('T')[0]
-          };
-          setApiKeys([...apiKeys, newKey]);
-          resolve('success');
-        }, 1200);
-      }), 
-      {
-        loading: 'Génération de la nouvelle clé API...',
-        success: 'Nouvelle clé API créée avec succès',
-        error: 'Erreur lors de la génération'
-      }
-    );
+  const handleApiKeyGenerate = async () => {
+    try {
+      await generateApiKey('Nouvelle API Key', ['read', 'write']);
+    } catch (error) {
+      // Error already handled in hook
+    }
   };
 
-  const toggleKeyVisibility = (id: number) => {
-    setApiKeys(apiKeys.map(key => 
-      key.id === id ? { ...key, visible: !key.visible } : key
-    ));
+  const toggleKeyVisibility = (id: string) => {
+    setKeyVisibility(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const copyToClipboard = (text: string) => {
@@ -210,10 +184,9 @@ const Settings = () => {
     toast.success('Clé API copiée dans le presse-papier');
   };
 
-  const deleteApiKey = (id: number) => {
+  const handleDeleteApiKey = async (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette clé API ?')) {
-      setApiKeys(apiKeys.filter(key => key.id !== id));
-      toast.success('Clé API supprimée avec succès');
+      await removeApiKey(id);
     }
   };
 
@@ -1052,40 +1025,46 @@ const Settings = () => {
                   </div>
 
                   <div className="space-y-3">
-                    {apiKeys.map((apiKey) => (
-                      <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                        <div className="space-y-1">
-                          <div className="font-medium">{apiKey.name}</div>
-                          <div className="font-mono text-sm text-muted-foreground">
-                            {apiKey.visible ? apiKey.key : apiKey.key.replace(/./g, '•')}
+                    {apiKeysLoading ? (
+                      <div className="text-center py-4 text-muted-foreground">Chargement...</div>
+                    ) : realApiKeys.length === 0 ? (
+                      <div className="text-center py-4 text-muted-foreground">Aucune clé API. Créez-en une pour commencer.</div>
+                    ) : (
+                      realApiKeys.map((apiKey) => (
+                        <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                          <div className="space-y-1">
+                            <div className="font-medium">{apiKey.name}</div>
+                            <div className="font-mono text-sm text-muted-foreground">
+                              {keyVisibility[apiKey.id] ? apiKey.key : (apiKey.key_prefix || apiKey.key.substring(0, 10)) + '••••••••••••••••'}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Créée le {new Date(apiKey.created_at).toLocaleDateString('fr-FR')}</div>
                           </div>
-                          <div className="text-xs text-muted-foreground">Créée le {apiKey.created}</div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleKeyVisibility(apiKey.id)}
+                            >
+                              {keyVisibility[apiKey.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(apiKey.key)}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteApiKey(apiKey.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleKeyVisibility(apiKey.id)}
-                          >
-                            {apiKey.visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(apiKey.key)}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteApiKey(apiKey.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
 
                   <div className="p-4 bg-muted/50 rounded-lg">
