@@ -8,16 +8,43 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Plus, Mail, Phone, MapPin, User, Calendar, ShoppingBag } from 'lucide-react';
+import { Search, Plus, Mail, Phone, User, Calendar, ShoppingBag, Eye, Edit, Trash2, Send, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useCustomerManagement } from '@/hooks/useCustomerManagement';
 import { logError } from '@/utils/consoleCleanup';
+import { CustomerDetailSheet } from './CustomerDetailSheet';
+import { CustomerEditDialog } from './CustomerEditDialog';
+import { CustomerDeleteDialog } from './CustomerDeleteDialog';
+import { CustomerEmailDialog } from './CustomerEmailDialog';
+
+interface CustomerWithDetails {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  status: string;
+  total_spent?: number;
+  total_orders?: number;
+  created_at: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  notes?: string;
+}
 
 export function CustomerManagement() {
-  const { customers, segments, loading, createCustomer, updateCustomer, createSegment } = useCustomerManagement();
+  const { customers, segments, loading, createCustomer, updateCustomer, deleteCustomer, createSegment } = useCustomerManagement();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSegment, setSelectedSegment] = useState('all');
   const [isNewCustomerOpen, setIsNewCustomerOpen] = useState(false);
   const [isNewSegmentOpen, setIsNewSegmentOpen] = useState(false);
+  
+  // Customer detail/edit/delete/email states
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerWithDetails | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -116,13 +143,66 @@ export function CustomerManagement() {
         <TabsContent value="customers" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredCustomers.map((customer) => (
-              <Card key={customer.id} className="hover:shadow-md transition-shadow">
+              <Card 
+                key={customer.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer group"
+                onClick={() => {
+                  setSelectedCustomer(customer as CustomerWithDetails);
+                  setIsDetailOpen(true);
+                }}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">{customer.name}</CardTitle>
-                    <Badge variant={customer.status === 'active' ? 'default' : 'secondary'}>
-                      {customer.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={customer.status === 'active' ? 'default' : 'secondary'}>
+                        {customer.status}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCustomer(customer as CustomerWithDetails);
+                            setIsDetailOpen(true);
+                          }}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Voir détails
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCustomer(customer as CustomerWithDetails);
+                            setIsEmailOpen(true);
+                          }}>
+                            <Send className="h-4 w-4 mr-2" />
+                            Envoyer email
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCustomer(customer as CustomerWithDetails);
+                            setIsEditOpen(true);
+                          }}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Modifier
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCustomer(customer as CustomerWithDetails);
+                              setIsDeleteOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Supprimer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -139,17 +219,24 @@ export function CustomerManagement() {
                   <div className="flex items-center justify-between pt-2">
                     <div className="text-sm">
                       <div className="font-medium">€{customer.total_spent?.toLocaleString() || 0}</div>
-                      <div className="text-muted-foreground">Total spent</div>
+                      <div className="text-muted-foreground">Total dépensé</div>
                     </div>
                     <div className="text-sm text-right">
                       <div className="font-medium">{customer.total_orders || 0}</div>
-                      <div className="text-muted-foreground">Orders</div>
+                      <div className="text-muted-foreground">Commandes</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
+          
+          {filteredCustomers.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Aucun client trouvé</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="segments" className="space-y-4">
@@ -238,6 +325,56 @@ export function CustomerManagement() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Customer Detail Sheet */}
+      <CustomerDetailSheet
+        customer={selectedCustomer}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        onEdit={(customer) => {
+          setSelectedCustomer(customer as CustomerWithDetails);
+          setIsDetailOpen(false);
+          setIsEditOpen(true);
+        }}
+        onDelete={(customer) => {
+          setSelectedCustomer(customer as CustomerWithDetails);
+          setIsDetailOpen(false);
+          setIsDeleteOpen(true);
+        }}
+        onSendEmail={(customer) => {
+          setSelectedCustomer(customer as CustomerWithDetails);
+          setIsDetailOpen(false);
+          setIsEmailOpen(true);
+        }}
+      />
+
+      {/* Edit Dialog */}
+      <CustomerEditDialog
+        customer={selectedCustomer}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        onSave={async (id, data) => {
+          await updateCustomer(id, data);
+        }}
+      />
+
+      {/* Delete Dialog */}
+      <CustomerDeleteDialog
+        customer={selectedCustomer}
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        onConfirm={async (id) => {
+          await deleteCustomer(id);
+          setSelectedCustomer(null);
+        }}
+      />
+
+      {/* Email Dialog */}
+      <CustomerEmailDialog
+        customer={selectedCustomer}
+        open={isEmailOpen}
+        onOpenChange={setIsEmailOpen}
+      />
     </div>
   );
 }
