@@ -65,6 +65,9 @@ const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 
+// Onboarding
+const OnboardingHubPage = lazy(() => import('@/pages/onboarding/OnboardingHubPage'));
+
 export function CoreRoutes() {
   return (
     <Routes>
@@ -135,6 +138,9 @@ export function CoreRoutes() {
       {/* Learning & Security */}
       <Route path="academy" element={<AcademyPage />} />
       <Route path="security" element={<SecurityDashboard />} />
+      
+      {/* Onboarding */}
+      <Route path="onboarding" element={<OnboardingHubPage />} />
       
       {/* Subscription & Notifications */}
       <Route path="subscription" element={<SubscriptionPage />} />
