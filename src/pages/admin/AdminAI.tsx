@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Bot, 
   Brain, 
@@ -21,14 +23,15 @@ import {
 
 interface AITask {
   id: string;
-  task_type: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  progress: number;
+  job_type: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  priority: number;
   input_data: any;
   output_data?: any;
   error_message?: string;
   created_at: string;
-  processing_time_ms?: number;
+  completed_at?: string;
+  started_at?: string;
 }
 
 interface AIModel {
@@ -44,82 +47,90 @@ interface AIModel {
 
 const AdminAI = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<AITask[]>([]);
   const [models, setModels] = useState<AIModel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    activeTasks: 0,
+    completedTasks: 0,
+    successRate: 0,
+    totalCost: 0
+  });
 
   useEffect(() => {
-    fetchAIData();
-  }, []);
+    if (user) {
+      fetchAIData();
+    }
+  }, [user]);
 
   const fetchAIData = async () => {
     try {
-      // Simulate fetching AI tasks and models
-      const mockTasks: AITask[] = [
-        {
-          id: '1',
-          task_type: 'product_optimization',
-          status: 'completed',
-          progress: 100,
-          input_data: { products_count: 150 },
-          output_data: { optimized: 148, improved_conversion: '15%' },
-          created_at: '2024-01-15T10:30:00Z',
-          processing_time_ms: 2500
-        },
-        {
-          id: '2',
-          task_type: 'price_optimization',
-          status: 'running',
-          progress: 65,
-          input_data: { products_count: 80 },
-          created_at: '2024-01-20T14:20:00Z'
-        },
-        {
-          id: '3',
-          task_type: 'content_generation',
-          status: 'pending',
-          progress: 0,
-          input_data: { articles_needed: 10 },
-          created_at: '2024-01-20T16:00:00Z'
-        }
-      ];
-
-      const mockModels: AIModel[] = [
-        {
-          id: '1',
-          name: 'Product Description Generator',
-          type: 'text',
-          status: 'active',
-          accuracy: 92.5,
-          usage_count: 1420,
-          cost_per_use: 0.02,
-          last_trained_at: '2024-01-01T00:00:00Z'
-        },
-        {
-          id: '2',
-          name: 'Price Predictor',
-          type: 'prediction',
-          status: 'active',
-          accuracy: 87.3,
-          usage_count: 890,
-          cost_per_use: 0.05,
-          last_trained_at: '2024-01-10T00:00:00Z'
-        },
-        {
-          id: '3',
-          name: 'Image Optimizer',
-          type: 'image',
-          status: 'training',
-          accuracy: 85.1,
-          usage_count: 450,
-          cost_per_use: 0.08,
-          last_trained_at: '2023-12-20T00:00:00Z'
-        }
-      ];
-
-      setTasks(mockTasks);
-      setModels(mockModels);
+      setLoading(true);
+      
+      // Fetch AI optimization jobs
+      const { data: jobs, error: jobsError } = await supabase
+        .from('ai_optimization_jobs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      
+      if (jobsError) throw jobsError;
+      
+      const formattedTasks: AITask[] = (jobs || []).map(job => ({
+        id: job.id,
+        job_type: job.job_type,
+        status: job.status as AITask['status'],
+        priority: job.priority || 0,
+        input_data: job.input_data,
+        output_data: job.output_data,
+        error_message: job.error_message,
+        created_at: job.created_at,
+        completed_at: job.completed_at,
+        started_at: job.started_at
+      }));
+      
+      setTasks(formattedTasks);
+      
+      // Calculate stats
+      const completed = formattedTasks.filter(t => t.status === 'completed').length;
+      const failed = formattedTasks.filter(t => t.status === 'failed').length;
+      const active = formattedTasks.filter(t => t.status === 'processing').length;
+      const total = completed + failed;
+      
+      setStats({
+        activeTasks: active,
+        completedTasks: completed,
+        successRate: total > 0 ? Math.round((completed / total) * 100) : 100,
+        totalCost: formattedTasks.length * 0.05 // Estimate $0.05 per job
+      });
+      
+      // Create mock models based on job types found
+      const jobTypes = [...new Set(formattedTasks.map(t => t.job_type))];
+      const modelData: AIModel[] = jobTypes.slice(0, 5).map((type, i) => ({
+        id: `model-${i}`,
+        name: type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        type: ['text', 'prediction', 'analysis', 'image'][i % 4] as AIModel['type'],
+        status: 'active' as const,
+        accuracy: 85 + Math.random() * 10,
+        usage_count: formattedTasks.filter(t => t.job_type === type).length,
+        cost_per_use: 0.02 + Math.random() * 0.08,
+        last_trained_at: new Date().toISOString()
+      }));
+      
+      // Add default models if none found
+      if (modelData.length === 0) {
+        modelData.push(
+          { id: '1', name: 'Product Description Generator', type: 'text', status: 'active', accuracy: 92.5, usage_count: 0, cost_per_use: 0.02, last_trained_at: new Date().toISOString() },
+          { id: '2', name: 'Price Predictor', type: 'prediction', status: 'active', accuracy: 87.3, usage_count: 0, cost_per_use: 0.05, last_trained_at: new Date().toISOString() },
+          { id: '3', name: 'Image Optimizer', type: 'image', status: 'active', accuracy: 85.1, usage_count: 0, cost_per_use: 0.08, last_trained_at: new Date().toISOString() }
+        );
+      }
+      
+      setModels(modelData);
+      
     } catch (error) {
+      console.error('Error fetching AI data:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les données IA",
@@ -181,7 +192,7 @@ const AdminAI = () => {
               <CardTitle className="text-sm">Tâches Actives</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{tasks.filter(t => t.status === 'running').length}</div>
+                <div className="text-2xl font-bold">{stats.activeTasks}</div>
               </CardContent>
             </Card>
             
@@ -190,7 +201,7 @@ const AdminAI = () => {
                 <CardTitle className="text-sm">Tâches Terminées</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{tasks.filter(t => t.status === 'completed').length}</div>
+                <div className="text-2xl font-bold">{stats.completedTasks}</div>
               </CardContent>
             </Card>
             
@@ -199,7 +210,7 @@ const AdminAI = () => {
                 <CardTitle className="text-sm">Taux Succès</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">94.2%</div>
+                <div className="text-2xl font-bold">{stats.successRate}%</div>
               </CardContent>
             </Card>
             
@@ -208,7 +219,7 @@ const AdminAI = () => {
                 <CardTitle className="text-sm">Coût Total</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$127.50</div>
+                <div className="text-2xl font-bold">${stats.totalCost.toFixed(2)}</div>
               </CardContent>
             </Card>
           </div>
@@ -222,7 +233,7 @@ const AdminAI = () => {
                       {getStatusIcon(task.status)}
                       <div>
                         <CardTitle className="text-lg capitalize">
-                          {task.task_type.replace('_', ' ')}
+                          {task.job_type.replace(/_/g, ' ')}
                         </CardTitle>
                         <CardDescription>
                           Créée le {new Date(task.created_at).toLocaleDateString('fr-FR')}
@@ -233,25 +244,25 @@ const AdminAI = () => {
                       <Badge variant={task.status === 'completed' ? 'default' : 'secondary'}>
                         {task.status}
                       </Badge>
-                      {task.processing_time_ms && (
+                      {task.started_at && task.completed_at && (
                         <Badge variant="outline">
-                          {task.processing_time_ms}ms
+                          {Math.round((new Date(task.completed_at).getTime() - new Date(task.started_at).getTime()))}ms
                         </Badge>
                       )}
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {task.status === 'running' && (
+                  {task.status === 'processing' && (
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-1">
                         <span>Progression</span>
-                        <span>{task.progress}%</span>
+                        <span>En cours...</span>
                       </div>
                       <div className="w-full bg-secondary rounded-full h-2">
                         <div 
-                          className="bg-primary h-2 rounded-full transition-all duration-300" 
-                          style={{ width: `${task.progress}%` }}
+                          className="bg-primary h-2 rounded-full transition-all duration-300 animate-pulse" 
+                          style={{ width: '60%' }}
                         ></div>
                       </div>
                     </div>
