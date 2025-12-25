@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Check, Loader2, TrendingUp, Eye } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
+import { usePlatformManagement } from '@/hooks/usePlatformManagement'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -17,17 +17,6 @@ interface ProductOption {
   price: number | null
 }
 
-interface OptimizationHistoryItem {
-  id: string
-  product_id: string
-  platform: string
-  optimization_type: string
-  optimization_score: number
-  optimized_content: any
-  is_applied: boolean
-  created_at: string
-}
-
 export function ContentOptimizer() {
   const [products, setProducts] = useState<ProductOption[]>([])
   const [selectedProduct, setSelectedProduct] = useState<string>('')
@@ -35,10 +24,9 @@ export function ContentOptimizer() {
   const [optimizationType, setOptimizationType] = useState<'title' | 'description' | 'keywords' | 'full'>('full')
   const [optimizing, setOptimizing] = useState(false)
   const [optimizationResult, setOptimizationResult] = useState<any>(null)
-  const [history, setHistory] = useState<OptimizationHistoryItem[]>([])
-  const { toast } = useToast()
+  
+  const { optimizations, platforms, createOptimization, applyOptimization, loading } = usePlatformManagement()
 
-  const platforms = ['shopify', 'amazon', 'ebay', 'woocommerce', 'facebook', 'google']
   const optimizationTypes = [
     { value: 'title', label: 'Titre uniquement' },
     { value: 'description', label: 'Description uniquement' },
@@ -48,7 +36,6 @@ export function ContentOptimizer() {
 
   useEffect(() => {
     fetchProducts()
-    fetchOptimizationHistory()
   }, [])
 
   const fetchProducts = async () => {
@@ -75,92 +62,41 @@ export function ContentOptimizer() {
     }
   }
 
-  const fetchOptimizationHistory = async () => {
-    // Use mock data since content_optimizations table doesn't exist
-    const mockHistory: OptimizationHistoryItem[] = [
-      {
-        id: '1',
-        product_id: 'prod1',
-        platform: 'shopify',
-        optimization_type: 'full',
-        optimization_score: 85,
-        optimized_content: { title: 'Optimized Title', description: 'Better description' },
-        is_applied: true,
-        created_at: new Date().toISOString()
-      }
-    ]
-    setHistory(mockHistory)
-  }
-
   const optimizeContent = async () => {
-    if (!selectedProduct) {
-      toast({
-        title: 'Erreur',
-        description: 'Veuillez sélectionner un produit',
-        variant: 'destructive'
-      })
-      return
-    }
+    if (!selectedProduct) return
 
     setOptimizing(true)
     setOptimizationResult(null)
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      toast({
-        title: 'Optimisation en cours...',
-        description: 'L\'IA analyse votre produit'
-      })
-
-      // Simulate AI optimization
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      const currentProduct = products.find(p => p.id === selectedProduct)
-      const result = {
-        optimizationId: `opt-${Date.now()}`,
-        optimizedContent: `Titre optimisé pour ${selectedPlatform}: ${currentProduct?.title || 'Produit'}\n\nDescription améliorée avec des mots-clés SEO pour maximiser la visibilité.`,
-        optimizationScore: Math.floor(Math.random() * 20) + 80,
-        suggestions: [
-          { type: 'title', message: 'Ajoutez des mots-clés pertinents au titre' },
-          { type: 'description', message: 'Utilisez des bullet points pour une meilleure lisibilité' },
-          { type: 'keywords', message: 'Intégrez les termes de recherche populaires' }
-        ]
+    const currentProduct = products.find(p => p.id === selectedProduct)
+    
+    const result = await createOptimization(
+      selectedProduct,
+      selectedPlatform,
+      optimizationType,
+      {
+        title: currentProduct?.title || '',
+        description: currentProduct?.description || '',
+        category: currentProduct?.category || '',
+        price: currentProduct?.price || 0
       }
+    )
 
-      setOptimizationResult(result)
-
-      toast({
-        title: 'Optimisation terminée !',
-        description: `Score d'optimisation: ${result.optimizationScore}/100`
+    if (result) {
+      setOptimizationResult({
+        optimizationId: result.id,
+        optimizedContent: JSON.stringify(result.optimized_content, null, 2),
+        optimizationScore: result.optimization_score,
+        suggestions: result.suggestions
       })
-
-    } catch (error: any) {
-      toast({
-        title: 'Erreur',
-        description: error.message,
-        variant: 'destructive'
-      })
-    } finally {
-      setOptimizing(false)
     }
+
+    setOptimizing(false)
   }
 
-  const applyOptimization = async (optimizationId: string) => {
-    try {
-      toast({
-        title: 'Succès',
-        description: 'Contenu optimisé appliqué au produit'
-      })
-      await fetchOptimizationHistory()
-    } catch (error: any) {
-      toast({
-        title: 'Erreur',
-        description: error.message,
-        variant: 'destructive'
-      })
-    }
+  const handleApplyOptimization = async (optimizationId: string) => {
+    await applyOptimization(optimizationId)
+    setOptimizationResult(null)
   }
 
   const currentProduct = products.find(p => p.id === selectedProduct)
@@ -236,7 +172,7 @@ export function ContentOptimizer() {
             <div className="p-4 bg-muted rounded-lg space-y-2">
               <h4 className="font-medium">Aperçu du produit actuel</h4>
               <p className="text-sm"><strong>Nom:</strong> {currentProduct.title}</p>
-              <p className="text-sm"><strong>Catégorie:</strong> {currentProduct.category}</p>
+              <p className="text-sm"><strong>Catégorie:</strong> {currentProduct.category || 'Non définie'}</p>
               <p className="text-sm"><strong>Prix:</strong> {currentProduct.price}€</p>
               {currentProduct.description && (
                 <p className="text-sm">
@@ -292,7 +228,7 @@ export function ContentOptimizer() {
                   />
                 </div>
                 <Button
-                  onClick={() => applyOptimization(optimizationResult.optimizationId)}
+                  onClick={() => handleApplyOptimization(optimizationResult.optimizationId)}
                   className="w-full"
                 >
                   <Check className="w-4 h-4 mr-2" />
@@ -324,7 +260,7 @@ export function ContentOptimizer() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {history.map((opt) => {
+            {optimizations.map((opt) => {
               const product = products.find(p => p.id === opt.product_id)
               
               return (
@@ -353,7 +289,7 @@ export function ContentOptimizer() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => applyOptimization(opt.id)}
+                      onClick={() => handleApplyOptimization(opt.id)}
                     >
                       <Check className="w-4 h-4 mr-1" />
                       Appliquer
@@ -363,7 +299,7 @@ export function ContentOptimizer() {
               )
             })}
 
-            {!history.length && (
+            {!optimizations.length && !loading && (
               <div className="text-center py-8 text-muted-foreground">
                 <Eye className="w-12 h-12 mx-auto mb-3 opacity-20" />
                 <p>Aucune optimisation pour le moment</p>

@@ -3,129 +3,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Activity, AlertCircle } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { format, subDays } from 'date-fns'
-
-interface PlatformMetric {
-  id: string
-  platform: string
-  metric_date: string
-  total_revenue: number
-  total_profit: number
-  total_orders: number
-  total_fees: number
-  views: number
-  conversion_rate: number
-  roas: number
-}
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Activity, AlertCircle, Loader2 } from 'lucide-react'
+import { usePlatformManagement } from '@/hooks/usePlatformManagement'
+import { format } from 'date-fns'
 
 export function PlatformAnalyticsDashboard() {
   const [selectedPlatform, setSelectedPlatform] = useState('all')
   const [dateRange, setDateRange] = useState('30')
-  const [metrics, setMetrics] = useState<PlatformMetric[]>([])
-  const [loading, setLoading] = useState(false)
-  const [summary, setSummary] = useState<any>(null)
-  const { toast } = useToast()
-
-  const platforms = ['shopify', 'amazon', 'ebay', 'woocommerce', 'facebook', 'google']
+  const { metrics, loading, platforms, fetchMetrics } = usePlatformManagement()
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
-    fetchMetrics()
-  }, [selectedPlatform, dateRange])
+    fetchMetrics(selectedPlatform, parseInt(dateRange))
+  }, [selectedPlatform, dateRange, fetchMetrics])
 
-  const fetchMetrics = async () => {
-    setLoading(true)
-    try {
-      // Generate mock metrics data since table doesn't exist
-      const days = parseInt(dateRange)
-      const mockMetrics: PlatformMetric[] = []
-      
-      for (let i = 0; i < days; i++) {
-        const date = subDays(new Date(), days - i - 1)
-        const platformsToGenerate = selectedPlatform === 'all' ? platforms : [selectedPlatform]
-        
-        platformsToGenerate.forEach(platform => {
-          mockMetrics.push({
-            id: `${platform}-${i}`,
-            platform,
-            metric_date: format(date, 'yyyy-MM-dd'),
-            total_revenue: Math.random() * 1000 + 200,
-            total_profit: Math.random() * 300 + 50,
-            total_orders: Math.floor(Math.random() * 20) + 5,
-            total_fees: Math.random() * 50 + 10,
-            views: Math.floor(Math.random() * 500) + 100,
-            conversion_rate: Math.random() * 5 + 1,
-            roas: Math.random() * 3 + 1
-          })
-        })
-      }
-
-      setMetrics(mockMetrics)
-      calculateSummary(mockMetrics)
-
-    } catch (error: any) {
-      toast({
-        title: 'Erreur',
-        description: error.message,
-        variant: 'destructive'
-      })
-    } finally {
-      setLoading(false)
-    }
+  const refreshData = async () => {
+    setRefreshing(true)
+    await fetchMetrics(selectedPlatform, parseInt(dateRange))
+    setRefreshing(false)
   }
 
-  const calculateSummary = (data: PlatformMetric[]) => {
-    if (!data.length) {
-      setSummary(null)
-      return
-    }
-
-    const totals = data.reduce((acc, m) => ({
-      revenue: acc.revenue + Number(m.total_revenue || 0),
-      orders: acc.orders + Number(m.total_orders || 0),
-      profit: acc.profit + Number(m.total_profit || 0),
-      fees: acc.fees + Number(m.total_fees || 0),
-      views: acc.views + Number(m.views || 0)
-    }), { revenue: 0, orders: 0, profit: 0, fees: 0, views: 0 })
-
-    const avgMetrics = {
-      conversionRate: data.reduce((sum, m) => sum + Number(m.conversion_rate || 0), 0) / data.length,
-      roas: data.reduce((sum, m) => sum + Number(m.roas || 0), 0) / data.length,
-      avgOrderValue: totals.revenue / totals.orders || 0
-    }
-
-    // Calculer la croissance par rapport à la période précédente
-    const midPoint = Math.floor(data.length / 2)
-    const firstHalf = data.slice(0, midPoint)
-    const secondHalf = data.slice(midPoint)
-
-    const firstHalfRevenue = firstHalf.reduce((sum, m) => sum + Number(m.total_revenue || 0), 0)
-    const secondHalfRevenue = secondHalf.reduce((sum, m) => sum + Number(m.total_revenue || 0), 0)
-    const revenueGrowth = firstHalfRevenue > 0 
-      ? ((secondHalfRevenue - firstHalfRevenue) / firstHalfRevenue) * 100 
-      : 0
-
-    setSummary({
-      ...totals,
-      ...avgMetrics,
-      revenueGrowth
-    })
-  }
-
-  const refreshMetrics = async () => {
-    toast({
-      title: 'Actualisation...',
-      description: 'Récupération des dernières métriques'
-    })
-
-    await fetchMetrics()
-
-    toast({
-      title: 'Succès',
-      description: 'Métriques actualisées avec succès'
-    })
-  }
+  const summary = calculateSummary(metrics)
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -165,9 +63,13 @@ export function PlatformAnalyticsDashboard() {
             </SelectContent>
           </Select>
 
-          <Button onClick={refreshMetrics} disabled={loading}>
-            <Activity className="w-4 h-4 mr-2" />
-            Actualiser
+          <Button onClick={refreshData} disabled={loading || refreshing}>
+            {refreshing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Activity className="w-4 h-4 mr-2" />
+            )}
+            {!refreshing && 'Actualiser'}
           </Button>
         </div>
       </div>
@@ -203,7 +105,7 @@ export function PlatformAnalyticsDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(summary.profit)}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Marge: {((summary.profit / summary.revenue) * 100).toFixed(1)}%
+                Marge: {((summary.profit / summary.revenue) * 100 || 0).toFixed(1)}%
               </p>
             </CardContent>
           </Card>
@@ -252,7 +154,7 @@ export function PlatformAnalyticsDashboard() {
                 />
                 <YAxis />
                 <Tooltip 
-                  formatter={(value: any) => formatCurrency(value)}
+                  formatter={(value: number) => formatCurrency(value)}
                   labelFormatter={(label) => format(new Date(label), 'dd MMM yyyy')}
                 />
                 <Legend />
@@ -274,7 +176,7 @@ export function PlatformAnalyticsDashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="platform" />
                 <YAxis />
-                <Tooltip formatter={(value: any) => formatCurrency(value)} />
+                <Tooltip formatter={(value: number) => formatCurrency(value)} />
                 <Legend />
                 <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Revenus" />
                 <Bar dataKey="profit" fill="hsl(var(--chart-2))" name="Profit" />
@@ -292,7 +194,7 @@ export function PlatformAnalyticsDashboard() {
             <p className="text-muted-foreground text-center mb-4">
               Cliquez sur "Actualiser" pour récupérer les métriques depuis les plateformes
             </p>
-            <Button onClick={refreshMetrics}>
+            <Button onClick={refreshData}>
               <Activity className="w-4 h-4 mr-2" />
               Récupérer les métriques
             </Button>
@@ -303,7 +205,41 @@ export function PlatformAnalyticsDashboard() {
   )
 }
 
-function groupByPlatform(metrics: PlatformMetric[]) {
+function calculateSummary(metrics: any[]) {
+  if (!metrics.length) return null
+
+  const totals = metrics.reduce((acc, m) => ({
+    revenue: acc.revenue + Number(m.total_revenue || 0),
+    orders: acc.orders + Number(m.total_orders || 0),
+    profit: acc.profit + Number(m.total_profit || 0),
+    fees: acc.fees + Number(m.total_fees || 0),
+    views: acc.views + Number(m.views || 0)
+  }), { revenue: 0, orders: 0, profit: 0, fees: 0, views: 0 })
+
+  const avgMetrics = {
+    conversionRate: metrics.reduce((sum, m) => sum + Number(m.conversion_rate || 0), 0) / metrics.length,
+    roas: metrics.reduce((sum, m) => sum + Number(m.roas || 0), 0) / metrics.length,
+    avgOrderValue: totals.revenue / totals.orders || 0
+  }
+
+  const midPoint = Math.floor(metrics.length / 2)
+  const firstHalf = metrics.slice(0, midPoint)
+  const secondHalf = metrics.slice(midPoint)
+
+  const firstHalfRevenue = firstHalf.reduce((sum, m) => sum + Number(m.total_revenue || 0), 0)
+  const secondHalfRevenue = secondHalf.reduce((sum, m) => sum + Number(m.total_revenue || 0), 0)
+  const revenueGrowth = firstHalfRevenue > 0 
+    ? ((secondHalfRevenue - firstHalfRevenue) / firstHalfRevenue) * 100 
+    : 0
+
+  return {
+    ...totals,
+    ...avgMetrics,
+    revenueGrowth
+  }
+}
+
+function groupByPlatform(metrics: any[]) {
   const grouped = metrics.reduce((acc, m) => {
     const platform = m.platform
     if (!acc[platform]) {

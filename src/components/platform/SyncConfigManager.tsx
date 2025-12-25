@@ -1,42 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RefreshCw, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { RefreshCw, Clock, CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { usePlatformManagement } from '@/hooks/usePlatformManagement'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-interface SyncConfig {
-  id: string
-  platform: string
-  is_active: boolean
-  sync_type: string
-  sync_frequency: string
-  last_sync_at: string | null
-}
-
-interface SyncLog {
-  id: string
-  platform: string
-  sync_type: string
-  status: string
-  items_synced: number
-  items_failed: number
-  duration_ms: number
-  started_at: string
-}
-
 export function SyncConfigManager() {
-  const [configs, setConfigs] = useState<SyncConfig[]>([])
-  const [syncLogs, setSyncLogs] = useState<SyncLog[]>([])
-  const [loading, setLoading] = useState(false)
+  const { syncConfigs, syncLogs, loading, platforms, updateSyncConfig, runSync } = usePlatformManagement()
   const [syncing, setSyncing] = useState<string | null>(null)
-  const { toast } = useToast()
 
-  const platforms = ['shopify', 'amazon', 'ebay', 'woocommerce', 'facebook', 'google']
   const syncTypes = [
     { value: 'inventory', label: 'Stock uniquement' },
     { value: 'prices', label: 'Prix uniquement' },
@@ -53,135 +29,10 @@ export function SyncConfigManager() {
     { value: '24hour', label: 'Une fois par jour' }
   ]
 
-  useEffect(() => {
-    fetchConfigs()
-    fetchLogs()
-  }, [])
-
-  const fetchConfigs = async () => {
-    // Use mock data since platform_sync_configs table doesn't exist
-    const mockConfigs: SyncConfig[] = platforms.map((platform, idx) => ({
-      id: `config-${idx}`,
-      platform,
-      is_active: idx < 3, // First 3 platforms active
-      sync_type: 'all',
-      sync_frequency: '1hour',
-      last_sync_at: idx < 3 ? new Date(Date.now() - Math.random() * 3600000).toISOString() : null
-    }))
-    setConfigs(mockConfigs)
-  }
-
-  const fetchLogs = async () => {
-    // Use mock data since platform_sync_logs table doesn't exist
-    const mockLogs: SyncLog[] = [
-      {
-        id: '1',
-        platform: 'shopify',
-        sync_type: 'all',
-        status: 'success',
-        items_synced: 45,
-        items_failed: 0,
-        duration_ms: 2340,
-        started_at: new Date(Date.now() - 1800000).toISOString()
-      },
-      {
-        id: '2',
-        platform: 'amazon',
-        sync_type: 'inventory',
-        status: 'partial',
-        items_synced: 38,
-        items_failed: 2,
-        duration_ms: 5670,
-        started_at: new Date(Date.now() - 3600000).toISOString()
-      },
-      {
-        id: '3',
-        platform: 'ebay',
-        sync_type: 'prices',
-        status: 'failed',
-        items_synced: 0,
-        items_failed: 12,
-        duration_ms: 890,
-        started_at: new Date(Date.now() - 7200000).toISOString()
-      }
-    ]
-    setSyncLogs(mockLogs)
-  }
-
-  const toggleSync = async (platform: string, enabled: boolean) => {
-    setConfigs(prev => prev.map(c => 
-      c.platform === platform ? { ...c, is_active: enabled } : c
-    ))
-    toast({
-      title: 'Succès',
-      description: 'Configuration mise à jour'
-    })
-  }
-
-  const updateSyncType = async (platform: string, syncType: string) => {
-    setConfigs(prev => prev.map(c => 
-      c.platform === platform ? { ...c, sync_type: syncType } : c
-    ))
-    toast({
-      title: 'Succès',
-      description: 'Configuration mise à jour'
-    })
-  }
-
-  const updateFrequency = async (platform: string, frequency: string) => {
-    setConfigs(prev => prev.map(c => 
-      c.platform === platform ? { ...c, sync_frequency: frequency } : c
-    ))
-    toast({
-      title: 'Succès',
-      description: 'Configuration mise à jour'
-    })
-  }
-
-  const runManualSync = async (platform: string) => {
+  const handleSync = async (platform: string) => {
     setSyncing(platform)
-    
-    try {
-      toast({
-        title: 'Synchronisation en cours...',
-        description: `Synchronisation de ${platform}`
-      })
-
-      // Simulate sync
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      // Update last sync time
-      setConfigs(prev => prev.map(c => 
-        c.platform === platform ? { ...c, last_sync_at: new Date().toISOString() } : c
-      ))
-
-      // Add new log
-      const newLog: SyncLog = {
-        id: `log-${Date.now()}`,
-        platform,
-        sync_type: configs.find(c => c.platform === platform)?.sync_type || 'all',
-        status: 'success',
-        items_synced: Math.floor(Math.random() * 50) + 10,
-        items_failed: 0,
-        duration_ms: Math.floor(Math.random() * 5000) + 1000,
-        started_at: new Date().toISOString()
-      }
-      setSyncLogs(prev => [newLog, ...prev.slice(0, 9)])
-
-      toast({
-        title: 'Succès',
-        description: `${newLog.items_synced} éléments synchronisés`
-      })
-
-    } catch (error: any) {
-      toast({
-        title: 'Erreur de synchronisation',
-        description: error.message,
-        variant: 'destructive'
-      })
-    } finally {
-      setSyncing(null)
-    }
+    await runSync(platform)
+    setSyncing(null)
   }
 
   const getStatusIcon = (status: string) => {
@@ -199,6 +50,14 @@ export function SyncConfigManager() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -210,7 +69,7 @@ export function SyncConfigManager() {
 
       <div className="grid gap-4">
         {platforms.map(platform => {
-          const config = configs.find(c => c.platform === platform)
+          const config = syncConfigs.find(c => c.platform === platform)
           
           return (
             <Card key={platform}>
@@ -228,13 +87,13 @@ export function SyncConfigManager() {
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={config?.is_active || false}
-                        onCheckedChange={(checked) => toggleSync(platform, checked)}
+                        onCheckedChange={(checked) => updateSyncConfig(platform, { is_active: checked })}
                       />
                       <Label>Actif</Label>
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => runManualSync(platform)}
+                      onClick={() => handleSync(platform)}
                       disabled={syncing === platform}
                     >
                       {syncing === platform ? (
@@ -255,7 +114,7 @@ export function SyncConfigManager() {
                     <Label>Type de synchronisation</Label>
                     <Select
                       value={config?.sync_type || 'all'}
-                      onValueChange={(value) => updateSyncType(platform, value)}
+                      onValueChange={(value) => updateSyncConfig(platform, { sync_type: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -274,7 +133,7 @@ export function SyncConfigManager() {
                     <Label>Fréquence</Label>
                     <Select
                       value={config?.sync_frequency || '1hour'}
-                      onValueChange={(value) => updateFrequency(platform, value)}
+                      onValueChange={(value) => updateSyncConfig(platform, { sync_frequency: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -298,7 +157,7 @@ export function SyncConfigManager() {
       <Card>
         <CardHeader>
           <CardTitle>Historique des synchronisations</CardTitle>
-          <CardDescription>Les 10 dernières synchronisations</CardDescription>
+          <CardDescription>Les 20 dernières synchronisations</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">

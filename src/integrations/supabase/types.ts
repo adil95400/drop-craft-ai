@@ -1154,6 +1154,62 @@ export type Database = {
           },
         ]
       }
+      content_optimizations: {
+        Row: {
+          applied_at: string | null
+          created_at: string | null
+          id: string
+          is_applied: boolean | null
+          optimization_score: number | null
+          optimization_type: string
+          optimized_content: Json | null
+          original_content: Json | null
+          platform: string
+          product_id: string | null
+          suggestions: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          created_at?: string | null
+          id?: string
+          is_applied?: boolean | null
+          optimization_score?: number | null
+          optimization_type: string
+          optimized_content?: Json | null
+          original_content?: Json | null
+          platform: string
+          product_id?: string | null
+          suggestions?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          created_at?: string | null
+          id?: string
+          is_applied?: boolean | null
+          optimization_score?: number | null
+          optimization_type?: string
+          optimized_content?: Json | null
+          original_content?: Json | null
+          platform?: string
+          product_id?: string | null
+          suggestions?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_optimizations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversion_events: {
         Row: {
           campaign_id: string | null
@@ -2439,6 +2495,135 @@ export type Database = {
           limit_value?: number
           plan_name?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      platform_metrics: {
+        Row: {
+          conversion_rate: number | null
+          created_at: string | null
+          id: string
+          metric_date: string
+          platform: string
+          roas: number | null
+          total_fees: number | null
+          total_orders: number | null
+          total_profit: number | null
+          total_revenue: number | null
+          updated_at: string | null
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          conversion_rate?: number | null
+          created_at?: string | null
+          id?: string
+          metric_date?: string
+          platform: string
+          roas?: number | null
+          total_fees?: number | null
+          total_orders?: number | null
+          total_profit?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          conversion_rate?: number | null
+          created_at?: string | null
+          id?: string
+          metric_date?: string
+          platform?: string
+          roas?: number | null
+          total_fees?: number | null
+          total_orders?: number | null
+          total_profit?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
+      platform_sync_configs: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          platform: string
+          sync_frequency: string | null
+          sync_type: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          platform: string
+          sync_frequency?: string | null
+          sync_type?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          platform?: string
+          sync_frequency?: string | null
+          sync_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_sync_logs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          items_failed: number | null
+          items_synced: number | null
+          platform: string
+          started_at: string | null
+          status: string | null
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          items_failed?: number | null
+          items_synced?: number | null
+          platform: string
+          started_at?: string | null
+          status?: string | null
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          items_failed?: number | null
+          items_synced?: number | null
+          platform?: string
+          started_at?: string | null
+          status?: string | null
+          sync_type?: string
+          user_id?: string
         }
         Relationships: []
       }
