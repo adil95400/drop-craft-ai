@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, 
   Search, 
@@ -20,174 +23,84 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  TrendingUp,
-  Link as LinkIcon
+  TrendingUp
 } from 'lucide-react';
-
-interface Supplier {
-  id: string;
-  name: string;
-  website: string;
-  country: string;
-  category: string;
-  productsCount: number;
-  status: 'active' | 'inactive' | 'pending';
-  connection: 'connected' | 'disconnected' | 'error';
-  lastSync: string;
-  syncFrequency: string;
-  successRate: number;
-  totalImports: number;
-  rating: number;
-}
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export const AdminSuppliers = () => {
   const { toast } = useToast();
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedConnection, setSelectedConnection] = useState('all');
 
-  useEffect(() => {
-    loadSuppliers();
-  }, []);
+  // Fetch supplier connections from database
+  const { data: suppliers, isLoading } = useQuery({
+    queryKey: ['admin-suppliers'],
+    queryFn: async () => {
+      const result: any = await supabase
+        .from('supplier_connections' as any)
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  const loadSuppliers = async () => {
-    try {
-      setLoading(true);
-      // Simulate loading suppliers
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockSuppliers: Supplier[] = [
-        {
-          id: '1',
-          name: 'TechGlobal Wholesale',
-          website: 'https://techglobal.com',
-          country: 'Chine',
-          category: 'Électronique',
-          productsCount: 2547,
-          status: 'active',
-          connection: 'connected',
-          lastSync: '2024-01-15T10:30:00Z',
-          syncFrequency: 'daily',
-          successRate: 98.5,
-          totalImports: 156,
-          rating: 4.8
-        },
-        {
-          id: '2',
-          name: 'Fashion Europe Ltd',
-          website: 'https://fashioneurope.eu',
-          country: 'Italie',
-          category: 'Mode',
-          productsCount: 1832,
-          status: 'active',
-          connection: 'connected',
-          lastSync: '2024-01-15T08:15:00Z',
-          syncFrequency: 'weekly',
-          successRate: 95.2,
-          totalImports: 89,
-          rating: 4.6
-        },
-        {
-          id: '3',
-          name: 'Home & Living Co',
-          website: 'https://homeliving.com',
-          country: 'Allemagne',
-          category: 'Maison',
-          productsCount: 3421,
-          status: 'inactive',
-          connection: 'disconnected',
-          lastSync: '2024-01-10T14:20:00Z',
-          syncFrequency: 'manual',
-          successRate: 87.3,
-          totalImports: 234,
-          rating: 4.2
-        },
-        {
-          id: '4',
-          name: 'Sports Pro Supplier',
-          website: 'https://sportspro.com',
-          country: 'France',
-          category: 'Sport',
-          productsCount: 987,
-          status: 'pending',
-          connection: 'error',
-          lastSync: '2024-01-12T16:45:00Z',
-          syncFrequency: 'weekly',
-          successRate: 76.8,
-          totalImports: 45,
-          rating: 3.9
-        },
-        {
-          id: '5',
-          name: 'Beauty World International',
-          website: 'https://beautyworld.com',
-          country: 'Corée du Sud',
-          category: 'Beauté',
-          productsCount: 1654,
-          status: 'active',
-          connection: 'connected',
-          lastSync: '2024-01-15T12:00:00Z',
-          syncFrequency: 'daily',
-          successRate: 99.1,
-          totalImports: 178,
-          rating: 4.9
-        }
-      ];
-      
-      setSuppliers(mockSuppliers);
-    } catch (error) {
-      console.error('Error loading suppliers:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les fournisseurs",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredSuppliers = suppliers.filter(supplier => {
-    const matchesSearch = supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         supplier.website.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         supplier.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         supplier.country.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || supplier.status === selectedStatus;
-    const matchesConnection = selectedConnection === 'all' || supplier.connection === selectedConnection;
-    
-    return matchesSearch && matchesStatus && matchesConnection;
+      if (result.error) throw result.error;
+      return result.data || [];
+    },
   });
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      active: 'bg-green-100 text-green-800',
-      inactive: 'bg-gray-100 text-gray-800',
-      pending: 'bg-yellow-100 text-yellow-800'
-    };
+  // Fetch products count per supplier
+  const { data: productCounts } = useQuery({
+    queryKey: ['supplier-product-counts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('catalog_products')
+        .select('supplier_name');
+
+      if (error) throw error;
+      
+      const counts: Record<string, number> = {};
+      data?.forEach(p => {
+        if (p.supplier_name) {
+          counts[p.supplier_name] = (counts[p.supplier_name] || 0) + 1;
+        }
+      });
+      return counts;
+    },
+  });
+
+  const filteredSuppliers = suppliers?.filter((supplier: any) => {
+    const matchesSearch = 
+      supplier.supplier_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.supplier_type?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const labels = {
-      active: 'Actif',
-      inactive: 'Inactif',
-      pending: 'En attente'
-    };
+    const matchesStatus = selectedStatus === 'all' || 
+      (selectedStatus === 'active' && supplier.is_active) ||
+      (selectedStatus === 'inactive' && !supplier.is_active);
     
-    return (
-      <Badge className={variants[status as keyof typeof variants]}>
-        {labels[status as keyof typeof labels]}
-      </Badge>
+    const matchesConnection = selectedConnection === 'all' || 
+      supplier.connection_status === selectedConnection;
+    
+    return matchesSearch && matchesStatus && matchesConnection;
+  }) || [];
+
+  const getStatusBadge = (isActive: boolean) => {
+    return isActive ? (
+      <Badge className="bg-green-100 text-green-800">Actif</Badge>
+    ) : (
+      <Badge className="bg-gray-100 text-gray-800">Inactif</Badge>
     );
   };
 
-  const getConnectionBadge = (connection: string) => {
-    const config = {
+  const getConnectionBadge = (status: string | null) => {
+    const config: Record<string, { className: string; icon: any; label: string }> = {
       connected: { className: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Connecté' },
       disconnected: { className: 'bg-gray-100 text-gray-800', icon: XCircle, label: 'Déconnecté' },
-      error: { className: 'bg-red-100 text-red-800', icon: AlertTriangle, label: 'Erreur' }
+      error: { className: 'bg-red-100 text-red-800', icon: AlertTriangle, label: 'Erreur' },
+      pending: { className: 'bg-yellow-100 text-yellow-800', icon: AlertTriangle, label: 'En attente' }
     };
     
-    const { className, icon: Icon, label } = config[connection as keyof typeof config];
+    const { className, icon: Icon, label } = config[status || 'disconnected'] || config.disconnected;
     
     return (
       <Badge className={className}>
@@ -198,11 +111,11 @@ export const AdminSuppliers = () => {
   };
 
   const supplierStats = {
-    total: suppliers.length,
-    active: suppliers.filter(s => s.status === 'active').length,
-    connected: suppliers.filter(s => s.connection === 'connected').length,
-    totalProducts: suppliers.reduce((sum, s) => sum + s.productsCount, 0),
-    averageRating: suppliers.reduce((sum, s) => sum + s.rating, 0) / suppliers.length
+    total: suppliers?.length || 0,
+    active: suppliers?.filter((s: any) => s.is_active).length || 0,
+    connected: suppliers?.filter((s: any) => s.connection_status === 'connected').length || 0,
+    totalProducts: Object.values(productCounts || {}).reduce((a: number, b: number) => a + b, 0),
+    autoOrder: suppliers?.filter((s: any) => s.auto_order_enabled).length || 0
   };
 
   return (
@@ -270,7 +183,11 @@ export const AdminSuppliers = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Produits Total</p>
-                <p className="text-2xl font-bold">{(supplierStats.totalProducts / 1000).toFixed(1)}k</p>
+                <p className="text-2xl font-bold">
+                  {supplierStats.totalProducts > 1000 
+                    ? `${(supplierStats.totalProducts / 1000).toFixed(1)}k` 
+                    : supplierStats.totalProducts}
+                </p>
               </div>
               <Package className="h-8 w-8 text-purple-600" />
             </div>
@@ -280,12 +197,10 @@ export const AdminSuppliers = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Note Moyenne</p>
-                <p className="text-2xl font-bold">{supplierStats.averageRating?.toFixed(1)}</p>
+                <p className="text-sm font-medium text-muted-foreground">Auto-Commande</p>
+                <p className="text-2xl font-bold">{supplierStats.autoOrder}</p>
               </div>
-              <Badge className="bg-yellow-100 text-yellow-800">
-                ★ {supplierStats.averageRating?.toFixed(1)}
-              </Badge>
+              <Badge className="bg-green-100 text-green-800">Auto</Badge>
             </div>
           </CardContent>
         </Card>
@@ -305,7 +220,7 @@ export const AdminSuppliers = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Rechercher par nom, site web, catégorie ou pays..."
+                  placeholder="Rechercher par nom ou type..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -320,7 +235,6 @@ export const AdminSuppliers = () => {
                 <SelectItem value="all">Tous statuts</SelectItem>
                 <SelectItem value="active">Actif</SelectItem>
                 <SelectItem value="inactive">Inactif</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedConnection} onValueChange={setSelectedConnection}>
@@ -347,90 +261,58 @@ export const AdminSuppliers = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
             </div>
-          ) : (
+          ) : filteredSuppliers.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Fournisseur</TableHead>
-                  <TableHead>Site Web</TableHead>
-                  <TableHead>Pays / Catégorie</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Produits</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Connexion</TableHead>
-                  <TableHead>Performance</TableHead>
+                  <TableHead>Auto-Commande</TableHead>
                   <TableHead>Dernière Sync</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredSuppliers.map((supplier) => (
+                {filteredSuppliers.map((supplier: any) => (
                   <TableRow key={supplier.id}>
                     <TableCell>
-                      <div>
-                        <div className="font-medium">{supplier.name}</div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Badge className="bg-yellow-100 text-yellow-800">
-                            ★ {supplier.rating}
-                          </Badge>
-                        </div>
-                      </div>
+                      <div className="font-medium">{supplier.supplier_name}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <a 
-                          href={supplier.website} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {supplier.website.replace('https://', '')}
-                        </a>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{supplier.country}</div>
-                        <Badge variant="outline" className="mt-1">
-                          {supplier.category}
-                        </Badge>
-                      </div>
+                      <Badge variant="outline">{supplier.supplier_type || 'Non défini'}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-center">
-                        <div className="font-bold text-lg">{supplier.productsCount.toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">produits</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(supplier.status)}
-                    </TableCell>
-                    <TableCell>
-                      {getConnectionBadge(supplier.connection)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1">
-                          <div className="text-sm font-medium">{supplier.successRate}%</div>
-                          <div className={`text-xs ${supplier.successRate > 95 ? 'text-green-600' : supplier.successRate > 85 ? 'text-yellow-600' : 'text-red-600'}`}>
-                            succès
-                          </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {supplier.totalImports} imports
+                        <div className="font-bold">
+                          {productCounts?.[supplier.supplier_name] || 0}
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(supplier.is_active)}
+                    </TableCell>
+                    <TableCell>
+                      {getConnectionBadge(supplier.connection_status)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={supplier.auto_order_enabled ? 'default' : 'secondary'}>
+                        {supplier.auto_order_enabled ? 'Activé' : 'Désactivé'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {new Date(supplier.lastSync).toLocaleDateString('fr-FR')}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {supplier.syncFrequency}
+                        {supplier.last_sync_at 
+                          ? format(new Date(supplier.last_sync_at), 'dd/MM/yyyy HH:mm', { locale: fr })
+                          : 'Jamais'}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -450,6 +332,18 @@ export const AdminSuppliers = () => {
                 ))}
               </TableBody>
             </Table>
+          ) : (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Aucun fournisseur</h3>
+              <p className="text-muted-foreground mb-4">
+                Ajoutez des connexions fournisseurs pour les voir ici
+              </p>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter un fournisseur
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
