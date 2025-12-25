@@ -926,6 +926,19 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'system',
     order: 25,
     groupId: 'support'
+  },
+  onboarding: {
+    id: 'onboarding',
+    name: 'Guide de Démarrage',
+    icon: 'GraduationCap',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/dashboard/onboarding',
+    features: ['tutorials', 'video-guides', 'interactive-onboarding'],
+    description: 'Tutoriels interactifs et vidéos de formation',
+    category: 'learning',
+    order: 26,
+    groupId: 'support'
   }
 };
 
