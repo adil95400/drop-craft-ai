@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { Product } from "@/hooks/useRealProducts";
 
 interface ProductActionButtonsProps {
@@ -48,15 +49,14 @@ export const ProductActionButtons = ({
   compact = false
 }: ProductActionButtonsProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleViewProduct = () => {
     if (onView) {
       onView(product);
     } else {
-      toast({
-        title: "Détails du produit",
-        description: `${product.name} - ${product.price}€`,
-      });
+      // Navigate to product detail page
+      navigate(`/products/${product.id}`);
     }
   };
 
@@ -64,10 +64,8 @@ export const ProductActionButtons = ({
     if (onEdit) {
       onEdit(product);
     } else {
-      toast({
-        title: "Modification",
-        description: `Modification du produit ${product.name}`,
-      });
+      // Navigate to product edit page
+      navigate(`/products/${product.id}/edit`);
     }
   };
 
@@ -137,10 +135,8 @@ export const ProductActionButtons = ({
     if (onViewAnalytics) {
       onViewAnalytics(product.id);
     } else {
-      toast({
-        title: "Analytics",
-        description: `Ouverture des analytics pour ${product.name}`,
-      });
+      // Navigate to product analytics page
+      navigate(`/products/${product.id}/analytics`);
     }
   };
 
