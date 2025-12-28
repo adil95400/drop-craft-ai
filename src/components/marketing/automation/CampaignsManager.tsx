@@ -46,6 +46,8 @@ export function CampaignsManager() {
     html_content: ''
   })
   const [scheduleDate, setScheduleDate] = useState('')
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [editCampaign, setEditCampaign] = useState<EmailCampaign | null>(null)
 
   const filteredCampaigns = campaigns.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -76,6 +78,23 @@ export function CampaignsManager() {
     setShowScheduleDialog(false)
     setSelectedCampaign(null)
     setScheduleDate('')
+  }
+
+  const handleEditOpen = (campaign: EmailCampaign) => {
+    setEditCampaign(campaign)
+    setShowEditDialog(true)
+  }
+
+  const handleEditSave = () => {
+    if (!editCampaign) return
+    updateCampaign({
+      id: editCampaign.id,
+      name: editCampaign.name,
+      subject: editCampaign.subject,
+      html_content: editCampaign.html_content
+    })
+    setShowEditDialog(false)
+    setEditCampaign(null)
   }
 
   if (isLoading) {
@@ -210,7 +229,7 @@ export function CampaignsManager() {
                   campaign={campaign}
                   stats={campaignStats[campaign.id]}
                   onPreview={() => { setSelectedCampaign(campaign); setShowPreviewDialog(true) }}
-                  onEdit={() => {}}
+                  onEdit={() => handleEditOpen(campaign)}
                   onDuplicate={() => duplicateCampaign(campaign.id)}
                   onDelete={() => deleteCampaign(campaign.id)}
                   onSend={() => sendCampaign(campaign.id)}
@@ -232,7 +251,7 @@ export function CampaignsManager() {
                   campaign={campaign}
                   stats={campaignStats[campaign.id]}
                   onPreview={() => { setSelectedCampaign(campaign); setShowPreviewDialog(true) }}
-                  onEdit={() => {}}
+                  onEdit={() => handleEditOpen(campaign)}
                   onDuplicate={() => duplicateCampaign(campaign.id)}
                   onDelete={() => deleteCampaign(campaign.id)}
                   onSend={() => sendCampaign(campaign.id)}
@@ -365,6 +384,48 @@ export function CampaignsManager() {
             <Button onClick={handleSchedule} disabled={!scheduleDate}>
               <Calendar className="h-4 w-4 mr-2" />
               Programmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Modifier la Campagne</DialogTitle>
+          </DialogHeader>
+          {editCampaign && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Nom de la campagne</Label>
+                <Input 
+                  value={editCampaign.name}
+                  onChange={(e) => setEditCampaign({ ...editCampaign, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Objet</Label>
+                <Input 
+                  value={editCampaign.subject}
+                  onChange={(e) => setEditCampaign({ ...editCampaign, subject: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Contenu</Label>
+                <Textarea 
+                  value={editCampaign.html_content || ''}
+                  onChange={(e) => setEditCampaign({ ...editCampaign, html_content: e.target.value })}
+                  rows={8}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Annuler</Button>
+            <Button onClick={handleEditSave}>
+              <Edit className="h-4 w-4 mr-2" />
+              Enregistrer
             </Button>
           </DialogFooter>
         </DialogContent>
