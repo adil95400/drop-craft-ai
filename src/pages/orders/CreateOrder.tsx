@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, ShoppingCart, Plus, X, Search, User,
-  CreditCard, Truck, Tag, FileText, Calculator
+  CreditCard, Truck, Tag, FileText, Calculator, Loader2
 } from 'lucide-react';
 import {
   Command,
@@ -27,6 +27,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface OrderItem {
   id: string;
@@ -37,24 +39,29 @@ interface OrderItem {
   discount: string;
 }
 
-// Données exemple pour la démo
-const sampleCustomers = [
-  { id: '1', name: 'Jean Dupont', email: 'jean.dupont@email.com' },
-  { id: '2', name: 'Marie Martin', email: 'marie.martin@email.com' },
-  { id: '3', name: 'Pierre Durant', email: 'pierre.durant@email.com' },
-];
+interface Customer {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+}
 
-const sampleProducts = [
-  { id: '1', name: 'T-shirt Premium', sku: 'TSH-001', price: 29.99 },
-  { id: '2', name: 'Jean Slim', sku: 'JEA-001', price: 59.99 },
-  { id: '3', name: 'Sneakers Urban', sku: 'SNE-001', price: 89.99 },
-];
+interface Product {
+  id: string;
+  title: string | null;
+  sku: string | null;
+  price: number | null;
+}
 
 export default function CreateOrder() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [customerOpen, setCustomerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   
   const [items, setItems] = useState<OrderItem[]>([
     { id: '1', product: '', sku: '', quantity: '1', price: '', discount: '0' }
@@ -74,6 +81,47 @@ export default function CreateOrder() {
     tags: [] as string[]
   });
 
+  // Charger les clients et produits depuis la base de données
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) return;
+      
+      setIsLoadingData(true);
+      try {
+        // Charger les clients
+        const { data: customersData, error: customersError } = await supabase
+          .from('customers')
+          .select('id, first_name, last_name, email')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        if (!customersError && customersData) {
+          setCustomers(customersData);
+        }
+
+        // Charger les produits
+        const { data: productsData, error: productsError } = await (supabase
+          .from('products') as any)
+          .select('id, title, sku, price')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        if (!productsError && productsData) {
+          setProducts(productsData);
+        }
+      } catch (error) {
+        console.error('Erreur chargement données:', error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
   const [currentTag, setCurrentTag] = useState('');
 
   const addItem = () => {
@@ -90,10 +138,10 @@ export default function CreateOrder() {
     setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
   };
 
-  const selectProduct = (itemId: string, product: typeof sampleProducts[0]) => {
-    updateItem(itemId, 'product', product.name);
-    updateItem(itemId, 'sku', product.sku);
-    updateItem(itemId, 'price', product.price.toString());
+  const selectProduct = (itemId: string, product: Product) => {
+    updateItem(itemId, 'product', product.title || '');
+    updateItem(itemId, 'sku', product.sku || '');
+    updateItem(itemId, 'price', (product.price || 0).toString());
   };
 
   const calculateSubtotal = () => {
@@ -204,7 +252,7 @@ export default function CreateOrder() {
     }
   };
 
-  const selectedCustomerData = sampleCustomers.find(c => c.id === selectedCustomer);
+  const selectedCustomerData = customers.find(c => c.id === selectedCustomer);
 
   return (
     <>
@@ -259,7 +307,7 @@ export default function CreateOrder() {
                             <div className="flex items-center gap-2">
                               <User className="h-4 w-4" />
                               <div className="text-left">
-                                <div className="font-medium">{selectedCustomerData.name}</div>
+                                <div className="font-medium">{selectedCustomerData.first_name || ''} {selectedCustomerData.last_name || ''}</div>
                                 <div className="text-xs text-muted-foreground">{selectedCustomerData.email}</div>
                               </div>
                             </div>
@@ -293,7 +341,7 @@ export default function CreateOrder() {
                               </div>
                             </CommandEmpty>
                             <CommandGroup>
-                              {sampleCustomers.map((customer) => (
+                              {customers.map((customer) => (
                                 <CommandItem
                                   key={customer.id}
                                   value={customer.id}
@@ -303,7 +351,9 @@ export default function CreateOrder() {
                                   }}
                                 >
                                   <div>
-                                    <div className="font-medium">{customer.name}</div>
+                                    <div className="font-medium">
+                                      {customer.first_name || ''} {customer.last_name || ''}
+                                    </div>
                                     <div className="text-xs text-muted-foreground">{customer.email}</div>
                                   </div>
                                 </CommandItem>
@@ -318,7 +368,7 @@ export default function CreateOrder() {
                       <div className="p-4 border rounded-lg bg-muted/50">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="font-medium">{selectedCustomerData.name}</p>
+                            <p className="font-medium">{selectedCustomerData.first_name || ''} {selectedCustomerData.last_name || ''}</p>
                             <p className="text-sm text-muted-foreground">{selectedCustomerData.email}</p>
                           </div>
                           <Button
@@ -384,15 +434,15 @@ export default function CreateOrder() {
                                   <CommandList>
                                     <CommandEmpty>Aucun produit trouvé</CommandEmpty>
                                     <CommandGroup>
-                                      {sampleProducts.map((product) => (
+                                      {products.map((product) => (
                                         <CommandItem
                                           key={product.id}
                                           onSelect={() => selectProduct(item.id, product)}
                                         >
                                           <div className="flex-1">
-                                            <div className="font-medium">{product.name}</div>
+                                            <div className="font-medium">{product.title || 'Sans nom'}</div>
                                             <div className="text-xs text-muted-foreground">
-                                              SKU: {product.sku} • {product.price}€
+                                              SKU: {product.sku || 'N/A'} • {product.price || 0}€
                                             </div>
                                           </div>
                                         </CommandItem>
