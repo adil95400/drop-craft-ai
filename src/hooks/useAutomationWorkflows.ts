@@ -21,7 +21,7 @@ export interface Workflow {
   execution_count: number
   success_count: number
   failure_count: number
-  last_executed_at?: string
+  last_run_at?: string
   created_at: string
   updated_at: string
 }
@@ -59,7 +59,7 @@ export function useAutomationWorkflows() {
         execution_count: workflow.execution_count || 0,
         success_count: workflow.run_count || 0,
         failure_count: 0,
-        last_executed_at: workflow.last_run_at,
+        last_run_at: workflow.last_run_at,
         created_at: workflow.created_at,
         updated_at: workflow.updated_at
       })) as Workflow[]
@@ -185,9 +185,13 @@ export function useAutomationWorkflows() {
 
   // Duplicate workflow
   const duplicateWorkflow = useMutation({
-    mutationFn: async (workflow: Workflow) => {
+    mutationFn: async (workflowId: string) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
+
+      // Find the workflow to duplicate
+      const workflow = workflows.find(w => w.id === workflowId)
+      if (!workflow) throw new Error('Workflow non trouvé')
 
       const { data, error } = await supabase
         .from('automation_workflows')

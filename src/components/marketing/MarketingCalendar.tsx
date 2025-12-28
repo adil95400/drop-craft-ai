@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger 
 } from '@/components/ui/dialog'
@@ -11,88 +12,19 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
-  Calendar as CalendarIcon, Plus, Filter, Download,
-  Mail, MessageSquare, Share2, Target, Clock, Users
+  Calendar as CalendarIcon, Plus, Download,
+  Mail, MessageSquare, Share2, Target, Clock, Users, Trash2
 } from 'lucide-react'
-import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
+import { useMarketingEvents, type MarketingEvent } from '@/hooks/useMarketingEvents'
 import { cn } from '@/lib/utils'
-
-interface MarketingEvent {
-  id: string
-  title: string
-  description: string
-  type: 'campaign' | 'email' | 'social' | 'event' | 'deadline'
-  status: 'scheduled' | 'active' | 'completed' | 'cancelled'
-  date: Date
-  endDate?: Date
-  campaign_id?: string
-  assignee?: string
-  priority: 'low' | 'medium' | 'high'
-  tags: string[]
-}
+import { useToast } from '@/hooks/use-toast'
 
 export function MarketingCalendar() {
-  const { campaigns } = useRealTimeMarketing()
+  const { events, isLoading, createEvent, deleteEvent } = useMarketingEvents()
+  const { toast } = useToast()
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [viewMode, setViewMode] = useState<'month' | 'week' | 'agenda'>('month')
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<MarketingEvent | null>(null)
   const [filterType, setFilterType] = useState<string>('all')
-
-  // Sample marketing events - in real app, this would come from Supabase
-  const [events, setEvents] = useState<MarketingEvent[]>([
-    {
-      id: '1',
-      title: 'Lancement Campagne Black Friday',
-      description: 'Campagne promotionnelle pour le Black Friday avec 30% de réduction',
-      type: 'campaign',
-      status: 'scheduled',
-      date: new Date(2024, 10, 25), // 25 November 2024
-      endDate: new Date(2024, 10, 29),
-      priority: 'high',
-      tags: ['promotion', 'black-friday']
-    },
-    {
-      id: '2',
-      title: 'Newsletter Hebdomadaire #47',
-      description: 'Newsletter avec les nouveautés de la semaine',
-      type: 'email',
-      status: 'scheduled',
-      date: new Date(2024, 10, 22),
-      priority: 'medium',
-      tags: ['newsletter', 'hebdo']
-    },
-    {
-      id: '3',
-      title: 'Post Instagram Stories',
-      description: 'Stories interactives avec sondage sur les préférences clients',
-      type: 'social',
-      status: 'scheduled',
-      date: new Date(2024, 10, 20),
-      priority: 'low',
-      tags: ['instagram', 'stories', 'engagement']
-    },
-    {
-      id: '4',
-      title: 'Webinaire Marketing Digital',
-      description: 'Webinaire sur les tendances marketing 2024',
-      type: 'event',
-      status: 'scheduled',
-      date: new Date(2024, 10, 28),
-      priority: 'high',
-      tags: ['webinaire', 'formation']
-    },
-    {
-      id: '5',
-      title: 'Deadline Rapport Mensuel',
-      description: 'Finaliser et envoyer le rapport de performance mensuel',
-      type: 'deadline',
-      status: 'scheduled',
-      date: new Date(2024, 10, 30),
-      priority: 'high',
-      tags: ['rapport', 'deadline']
-    }
-  ])
 
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -116,21 +48,21 @@ export function MarketingCalendar() {
 
   const getEventTypeColor = (type: string) => {
     switch (type) {
-      case 'campaign': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'email': return 'bg-green-100 text-green-800 border-green-200'
-      case 'social': return 'bg-purple-100 text-purple-800 border-purple-200'
-      case 'event': return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'deadline': return 'bg-red-100 text-red-800 border-red-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'campaign': return 'bg-primary/10 text-primary border-primary/20'
+      case 'email': return 'bg-secondary/10 text-secondary border-secondary/20'
+      case 'social': return 'bg-accent/10 text-accent border-accent/20'
+      case 'event': return 'bg-warning/10 text-warning border-warning/20'
+      case 'deadline': return 'bg-destructive/10 text-destructive border-destructive/20'
+      default: return 'bg-muted text-muted-foreground border-muted'
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-600 border-red-600'
-      case 'medium': return 'text-yellow-600 border-yellow-600'
-      case 'low': return 'text-green-600 border-green-600'
-      default: return 'text-gray-600 border-gray-600'
+      case 'high': return 'text-destructive border-destructive'
+      case 'medium': return 'text-warning border-warning'
+      case 'low': return 'text-secondary border-secondary'
+      default: return 'text-muted-foreground border-muted'
     }
   }
 
@@ -149,9 +81,8 @@ export function MarketingCalendar() {
     filterType === 'all' || event.type === filterType
   )
 
-  const handleCreateEvent = () => {
-    const event: MarketingEvent = {
-      id: Date.now().toString(),
+  const handleCreateEvent = async () => {
+    await createEvent.mutateAsync({
       title: newEvent.title,
       description: newEvent.description,
       type: newEvent.type,
@@ -159,9 +90,8 @@ export function MarketingCalendar() {
       date: newEvent.date,
       priority: newEvent.priority,
       tags: newEvent.tags.split(',').map(tag => tag.trim()).filter(Boolean)
-    }
-
-    setEvents([...events, event])
+    })
+    
     setIsCreateEventOpen(false)
     setNewEvent({
       title: '',
@@ -171,10 +101,61 @@ export function MarketingCalendar() {
       priority: 'medium',
       tags: ''
     })
+    
+    toast({
+      title: "Événement créé",
+      description: "L'événement a été ajouté au calendrier"
+    })
+  }
+
+  const handleDeleteEvent = async (eventId: string) => {
+    await deleteEvent.mutateAsync(eventId)
+    toast({
+      title: "Événement supprimé",
+      description: "L'événement a été retiré du calendrier"
+    })
+  }
+
+  const handleExport = () => {
+    const data = events.map(e => ({
+      titre: e.title,
+      description: e.description,
+      type: e.type,
+      date: new Date(e.date).toLocaleDateString('fr-FR'),
+      priorité: e.priority,
+      tags: e.tags.join(', ')
+    }))
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'calendrier-marketing.json'
+    a.click()
+    
+    toast({
+      title: "Export réussi",
+      description: "Le calendrier a été exporté"
+    })
   }
 
   const renderEventList = () => {
     const eventsToShow = selectedDate ? getEventsForDate(selectedDate) : filteredEvents
+
+    if (isLoading) {
+      return (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <Skeleton className="h-4 w-48 mb-2" />
+                <Skeleton className="h-3 w-64" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )
+    }
 
     if (eventsToShow.length === 0) {
       return (
@@ -213,11 +194,11 @@ export function MarketingCalendar() {
                   </p>
                   
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>{event.date.toLocaleDateString('fr-FR')}</span>
+                    <span>{new Date(event.date).toLocaleDateString('fr-FR')}</span>
                     {event.endDate && (
-                      <span>→ {event.endDate.toLocaleDateString('fr-FR')}</span>
+                      <span>→ {new Date(event.endDate).toLocaleDateString('fr-FR')}</span>
                     )}
-                    <span>{event.date.toLocaleTimeString('fr-FR', { 
+                    <span>{new Date(event.date).toLocaleTimeString('fr-FR', { 
                       hour: '2-digit', 
                       minute: '2-digit' 
                     })}</span>
@@ -233,6 +214,18 @@ export function MarketingCalendar() {
                     </div>
                   )}
                 </div>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDeleteEvent(event.id)
+                  }}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -267,7 +260,7 @@ export function MarketingCalendar() {
             </SelectContent>
           </Select>
           
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4" />
           </Button>
           
@@ -355,8 +348,12 @@ export function MarketingCalendar() {
                 <Button variant="outline" onClick={() => setIsCreateEventOpen(false)} className="flex-1">
                   Annuler
                 </Button>
-                <Button onClick={handleCreateEvent} disabled={!newEvent.title.trim()} className="flex-1">
-                  Créer
+                <Button 
+                  onClick={handleCreateEvent} 
+                  disabled={!newEvent.title.trim() || createEvent.isPending} 
+                  className="flex-1"
+                >
+                  {createEvent.isPending ? 'Création...' : 'Créer'}
                 </Button>
               </div>
             </DialogContent>
@@ -431,11 +428,11 @@ export function MarketingCalendar() {
       {/* Quick Stats */}
       <div className="grid gap-4 md:grid-cols-5">
         {[
-          { label: 'Campagnes', count: events.filter(e => e.type === 'campaign').length, color: 'blue' },
-          { label: 'Emails', count: events.filter(e => e.type === 'email').length, color: 'green' },
-          { label: 'Social Media', count: events.filter(e => e.type === 'social').length, color: 'purple' },
-          { label: 'Événements', count: events.filter(e => e.type === 'event').length, color: 'orange' },
-          { label: 'Deadlines', count: events.filter(e => e.type === 'deadline').length, color: 'red' }
+          { label: 'Campagnes', count: events.filter(e => e.type === 'campaign').length, color: 'primary' },
+          { label: 'Emails', count: events.filter(e => e.type === 'email').length, color: 'secondary' },
+          { label: 'Social Media', count: events.filter(e => e.type === 'social').length, color: 'accent' },
+          { label: 'Événements', count: events.filter(e => e.type === 'event').length, color: 'warning' },
+          { label: 'Deadlines', count: events.filter(e => e.type === 'deadline').length, color: 'destructive' }
         ].map((stat, index) => (
           <Card key={index}>
             <CardContent className="p-4 text-center">
