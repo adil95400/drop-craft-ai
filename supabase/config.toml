@@ -681,3 +681,6 @@ verify_jwt = true
 
 [functions.ebay-connector]
 verify_jwt = true
+
+[functions.track-email]
+verify_jwt = false
