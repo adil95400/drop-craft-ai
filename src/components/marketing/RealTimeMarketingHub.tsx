@@ -4,35 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { 
-  Activity, 
-  Zap, 
-  Bell, 
-  Target, 
-  TrendingUp, 
-  AlertCircle, 
-  CheckCircle2, 
-  Clock, 
-  Users, 
-  Mail, 
-  ShoppingCart, 
-  DollarSign,
-  Eye,
-  MousePointer,
-  Phone,
-  MessageSquare,
-  Calendar,
-  Smartphone,
-  Globe,
-  ArrowUp,
-  ArrowDown,
-  Pause,
-  Play,
-  Settings,
-  RefreshCw
+  Activity, Bell, Target, TrendingUp, 
+  Users, Mail, ShoppingCart, DollarSign,
+  Eye, MousePointer, ArrowUp, ArrowDown, Settings, RefreshCw
 } from 'lucide-react';
-import { useMarketing } from '@/hooks/useMarketing';
+import { useUnifiedMarketing } from '@/hooks/useUnifiedMarketing';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LiveActivity {
   id: string;
@@ -67,142 +47,138 @@ interface LiveMetric {
 }
 
 export const RealTimeMarketingHub: React.FC = () => {
-  const { stats } = useMarketing();
+  const { stats, campaigns, isLoading } = useUnifiedMarketing();
   
   const [isLive, setIsLive] = useState(true);
   const [activities, setActivities] = useState<LiveActivity[]>([]);
   const [alerts, setAlerts] = useState<AlertRule[]>([]);
   const [liveMetrics, setLiveMetrics] = useState<LiveMetric[]>([]);
 
-  const initialActivities: LiveActivity[] = [
-    {
-      id: '1',
-      type: 'email_open',
-      timestamp: new Date(Date.now() - 30000),
-      campaign: 'Black Friday 2024',
-      user: 'Marie L.',
-      location: 'Paris, FR',
-      device: 'Mobile'
-    },
-    {
-      id: '2',
-      type: 'purchase',
-      timestamp: new Date(Date.now() - 45000),
-      campaign: 'Retargeting Q4',
-      user: 'Jean D.',
-      value: 127.50,
-      location: 'Lyon, FR',
-      device: 'Desktop'
-    },
-    {
-      id: '3',
-      type: 'click',
-      timestamp: new Date(Date.now() - 60000),
-      campaign: 'Social Media Boost',
-      user: 'Sophie M.',
-      location: 'Marseille, FR',
-      device: 'Mobile'
-    },
-    {
-      id: '4',
-      type: 'signup',
-      timestamp: new Date(Date.now() - 90000),
-      campaign: 'Newsletter Hebdo',
-      user: 'Pierre R.',
-      location: 'Toulouse, FR',
-      device: 'Tablet'
-    }
-  ];
-
-  const alertRules: AlertRule[] = [
-    {
-      id: 'conversion_drop',
-      name: 'Chute Conversion',
-      condition: 'Taux conversion < 2%',
-      threshold: 2,
-      isActive: true,
-      actions: ['Email équipe', 'Pause campagne faible performance']
-    },
-    {
-      id: 'high_cpc',
-      name: 'CPC Élevé',
-      condition: 'CPC > 5€',
-      threshold: 5,
-      isActive: true,
-      lastTriggered: new Date(Date.now() - 3600000),
-      actions: ['Optimisation automatique', 'Notification manager']
-    },
-    {
-      id: 'budget_alert',
-      name: 'Budget 90%',
-      condition: 'Budget utilisé > 90%',
-      threshold: 90,
-      isActive: true,
-      actions: ['Alerte budget', 'Recommandation extension']
-    },
-    {
-      id: 'engagement_spike',
-      name: 'Pic Engagement',
-      condition: 'Engagement > 150% moyenne',
-      threshold: 150,
-      isActive: true,
-      actions: ['Boost automatique', 'Capitaliser sur trend']
-    }
-  ];
-
-  const initialMetrics: LiveMetric[] = [
-    {
-      id: 'visitors_now',
-      name: 'Visiteurs Actifs',
-      value: 347,
-      change: 12,
-      icon: Users,
-      color: 'text-blue-600',
-      target: 500,
-      unit: ''
-    },
-    {
-      id: 'emails_opened',
-      name: 'Emails Ouverts/h',
-      value: 1247,
-      change: -8,
-      icon: Mail,
-      color: 'text-green-600',
-      target: 1500,
-      unit: '/h'
-    },
-    {
-      id: 'conversions_today',
-      name: 'Conversions Aujourd\'hui',
-      value: 89,
-      change: 23,
-      icon: Target,
-      color: 'text-purple-600',
-      target: 120,
-      unit: ''
-    },
-    {
-      id: 'revenue_hour',
-      name: 'Revenus/h',
-      value: 2847,
-      change: 34,
-      icon: DollarSign,
-      color: 'text-orange-600',
-      target: 3000,
-      unit: '€'
-    }
-  ];
-
+  // Fetch real conversion events
   useEffect(() => {
-    setActivities(initialActivities);
-    setAlerts(alertRules);
-    setLiveMetrics(initialMetrics);
+    const fetchActivities = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    if (isLive) {
+      const { data: events } = await supabase
+        .from('conversion_events')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (events) {
+        const mappedActivities: LiveActivity[] = events.map((event: any) => ({
+          id: event.id,
+          type: event.event_type as LiveActivity['type'],
+          timestamp: new Date(event.created_at),
+          campaign: event.source || 'Direct',
+          user: 'Client',
+          value: event.revenue,
+          location: 'France',
+          device: 'Web'
+        }));
+        setActivities(mappedActivities);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  // Initialize metrics from real stats
+  useEffect(() => {
+    const metrics: LiveMetric[] = [
+      {
+        id: 'visitors_now',
+        name: 'Visiteurs Actifs',
+        value: stats.totalImpressions > 0 ? Math.floor(stats.totalImpressions / 100) : 0,
+        change: 12,
+        icon: Users,
+        color: 'text-primary',
+        target: 500,
+        unit: ''
+      },
+      {
+        id: 'emails_opened',
+        name: 'Clics/h',
+        value: stats.totalClicks,
+        change: -8,
+        icon: Mail,
+        color: 'text-secondary',
+        target: 1500,
+        unit: '/h'
+      },
+      {
+        id: 'conversions_today',
+        name: 'Conversions Aujourd\'hui',
+        value: Math.floor(stats.totalClicks * stats.conversionRate),
+        change: 23,
+        icon: Target,
+        color: 'text-accent',
+        target: 120,
+        unit: ''
+      },
+      {
+        id: 'revenue_hour',
+        name: 'Revenus/h',
+        value: Math.floor(stats.totalBudget * stats.avgROAS),
+        change: 34,
+        icon: DollarSign,
+        color: 'text-warning',
+        target: 3000,
+        unit: '€'
+      }
+    ];
+    
+    setLiveMetrics(metrics);
+  }, [stats]);
+
+  // Initialize alerts from campaigns
+  useEffect(() => {
+    const alertRules: AlertRule[] = [
+      {
+        id: 'conversion_drop',
+        name: 'Chute Conversion',
+        condition: `Taux conversion < ${(stats.conversionRate * 100).toFixed(1)}%`,
+        threshold: stats.conversionRate * 100,
+        isActive: true,
+        actions: ['Email équipe', 'Pause campagne faible performance']
+      },
+      {
+        id: 'high_cpc',
+        name: 'CPC Élevé',
+        condition: 'CPC > 5€',
+        threshold: 5,
+        isActive: true,
+        lastTriggered: new Date(Date.now() - 3600000),
+        actions: ['Optimisation automatique', 'Notification manager']
+      },
+      {
+        id: 'budget_alert',
+        name: 'Budget 90%',
+        condition: 'Budget utilisé > 90%',
+        threshold: 90,
+        isActive: true,
+        actions: ['Alerte budget', 'Recommandation extension']
+      },
+      {
+        id: 'engagement_spike',
+        name: 'Pic Engagement',
+        condition: 'Engagement > 150% moyenne',
+        threshold: 150,
+        isActive: true,
+        actions: ['Boost automatique', 'Capitaliser sur trend']
+      }
+    ];
+    setAlerts(alertRules);
+  }, [stats]);
+
+  // Live updates simulation
+  useEffect(() => {
+    if (isLive && activities.length > 0) {
       const interval = setInterval(() => {
-        // Simulate new activity
         const types: LiveActivity['type'][] = ['email_open', 'click', 'conversion', 'visit', 'signup', 'purchase'];
-        const campaigns = ['Black Friday 2024', 'Retargeting Q4', 'Social Media Boost', 'Newsletter Hebdo'];
+        const campaignNames = campaigns.map(c => c.name).slice(0, 4);
         const users = ['Marie L.', 'Jean D.', 'Sophie M.', 'Pierre R.', 'Alice B.', 'Marc V.'];
         const locations = ['Paris, FR', 'Lyon, FR', 'Marseille, FR', 'Toulouse, FR', 'Nice, FR'];
         const devices = ['Mobile', 'Desktop', 'Tablet'];
@@ -211,7 +187,7 @@ export const RealTimeMarketingHub: React.FC = () => {
           id: Math.random().toString(36).substr(2, 9),
           type: types[Math.floor(Math.random() * types.length)],
           timestamp: new Date(),
-          campaign: campaigns[Math.floor(Math.random() * campaigns.length)],
+          campaign: campaignNames[Math.floor(Math.random() * campaignNames.length)] || 'Direct',
           user: users[Math.floor(Math.random() * users.length)],
           value: Math.random() > 0.7 ? Math.round(Math.random() * 200 + 50) : undefined,
           location: locations[Math.floor(Math.random() * locations.length)],
@@ -220,17 +196,16 @@ export const RealTimeMarketingHub: React.FC = () => {
 
         setActivities(prev => [newActivity, ...prev.slice(0, 19)]);
 
-        // Update metrics
         setLiveMetrics(prev => prev.map(metric => ({
           ...metric,
-          value: metric.value + Math.round(Math.random() * 10 - 5),
+          value: Math.max(0, metric.value + Math.round(Math.random() * 10 - 5)),
           change: Math.round((Math.random() - 0.5) * 50)
         })));
       }, 5000);
 
       return () => clearInterval(interval);
     }
-  }, [isLive]);
+  }, [isLive, activities.length, campaigns]);
 
   const getActivityIcon = (type: LiveActivity['type']) => {
     switch (type) {
@@ -246,13 +221,13 @@ export const RealTimeMarketingHub: React.FC = () => {
 
   const getActivityColor = (type: LiveActivity['type']) => {
     switch (type) {
-      case 'email_open': return 'text-blue-600';
-      case 'click': return 'text-purple-600';
-      case 'conversion': return 'text-green-600';
-      case 'visit': return 'text-orange-600';
-      case 'signup': return 'text-indigo-600';
-      case 'purchase': return 'text-emerald-600';
-      default: return 'text-gray-600';
+      case 'email_open': return 'text-primary';
+      case 'click': return 'text-accent';
+      case 'conversion': return 'text-secondary';
+      case 'visit': return 'text-warning';
+      case 'signup': return 'text-primary';
+      case 'purchase': return 'text-secondary';
+      default: return 'text-muted-foreground';
     }
   };
 
@@ -286,6 +261,27 @@ export const RealTimeMarketingHub: React.FC = () => {
     toast.success('Règle d\'alerte mise à jour');
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-12 w-full" />
+          </CardContent>
+        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Live Status Header */}
@@ -293,7 +289,7 @@ export const RealTimeMarketingHub: React.FC = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+              <div className={`w-3 h-3 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-muted'}`} />
               <div>
                 <h3 className="font-semibold">Hub Marketing Temps Réel</h3>
                 <p className="text-sm text-muted-foreground">
@@ -320,7 +316,7 @@ export const RealTimeMarketingHub: React.FC = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <MetricIcon className={`h-5 w-5 ${metric.color}`} />
-                  <div className={`flex items-center text-sm ${metric.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`flex items-center text-sm ${metric.change > 0 ? 'text-green-600' : 'text-destructive'}`}>
                     {metric.change > 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
                     <span>{Math.abs(metric.change)}%</span>
                   </div>
@@ -360,37 +356,43 @@ export const RealTimeMarketingHub: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {activities.map((activity) => {
-                const ActivityIcon = getActivityIcon(activity.type);
-                
-                return (
-                  <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/20 transition-colors animate-fade-in">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-muted/50`}>
-                      <ActivityIcon className={`h-4 w-4 ${getActivityColor(activity.type)}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">{getActivityLabel(activity.type)}</p>
-                        <span className="text-xs text-muted-foreground">{formatTimeAgo(activity.timestamp)}</span>
+              {activities.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Aucune activité récente
+                </div>
+              ) : (
+                activities.map((activity) => {
+                  const ActivityIcon = getActivityIcon(activity.type);
+                  
+                  return (
+                    <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/20 transition-colors">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-muted/50">
+                        <ActivityIcon className={`h-4 w-4 ${getActivityColor(activity.type)}`} />
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        <span className="font-medium">{activity.user}</span> • {activity.campaign}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {activity.device}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{activity.location}</span>
-                        {activity.value && (
-                          <Badge variant="secondary" className="text-xs text-green-600">
-                            +{activity.value}€
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium">{getActivityLabel(activity.type)}</p>
+                          <span className="text-xs text-muted-foreground">{formatTimeAgo(activity.timestamp)}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium">{activity.user}</span> • {activity.campaign}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {activity.device}
                           </Badge>
-                        )}
+                          <span className="text-xs text-muted-foreground">{activity.location}</span>
+                          {activity.value && (
+                            <Badge variant="secondary" className="text-xs text-green-600">
+                              +{activity.value}€
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </CardContent>
         </Card>
@@ -424,8 +426,8 @@ export const RealTimeMarketingHub: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-2">{alert.condition}</p>
                   
                   {alert.lastTriggered && (
-                    <p className="text-xs text-orange-600 mb-2">
-                      Dernière activation: {formatTimeAgo(alert.lastTriggered)} ago
+                    <p className="text-xs text-warning mb-2">
+                      Dernière activation: {formatTimeAgo(alert.lastTriggered)}
                     </p>
                   )}
                   
@@ -462,7 +464,7 @@ export const RealTimeMarketingHub: React.FC = () => {
             {Array.from({ length: 24 }, (_, hour) => (
               <div key={hour} className="text-center">
                 <div className="text-xs text-muted-foreground mb-1">{hour}h</div>
-                {['Black Friday', 'Retargeting', 'Social Media', 'Newsletter'].map((campaign, campaignIndex) => (
+                {campaigns.slice(0, 4).map((campaign, campaignIndex) => (
                   <div 
                     key={campaignIndex}
                     className={`h-4 mb-1 rounded ${
@@ -470,7 +472,7 @@ export const RealTimeMarketingHub: React.FC = () => {
                       Math.random() > 0.4 ? 'bg-yellow-500' :
                       Math.random() > 0.2 ? 'bg-orange-500' : 'bg-red-500'
                     } opacity-${Math.floor(Math.random() * 5 + 1) * 20}`}
-                    title={`${campaign} - ${hour}h`}
+                    title={`${campaign.name} - ${hour}h`}
                   />
                 ))}
               </div>
