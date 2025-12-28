@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Target, Play, Pause, Sparkles } from "lucide-react"
 import { format } from "date-fns"
 import { Progress } from "@/components/ui/progress"
+import { supabase } from "@/integrations/supabase/client"
 
 interface Campaign {
   id: string
@@ -37,30 +38,6 @@ interface Campaign {
   created_at: string
 }
 
-// Mock campaigns data since automated_campaigns table doesn't have campaign_name etc
-const mockCampaigns: Campaign[] = [
-  {
-    id: '1',
-    campaign_name: 'Campagne Black Friday',
-    campaign_type: 'promotional',
-    status: 'active',
-    target_criteria: { audience: 'Tous les clients' },
-    content_templates: { email: { subject: 'Offres Black Friday', body: 'Découvrez nos offres!' } },
-    current_metrics: { sent: 1500, opened: 450, clicked: 120, converted: 35 },
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    campaign_name: 'Newsletter Hebdomadaire',
-    campaign_type: 'educational',
-    status: 'draft',
-    target_criteria: { audience: 'Abonnés newsletter' },
-    content_templates: { email: { subject: 'Votre newsletter', body: 'Les news de la semaine' } },
-    current_metrics: { sent: 0, opened: 0, clicked: 0, converted: 0 },
-    created_at: new Date().toISOString()
-  }
-]
-
 export const CampaignManager = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -70,46 +47,57 @@ export const CampaignManager = () => {
   const [targetAudience, setTargetAudience] = useState("")
   const [emailSubject, setEmailSubject] = useState("")
   const [emailContent, setEmailContent] = useState("")
-  const [campaigns, setCampaigns] = useState<Campaign[]>(mockCampaigns)
 
-  const { isLoading } = useQuery({
-    queryKey: ['marketing-campaigns'],
+  const { data: campaigns = [], isLoading } = useQuery({
+    queryKey: ['marketing-campaigns-manager'],
     queryFn: async () => {
-      // Return mock data since table doesn't have the expected schema
-      return mockCampaigns
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user?.id) return []
+      
+      const { data, error } = await supabase
+        .from('marketing_campaigns')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      return (data || []).map((campaign: any) => ({
+        id: campaign.id,
+        campaign_name: campaign.name,
+        campaign_type: campaign.type,
+        status: campaign.status,
+        target_criteria: { audience: 'Tous les clients' },
+        content_templates: campaign.metrics?.content || {},
+        current_metrics: campaign.metrics || { sent: 0, opened: 0, clicked: 0, converted: 0 },
+        created_at: campaign.created_at
+      }))
     }
   })
 
   const createCampaignMutation = useMutation({
     mutationFn: async () => {
-      const newCampaign: Campaign = {
-        id: Date.now().toString(),
-        campaign_name: campaignName,
-        campaign_type: campaignType,
-        status: 'draft',
-        target_criteria: { audience: targetAudience },
-        content_templates: {
-          email: {
-            subject: emailSubject,
-            body: emailContent
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user?.id) throw new Error('Not authenticated')
+
+      const { error } = await supabase
+        .from('marketing_campaigns')
+        .insert([{
+          user_id: user.id,
+          name: campaignName,
+          type: campaignType,
+          status: 'draft',
+          metrics: {
+            sent: 0, opened: 0, clicked: 0, converted: 0,
+            content: { email: { subject: emailSubject, body: emailContent } }
           }
-        },
-        current_metrics: {
-          sent: 0,
-          opened: 0,
-          clicked: 0,
-          converted: 0
-        },
-        created_at: new Date().toISOString()
-      }
-      setCampaigns(prev => [newCampaign, ...prev])
+        }])
+
+      if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] })
-      toast({
-        title: "Campagne créée",
-        description: "La campagne a été créée avec succès"
-      })
+      queryClient.invalidateQueries({ queryKey: ['marketing-campaigns-manager'] })
+      toast({ title: "Campagne créée", description: "La campagne a été créée avec succès" })
       setIsCreating(false)
       setCampaignName("")
       setCampaignType("")
@@ -121,14 +109,16 @@ export const CampaignManager = () => {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string, status: string }) => {
-      setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status } : c))
+      const { error } = await supabase
+        .from('marketing_campaigns')
+        .update({ status })
+        .eq('id', id)
+
+      if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] })
-      toast({
-        title: "Statut mis à jour",
-        description: "Le statut de la campagne a été modifié"
-      })
+      queryClient.invalidateQueries({ queryKey: ['marketing-campaigns-manager'] })
+      toast({ title: "Statut mis à jour", description: "Le statut de la campagne a été modifié" })
     }
   })
 
