@@ -51,10 +51,10 @@ export function LiveCampaignMonitor() {
 
       {selectedCampaign && (
         <div className="grid gap-4 md:grid-cols-4">
-          <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Impressions</CardTitle><Eye className="h-4 w-4" /></CardHeader><CardContent><div className="text-2xl font-bold">15,234</div></CardContent></Card>
-          <Card><CardHeader className="pb-2"><CardTitle className="text-sm">CTR</CardTitle><MousePointer className="h-4 w-4" /></CardHeader><CardContent><div className="text-2xl font-bold">3.2%</div></CardContent></Card>
-          <Card><CardHeader className="pb-2"><CardTitle className="text-sm">ROAS</CardTitle><DollarSign className="h-4 w-4" /></CardHeader><CardContent><div className="text-2xl font-bold">4.5x</div></CardContent></Card>
-          <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Conversions</CardTitle><Target className="h-4 w-4" /></CardHeader><CardContent><div className="text-2xl font-bold">47</div></CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Impressions</CardTitle><Eye className="h-4 w-4" /></CardHeader><CardContent><div className="text-2xl font-bold">{(selectedCampaign.metrics?.impressions || 0).toLocaleString()}</div></CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="text-sm">CTR</CardTitle><MousePointer className="h-4 w-4" /></CardHeader><CardContent><div className="text-2xl font-bold">{((selectedCampaign.metrics?.ctr || 0) * 100).toFixed(1)}%</div></CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="text-sm">ROAS</CardTitle><DollarSign className="h-4 w-4" /></CardHeader><CardContent><div className="text-2xl font-bold">{(selectedCampaign.metrics?.roas || 0).toFixed(1)}x</div></CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Conversions</CardTitle><Target className="h-4 w-4" /></CardHeader><CardContent><div className="text-2xl font-bold">{selectedCampaign.metrics?.conversions || 0}</div></CardContent></Card>
         </div>
       )}
     </div>

@@ -1,62 +1,20 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, Sparkles, TrendingUp, Target } from "lucide-react"
+import { Users, Sparkles, TrendingUp, Target, Loader2 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
+import { useCustomerSegments } from "@/hooks/useCustomerSegments"
 
 export const CustomerSegmentation = () => {
-  const segments = [
-    {
-      id: 1,
-      name: "VIP - Gros acheteurs",
-      description: "Clients avec >5 commandes et panier moyen >150€",
-      count: 342,
-      total: 2850,
-      avgValue: 245,
-      engagement: 87,
-      color: "bg-primary"
-    },
-    {
-      id: 2,
-      name: "Clients fidèles",
-      description: "Achats réguliers, panier moyen 80-150€",
-      count: 789,
-      total: 2850,
-      avgValue: 112,
-      engagement: 68,
-      color: "bg-secondary"
-    },
-    {
-      id: 3,
-      name: "Nouveaux clients",
-      description: "1ère commande dans les 30 derniers jours",
-      count: 456,
-      total: 2850,
-      avgValue: 67,
-      engagement: 45,
-      color: "bg-accent"
-    },
-    {
-      id: 4,
-      name: "À risque",
-      description: "Inactifs depuis 60+ jours, historique d'achats",
-      count: 234,
-      total: 2850,
-      avgValue: 95,
-      engagement: 23,
-      color: "bg-destructive"
-    },
-    {
-      id: 5,
-      name: "Prospects engagés",
-      description: "Email ouvert, pas encore d'achat",
-      count: 628,
-      total: 2850,
-      avgValue: 0,
-      engagement: 34,
-      color: "bg-muted"
-    }
-  ]
+  const { segments, isLoading } = useCustomerSegments()
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -88,61 +46,74 @@ export const CustomerSegmentation = () => {
         </div>
       </Card>
 
-      <div className="space-y-4">
-        {segments.map((segment) => {
-          const percentage = (segment.count / segment.total) * 100
-          
-          return (
-            <Card key={segment.id} className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="space-y-2 flex-1">
-                  <div className="flex items-center gap-3">
-                    <h4 className="font-semibold">{segment.name}</h4>
-                    <Badge variant="outline">{segment.count} clients</Badge>
+      {segments.length === 0 ? (
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground">Aucun segment créé</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Créez des segments pour cibler vos clients
+          </p>
+          <Button className="mt-4">
+            <Users className="w-4 h-4 mr-2" />
+            Créer un segment
+          </Button>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {segments.map((segment) => {
+            const percentage = segment.total > 0 ? (segment.count / segment.total) * 100 : 0
+            
+            return (
+              <Card key={segment.id} className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center gap-3">
+                      <h4 className="font-semibold">{segment.name}</h4>
+                      <Badge variant="outline">{segment.count} clients</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {segment.description}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {segment.description}
-                  </p>
+                  <Button size="sm" variant="outline">
+                    <Target className="w-4 h-4 mr-2" />
+                    Cibler
+                  </Button>
                 </div>
-                <Button size="sm" variant="outline">
-                  <Target className="w-4 h-4 mr-2" />
-                  Cibler
-                </Button>
-              </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Part de la base</span>
-                    <span className="font-medium">{percentage.toFixed(1)}%</span>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Part de la base</span>
+                      <span className="font-medium">{percentage.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={percentage} className="h-2" />
                   </div>
-                  <Progress value={percentage} className="h-2" />
-                </div>
 
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Clients</p>
-                    <p className="text-lg font-bold">{segment.count}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Panier moyen</p>
-                    <p className="text-lg font-bold">{segment.avgValue}€</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Engagement</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-lg font-bold">{segment.engagement}%</p>
-                      {segment.engagement > 60 && (
-                        <TrendingUp className="w-4 h-4 text-secondary" />
-                      )}
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Clients</p>
+                      <p className="text-lg font-bold">{segment.count}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Panier moyen</p>
+                      <p className="text-lg font-bold">{segment.avgValue}€</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Engagement</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-lg font-bold">{segment.engagement}%</p>
+                        {segment.engagement > 60 && (
+                          <TrendingUp className="w-4 h-4 text-secondary" />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          )
-        })}
-      </div>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
       <Card className="p-6 bg-muted/50">
         <div className="flex items-start gap-4">

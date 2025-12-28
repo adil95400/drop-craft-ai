@@ -3,47 +3,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Mail, Zap, Clock, Users, TrendingUp } from "lucide-react"
+import { Mail, Zap, Clock, Users, TrendingUp, Loader2 } from "lucide-react"
+import { useEmailAutomation } from "@/hooks/useEmailAutomation"
 
 export const EmailAutomation = () => {
-  const automations = [
-    {
-      id: 1,
-      name: "Email de bienvenue",
-      trigger: "Nouvelle inscription",
-      status: "active",
-      sent: 342,
-      openRate: 45.2,
-      description: "Envoyé automatiquement aux nouveaux inscrits"
-    },
-    {
-      id: 2,
-      name: "Panier abandonné",
-      trigger: "Panier non finalisé 1h",
-      status: "active",
-      sent: 128,
-      openRate: 38.5,
-      description: "Relance après 1h d'inactivité"
-    },
-    {
-      id: 3,
-      name: "Réengagement",
-      trigger: "Inactif 30 jours",
-      status: "paused",
-      sent: 89,
-      openRate: 22.1,
-      description: "Récupération des clients inactifs"
-    },
-    {
-      id: 4,
-      name: "Upsell post-achat",
-      trigger: "7 jours après achat",
-      status: "active",
-      sent: 215,
-      openRate: 31.8,
-      description: "Suggestions de produits complémentaires"
-    }
-  ]
+  const { automations, stats, isLoading, toggleAutomation } = useEmailAutomation()
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -66,7 +38,7 @@ export const EmailAutomation = () => {
               <Mail className="w-8 h-8 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">Emails envoyés</p>
-                <p className="text-2xl font-bold">774</p>
+                <p className="text-2xl font-bold">{stats.totalSent}</p>
               </div>
             </div>
           </Card>
@@ -76,7 +48,7 @@ export const EmailAutomation = () => {
               <TrendingUp className="w-8 h-8 text-secondary" />
               <div>
                 <p className="text-sm text-muted-foreground">Taux d'ouverture</p>
-                <p className="text-2xl font-bold">34.4%</p>
+                <p className="text-2xl font-bold">{stats.avgOpenRate.toFixed(1)}%</p>
               </div>
             </div>
           </Card>
@@ -86,64 +58,75 @@ export const EmailAutomation = () => {
               <Users className="w-8 h-8 text-accent" />
               <div>
                 <p className="text-sm text-muted-foreground">Conversions</p>
-                <p className="text-2xl font-bold">127</p>
+                <p className="text-2xl font-bold">{stats.conversions}</p>
               </div>
             </div>
           </Card>
         </div>
       </Card>
 
-      <div className="space-y-4">
-        {automations.map((automation) => (
-          <Card key={automation.id} className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="space-y-3 flex-1">
-                <div className="flex items-center gap-3">
-                  <h4 className="font-semibold">{automation.name}</h4>
-                  <Badge variant={automation.status === 'active' ? 'default' : 'secondary'}>
-                    {automation.status === 'active' ? 'Actif' : 'En pause'}
-                  </Badge>
-                </div>
-                
-                <p className="text-sm text-muted-foreground">
-                  {automation.description}
-                </p>
+      {automations.length === 0 ? (
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground">Aucune automation email configurée</p>
+          <Button className="mt-4">
+            <Zap className="w-4 h-4 mr-2" />
+            Créer une automation
+          </Button>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {automations.map((automation) => (
+            <Card key={automation.id} className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-center gap-3">
+                    <h4 className="font-semibold">{automation.name}</h4>
+                    <Badge variant={automation.status === 'active' ? 'default' : 'secondary'}>
+                      {automation.status === 'active' ? 'Actif' : 'En pause'}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground">
+                    {automation.description}
+                  </p>
 
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Trigger:</span>
-                    <span className="font-medium">{automation.trigger}</span>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Trigger:</span>
+                      <span className="font-medium">{automation.trigger}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">{automation.sent} envoyés</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">{automation.openRate}% ouverture</span>
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{automation.sent} envoyés</span>
+                    <Switch 
+                      checked={automation.status === 'active'}
+                      onCheckedChange={(checked) => toggleAutomation({ id: automation.id, is_active: checked })}
+                      id={`automation-${automation.id}`}
+                    />
+                    <Label htmlFor={`automation-${automation.id}`}>
+                      {automation.status === 'active' ? 'Actif' : 'Inactif'}
+                    </Label>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{automation.openRate}% ouverture</span>
-                  </div>
+                  <Button size="sm" variant="outline">
+                    Modifier
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    checked={automation.status === 'active'}
-                    id={`automation-${automation.id}`}
-                  />
-                  <Label htmlFor={`automation-${automation.id}`}>
-                    {automation.status === 'active' ? 'Actif' : 'Inactif'}
-                  </Label>
-                </div>
-                <Button size="sm" variant="outline">
-                  Modifier
-                </Button>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Card className="p-6 bg-muted/50">
         <div className="flex items-start gap-4">
