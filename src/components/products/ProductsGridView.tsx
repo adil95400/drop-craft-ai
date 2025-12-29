@@ -90,6 +90,9 @@ export const ProductsGridView = memo(function ProductsGridView({
 
   return (
     <div className="space-y-4">
+      {/* Widget de statistiques */}
+      <ProductStatsWidget products={products} className="mb-4" />
+      
       {/* Sélection en masse de la page */}
       {onSelectionChange && (
         <div className="flex items-center justify-between pb-2 border-b">
