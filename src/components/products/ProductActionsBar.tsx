@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { 
   Search, 
   Filter, 
@@ -25,7 +26,11 @@ import {
   Clock,
   ChevronDown,
   Sliders,
-  RotateCcw
+  RotateCcw,
+  Wand2,
+  Send,
+  Trash2,
+  MoreHorizontal
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -54,6 +59,9 @@ interface ProductActionsBarProps {
   savedViews?: SavedView[]
   onSaveView?: (name: string) => void
   onLoadView?: (view: SavedView) => void
+  onBulkOptimize?: () => void
+  onBulkPublish?: () => void
+  onBulkDelete?: () => void
 }
 
 const QUICK_FILTERS = [
@@ -93,7 +101,10 @@ export function ProductActionsBar({
   onResetFilters,
   savedViews = [],
   onSaveView,
-  onLoadView
+  onLoadView,
+  onBulkOptimize,
+  onBulkPublish,
+  onBulkDelete
 }: ProductActionsBarProps) {
   const [activeQuickFilter, setActiveQuickFilter] = useState('all')
   const [showSaveViewPopover, setShowSaveViewPopover] = useState(false)
@@ -360,19 +371,72 @@ export function ProductActionsBar({
         )}
       </div>
       
-      {/* Infos résultats */}
+      {/* Infos résultats et actions groupées */}
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-3">
           <span className="text-muted-foreground">
             <span className="font-semibold text-foreground">{totalCount}</span> produit{totalCount > 1 ? 's' : ''}
           </span>
           {selectedCount > 0 && (
-            <Badge 
-              variant="secondary" 
-              className="bg-primary/10 text-primary border-primary/20 animate-in zoom-in duration-200"
-            >
-              {selectedCount} sélectionné{selectedCount > 1 ? 's' : ''}
-            </Badge>
+            <>
+              <Badge 
+                variant="secondary" 
+                className="bg-primary/10 text-primary border-primary/20 animate-in zoom-in duration-200"
+              >
+                {selectedCount} sélectionné{selectedCount > 1 ? 's' : ''}
+              </Badge>
+              
+              {/* Actions groupées */}
+              <div className="flex items-center gap-2 ml-2 animate-in slide-in-from-left duration-200">
+                <Separator orientation="vertical" className="h-5" />
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1.5 text-xs bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-violet-300/50 text-violet-700 hover:from-violet-500/20 hover:to-purple-500/20"
+                  onClick={onBulkOptimize}
+                >
+                  <Wand2 className="h-3.5 w-3.5" />
+                  Optimiser
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1.5 text-xs bg-gradient-to-r from-emerald-500/10 to-green-500/10 border-emerald-300/50 text-emerald-700 hover:from-emerald-500/20 hover:to-green-500/20"
+                  onClick={onBulkPublish}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  Publier
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={onBulkOptimize}>
+                      <Wand2 className="h-4 w-4 mr-2 text-violet-600" />
+                      Optimiser par IA
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onBulkPublish}>
+                      <Send className="h-4 w-4 mr-2 text-emerald-600" />
+                      Publier sur marketplace
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={onBulkDelete}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Supprimer la sélection
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </>
           )}
           {hasActiveFilters && (
             <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
