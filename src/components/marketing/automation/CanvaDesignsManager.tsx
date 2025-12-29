@@ -27,11 +27,10 @@ export function CanvaDesignsManager() {
     isLoading, 
     isConnecting,
     isConnected,
-    initiateOAuth,
-    disconnect,
-    syncDesigns,
-    createDesign,
-    deleteDesign 
+    connectCanva,
+    disconnectCanva,
+    getDesigns,
+    openCanvaEditor
   } = useCanvaIntegration()
 
   const [search, setSearch] = useState('')
@@ -47,7 +46,7 @@ export function CanvaDesignsManager() {
   })
 
   const handleCreateDesign = (designType: string) => {
-    createDesign(designType)
+    openCanvaEditor(undefined, designType)
     setShowCreateDialog(false)
   }
 
@@ -76,7 +75,7 @@ export function CanvaDesignsManager() {
             </div>
             <Button 
               size="lg" 
-              onClick={initiateOAuth}
+              onClick={connectCanva}
               disabled={isConnecting}
               className="mt-4"
             >
@@ -163,7 +162,7 @@ export function CanvaDesignsManager() {
           </Select>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={syncDesigns}>
+          <Button variant="outline" onClick={() => getDesigns()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Synchroniser
           </Button>
@@ -178,7 +177,7 @@ export function CanvaDesignsManager() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={disconnect} className="text-destructive">
+              <DropdownMenuItem onClick={disconnectCanva} className="text-destructive">
                 <Unlink className="h-4 w-4 mr-2" />
                 Déconnecter Canva
               </DropdownMenuItem>
@@ -217,7 +216,7 @@ export function CanvaDesignsManager() {
               key={design.id}
               design={design}
               onPreview={() => { setSelectedDesign(design); setShowPreviewDialog(true) }}
-              onDelete={() => deleteDesign(design.id)}
+              onOpen={() => openCanvaEditor(design.canva_design_id)}
             />
           ))
         )}
@@ -252,9 +251,9 @@ export function CanvaDesignsManager() {
             <DialogTitle>{selectedDesign?.title}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {selectedDesign?.thumbnail_url ? (
+            {selectedDesign?.thumbnail ? (
               <img 
-                src={selectedDesign.thumbnail_url} 
+                src={selectedDesign.thumbnail} 
                 alt={selectedDesign.title}
                 className="w-full rounded-lg border"
               />
@@ -266,7 +265,7 @@ export function CanvaDesignsManager() {
             <div className="flex items-center gap-2">
               <Badge>{selectedDesign?.design_type || 'Design'}</Badge>
               <span className="text-sm text-muted-foreground">
-                Modifié: {selectedDesign?.last_modified_at ? new Date(selectedDesign.last_modified_at).toLocaleDateString() : 'N/A'}
+                Modifié: {selectedDesign?.updated_at ? new Date(selectedDesign.updated_at).toLocaleDateString() : 'N/A'}
               </span>
             </div>
           </div>
@@ -290,19 +289,19 @@ export function CanvaDesignsManager() {
 interface DesignCardProps {
   design: CanvaDesign
   onPreview: () => void
-  onDelete: () => void
+  onOpen: () => void
 }
 
-function DesignCard({ design, onPreview, onDelete }: DesignCardProps) {
+function DesignCard({ design, onPreview, onOpen }: DesignCardProps) {
   return (
     <Card className="overflow-hidden">
       <div 
         className="h-40 bg-gradient-to-br from-muted to-muted/50 cursor-pointer relative"
         onClick={onPreview}
       >
-        {design.thumbnail_url ? (
+        {design.thumbnail ? (
           <img 
-            src={design.thumbnail_url} 
+            src={design.thumbnail} 
             alt={design.title}
             className="w-full h-full object-cover"
           />
@@ -331,17 +330,9 @@ function DesignCard({ design, onPreview, onDelete }: DesignCardProps) {
                 <Eye className="h-4 w-4 mr-2" />
                 Voir
               </DropdownMenuItem>
-              {design.design_url && (
-                <DropdownMenuItem asChild>
-                  <a href={design.design_url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Ouvrir dans Canva
-                  </a>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Supprimer
+              <DropdownMenuItem onClick={onOpen}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Ouvrir dans Canva
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

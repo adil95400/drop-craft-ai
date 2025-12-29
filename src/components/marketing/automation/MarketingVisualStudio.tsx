@@ -71,7 +71,7 @@ export function MarketingVisualStudio() {
       type: 'canva' as const,
       id: d.id,
       title: d.title,
-      thumbnail: d.thumbnail_url,
+      thumbnail: d.thumbnail || null,
       createdAt: d.created_at,
       data: d
     })),
@@ -117,7 +117,7 @@ export function MarketingVisualStudio() {
   const handleCopy = async (item: VisualItem) => {
     const imageUrl = item.type === 'ai' 
       ? (item.data as AIImage).image_base64 
-      : (item.data as CanvaDesign).thumbnail_url
+      : (item.data as CanvaDesign).thumbnail
 
     if (imageUrl) {
       try {
@@ -143,7 +143,7 @@ export function MarketingVisualStudio() {
   const handleDownload = (item: VisualItem) => {
     const imageUrl = item.type === 'ai' 
       ? (item.data as AIImage).image_base64 
-      : (item.data as CanvaDesign).thumbnail_url
+      : (item.data as CanvaDesign).thumbnail
 
     if (imageUrl) {
       const link = document.createElement('a')
