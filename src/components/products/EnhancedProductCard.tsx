@@ -74,13 +74,6 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
   const { toast } = useToast();
 
   const imageUrl = product.image_url;
-  const aiScore = (product as any).ai_score || calculateAIScore(product);
-  const seoScore = (product as any).seo_score || Math.floor(aiScore * 0.9);
-  const isWinner = (product as any).is_winner;
-  const isTrending = (product as any).is_trending;
-  const isBestseller = (product as any).is_bestseller;
-  const salesCount = (product as any).sales_count || 0;
-  const viewsCount = (product as any).views_count || Math.floor(Math.random() * 500) + 50;
   
   const margin = product.cost_price 
     ? Math.round(((product.price - product.cost_price) / product.price) * 100)
@@ -91,7 +84,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
     : null;
 
   // Calculate a realistic AI score based on product data
-  function calculateAIScore(p: UnifiedProduct): number {
+  const calculateAIScore = (p: UnifiedProduct): number => {
     let score = 50;
     if (p.description && p.description.length > 100) score += 15;
     if (p.image_url) score += 10;
@@ -100,7 +93,15 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
     if (p.stock_quantity && p.stock_quantity > 0) score += 5;
     if (margin && margin > 20) score += 10;
     return Math.min(score, 100);
-  }
+  };
+
+  const aiScore = (product as any).ai_score || calculateAIScore(product);
+  const seoScore = (product as any).seo_score || Math.floor(aiScore * 0.9);
+  const isWinner = (product as any).is_winner;
+  const isTrending = (product as any).is_trending;
+  const isBestseller = (product as any).is_bestseller;
+  const salesCount = (product as any).sales_count || 0;
+  const viewsCount = (product as any).views_count || Math.floor(Math.random() * 500) + 50;
 
   const getStockStatus = () => {
     const stock = product.stock_quantity || 0;
