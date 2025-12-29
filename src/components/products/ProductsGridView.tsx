@@ -7,6 +7,7 @@ import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
 import { EnhancedProductCard } from './EnhancedProductCard';
 import { ProductsPagination } from './ProductsPagination';
 import { ProductViewModal } from '@/components/modals/ProductViewModal';
+import { ProductStatsWidget } from './ProductStatsWidget';
 import { Package } from 'lucide-react';
 
 interface ProductsGridViewProps {
