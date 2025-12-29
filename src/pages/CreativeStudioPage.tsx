@@ -4,10 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { 
@@ -20,21 +20,27 @@ import {
   Share,
   Eye,
   Heart,
-  Star,
   Wand2,
   Loader2,
   Trash2,
-  Copy,
   QrCode,
   Eraser,
   Settings,
   Check,
-  X
+  X,
+  Crop,
+  Layers,
+  Zap,
+  RefreshCw
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { BackgroundRemovalTool } from '@/components/creative-studio/BackgroundRemovalTool';
+import { ImageEnhancerTool } from '@/components/creative-studio/ImageEnhancerTool';
+import { TextOverlayTool } from '@/components/creative-studio/TextOverlayTool';
+import { PromptSuggestions } from '@/components/creative-studio/PromptSuggestions';
 
 interface GeneratedCreation {
   id: string;
@@ -57,6 +63,7 @@ interface Template {
   width: number;
   height: number;
   description: string;
+  gradient: string;
 }
 
 const templates: Template[] = [
@@ -68,7 +75,8 @@ const templates: Template[] = [
     popular: true,
     width: 1080,
     height: 1080,
-    description: 'Format carré idéal pour le feed Instagram'
+    description: 'Format carré idéal pour le feed Instagram',
+    gradient: 'from-pink-500 via-purple-500 to-indigo-500'
   },
   {
     title: 'Bannière Web',
@@ -78,7 +86,8 @@ const templates: Template[] = [
     popular: false,
     width: 1200,
     height: 400,
-    description: 'Bannière large pour sites web et newsletters'
+    description: 'Bannière large pour sites web et newsletters',
+    gradient: 'from-blue-500 to-cyan-500'
   },
   {
     title: 'Story Facebook',
@@ -88,7 +97,8 @@ const templates: Template[] = [
     popular: true,
     width: 1080,
     height: 1920,
-    description: 'Format vertical pour stories Facebook et Instagram'
+    description: 'Format vertical pour stories Facebook et Instagram',
+    gradient: 'from-orange-500 to-red-500'
   },
   {
     title: 'Thumbnail YouTube',
@@ -98,7 +108,8 @@ const templates: Template[] = [
     popular: false,
     width: 1280,
     height: 720,
-    description: 'Miniature 16:9 pour vidéos YouTube'
+    description: 'Miniature 16:9 pour vidéos YouTube',
+    gradient: 'from-red-600 to-red-400'
   },
   {
     title: 'Logo Design',
@@ -108,7 +119,8 @@ const templates: Template[] = [
     popular: true,
     width: 800,
     height: 800,
-    description: 'Design de logo carré haute résolution'
+    description: 'Design de logo carré haute résolution',
+    gradient: 'from-emerald-500 to-teal-500'
   },
   {
     title: 'Flyer A4',
@@ -118,7 +130,8 @@ const templates: Template[] = [
     popular: false,
     width: 2480,
     height: 3508,
-    description: 'Format A4 pour impression (300 DPI)'
+    description: 'Format A4 pour impression (300 DPI)',
+    gradient: 'from-violet-500 to-purple-500'
   }
 ];
 
@@ -135,6 +148,7 @@ export default function CreativeStudioPage() {
   
   // Gallery state
   const [creations, setCreations] = useState<GeneratedCreation[]>([]);
+  const [filterType, setFilterType] = useState<'all' | 'favorites'>('all');
   
   // Modal states
   const [templatePreviewOpen, setTemplatePreviewOpen] = useState(false);
@@ -150,6 +164,12 @@ export default function CreativeStudioPage() {
   const [generatedPalette, setGeneratedPalette] = useState<string[]>([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<GeneratedCreation | null>(null);
+  
+  // New tool modals
+  const [bgRemovalOpen, setBgRemovalOpen] = useState(false);
+  const [imageEnhancerOpen, setImageEnhancerOpen] = useState(false);
+  const [textOverlayOpen, setTextOverlayOpen] = useState(false);
+  const [selectedImageForTool, setSelectedImageForTool] = useState<string | undefined>();
 
   // Fetch saved creations from marketing_ai_images
   const { data: savedCreations = [], isLoading: isLoadingCreations, refetch: refetchCreations } = useQuery({
@@ -187,16 +207,21 @@ export default function CreativeStudioPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
       
-      // Determine size based on format
       let width = 1024, height = 1024;
       if (format === 'portrait') { width = 768; height = 1024; }
       else if (format === 'landscape') { width = 1024; height = 768; }
       else if (format === 'story') { width = 768; height = 1280; }
       
-      // Call AI generation edge function
+      const stylePrefix = {
+        realistic: 'Photorealistic, high quality, professional',
+        cartoon: 'Cartoon style, vibrant colors, playful',
+        minimalist: 'Minimalist, clean design, simple shapes',
+        artistic: 'Artistic, creative, expressive brushstrokes'
+      }[style] || '';
+      
       const { data, error } = await supabase.functions.invoke('generate-marketing-image', {
         body: {
-          prompt: `${style === 'realistic' ? 'Realistic ' : style === 'cartoon' ? 'Cartoon style ' : style === 'minimalist' ? 'Minimalist ' : 'Artistic '}${prompt}`,
+          prompt: `${stylePrefix}. ${prompt}`,
           width,
           height,
           style
@@ -206,13 +231,11 @@ export default function CreativeStudioPage() {
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || 'Generation failed');
       
-      // The API returns 'image' not 'imageUrl'
       const imageData = data.image;
       if (!imageData) throw new Error('No image returned');
       
       const newId = crypto.randomUUID();
       
-      // Save to marketing_ai_images table
       const { error: saveError } = await supabase.from('marketing_ai_images').insert([{
         user_id: user.id,
         prompt: prompt,
@@ -222,16 +245,12 @@ export default function CreativeStudioPage() {
         model: 'google/gemini-2.5-flash-image-preview',
         style: style,
         category: 'creative-studio',
-        metadata: {
-          format,
-          type: selectedType,
-          isFavorite: false
-        }
+        metadata: { format, type: selectedType, isFavorite: false }
       }]);
       
       if (saveError) console.error('Save error:', saveError);
       
-      const newCreation: GeneratedCreation = {
+      return {
         id: newId,
         type: selectedType,
         prompt,
@@ -241,24 +260,19 @@ export default function CreativeStudioPage() {
         content: data.text,
         createdAt: new Date(),
         isFavorite: false
-      };
-      
-      return newCreation;
+      } as GeneratedCreation;
     },
     onSuccess: (data) => {
       setGeneratedResult(data);
       setCreations(prev => [data, ...prev]);
       refetchCreations();
-      toast({
-        title: "Génération réussie",
-        description: "Votre image a été créée avec succès"
-      });
+      toast({ title: "Génération réussie", description: "Votre image a été créée avec succès" });
     },
     onError: (error: any) => {
       console.error('Generation error:', error);
       toast({
         title: "Erreur de génération",
-        description: error.message || "Impossible de générer le contenu. Réessayez.",
+        description: error.message || "Impossible de générer le contenu",
         variant: "destructive"
       });
     }
@@ -284,17 +298,10 @@ export default function CreativeStudioPage() {
       refetchCreations();
       setDeleteConfirmOpen(false);
       setItemToDelete(null);
-      toast({
-        title: "Supprimé",
-        description: "L'image a été supprimée de votre galerie"
-      });
+      toast({ title: "Supprimé", description: "L'image a été supprimée" });
     },
     onError: (error: any) => {
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible de supprimer",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   });
 
@@ -307,42 +314,24 @@ export default function CreativeStudioPage() {
   const handleTemplateUse = (template: Template) => {
     setPrompt(`Créer un ${template.title} professionnel, ${template.description}`);
     setSelectedType('design');
-    // Set appropriate format
     if (template.width === template.height) setFormat('square');
     else if (template.width > template.height) setFormat('landscape');
     else setFormat('portrait');
     
     setTemplatePreviewOpen(false);
-    toast({
-      title: "Template sélectionné",
-      description: `${template.title} - Allez dans l'onglet Générateur IA pour créer`
-    });
+    toast({ title: "Template sélectionné", description: `${template.title} - Allez dans Générateur IA` });
   };
 
-  // Gallery actions - Fixed for base64 images
+  // Gallery actions
   const handleDownload = async (creation: GeneratedCreation) => {
     if (!creation.imageUrl) {
-      toast({ 
-        title: "Téléchargement impossible", 
-        description: "Aucune image à télécharger",
-        variant: "destructive"
-      });
+      toast({ title: "Téléchargement impossible", variant: "destructive" });
       return;
     }
     
     try {
-      let blob: Blob;
-      
-      if (creation.imageUrl.startsWith('data:')) {
-        // Handle base64 image
-        const response = await fetch(creation.imageUrl);
-        blob = await response.blob();
-      } else {
-        // Handle URL
-        const response = await fetch(creation.imageUrl);
-        blob = await response.blob();
-      }
-      
+      const response = await fetch(creation.imageUrl);
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -351,35 +340,27 @@ export default function CreativeStudioPage() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      
       toast({ title: "Téléchargement démarré" });
     } catch (error) {
-      console.error('Download error:', error);
-      toast({ 
-        title: "Erreur de téléchargement", 
-        description: "Impossible de télécharger l'image",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur de téléchargement", variant: "destructive" });
     }
   };
 
   const handleShare = async (creation: GeneratedCreation) => {
-    if (navigator.share && creation.imageUrl) {
+    if (navigator.share) {
       try {
         await navigator.share({
           title: 'Ma création Creative Studio',
           text: creation.prompt,
           url: window.location.href
         });
-        toast({ title: "Partagé avec succès" });
-      } catch (error) {
-        // User cancelled or share failed
+      } catch {
         await navigator.clipboard.writeText(window.location.href);
-        toast({ title: "Lien copié", description: "Lien de partage copié dans le presse-papier" });
+        toast({ title: "Lien copié" });
       }
     } else {
       await navigator.clipboard.writeText(window.location.href);
-      toast({ title: "Lien copié", description: "Lien de partage copié dans le presse-papier" });
+      toast({ title: "Lien copié" });
     }
   };
 
@@ -389,32 +370,13 @@ export default function CreativeStudioPage() {
     
     const newFavoriteStatus = !creation.isFavorite;
     
-    // Update in marketing_ai_images
-    const { error } = await supabase
-      .from('marketing_ai_images')
-      .update({
-        metadata: {
-          isFavorite: newFavoriteStatus,
-          format: creation.format,
-          type: creation.type
-        }
-      })
-      .eq('id', creation.id);
+    await supabase.from('marketing_ai_images').update({
+      metadata: { isFavorite: newFavoriteStatus, format: creation.format, type: creation.type }
+    }).eq('id', creation.id);
     
-    if (error) {
-      toast({ title: "Erreur", description: "Impossible de modifier les favoris", variant: "destructive" });
-      return;
-    }
-    
-    setCreations(prev => prev.map(c =>
-      c.id === creation.id ? { ...c, isFavorite: newFavoriteStatus } : c
-    ));
-    
+    setCreations(prev => prev.map(c => c.id === creation.id ? { ...c, isFavorite: newFavoriteStatus } : c));
     refetchCreations();
-    
-    toast({ 
-      title: newFavoriteStatus ? "Ajouté aux favoris" : "Retiré des favoris" 
-    });
+    toast({ title: newFavoriteStatus ? "Ajouté aux favoris" : "Retiré des favoris" });
   };
 
   const handleDeleteClick = (creation: GeneratedCreation) => {
@@ -422,15 +384,24 @@ export default function CreativeStudioPage() {
     setDeleteConfirmOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (itemToDelete) {
-      deleteMutation.mutate(itemToDelete.id);
-    }
-  };
-
   const handleViewImage = (creation: GeneratedCreation) => {
     setPreviewImage(creation);
     setImagePreviewOpen(true);
+  };
+
+  const handleEditImage = (creation: GeneratedCreation) => {
+    setSelectedImageForTool(creation.imageUrl);
+    setImageEnhancerOpen(true);
+  };
+
+  const handleRemoveBackground = (creation: GeneratedCreation) => {
+    setSelectedImageForTool(creation.imageUrl);
+    setBgRemovalOpen(true);
+  };
+
+  const handleAddText = (creation: GeneratedCreation) => {
+    setSelectedImageForTool(creation.imageUrl);
+    setTextOverlayOpen(true);
   };
 
   // Tool functions
@@ -441,9 +412,9 @@ export default function CreativeStudioPage() {
       ['#F39C12', '#E74C3C', '#9B59B6', '#1ABC9C', '#34495E'],
       ['#667EEA', '#764BA2', '#F093FB', '#F5576C', '#4FACFE'],
       ['#11998E', '#38EF7D', '#43E97B', '#38F9D7', '#08AEEA'],
+      ['#FC466B', '#3F5EFB', '#C471ED', '#12CBC4', '#FDA085'],
     ];
-    const randomPalette = palettes[Math.floor(Math.random() * palettes.length)];
-    setGeneratedPalette(randomPalette);
+    setGeneratedPalette(palettes[Math.floor(Math.random() * palettes.length)]);
   };
 
   const copyColor = async (color: string) => {
@@ -451,21 +422,65 @@ export default function CreativeStudioPage() {
     toast({ title: "Couleur copiée", description: color });
   };
 
-  const generateQRCode = () => {
-    // In a real implementation, you'd generate a QR code
-    // For now, we'll use a QR code API
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`;
-    window.open(qrApiUrl, '_blank');
-    toast({ title: "QR Code généré", description: "Ouvert dans un nouvel onglet" });
-  };
-
   const allCreations = [...creations, ...savedCreations.filter(sc => !creations.find(c => c.id === sc.id))];
+  const filteredCreations = filterType === 'favorites' ? allCreations.filter(c => c.isFavorite) : allCreations;
+
+  const tools = [
+    {
+      title: 'Suppression de fond',
+      description: 'Supprimez automatiquement l\'arrière-plan avec l\'IA',
+      icon: Eraser,
+      color: 'text-rose-500',
+      bgColor: 'bg-rose-500/10',
+      action: () => { setSelectedImageForTool(undefined); setBgRemovalOpen(true); }
+    },
+    {
+      title: 'Éditeur d\'images',
+      description: 'Ajustez luminosité, contraste et appliquez des filtres',
+      icon: Zap,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
+      action: () => { setSelectedImageForTool(undefined); setImageEnhancerOpen(true); }
+    },
+    {
+      title: 'Ajout de texte',
+      description: 'Superposez du texte personnalisé sur vos images',
+      icon: Type,
+      color: 'text-green-500',
+      bgColor: 'bg-green-500/10',
+      action: () => { setSelectedImageForTool(undefined); setTextOverlayOpen(true); }
+    },
+    {
+      title: 'Générateur de palettes',
+      description: 'Créez des palettes de couleurs harmonieuses',
+      icon: Palette,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-500/10',
+      action: () => { generatePalette(); setPaletteModalOpen(true); }
+    },
+    {
+      title: 'Générateur de QR codes',
+      description: 'QR codes personnalisés pour vos campagnes',
+      icon: QrCode,
+      color: 'text-orange-500',
+      bgColor: 'bg-orange-500/10',
+      action: () => setQrModalOpen(true)
+    },
+    {
+      title: 'Watermark automatique',
+      description: 'Protégez vos créations avec un filigrane',
+      icon: Settings,
+      color: 'text-indigo-500',
+      bgColor: 'bg-indigo-500/10',
+      action: () => setWatermarkModalOpen(true)
+    }
+  ];
 
   return (
     <>
       <Helmet>
-        <title>Creative Studio - Création de Contenu IA</title>
-        <meta name="description" content="Studio créatif avec IA pour générer des visuels, vidéos, textes et designs pour vos campagnes marketing." />
+        <title>Creative Studio - Création de Contenu IA | Shopopti</title>
+        <meta name="description" content="Studio créatif avec IA pour générer des visuels, supprimer les fonds, éditer vos images et créer des designs professionnels." />
       </Helmet>
 
       <div className="space-y-6">
@@ -475,10 +490,15 @@ export default function CreativeStudioPage() {
         />
 
         <Tabs defaultValue="generator" className="space-y-6">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="generator">Générateur IA</TabsTrigger>
-            <TabsTrigger value="gallery">Galerie</TabsTrigger>
+            <TabsTrigger value="gallery">
+              Galerie
+              {allCreations.length > 0 && (
+                <Badge variant="secondary" className="ml-2">{allCreations.length}</Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="tools">Outils</TabsTrigger>
           </TabsList>
 
@@ -486,42 +506,32 @@ export default function CreativeStudioPage() {
           <TabsContent value="templates" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {templates.map((template, index) => (
-                <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="aspect-video bg-muted relative">
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
-                      <div className="text-center">
-                        <Image className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <span className="text-xs text-muted-foreground">{template.size}</span>
+                <Card key={index} className="overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group">
+                  <div className={`aspect-video bg-gradient-to-br ${template.gradient} relative flex items-center justify-center`}>
+                    <div className="text-center text-white">
+                      <div className="w-16 h-16 mx-auto mb-2 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                        <Image className="h-8 w-8" />
                       </div>
+                      <span className="text-sm font-medium">{template.size}</span>
                     </div>
                     {template.popular && (
-                      <Badge className="absolute top-2 right-2 bg-gradient-to-r from-orange-500 to-red-500">
+                      <Badge className="absolute top-2 right-2 bg-white text-black">
                         Populaire
                       </Badge>
                     )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   </div>
-                  <CardHeader>
+                  <CardHeader className="pb-2">
                     <CardTitle className="text-base">{template.title}</CardTitle>
-                    <CardDescription>
-                      <Badge variant="outline" className="mr-2">{template.type}</Badge>
-                      <span className="text-xs text-muted-foreground">{template.size}</span>
-                    </CardDescription>
+                    <CardDescription className="text-xs">{template.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handleTemplatePreview(template)}
-                      >
+                      <Button size="sm" className="flex-1" onClick={() => handleTemplatePreview(template)}>
                         <Eye className="h-3 w-3 mr-1" />
                         Aperçu
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleTemplateUse(template)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => handleTemplateUse(template)}>
                         <Wand2 className="h-3 w-3" />
                       </Button>
                     </div>
@@ -540,9 +550,7 @@ export default function CreativeStudioPage() {
                     <Sparkles className="h-5 w-5 text-primary" />
                     Générateur IA
                   </CardTitle>
-                  <CardDescription>
-                    Décrivez votre vision, l'IA crée le contenu
-                  </CardDescription>
+                  <CardDescription>Décrivez votre vision, l'IA crée le contenu</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -570,13 +578,15 @@ export default function CreativeStudioPage() {
                   <div>
                     <label className="text-sm font-medium">Description</label>
                     <Textarea 
-                      placeholder="Ex: Un chat mignon avec des lunettes de soleil sur une plage..."
+                      placeholder="Ex: Un chat mignon avec des lunettes de soleil sur une plage tropicale..."
                       className="mt-2"
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       rows={3}
                     />
                   </div>
+
+                  <PromptSuggestions onSelect={setPrompt} />
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -633,18 +643,12 @@ export default function CreativeStudioPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Résultat</CardTitle>
-                  <CardDescription>
-                    Votre création apparaîtra ici
-                  </CardDescription>
+                  <CardDescription>Votre création apparaîtra ici</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="aspect-square bg-muted rounded-lg flex items-center justify-center overflow-hidden">
                     {generatedResult?.imageUrl ? (
-                      <img 
-                        src={generatedResult.imageUrl} 
-                        alt="Generated content" 
-                        className="w-full h-full object-contain"
-                      />
+                      <img src={generatedResult.imageUrl} alt="Generated" className="w-full h-full object-contain" />
                     ) : generateMutation.isPending ? (
                       <div className="text-center text-muted-foreground">
                         <Loader2 className="h-12 w-12 mx-auto mb-2 animate-spin" />
@@ -658,24 +662,23 @@ export default function CreativeStudioPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button 
-                      variant="outline" 
-                      disabled={!generatedResult}
-                      onClick={() => generatedResult && handleDownload(generatedResult)}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Télécharger
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      disabled={!generatedResult}
-                      onClick={() => generatedResult && handleShare(generatedResult)}
-                    >
-                      <Share className="h-4 w-4 mr-2" />
-                      Partager
-                    </Button>
-                  </div>
+                  
+                  {generatedResult && (
+                    <div className="grid grid-cols-4 gap-2 mt-4">
+                      <Button variant="outline" size="sm" onClick={() => handleDownload(generatedResult)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleEditImage(generatedResult)}>
+                        <Zap className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleRemoveBackground(generatedResult)}>
+                        <Eraser className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleAddText(generatedResult)}>
+                        <Type className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -683,90 +686,90 @@ export default function CreativeStudioPage() {
 
           {/* Gallery Tab */}
           <TabsContent value="gallery" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Mes Créations ({allCreations.length})</h3>
-              <Button 
-                variant="outline"
-                onClick={() => refetchCreations()}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Actualiser
-              </Button>
+            <div className="flex justify-between items-center flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Mes Créations</h3>
+                <Badge variant="secondary">{filteredCreations.length}</Badge>
+              </div>
+              <div className="flex gap-2">
+                <Select value={filterType} onValueChange={(v: 'all' | 'favorites') => setFilterType(v)}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes</SelectItem>
+                    <SelectItem value="favorites">Favoris</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" onClick={() => refetchCreations()}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             {isLoadingCreations ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin" />
               </div>
-            ) : allCreations.length === 0 ? (
+            ) : filteredCreations.length === 0 ? (
               <Card className="p-12 text-center">
                 <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">Aucune création</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  {filterType === 'favorites' ? 'Aucun favori' : 'Aucune création'}
+                </h3>
                 <p className="text-muted-foreground mb-4">
-                  Utilisez le générateur IA pour créer votre premier contenu
+                  {filterType === 'favorites' 
+                    ? 'Ajoutez des créations à vos favoris' 
+                    : 'Utilisez le générateur IA pour créer votre premier contenu'}
                 </p>
               </Card>
             ) : (
-              <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-                {allCreations.map((creation) => (
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {filteredCreations.map((creation) => (
                   <Card key={creation.id} className="overflow-hidden group">
                     <div className="aspect-square bg-gradient-to-br from-primary/20 to-secondary/20 relative">
                       {creation.imageUrl ? (
-                        <img 
-                          src={creation.imageUrl} 
-                          alt={creation.prompt}
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={creation.imageUrl} alt={creation.prompt} className="w-full h-full object-cover" />
                       ) : (
                         <div className="flex items-center justify-center h-full">
                           <Sparkles className="h-8 w-8 opacity-50" />
                         </div>
                       )}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="secondary"
-                            onClick={() => handleViewImage(creation)}
-                          >
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/60 transition-opacity">
+                        <div className="grid grid-cols-3 gap-1">
+                          <Button size="sm" variant="secondary" onClick={() => handleViewImage(creation)}>
                             <Eye className="h-3 w-3" />
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="secondary"
-                            onClick={() => handleDownload(creation)}
-                          >
+                          <Button size="sm" variant="secondary" onClick={() => handleDownload(creation)}>
                             <Download className="h-3 w-3" />
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="secondary"
-                            onClick={() => handleShare(creation)}
-                          >
+                          <Button size="sm" variant="secondary" onClick={() => handleShare(creation)}>
                             <Share className="h-3 w-3" />
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => handleDeleteClick(creation)}
-                          >
+                          <Button size="sm" variant="secondary" onClick={() => handleEditImage(creation)}>
+                            <Zap className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="secondary" onClick={() => handleRemoveBackground(creation)}>
+                            <Eraser className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDeleteClick(creation)}>
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
+                      {creation.isFavorite && (
+                        <div className="absolute top-2 right-2">
+                          <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                        </div>
+                      )}
                     </div>
                     <CardContent className="p-3">
-                      <p className="text-sm font-medium truncate">{creation.prompt.substring(0, 30)}...</p>
+                      <p className="text-sm font-medium truncate">{creation.prompt.substring(0, 40)}...</p>
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-xs text-muted-foreground">
                           {new Date(creation.createdAt).toLocaleDateString('fr-FR')}
                         </span>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="p-0 h-auto"
-                          onClick={() => handleToggleFavorite(creation)}
-                        >
+                        <Button variant="ghost" size="sm" className="p-0 h-auto" onClick={() => handleToggleFavorite(creation)}>
                           <Heart className={`h-3 w-3 ${creation.isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                         </Button>
                       </div>
@@ -779,93 +782,18 @@ export default function CreativeStudioPage() {
 
           {/* Tools Tab */}
           <TabsContent value="tools" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  title: 'Éditeur d\'images',
-                  description: 'Retouche et modification avancée',
-                  icon: Image,
-                  color: 'text-blue-500',
-                  action: () => {
-                    if (allCreations.length > 0) {
-                      handleViewImage(allCreations[0]);
-                    } else {
-                      toast({
-                        title: "Éditeur d'images",
-                        description: "Créez d'abord une image dans le générateur IA"
-                      });
-                    }
-                  }
-                },
-                {
-                  title: 'Générateur de palettes',
-                  description: 'Créez des palettes de couleurs harmonieuses',
-                  icon: Palette,
-                  color: 'text-purple-500',
-                  action: () => {
-                    generatePalette();
-                    setPaletteModalOpen(true);
-                  }
-                },
-                {
-                  title: 'Optimiseur de formats',
-                  description: 'Adaptez vos créations aux différentes plateformes',
-                  icon: Type,
-                  color: 'text-green-500',
-                  action: () => {
-                    if (allCreations.length > 0) {
-                      setPreviewImage(allCreations[0]);
-                      setImagePreviewOpen(true);
-                      toast({
-                        title: "Optimiseur de formats",
-                        description: "Téléchargez l'image pour l'optimiser dans votre éditeur préféré"
-                      });
-                    } else {
-                      toast({
-                        title: "Optimiseur",
-                        description: "Créez d'abord une image dans le générateur IA"
-                      });
-                    }
-                  }
-                },
-                {
-                  title: 'Studio vidéo',
-                  description: 'Montage et effets vidéo automatisés',
-                  icon: Video,
-                  color: 'text-red-500',
-                  action: () => {
-                    toast({
-                      title: "Studio vidéo",
-                      description: "Sélectionnez 'Vidéo' dans le générateur IA pour créer du contenu vidéo"
-                    });
-                    setSelectedType('video');
-                  }
-                },
-                {
-                  title: 'Générateur de QR codes',
-                  description: 'QR codes personnalisés et stylisés',
-                  icon: QrCode,
-                  color: 'text-orange-500',
-                  action: () => setQrModalOpen(true)
-                },
-                {
-                  title: 'Watermark automatique',
-                  description: 'Protection de vos créations',
-                  icon: Settings,
-                  color: 'text-indigo-500',
-                  action: () => setWatermarkModalOpen(true)
-                }
-              ].map((tool, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {tools.map((tool, index) => (
+                <Card key={index} className="hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer" onClick={tool.action}>
+                  <CardHeader className="pb-2">
+                    <div className={`w-12 h-12 rounded-lg ${tool.bgColor} flex items-center justify-center mb-2`}>
                       <tool.icon className={`h-6 w-6 ${tool.color}`} />
-                      {tool.title}
-                    </CardTitle>
-                    <CardDescription>{tool.description}</CardDescription>
+                    </div>
+                    <CardTitle className="text-lg">{tool.title}</CardTitle>
+                    <CardDescription className="text-sm">{tool.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button className="w-full" onClick={tool.action}>
+                    <Button className="w-full" variant="outline">
                       Ouvrir l'outil
                     </Button>
                   </CardContent>
@@ -876,6 +804,23 @@ export default function CreativeStudioPage() {
         </Tabs>
       </div>
 
+      {/* Tool Modals */}
+      <BackgroundRemovalTool 
+        open={bgRemovalOpen} 
+        onOpenChange={setBgRemovalOpen}
+        initialImage={selectedImageForTool}
+      />
+      <ImageEnhancerTool 
+        open={imageEnhancerOpen} 
+        onOpenChange={setImageEnhancerOpen}
+        initialImage={selectedImageForTool}
+      />
+      <TextOverlayTool 
+        open={textOverlayOpen} 
+        onOpenChange={setTextOverlayOpen}
+        initialImage={selectedImageForTool}
+      />
+
       {/* Template Preview Modal */}
       <Dialog open={templatePreviewOpen} onOpenChange={setTemplatePreviewOpen}>
         <DialogContent className="max-w-2xl">
@@ -883,30 +828,18 @@ export default function CreativeStudioPage() {
             <DialogTitle>{selectedTemplate?.title}</DialogTitle>
             <DialogDescription>{selectedTemplate?.description}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-              <div className="text-center p-8 border-2 border-dashed border-muted-foreground/30 rounded-lg">
-                <Image className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p className="text-lg font-medium">{selectedTemplate?.title}</p>
-                <p className="text-sm text-muted-foreground">{selectedTemplate?.size}</p>
-                <Badge className="mt-2">{selectedTemplate?.type}</Badge>
+          <div className={`aspect-video bg-gradient-to-br ${selectedTemplate?.gradient} rounded-lg flex items-center justify-center`}>
+            <div className="text-center text-white p-8">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                <Image className="h-10 w-10" />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Dimensions:</span>
-                <span className="ml-2 text-muted-foreground">{selectedTemplate?.size}</span>
-              </div>
-              <div>
-                <span className="font-medium">Type:</span>
-                <span className="ml-2 text-muted-foreground">{selectedTemplate?.type}</span>
-              </div>
+              <p className="text-2xl font-bold">{selectedTemplate?.title}</p>
+              <p className="text-lg opacity-80">{selectedTemplate?.size}</p>
+              <Badge className="mt-2 bg-white/20">{selectedTemplate?.type}</Badge>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setTemplatePreviewOpen(false)}>
-              Fermer
-            </Button>
+            <Button variant="outline" onClick={() => setTemplatePreviewOpen(false)}>Fermer</Button>
             <Button onClick={() => selectedTemplate && handleTemplateUse(selectedTemplate)}>
               <Wand2 className="h-4 w-4 mr-2" />
               Utiliser ce template
@@ -915,7 +848,7 @@ export default function CreativeStudioPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Palette Generator Modal */}
+      {/* Palette Modal */}
       <Dialog open={paletteModalOpen} onOpenChange={setPaletteModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -923,15 +856,15 @@ export default function CreativeStudioPage() {
             <DialogDescription>Cliquez sur une couleur pour la copier</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex gap-2 h-24">
               {generatedPalette.map((color, index) => (
                 <button
                   key={index}
-                  className="flex-1 h-20 rounded-lg cursor-pointer hover:scale-105 transition-transform flex items-end justify-center pb-2"
+                  className="flex-1 rounded-lg cursor-pointer hover:scale-105 transition-transform flex items-end justify-center pb-2 shadow-lg"
                   style={{ backgroundColor: color }}
                   onClick={() => copyColor(color)}
                 >
-                  <span className="text-xs font-mono bg-white/80 px-1 rounded">{color}</span>
+                  <span className="text-xs font-mono bg-white/90 px-2 py-0.5 rounded shadow">{color}</span>
                 </button>
               ))}
             </div>
@@ -943,7 +876,7 @@ export default function CreativeStudioPage() {
         </DialogContent>
       </Dialog>
 
-      {/* QR Code Generator Modal */}
+      {/* QR Code Modal */}
       <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -953,27 +886,17 @@ export default function CreativeStudioPage() {
           <div className="space-y-4">
             <div>
               <Label>URL</Label>
-              <Input 
-                value={qrUrl} 
-                onChange={(e) => setQrUrl(e.target.value)}
-                placeholder="https://example.com"
-              />
+              <Input value={qrUrl} onChange={(e) => setQrUrl(e.target.value)} placeholder="https://example.com" />
             </div>
             {qrUrl && (
               <div className="flex justify-center p-4 bg-white rounded-lg">
-                <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`}
-                  alt="QR Code"
-                  className="w-48 h-48"
-                />
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`} alt="QR Code" className="w-48 h-48" />
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setQrModalOpen(false)}>
-              Fermer
-            </Button>
-            <Button onClick={generateQRCode}>
+            <Button variant="outline" onClick={() => setQrModalOpen(false)}>Fermer</Button>
+            <Button onClick={() => window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrUrl)}`, '_blank')}>
               <Download className="h-4 w-4 mr-2" />
               Télécharger
             </Button>
@@ -981,7 +904,7 @@ export default function CreativeStudioPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Watermark Settings Modal */}
+      {/* Watermark Modal */}
       <Dialog open={watermarkModalOpen} onOpenChange={setWatermarkModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -991,42 +914,24 @@ export default function CreativeStudioPage() {
           <div className="space-y-4">
             <div>
               <Label>Texte du watermark</Label>
-              <Input 
-                value={watermarkText} 
-                onChange={(e) => setWatermarkText(e.target.value)}
-                placeholder="© Votre nom"
-              />
+              <Input value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} placeholder="© Votre nom" />
             </div>
             <div>
               <Label>Opacité: {watermarkOpacity[0]}%</Label>
-              <Slider
-                value={watermarkOpacity}
-                onValueChange={setWatermarkOpacity}
-                max={100}
-                step={5}
-                className="mt-2"
-              />
+              <Slider value={watermarkOpacity} onValueChange={setWatermarkOpacity} max={100} step={5} className="mt-2" />
             </div>
             <div className="p-4 bg-muted rounded-lg relative">
               <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded flex items-center justify-center">
                 <Image className="h-8 w-8 opacity-50" />
               </div>
-              <span 
-                className="absolute bottom-6 right-6 text-sm font-medium"
-                style={{ opacity: watermarkOpacity[0] / 100 }}
-              >
+              <span className="absolute bottom-6 right-6 text-sm font-medium" style={{ opacity: watermarkOpacity[0] / 100 }}>
                 {watermarkText}
               </span>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setWatermarkModalOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={() => {
-              toast({ title: "Watermark configuré", description: `Texte: "${watermarkText}" à ${watermarkOpacity[0]}% d'opacité` });
-              setWatermarkModalOpen(false);
-            }}>
+            <Button variant="outline" onClick={() => setWatermarkModalOpen(false)}>Annuler</Button>
+            <Button onClick={() => { toast({ title: "Watermark configuré" }); setWatermarkModalOpen(false); }}>
               <Check className="h-4 w-4 mr-2" />
               Enregistrer
             </Button>
@@ -1039,20 +944,18 @@ export default function CreativeStudioPage() {
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Aperçu de l'image</DialogTitle>
-            <DialogDescription>{previewImage?.prompt}</DialogDescription>
+            <DialogDescription className="truncate max-w-lg">{previewImage?.prompt}</DialogDescription>
           </DialogHeader>
-          <div className="flex justify-center">
+          <div className="flex justify-center bg-muted rounded-lg p-4">
             {previewImage?.imageUrl && (
-              <img 
-                src={previewImage.imageUrl} 
-                alt={previewImage.prompt}
-                className="max-w-full max-h-[60vh] object-contain rounded-lg"
-              />
+              <img src={previewImage.imageUrl} alt={previewImage.prompt} className="max-w-full max-h-[60vh] object-contain rounded-lg" />
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setImagePreviewOpen(false)}>
-              Fermer
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setImagePreviewOpen(false)}>Fermer</Button>
+            <Button variant="outline" onClick={() => previewImage && handleEditImage(previewImage)}>
+              <Zap className="h-4 w-4 mr-2" />
+              Éditer
             </Button>
             <Button onClick={() => previewImage && handleDownload(previewImage)}>
               <Download className="h-4 w-4 mr-2" />
@@ -1067,25 +970,15 @@ export default function CreativeStudioPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmer la suppression</DialogTitle>
-            <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette création ? Cette action est irréversible.
-            </DialogDescription>
+            <DialogDescription>Cette action est irréversible.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
               <X className="h-4 w-4 mr-2" />
               Annuler
             </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleConfirmDelete}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4 mr-2" />
-              )}
+            <Button variant="destructive" onClick={() => itemToDelete && deleteMutation.mutate(itemToDelete.id)} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
               Supprimer
             </Button>
           </DialogFooter>
