@@ -319,36 +319,36 @@ async function publishToMarketplaceReal(integration: any, transformedProduct: an
       }
 
       case 'shopify': {
-        const { data: shopifyResult, error: shopifyError } = await supabaseAdmin.functions.invoke('shopify-product-create', {
+        const { data: shopifyResult, error: shopifyError } = await supabase.functions.invoke('shopify-product-create', {
           body: { 
             product: transformedProduct,
-            storeId: credentials.storeId
+            storeId: integration.api_credentials?.storeId
           }
         })
 
         if (shopifyError) throw new Error(`Shopify error: ${shopifyError.message}`)
         
         return {
-          listingId: shopifyResult.productId?.toString(),
+          listingId: shopifyResult?.productId?.toString() || transformedProduct.sku,
           status: 'active',
-          url: shopifyResult.url
+          url: shopifyResult?.url || ''
         }
       }
 
       case 'woocommerce': {
-        const { data: wooResult, error: wooError } = await supabaseAdmin.functions.invoke('woocommerce-product-create', {
+        const { data: wooResult, error: wooError } = await supabase.functions.invoke('woocommerce-product-create', {
           body: { 
             product: transformedProduct,
-            storeId: credentials.storeId
+            storeId: integration.api_credentials?.storeId
           }
         })
 
         if (wooError) throw new Error(`WooCommerce error: ${wooError.message}`)
         
         return {
-          listingId: wooResult.productId?.toString(),
+          listingId: wooResult?.productId?.toString() || transformedProduct.sku,
           status: 'active',
-          url: wooResult.url
+          url: wooResult?.url || ''
         }
       }
 
