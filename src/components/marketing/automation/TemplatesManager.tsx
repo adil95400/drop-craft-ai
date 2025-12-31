@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,19 @@ import {
   Loader2, Code, Palette, Mail, ShoppingCart, Gift, UserPlus, AlertCircle
 } from 'lucide-react'
 import { useEmailTemplates, EmailTemplate } from '@/hooks/useEmailTemplates'
+import DOMPurify from 'dompurify'
+
+// Configure DOMPurify for email templates - allow safe HTML tags for email content
+const DOMPURIFY_CONFIG = {
+  ALLOWED_TAGS: ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'u', 'b', 'i', 'br', 'ul', 'ol', 'li', 'a', 'img', 'span', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'blockquote', 'hr', 'pre', 'code'],
+  ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'style', 'class', 'id', 'width', 'height', 'border', 'cellpadding', 'cellspacing', 'align', 'valign', 'bgcolor', 'target'],
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i
+}
+
+// Sanitize HTML content to prevent XSS attacks
+const sanitizeHtml = (html: string): string => {
+  return DOMPurify.sanitize(html, DOMPURIFY_CONFIG)
+}
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   welcome: <UserPlus className="h-4 w-4" />,
@@ -249,7 +262,7 @@ export function TemplatesManager() {
               <Label>Prévisualisation</Label>
               <div 
                 className="border rounded-lg p-4 bg-white h-[400px] overflow-auto"
-                dangerouslySetInnerHTML={{ __html: newTemplate.html_content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(newTemplate.html_content) }}
               />
             </div>
           </div>
@@ -315,7 +328,7 @@ export function TemplatesManager() {
                 <Label>Prévisualisation</Label>
                 <div 
                   className="border rounded-lg p-4 bg-white h-[400px] overflow-auto"
-                  dangerouslySetInnerHTML={{ __html: selectedTemplate.html_content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedTemplate.html_content) }}
                 />
               </div>
             </div>
@@ -340,7 +353,7 @@ export function TemplatesManager() {
             </div>
             <div 
               className="border rounded-lg p-4 bg-white"
-              dangerouslySetInnerHTML={{ __html: selectedTemplate?.html_content || '' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedTemplate?.html_content || '') }}
             />
           </div>
         </DialogContent>
@@ -369,7 +382,7 @@ function TemplateCard({ template, onPreview, onEdit, onDuplicate, onDelete }: Te
       >
         <div 
           className="bg-white rounded shadow-sm p-2 text-xs transform scale-50 origin-top-left w-[200%]"
-          dangerouslySetInnerHTML={{ __html: template.html_content.slice(0, 500) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(template.html_content.slice(0, 500)) }}
         />
       </div>
       <CardContent className="p-4">

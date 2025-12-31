@@ -18,6 +18,19 @@ import { useEmailCampaigns, EmailCampaign } from '@/hooks/useEmailCampaigns'
 import { useEmailTemplates } from '@/hooks/useEmailTemplates'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import DOMPurify from 'dompurify'
+
+// Configure DOMPurify for email campaigns - allow safe HTML tags for email content
+const DOMPURIFY_CONFIG = {
+  ALLOWED_TAGS: ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'u', 'b', 'i', 'br', 'ul', 'ol', 'li', 'a', 'img', 'span', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'blockquote', 'hr', 'pre', 'code'],
+  ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'style', 'class', 'id', 'width', 'height', 'border', 'cellpadding', 'cellspacing', 'align', 'valign', 'bgcolor', 'target'],
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i
+}
+
+// Sanitize HTML content to prevent XSS attacks
+const sanitizeHtml = (html: string): string => {
+  return DOMPurify.sanitize(html, DOMPURIFY_CONFIG)
+}
 
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
   draft: { label: 'Brouillon', variant: 'secondary' },
@@ -356,7 +369,7 @@ export function CampaignsManager() {
             </div>
             <div 
               className="bg-white rounded border p-4"
-              dangerouslySetInnerHTML={{ __html: selectedCampaign?.html_content || '' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedCampaign?.html_content || '') }}
             />
           </div>
         </DialogContent>
