@@ -1501,6 +1501,42 @@ export type Database = {
         }
         Relationships: []
       }
+      colors: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          hex_value: string
+          id: string
+          is_active: boolean | null
+          name: string
+          rgb_value: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          hex_value: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          rgb_value?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          hex_value?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          rgb_value?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       competitive_intelligence: {
         Row: {
           competitive_data: Json | null
