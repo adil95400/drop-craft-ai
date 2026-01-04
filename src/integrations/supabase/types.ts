@@ -1935,6 +1935,99 @@ export type Database = {
         }
         Relationships: []
       }
+      content_calendar: {
+        Row: {
+          color: string | null
+          content_id: string | null
+          content_type: string
+          created_at: string
+          id: string
+          notes: string | null
+          platform: string | null
+          scheduled_date: string
+          scheduled_time: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          content_id?: string | null
+          content_type: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          platform?: string | null
+          scheduled_date: string
+          scheduled_time?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          platform?: string | null
+          scheduled_date?: string
+          scheduled_time?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      content_library: {
+        Row: {
+          ai_generated: boolean | null
+          content: string
+          content_type: string
+          created_at: string
+          id: string
+          is_favorite: boolean | null
+          metadata: Json | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          content: string
+          content_type: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          metadata?: Json | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          ai_generated?: boolean | null
+          content?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          metadata?: Json | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       content_optimizations: {
         Row: {
           applied_at: string | null
@@ -1990,6 +2083,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      content_templates: {
+        Row: {
+          category: string | null
+          content: Json
+          created_at: string
+          id: string
+          is_favorite: boolean | null
+          name: string
+          template_type: string
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+          variables: string[] | null
+        }
+        Insert: {
+          category?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          name: string
+          template_type: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+          variables?: string[] | null
+        }
+        Update: {
+          category?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          name?: string
+          template_type?: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
+          variables?: string[] | null
+        }
+        Relationships: []
       }
       conversion_events: {
         Row: {
