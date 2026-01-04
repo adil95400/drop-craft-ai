@@ -22,7 +22,6 @@ const EnterpriseObservability = lazy(() => import('@/pages/EnterpriseObservabili
 const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
 const DocumentationPage = lazy(() => import('@/pages/public/DocumentationPage'));
 const TestimonialsPage = lazy(() => import('@/pages/public/TestimonialsPage'));
-const UnsubscribePage = lazy(() => import('@/pages/public/UnsubscribePage'));
 const Integrations = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 
 // Feature pages
@@ -54,7 +53,6 @@ export function PublicRoutes() {
       <Route path="docs" element={<DocumentationPage />} />
       <Route path="blog" element={<BlogPage />} />
       <Route path="testimonials" element={<TestimonialsPage />} />
-      <Route path="unsubscribe" element={<UnsubscribePage />} />
       <Route path="integrations" element={<Integrations />} />
       
       {/* Support */}

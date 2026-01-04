@@ -59,23 +59,13 @@ export const useCustomerSecurityMonitoring = () => {
     }
   };
 
-  // Log when the security monitoring is initialized (with error handling)
+  // Log when the security monitoring is initialized
   useEffect(() => {
-    const initLogging = async () => {
-      try {
-        await logSecurityEvent(
-          'security_monitoring_init',
-          'info',
-          'Customer security monitoring initialized'
-        );
-      } catch {
-        // Silently handle logging errors - don't block app functionality
-        if (import.meta.env.DEV) {
-          console.warn('Security monitoring init logging skipped');
-        }
-      }
-    };
-    initLogging();
+    logSecurityEvent(
+      'security_monitoring_init',
+      'info',
+      'Customer security monitoring initialized'
+    );
   }, []);
 
   return {

@@ -4,13 +4,23 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { Skeleton } from '@/components/ui/skeleton'
 import { 
-  Bot, Brain, Target, TrendingUp, Zap, Settings, Play, Pause, 
-  BarChart3, Users, Sparkles, Clock, CheckCircle2
+  Bot, 
+  Brain,
+  Target,
+  TrendingUp,
+  Zap,
+  Settings,
+  Play,
+  Pause,
+  BarChart3,
+  Users,
+  Sparkles,
+  Clock,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react'
-import { useUnifiedMarketing } from '@/hooks/useUnifiedMarketing'
-import { useToast } from '@/hooks/use-toast'
+import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
 
 interface OptimizationRecommendation {
   id: string
@@ -24,9 +34,9 @@ interface OptimizationRecommendation {
   estimatedLift: string
 }
 
+
 export function AIMarketingOptimizer() {
-  const { campaigns, stats, isLoading } = useUnifiedMarketing()
-  const { toast } = useToast()
+  const { automationJobs, campaigns, stats } = useRealTimeMarketing()
   const [activeTab, setActiveTab] = useState('recommendations')
   const [selectedRecommendations, setSelectedRecommendations] = useState<string[]>([])
   const [isOptimizing, setIsOptimizing] = useState(false)
@@ -36,12 +46,8 @@ export function AIMarketingOptimizer() {
     const recommendations: OptimizationRecommendation[] = []
     
     // Budget reallocation recommendations
-    const highSpendCampaigns = campaigns.filter(c => 
-      c.budget_total && c.budget_spent && (c.budget_spent / c.budget_total) > 0.8
-    )
-    const lowSpendCampaigns = campaigns.filter(c => 
-      c.budget_total && c.budget_spent && (c.budget_spent / c.budget_total) < 0.3
-    )
+    const highSpendCampaigns = campaigns.filter(c => (c.budget_spent / (c.budget_total || 1)) > 0.8)
+    const lowSpendCampaigns = campaigns.filter(c => (c.budget_spent / (c.budget_total || 1)) < 0.3)
     
     if (highSpendCampaigns.length > 0 && lowSpendCampaigns.length > 0) {
       recommendations.push({
@@ -72,36 +78,6 @@ export function AIMarketingOptimizer() {
       })
     }
 
-    // Timing optimization
-    if (campaigns.length > 0) {
-      recommendations.push({
-        id: `timing-${Date.now()}`,
-        type: 'timing',
-        priority: 'medium',
-        title: 'Optimiser les horaires d\'envoi',
-        description: 'Analyse IA suggère d\'envoyer les emails entre 10h et 14h pour meilleur engagement',
-        impact: 'Taux d\'ouverture: +12%',
-        effort: 'Faible - 2 minutes',
-        confidence: 78,
-        estimatedLift: '+500 ouvertures/semaine'
-      })
-    }
-
-    // Creative optimization
-    if (stats.conversionRate < 0.05) {
-      recommendations.push({
-        id: `creative-${Date.now()}`,
-        type: 'creative',
-        priority: 'medium',
-        title: 'Améliorer les créatifs publicitaires',
-        description: 'Taux de conversion bas - tester de nouvelles accroches et visuels',
-        impact: 'Conversion: +30%',
-        effort: 'Élevé - 1 heure',
-        confidence: 72,
-        estimatedLift: '+€3,200 revenus mensuels'
-      })
-    }
-
     return recommendations
   }
 
@@ -109,10 +85,10 @@ export function AIMarketingOptimizer() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-destructive/10 text-destructive border-destructive/20'
-      case 'medium': return 'bg-warning/10 text-warning border-warning/20'
-      case 'low': return 'bg-secondary/10 text-secondary border-secondary/20'
-      default: return 'bg-muted text-muted-foreground border-muted'
+      case 'high': return 'bg-red-100 text-red-800 border-red-200'
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'low': return 'bg-green-100 text-green-800 border-green-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
@@ -125,48 +101,6 @@ export function AIMarketingOptimizer() {
       case 'bidding': return <Target className="h-4 w-4" />
       default: return <Bot className="h-4 w-4" />
     }
-  }
-
-  const toggleRecommendation = (id: string) => {
-    setSelectedRecommendations(prev => 
-      prev.includes(id) 
-        ? prev.filter(r => r !== id)
-        : [...prev, id]
-    )
-  }
-
-  const handleApplyOptimizations = async () => {
-    setIsOptimizing(true)
-    
-    // Simulate optimization process
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    toast({
-      title: "Optimisations appliquées",
-      description: `${selectedRecommendations.length} recommandation(s) ont été appliquées`
-    })
-    
-    setSelectedRecommendations([])
-    setIsOptimizing(false)
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-10 w-40" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <Card key={i}>
-              <CardHeader className="pb-3"><Skeleton className="h-4 w-24" /></CardHeader>
-              <CardContent><Skeleton className="h-8 w-16" /></CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -189,7 +123,6 @@ export function AIMarketingOptimizer() {
           <Button 
             disabled={selectedRecommendations.length === 0 || isOptimizing}
             className="gap-2"
-            onClick={handleApplyOptimizations}
           >
             {isOptimizing ? (
               <>
@@ -215,9 +148,7 @@ export function AIMarketingOptimizer() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              +€{Math.floor(stats.totalBudget * 0.15).toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold text-green-600">+€7,200</div>
             <p className="text-sm text-muted-foreground">Revenus mensuels estimés</p>
           </CardContent>
         </Card>
@@ -225,14 +156,12 @@ export function AIMarketingOptimizer() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
+              <Target className="h-4 w-4 text-blue-600" />
               Économies Possibles
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              €{Math.floor(stats.totalBudget * 0.08).toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold text-blue-600">€1,800</div>
             <p className="text-sm text-muted-foreground">Réduction CPA mensuelle</p>
           </CardContent>
         </Card>
@@ -240,29 +169,25 @@ export function AIMarketingOptimizer() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-4 w-4 text-accent" />
-              Recommandations
+              <Zap className="h-4 w-4 text-purple-600" />
+              Optimisations Actives
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-accent">{recommendations.length}</div>
-            <p className="text-sm text-muted-foreground">Optimisations disponibles</p>
+            <div className="text-2xl font-bold text-purple-600">{automationJobs.length}</div>
+            <p className="text-sm text-muted-foreground">Tâches en cours</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-warning" />
+              <CheckCircle2 className="h-4 w-4 text-orange-600" />
               Confiance Moyenne
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">
-              {recommendations.length > 0 
-                ? Math.round(recommendations.reduce((sum, r) => sum + r.confidence, 0) / recommendations.length)
-                : 0}%
-            </div>
+            <div className="text-2xl font-bold text-orange-600">84%</div>
             <p className="text-sm text-muted-foreground">Fiabilité des recommandations</p>
           </CardContent>
         </Card>
@@ -271,7 +196,7 @@ export function AIMarketingOptimizer() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="recommendations">Recommandations</TabsTrigger>
-          <TabsTrigger value="history">Historique</TabsTrigger>
+          <TabsTrigger value="automation">Automatisation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="recommendations" className="space-y-6">
@@ -281,22 +206,11 @@ export function AIMarketingOptimizer() {
                 <Sparkles className="h-5 w-5" />
                 Recommandations d'Optimisation
               </CardTitle>
-              <CardDescription>
-                Cliquez sur une recommandation pour la sélectionner
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {recommendations.length > 0 ? recommendations.map((rec) => (
-                  <div 
-                    key={rec.id} 
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      selectedRecommendations.includes(rec.id) 
-                        ? 'border-primary bg-primary/5' 
-                        : 'hover:bg-muted/50'
-                    }`}
-                    onClick={() => toggleRecommendation(rec.id)}
-                  >
+                  <div key={rec.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-3">
@@ -305,21 +219,14 @@ export function AIMarketingOptimizer() {
                           <Badge className={getPriorityColor(rec.priority)}>
                             {rec.priority}
                           </Badge>
-                          {selectedRecommendations.includes(rec.id) && (
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
-                          )}
                         </div>
                         <p className="text-sm text-muted-foreground">{rec.description}</p>
                         <div className="flex items-center gap-6 text-sm">
                           <span className="text-green-600 font-medium">{rec.impact}</span>
-                          <span className="text-primary">{rec.effort}</span>
-                          <span className="text-muted-foreground">{rec.estimatedLift}</span>
+                          <span className="text-blue-600">{rec.effort}</span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="text-sm font-medium">{rec.confidence}%</span>
-                        <Progress value={rec.confidence} className="w-20 h-2" />
-                      </div>
+                      <Progress value={rec.confidence} className="w-20 h-2" />
                     </div>
                   </div>
                 )) : (
@@ -334,20 +241,29 @@ export function AIMarketingOptimizer() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-6">
+        <TabsContent value="automation" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Historique des Optimisations
+                <Bot className="h-5 w-5" />
+                Tâches d'Automatisation
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="font-medium mb-2">Aucun historique</h3>
-                <p>Les optimisations appliquées apparaîtront ici</p>
-              </div>
+            <CardContent className="space-y-4">
+              {automationJobs.map((job) => (
+                <div key={job.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <h4 className="font-medium">{job.job_type}</h4>
+                    <Progress value={job.progress || 0} className="mt-2 h-2" />
+                  </div>
+                  <Badge variant="outline">{job.status}</Badge>
+                </div>
+              ))}
+              {automationJobs.length === 0 && (
+                <div className="text-center py-6 text-muted-foreground">
+                  Aucune tâche en cours
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

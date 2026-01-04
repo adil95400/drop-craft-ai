@@ -23,7 +23,6 @@ export interface ModalState {
   aiInsights: boolean;
   bulkActions: boolean;
   productDetails: boolean;
-  bulkPublish: boolean;
 }
 
 export interface ModalData {
@@ -61,7 +60,6 @@ export const useModals = () => {
     aiInsights: false,
     bulkActions: false,
     productDetails: false,
-    bulkPublish: false,
   });
 
   const [modalData, setModalData] = useState<ModalData>({});
@@ -102,7 +100,6 @@ export const useModals = () => {
       aiInsights: false,
       bulkActions: false,
       productDetails: false,
-      bulkPublish: false,
     });
     setModalData({});
   };

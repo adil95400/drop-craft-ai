@@ -23,7 +23,6 @@ import {
 import { NewAutomationDialog } from '@/components/automation/NewAutomationDialog';
 import { AutomationConfigDialog } from '@/components/automation/AutomationConfigDialog';
 import { AIInsightsModal } from '@/components/dashboard/AIInsightsModal';
-import { BulkPublishDialog } from '@/components/products/BulkPublishDialog';
 
 interface ModalProviderProps {
   children: React.ReactNode;
@@ -165,14 +164,6 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
       <SupplierFeedDialog
         open={modalStates.supplierFeed}
         onOpenChange={(open) => !open && closeModal('supplierFeed')}
-      />
-
-      {/* Bulk Publish Modal */}
-      <BulkPublishDialog
-        open={modalStates.bulkPublish}
-        onOpenChange={(open) => !open && closeModal('bulkPublish')}
-        productIds={modalData.selectedProducts || []}
-        onSuccess={modalData.onSuccess}
       />
     </>
   );

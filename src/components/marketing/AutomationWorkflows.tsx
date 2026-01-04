@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Skeleton } from '@/components/ui/skeleton'
 import { 
   Dialog, DialogContent, DialogDescription, DialogHeader, 
   DialogTitle, DialogTrigger, DialogFooter 
@@ -15,23 +14,108 @@ import { Textarea } from '@/components/ui/textarea'
 import { 
   Plus, Settings, Play, Pause, Copy, Trash2, 
   Mail, Clock, Users, Zap, ArrowRight, 
-  Filter, Calendar, Target
+  Filter, Calendar, MessageSquare, Target
 } from 'lucide-react'
-import { useAutomationWorkflows } from '@/hooks/useAutomationWorkflows'
+import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
+import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useQueryClient } from '@tanstack/react-query'
+
+interface Workflow {
+  id: string
+  name: string
+  description: string
+  trigger_type: string
+  trigger_config: any
+  steps: WorkflowStep[]
+  status: 'active' | 'draft' | 'paused'
+  execution_count: number
+  success_count: number
+  failure_count: number
+  last_executed_at?: string
+  created_at: string
+  updated_at: string
+}
+
+interface WorkflowStep {
+  id: string
+  type: 'email' | 'wait' | 'condition' | 'tag' | 'webhook'
+  config: any
+  delay?: number
+  conditions?: any[]
+}
 
 export function AutomationWorkflows() {
-  const { 
-    workflows, 
-    isLoading, 
-    createWorkflow, 
-    updateWorkflow, 
-    deleteWorkflow, 
-    duplicateWorkflow,
-    toggleStatus 
-  } = useAutomationWorkflows()
-  
+  const { automationJobs } = useRealTimeMarketing()
+  const [workflows, setWorkflows] = useState<Workflow[]>([
+    {
+      id: '1',
+      name: 'Séquence de Bienvenue',
+      description: 'Série d\'emails automatiques pour nouveaux abonnés',
+      trigger_type: 'contact_created',
+      trigger_config: { segment: 'new_subscribers' },
+      steps: [
+        { id: '1', type: 'email', config: { template: 'welcome', subject: 'Bienvenue !' } },
+        { id: '2', type: 'wait', config: {}, delay: 3 },
+        { id: '3', type: 'email', config: { template: 'onboarding', subject: 'Comment bien commencer' } },
+        { id: '4', type: 'wait', config: {}, delay: 7 },
+        { id: '5', type: 'condition', config: { field: 'engagement', operator: 'greater_than', value: 50 } },
+        { id: '6', type: 'email', config: { template: 'premium_offer', subject: 'Offre spéciale pour vous' } }
+      ],
+      status: 'active',
+      execution_count: 1250,
+      success_count: 1180,
+      failure_count: 70,
+      last_executed_at: '2024-01-20T10:30:00Z',
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-20T10:30:00Z'
+    },
+    {
+      id: '2', 
+      name: 'Récupération Panier Abandonné',
+      description: 'Relance automatique pour paniers abandonnés',
+      trigger_type: 'cart_abandoned',
+      trigger_config: { delay_hours: 2 },
+      steps: [
+        { id: '1', type: 'email', config: { template: 'cart_reminder', subject: 'Vous avez oublié quelque chose...' } },
+        { id: '2', type: 'wait', config: {}, delay: 1 },
+        { id: '3', type: 'email', config: { template: 'cart_discount', subject: '10% de réduction sur votre commande' } },
+        { id: '4', type: 'wait', config: {}, delay: 3 },
+        { id: '5', type: 'email', config: { template: 'cart_final', subject: 'Dernière chance !' } }
+      ],
+      status: 'active',
+      execution_count: 850,
+      success_count: 680,
+      failure_count: 170,
+      last_executed_at: '2024-01-20T14:15:00Z',
+      created_at: '2024-01-05T00:00:00Z',
+      updated_at: '2024-01-20T14:15:00Z'
+    },
+    {
+      id: '3',
+      name: 'Lead Nurturing B2B',
+      description: 'Nurturing progressif pour prospects B2B',
+      trigger_type: 'lead_scored',
+      trigger_config: { min_score: 50 },
+      steps: [
+        { id: '1', type: 'email', config: { template: 'b2b_intro', subject: 'Découvrez nos solutions entreprise' } },
+        { id: '2', type: 'wait', config: {}, delay: 5 },
+        { id: '3', type: 'email', config: { template: 'case_study', subject: 'Étude de cas client' } },
+        { id: '4', type: 'wait', config: {}, delay: 7 },
+        { id: '5', type: 'condition', config: { field: 'email_opened', operator: 'equals', value: true } },
+        { id: '6', type: 'email', config: { template: 'demo_invite', subject: 'Planifiez votre démonstration' } }
+      ],
+      status: 'draft',
+      execution_count: 0,
+      success_count: 0,
+      failure_count: 0,
+      created_at: '2024-01-15T00:00:00Z',
+      updated_at: '2024-01-15T00:00:00Z'
+    }
+  ])
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null)
   const [newWorkflow, setNewWorkflow] = useState({
     name: '',
     description: '',
@@ -39,13 +123,14 @@ export function AutomationWorkflows() {
   })
 
   const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800 border-green-200'
       case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'draft': return 'bg-muted text-muted-foreground border-muted'
-      default: return 'bg-muted text-muted-foreground border-muted'
+      case 'draft': return 'bg-gray-100 text-gray-800 border-gray-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
@@ -71,79 +156,83 @@ export function AutomationWorkflows() {
   }
 
   const handleCreateWorkflow = async () => {
-    await createWorkflow.mutateAsync({
-      name: newWorkflow.name,
-      description: newWorkflow.description,
-      trigger_type: newWorkflow.trigger_type
-    })
-    
-    setIsCreateModalOpen(false)
-    setNewWorkflow({ name: '', description: '', trigger_type: 'contact_created' })
-    
-    toast({
-      title: "Workflow créé",
-      description: "Le workflow a été créé avec succès"
-    })
+    try {
+      // Create the workflow object directly without Supabase for demo
+      const newWorkflowData: Workflow = {
+        id: Date.now().toString(),
+        ...newWorkflow,
+        trigger_config: {},
+        steps: [],
+        status: 'draft',
+        execution_count: 0,
+        success_count: 0,
+        failure_count: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      setWorkflows([...workflows, newWorkflowData])
+      setIsCreateModalOpen(false)
+      setNewWorkflow({ name: '', description: '', trigger_type: 'contact_created' })
+
+      toast({
+        title: "Workflow créé",
+        description: "Le workflow a été créé avec succès"
+      })
+
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer le workflow",
+        variant: "destructive"
+      })
+    }
   }
 
-  const handleStatusChange = async (workflowId: string, isActive: boolean) => {
-    await toggleStatus.mutateAsync({ id: workflowId, status: isActive ? 'active' : 'paused' })
-    
+  const handleStatusChange = (workflowId: string, newStatus: 'active' | 'paused' | 'draft') => {
+    setWorkflows(workflows.map(w => 
+      w.id === workflowId 
+        ? { ...w, status: newStatus, updated_at: new Date().toISOString() }
+        : w
+    ))
+
     toast({
       title: "Statut mis à jour",
-      description: `Le workflow est maintenant ${isActive ? 'actif' : 'en pause'}`
+      description: `Le workflow est maintenant ${newStatus === 'active' ? 'actif' : newStatus === 'paused' ? 'en pause' : 'en brouillon'}`
     })
   }
 
-  const handleDuplicateWorkflow = async (workflowId: string) => {
-    await duplicateWorkflow.mutateAsync(workflowId)
-    
+  const handleDuplicateWorkflow = (workflow: Workflow) => {
+    const duplicatedWorkflow = {
+      ...workflow,
+      id: Date.now().toString(),
+      name: `${workflow.name} (Copie)`,
+      status: 'draft' as const,
+      execution_count: 0,
+      success_count: 0,
+      failure_count: 0,
+      last_executed_at: undefined,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    setWorkflows([...workflows, duplicatedWorkflow])
+
     toast({
       title: "Workflow dupliqué",
       description: "Une copie du workflow a été créée"
     })
   }
 
-  const handleDeleteWorkflow = async (workflowId: string) => {
+  const handleDeleteWorkflow = (workflowId: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce workflow ?')) {
-      await deleteWorkflow.mutateAsync(workflowId)
+      setWorkflows(workflows.filter(w => w.id !== workflowId))
       
       toast({
         title: "Workflow supprimé",
         description: "Le workflow a été supprimé avec succès"
       })
     }
-  }
-
-  const activeWorkflows = workflows.filter(w => w.status === 'active').length
-  const totalExecutions = workflows.reduce((sum, w) => sum + (w.execution_count || 0), 0)
-  const runningJobs = workflows.filter(w => w.status === 'active').length
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-10 w-40" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map(i => (
-            <Card key={i}>
-              <CardHeader className="pb-2"><Skeleton className="h-4 w-24" /></CardHeader>
-              <CardContent><Skeleton className="h-8 w-16" /></CardContent>
-            </Card>
-          ))}
-        </div>
-        <div className="grid gap-4">
-          {[1, 2, 3].map(i => (
-            <Card key={i}>
-              <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
-              <CardContent><Skeleton className="h-20 w-full" /></CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -218,11 +307,8 @@ export function AutomationWorkflows() {
               <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                 Annuler
               </Button>
-              <Button 
-                onClick={handleCreateWorkflow} 
-                disabled={!newWorkflow.name.trim() || createWorkflow.isPending}
-              >
-                {createWorkflow.isPending ? 'Création...' : 'Créer le Workflow'}
+              <Button onClick={handleCreateWorkflow} disabled={!newWorkflow.name.trim()}>
+                Créer le Workflow
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -237,7 +323,9 @@ export function AutomationWorkflows() {
             <Play className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeWorkflows}</div>
+            <div className="text-2xl font-bold">
+              {workflows.filter(w => w.status === 'active').length}
+            </div>
             <p className="text-xs text-muted-foreground">
               Sur {workflows.length} workflows total
             </p>
@@ -250,8 +338,12 @@ export function AutomationWorkflows() {
             <Zap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalExecutions.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Ce mois-ci</p>
+            <div className="text-2xl font-bold">
+              {workflows.reduce((sum, w) => sum + w.execution_count, 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Ce mois-ci
+            </p>
           </CardContent>
         </Card>
 
@@ -262,9 +354,14 @@ export function AutomationWorkflows() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {totalExecutions > 0 ? '94.5%' : '0%'}
+              {(
+                (workflows.reduce((sum, w) => sum + w.success_count, 0) / 
+                 workflows.reduce((sum, w) => sum + w.execution_count, 1)) * 100
+              ).toFixed(1)}%
             </div>
-            <p className="text-xs text-muted-foreground">Moyenne générale</p>
+            <p className="text-xs text-muted-foreground">
+              Moyenne générale
+            </p>
           </CardContent>
         </Card>
 
@@ -274,138 +371,138 @@ export function AutomationWorkflows() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{runningJobs}</div>
-            <p className="text-xs text-muted-foreground">Exécutions actives</p>
+            <div className="text-2xl font-bold">
+              {automationJobs.filter(job => job.status === 'running').length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Exécutions actives
+            </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Workflows List */}
-      {workflows.length === 0 ? (
+      <div className="grid gap-4">
+        {workflows.map((workflow) => (
+          <Card key={workflow.id} className="overflow-hidden">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    {getTriggerIcon(workflow.trigger_type)}
+                    <h3 className="font-semibold text-lg">{workflow.name}</h3>
+                    <Badge className={getStatusColor(workflow.status)}>
+                      {workflow.status}
+                    </Badge>
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    {workflow.description}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Switch 
+                    checked={workflow.status === 'active'}
+                    onCheckedChange={(checked) => 
+                      handleStatusChange(workflow.id, checked ? 'active' : 'paused')
+                    }
+                  />
+                  <Button variant="outline" size="sm" onClick={() => handleDuplicateWorkflow(workflow)}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleDeleteWorkflow(workflow.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent>
+              {/* Steps Preview */}
+              <div className="mb-4">
+                <h4 className="font-medium mb-2">Étapes du Workflow:</h4>
+                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                  {workflow.steps.map((step, index) => (
+                    <div key={step.id} className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 bg-muted px-3 py-1 rounded-md">
+                        {getStepIcon(step.type)}
+                        <span className="text-sm capitalize">
+                          {step.type === 'email' ? 'Email' :
+                           step.type === 'wait' ? `Attendre ${step.delay}j` :
+                           step.type === 'condition' ? 'Condition' :
+                           step.type === 'tag' ? 'Tag' : 'Webhook'
+                          }
+                        </span>
+                      </div>
+                      {index < workflow.steps.length - 1 && (
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold">{workflow.execution_count.toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">Exécutions</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-600">{workflow.success_count.toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">Succès</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">
+                    {workflow.execution_count > 0 
+                      ? ((workflow.success_count / workflow.execution_count) * 100).toFixed(1)
+                      : '0'
+                    }%
+                  </div>
+                  <div className="text-xs text-muted-foreground">Taux de Succès</div>
+                </div>
+              </div>
+              
+              {workflow.last_executed_at && (
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    Dernière exécution: {new Date(workflow.last_executed_at).toLocaleDateString('fr-FR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {workflows.length === 0 && (
         <Card>
-          <CardContent className="text-center py-12">
-            <Zap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Aucun workflow</h3>
+          <CardContent className="py-8 text-center">
+            <Zap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Aucun workflow configuré</h3>
             <p className="text-muted-foreground mb-4">
-              Créez votre premier workflow d'automatisation
+              Créez votre premier workflow d'automatisation pour optimiser vos campagnes marketing
             </p>
             <Button onClick={() => setIsCreateModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Nouveau Workflow
+              Créer un Workflow
             </Button>
           </CardContent>
         </Card>
-      ) : (
-        <div className="grid gap-4">
-          {workflows.map((workflow) => (
-            <Card key={workflow.id} className="overflow-hidden">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      {getTriggerIcon(workflow.trigger_type)}
-                      <h3 className="font-semibold text-lg">{workflow.name}</h3>
-                      <Badge className={getStatusColor(workflow.status)}>
-                        {workflow.status}
-                      </Badge>
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      {workflow.description || 'Aucune description'}
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Switch 
-                      checked={workflow.status === 'active'}
-                      onCheckedChange={(checked) => handleStatusChange(workflow.id, checked)}
-                      disabled={toggleStatus.isPending}
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleDuplicateWorkflow(workflow.id)}
-                      disabled={duplicateWorkflow.isPending}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleDeleteWorkflow(workflow.id)}
-                      className="text-destructive hover:text-destructive"
-                      disabled={deleteWorkflow.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                {/* Steps Preview */}
-                <div className="mb-4">
-                  <h4 className="font-medium mb-2">Étapes du Workflow:</h4>
-                  <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                    {workflow.steps && workflow.steps.length > 0 ? (
-                      workflow.steps.map((step: any, index: number) => (
-                        <div key={step.id || index} className="flex items-center gap-2 flex-shrink-0">
-                          <div className="flex items-center gap-2 bg-muted px-3 py-1 rounded-md">
-                            {getStepIcon(step.type)}
-                            <span className="text-sm capitalize">
-                              {step.type === 'email' ? 'Email' :
-                               step.type === 'wait' ? `Attendre ${step.delay || 1}j` :
-                               step.type === 'condition' ? 'Condition' :
-                               step.type === 'tag' ? 'Tag' : 'Webhook'
-                              }
-                            </span>
-                          </div>
-                          {index < workflow.steps.length - 1 && (
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        Aucune étape configurée
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold">
-                      {(workflow.execution_count || 0).toLocaleString()}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Exécutions</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">
-                      {workflow.execution_count && workflow.execution_count > 0 ? '94.5%' : '0%'}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Taux de succès</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-destructive">
-                      {workflow.execution_count ? Math.floor(workflow.execution_count * 0.055) : 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Échecs</div>
-                  </div>
-                </div>
-                
-                {workflow.last_run_at && (
-                  <div className="mt-4 text-xs text-muted-foreground text-center">
-                    Dernière exécution: {new Date(workflow.last_run_at).toLocaleString('fr-FR')}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       )}
     </div>
   )

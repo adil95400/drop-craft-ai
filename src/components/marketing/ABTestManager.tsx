@@ -12,18 +12,188 @@ import {
 } from '@/components/ui/dialog'
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer
+  Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'
 import { 
   Plus, Play, Pause, BarChart3, TrendingUp, 
-  Trophy, Loader2, CheckCircle, Target
+  Users, Target, MousePointer, Trophy,
+  Eye, Clock, CheckCircle, AlertTriangle
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useABTests } from '@/hooks/useABTests'
-import type { ABTest, ABTestVariant } from '@/hooks/useABTests'
+
+interface ABTest {
+  id: string
+  name: string
+  description: string
+  type: 'email' | 'landing_page' | 'ad' | 'button' | 'headline'
+  status: 'draft' | 'running' | 'completed' | 'paused'
+  variants: ABTestVariant[]
+  traffic_split: number[]
+  start_date?: string
+  end_date?: string
+  goal_metric: 'conversion_rate' | 'click_rate' | 'open_rate' | 'revenue'
+  confidence_level: number
+  sample_size: number
+  current_sample: number
+  winner?: string
+  created_at: string
+  updated_at: string
+}
+
+interface ABTestVariant {
+  id: string
+  name: string
+  description: string
+  traffic_percentage: number
+  metrics: {
+    impressions: number
+    clicks: number
+    conversions: number
+    revenue: number
+    conversion_rate: number
+    click_rate: number
+  }
+}
 
 export function ABTestManager() {
-  const { tests, isLoading, updateTestStatus, createTest, isCreating } = useABTests()
+  const [tests, setTests] = useState<ABTest[]>([
+    {
+      id: '1',
+      name: 'Test Bouton CTA - Landing Page',
+      description: 'Comparaison entre "Essayer maintenant" vs "Commencer gratuitement"',
+      type: 'landing_page',
+      status: 'running',
+      variants: [
+        {
+          id: 'v1',
+          name: 'Contrôle - "Essayer maintenant"',
+          description: 'Version actuelle avec bouton bleu',
+          traffic_percentage: 50,
+          metrics: {
+            impressions: 5420,
+            clicks: 680,
+            conversions: 95,
+            revenue: 4750,
+            conversion_rate: 13.97,
+            click_rate: 12.55
+          }
+        },
+        {
+          id: 'v2', 
+          name: 'Variant - "Commencer gratuitement"',
+          description: 'Nouveau texte avec bouton vert',
+          traffic_percentage: 50,
+          metrics: {
+            impressions: 5380,
+            clicks: 720,
+            conversions: 118,
+            revenue: 5900,
+            conversion_rate: 16.39,
+            click_rate: 13.38
+          }
+        }
+      ],
+      traffic_split: [50, 50],
+      start_date: '2024-01-15T00:00:00Z',
+      goal_metric: 'conversion_rate',
+      confidence_level: 95,
+      sample_size: 10000,
+      current_sample: 10800,
+      created_at: '2024-01-15T00:00:00Z',
+      updated_at: '2024-01-20T10:30:00Z'
+    },
+    {
+      id: '2',
+      name: 'Test Objet Email Newsletter',
+      description: 'Impact de l\'emoji vs texte simple dans l\'objet',
+      type: 'email',
+      status: 'completed',
+      variants: [
+        {
+          id: 'v1',
+          name: 'Sans emoji',
+          description: 'Nos nouveautés de la semaine',
+          traffic_percentage: 50,
+          metrics: {
+            impressions: 15000,
+            clicks: 1950,
+            conversions: 156,
+            revenue: 7800,
+            conversion_rate: 8.0,
+            click_rate: 13.0
+          }
+        },
+        {
+          id: 'v2',
+          name: 'Avec emoji',
+          description: '🎉 Nos nouveautés de la semaine',
+          traffic_percentage: 50,
+          metrics: {
+            impressions: 15000,
+            clicks: 2250,
+            conversions: 203,
+            revenue: 10150,
+            conversion_rate: 9.02,
+            click_rate: 15.0
+          }
+        }
+      ],
+      traffic_split: [50, 50],
+      start_date: '2024-01-01T00:00:00Z',
+      end_date: '2024-01-14T23:59:59Z',
+      goal_metric: 'click_rate',
+      confidence_level: 99,
+      sample_size: 30000,
+      current_sample: 30000,
+      winner: 'v2',
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-14T23:59:59Z'
+    },
+    {
+      id: '3',
+      name: 'Test Headline Publicitaire',
+      description: 'Comparaison de deux accroches pour annonce Facebook',
+      type: 'ad',
+      status: 'draft',
+      variants: [
+        {
+          id: 'v1',
+          name: 'Bénéfice rationnel',
+          description: 'Économisez 40% sur vos achats',
+          traffic_percentage: 50,
+          metrics: {
+            impressions: 0,
+            clicks: 0,
+            conversions: 0,
+            revenue: 0,
+            conversion_rate: 0,
+            click_rate: 0
+          }
+        },
+        {
+          id: 'v2',
+          name: 'Bénéfice émotionnel', 
+          description: 'Découvrez le plaisir d\'économiser',
+          traffic_percentage: 50,
+          metrics: {
+            impressions: 0,
+            clicks: 0,
+            conversions: 0,
+            revenue: 0,
+            conversion_rate: 0,
+            click_rate: 0
+          }
+        }
+      ],
+      traffic_split: [50, 50],
+      goal_metric: 'conversion_rate',
+      confidence_level: 95,
+      sample_size: 5000,
+      current_sample: 0,
+      created_at: '2024-01-20T00:00:00Z',
+      updated_at: '2024-01-20T00:00:00Z'
+    }
+  ])
 
   const [isCreateTestOpen, setIsCreateTestOpen] = useState(false)
   const [selectedTest, setSelectedTest] = useState<ABTest | null>(null)
@@ -105,7 +275,12 @@ export function ABTestManager() {
   }
 
   const handleStartTest = (testId: string) => {
-    updateTestStatus({ id: testId, status: 'running' })
+    setTests(tests.map(test => 
+      test.id === testId 
+        ? { ...test, status: 'running', start_date: new Date().toISOString() }
+        : test
+    ))
+
     toast({
       title: "Test démarré",
       description: "Le test A/B a été lancé avec succès"
@@ -113,7 +288,12 @@ export function ABTestManager() {
   }
 
   const handlePauseTest = (testId: string) => {
-    updateTestStatus({ id: testId, status: 'paused' })
+    setTests(tests.map(test => 
+      test.id === testId 
+        ? { ...test, status: 'paused', updated_at: new Date().toISOString() }
+        : test
+    ))
+
     toast({
       title: "Test mis en pause",
       description: "Le test A/B a été suspendu"
@@ -121,7 +301,18 @@ export function ABTestManager() {
   }
 
   const handleStopTest = (testId: string, winnerId?: string) => {
-    updateTestStatus({ id: testId, status: 'completed', winner: winnerId })
+    setTests(tests.map(test => 
+      test.id === testId 
+        ? { 
+            ...test, 
+            status: 'completed', 
+            end_date: new Date().toISOString(),
+            winner: winnerId,
+            updated_at: new Date().toISOString()
+          }
+        : test
+    ))
+
     toast({
       title: "Test terminé",
       description: winnerId ? "Un gagnant a été déclaré" : "Le test a été arrêté"
@@ -293,14 +484,6 @@ export function ABTestManager() {
           </div>
         </DialogContent>
       </Dialog>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
     )
   }
 

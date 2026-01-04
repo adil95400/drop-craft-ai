@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,11 +9,35 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Instagram, Twitter, Facebook, Linkedin, Youtube, 
-  Clock, Image, Hash,
-  Send, Save, TrendingUp, Users, Heart, Loader2, Plus
+  Calendar, Clock, Image, Video, Link, Hash,
+  Send, Save, Eye, TrendingUp, Users, Heart
 } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { useSocialMedia, SocialPost } from '@/hooks/useSocialMedia'
+
+interface SocialPost {
+  id: string
+  platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin' | 'youtube'
+  content: string
+  mediaUrls: string[]
+  hashtags: string[]
+  scheduledAt?: string
+  status: 'draft' | 'scheduled' | 'published'
+  engagement?: {
+    likes: number
+    comments: number
+    shares: number
+    views?: number
+  }
+}
+
+interface SocialAccount {
+  platform: string
+  username: string
+  followers: number
+  isConnected: boolean
+  profileImage: string
+}
 
 const platforms = [
   { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'bg-pink-500' },
@@ -24,8 +48,30 @@ const platforms = [
 ]
 
 export function SocialMediaManager() {
-  const { accounts, posts, totalEngagement, isLoading, createPost, connectAccount, isCreating } = useSocialMedia()
-  const { toast } = useToast()
+  const [posts, setPosts] = useState<SocialPost[]>([])
+  const [accounts, setAccounts] = useState<SocialAccount[]>([
+    {
+      platform: 'instagram',
+      username: '@votre_entreprise',
+      followers: 15420,
+      isConnected: true,
+      profileImage: '/placeholder.svg'
+    },
+    {
+      platform: 'facebook',
+      username: 'Votre Entreprise',
+      followers: 8350,
+      isConnected: true,
+      profileImage: '/placeholder.svg'
+    },
+    {
+      platform: 'linkedin',
+      username: 'Votre Entreprise',
+      followers: 2140,
+      isConnected: false,
+      profileImage: '/placeholder.svg'
+    }
+  ])
 
   const [currentPost, setCurrentPost] = useState({
     platform: 'instagram' as const,
@@ -36,6 +82,41 @@ export function SocialMediaManager() {
   })
 
   const [hashtagInput, setHashtagInput] = useState('')
+  const { toast } = useToast()
+
+  // Sample posts
+  useEffect(() => {
+    setPosts([
+      {
+        id: '1',
+        platform: 'instagram',
+        content: 'Découvrez notre nouvelle collection ! 🌟 Des designs innovants qui allient style et fonctionnalité.',
+        hashtags: ['#nouveauté', '#design', '#innovation', '#style'],
+        mediaUrls: ['/placeholder.svg'],
+        status: 'published',
+        engagement: { likes: 245, comments: 18, shares: 12 }
+      },
+      {
+        id: '2',
+        platform: 'facebook',
+        content: 'Merci à tous nos clients pour leur confiance ! Nous continuons à innover pour vous offrir le meilleur.',
+        hashtags: ['#merci', '#clients', '#innovation'],
+        mediaUrls: [],
+        status: 'published',
+        engagement: { likes: 156, comments: 32, shares: 28 }
+      },
+      {
+        id: '3',
+        platform: 'linkedin',
+        content: 'Notre équipe grandit ! Nous recherchons des talents passionnés pour rejoindre notre aventure.',
+        hashtags: ['#recrutement', '#équipe', '#carrières'],
+        mediaUrls: [],
+        scheduledAt: '2024-01-25T10:00:00Z',
+        status: 'scheduled',
+        engagement: { likes: 89, comments: 15, shares: 22 }
+      }
+    ])
+  }, [])
 
   const addHashtag = () => {
     if (hashtagInput.trim() && !currentPost.hashtags.includes(hashtagInput.trim())) {
@@ -64,26 +145,48 @@ export function SocialMediaManager() {
       return
     }
 
-    const postData: Omit<SocialPost, 'id'> = {
-      platform: currentPost.platform,
-      content: currentPost.content,
-      hashtags: currentPost.hashtags,
-      mediaUrls: currentPost.mediaUrls,
-      scheduledAt: action === 'schedule' ? currentPost.scheduledAt : undefined,
-      status: action === 'save' ? 'draft' : action === 'schedule' ? 'scheduled' : 'published',
-      engagement: action === 'publish' ? { likes: 0, comments: 0, shares: 0, views: 0 } : undefined
+    try {
+      const postData: SocialPost = {
+        id: Date.now().toString(),
+        platform: currentPost.platform,
+        content: currentPost.content,
+        hashtags: currentPost.hashtags,
+        mediaUrls: currentPost.mediaUrls,
+        scheduledAt: action === 'schedule' ? currentPost.scheduledAt : undefined,
+        status: action === 'save' ? 'draft' : action === 'schedule' ? 'scheduled' : 'published'
+      }
+
+      if (action === 'publish') {
+        postData.engagement = {
+          likes: Math.floor(Math.random() * 100) + 10,
+          comments: Math.floor(Math.random() * 20) + 1,
+          shares: Math.floor(Math.random() * 15) + 1
+        }
+      }
+
+      setPosts([postData, ...posts])
+
+      toast({
+        title: action === 'save' ? "Brouillon sauvegardé" : action === 'schedule' ? "Post programmé" : "Post publié",
+        description: "L'action a été effectuée avec succès"
+      })
+
+      // Reset form
+      setCurrentPost({
+        platform: 'instagram',
+        content: '',
+        hashtags: [],
+        mediaUrls: [],
+        scheduledAt: ''
+      })
+
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'effectuer l'action",
+        variant: "destructive"
+      })
     }
-
-    createPost(postData)
-
-    // Reset form
-    setCurrentPost({
-      platform: 'instagram',
-      content: '',
-      hashtags: [],
-      mediaUrls: [],
-      scheduledAt: ''
-    })
   }
 
   const getPlatformIcon = (platform: string) => {
@@ -112,14 +215,6 @@ export function SocialMediaManager() {
     return num.toString()
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -133,55 +228,30 @@ export function SocialMediaManager() {
       </div>
 
       {/* Connected Accounts */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        {accounts.length === 0 ? (
-          <Card className="col-span-full">
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground mb-4">Aucun compte social connecté</p>
-              <div className="flex gap-2 justify-center flex-wrap">
-                {platforms.map((platform) => {
-                  const Icon = platform.icon
-                  return (
-                    <Button
-                      key={platform.id}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => connectAccount(platform.id)}
-                      className="gap-2"
-                    >
-                      <Icon className="h-4 w-4" />
-                      {platform.name}
-                    </Button>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          accounts.map((account, index) => {
-            const PlatformIcon = getPlatformIcon(account.platform)
-            return (
-              <Card key={account.id || index}>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${getPlatformColor(account.platform)} text-white`}>
-                      <PlatformIcon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{account.username}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatNumber(account.followers)} abonnés
-                      </div>
-                    </div>
-                    <Badge variant={account.isConnected ? "default" : "secondary"} className="text-xs">
-                      {account.isConnected ? 'Connecté' : 'Déconnecté'}
-                    </Badge>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {accounts.map((account, index) => {
+          const PlatformIcon = getPlatformIcon(account.platform)
+          return (
+            <Card key={index}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${getPlatformColor(account.platform)} text-white`}>
+                    <PlatformIcon className="h-4 w-4" />
                   </div>
-                </CardContent>
-              </Card>
-            )
-          })
-        )}
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{account.username}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatNumber(account.followers)} abonnés
+                    </div>
+                  </div>
+                  <Badge variant={account.isConnected ? "default" : "secondary"} className="text-xs">
+                    {account.isConnected ? 'Connecté' : 'Déconnecté'}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -300,9 +370,8 @@ export function SocialMediaManager() {
                       variant="outline" 
                       onClick={() => handleSavePost('save')}
                       className="gap-2"
-                      disabled={isCreating}
                     >
-                      {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      <Save className="h-4 w-4" />
                       Brouillon
                     </Button>
                     
@@ -311,9 +380,8 @@ export function SocialMediaManager() {
                         variant="outline" 
                         onClick={() => handleSavePost('schedule')}
                         className="gap-2"
-                        disabled={isCreating}
                       >
-                        {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clock className="h-4 w-4" />}
+                        <Clock className="h-4 w-4" />
                         Programmer
                       </Button>
                     )}
@@ -321,9 +389,8 @@ export function SocialMediaManager() {
                     <Button 
                       onClick={() => handleSavePost('publish')}
                       className="gap-2"
-                      disabled={isCreating}
                     >
-                      {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      <Send className="h-4 w-4" />
                       Publier maintenant
                     </Button>
                   </div>
@@ -332,71 +399,62 @@ export function SocialMediaManager() {
             </TabsContent>
 
             <TabsContent value="posts" className="space-y-4">
-              {posts.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">Aucune publication pour le moment</p>
-                    <p className="text-sm text-muted-foreground mt-1">Créez votre première publication ci-dessus</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                posts.map((post) => {
-                  const PlatformIcon = getPlatformIcon(post.platform)
-                  return (
-                    <Card key={post.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-full ${getPlatformColor(post.platform)} text-white`}>
-                            <PlatformIcon className="h-4 w-4" />
+              {posts.map((post) => {
+                const PlatformIcon = getPlatformIcon(post.platform)
+                return (
+                  <Card key={post.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-full ${getPlatformColor(post.platform)} text-white`}>
+                          <PlatformIcon className="h-4 w-4" />
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge className={getStatusColor(post.status)}>
+                              {post.status}
+                            </Badge>
+                            {post.scheduledAt && (
+                              <div className="text-xs text-muted-foreground">
+                                Programmé pour {new Date(post.scheduledAt).toLocaleDateString('fr-FR')}
+                              </div>
+                            )}
                           </div>
                           
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge className={getStatusColor(post.status)}>
-                                {post.status}
-                              </Badge>
-                              {post.scheduledAt && (
-                                <div className="text-xs text-muted-foreground">
-                                  Programmé pour {new Date(post.scheduledAt).toLocaleDateString('fr-FR')}
-                                </div>
-                              )}
+                          <p className="text-sm mb-2">{post.content}</p>
+                          
+                          {post.hashtags.length > 0 && (
+                            <div className="flex gap-1 flex-wrap mb-2">
+                              {post.hashtags.map((hashtag, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {hashtag}
+                                </Badge>
+                              ))}
                             </div>
-                            
-                            <p className="text-sm mb-2">{post.content}</p>
-                            
-                            {post.hashtags.length > 0 && (
-                              <div className="flex gap-1 flex-wrap mb-2">
-                                {post.hashtags.map((hashtag, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {hashtag}
-                                  </Badge>
-                                ))}
+                          )}
+                          
+                          {post.engagement && (
+                            <div className="flex gap-4 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" />
+                                {post.engagement.likes}
                               </div>
-                            )}
-                            
-                            {post.engagement && (
-                              <div className="flex gap-4 text-xs text-muted-foreground">
-                                <div className="flex items-center gap-1">
-                                  <Heart className="h-3 w-3" />
-                                  {post.engagement.likes}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  {post.engagement.comments}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <TrendingUp className="h-3 w-3" />
-                                  {post.engagement.shares}
-                                </div>
+                              <div className="flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                {post.engagement.comments}
                               </div>
-                            )}
-                          </div>
+                              <div className="flex items-center gap-1">
+                                <TrendingUp className="h-3 w-3" />
+                                {post.engagement.shares}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })
-              )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </TabsContent>
           </Tabs>
         </div>
@@ -438,19 +496,19 @@ export function SocialMediaManager() {
             <CardContent className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Publications ce mois</span>
-                <span className="font-medium">{posts.length}</span>
+                <span className="font-medium">24</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Total likes</span>
-                <span className="font-medium">{totalEngagement.likes}</span>
+                <span className="text-sm text-muted-foreground">Engagement moyen</span>
+                <span className="font-medium">5.2%</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Total commentaires</span>
-                <span className="font-medium">{totalEngagement.comments}</span>
+                <span className="text-sm text-muted-foreground">Nouveaux abonnés</span>
+                <span className="font-medium text-green-600">+127</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Total partages</span>
-                <span className="font-medium">{totalEngagement.shares}</span>
+                <span className="text-sm text-muted-foreground">Meilleure heure</span>
+                <span className="font-medium">18h-20h</span>
               </div>
             </CardContent>
           </Card>
