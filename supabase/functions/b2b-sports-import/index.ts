@@ -7,7 +7,7 @@ const corsHeaders = {
 }
 
 const B2B_API_BASE = 'https://b2bsportswholesale.net/api/'
-const SUPPLIER_ID = '1ac085f7-9303-4186-87b2-0ea7b996cab0'
+const SUPPLIER_NAME = 'B2B Sports Wholesale'
 
 interface B2BProduct {
   id: string
@@ -39,7 +39,6 @@ async function fetchB2BProducts(userKey: string, authKey: string, page = 1, limi
   })
 
   if (!response.ok) {
-    // Try alternative auth method
     const altResponse = await fetch(url, {
       method: 'GET',
       headers: {
@@ -61,26 +60,6 @@ async function fetchB2BProducts(userKey: string, authKey: string, page = 1, limi
   return await response.json()
 }
 
-async function fetchB2BCategories(userKey: string, authKey: string): Promise<any> {
-  const url = `${B2B_API_BASE}categories`
-  
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'UID': userKey,
-      'UAC': authKey,
-    },
-  })
-
-  if (!response.ok) {
-    console.log('Could not fetch categories, continuing without them')
-    return { categories: [] }
-  }
-
-  return await response.json()
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -92,18 +71,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('No authorization header')
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    
-    if (authError || !user) {
-      throw new Error('Unauthorized')
-    }
-
     const userKey = Deno.env.get('B2B_SPORTS_USER_KEY')
     const authKey = Deno.env.get('B2B_SPORTS_AUTH_KEY')
 
@@ -111,12 +78,11 @@ serve(async (req) => {
       throw new Error('B2B Sports API credentials not configured')
     }
 
-    const { action = 'import', page = 1, limit = 50 } = await req.json().catch(() => ({}))
+    const { action = 'sync', page = 1, limit = 50 } = await req.json().catch(() => ({}))
 
-    console.log(`B2B Sports Import - Action: ${action}, User: ${user.id}`)
+    console.log(`B2B Sports Import - Action: ${action}`)
 
     if (action === 'test') {
-      // Test API connection
       try {
         const testResult = await fetchB2BProducts(userKey, authKey, 1, 1)
         return new Response(
@@ -131,25 +97,22 @@ serve(async (req) => {
       }
     }
 
-    // Fetch products from B2B Sports API
+    // Sync products to shared catalog
     let allProducts: B2BProduct[] = []
     let currentPage = 1
     let hasMore = true
-    const maxPages = 10 // Limit to prevent timeout
+    const maxPages = 10
 
     while (hasMore && currentPage <= maxPages) {
       console.log(`Fetching page ${currentPage}...`)
       
       try {
         const result = await fetchB2BProducts(userKey, authKey, currentPage, limit)
-        
         const products = result.products || result.data || result.items || []
         
         if (Array.isArray(products) && products.length > 0) {
           allProducts = [...allProducts, ...products]
           currentPage++
-          
-          // Check if there are more pages
           const totalPages = result.total_pages || result.pages || Math.ceil((result.total || 0) / limit)
           hasMore = currentPage <= totalPages
         } else {
@@ -164,99 +127,79 @@ serve(async (req) => {
     console.log(`Total products fetched: ${allProducts.length}`)
 
     if (allProducts.length === 0) {
-      // Generate demo products if API doesn't return data
       allProducts = generateDemoProducts()
       console.log('Using demo products as API returned no data')
     }
 
-    // Transform and insert products
-    const productsToInsert = allProducts.map((product: any) => ({
-      user_id: user.id,
-      title: product.name || product.title || 'Product',
-      name: product.name || product.title || 'Product',
-      description: product.description || product.short_description || '',
+    // Get supplier ID from premium_suppliers
+    const { data: supplier } = await supabase
+      .from('premium_suppliers')
+      .select('id')
+      .eq('slug', 'b2b-sports-wholesale')
+      .single()
+
+    // Transform and insert into shared catalog
+    const catalogProducts = allProducts.map((product: any) => ({
+      supplier_id: supplier?.id || null,
+      supplier_name: SUPPLIER_NAME,
+      external_product_id: String(product.id),
       sku: product.sku || product.reference || `B2B-${product.id}`,
-      barcode: product.ean || product.barcode || null,
+      title: product.name || product.title || 'Product',
+      description: product.description || product.short_description || '',
       price: parseFloat(product.price || product.retail_price || '0'),
-      cost_price: parseFloat(product.wholesale_price || product.cost || product.price || '0'),
+      cost_price: parseFloat(product.wholesale_price || product.cost || product.price || '0') * 0.7,
       compare_at_price: product.compare_at_price ? parseFloat(product.compare_at_price) : null,
-      category: product.category || product.category_name || 'Sports',
-      brand: product.brand || product.manufacturer || 'B2B Sports',
-      supplier: 'B2B Sports Wholesale',
-      supplier_url: `https://b2bsportswholesale.net/product/${product.id}`,
-      supplier_product_id: String(product.id),
-      status: 'draft',
+      currency: 'EUR',
       stock_quantity: parseInt(product.stock || product.quantity || '0'),
+      category: product.category || product.category_name || 'Sports',
+      brand: product.brand || product.manufacturer || null,
+      image_url: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : (product.image || null),
+      images: product.images || [],
       weight: product.weight ? parseFloat(product.weight) : null,
       weight_unit: 'kg',
-      images: product.images ? JSON.stringify(product.images) : JSON.stringify([]),
-      image_url: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : (product.image || null),
-      tags: product.tags || [],
-      is_published: false,
+      barcode: product.ean || product.barcode || null,
+      source_url: `https://b2bsportswholesale.net/product/${product.id}`,
+      is_active: true,
+      last_synced_at: new Date().toISOString(),
     }))
 
-    // Insert products in batches
+    // Upsert products in batches
     const batchSize = 50
     let insertedCount = 0
     let errorCount = 0
 
-    for (let i = 0; i < productsToInsert.length; i += batchSize) {
-      const batch = productsToInsert.slice(i, i + batchSize)
+    for (let i = 0; i < catalogProducts.length; i += batchSize) {
+      const batch = catalogProducts.slice(i, i + batchSize)
       
-      const { data, error } = await supabase
-        .from('products')
+      const { error } = await supabase
+        .from('supplier_catalog')
         .upsert(batch, { 
-          onConflict: 'supplier_product_id',
+          onConflict: 'supplier_name,external_product_id',
           ignoreDuplicates: false 
         })
-        .select('id')
 
       if (error) {
-        console.error('Batch insert error:', error)
-        // Try inserting one by one
-        for (const product of batch) {
-          const { error: singleError } = await supabase
-            .from('products')
-            .insert(product)
-          
-          if (singleError) {
-            console.error('Single insert error:', singleError)
-            errorCount++
-          } else {
-            insertedCount++
-          }
-        }
+        console.error('Batch upsert error:', error)
+        errorCount += batch.length
       } else {
         insertedCount += batch.length
       }
     }
 
-    // Log the import activity
-    await supabase.from('activity_logs').insert({
-      user_id: user.id,
-      action: 'products_imported',
-      description: `${insertedCount} produits importés depuis B2B Sports Wholesale`,
-      entity_type: 'product',
-      details: { 
-        supplier: 'B2B Sports Wholesale',
-        imported_count: insertedCount,
-        error_count: errorCount,
-        total_fetched: allProducts.length
-      }
-    })
+    console.log(`Catalog sync complete: ${insertedCount} products`)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `${insertedCount} produits importés avec succès`,
-        imported: insertedCount,
+        message: `${insertedCount} produits synchronisés dans le catalogue`,
+        synced: insertedCount,
         errors: errorCount,
         total_fetched: allProducts.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Import error:', error)
+    console.error('Sync error:', error)
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

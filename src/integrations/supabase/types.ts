@@ -6128,6 +6128,101 @@ export type Database = {
           },
         ]
       }
+      supplier_catalog: {
+        Row: {
+          attributes: Json | null
+          barcode: string | null
+          brand: string | null
+          category: string | null
+          compare_at_price: number | null
+          cost_price: number | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          external_product_id: string
+          id: string
+          image_url: string | null
+          images: Json | null
+          is_active: boolean | null
+          last_synced_at: string | null
+          price: number | null
+          sku: string | null
+          source_url: string | null
+          stock_quantity: number | null
+          supplier_id: string | null
+          supplier_name: string
+          title: string
+          updated_at: string | null
+          variants: Json | null
+          weight: number | null
+          weight_unit: string | null
+        }
+        Insert: {
+          attributes?: Json | null
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          compare_at_price?: number | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          external_product_id: string
+          id?: string
+          image_url?: string | null
+          images?: Json | null
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          price?: number | null
+          sku?: string | null
+          source_url?: string | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          supplier_name: string
+          title: string
+          updated_at?: string | null
+          variants?: Json | null
+          weight?: number | null
+          weight_unit?: string | null
+        }
+        Update: {
+          attributes?: Json | null
+          barcode?: string | null
+          brand?: string | null
+          category?: string | null
+          compare_at_price?: number | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          external_product_id?: string
+          id?: string
+          image_url?: string | null
+          images?: Json | null
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          price?: number | null
+          sku?: string | null
+          source_url?: string | null
+          stock_quantity?: number | null
+          supplier_id?: string | null
+          supplier_name?: string
+          title?: string
+          updated_at?: string | null
+          variants?: Json | null
+          weight?: number | null
+          weight_unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_catalog_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "premium_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_credentials_vault: {
         Row: {
           created_at: string | null
