@@ -8,9 +8,10 @@ import { ContentImportExport } from './ContentImportExport';
 import { MediaLibrary } from './MediaLibrary';
 import { PageBuilder } from './PageBuilder';
 import { TranslationManager } from './TranslationManager';
+import { ShopifyContentSync } from './ShopifyContentSync';
 import { 
   Library, Calendar, LayoutTemplate, FileText, Sparkles, Settings,
-  Image, Layers, Languages
+  Image, Layers, Languages, Store
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,7 +68,7 @@ export function ContentManagementHub() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-7 w-full">
+        <TabsList className="grid grid-cols-8 w-full">
           <TabsTrigger value="library" className="flex items-center gap-2">
             <Library className="h-4 w-4" />
             <span className="hidden lg:inline">Bibliothèque</span>
@@ -83,6 +84,10 @@ export function ContentManagementHub() {
           <TabsTrigger value="pages" className="flex items-center gap-2">
             <Layers className="h-4 w-4" />
             <span className="hidden lg:inline">Pages</span>
+          </TabsTrigger>
+          <TabsTrigger value="shopify" className="flex items-center gap-2">
+            <Store className="h-4 w-4" />
+            <span className="hidden lg:inline">Shopify</span>
           </TabsTrigger>
           <TabsTrigger value="translations" className="flex items-center gap-2">
             <Languages className="h-4 w-4" />
@@ -102,6 +107,7 @@ export function ContentManagementHub() {
         <TabsContent value="blog" className="mt-6"><BlogManager /></TabsContent>
         <TabsContent value="media" className="mt-6"><MediaLibrary /></TabsContent>
         <TabsContent value="pages" className="mt-6"><PageBuilder /></TabsContent>
+        <TabsContent value="shopify" className="mt-6"><ShopifyContentSync /></TabsContent>
         <TabsContent value="translations" className="mt-6"><TranslationManager /></TabsContent>
         <TabsContent value="calendar" className="mt-6"><ContentCalendar /></TabsContent>
         <TabsContent value="templates" className="mt-6"><ContentTemplates /></TabsContent>
