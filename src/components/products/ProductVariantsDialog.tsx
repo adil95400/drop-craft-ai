@@ -69,18 +69,18 @@ export const ProductVariantsDialog = ({ productId, open, onOpenChange }: Product
 
   const handleSaveOptions = async () => {
     const validOptions = optionsConfig.filter(opt => opt.name && opt.values.length > 0)
-    await saveOptions(validOptions.map((opt, i) => ({
-      product_id: productId,
-      name: opt.name,
-      values: opt.values,
-      position: i
-    })))
+    // Store options locally for variant generation
     setShowOptionsDialog(false)
   }
 
   const handleGenerateVariants = async () => {
-    if (!options || options.length === 0) return
-    await generateVariants(options)
+    const validOptions = optionsConfig.filter(opt => opt.name && opt.values.length > 0)
+    if (validOptions.length === 0) return
+    await generateVariants(validOptions.map((opt, i) => ({
+      name: opt.name,
+      values: opt.values,
+      position: i
+    })))
   }
 
   return (
@@ -107,10 +107,10 @@ export const ProductVariantsDialog = ({ productId, open, onOpenChange }: Product
                 </Button>
               </div>
 
-              {options && options.length > 0 && (
+              {optionsConfig.filter(o => o.name && o.values.length > 0).length > 0 && (
                 <div className="space-y-2">
-                  {options.map((option) => (
-                    <div key={option.id} className="flex gap-2 items-center">
+                  {optionsConfig.filter(o => o.name && o.values.length > 0).map((option, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
                       <Badge variant="secondary">{option.name}</Badge>
                       <div className="flex gap-1 flex-wrap">
                         {option.values.map((value, i) => (
@@ -171,17 +171,25 @@ export const ProductVariantsDialog = ({ productId, open, onOpenChange }: Product
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="font-mono text-sm">{variant.variant_sku || 'N/A'}</TableCell>
+                        <TableCell className="font-mono text-sm">{variant.sku || 'N/A'}</TableCell>
                         <TableCell>{variant.name}</TableCell>
                         <TableCell>
                           <div className="flex gap-1 flex-wrap">
-                            {variant.options && typeof variant.options === 'object' && 
-                              Object.values(variant.options as Record<string, any>).map((value, i) => (
-                                <Badge key={i} variant="outline" className="text-xs">
-                                  {String(value)}
-                                </Badge>
-                              ))
-                            }
+                            {variant.option1_value && (
+                              <Badge variant="outline" className="text-xs">
+                                {variant.option1_name}: {variant.option1_value}
+                              </Badge>
+                            )}
+                            {variant.option2_value && (
+                              <Badge variant="outline" className="text-xs">
+                                {variant.option2_name}: {variant.option2_value}
+                              </Badge>
+                            )}
+                            {variant.option3_value && (
+                              <Badge variant="outline" className="text-xs">
+                                {variant.option3_name}: {variant.option3_value}
+                              </Badge>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>{variant.price} €</TableCell>
