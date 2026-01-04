@@ -18,6 +18,7 @@ const ImportHub = lazy(() => import('@/pages/import/ImportHub'));
 const WinnersPage = lazy(() => import('@/pages/WinnersPage'));
 const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
 const AdsSpyPage = lazy(() => import('@/pages/AdsSpyPage'));
+const MarketplaceCampaignsPage = lazy(() => import('@/pages/MarketplaceCampaignsPage'));
 
 // Tools
 const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
@@ -69,6 +70,7 @@ export function ProductRoutes() {
       {/* Product Research & Marketplace */}
       <Route path="winners" element={<WinnersPage />} />
       <Route path="ads-spy" element={<AdsSpyPage />} />
+      <Route path="marketplace-campaigns" element={<MarketplaceCampaignsPage />} />
       <Route path="research-legacy" element={<ProductResearchPage />} />
       
       {/* Tools */}
