@@ -5,8 +5,12 @@ import { ContentCalendar } from './ContentCalendar';
 import { ContentTemplates } from './ContentTemplates';
 import { BlogManager } from './BlogManager';
 import { ContentImportExport } from './ContentImportExport';
+import { MediaLibrary } from './MediaLibrary';
+import { PageBuilder } from './PageBuilder';
+import { TranslationManager } from './TranslationManager';
 import { 
-  Library, Calendar, LayoutTemplate, FileText, Sparkles, Settings
+  Library, Calendar, LayoutTemplate, FileText, Sparkles, Settings,
+  Image, Layers, Languages
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -54,55 +58,53 @@ export function ContentManagementHub() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Paramètres</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Préférences de génération IA
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Paramètres SEO par défaut
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Intégrations de publication
-              </DropdownMenuItem>
+              <DropdownMenuItem>Préférences de génération IA</DropdownMenuItem>
+              <DropdownMenuItem>Paramètres SEO par défaut</DropdownMenuItem>
+              <DropdownMenuItem>Intégrations de publication</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-7 w-full">
           <TabsTrigger value="library" className="flex items-center gap-2">
             <Library className="h-4 w-4" />
-            <span className="hidden sm:inline">Bibliothèque</span>
+            <span className="hidden lg:inline">Bibliothèque</span>
           </TabsTrigger>
           <TabsTrigger value="blog" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Blog</span>
+            <span className="hidden lg:inline">Blog</span>
+          </TabsTrigger>
+          <TabsTrigger value="media" className="flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            <span className="hidden lg:inline">Médias</span>
+          </TabsTrigger>
+          <TabsTrigger value="pages" className="flex items-center gap-2">
+            <Layers className="h-4 w-4" />
+            <span className="hidden lg:inline">Pages</span>
+          </TabsTrigger>
+          <TabsTrigger value="translations" className="flex items-center gap-2">
+            <Languages className="h-4 w-4" />
+            <span className="hidden lg:inline">Traductions</span>
           </TabsTrigger>
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Calendrier</span>
+            <span className="hidden lg:inline">Calendrier</span>
           </TabsTrigger>
           <TabsTrigger value="templates" className="flex items-center gap-2">
             <LayoutTemplate className="h-4 w-4" />
-            <span className="hidden sm:inline">Templates</span>
+            <span className="hidden lg:inline">Templates</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="library" className="mt-6">
-          <ContentLibrary />
-        </TabsContent>
-
-        <TabsContent value="blog" className="mt-6">
-          <BlogManager />
-        </TabsContent>
-
-        <TabsContent value="calendar" className="mt-6">
-          <ContentCalendar />
-        </TabsContent>
-
-        <TabsContent value="templates" className="mt-6">
-          <ContentTemplates />
-        </TabsContent>
+        <TabsContent value="library" className="mt-6"><ContentLibrary /></TabsContent>
+        <TabsContent value="blog" className="mt-6"><BlogManager /></TabsContent>
+        <TabsContent value="media" className="mt-6"><MediaLibrary /></TabsContent>
+        <TabsContent value="pages" className="mt-6"><PageBuilder /></TabsContent>
+        <TabsContent value="translations" className="mt-6"><TranslationManager /></TabsContent>
+        <TabsContent value="calendar" className="mt-6"><ContentCalendar /></TabsContent>
+        <TabsContent value="templates" className="mt-6"><ContentTemplates /></TabsContent>
       </Tabs>
     </div>
   );
