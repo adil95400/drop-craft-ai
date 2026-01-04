@@ -1300,6 +1300,153 @@ export type Database = {
           },
         ]
       }
+      campaign_creatives: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          creative_type: string
+          generated_assets: Json | null
+          id: string
+          name: string
+          performance_data: Json | null
+          status: string | null
+          template_data: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          creative_type: string
+          generated_assets?: Json | null
+          id?: string
+          name: string
+          performance_data?: Json | null
+          status?: string | null
+          template_data?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          creative_type?: string
+          generated_assets?: Json | null
+          id?: string
+          name?: string
+          performance_data?: Json | null
+          status?: string | null
+          template_data?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      campaign_performance: {
+        Row: {
+          additional_metrics: Json | null
+          campaign_id: string | null
+          clicks: number | null
+          conversions: number | null
+          cpc: number | null
+          cpm: number | null
+          created_at: string | null
+          ctr: number | null
+          date: string
+          id: string
+          impressions: number | null
+          platform: string
+          revenue: number | null
+          roas: number | null
+          spend: number | null
+          user_id: string
+        }
+        Insert: {
+          additional_metrics?: Json | null
+          campaign_id?: string | null
+          clicks?: number | null
+          conversions?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          date: string
+          id?: string
+          impressions?: number | null
+          platform: string
+          revenue?: number | null
+          roas?: number | null
+          spend?: number | null
+          user_id: string
+        }
+        Update: {
+          additional_metrics?: Json | null
+          campaign_id?: string | null
+          clicks?: number | null
+          conversions?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          platform?: string
+          revenue?: number | null
+          roas?: number | null
+          spend?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      campaign_product_feeds: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          feed_type: string
+          feed_url: string | null
+          generation_status: string | null
+          id: string
+          last_generated_at: string | null
+          name: string
+          product_count: number | null
+          settings: Json | null
+          updated_at: string | null
+          user_id: string
+          validation_errors: Json | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          feed_type: string
+          feed_url?: string | null
+          generation_status?: string | null
+          id?: string
+          last_generated_at?: string | null
+          name: string
+          product_count?: number | null
+          settings?: Json | null
+          updated_at?: string | null
+          user_id: string
+          validation_errors?: Json | null
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          feed_type?: string
+          feed_url?: string | null
+          generation_status?: string | null
+          id?: string
+          last_generated_at?: string | null
+          name?: string
+          product_count?: number | null
+          settings?: Json | null
+          updated_at?: string | null
+          user_id?: string
+          validation_errors?: Json | null
+        }
+        Relationships: []
+      }
       campaign_recipients: {
         Row: {
           campaign_id: string
@@ -2050,6 +2197,75 @@ export type Database = {
           opened_count?: number | null
           reputation_score?: number | null
           sent_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dynamic_ad_campaigns: {
+        Row: {
+          bid_amount: number | null
+          bid_strategy: string | null
+          budget_daily: number | null
+          budget_spent: number | null
+          budget_total: number | null
+          campaign_type: string
+          created_at: string | null
+          creative_template: Json | null
+          description: string | null
+          id: string
+          name: string
+          performance_metrics: Json | null
+          platforms: Json | null
+          product_filter: Json | null
+          schedule_end: string | null
+          schedule_start: string | null
+          status: string | null
+          targeting_rules: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          bid_amount?: number | null
+          bid_strategy?: string | null
+          budget_daily?: number | null
+          budget_spent?: number | null
+          budget_total?: number | null
+          campaign_type: string
+          created_at?: string | null
+          creative_template?: Json | null
+          description?: string | null
+          id?: string
+          name: string
+          performance_metrics?: Json | null
+          platforms?: Json | null
+          product_filter?: Json | null
+          schedule_end?: string | null
+          schedule_start?: string | null
+          status?: string | null
+          targeting_rules?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          bid_amount?: number | null
+          bid_strategy?: string | null
+          budget_daily?: number | null
+          budget_spent?: number | null
+          budget_total?: number | null
+          campaign_type?: string
+          created_at?: string | null
+          creative_template?: Json | null
+          description?: string | null
+          id?: string
+          name?: string
+          performance_metrics?: Json | null
+          platforms?: Json | null
+          product_filter?: Json | null
+          schedule_end?: string | null
+          schedule_start?: string | null
+          status?: string | null
+          targeting_rules?: Json | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -3246,6 +3462,117 @@ export type Database = {
           is_dynamic?: boolean | null
           name?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_connections: {
+        Row: {
+          api_version: string | null
+          created_at: string | null
+          credentials_encrypted: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          last_sync_error: string | null
+          last_sync_status: string | null
+          name: string
+          platform: string
+          settings: Json | null
+          shop_domain: string | null
+          sync_enabled: boolean | null
+          sync_frequency: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          api_version?: string | null
+          created_at?: string | null
+          credentials_encrypted?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
+          name: string
+          platform: string
+          settings?: Json | null
+          shop_domain?: string | null
+          sync_enabled?: boolean | null
+          sync_frequency?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          api_version?: string | null
+          created_at?: string | null
+          credentials_encrypted?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
+          name?: string
+          platform?: string
+          settings?: Json | null
+          shop_domain?: string | null
+          sync_enabled?: boolean | null
+          sync_frequency?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_product_mappings: {
+        Row: {
+          connection_id: string | null
+          created_at: string | null
+          external_product_id: string | null
+          external_sku: string | null
+          external_variant_id: string | null
+          field_mappings: Json | null
+          id: string
+          last_synced_at: string | null
+          price_override: number | null
+          product_id: string | null
+          stock_override: number | null
+          sync_error: string | null
+          sync_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string | null
+          external_product_id?: string | null
+          external_sku?: string | null
+          external_variant_id?: string | null
+          field_mappings?: Json | null
+          id?: string
+          last_synced_at?: string | null
+          price_override?: number | null
+          product_id?: string | null
+          stock_override?: number | null
+          sync_error?: string | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string | null
+          external_product_id?: string | null
+          external_sku?: string | null
+          external_variant_id?: string | null
+          field_mappings?: Json | null
+          id?: string
+          last_synced_at?: string | null
+          price_override?: number | null
+          product_id?: string | null
+          stock_override?: number | null
+          sync_error?: string | null
+          sync_status?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -5338,6 +5665,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_conflicts: {
+        Row: {
+          conflict_type: string
+          connection_id: string | null
+          created_at: string | null
+          id: string
+          local_value: Json | null
+          product_id: string | null
+          remote_value: Json | null
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          user_id: string
+        }
+        Insert: {
+          conflict_type: string
+          connection_id?: string | null
+          created_at?: string | null
+          id?: string
+          local_value?: Json | null
+          product_id?: string | null
+          remote_value?: Json | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          user_id: string
+        }
+        Update: {
+          conflict_type?: string
+          connection_id?: string | null
+          created_at?: string | null
+          id?: string
+          local_value?: Json | null
+          product_id?: string | null
+          remote_value?: Json | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       sync_logs: {
         Row: {
           completed_at: string | null
@@ -5384,6 +5753,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sync_queue: {
+        Row: {
+          attempts: number | null
+          completed_at: string | null
+          connection_id: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          max_attempts: number | null
+          payload: Json | null
+          priority: number | null
+          product_id: string | null
+          result: Json | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: string | null
+          sync_direction: string | null
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number | null
+          completed_at?: string | null
+          connection_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          max_attempts?: number | null
+          payload?: Json | null
+          priority?: number | null
+          product_id?: string | null
+          result?: Json | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string | null
+          sync_direction?: string | null
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number | null
+          completed_at?: string | null
+          connection_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          max_attempts?: number | null
+          payload?: Json | null
+          priority?: number | null
+          product_id?: string | null
+          result?: Json | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string | null
+          sync_direction?: string | null
+          sync_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       system_stats: {
         Row: {
