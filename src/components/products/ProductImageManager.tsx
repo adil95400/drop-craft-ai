@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { toast } from 'sonner'
+import { useProductImages } from '@/hooks/useProductImages'
+import { Loader2 } from 'lucide-react'
 import { 
   Upload, 
   Image as ImageIcon, 
@@ -12,104 +13,85 @@ import {
   Star, 
   Eye,
   Download,
-  Maximize,
   RotateCw,
   Crop,
   Palette
 } from 'lucide-react'
-
-interface ProductImage {
-  id: string
-  url: string
-  alt: string
-  isPrimary: boolean
-  size: number
-  format: string
-  dimensions: { width: number; height: number }
-  uploadDate: string
-}
 
 interface ProductImageManagerProps {
   productId: string
 }
 
 export function ProductImageManager({ productId }: ProductImageManagerProps) {
-  const [images, setImages] = useState<ProductImage[]>([
-    {
-      id: '1',
-      url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400',
-      alt: 'Vue principale du produit',
-      isPrimary: true,
-      size: 245760,
-      format: 'JPG',
-      dimensions: { width: 800, height: 600 },
-      uploadDate: '2024-01-15T10:30:00Z'
-    },
-    {
-      id: '2',
-      url: 'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400',
-      alt: 'Vue latérale du produit',
-      isPrimary: false,
-      size: 189440,
-      format: 'JPG',
-      dimensions: { width: 800, height: 600 },
-      uploadDate: '2024-01-15T10:32:00Z'
-    },
-    {
-      id: '3',
-      url: 'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=400',
-      alt: 'Détail du produit',
-      isPrimary: false,
-      size: 210340,
-      format: 'JPG',
-      dimensions: { width: 800, height: 600 },
-      uploadDate: '2024-01-15T10:35:00Z'
-    }
-  ])
+  const { 
+    images, 
+    isLoading, 
+    addImage, 
+    deleteImage, 
+    setPrimaryImage, 
+    uploadImage,
+    isAdding,
+    isDeleting 
+  } = useProductImages(productId)
   
-  const [selectedImage, setSelectedImage] = useState<ProductImage | null>(null)
+  const [selectedImage, setSelectedImage] = useState<typeof images[0] | null>(null)
   const [isViewerOpen, setIsViewerOpen] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B'
+  const formatFileSize = (bytes: number | undefined): string => {
+    if (!bytes || bytes === 0) return '0 B'
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
   }
 
-  const setPrimaryImage = (imageId: string) => {
-    setImages(images.map(img => ({
-      ...img,
-      isPrimary: img.id === imageId
-    })))
-    toast.success('Image principale mise à jour')
+  const handleSetPrimary = (imageId: string) => {
+    setPrimaryImage(imageId)
   }
 
-  const deleteImage = (imageId: string) => {
-    setImages(images.filter(img => img.id !== imageId))
-    toast.success('Image supprimée')
+  const handleDelete = (imageId: string) => {
+    deleteImage(imageId)
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (files) {
-      Array.from(files).forEach(file => {
-        // Simulation d'upload
-        const newImage: ProductImage = {
-          id: Date.now().toString(),
-          url: URL.createObjectURL(file),
-          alt: `Image ${file.name}`,
-          isPrimary: images.length === 0,
-          size: file.size,
-          format: file.type.split('/')[1].toUpperCase(),
-          dimensions: { width: 800, height: 600 }, // Simulation
-          uploadDate: new Date().toISOString()
-        }
-        setImages(prev => [...prev, newImage])
-      })
-      toast.success('Images uploadées avec succès')
+    if (!files) return
+
+    setIsUploading(true)
+    try {
+      for (const file of Array.from(files)) {
+        const url = await uploadImage(file)
+        
+        // Get image dimensions
+        const img = new Image()
+        img.src = url
+        await new Promise((resolve) => {
+          img.onload = resolve
+        })
+
+        addImage({
+          product_id: productId,
+          url,
+          alt_text: file.name.replace(/\.[^/.]+$/, ''),
+          position: images.length,
+          is_primary: images.length === 0,
+          width: img.width,
+          height: img.height,
+          file_size: file.size
+        })
+      }
+    } finally {
+      setIsUploading(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   return (
@@ -118,7 +100,7 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
         <div>
           <h3 className="text-lg font-semibold">Gestion des images</h3>
           <p className="text-sm text-muted-foreground">
-            Gérez les images de votre produit avec optimisation automatique
+            Gérez les images de votre produit ({images.length} image{images.length !== 1 ? 's' : ''})
           </p>
         </div>
         <div className="flex gap-2">
@@ -129,11 +111,16 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
             onChange={handleImageUpload}
             className="hidden"
             id="image-upload"
+            disabled={isUploading}
           />
           <label htmlFor="image-upload">
-            <Button asChild>
+            <Button asChild disabled={isUploading || isAdding}>
               <span>
-                <Upload className="h-4 w-4 mr-2" />
+                {isUploading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4 mr-2" />
+                )}
                 Ajouter des images
               </span>
             </Button>
@@ -166,10 +153,10 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
               <div className="relative">
                 <img
                   src={image.url}
-                  alt={image.alt}
+                  alt={image.alt_text || 'Image produit'}
                   className="w-full h-48 object-cover"
                 />
-                {image.isPrimary && (
+                {image.is_primary && (
                   <Badge className="absolute top-2 left-2 bg-primary">
                     <Star className="h-3 w-3 mr-1" />
                     Principal
@@ -192,33 +179,32 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
               <CardContent className="p-4">
                 <div className="space-y-2">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-medium truncate">{image.alt}</h4>
-                    <Badge variant="outline" className="text-xs">
-                      {image.format}
-                    </Badge>
+                    <h4 className="font-medium truncate">{image.alt_text || 'Image'}</h4>
                   </div>
                   
                   <div className="text-sm text-muted-foreground space-y-1">
-                    <div className="flex justify-between">
-                      <span>Dimensions:</span>
-                      <span>{image.dimensions.width}×{image.dimensions.height}</span>
-                    </div>
+                    {image.width && image.height && (
+                      <div className="flex justify-between">
+                        <span>Dimensions:</span>
+                        <span>{image.width}×{image.height}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span>Taille:</span>
-                      <span>{formatFileSize(image.size)}</span>
+                      <span>{formatFileSize(image.file_size)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Uploadé:</span>
-                      <span>{new Date(image.uploadDate).toLocaleDateString('fr-FR')}</span>
+                      <span>Ajouté:</span>
+                      <span>{new Date(image.created_at).toLocaleDateString('fr-FR')}</span>
                     </div>
                   </div>
 
                   <div className="flex gap-2 pt-2">
-                    {!image.isPrimary && (
+                    {!image.is_primary && (
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setPrimaryImage(image.id)}
+                        onClick={() => handleSetPrimary(image.id)}
                         className="flex-1"
                       >
                         <Star className="h-3 w-3 mr-1" />
@@ -228,7 +214,8 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => deleteImage(image.id)}
+                      onClick={() => handleDelete(image.id)}
+                      disabled={isDeleting}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -262,7 +249,7 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
               <div className="relative bg-muted rounded-lg overflow-hidden">
                 <img
                   src={selectedImage.url}
-                  alt={selectedImage.alt}
+                  alt={selectedImage.alt_text || 'Image'}
                   className="w-full max-h-96 object-contain"
                 />
               </div>
@@ -273,17 +260,15 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
                     <CardTitle className="text-sm">Informations</CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm space-y-2">
-                    <div className="flex justify-between">
-                      <span>Format:</span>
-                      <span>{selectedImage.format}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Dimensions:</span>
-                      <span>{selectedImage.dimensions.width}×{selectedImage.dimensions.height}</span>
-                    </div>
+                    {selectedImage.width && selectedImage.height && (
+                      <div className="flex justify-between">
+                        <span>Dimensions:</span>
+                        <span>{selectedImage.width}×{selectedImage.height}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span>Taille:</span>
-                      <span>{formatFileSize(selectedImage.size)}</span>
+                      <span>{formatFileSize(selectedImage.file_size)}</span>
                     </div>
                   </CardContent>
                 </Card>

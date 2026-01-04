@@ -3751,6 +3751,66 @@ export type Database = {
           },
         ]
       }
+      product_images: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          file_size: number | null
+          height: number | null
+          id: string
+          is_primary: boolean | null
+          position: number | null
+          product_id: string
+          url: string
+          user_id: string
+          variant_id: string | null
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          is_primary?: boolean | null
+          position?: number | null
+          product_id: string
+          url: string
+          user_id: string
+          variant_id?: string | null
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          is_primary?: boolean | null
+          position?: number | null
+          product_id?: string
+          url?: string
+          user_id?: string
+          variant_id?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_images_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_rewrites: {
         Row: {
           applied_at: string | null
@@ -3881,6 +3941,86 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          compare_at_price: number | null
+          cost_price: number | null
+          created_at: string
+          id: string
+          image_url: string | null
+          is_default: boolean | null
+          name: string
+          option1_name: string | null
+          option1_value: string | null
+          option2_name: string | null
+          option2_value: string | null
+          option3_name: string | null
+          option3_value: string | null
+          price: number | null
+          product_id: string
+          sku: string | null
+          status: string | null
+          stock_quantity: number | null
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          compare_at_price?: number | null
+          cost_price?: number | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_default?: boolean | null
+          name: string
+          option1_name?: string | null
+          option1_value?: string | null
+          option2_name?: string | null
+          option2_value?: string | null
+          option3_name?: string | null
+          option3_value?: string | null
+          price?: number | null
+          product_id: string
+          sku?: string | null
+          status?: string | null
+          stock_quantity?: number | null
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          compare_at_price?: number | null
+          cost_price?: number | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_default?: boolean | null
+          name?: string
+          option1_name?: string | null
+          option1_value?: string | null
+          option2_name?: string | null
+          option2_value?: string | null
+          option3_name?: string | null
+          option3_value?: string | null
+          price?: number | null
+          product_id?: string
+          sku?: string | null
+          status?: string | null
+          stock_quantity?: number | null
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
