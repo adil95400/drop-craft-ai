@@ -4241,6 +4241,93 @@ export type Database = {
         }
         Relationships: []
       }
+      returns: {
+        Row: {
+          carrier: string | null
+          created_at: string
+          customer_id: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          inspected_at: string | null
+          items: Json
+          notes: string | null
+          order_id: string | null
+          reason: string
+          reason_category: string | null
+          received_at: string | null
+          refund_amount: number | null
+          refund_method: string | null
+          refunded_at: string | null
+          rma_number: string
+          status: string
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          inspected_at?: string | null
+          items?: Json
+          notes?: string | null
+          order_id?: string | null
+          reason: string
+          reason_category?: string | null
+          received_at?: string | null
+          refund_amount?: number | null
+          refund_method?: string | null
+          refunded_at?: string | null
+          rma_number: string
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          inspected_at?: string | null
+          items?: Json
+          notes?: string | null
+          order_id?: string | null
+          reason?: string
+          reason_category?: string | null
+          received_at?: string | null
+          refund_amount?: number | null
+          refund_method?: string | null
+          refunded_at?: string | null
+          rma_number?: string
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_tasks: {
         Row: {
           config: Json | null
@@ -5417,6 +5504,7 @@ export type Database = {
         Args: { key_name: string; key_scopes?: string[] }
         Returns: string
       }
+      generate_rma_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
