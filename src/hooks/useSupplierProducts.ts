@@ -20,22 +20,22 @@ export function useSupplierProducts(supplierId: string | undefined, limit = 50) 
     queryFn: async () => {
       if (!supplierId) return { products: [], count: 0 };
 
-      // Query products by supplier column
+      // Query products by supplier column using wildcard select to avoid column name issues
       const { data: products, error, count } = await supabase
         .from('products')
-        .select('id, title, sku, price, cost_price, stock_quantity, image_url, status, supplier, created_at', { count: 'exact' })
+        .select('*', { count: 'exact' })
         .eq('supplier', supplierId)
         .order('created_at', { ascending: false })
-        .limit(limit) as { data: any[] | null; error: any; count: number | null };
+        .limit(limit);
 
       if (error) {
         console.error('Error fetching supplier products:', error);
         throw error;
       }
 
-      const transformedProducts: SupplierProduct[] = (products || []).map((p: any) => ({
+      const transformedProducts: SupplierProduct[] = (products || []).map((p) => ({
         id: p.id,
-        name: p.title || '',
+        name: p.title || p.name || '',
         sku: p.sku || '',
         price: p.price || 0,
         cost_price: p.cost_price || 0,
@@ -43,7 +43,7 @@ export function useSupplierProducts(supplierId: string | undefined, limit = 50) 
         image_url: p.image_url,
         status: p.status || 'active',
         vendor: p.supplier || '',
-        created_at: p.created_at
+        created_at: p.created_at || ''
       }));
 
       return {

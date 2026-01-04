@@ -20,23 +20,31 @@ export function useSupplierConnection() {
   const loadConnections = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        setIsLoading(false)
+        return
+      }
 
-      // Use premium_supplier_connections table instead
+      // Use premium_supplier_connections table with wildcard select
       const { data, error } = await supabase
         .from('premium_supplier_connections')
-        .select('premium_supplier_id, connection_status, last_sync_at')
+        .select('*')
         .eq('user_id', user.id)
       
-      if (error) throw error
+      if (error) {
+        console.error('Error loading connections:', error)
+        setIsLoading(false)
+        return
+      }
 
       const connections = new Map<string, SupplierConnectionStatus>()
       data?.forEach(cred => {
-        if (cred.premium_supplier_id) {
-          connections.set(cred.premium_supplier_id, {
-            supplierId: cred.premium_supplier_id,
+        const supplierId = cred.premium_supplier_id
+        if (supplierId) {
+          connections.set(supplierId, {
+            supplierId: supplierId,
             isConnected: cred.connection_status === 'active' || cred.connection_status === 'connected',
-            connectionStatus: (cred.connection_status || 'inactive') as any,
+            connectionStatus: (cred.connection_status || 'inactive') as 'active' | 'inactive' | 'error' | 'pending',
             lastSyncAt: cred.last_sync_at || undefined
           })
         }
