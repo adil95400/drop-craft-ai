@@ -32,11 +32,15 @@ import {
 import { 
   Plus, FileText, Eye, Edit, Trash2, Search, 
   Calendar, Tag, Sparkles, MoreVertical, Image,
-  Send, Clock, CheckCircle, XCircle
+  Send, Clock, CheckCircle, XCircle, Wand2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { RichTextEditor } from './RichTextEditor';
+import { AIContentAssistant } from './AIContentAssistant';
+import { SEOAnalyzer } from './SEOAnalyzer';
+import { ContentVersions } from './ContentVersions';
 
 interface BlogPost {
   id: string;
@@ -71,6 +75,7 @@ export function BlogManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [activeTab, setActiveTab] = useState('content');
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -468,21 +473,31 @@ export function BlogManager() {
           </DialogHeader>
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="content">Contenu</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
               <TabsTrigger value="settings">Paramètres</TabsTrigger>
+              <TabsTrigger value="preview">Aperçu</TabsTrigger>
             </TabsList>
 
             <TabsContent value="content" className="space-y-4 mt-4">
-              <div className="space-y-2">
+              <div className="flex items-center justify-between">
                 <Label>Titre de l'article</Label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Entrez le titre de l'article"
-                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAIAssistantOpen(true)}
+                  className="gap-2"
+                >
+                  <Wand2 className="h-4 w-4" />
+                  Assistance IA
+                </Button>
               </div>
+              <Input
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Entrez le titre de l'article"
+              />
               <div className="space-y-2">
                 <Label>Extrait (optionnel)</Label>
                 <Textarea
@@ -494,45 +509,56 @@ export function BlogManager() {
               </div>
               <div className="space-y-2">
                 <Label>Contenu</Label>
-                <Textarea
+                <RichTextEditor
                   value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  onChange={(content) => setFormData({ ...formData, content })}
                   placeholder="Écrivez votre article ici..."
-                  rows={12}
+                  minHeight="350px"
+                  onAIAssist={() => setIsAIAssistantOpen(true)}
                 />
               </div>
             </TabsContent>
 
-            <TabsContent value="seo" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Titre SEO</Label>
-                <Input
-                  value={formData.seo_title}
-                  onChange={(e) => setFormData({ ...formData, seo_title: e.target.value })}
-                  placeholder="Titre optimisé pour les moteurs de recherche"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {formData.seo_title.length}/60 caractères recommandés
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label>Meta description</Label>
-                <Textarea
-                  value={formData.seo_description}
-                  onChange={(e) => setFormData({ ...formData, seo_description: e.target.value })}
-                  placeholder="Description pour les résultats de recherche"
-                  rows={3}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {formData.seo_description.length}/160 caractères recommandés
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label>Tags (séparés par des virgules)</Label>
-                <Input
-                  value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  placeholder="e-commerce, marketing, conseils"
+            <TabsContent value="seo" className="mt-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Titre SEO</Label>
+                    <Input
+                      value={formData.seo_title}
+                      onChange={(e) => setFormData({ ...formData, seo_title: e.target.value })}
+                      placeholder="Titre optimisé pour les moteurs de recherche"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {formData.seo_title.length}/60 caractères recommandés
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Meta description</Label>
+                    <Textarea
+                      value={formData.seo_description}
+                      onChange={(e) => setFormData({ ...formData, seo_description: e.target.value })}
+                      placeholder="Description pour les résultats de recherche"
+                      rows={3}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {formData.seo_description.length}/160 caractères recommandés
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tags (séparés par des virgules)</Label>
+                    <Input
+                      value={formData.tags}
+                      onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                      placeholder="e-commerce, marketing, conseils"
+                    />
+                  </div>
+                </div>
+                <SEOAnalyzer
+                  title={formData.seo_title || formData.title}
+                  content={formData.content}
+                  metaDescription={formData.seo_description}
+                  focusKeyword={formData.tags.split(',')[0]?.trim()}
                 />
               </div>
             </TabsContent>
@@ -579,6 +605,13 @@ export function BlogManager() {
                   onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                   placeholder="https://example.com/image.jpg"
                 />
+                {formData.image_url && (
+                  <img 
+                    src={formData.image_url} 
+                    alt="Aperçu" 
+                    className="w-full max-h-48 object-cover rounded-lg mt-2"
+                  />
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Date de publication</Label>
@@ -588,19 +621,76 @@ export function BlogManager() {
                   onChange={(e) => setFormData({ ...formData, publish_date: e.target.value })}
                 />
               </div>
+              {editingPost && (
+                <ContentVersions
+                  contentId={editingPost.id}
+                  contentType="blog"
+                  currentContent={formData.content}
+                  onRestore={(content) => setFormData({ ...formData, content })}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="preview" className="mt-4">
+              <Card>
+                <CardContent className="p-6">
+                  {formData.image_url && (
+                    <img 
+                      src={formData.image_url} 
+                      alt={formData.title} 
+                      className="w-full h-64 object-cover rounded-lg mb-6"
+                    />
+                  )}
+                  <h1 className="text-3xl font-bold mb-4">{formData.title || 'Titre de l\'article'}</h1>
+                  {formData.excerpt && (
+                    <p className="text-lg text-muted-foreground mb-6 italic">{formData.excerpt}</p>
+                  )}
+                  <div className="flex items-center gap-4 mb-6 text-sm text-muted-foreground">
+                    {formData.category && <Badge variant="secondary">{formData.category}</Badge>}
+                    {formData.tags && formData.tags.split(',').slice(0, 3).map((tag, i) => (
+                      <Badge key={i} variant="outline">{tag.trim()}</Badge>
+                    ))}
+                  </div>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <pre className="whitespace-pre-wrap font-sans text-base">
+                      {formData.content || 'Le contenu de votre article apparaîtra ici...'}
+                    </pre>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={resetForm}>
-              Annuler
-            </Button>
-            <Button onClick={handleSubmit}>
-              {editingPost ? 'Mettre à jour' : 'Créer l\'article'}
-            </Button>
+          <DialogFooter className="flex justify-between">
+            <div>
+              {editingPost && (
+                <ContentVersions
+                  contentId={editingPost.id}
+                  contentType="blog"
+                  currentContent={formData.content}
+                  onRestore={(content) => setFormData({ ...formData, content })}
+                />
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={resetForm}>
+                Annuler
+              </Button>
+              <Button onClick={handleSubmit}>
+                {editingPost ? 'Mettre à jour' : 'Créer l\'article'}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AIContentAssistant
+        open={isAIAssistantOpen}
+        onOpenChange={setIsAIAssistantOpen}
+        initialContent={formData.content}
+        onApply={(content) => setFormData({ ...formData, content })}
+        contentType="blog"
+      />
     </div>
   );
 }
