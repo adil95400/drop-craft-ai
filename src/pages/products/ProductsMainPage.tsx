@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
-import { B2BSportsImportButton } from '@/components/products/B2BSportsImportButton';
+import { SupplierCatalogBrowser } from '@/components/products/SupplierCatalogBrowser';
 
 /**
  * Page principale de gestion des produits
@@ -268,8 +268,8 @@ export default function ProductsMainPage() {
               <span className="hidden xs:inline">Enrichir</span>
             </Button>
 
-            {/* Import B2B Sports */}
-            <B2BSportsImportButton />
+            {/* Catalogue B2B Sports */}
+            <SupplierCatalogBrowser />
 
             <BulkEnrichmentDialog
               open={showBulkEnrichment}
