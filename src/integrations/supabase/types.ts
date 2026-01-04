@@ -310,6 +310,108 @@ export type Database = {
           },
         ]
       }
+      ad_collection_items: {
+        Row: {
+          ad_id: string
+          added_at: string | null
+          collection_id: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          ad_id: string
+          added_at?: string | null
+          collection_id: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          ad_id?: string
+          added_at?: string | null
+          collection_id?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_collection_items_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "competitor_ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_collection_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "ad_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_collections: {
+        Row: {
+          ad_count: number | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ad_count?: number | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ad_count?: number | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ad_searches: {
+        Row: {
+          filters: Json | null
+          id: string
+          platform: string | null
+          query: string
+          results_count: number | null
+          searched_at: string | null
+          user_id: string
+        }
+        Insert: {
+          filters?: Json | null
+          id?: string
+          platform?: string | null
+          query: string
+          results_count?: number | null
+          searched_at?: string | null
+          user_id: string
+        }
+        Update: {
+          filters?: Json | null
+          id?: string
+          platform?: string | null
+          query?: string
+          results_count?: number | null
+          searched_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       advanced_reports: {
         Row: {
           created_at: string | null
@@ -1595,6 +1697,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      competitor_ads: {
+        Row: {
+          ad_cta: string | null
+          ad_headline: string | null
+          ad_id: string | null
+          ad_text: string | null
+          advertiser_name: string | null
+          age_range: string | null
+          ai_analysis: Json | null
+          countries: string[] | null
+          created_at: string | null
+          engagement_score: number | null
+          estimated_reach: number | null
+          estimated_spend_max: number | null
+          estimated_spend_min: number | null
+          first_seen_at: string | null
+          gender_targeting: string | null
+          id: string
+          image_urls: string[] | null
+          interests: string[] | null
+          is_active: boolean | null
+          landing_page_url: string | null
+          last_seen_at: string | null
+          platform: string
+          product_category: string | null
+          running_days: number | null
+          updated_at: string | null
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          ad_cta?: string | null
+          ad_headline?: string | null
+          ad_id?: string | null
+          ad_text?: string | null
+          advertiser_name?: string | null
+          age_range?: string | null
+          ai_analysis?: Json | null
+          countries?: string[] | null
+          created_at?: string | null
+          engagement_score?: number | null
+          estimated_reach?: number | null
+          estimated_spend_max?: number | null
+          estimated_spend_min?: number | null
+          first_seen_at?: string | null
+          gender_targeting?: string | null
+          id?: string
+          image_urls?: string[] | null
+          interests?: string[] | null
+          is_active?: boolean | null
+          landing_page_url?: string | null
+          last_seen_at?: string | null
+          platform: string
+          product_category?: string | null
+          running_days?: number | null
+          updated_at?: string | null
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          ad_cta?: string | null
+          ad_headline?: string | null
+          ad_id?: string | null
+          ad_text?: string | null
+          advertiser_name?: string | null
+          age_range?: string | null
+          ai_analysis?: Json | null
+          countries?: string[] | null
+          created_at?: string | null
+          engagement_score?: number | null
+          estimated_reach?: number | null
+          estimated_spend_max?: number | null
+          estimated_spend_min?: number | null
+          first_seen_at?: string | null
+          gender_targeting?: string | null
+          id?: string
+          image_urls?: string[] | null
+          interests?: string[] | null
+          is_active?: boolean | null
+          landing_page_url?: string | null
+          last_seen_at?: string | null
+          platform?: string
+          product_category?: string | null
+          running_days?: number | null
+          updated_at?: string | null
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
       }
       content_optimizations: {
         Row: {
