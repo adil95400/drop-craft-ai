@@ -27,12 +27,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-// Shopify API config
-const SHOPIFY_STORE_PERMANENT_DOMAIN = 'drop-craft-ai-9874g.myshopify.com';
-const SHOPIFY_API_VERSION = '2025-07';
-const SHOPIFY_STOREFRONT_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/api/${SHOPIFY_API_VERSION}/graphql.json`;
-const SHOPIFY_STOREFRONT_TOKEN = '9e33316887e1b93d1bdcca1d8344d104';
-
 interface ShopifyProduct {
   id: string;
   title: string;
@@ -63,36 +57,6 @@ interface ShopifyProduct {
       };
     }>;
   };
-}
-
-async function storefrontApiRequest(query: string, variables: Record<string, unknown> = {}) {
-  const response = await fetch(SHOPIFY_STOREFRONT_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_TOKEN
-    },
-    body: JSON.stringify({ query, variables }),
-  });
-
-  if (response.status === 402) {
-    toast.error("Shopify: Paiement requis", {
-      description: "Votre boutique Shopify nécessite un plan payant actif."
-    });
-    return null;
-  }
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const data = await response.json();
-  
-  if (data.errors) {
-    throw new Error(`Erreur Shopify: ${data.errors.map((e: { message: string }) => e.message).join(', ')}`);
-  }
-
-  return data;
 }
 
 const PRODUCTS_QUERY = `
@@ -162,18 +126,25 @@ export function ShopifyContentSync() {
     metaDescription: ''
   });
 
-  // Fetch Shopify products
+  // Fetch Shopify products via edge function
   const fetchShopifyProducts = async () => {
     setLoadingProducts(true);
     try {
-      const data = await storefrontApiRequest(PRODUCTS_QUERY, { first: 50 });
-      if (data?.data?.products?.edges) {
-        setShopifyProducts(data.data.products.edges.map((edge: { node: ShopifyProduct }) => edge.node));
-        toast.success(`${data.data.products.edges.length} produits récupérés`);
+      const { data, error } = await supabase.functions.invoke('shopify-fetch-products', {
+        body: { limit: 50 }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.success && data?.products) {
+        setShopifyProducts(data.products);
+        toast.success(`${data.products.length} produits récupérés`);
+      } else if (data?.error) {
+        throw new Error(data.error);
       }
     } catch (error) {
       console.error('Error fetching Shopify products:', error);
-      toast.error('Erreur lors de la récupération des produits');
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de la récupération des produits');
     } finally {
       setLoadingProducts(false);
     }
