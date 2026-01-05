@@ -201,7 +201,7 @@ const FeaturesSection = () => {
     <section className="py-12 sm:py-16 lg:py-20">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center space-y-3 sm:space-y-4 mb-12 sm:mb-16">
-          <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary/10 text-primary border-primary/20">
+          <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary/10 border-primary/20" style={{ color: 'hsl(221 83% 40%)' }}>
             Fonctionnalités
           </Badge>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Tout ce dont vous avez besoin</h2>
