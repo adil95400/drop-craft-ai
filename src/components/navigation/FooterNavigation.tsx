@@ -140,7 +140,7 @@ const FooterNavigation = () => {
                 placeholder="Votre email"
                 className="flex-1 px-3 py-2 text-sm border rounded-md bg-background"
               />
-              <Button size="sm">
+              <Button size="sm" aria-label="S'abonner à la newsletter">
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
