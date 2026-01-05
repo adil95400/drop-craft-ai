@@ -59,14 +59,8 @@ export const useCustomerSecurityMonitoring = () => {
     }
   };
 
-  // Log when the security monitoring is initialized
-  useEffect(() => {
-    logSecurityEvent(
-      'security_monitoring_init',
-      'info',
-      'Customer security monitoring initialized'
-    );
-  }, []);
+  // Remove auto-log on mount - only log when explicitly called
+  // This prevents unnecessary API calls on public pages
 
   return {
     monitorCustomerAccess,

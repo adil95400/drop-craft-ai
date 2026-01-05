@@ -61,6 +61,12 @@ export const useSecurityMonitoring = () => {
   ) => {
     try {
       const currentUser = await getCurrentUser();
+      
+      // Skip logging if no authenticated user
+      if (!currentUser) {
+        return { success: false, error: 'User not authenticated' };
+      }
+      
       const clientIP = await getClientIP();
       const userAgent = navigator.userAgent;
 
@@ -68,7 +74,7 @@ export const useSecurityMonitoring = () => {
       const { error } = await supabase
         .from('activity_logs')
         .insert([{
-          user_id: currentUser?.id || null,
+          user_id: currentUser.id,
           action: eventType,
           severity,
           description,
@@ -230,10 +236,8 @@ export const useSecurityMonitoring = () => {
     fetchSecurityEvents();
   };
 
-  useEffect(() => {
-    // Auto-fetch events when hook is mounted
-    fetchSecurityEvents();
-  }, []);
+  // Remove auto-fetch on mount - only fetch when explicitly called
+  // This prevents unnecessary API calls on public pages
 
   return {
     events,
