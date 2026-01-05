@@ -4,9 +4,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-// Pages critiques chargées immédiatement
-import Index from '@/pages/Index';
-import AuthPage from '@/pages/AuthPage';
+// Pages critiques lazy loaded pour réduire le bundle initial
+const Index = lazy(() => import('@/pages/Index'));
+const AuthPage = lazy(() => import('@/pages/AuthPage'));
 
 // Pages publiques lazy loaded
 const Pricing = lazy(() => import('@/pages/Pricing'));
