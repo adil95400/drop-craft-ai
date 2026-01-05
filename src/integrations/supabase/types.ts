@@ -1969,6 +1969,161 @@ export type Database = {
         }
         Relationships: []
       }
+      category_mappings: {
+        Row: {
+          auto_map_enabled: boolean | null
+          created_at: string | null
+          default_category: string | null
+          description: string | null
+          destination_id: string | null
+          destination_type: string
+          id: string
+          is_active: boolean | null
+          last_applied_at: string | null
+          mappings: Json
+          name: string
+          products_mapped: number | null
+          source_id: string | null
+          source_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_map_enabled?: boolean | null
+          created_at?: string | null
+          default_category?: string | null
+          description?: string | null
+          destination_id?: string | null
+          destination_type: string
+          id?: string
+          is_active?: boolean | null
+          last_applied_at?: string | null
+          mappings?: Json
+          name: string
+          products_mapped?: number | null
+          source_id?: string | null
+          source_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_map_enabled?: boolean | null
+          created_at?: string | null
+          default_category?: string | null
+          description?: string | null
+          destination_id?: string | null
+          destination_type?: string
+          id?: string
+          is_active?: boolean | null
+          last_applied_at?: string | null
+          mappings?: Json
+          name?: string
+          products_mapped?: number | null
+          source_id?: string | null
+          source_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      category_suggestions: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          mapping_id: string | null
+          resolved_at: string | null
+          source_category: string
+          status: string | null
+          suggested_category: string
+          suggested_category_id: string | null
+          user_choice: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          mapping_id?: string | null
+          resolved_at?: string | null
+          source_category: string
+          status?: string | null
+          suggested_category: string
+          suggested_category_id?: string | null
+          user_choice?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          mapping_id?: string | null
+          resolved_at?: string | null
+          source_category?: string
+          status?: string | null
+          suggested_category?: string
+          suggested_category_id?: string | null
+          user_choice?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_suggestions_mapping_id_fkey"
+            columns: ["mapping_id"]
+            isOneToOne: false
+            referencedRelation: "category_mappings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_taxonomies: {
+        Row: {
+          category_id: string
+          category_name: string
+          created_at: string | null
+          full_path: string | null
+          id: string
+          is_global: boolean | null
+          is_leaf: boolean | null
+          level: number | null
+          metadata: Json | null
+          parent_id: string | null
+          product_count: number | null
+          taxonomy_type: string
+          user_id: string | null
+        }
+        Insert: {
+          category_id: string
+          category_name: string
+          created_at?: string | null
+          full_path?: string | null
+          id?: string
+          is_global?: boolean | null
+          is_leaf?: boolean | null
+          level?: number | null
+          metadata?: Json | null
+          parent_id?: string | null
+          product_count?: number | null
+          taxonomy_type: string
+          user_id?: string | null
+        }
+        Update: {
+          category_id?: string
+          category_name?: string
+          created_at?: string | null
+          full_path?: string | null
+          id?: string
+          is_global?: boolean | null
+          is_leaf?: boolean | null
+          level?: number | null
+          metadata?: Json | null
+          parent_id?: string | null
+          product_count?: number | null
+          taxonomy_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       colors: {
         Row: {
           category: string | null
