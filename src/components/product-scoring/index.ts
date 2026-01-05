@@ -1,0 +1,1 @@
+export { ProductScoringDashboard } from './ProductScoringDashboard';
