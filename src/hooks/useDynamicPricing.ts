@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DynamicPricingService, DynamicPricing } from '@/services/DynamicPricingService';
+import { toast } from 'sonner';
 
 export function usePricingRecommendations() {
   return useQuery({
@@ -19,6 +20,12 @@ export function useOptimizeProductPrice() {
   return useMutation({
     mutationFn: ({ productId, marketData }: { productId: string; marketData?: any }) => 
       DynamicPricingService.optimizeProductPrice(productId, marketData),
+    onSuccess: () => {
+      toast.success('Prix optimisé avec succès');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur d'optimisation: ${error.message}`);
+    },
   });
 }
 
@@ -30,6 +37,10 @@ export function useApprovePricingRecommendation() {
       DynamicPricingService.approvePricingRecommendation(recommendationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-recommendations'] });
+      toast.success('Recommandation approuvée');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`);
     },
   });
 }
@@ -42,6 +53,10 @@ export function useRejectPricingRecommendation() {
       DynamicPricingService.rejectPricingRecommendation(recommendationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-recommendations'] });
+      toast.success('Recommandation rejetée');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`);
     },
   });
 }
@@ -55,6 +70,10 @@ export function useApplyPricingRecommendation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-recommendations'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Prix appliqué avec succès');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur d'application: ${error.message}`);
     },
   });
 }
@@ -71,6 +90,12 @@ export function useBulkOptimizePricing() {
   return useMutation({
     mutationFn: ({ productIds, marketData }: { productIds: string[]; marketData?: any }) => 
       DynamicPricingService.bulkOptimizePricing(productIds, marketData),
+    onSuccess: (data) => {
+      toast.success(`${data?.length || 0} prix optimisés`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur d'optimisation en masse: ${error.message}`);
+    },
   });
 }
 
