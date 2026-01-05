@@ -33,6 +33,9 @@ const SyncConfigPage = lazy(() => import('@/pages/SyncConfigPage'));
 // Content Management
 const ContentManagementPage = lazy(() => import('@/pages/ContentManagementPage'));
 
+// Multi-Channel
+const MultiChannelPage = lazy(() => import('@/pages/integrations/MultiChannelPage'));
+
 export function IntegrationRoutes() {
   return (
     <Routes>
@@ -69,6 +72,9 @@ export function IntegrationRoutes() {
       
       {/* Content */}
       <Route path="content" element={<ContentManagementPage />} />
+      
+      {/* Multi-Channel */}
+      <Route path="multi-channel" element={<MultiChannelPage />} />
     </Routes>
   );
 }

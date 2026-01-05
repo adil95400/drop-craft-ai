@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { AIContentService, AIContentTemplate, AIGeneratedContent } from '@/services/AIContentService';
 
 export type ContentType = 'product_description' | 'blog_article' | 'seo_content' | 'ad_copy' | 'email_marketing';
 
@@ -84,4 +86,115 @@ export function useAIContent() {
     isGenerating,
     content,
   };
+}
+
+// New hooks for AI Content Templates
+export function useAIContentTemplates() {
+  return useQuery({
+    queryKey: ['ai-content-templates'],
+    queryFn: () => AIContentService.getTemplates(),
+  });
+}
+
+export function useCreateAITemplate() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (template: Partial<AIContentTemplate>) => AIContentService.createTemplate(template),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-content-templates'] });
+      toast.success('Template créé avec succès');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`);
+    },
+  });
+}
+
+export function useUpdateAITemplate() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<AIContentTemplate> }) => 
+      AIContentService.updateTemplate(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-content-templates'] });
+      toast.success('Template mis à jour');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`);
+    },
+  });
+}
+
+export function useDeleteAITemplate() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (id: string) => AIContentService.deleteTemplate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-content-templates'] });
+      toast.success('Template supprimé');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`);
+    },
+  });
+}
+
+export function useGeneratedContent(filters?: { status?: string; productId?: string }) {
+  return useQuery({
+    queryKey: ['ai-generated-content', filters],
+    queryFn: () => AIContentService.getGeneratedContent(filters),
+  });
+}
+
+export function useGenerateAIContent() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ productId, templateId, variables }: { 
+      productId: string; 
+      templateId: string; 
+      variables: Record<string, any> 
+    }) => AIContentService.generateContent(productId, templateId, variables),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-generated-content'] });
+      queryClient.invalidateQueries({ queryKey: ['ai-content-templates'] });
+      toast.success('Contenu généré avec succès');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur de génération: ${error.message}`);
+    },
+  });
+}
+
+export function useUpdateContentStatus() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: AIGeneratedContent['status'] }) => 
+      AIContentService.updateContentStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-generated-content'] });
+      toast.success('Statut mis à jour');
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`);
+    },
+  });
+}
+
+export function useAIContentBatches() {
+  return useQuery({
+    queryKey: ['ai-content-batches'],
+    queryFn: () => AIContentService.getBatches(),
+  });
+}
+
+export function useAIContentStats() {
+  return useQuery({
+    queryKey: ['ai-content-stats'],
+    queryFn: () => AIContentService.getContentStats(),
+  });
 }
