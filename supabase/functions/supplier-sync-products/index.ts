@@ -1,58 +1,69 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts'
+import { parseJsonValidated, z } from '../_shared/validators.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+const BodySchema = z.object({
+  supplierId: z.string().min(1, 'supplierId requis'),
+  filters: z.record(z.any()).optional(),
+  limit: z.number().int().min(1).max(1000).optional().default(100),
+})
 
-  try {
+Deno.serve(
+  withErrorHandler(async (req) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders })
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    
+
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      throw new Error('Missing authorization header')
+      throw new ValidationError('Missing authorization header')
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+
     if (authError || !user) {
-      throw new Error('Unauthorized')
+      throw new ValidationError('Unauthorized')
     }
 
-    const { supplierId, filters, limit = 100 } = await req.json()
-    
+    const { supplierId, filters, limit } = await parseJsonValidated(req, BodySchema)
+
     console.log('Syncing products from supplier:', supplierId)
-    
+
     // Get supplier credentials
     const { data: credentialData, error: credError } = await supabase
       .from('supplier_credentials_vault')
       .select('*')
       .eq('user_id', user.id)
       .eq('supplier_id', supplierId)
-      .single()
-    
-    if (credError || !credentialData) {
-      throw new Error('Supplier not connected')
+      .maybeSingle()
+
+    if (credError) throw credError
+    if (!credentialData) {
+      throw new ValidationError('Supplier not connected')
     }
-    
+
     // Extract credentials from oauth_data or direct fields
     const credentials = credentialData.oauth_data || {}
     const connectorId = credentials.connectorId || supplierId
-    
+
     let products: any[] = []
     let syncStats = {
       fetched: 0,
       imported: 0,
       updated: 0,
       failed: 0,
-      errors: [] as string[]
+      errors: [] as string[],
     }
+
     
     // Fetch products based on supplier
     switch (connectorId) {
@@ -593,14 +604,6 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-  } catch (error) {
-    console.error('Product sync error:', error)
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-  }
-})
+  }, corsHeaders)
+)
+

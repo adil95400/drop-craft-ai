@@ -1,5 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts'
+import { parseJsonValidated, z } from '../_shared/validators.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,11 +25,17 @@ interface B2BProduct {
   ean?: string
 }
 
+const BodySchema = z.object({
+  action: z.enum(['sync', 'test']).optional().default('sync'),
+  page: z.number().int().min(1).optional().default(1),
+  limit: z.number().int().min(1).max(250).optional().default(50),
+})
+
 async function fetchB2BProducts(userKey: string, authKey: string, page = 1, limit = 100): Promise<any> {
   const url = `${B2B_API_BASE}products?page=${page}&limit=${limit}`
-  
+
   console.log(`Fetching B2B Sports products from: ${url}`)
-  
+
   const response = await fetch(url, {
     method: 'GET',
     headers: {
@@ -47,25 +55,25 @@ async function fetchB2BProducts(userKey: string, authKey: string, page = 1, limi
         'UAC': authKey,
       },
     })
-    
+
     if (!altResponse.ok) {
       const errorText = await altResponse.text()
       console.error('B2B API Error:', errorText)
       throw new Error(`B2B API error: ${altResponse.status} - ${errorText}`)
     }
-    
+
     return await altResponse.json()
   }
 
   return await response.json()
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+serve(
+  withErrorHandler(async (req) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders })
+    }
 
-  try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -75,26 +83,19 @@ serve(async (req) => {
     const authKey = Deno.env.get('B2B_SPORTS_AUTH_KEY')
 
     if (!userKey || !authKey) {
-      throw new Error('B2B Sports API credentials not configured')
+      throw new ValidationError('Identifiants B2B Sports non configurés')
     }
 
-    const { action = 'sync', page = 1, limit = 50 } = await req.json().catch(() => ({}))
+    const { action, limit } = await parseJsonValidated(req, BodySchema)
 
     console.log(`B2B Sports Import - Action: ${action}`)
 
     if (action === 'test') {
-      try {
-        const testResult = await fetchB2BProducts(userKey, authKey, 1, 1)
-        return new Response(
-          JSON.stringify({ success: true, message: 'API connection successful', sample: testResult }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      } catch (error) {
-        return new Response(
-          JSON.stringify({ success: false, error: error.message }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
+      const testResult = await fetchB2BProducts(userKey, authKey, 1, 1)
+      return new Response(
+        JSON.stringify({ success: true, message: 'API connection successful', sample: testResult }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Sync products to shared catalog
@@ -105,11 +106,11 @@ serve(async (req) => {
 
     while (hasMore && currentPage <= maxPages) {
       console.log(`Fetching page ${currentPage}...`)
-      
+
       try {
         const result = await fetchB2BProducts(userKey, authKey, currentPage, limit)
         const products = result.products || result.data || result.items || []
-        
+
         if (Array.isArray(products) && products.length > 0) {
           allProducts = [...allProducts, ...products]
           currentPage++
@@ -132,11 +133,13 @@ serve(async (req) => {
     }
 
     // Get supplier ID from premium_suppliers
-    const { data: supplier } = await supabase
+    const { data: supplier, error: supplierError } = await supabase
       .from('premium_suppliers')
       .select('id')
       .eq('slug', 'b2b-sports-wholesale')
-      .single()
+      .maybeSingle()
+
+    if (supplierError) throw supplierError
 
     // Transform and insert into shared catalog
     const catalogProducts = allProducts.map((product: any) => ({
@@ -153,7 +156,10 @@ serve(async (req) => {
       stock_quantity: parseInt(product.stock || product.quantity || '0'),
       category: product.category || product.category_name || 'Sports',
       brand: product.brand || product.manufacturer || null,
-      image_url: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : (product.image || null),
+      image_url:
+        Array.isArray(product.images) && product.images.length > 0
+          ? product.images[0]
+          : (product.image || null),
       images: product.images || [],
       weight: product.weight ? parseFloat(product.weight) : null,
       weight_unit: 'kg',
@@ -170,12 +176,12 @@ serve(async (req) => {
 
     for (let i = 0; i < catalogProducts.length; i += batchSize) {
       const batch = catalogProducts.slice(i, i + batchSize)
-      
+
       const { error } = await supabase
         .from('supplier_catalog')
-        .upsert(batch, { 
+        .upsert(batch, {
           onConflict: 'supplier_name,external_product_id',
-          ignoreDuplicates: false 
+          ignoreDuplicates: false,
         })
 
       if (error) {
@@ -189,30 +195,24 @@ serve(async (req) => {
     console.log(`Catalog sync complete: ${insertedCount} products`)
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: `${insertedCount} produits synchronisés dans le catalogue`,
         synced: insertedCount,
         errors: errorCount,
-        total_fetched: allProducts.length
+        total_fetched: allProducts.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-  } catch (error) {
-    console.error('Sync error:', error)
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-})
+  }, corsHeaders)
+)
 
 function generateDemoProducts(): B2BProduct[] {
   const categories = ['Football', 'Basketball', 'Running', 'Tennis', 'Fitness', 'Natation', 'Cyclisme']
   const brands = ['Nike', 'Adidas', 'Puma', 'Reebok', 'Under Armour', 'New Balance', 'Asics']
-  
+
   const products: B2BProduct[] = []
-  
+
   const productTemplates = [
     { name: 'Ballon de Football Pro', category: 'Football', basePrice: 29.99 },
     { name: 'Chaussures Running Elite', category: 'Running', basePrice: 89.99 },
@@ -230,12 +230,12 @@ function generateDemoProducts(): B2BProduct[] {
     { name: 'Corde à Sauter Pro', category: 'Fitness', basePrice: 14.99 },
     { name: 'Gourde Sport Isotherme', category: 'Fitness', basePrice: 24.99 },
   ]
-  
+
   for (let i = 0; i < 50; i++) {
     const template = productTemplates[i % productTemplates.length]
     const brand = brands[Math.floor(Math.random() * brands.length)]
     const variation = Math.floor(Math.random() * 10) + 1
-    
+
     products.push({
       id: `b2b-${1000 + i}`,
       sku: `B2B-SPT-${1000 + i}`,
@@ -250,6 +250,7 @@ function generateDemoProducts(): B2BProduct[] {
       ean: `302830${String(1000000 + i).slice(-7)}`,
     })
   }
-  
+
   return products
 }
+
