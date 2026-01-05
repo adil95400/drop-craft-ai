@@ -457,6 +457,182 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_content_batches: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_log: Json | null
+          failed_count: number | null
+          id: string
+          name: string
+          processed_products: number | null
+          product_filter: Json | null
+          started_at: string | null
+          status: string | null
+          successful_count: number | null
+          template_id: string | null
+          total_products: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_log?: Json | null
+          failed_count?: number | null
+          id?: string
+          name: string
+          processed_products?: number | null
+          product_filter?: Json | null
+          started_at?: string | null
+          status?: string | null
+          successful_count?: number | null
+          template_id?: string | null
+          total_products?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_log?: Json | null
+          failed_count?: number | null
+          id?: string
+          name?: string
+          processed_products?: number | null
+          product_filter?: Json | null
+          started_at?: string | null
+          status?: string | null
+          successful_count?: number | null
+          template_id?: string | null
+          total_products?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_content_batches_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ai_content_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_content_templates: {
+        Row: {
+          content_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          language: string | null
+          max_tokens: number | null
+          name: string
+          prompt_template: string
+          tone: string | null
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+          variables: Json | null
+        }
+        Insert: {
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          language?: string | null
+          max_tokens?: number | null
+          name: string
+          prompt_template: string
+          tone?: string | null
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+          variables?: Json | null
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          language?: string | null
+          max_tokens?: number | null
+          name?: string
+          prompt_template?: string
+          tone?: string | null
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
+      ai_generated_content: {
+        Row: {
+          applied_at: string | null
+          content_type: string
+          created_at: string
+          generated_content: string
+          generation_time_ms: number | null
+          id: string
+          original_content: string | null
+          product_id: string | null
+          quality_score: number | null
+          status: string | null
+          template_id: string | null
+          tokens_used: number | null
+          user_id: string
+          variables_used: Json | null
+        }
+        Insert: {
+          applied_at?: string | null
+          content_type: string
+          created_at?: string
+          generated_content: string
+          generation_time_ms?: number | null
+          id?: string
+          original_content?: string | null
+          product_id?: string | null
+          quality_score?: number | null
+          status?: string | null
+          template_id?: string | null
+          tokens_used?: number | null
+          user_id: string
+          variables_used?: Json | null
+        }
+        Update: {
+          applied_at?: string | null
+          content_type?: string
+          created_at?: string
+          generated_content?: string
+          generation_time_ms?: number | null
+          id?: string
+          original_content?: string | null
+          product_id?: string | null
+          quality_score?: number | null
+          status?: string | null
+          template_id?: string | null
+          tokens_used?: number | null
+          user_id?: string
+          variables_used?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generated_content_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_content_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ai_content_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_optimization_jobs: {
         Row: {
           completed_at: string | null
@@ -2123,6 +2299,128 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      channel_product_mappings: {
+        Row: {
+          channel_id: string
+          created_at: string
+          external_product_id: string | null
+          external_sku: string | null
+          id: string
+          last_synced_at: string | null
+          metadata: Json | null
+          price_override: number | null
+          product_id: string
+          stock_override: number | null
+          sync_errors: Json | null
+          sync_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          external_product_id?: string | null
+          external_sku?: string | null
+          id?: string
+          last_synced_at?: string | null
+          metadata?: Json | null
+          price_override?: number | null
+          product_id: string
+          stock_override?: number | null
+          sync_errors?: Json | null
+          sync_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          external_product_id?: string | null
+          external_sku?: string | null
+          id?: string
+          last_synced_at?: string | null
+          metadata?: Json | null
+          price_override?: number | null
+          product_id?: string
+          stock_override?: number | null
+          sync_errors?: Json | null
+          sync_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_product_mappings_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "sales_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_product_mappings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_sync_logs: {
+        Row: {
+          channel_id: string
+          completed_at: string | null
+          direction: string | null
+          duration_ms: number | null
+          error_details: Json | null
+          id: string
+          items_failed: number | null
+          items_processed: number | null
+          items_succeeded: number | null
+          started_at: string
+          status: string | null
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          completed_at?: string | null
+          direction?: string | null
+          duration_ms?: number | null
+          error_details?: Json | null
+          id?: string
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: number | null
+          started_at?: string
+          status?: string | null
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          completed_at?: string | null
+          direction?: string | null
+          duration_ms?: number | null
+          error_details?: Json | null
+          id?: string
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: number | null
+          started_at?: string
+          status?: string | null
+          sync_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_sync_logs_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "sales_channels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       colors: {
         Row: {
@@ -6498,6 +6796,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sales_channels: {
+        Row: {
+          api_credentials: Json | null
+          channel_type: string
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          last_sync_status: string | null
+          name: string
+          orders_synced: number | null
+          products_synced: number | null
+          settings: Json | null
+          status: string | null
+          sync_config: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_credentials?: Json | null
+          channel_type: string
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          name: string
+          orders_synced?: number | null
+          products_synced?: number | null
+          settings?: Json | null
+          status?: string | null
+          sync_config?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_credentials?: Json | null
+          channel_type?: string
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          name?: string
+          orders_synced?: number | null
+          products_synced?: number | null
+          settings?: Json | null
+          status?: string | null
+          sync_config?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       scheduled_tasks: {
         Row: {
