@@ -25,6 +25,12 @@ export const useRealCustomers = (filters?: any) => {
   const { data: customers = [], isLoading, error } = useQuery({
     queryKey: ['real-customers', filters],
     queryFn: async () => {
+      // Check authentication first
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        return [] // Return empty array for unauthenticated users
+      }
+      
       // Log security access
       await monitorCustomerAccess('view')
       
@@ -60,6 +66,7 @@ export const useRealCustomers = (filters?: any) => {
         updated_at: c.updated_at
       })) as Customer[]
     },
+    enabled: true // Query will return empty if not authenticated
   })
 
   const addCustomer = useMutation({
