@@ -3316,6 +3316,164 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_rule_executions: {
+        Row: {
+          changes_summary: Json | null
+          error_message: string | null
+          executed_at: string | null
+          execution_time_ms: number | null
+          feed_id: string | null
+          id: string
+          products_matched: number | null
+          products_modified: number | null
+          rule_id: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          changes_summary?: Json | null
+          error_message?: string | null
+          executed_at?: string | null
+          execution_time_ms?: number | null
+          feed_id?: string | null
+          id?: string
+          products_matched?: number | null
+          products_modified?: number | null
+          rule_id?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          changes_summary?: Json | null
+          error_message?: string | null
+          executed_at?: string | null
+          execution_time_ms?: number | null
+          feed_id?: string | null
+          id?: string
+          products_matched?: number | null
+          products_modified?: number | null
+          rule_id?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_rule_executions_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_product_feeds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_rule_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "feed_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_rule_templates: {
+        Row: {
+          actions: Json
+          category: string | null
+          conditions: Json
+          created_at: string | null
+          description: string | null
+          id: string
+          is_global: boolean | null
+          match_type: string | null
+          name: string
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          actions?: Json
+          category?: string | null
+          conditions?: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean | null
+          match_type?: string | null
+          name: string
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          actions?: Json
+          category?: string | null
+          conditions?: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean | null
+          match_type?: string | null
+          name?: string
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      feed_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string | null
+          description: string | null
+          execution_count: number | null
+          feed_id: string | null
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          match_type: string | null
+          name: string
+          priority: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          feed_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          match_type?: string | null
+          name: string
+          priority?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          feed_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          match_type?: string | null
+          name?: string
+          priority?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_rules_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_product_feeds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       field_mappings: {
         Row: {
           created_at: string | null
