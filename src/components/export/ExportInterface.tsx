@@ -226,7 +226,7 @@ export const ExportInterface: React.FC<ExportInterfaceProps> = ({
                     <div className="flex items-center gap-3">
                       <Checkbox 
                         checked={isSelected}
-                        onChange={() => {}}
+                        onCheckedChange={() => handlePlatformSelect(platform.id)}
                         className="mt-1"
                       />
                       <Icon className={`h-6 w-6 ${platform.color}`} />

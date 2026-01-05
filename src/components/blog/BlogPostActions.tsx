@@ -215,7 +215,13 @@ export function BlogPostActions({ post }: BlogPostActionsProps) {
                     >
                       <Checkbox
                         checked={selectedOptimizations.includes(option.id)}
-                        onChange={() => {}}
+                        onCheckedChange={() => {
+                          setSelectedOptimizations(prev =>
+                            prev.includes(option.id)
+                              ? prev.filter(id => id !== option.id)
+                              : [...prev, option.id]
+                          );
+                        }}
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -305,7 +311,13 @@ export function BlogPostActions({ post }: BlogPostActionsProps) {
                         >
                           <Checkbox
                             checked={selectedIntegrations.includes(integration.id)}
-                            onChange={() => {}}
+                            onCheckedChange={() => {
+                              setSelectedIntegrations(prev =>
+                                prev.includes(integration.id)
+                                  ? prev.filter(id => id !== integration.id)
+                                  : [...prev, integration.id]
+                              );
+                            }}
                           />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
