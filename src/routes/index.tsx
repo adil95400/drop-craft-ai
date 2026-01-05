@@ -61,6 +61,8 @@ const ProductRulesPage = lazy(() => import('@/pages/rules/ProductRulesPage'));
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
+const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
+const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -146,6 +148,10 @@ export function AppRoutes() {
         <Route path="/trial" element={<ProtectedRoute><AppLayout><FreeTrialActivationPage /></AppLayout></ProtectedRoute>} />
         <Route path="/ab-testing" element={<ProtectedRoute><AppLayout><ABTestingPage /></AppLayout></ProtectedRoute>} />
         <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
+        
+        {/* Page Builder */}
+        <Route path="/page-builder" element={<ProtectedRoute><AppLayout><PageBuilderPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/page-builder/:pageId" element={<ProtectedRoute><PageEditorPage /></ProtectedRoute>} />
         
         {/* Enrichment */}
         <Route path="/enrichment" element={<ProtectedRoute><AppLayout><EnrichmentSettingsPage /></AppLayout></ProtectedRoute>} />
