@@ -687,6 +687,45 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_dashboards: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_default: boolean | null
+          is_shared: boolean | null
+          layout: Json | null
+          name: string
+          updated_at: string
+          user_id: string
+          widgets: Json | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          layout?: Json | null
+          name: string
+          updated_at?: string
+          user_id: string
+          widgets?: Json | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          layout?: Json | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+          widgets?: Json | null
+        }
+        Relationships: []
+      }
       analytics_insights: {
         Row: {
           category: string | null
@@ -746,6 +785,86 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      analytics_snapshots: {
+        Row: {
+          comparisons: Json | null
+          created_at: string
+          id: string
+          metrics: Json
+          snapshot_date: string
+          snapshot_type: string
+          user_id: string
+        }
+        Insert: {
+          comparisons?: Json | null
+          created_at?: string
+          id?: string
+          metrics: Json
+          snapshot_date: string
+          snapshot_type: string
+          user_id: string
+        }
+        Update: {
+          comparisons?: Json | null
+          created_at?: string
+          id?: string
+          metrics?: Json
+          snapshot_date?: string
+          snapshot_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      analytics_widgets: {
+        Row: {
+          config: Json | null
+          created_at: string
+          dashboard_id: string | null
+          data_source: string
+          id: string
+          position: Json | null
+          refresh_interval_seconds: number | null
+          title: string
+          updated_at: string
+          user_id: string
+          widget_type: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          dashboard_id?: string | null
+          data_source: string
+          id?: string
+          position?: Json | null
+          refresh_interval_seconds?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+          widget_type: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          dashboard_id?: string | null
+          data_source?: string
+          id?: string
+          position?: Json | null
+          refresh_interval_seconds?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          widget_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_widgets_dashboard_id_fkey"
+            columns: ["dashboard_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_dashboards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       announcements: {
         Row: {
@@ -5015,6 +5134,48 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          categories: Json | null
+          created_at: string
+          digest_frequency: string | null
+          email_enabled: boolean | null
+          id: string
+          push_enabled: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          sms_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categories?: Json | null
+          created_at?: string
+          digest_frequency?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          push_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          sms_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categories?: Json | null
+          created_at?: string
+          digest_frequency?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          push_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          sms_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -8107,6 +8268,57 @@ export type Database = {
           total_products?: number | null
           total_revenue?: number | null
           total_users?: number | null
+        }
+        Relationships: []
+      }
+      user_notifications: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          category: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          notification_type: string
+          priority: string | null
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          category?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          notification_type?: string
+          priority?: string | null
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          category?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          notification_type?: string
+          priority?: string | null
+          read_at?: string | null
+          title?: string
+          user_id?: string
         }
         Relationships: []
       }

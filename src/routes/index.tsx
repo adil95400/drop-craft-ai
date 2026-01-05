@@ -63,6 +63,7 @@ const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
 const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
+const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -138,6 +139,7 @@ export function AppRoutes() {
         <Route path="/orders/bulk" element={<ProtectedRoute><AppLayout><BulkOrdersPage /></AppLayout></ProtectedRoute>} />
         <Route path="/customers/create" element={<ProtectedRoute><CreateCustomer /></ProtectedRoute>} />
         <Route path="/notifications/create" element={<ProtectedRoute><CreateNotification /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><AppLayout><NotificationsPage /></AppLayout></ProtectedRoute>} />
         
         {/* Feature Pages */}
         <Route path="/advanced" element={<ProtectedRoute><AppLayout><AdvancedModulesPage /></AppLayout></ProtectedRoute>} />
