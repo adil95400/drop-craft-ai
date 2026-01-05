@@ -49,20 +49,26 @@ const guideSections: GuideSection[] = [
     items: [
       {
         title: 'Configuration initiale',
-        description: 'Configurez votre compte et vos préférences de base',
+        description: 'Configurez votre compte et vos préférences de base pour commencer à utiliser la plateforme.',
         duration: '5 min',
         videoUrl: '#',
       },
       {
         title: 'Connecter votre première boutique',
-        description: 'Connectez Shopify, WooCommerce ou autre marketplace',
+        description: 'Connectez Shopify, WooCommerce, PrestaShop ou autre marketplace en quelques clics.',
         duration: '10 min',
         videoUrl: '#',
       },
       {
         title: 'Importer vos premiers produits',
-        description: 'Découvrez les différentes méthodes d\'import',
+        description: 'Découvrez les différentes méthodes d\'import : CSV, API, scraping intelligent.',
         duration: '8 min',
+        videoUrl: '#',
+      },
+      {
+        title: 'Tour de l\'interface',
+        description: 'Familiarisez-vous avec le dashboard et les principales fonctionnalités.',
+        duration: '7 min',
         videoUrl: '#',
       },
     ],
@@ -74,43 +80,75 @@ const guideSections: GuideSection[] = [
     items: [
       {
         title: 'Organisation du catalogue',
-        description: 'Structurez et catégorisez vos produits efficacement',
+        description: 'Structurez et catégorisez vos produits efficacement avec les tags et collections.',
         duration: '12 min',
       },
       {
         title: 'Optimisation SEO automatique',
-        description: 'Utilisez l\'IA pour optimiser vos descriptions',
+        description: 'Utilisez l\'IA pour optimiser vos titres, descriptions et mots-clés.',
         duration: '15 min',
         badge: 'AI',
       },
       {
         title: 'Gestion des stocks en temps réel',
-        description: 'Synchronisez vos stocks sur toutes vos plateformes',
+        description: 'Synchronisez vos stocks sur toutes vos plateformes automatiquement.',
         duration: '10 min',
+      },
+      {
+        title: 'Import en masse depuis fournisseurs',
+        description: 'Importez des milliers de produits depuis AliExpress, BigBuy, Spocket et 99+ autres.',
+        duration: '15 min',
+      },
+    ],
+  },
+  {
+    id: 'orders',
+    title: 'Commandes & Fulfillment',
+    icon: Package,
+    items: [
+      {
+        title: 'Traitement automatique des commandes',
+        description: 'Automatisez le passage des commandes chez vos fournisseurs.',
+        duration: '12 min',
+      },
+      {
+        title: 'Suivi des expéditions',
+        description: 'Suivez tous vos colis en temps réel et notifiez vos clients automatiquement.',
+        duration: '10 min',
+      },
+      {
+        title: 'Gestion des retours',
+        description: 'Traitez les demandes de retour et remboursements efficacement.',
+        duration: '8 min',
       },
     ],
   },
   {
     id: 'automation',
-    title: 'Automation & IA',
+    title: 'Automation & Workflows',
     icon: Zap,
     badge: 'Premium',
     items: [
       {
         title: 'Règles d\'automation',
-        description: 'Créez des workflows automatisés pour vos tâches répétitives',
+        description: 'Créez des workflows automatisés pour vos tâches répétitives : pricing, stocks, notifications.',
         duration: '20 min',
       },
       {
         title: 'Pricing intelligent',
-        description: 'Optimisez vos prix automatiquement avec l\'IA',
+        description: 'Optimisez vos prix automatiquement avec l\'IA en fonction du marché et de vos objectifs.',
         duration: '15 min',
         badge: 'AI',
       },
       {
         title: 'Alertes et notifications',
-        description: 'Configurez des alertes intelligentes pour votre business',
+        description: 'Configurez des alertes intelligentes : ruptures de stock, prix concurrents, performances.',
         duration: '8 min',
+      },
+      {
+        title: 'Triggers et conditions',
+        description: 'Définissez des conditions avancées pour déclencher vos automatisations.',
+        duration: '12 min',
       },
     ],
   },
@@ -121,19 +159,114 @@ const guideSections: GuideSection[] = [
     items: [
       {
         title: 'Dashboard analytics',
-        description: 'Comprenez vos métriques clés en un coup d\'œil',
+        description: 'Comprenez vos métriques clés en un coup d\'œil : CA, marges, conversions.',
         duration: '10 min',
       },
       {
         title: 'Rapports personnalisés',
-        description: 'Créez des rapports adaptés à vos besoins',
+        description: 'Créez des rapports sur mesure et programmez leur envoi automatique.',
         duration: '15 min',
       },
       {
         title: 'Insights prédictifs',
-        description: 'Anticipez les tendances avec l\'IA prédictive',
+        description: 'Anticipez les tendances et les ruptures avec l\'IA prédictive.',
         duration: '12 min',
         badge: 'AI',
+      },
+      {
+        title: 'Comparaison multi-périodes',
+        description: 'Analysez l\'évolution de vos performances sur différentes périodes.',
+        duration: '8 min',
+      },
+    ],
+  },
+  {
+    id: 'marketing',
+    title: 'Marketing & CRM',
+    icon: MessageCircle,
+    badge: 'Pro',
+    items: [
+      {
+        title: 'Campagnes email automatisées',
+        description: 'Créez des séquences email pour fidéliser vos clients et récupérer les paniers abandonnés.',
+        duration: '18 min',
+      },
+      {
+        title: 'Segmentation clients',
+        description: 'Segmentez votre base clients pour des communications ciblées.',
+        duration: '12 min',
+      },
+      {
+        title: 'Publicités Facebook & Google',
+        description: 'Gérez vos campagnes publicitaires et analysez leur ROI depuis la plateforme.',
+        duration: '20 min',
+      },
+    ],
+  },
+  {
+    id: 'integrations',
+    title: 'Intégrations & API',
+    icon: Settings,
+    items: [
+      {
+        title: 'Connecter des marketplaces',
+        description: 'Intégrez Amazon, eBay, Cdiscount et autres marketplaces populaires.',
+        duration: '15 min',
+      },
+      {
+        title: 'API REST et Webhooks',
+        description: 'Utilisez notre API pour créer des intégrations personnalisées.',
+        duration: '25 min',
+      },
+      {
+        title: 'Zapier et Make',
+        description: 'Connectez ShopOpti+ à des milliers d\'autres outils via Zapier ou Make.',
+        duration: '10 min',
+      },
+    ],
+  },
+  {
+    id: 'security',
+    title: 'Sécurité & Conformité',
+    icon: Settings,
+    items: [
+      {
+        title: 'Gestion des accès',
+        description: 'Configurez les rôles et permissions pour votre équipe.',
+        duration: '10 min',
+      },
+      {
+        title: 'Double authentification',
+        description: 'Sécurisez votre compte avec l\'authentification à deux facteurs.',
+        duration: '5 min',
+      },
+      {
+        title: 'Conformité RGPD',
+        description: 'Gérez les données personnelles conformément à la réglementation européenne.',
+        duration: '12 min',
+      },
+    ],
+  },
+  {
+    id: 'mobile',
+    title: 'Application mobile',
+    icon: Settings,
+    badge: 'Nouveau',
+    items: [
+      {
+        title: 'Installation PWA',
+        description: 'Installez l\'application progressive sur votre smartphone.',
+        duration: '3 min',
+      },
+      {
+        title: 'Notifications push',
+        description: 'Recevez des alertes en temps réel sur votre mobile.',
+        duration: '5 min',
+      },
+      {
+        title: 'Gestion en déplacement',
+        description: 'Gérez vos commandes et stocks depuis n\'importe où.',
+        duration: '8 min',
       },
     ],
   },
@@ -141,17 +274,22 @@ const guideSections: GuideSection[] = [
     id: 'advanced',
     title: 'Fonctionnalités avancées',
     icon: Settings,
+    badge: 'Enterprise',
     items: [
       {
-        title: 'API et webhooks',
-        description: 'Intégrez des services tiers via notre API',
-        duration: '25 min',
+        title: 'Multi-tenant',
+        description: 'Gérez plusieurs boutiques et clients depuis un seul compte administrateur.',
+        duration: '18 min',
       },
       {
-        title: 'Multi-tenant',
-        description: 'Gérez plusieurs boutiques depuis un seul compte',
-        duration: '18 min',
-        badge: 'Enterprise',
+        title: 'White label',
+        description: 'Personnalisez l\'interface avec votre marque pour vos clients.',
+        duration: '15 min',
+      },
+      {
+        title: 'Import/Export avancé',
+        description: 'Utilisez les formats XML, JSON et les mappings personnalisés.',
+        duration: '20 min',
       },
     ],
   },
