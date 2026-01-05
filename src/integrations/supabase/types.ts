@@ -6843,6 +6843,170 @@ export type Database = {
         }
         Relationships: []
       }
+      variant_mapping_rules: {
+        Row: {
+          apply_to_all_products: boolean | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          option_type: string
+          priority: number | null
+          rule_name: string
+          source_pattern: string
+          supplier_id: string | null
+          target_value: string
+          transformation_type: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          apply_to_all_products?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          option_type: string
+          priority?: number | null
+          rule_name: string
+          source_pattern: string
+          supplier_id?: string | null
+          target_value: string
+          transformation_type?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          apply_to_all_products?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          option_type?: string
+          priority?: number | null
+          rule_name?: string
+          source_pattern?: string
+          supplier_id?: string | null
+          target_value?: string
+          transformation_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "variant_mapping_rules_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      variant_mapping_templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_global: boolean | null
+          mappings: Json
+          name: string
+          option_type: string
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean | null
+          mappings?: Json
+          name: string
+          option_type: string
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean | null
+          mappings?: Json
+          name?: string
+          option_type?: string
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      variant_mappings: {
+        Row: {
+          auto_sync: boolean | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          priority: number | null
+          product_id: string | null
+          source_option_name: string
+          source_option_value: string
+          source_sku: string | null
+          source_variant_id: string | null
+          supplier_id: string | null
+          target_option_name: string
+          target_option_value: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_sync?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          priority?: number | null
+          product_id?: string | null
+          source_option_name: string
+          source_option_value: string
+          source_sku?: string | null
+          source_variant_id?: string | null
+          supplier_id?: string | null
+          target_option_name: string
+          target_option_value: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_sync?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          priority?: number | null
+          product_id?: string | null
+          source_option_name?: string
+          source_option_value?: string
+          source_sku?: string | null
+          source_variant_id?: string | null
+          supplier_id?: string | null
+          target_option_name?: string
+          target_option_value?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "variant_mappings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "variant_mappings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       video_tutorials: {
         Row: {
           category: string | null
