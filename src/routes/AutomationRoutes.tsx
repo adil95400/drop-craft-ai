@@ -33,6 +33,7 @@ const PriceOptimizationPage = lazy(() => import('@/pages/PriceOptimizationPage')
 const PricingAutomationPage = lazy(() => import('@/pages/PricingAutomationPage'));
 const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendationsPage'));
 const DynamicPricing = lazy(() => import('@/pages/DynamicPricing'));
+const WorkflowBuilderAdvanced = lazy(() => import('@/pages/automation/WorkflowBuilderPage'));
 
 export function AutomationRoutes() {
   return (
@@ -67,6 +68,7 @@ export function AutomationRoutes() {
       <Route path="pricing-automation" element={<PricingAutomationPage />} />
       <Route path="recommendations" element={<ProductRecommendationsPage />} />
       <Route path="dynamic-pricing" element={<DynamicPricing />} />
+      <Route path="workflows" element={<WorkflowBuilderAdvanced />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/automation" replace />} />
