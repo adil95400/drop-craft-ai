@@ -4942,6 +4942,205 @@ export type Database = {
         }
         Relationships: []
       }
+      ppc_feed_links: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          description: string | null
+          feed_id: string | null
+          field_mappings: Json | null
+          filters: Json | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          name: string
+          next_sync_at: string | null
+          platform: string
+          products_synced: number | null
+          sync_errors: Json | null
+          sync_frequency: string | null
+          sync_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          feed_id?: string | null
+          field_mappings?: Json | null
+          filters?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          name: string
+          next_sync_at?: string | null
+          platform: string
+          products_synced?: number | null
+          sync_errors?: Json | null
+          sync_frequency?: string | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          feed_id?: string | null
+          field_mappings?: Json | null
+          filters?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          name?: string
+          next_sync_at?: string | null
+          platform?: string
+          products_synced?: number | null
+          sync_errors?: Json | null
+          sync_frequency?: string | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ppc_feed_links_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ad_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ppc_feed_links_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_product_feeds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ppc_link_performance: {
+        Row: {
+          clicks: number | null
+          conversions: number | null
+          cpc: number | null
+          created_at: string | null
+          ctr: number | null
+          date: string
+          id: string
+          impressions: number | null
+          link_id: string | null
+          products_active: number | null
+          products_converting: number | null
+          revenue: number | null
+          roas: number | null
+          spend: number | null
+          user_id: string
+        }
+        Insert: {
+          clicks?: number | null
+          conversions?: number | null
+          cpc?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          date: string
+          id?: string
+          impressions?: number | null
+          link_id?: string | null
+          products_active?: number | null
+          products_converting?: number | null
+          revenue?: number | null
+          roas?: number | null
+          spend?: number | null
+          user_id: string
+        }
+        Update: {
+          clicks?: number | null
+          conversions?: number | null
+          cpc?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          link_id?: string | null
+          products_active?: number | null
+          products_converting?: number | null
+          revenue?: number | null
+          roas?: number | null
+          spend?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ppc_link_performance_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "ppc_feed_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ppc_sync_logs: {
+        Row: {
+          completed_at: string | null
+          duration_ms: number | null
+          error_details: Json | null
+          errors_count: number | null
+          id: string
+          link_id: string | null
+          products_added: number | null
+          products_processed: number | null
+          products_removed: number | null
+          products_updated: number | null
+          started_at: string | null
+          status: string | null
+          sync_type: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          error_details?: Json | null
+          errors_count?: number | null
+          id?: string
+          link_id?: string | null
+          products_added?: number | null
+          products_processed?: number | null
+          products_removed?: number | null
+          products_updated?: number | null
+          started_at?: string | null
+          status?: string | null
+          sync_type?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          error_details?: Json | null
+          errors_count?: number | null
+          id?: string
+          link_id?: string | null
+          products_added?: number | null
+          products_processed?: number | null
+          products_removed?: number | null
+          products_updated?: number | null
+          started_at?: string | null
+          status?: string | null
+          sync_type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ppc_sync_logs_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "ppc_feed_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       premium_supplier_connections: {
         Row: {
           connection_status: string | null
