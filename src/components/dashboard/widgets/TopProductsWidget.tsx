@@ -2,8 +2,9 @@ import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TimeRange } from '@/hooks/useDashboardConfig';
-import { useProductionData } from '@/hooks/useProductionData';
-import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface TopProductsWidgetProps {
   timeRange: TimeRange;
@@ -15,19 +16,70 @@ interface TopProductsWidgetProps {
 }
 
 export function TopProductsWidget({ timeRange, settings, lastRefresh }: TopProductsWidgetProps) {
-  const { products, orders, isLoadingProducts, isLoadingOrders } = useProductionData();
+  const { user } = useAuth();
 
-  const formattedData = useMemo(() => {
-    // In a real app, you'd calculate sales from order_items
-    // For now, we'll use products with estimated sales based on price
-    return (products || []).slice(0, 5).map((product: any, index: number) => ({
-      name: (product.title || product.name || `Produit ${index + 1}`).substring(0, 15) + (product.title?.length > 15 ? '...' : ''),
-      sales: Math.floor(Math.random() * 50) + 10 + (5 - index) * 10, // Simulated based on ranking
-      revenue: Number(product.price || 0) * (Math.floor(Math.random() * 20) + 5),
-    }));
-  }, [products]);
+  // Fetch top products based on order_items
+  const { data: topProductsData, isLoading } = useQuery({
+    queryKey: ['top-products-sales', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      // Get order items with product info
+      const { data: orderItems, error } = await supabase
+        .from('order_items')
+        .select(`
+          product_id,
+          product_name,
+          qty,
+          total_price,
+          order:orders!inner(user_id, status)
+        `)
+        .eq('order.user_id', user.id)
+        .neq('order.status', 'cancelled');
+      
+      if (error) {
+        console.warn('Error fetching order items:', error);
+        // Fallback to products table
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, title, price, stock_quantity')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        return (products || []).map((p, i) => ({
+          name: (p.title || 'Produit').substring(0, 15) + ((p.title?.length || 0) > 15 ? '...' : ''),
+          sales: 5 - i,
+          revenue: Number(p.price || 0) * (5 - i)
+        }));
+      }
+      
+      // Aggregate by product
+      const productStats: { [key: string]: { name: string; sales: number; revenue: number } } = {};
+      
+      orderItems?.forEach(item => {
+        const productId = item.product_id || item.product_name;
+        if (!productStats[productId]) {
+          productStats[productId] = {
+            name: (item.product_name || 'Produit').substring(0, 15) + ((item.product_name?.length || 0) > 15 ? '...' : ''),
+            sales: 0,
+            revenue: 0
+          };
+        }
+        productStats[productId].sales += item.qty || 1;
+        productStats[productId].revenue += Number(item.total_price || 0);
+      });
+      
+      // Sort by sales and take top 5
+      return Object.values(productStats)
+        .sort((a, b) => b.sales - a.sales)
+        .slice(0, 5);
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000
+  });
 
-  const isLoading = isLoadingProducts || isLoadingOrders;
+  const formattedData = topProductsData || [];
 
   if (isLoading) {
     return (
@@ -78,7 +130,7 @@ export function TopProductsWidget({ timeRange, settings, lastRefresh }: TopProdu
           <div className="space-y-2">
             {formattedData.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Aucun produit dans le catalogue
+                Aucune vente enregistrée
               </p>
             ) : (
               formattedData.map((product, index) => (

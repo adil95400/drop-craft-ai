@@ -1,10 +1,13 @@
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart, TrendingUp, TrendingDown, Loader2, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { ShoppingCart, TrendingUp, TrendingDown, Loader2, Clock, XCircle, Truck } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useChartData } from '@/hooks/useDashboard';
 import { TimeRange } from '@/hooks/useDashboardConfig';
 import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface OrdersWidgetAdvancedProps {
   timeRange: TimeRange;
@@ -16,12 +19,45 @@ interface OrdersWidgetAdvancedProps {
   lastRefresh: Date;
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
-
 export function OrdersWidgetAdvanced({ timeRange, settings, lastRefresh }: OrdersWidgetAdvancedProps) {
+  const { user } = useAuth();
   const period = timeRange === 'today' || timeRange === 'week' ? 'week' : timeRange === 'year' ? 'year' : 'month';
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: chartData, isLoading: chartLoading } = useChartData(period);
+
+  // Fetch real order status distribution
+  const { data: statusDistribution, isLoading: statusLoading } = useQuery({
+    queryKey: ['order-status-distribution', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return { pending: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0 };
+      
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      const counts = {
+        pending: 0,
+        processing: 0,
+        shipped: 0,
+        delivered: 0,
+        cancelled: 0
+      };
+      
+      orders?.forEach(order => {
+        const status = order.status as keyof typeof counts;
+        if (status in counts) {
+          counts[status]++;
+        }
+      });
+      
+      return counts;
+    },
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000
+  });
 
   const formattedChartData = chartData?.map(item => ({
     name: item.date.substring(0, 3),
@@ -31,14 +67,14 @@ export function OrdersWidgetAdvanced({ timeRange, settings, lastRefresh }: Order
   const ordersChange = stats?.ordersChange || 0;
   const isPositive = ordersChange >= 0;
 
-  // Mock status distribution - in real app, fetch from DB
+  // Real status distribution from database
   const statusData = [
-    { name: 'En attente', value: 12, icon: Clock, color: 'text-yellow-500' },
-    { name: 'Expédiées', value: 45, icon: CheckCircle, color: 'text-green-500' },
-    { name: 'Annulées', value: 3, icon: XCircle, color: 'text-red-500' },
+    { name: 'En attente', value: (statusDistribution?.pending || 0) + (statusDistribution?.processing || 0), icon: Clock, color: 'text-yellow-500' },
+    { name: 'Expédiées', value: (statusDistribution?.shipped || 0) + (statusDistribution?.delivered || 0), icon: Truck, color: 'text-green-500' },
+    { name: 'Annulées', value: statusDistribution?.cancelled || 0, icon: XCircle, color: 'text-red-500' },
   ];
 
-  if (statsLoading || chartLoading) {
+  if (statsLoading || chartLoading || statusLoading) {
     return (
       <CardContent className="flex items-center justify-center h-[250px]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
