@@ -77,7 +77,12 @@ const HeroSection = () => {
                 src={heroImage} 
                 alt="Dashboard e-commerce automatisé avec gestion produits et analytics" 
                 className="w-full h-auto object-cover"
+                width={1920}
+                height={1080}
                 loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
             </div>
@@ -229,7 +234,11 @@ const FeaturesSection = () => {
                       src={feature.image} 
                       alt={`${feature.title} - Interface de ${feature.title.toLowerCase()}`}
                       className="w-full h-auto object-cover"
+                      width={800}
+                      height={800}
                       loading="lazy"
+                      decoding="async"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                     />
                   </div>
                 </div>
