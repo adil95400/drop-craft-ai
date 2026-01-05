@@ -21,6 +21,7 @@ const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNoti
 
 // Customers
 const CustomersPage = lazy(() => import('@/pages/CustomersPage'));
+const CustomerSegmentationPage = lazy(() => import('@/pages/customers/CustomerSegmentationPage'));
 
 // Quick actions
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
@@ -109,6 +110,7 @@ export function CoreRoutes() {
       
       {/* Customers */}
       <Route path="customers" element={<CustomersPage />} />
+      <Route path="customers/segmentation" element={<CustomerSegmentationPage />} />
       
       {/* Quick Actions */}
       <Route path="sync-manager" element={<SyncManagerPage />} />

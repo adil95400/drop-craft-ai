@@ -3307,6 +3307,161 @@ export type Database = {
           },
         ]
       }
+      customer_rfm_scores: {
+        Row: {
+          avg_order_value: number | null
+          calculated_at: string
+          customer_id: string
+          days_since_last_order: number | null
+          frequency_score: number | null
+          id: string
+          monetary_score: number | null
+          recency_score: number | null
+          rfm_segment: string | null
+          total_orders: number | null
+          total_spent: number | null
+          user_id: string
+        }
+        Insert: {
+          avg_order_value?: number | null
+          calculated_at?: string
+          customer_id: string
+          days_since_last_order?: number | null
+          frequency_score?: number | null
+          id?: string
+          monetary_score?: number | null
+          recency_score?: number | null
+          rfm_segment?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+          user_id: string
+        }
+        Update: {
+          avg_order_value?: number | null
+          calculated_at?: string
+          customer_id?: string
+          days_since_last_order?: number | null
+          frequency_score?: number | null
+          id?: string
+          monetary_score?: number | null
+          recency_score?: number | null
+          rfm_segment?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_rfm_scores_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_segment_members: {
+        Row: {
+          added_at: string
+          customer_id: string
+          id: string
+          metadata: Json | null
+          score: number | null
+          segment_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          customer_id: string
+          id?: string
+          metadata?: Json | null
+          score?: number | null
+          segment_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          customer_id?: string
+          id?: string
+          metadata?: Json | null
+          score?: number | null
+          segment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_segment_members_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_segment_members_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "customer_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_segments: {
+        Row: {
+          auto_update: boolean | null
+          avg_order_value: number | null
+          created_at: string
+          customer_count: number | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_calculated_at: string | null
+          name: string
+          rules: Json | null
+          segment_type: string | null
+          tags: string[] | null
+          total_revenue: number | null
+          update_frequency: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_update?: boolean | null
+          avg_order_value?: number | null
+          created_at?: string
+          customer_count?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_calculated_at?: string | null
+          name: string
+          rules?: Json | null
+          segment_type?: string | null
+          tags?: string[] | null
+          total_revenue?: number | null
+          update_frequency?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_update?: boolean | null
+          avg_order_value?: number | null
+          created_at?: string
+          customer_count?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_calculated_at?: string | null
+          name?: string
+          rules?: Json | null
+          segment_type?: string | null
+          tags?: string[] | null
+          total_revenue?: number | null
+          update_frequency?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -8819,6 +8974,149 @@ export type Database = {
           secret?: string | null
           updated_at?: string | null
           url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workflow_executions: {
+        Row: {
+          completed_at: string | null
+          current_step: number | null
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          input_data: Json | null
+          output_data: Json | null
+          started_at: string
+          status: string | null
+          step_results: Json | null
+          total_steps: number | null
+          user_id: string
+          workflow_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          current_step?: number | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          started_at?: string
+          status?: string | null
+          step_results?: Json | null
+          total_steps?: number | null
+          user_id: string
+          workflow_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          current_step?: number | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          started_at?: string
+          status?: string | null
+          step_results?: Json | null
+          total_steps?: number | null
+          user_id?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_executions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_step_definitions: {
+        Row: {
+          category: string | null
+          config_schema: Json | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_global: boolean | null
+          name: string
+          step_type: string
+        }
+        Insert: {
+          category?: string | null
+          config_schema?: Json | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_global?: boolean | null
+          name: string
+          step_type: string
+        }
+        Update: {
+          category?: string | null
+          config_schema?: Json | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_global?: boolean | null
+          name?: string
+          step_type?: string
+        }
+        Relationships: []
+      }
+      workflow_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          execution_count: number | null
+          id: string
+          is_active: boolean | null
+          is_template: boolean | null
+          last_executed_at: string | null
+          name: string
+          steps: Json | null
+          trigger_config: Json | null
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_template?: boolean | null
+          last_executed_at?: string | null
+          name: string
+          steps?: Json | null
+          trigger_config?: Json | null
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_template?: boolean | null
+          last_executed_at?: string | null
+          name?: string
+          steps?: Json | null
+          trigger_config?: Json | null
+          trigger_type?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
