@@ -33,6 +33,12 @@ const faqCategories = [
         question: 'Comment importer des produits en masse ?',
         answer: 'Utilisez l\'outil d\'import dans la section "Import". Vous pouvez importer via CSV, URL de produit, ou directement depuis vos fournisseurs connectés. Notre IA analyse automatiquement les données et propose un mapping intelligent.',
         tags: ['import', 'CSV', 'masse']
+      },
+      {
+        id: 4,
+        question: 'Comment fonctionne l\'essai gratuit ?',
+        answer: 'L\'essai gratuit de 14 jours vous donne accès à toutes les fonctionnalités Pro sans engagement. Aucune carte bancaire n\'est requise. À la fin de l\'essai, vous pouvez choisir un plan ou continuer avec la version gratuite limitée.',
+        tags: ['essai', 'gratuit', 'abonnement']
       }
     ]
   },
@@ -43,16 +49,22 @@ const faqCategories = [
     count: 12,
     questions: [
       {
-        id: 4,
+        id: 5,
         question: 'Comment optimiser mes fiches produits pour le SEO ?',
         answer: 'Utilisez notre outil d\'optimisation SEO automatique qui génère des titres, descriptions et mots-clés optimisés. Ajoutez des images de qualité avec des balises alt, et utilisez notre analyseur de contenu pour améliorer votre référencement.',
         tags: ['SEO', 'optimisation', 'référencement']
       },
       {
-        id: 5,
+        id: 6,
         question: 'Comment gérer les variations de produits ?',
         answer: 'Dans l\'éditeur de produit, ajoutez des variations (taille, couleur, etc.) via l\'onglet "Variations". Définissez les prix, stocks et images pour chaque variante. Vous pouvez aussi importer des variations via CSV.',
         tags: ['variations', 'options', 'stock']
+      },
+      {
+        id: 7,
+        question: 'Comment utiliser l\'IA pour réécrire mes descriptions ?',
+        answer: 'Cliquez sur le bouton "IA" dans l\'éditeur de produit. Notre IA analyse votre description actuelle et génère une version optimisée pour la conversion et le SEO. Vous pouvez choisir le ton (professionnel, amical, luxe) et la longueur.',
+        tags: ['IA', 'description', 'optimisation']
       }
     ]
   },
@@ -63,16 +75,22 @@ const faqCategories = [
     count: 10,
     questions: [
       {
-        id: 6,
+        id: 8,
         question: 'Comment suivre mes commandes automatiquement ?',
         answer: 'Notre système de tracking automatique récupère les informations de livraison depuis vos transporteurs. Configurez vos comptes transporteurs dans "Intégrations" pour un suivi en temps réel et des notifications automatiques aux clients.',
         tags: ['tracking', 'livraison', 'automatisation']
       },
       {
-        id: 7,
+        id: 9,
         question: 'Comment gérer les retours et remboursements ?',
         answer: 'Accédez à la section "Commandes", sélectionnez la commande concernée et utilisez les actions "Retour" ou "Remboursement". Vous pouvez définir des règles automatiques de traitement selon vos conditions générales.',
         tags: ['retours', 'remboursements', 'SAV']
+      },
+      {
+        id: 10,
+        question: 'Comment automatiser le passage des commandes fournisseur ?',
+        answer: 'Activez l\'auto-fulfillment dans les paramètres de chaque fournisseur. Quand vous recevez une commande client, le système passe automatiquement la commande chez le fournisseur avec les informations de livraison.',
+        tags: ['fulfillment', 'automatisation', 'fournisseur']
       }
     ]
   },
@@ -83,16 +101,74 @@ const faqCategories = [
     count: 15,
     questions: [
       {
-        id: 8,
+        id: 11,
         question: 'Quelles plateformes sont supportées ?',
         answer: 'Nous supportons Shopify, WooCommerce, PrestaShop, Magento, Amazon, eBay, et plus de 50 autres plateformes. Consultez notre liste complète dans la section "Intégrations" ou contactez-nous pour des besoins spécifiques.',
         tags: ['plateformes', 'compatibilité', 'e-commerce']
       },
       {
-        id: 9,
+        id: 12,
         question: 'Comment configurer la synchronisation automatique ?',
         answer: 'Dans chaque intégration, définissez la fréquence de synchronisation (temps réel, horaire, quotidienne). Choisissez les données à synchroniser : produits, stocks, commandes, clients. Activez les notifications pour être informé des mises à jour.',
         tags: ['synchronisation', 'automatique', 'configuration']
+      },
+      {
+        id: 13,
+        question: 'Comment connecter plusieurs boutiques ?',
+        answer: 'Ajoutez autant d\'intégrations que nécessaire depuis la section "Intégrations". Chaque boutique a ses propres paramètres de synchronisation. Le plan Pro permet jusqu\'à 5 boutiques, le plan Enterprise est illimité.',
+        tags: ['multi-boutiques', 'intégrations', 'synchronisation']
+      }
+    ]
+  },
+  {
+    id: 'billing',
+    title: 'Facturation & Abonnement',
+    description: 'Gérer votre abonnement et paiements',
+    count: 8,
+    questions: [
+      {
+        id: 14,
+        question: 'Comment changer de plan ?',
+        answer: 'Allez dans Paramètres > Abonnement. Vous pouvez upgrader à tout moment (facturation au prorata). Le downgrade prend effet à la prochaine période de facturation. Vos données sont conservées lors d\'un changement de plan.',
+        tags: ['abonnement', 'plan', 'upgrade']
+      },
+      {
+        id: 15,
+        question: 'Quels moyens de paiement acceptez-vous ?',
+        answer: 'Nous acceptons les cartes bancaires (Visa, Mastercard, Amex), PayPal, et le virement bancaire pour les plans Enterprise. Toutes les transactions sont sécurisées par Stripe.',
+        tags: ['paiement', 'facturation', 'sécurité']
+      },
+      {
+        id: 16,
+        question: 'Comment annuler mon abonnement ?',
+        answer: 'Rendez-vous dans Paramètres > Abonnement > Annuler. L\'accès reste actif jusqu\'à la fin de la période payée. Vos données sont conservées 30 jours après l\'annulation et peuvent être exportées.',
+        tags: ['annulation', 'abonnement', 'résiliation']
+      }
+    ]
+  },
+  {
+    id: 'security',
+    title: 'Sécurité & Confidentialité',
+    description: 'Protection de vos données',
+    count: 6,
+    questions: [
+      {
+        id: 17,
+        question: 'Comment protégez-vous mes données ?',
+        answer: 'Toutes les données sont chiffrées en transit (TLS 1.3) et au repos (AES-256). Nos serveurs sont hébergés en Europe (RGPD compliant). Nous effectuons des sauvegardes quotidiennes et des audits de sécurité réguliers.',
+        tags: ['sécurité', 'chiffrement', 'RGPD']
+      },
+      {
+        id: 18,
+        question: 'Comment activer l\'authentification à deux facteurs ?',
+        answer: 'Allez dans Paramètres > Sécurité > Authentification à deux facteurs. Scannez le QR code avec une app comme Google Authenticator ou Authy. Conservez vos codes de récupération dans un endroit sûr.',
+        tags: ['2FA', 'authentification', 'sécurité']
+      },
+      {
+        id: 19,
+        question: 'Comment gérer les accès de mon équipe ?',
+        answer: 'Dans Paramètres > Équipe, invitez des membres et assignez des rôles (Admin, Éditeur, Lecteur). Chaque rôle a des permissions spécifiques. Vous pouvez révoquer les accès à tout moment.',
+        tags: ['équipe', 'permissions', 'rôles']
       }
     ]
   }
