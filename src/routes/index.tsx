@@ -37,6 +37,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const AvisPositifUltraPro = lazy(() => import('@/pages/AvisPositifUltraPro'));
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
 const OrdersCenterPage = lazy(() => import('@/pages/orders/OrdersCenterPage'));
+const BulkOrdersPage = lazy(() => import('@/pages/orders/BulkOrdersPage'));
 const QADashboard = lazy(() => import('@/pages/qa/QADashboard'));
 const ProductsQA = lazy(() => import('@/pages/qa/ProductsQA'));
 const OrdersQA = lazy(() => import('@/pages/qa/OrdersQA'));
@@ -132,6 +133,7 @@ export function AppRoutes() {
         {/* Creation Pages */}
         <Route path="/products/create" element={<ProtectedRoute><CreateProduct /></ProtectedRoute>} />
         <Route path="/orders/create" element={<ProtectedRoute><CreateOrder /></ProtectedRoute>} />
+        <Route path="/orders/bulk" element={<ProtectedRoute><AppLayout><BulkOrdersPage /></AppLayout></ProtectedRoute>} />
         <Route path="/customers/create" element={<ProtectedRoute><CreateCustomer /></ProtectedRoute>} />
         <Route path="/notifications/create" element={<ProtectedRoute><CreateNotification /></ProtectedRoute>} />
         

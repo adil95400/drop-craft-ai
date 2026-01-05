@@ -1181,6 +1181,225 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_order_items: {
+        Row: {
+          bulk_order_id: string
+          carrier_code: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          product_id: string | null
+          product_sku: string | null
+          product_title: string
+          quantity: number
+          status: string | null
+          supplier_id: string | null
+          total_price: number | null
+          tracking_number: string | null
+          unit_price: number
+          updated_at: string | null
+          variant_info: Json | null
+        }
+        Insert: {
+          bulk_order_id: string
+          carrier_code?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          product_id?: string | null
+          product_sku?: string | null
+          product_title: string
+          quantity?: number
+          status?: string | null
+          supplier_id?: string | null
+          total_price?: number | null
+          tracking_number?: string | null
+          unit_price: number
+          updated_at?: string | null
+          variant_info?: Json | null
+        }
+        Update: {
+          bulk_order_id?: string
+          carrier_code?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          product_id?: string | null
+          product_sku?: string | null
+          product_title?: string
+          quantity?: number
+          status?: string | null
+          supplier_id?: string | null
+          total_price?: number | null
+          tracking_number?: string | null
+          unit_price?: number
+          updated_at?: string | null
+          variant_info?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_order_items_bulk_order_id_fkey"
+            columns: ["bulk_order_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_order_items_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_order_supplier_groups: {
+        Row: {
+          bulk_order_id: string
+          created_at: string | null
+          id: string
+          items_count: number | null
+          metadata: Json | null
+          ordered_at: string | null
+          shipping_cost: number | null
+          status: string | null
+          subtotal: number | null
+          supplier_id: string | null
+          supplier_order_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bulk_order_id: string
+          created_at?: string | null
+          id?: string
+          items_count?: number | null
+          metadata?: Json | null
+          ordered_at?: string | null
+          shipping_cost?: number | null
+          status?: string | null
+          subtotal?: number | null
+          supplier_id?: string | null
+          supplier_order_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bulk_order_id?: string
+          created_at?: string | null
+          id?: string
+          items_count?: number | null
+          metadata?: Json | null
+          ordered_at?: string | null
+          shipping_cost?: number | null
+          status?: string | null
+          subtotal?: number | null
+          supplier_id?: string | null
+          supplier_order_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_order_supplier_groups_bulk_order_id_fkey"
+            columns: ["bulk_order_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_order_supplier_groups_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_orders: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          estimated_delivery_date: string | null
+          id: string
+          metadata: Json | null
+          name: string | null
+          notes: string | null
+          order_number: string
+          primary_supplier_id: string | null
+          processed_at: string | null
+          shipped_at: string | null
+          shipping_cost: number | null
+          shipping_method: string | null
+          status: string | null
+          submitted_at: string | null
+          total_amount: number | null
+          total_items: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          estimated_delivery_date?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          notes?: string | null
+          order_number: string
+          primary_supplier_id?: string | null
+          processed_at?: string | null
+          shipped_at?: string | null
+          shipping_cost?: number | null
+          shipping_method?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          total_amount?: number | null
+          total_items?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          estimated_delivery_date?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          notes?: string | null
+          order_number?: string
+          primary_supplier_id?: string | null
+          processed_at?: string | null
+          shipped_at?: string | null
+          shipping_cost?: number | null
+          shipping_method?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          total_amount?: number | null
+          total_items?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_orders_primary_supplier_id_fkey"
+            columns: ["primary_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_intelligence_insights: {
         Row: {
           actionable_recommendations: Json | null
@@ -7296,6 +7515,7 @@ export type Database = {
         Args: { key_name: string; key_scopes?: string[] }
         Returns: string
       }
+      generate_bulk_order_number: { Args: never; Returns: string }
       generate_rma_number: { Args: never; Returns: string }
       has_role: {
         Args: {
