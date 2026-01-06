@@ -23,7 +23,11 @@ import { MappingTable } from './MappingTable';
 import { MappingRulesPanel } from './MappingRulesPanel';
 import { MappingTemplatesPanel } from './MappingTemplatesPanel';
 import { CreateMappingDialog } from './CreateMappingDialog';
+import { VariantAttributeDetector } from './VariantAttributeDetector';
+import { VariantMatrix } from './VariantMatrix';
+import { VariantStockSync } from './VariantStockSync';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Scan, Grid3X3, ArrowRightLeft } from 'lucide-react';
 
 export function VariantMappingDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -130,14 +134,26 @@ export function VariantMappingDashboard() {
       {/* Main Content */}
       <Tabs defaultValue="mappings" className="space-y-4">
         <div className="flex flex-col lg:flex-row justify-between gap-4">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="mappings" className="gap-2">
               <Layers className="h-4 w-4" />
               Mappings
             </TabsTrigger>
+            <TabsTrigger value="detector" className="gap-2">
+              <Scan className="h-4 w-4" />
+              Détection
+            </TabsTrigger>
+            <TabsTrigger value="matrix" className="gap-2">
+              <Grid3X3 className="h-4 w-4" />
+              Matrice
+            </TabsTrigger>
+            <TabsTrigger value="sync" className="gap-2">
+              <ArrowRightLeft className="h-4 w-4" />
+              Sync Stocks
+            </TabsTrigger>
             <TabsTrigger value="rules" className="gap-2">
               <Zap className="h-4 w-4" />
-              Règles Auto
+              Règles
             </TabsTrigger>
             <TabsTrigger value="templates" className="gap-2">
               <Package className="h-4 w-4" />
@@ -224,6 +240,18 @@ export function VariantMappingDashboard() {
             selectedMappings={selectedMappings}
             onSelectionChange={setSelectedMappings}
           />
+        </TabsContent>
+
+        <TabsContent value="detector">
+          <VariantAttributeDetector />
+        </TabsContent>
+
+        <TabsContent value="matrix">
+          <VariantMatrix />
+        </TabsContent>
+
+        <TabsContent value="sync">
+          <VariantStockSync />
         </TabsContent>
 
         <TabsContent value="rules">
