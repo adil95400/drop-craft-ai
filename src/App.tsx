@@ -8,21 +8,21 @@ import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { UnifiedAuthProvider } from '@/contexts/UnifiedAuthContext';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { UnifiedProvider } from '@/components/unified/UnifiedProvider';
-import { NotificationProvider } from '@/components/notifications/NotificationService';
 import { ThemeProvider } from 'next-themes';
 import { GlobalModals } from '@/components/GlobalModals';
 import { ModalContextProvider } from '@/hooks/useModalHelpers';
 import { ModalManager } from '@/components/modals/ModalManager';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
-import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
+import { OfflineIndicatorLite } from '@/components/offline/OfflineIndicatorLite';
 
-// Lazy load heavy components to reduce initial bundle
+// Lazy load heavy components to reduce initial bundle (framer-motion, supabase notifications, etc.)
 const PWAInstallBanner = lazy(() => import('@/components/mobile/PWAInstallBanner').then(m => ({ default: m.PWAInstallBanner })));
 const FeedbackWidget = lazy(() => import('@/components/feedback/FeedbackWidget').then(m => ({ default: m.FeedbackWidget })));
 const MobileGlobalOptimizer = lazy(() => import('@/components/mobile/MobileGlobalOptimizer').then(m => ({ default: m.MobileGlobalOptimizer })));
 const AdaptiveBottomNav = lazy(() => import('@/components/mobile/AdaptiveBottomNav').then(m => ({ default: m.AdaptiveBottomNav })));
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour').then(m => ({ default: m.OnboardingTour })));
+const NotificationProvider = lazy(() => import('@/components/notifications/NotificationService').then(m => ({ default: m.NotificationProvider })));
 
 // Initialize i18n lazily to reduce initial bundle
 const initI18n = () => import('@/lib/i18n');
@@ -54,11 +54,15 @@ const AppContent = memo(() => {
           Aller au contenu principal
         </a>
         
-        {/* Offline status indicator */}
-        <OfflineIndicator variant="banner" />
+        {/* Lightweight offline status indicator (no framer-motion) */}
+        <OfflineIndicatorLite />
         
         <main id="main-content" className="pb-20 md:pb-0">
-          <AppRoutes />
+          <Suspense fallback={null}>
+            <NotificationProvider>
+              <AppRoutes />
+            </NotificationProvider>
+          </Suspense>
         </main>
         
         <GlobalModals />
@@ -101,11 +105,9 @@ function App() {
       <ErrorBoundary>
         <UnifiedAuthProvider>
           <UnifiedProvider>
-            <NotificationProvider>
-              <ModalContextProvider>
-                <AppContent />
-              </ModalContextProvider>
-            </NotificationProvider>
+            <ModalContextProvider>
+              <AppContent />
+            </ModalContextProvider>
           </UnifiedProvider>
         </UnifiedAuthProvider>
       </ErrorBoundary>
