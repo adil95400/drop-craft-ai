@@ -3,3 +3,6 @@ export { MappingTable } from './MappingTable';
 export { MappingRulesPanel } from './MappingRulesPanel';
 export { MappingTemplatesPanel } from './MappingTemplatesPanel';
 export { CreateMappingDialog } from './CreateMappingDialog';
+export { VariantAttributeDetector } from './VariantAttributeDetector';
+export { VariantMatrix } from './VariantMatrix';
+export { VariantStockSync } from './VariantStockSync';
