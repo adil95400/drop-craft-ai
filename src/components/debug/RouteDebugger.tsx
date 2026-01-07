@@ -6,7 +6,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Bug, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { MODULE_REGISTRY } from '@/config/modules';
-import { SUB_MODULES_REGISTRY } from '@/config/sub-modules';
 
 export function RouteDebugger() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,23 +25,36 @@ export function RouteDebugger() {
     );
   }
 
-  const allRoutes = [
-    ...Object.values(MODULE_REGISTRY).map(m => ({
+  // Collecter toutes les routes des modules et sous-modules
+  const allRoutes: Array<{
+    route: string;
+    name: string;
+    type: 'module' | 'sub-module';
+    minPlan: string;
+    parent?: string;
+  }> = [];
+
+  Object.values(MODULE_REGISTRY).forEach(m => {
+    allRoutes.push({
       route: m.route,
       name: m.name,
-      type: 'module' as const,
+      type: 'module',
       minPlan: m.minPlan
-    })),
-    ...Object.values(SUB_MODULES_REGISTRY).flatMap(subModules =>
-      subModules.map(sm => ({
-        route: sm.route,
-        name: sm.name,
-        type: 'sub-module' as const,
-        minPlan: sm.minPlan,
-        parent: sm.parentModule
-      }))
-    )
-  ];
+    });
+    
+    // Ajouter les sous-modules
+    if (m.subModules) {
+      m.subModules.forEach(sm => {
+        allRoutes.push({
+          route: sm.route,
+          name: sm.name,
+          type: 'sub-module',
+          minPlan: m.minPlan,
+          parent: m.id
+        });
+      });
+    }
+  });
 
   const currentPath = location.pathname;
   const matchingRoute = allRoutes.find(r => r.route === currentPath);

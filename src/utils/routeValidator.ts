@@ -1,5 +1,4 @@
-import { MODULE_REGISTRY, type ModuleConfig } from '@/config/modules';
-import { SUB_MODULES_REGISTRY, type SubModule } from '@/config/sub-modules';
+import { MODULE_REGISTRY, type ModuleConfig, type SubModule } from '@/config/modules';
 
 interface RouteDefinition {
   path: string;
@@ -238,19 +237,21 @@ function validateModules(): ValidationIssue[] {
 function validateSubModules(): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   
-  Object.entries(SUB_MODULES_REGISTRY).forEach(([parentId, subModules]) => {
-    subModules.forEach((subModule: SubModule) => {
-      if (!validateRoute(subModule.route)) {
-        issues.push({
-          type: 'error',
-          category: 'sub-module',
-          route: subModule.route,
-          name: subModule.name,
-          issue: `Route non définie dans les fichiers de routing`,
-          suggestion: `Parent: ${parentId} - Vérifier que la route existe dans le fichier de routing approprié`
-        });
-      }
-    });
+  Object.values(MODULE_REGISTRY).forEach((module) => {
+    if (module.subModules) {
+      module.subModules.forEach((subModule: SubModule) => {
+        if (!validateRoute(subModule.route)) {
+          issues.push({
+            type: 'error',
+            category: 'sub-module',
+            route: subModule.route,
+            name: subModule.name,
+            issue: `Route non définie dans les fichiers de routing`,
+            suggestion: `Parent: ${module.id} - Vérifier que la route existe dans le fichier de routing approprié`
+          });
+        }
+      });
+    }
   });
   
   return issues;
@@ -277,8 +278,8 @@ export function validateAllRoutes(): {
   const warnings = allIssues.filter(i => i.type === 'warning').length;
   
   const totalModules = Object.keys(MODULE_REGISTRY).length;
-  const totalSubModules = Object.values(SUB_MODULES_REGISTRY).reduce(
-    (sum, subModules) => sum + subModules.length,
+  const totalSubModules = Object.values(MODULE_REGISTRY).reduce(
+    (sum, module) => sum + (module.subModules?.length || 0),
     0
   );
   

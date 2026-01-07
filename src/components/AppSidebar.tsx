@@ -33,20 +33,44 @@ import { SidebarNavGroup } from "@/components/sidebar/SidebarNavGroup"
 import { SidebarNavItem } from "@/components/sidebar/SidebarNavItem"
 import { SidebarFooterSection } from "@/components/sidebar/SidebarFooterSection"
 
-// Map des icônes
+// Map des icônes - Complète pour tous les modules
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  'Home': Home, 'BarChart3': BarChart3, 'Package': Package, 'Truck': Truck,
-  'Upload': Upload, 'Trophy': Trophy, 'TrendingUp': TrendingUp, 'Zap': Zap,
-  'Users': Users, 'Search': Search, 'Brain': Brain, 'Shield': Shield,
-  'Plug': Plug, 'ShoppingCart': ShoppingCart, 'Bot': Bot, 'Settings': Settings,
-  'Sparkles': Sparkles, 'Crown': Crown, 'Calculator': Calculator,
-  'Megaphone': Megaphone, 'FileText': FileText, 'Globe': Globe, 'Store': Store,
-  'PuzzlePiece': Puzzle, 'Puzzle': Puzzle, 'GitCompare': GitCompare,
-  'Database': Database, 'ShoppingBag': ShoppingBag, 'GraduationCap': GraduationCap,
-  'HelpCircle': HelpCircle, 'Activity': Activity, 'Building2': Building2,
-  'Boxes': Boxes, 'CreditCard': CreditCard, 'LifeBuoy': LifeBuoy, 'Video': Video,
-  'Tag': Tag, 'Rss': Rss, 'RefreshCw': RefreshCw, 'Target': Target,
-  'CheckCircle': CheckCircle, 'Clock': Clock, 'Calendar': Calendar, 'Star': Star,
+  // Navigation principale
+  'Home': Home, 'LayoutDashboard': Home, 'Store': Store, 'Package': Package,
+  'Upload': Upload, 'Truck': Truck, 'ShoppingCart': ShoppingCart,
+  'BarChart3': BarChart3, 'Settings': Settings,
+  
+  // Actions & outils
+  'Zap': Zap, 'Sparkles': Sparkles, 'Search': Search, 'Plus': Package,
+  'Link': Database, 'History': Clock, 'RefreshCw': RefreshCw,
+  
+  // Gestion
+  'Users': Users, 'Boxes': Boxes, 'Star': Star, 'Eye': Search,
+  'GitBranch': GitCompare, 'CheckCircle': CheckCircle, 'Bell': Activity,
+  
+  // Marketing & Analytics
+  'TrendingUp': TrendingUp, 'Megaphone': Megaphone, 'Tag': Tag,
+  'Mail': FileText, 'FileText': FileText,
+  
+  // Feeds & Exports
+  'Rss': Rss, 'PackageCheck': Package,
+  
+  // Intégrations
+  'Plug': Plug, 'Puzzle': Puzzle, 'PuzzlePiece': Puzzle,
+  
+  // Support & Formation
+  'GraduationCap': GraduationCap, 'HelpCircle': HelpCircle,
+  'LifeBuoy': LifeBuoy, 'Video': Video,
+  
+  // Admin & Enterprise
+  'Shield': Shield, 'Crown': Crown, 'Brain': Brain,
+  
+  // Autres
+  'Bot': Bot, 'Calculator': Calculator, 'Globe': Globe,
+  'Database': Database, 'ShoppingBag': ShoppingBag,
+  'Activity': Activity, 'Building2': Building2,
+  'CreditCard': CreditCard, 'Target': Target,
+  'Clock': Clock, 'Calendar': Calendar, 'Trophy': Trophy,
 }
 
 // Section Favoris mémorisée
