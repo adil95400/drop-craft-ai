@@ -17,11 +17,23 @@
     <link rel="preconnect" href="https://jsmwckzrmqecwwrswwrz.supabase.co" crossorigin>
     
     <!-- Preload LCP image for faster rendering -->
-    <link rel="preload" as="image" href="/src/assets/hero-automation.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/src/assets/hero-automation.jpg" fetchpriority="high" type="image/jpeg">
     
-    <!-- Google Fonts - Optimized for performance -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <!-- Critical inline styles for above-the-fold content -->
+    <style>
+      /* Critical CSS for initial render */
+      *,*::before,*::after{box-sizing:border-box}
+      html{line-height:1.5;-webkit-text-size-adjust:100%;font-family:Inter,system-ui,-apple-system,sans-serif}
+      body{margin:0;background:#fff}
+      #root{min-height:100vh}
+      .loading-skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+      @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    </style>
+    
+    <!-- Google Fonts - Deferred loading -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
     
     <!-- Global SEO defaults -->
     <title>Shopopti+ | SaaS de Dropshipping Intelligent Propulsé par IA</title>
