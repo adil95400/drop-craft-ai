@@ -64,6 +64,7 @@ const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPa
 const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
+const RepricingPage = lazy(() => import('@/pages/RepricingPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -150,6 +151,7 @@ export function AppRoutes() {
         <Route path="/trial" element={<ProtectedRoute><AppLayout><FreeTrialActivationPage /></AppLayout></ProtectedRoute>} />
         <Route path="/ab-testing" element={<ProtectedRoute><AppLayout><ABTestingPage /></AppLayout></ProtectedRoute>} />
         <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/repricing" element={<ProtectedRoute><AppLayout><RepricingPage /></AppLayout></ProtectedRoute>} />
         
         {/* Page Builder */}
         <Route path="/page-builder" element={<ProtectedRoute><AppLayout><PageBuilderPage /></AppLayout></ProtectedRoute>} />
