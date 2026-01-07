@@ -190,19 +190,20 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/suppliers',
-    features: ['supplier-management', 'catalog-sync'],
-    description: 'Gérer vos fournisseurs',
+    features: ['supplier-management', 'catalog-sync', 'dropshipping'],
+    description: 'Connectez vos fournisseurs et grossistes',
     category: 'product',
     order: 2,
     groupId: 'sources',
     subModules: [
+      // === Gestion ===
       {
         id: 'suppliers-hub',
-        name: 'Hub',
+        name: 'Hub Fournisseurs',
         route: '/suppliers',
         icon: 'Truck',
-        description: 'Vue d\'ensemble',
-        features: ['overview', 'stats'],
+        description: 'Vue d\'ensemble de vos fournisseurs',
+        features: ['overview', 'stats', 'status'],
         order: 1
       },
       {
@@ -215,13 +216,293 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
         order: 2
       },
       {
+        id: 'suppliers-add',
+        name: 'Ajouter un fournisseur',
+        route: '/suppliers/add',
+        icon: 'Plus',
+        description: 'Connecter un nouveau fournisseur',
+        features: ['add', 'configure', 'wizard'],
+        order: 3
+      },
+      
+      // === Grossistes européens (Dropshipping) ===
+      {
+        id: 'supplier-bigbuy',
+        name: 'BigBuy',
+        route: '/suppliers/bigbuy',
+        icon: 'Truck',
+        description: 'Grossiste européen #1 - 100k+ produits',
+        features: ['bigbuy-api', 'dropshipping', 'catalog', 'fulfillment'],
+        order: 10
+      },
+      {
+        id: 'supplier-cj',
+        name: 'CJ Dropshipping',
+        route: '/suppliers/cj-dropshipping',
+        icon: 'Plane',
+        description: 'Dropshipping Chine vers monde entier',
+        features: ['cj-api', 'fulfillment', 'sourcing'],
+        order: 11
+      },
+      {
+        id: 'supplier-dropshipping-europe',
+        name: 'Dropshipping Europe',
+        route: '/suppliers/dropshipping-europe',
+        icon: 'Globe',
+        description: 'Fournisseurs européens multiples',
+        features: ['europe', 'dropshipping', 'fast-shipping'],
+        order: 12
+      },
+      {
+        id: 'supplier-bts',
+        name: 'BTS Wholesaler',
+        route: '/suppliers/bts',
+        icon: 'Package',
+        description: 'Mode et accessoires en gros',
+        features: ['bts-api', 'fashion', 'accessories'],
+        order: 13
+      },
+      {
+        id: 'supplier-matterhorn',
+        name: 'Matterhorn',
+        route: '/suppliers/matterhorn',
+        icon: 'Mountain',
+        description: 'Mode et textile européen',
+        features: ['matterhorn-api', 'textile', 'fashion'],
+        order: 14
+      },
+      {
+        id: 'supplier-b2b-sports',
+        name: 'B2B Sports Wholesale',
+        route: '/suppliers/b2b-sports',
+        icon: 'Dumbbell',
+        description: 'Articles de sport en gros',
+        features: ['sports', 'b2b', 'fitness'],
+        order: 15
+      },
+      {
+        id: 'supplier-watch-import',
+        name: 'Watch Import',
+        route: '/suppliers/watch-import',
+        icon: 'Watch',
+        description: 'Montres et bijoux en gros',
+        features: ['watches', 'jewelry', 'luxury'],
+        order: 16
+      },
+      {
+        id: 'supplier-dropshipping-generic',
+        name: 'Autres Dropshippers',
+        route: '/suppliers/dropshipping',
+        icon: 'Send',
+        description: 'Fournisseurs dropshipping génériques',
+        features: ['dropshipping', 'generic'],
+        order: 17
+      },
+      
+      // === Marketplaces globales (comme source) ===
+      {
+        id: 'supplier-amazon',
+        name: 'Amazon',
+        route: '/suppliers/amazon',
+        icon: 'ShoppingBag',
+        description: 'Amazon Seller/Vendor Central',
+        features: ['amazon-api', 'mws', 'sp-api'],
+        order: 20
+      },
+      {
+        id: 'supplier-aliexpress',
+        name: 'AliExpress',
+        route: '/suppliers/aliexpress',
+        icon: 'Globe',
+        description: 'Import produits AliExpress',
+        features: ['aliexpress-api', 'dropshipping', 'sourcing'],
+        order: 21
+      },
+      {
+        id: 'supplier-wish',
+        name: 'Wish',
+        route: '/suppliers/wish',
+        icon: 'Star',
+        description: 'Marketplace Wish',
+        features: ['wish-api', 'global'],
+        order: 22
+      },
+      {
+        id: 'supplier-shopee',
+        name: 'Shopee',
+        route: '/suppliers/shopee',
+        icon: 'ShoppingBag',
+        description: 'Marketplace Asie-Pacifique',
+        features: ['shopee-api', 'asia'],
+        order: 23
+      },
+      
+      // === Marketplaces européennes ===
+      {
+        id: 'supplier-cdiscount',
+        name: 'Cdiscount',
+        route: '/suppliers/cdiscount',
+        icon: 'ShoppingCart',
+        description: 'Marketplace française #1',
+        features: ['cdiscount-api', 'france'],
+        order: 30
+      },
+      {
+        id: 'supplier-rakuten',
+        name: 'Rakuten',
+        route: '/suppliers/rakuten',
+        icon: 'Circle',
+        description: 'Rakuten France (ex PriceMinister)',
+        features: ['rakuten-api', 'france'],
+        order: 31
+      },
+      {
+        id: 'supplier-fnac',
+        name: 'Fnac',
+        route: '/suppliers/fnac',
+        icon: 'BookOpen',
+        description: 'Marketplace Fnac/Darty',
+        features: ['fnac-api', 'culture', 'electronics'],
+        order: 32
+      },
+      {
+        id: 'supplier-zalando',
+        name: 'Zalando',
+        route: '/suppliers/zalando',
+        icon: 'Shirt',
+        description: 'Mode et chaussures Europe',
+        features: ['zalando-api', 'fashion'],
+        order: 33
+      },
+      {
+        id: 'supplier-mirakl',
+        name: 'Mirakl',
+        route: '/suppliers/mirakl',
+        icon: 'Layers',
+        description: 'Plateformes Mirakl (Carrefour, etc.)',
+        features: ['mirakl-api', 'b2b', 'enterprise'],
+        order: 34
+      },
+      {
+        id: 'supplier-mercadolibre',
+        name: 'MercadoLibre',
+        route: '/suppliers/mercadolibre',
+        icon: 'Handshake',
+        description: 'Marketplace Amérique Latine',
+        features: ['mercadolibre-api', 'latam'],
+        order: 35
+      },
+      
+      // === Plateformes E-commerce (comme source) ===
+      {
+        id: 'supplier-shopify',
+        name: 'Shopify',
+        route: '/suppliers/shopify',
+        icon: 'ShoppingBag',
+        description: 'Import depuis boutique Shopify',
+        features: ['shopify-api', 'import', 'sync'],
+        order: 40
+      },
+      {
+        id: 'supplier-woocommerce',
+        name: 'WooCommerce',
+        route: '/suppliers/woocommerce',
+        icon: 'ShoppingCart',
+        description: 'Import depuis WooCommerce',
+        features: ['woo-api', 'import', 'wordpress'],
+        order: 41
+      },
+      {
+        id: 'supplier-prestashop',
+        name: 'PrestaShop',
+        route: '/suppliers/prestashop',
+        icon: 'Store',
+        description: 'Import depuis PrestaShop',
+        features: ['presta-api', 'import'],
+        order: 42
+      },
+      {
+        id: 'supplier-magento',
+        name: 'Magento',
+        route: '/suppliers/magento',
+        icon: 'Box',
+        description: 'Import depuis Magento/Adobe Commerce',
+        features: ['magento-api', 'import', 'enterprise'],
+        order: 43
+      },
+      {
+        id: 'supplier-bigcommerce',
+        name: 'BigCommerce',
+        route: '/suppliers/bigcommerce',
+        icon: 'Building',
+        description: 'Import depuis BigCommerce',
+        features: ['bigcommerce-api', 'import'],
+        order: 44
+      },
+      {
+        id: 'supplier-opencart',
+        name: 'OpenCart',
+        route: '/suppliers/opencart',
+        icon: 'ShoppingCart',
+        description: 'Import depuis OpenCart',
+        features: ['opencart-api', 'import'],
+        order: 45
+      },
+      {
+        id: 'supplier-wix',
+        name: 'Wix Stores',
+        route: '/suppliers/wix',
+        icon: 'Palette',
+        description: 'Import depuis Wix eCommerce',
+        features: ['wix-api', 'import'],
+        order: 46
+      },
+      {
+        id: 'supplier-ecwid',
+        name: 'Ecwid',
+        route: '/suppliers/ecwid',
+        icon: 'Grid',
+        description: 'Import depuis Ecwid',
+        features: ['ecwid-api', 'import'],
+        order: 47
+      },
+      {
+        id: 'supplier-lightspeed',
+        name: 'Lightspeed',
+        route: '/suppliers/lightspeed',
+        icon: 'Zap',
+        description: 'Import depuis Lightspeed eCom',
+        features: ['lightspeed-api', 'import', 'pos'],
+        order: 48
+      },
+      {
+        id: 'supplier-square',
+        name: 'Square',
+        route: '/suppliers/square',
+        icon: 'Square',
+        description: 'Import depuis Square Online',
+        features: ['square-api', 'import', 'pos'],
+        order: 49
+      },
+      {
+        id: 'supplier-etsy',
+        name: 'Etsy',
+        route: '/suppliers/etsy',
+        icon: 'Heart',
+        description: 'Import depuis Etsy (artisanat)',
+        features: ['etsy-api', 'artisan', 'handmade'],
+        order: 50
+      },
+      
+      // === Analytics ===
+      {
         id: 'suppliers-analytics',
         name: 'Performances',
         route: '/suppliers/analytics',
         icon: 'BarChart3',
-        description: 'KPIs et rapports',
-        features: ['kpis', 'charts'],
-        order: 3
+        description: 'KPIs et rapports fournisseurs',
+        features: ['kpis', 'charts', 'comparison'],
+        order: 99
       }
     ]
   },
