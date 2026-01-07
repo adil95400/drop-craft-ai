@@ -8,7 +8,8 @@ import {
   Brain,
   Zap,
   Users,
-  Package
+  Package,
+  TrendingUp
 } from 'lucide-react'
 import { RealTimeMonitoring } from './RealTimeMonitoring'
 import { SecurityDashboard } from './SecurityDashboard'
@@ -20,11 +21,12 @@ import { PerformanceOptimizer } from './PerformanceOptimizer'
 import { NotificationCenter } from './NotificationCenter'
 import { AutomationHub } from './AutomationHub'
 import { KPIWidgets } from './KPIWidgets'
+import { RepricingDashboard } from '@/components/repricing/RepricingDashboard'
 
 export function EnhancedDashboardTabs() {
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid grid-cols-8 w-full">
+      <TabsList className="grid grid-cols-9 w-full">
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
           Vue d'ensemble
@@ -36,6 +38,10 @@ export function EnhancedDashboardTabs() {
         <TabsTrigger value="analytics" className="flex items-center gap-2">
           <Brain className="h-4 w-4" />
           Analytics IA
+        </TabsTrigger>
+        <TabsTrigger value="repricing" className="flex items-center gap-2">
+          <TrendingUp className="h-4 w-4" />
+          Repricing
         </TabsTrigger>
         <TabsTrigger value="automation" className="flex items-center gap-2">
           <Zap className="h-4 w-4" />
@@ -69,6 +75,10 @@ export function EnhancedDashboardTabs() {
 
       <TabsContent value="analytics" className="space-y-6 mt-6">
         <AdvancedAnalytics />
+      </TabsContent>
+
+      <TabsContent value="repricing" className="space-y-6 mt-6">
+        <RepricingDashboard />
       </TabsContent>
 
       <TabsContent value="automation" className="space-y-6 mt-6">
