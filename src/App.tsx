@@ -7,22 +7,24 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { UnifiedAuthProvider } from '@/contexts/UnifiedAuthContext';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { UnifiedProvider } from '@/components/unified/UnifiedProvider';
 import { ThemeProvider } from 'next-themes';
-import { GlobalModals } from '@/components/GlobalModals';
 import { ModalContextProvider } from '@/hooks/useModalHelpers';
-import { ModalManager } from '@/components/modals/ModalManager';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import { OfflineIndicatorLite } from '@/components/offline/OfflineIndicatorLite';
 
-// Lazy load heavy components to reduce initial bundle (framer-motion, supabase notifications, etc.)
+// Lazy load heavy components to reduce initial bundle
 const PWAInstallBanner = lazy(() => import('@/components/mobile/PWAInstallBanner').then(m => ({ default: m.PWAInstallBanner })));
 const FeedbackWidget = lazy(() => import('@/components/feedback/FeedbackWidget').then(m => ({ default: m.FeedbackWidget })));
 const MobileGlobalOptimizer = lazy(() => import('@/components/mobile/MobileGlobalOptimizer').then(m => ({ default: m.MobileGlobalOptimizer })));
 const AdaptiveBottomNav = lazy(() => import('@/components/mobile/AdaptiveBottomNav').then(m => ({ default: m.AdaptiveBottomNav })));
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour').then(m => ({ default: m.OnboardingTour })));
 const NotificationProvider = lazy(() => import('@/components/notifications/NotificationService').then(m => ({ default: m.NotificationProvider })));
+
+// Lazy load modal systems (pulls in many dialog components with supabase/heavy deps)
+const GlobalModals = lazy(() => import('@/components/GlobalModals').then(m => ({ default: m.GlobalModals })));
+const ModalManager = lazy(() => import('@/components/modals/ModalManager').then(m => ({ default: m.ModalManager })));
+const UnifiedProvider = lazy(() => import('@/components/unified/UnifiedProvider').then(m => ({ default: m.UnifiedProvider })));
 
 // Initialize i18n lazily to reduce initial bundle
 const initI18n = () => import('@/lib/i18n');
@@ -65,8 +67,12 @@ const AppContent = memo(() => {
           </Suspense>
         </main>
         
-        <GlobalModals />
-        <ModalManager />
+        <Suspense fallback={null}>
+          <GlobalModals />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ModalManager />
+        </Suspense>
         <Toaster />
         <SonnerToaster position="top-right" />
         <Suspense fallback={null}>
@@ -104,11 +110,13 @@ function App() {
     >
       <ErrorBoundary>
         <UnifiedAuthProvider>
-          <UnifiedProvider>
-            <ModalContextProvider>
-              <AppContent />
-            </ModalContextProvider>
-          </UnifiedProvider>
+          <Suspense fallback={null}>
+            <UnifiedProvider>
+              <ModalContextProvider>
+                <AppContent />
+              </ModalContextProvider>
+            </UnifiedProvider>
+          </Suspense>
         </UnifiedAuthProvider>
       </ErrorBoundary>
     </ThemeProvider>
