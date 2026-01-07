@@ -360,24 +360,138 @@ export default function SuppliersHubUnified() {
           </TabsContent>
 
           {/* Tab: Marketplace */}
-          <TabsContent value="marketplace" className="space-y-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center py-8">
-                  <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mb-4">
-                    <ShoppingCart className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Marketplace Fournisseurs</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Accédez à notre catalogue de fournisseurs vérifiés avec des milliers de produits gagnants
-                  </p>
-                  <Button size="lg" onClick={() => navigate('/suppliers/marketplace')}>
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Explorer le Marketplace
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="marketplace" className="space-y-6">
+            {/* Grossistes européens */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Package className="h-5 w-5 text-green-600" />
+                Grossistes Européens (Dropshipping)
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[
+                  { id: 'bigbuy', name: 'BigBuy', desc: '100K+ produits', color: '#1e88e5' },
+                  { id: 'cj-dropshipping', name: 'CJ Dropshipping', desc: 'Chine vers monde', color: '#e91e63' },
+                  { id: 'bts', name: 'BTS Wholesaler', desc: 'Mode & accessoires', color: '#e91e63' },
+                  { id: 'matterhorn', name: 'Matterhorn', desc: 'Textile EU', color: '#3f51b5' },
+                  { id: 'b2b-sports', name: 'B2B Sports', desc: 'Articles sport', color: '#4caf50' },
+                  { id: 'watch-import', name: 'Watch Import', desc: 'Montres & bijoux', color: '#9c27b0' },
+                  { id: 'dropshipping-europe', name: 'DS Europe', desc: 'Multi-fournisseurs', color: '#2196f3' },
+                ].map(item => (
+                  <Card key={item.id} className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02]" onClick={() => navigate(`/suppliers/${item.id}`)}>
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg" style={{ backgroundColor: `${item.color}20` }}>
+                          <Store className="h-4 w-4" style={{ color: item.color }} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.desc}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Marketplaces globales */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-blue-600" />
+                Marketplaces Globales
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[
+                  { id: 'aliexpress', name: 'AliExpress', desc: 'Chine mondiale', color: '#e53935' },
+                  { id: 'amazon', name: 'Amazon', desc: 'Seller Central', color: '#ff9800' },
+                  { id: 'wish', name: 'Wish', desc: 'Prix usine', color: '#2fb7ec' },
+                  { id: 'shopee', name: 'Shopee', desc: 'Asie-Pacifique', color: '#ee4d2d' },
+                ].map(item => (
+                  <Card key={item.id} className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02]" onClick={() => navigate(`/suppliers/${item.id}`)}>
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg" style={{ backgroundColor: `${item.color}20` }}>
+                          <Globe className="h-4 w-4" style={{ color: item.color }} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.desc}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Marketplaces européennes */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-purple-600" />
+                Marketplaces Européennes
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[
+                  { id: 'cdiscount', name: 'Cdiscount', desc: 'France #1', color: '#c62828' },
+                  { id: 'rakuten', name: 'Rakuten', desc: 'Ex PriceMinister', color: '#bf0000' },
+                  { id: 'fnac', name: 'Fnac', desc: 'Culture & tech', color: '#e1a400' },
+                  { id: 'zalando', name: 'Zalando', desc: 'Mode Europe', color: '#ff6900' },
+                  { id: 'mirakl', name: 'Mirakl', desc: 'Enterprise', color: '#0052cc' },
+                  { id: 'mercadolibre', name: 'MercadoLibre', desc: 'LATAM', color: '#ffe600' },
+                ].map(item => (
+                  <Card key={item.id} className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02]" onClick={() => navigate(`/suppliers/${item.id}`)}>
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg" style={{ backgroundColor: `${item.color}20` }}>
+                          <ShoppingCart className="h-4 w-4" style={{ color: item.color }} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.desc}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Plateformes E-commerce */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Store className="h-5 w-5 text-orange-600" />
+                Plateformes E-commerce
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {[
+                  { id: 'shopify', name: 'Shopify', desc: 'Import boutique', color: '#95bf47' },
+                  { id: 'woocommerce', name: 'WooCommerce', desc: 'WordPress', color: '#9b5c8f' },
+                  { id: 'prestashop', name: 'PrestaShop', desc: 'Open source', color: '#df0067' },
+                  { id: 'magento', name: 'Magento', desc: 'Adobe Commerce', color: '#f46f25' },
+                  { id: 'bigcommerce', name: 'BigCommerce', desc: 'SaaS', color: '#34313f' },
+                  { id: 'opencart', name: 'OpenCart', desc: 'Open source', color: '#23a8e0' },
+                  { id: 'wix', name: 'Wix Stores', desc: 'Simple', color: '#0c6efc' },
+                  { id: 'ecwid', name: 'Ecwid', desc: 'Multiplateforme', color: '#5ea9dd' },
+                  { id: 'lightspeed', name: 'Lightspeed', desc: 'Retail + POS', color: '#e4002b' },
+                  { id: 'square', name: 'Square', desc: 'Paiement + POS', color: '#006aff' },
+                  { id: 'etsy', name: 'Etsy', desc: 'Artisanat', color: '#f56400' },
+                ].map(item => (
+                  <Card key={item.id} className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02]" onClick={() => navigate(`/suppliers/${item.id}`)}>
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg" style={{ backgroundColor: `${item.color}20` }}>
+                          <Store className="h-4 w-4" style={{ color: item.color }} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.desc}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </TabsContent>
 
           {/* Tab: My Suppliers */}
