@@ -551,6 +551,39 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 5,
     groupId: 'import_feeds'
   },
+  connectors: {
+    id: 'connectors',
+    name: 'Connecteurs',
+    icon: 'Plug',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/integrations/connectors',
+    features: ['marketplace-connectors', 'supplier-connectors', 'shipping-connectors', 'erp-connectors'],
+    description: '90+ connecteurs marketplaces, fournisseurs et canaux',
+    category: 'integrations',
+    order: 2.5,
+    groupId: 'stores_channels',
+    subModules: [
+      {
+        id: 'connectors-all',
+        name: 'Tous les connecteurs',
+        route: '/integrations/connectors',
+        icon: 'Boxes',
+        description: 'Explorer tous les connecteurs disponibles',
+        features: ['browse', 'search', 'filter'],
+        order: 1
+      },
+      {
+        id: 'connectors-my',
+        name: 'Mes connecteurs',
+        route: '/integrations/connectors?filter=connected',
+        icon: 'CheckCircle',
+        description: 'Connecteurs actifs',
+        features: ['manage', 'sync', 'settings'],
+        order: 2
+      }
+    ]
+  },
 
   // ============= MODULES PHASE 2 - MARKETPLACE AVANCÉE =============
   
