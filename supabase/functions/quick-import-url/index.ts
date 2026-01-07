@@ -10,39 +10,94 @@ const corsHeaders = {
 function detectPlatform(url: string): { platform: string; productId: string | null } {
   const urlLower = url.toLowerCase()
   
-  if (urlLower.includes('aliexpress.com')) {
-    const match = url.match(/item\/(\d+)\.html/) || url.match(/\/(\d+)\.html/)
+  // AliExpress
+  if (urlLower.includes('aliexpress.com') || urlLower.includes('aliexpress.fr') || urlLower.includes('aliexpress.us') || urlLower.includes('ali.ski') || urlLower.includes('s.click.aliexpress')) {
+    const match = url.match(/item\/(\d+)\.html/) || url.match(/\/(\d+)\.html/) || url.match(/productId=(\d+)/) || url.match(/item\/(\d+)/)
     return { platform: 'aliexpress', productId: match?.[1] || null }
   }
   
+  // Amazon (toutes régions)
   if (urlLower.includes('amazon.')) {
-    const match = url.match(/\/dp\/([A-Z0-9]+)/) || url.match(/\/gp\/product\/([A-Z0-9]+)/)
+    const match = url.match(/\/dp\/([A-Z0-9]+)/i) || url.match(/\/gp\/product\/([A-Z0-9]+)/i) || url.match(/\/product\/([A-Z0-9]+)/i) || url.match(/asin=([A-Z0-9]+)/i)
     return { platform: 'amazon', productId: match?.[1] || null }
   }
   
+  // eBay
   if (urlLower.includes('ebay.')) {
-    const match = url.match(/\/itm\/(\d+)/) || url.match(/item=(\d+)/)
+    const match = url.match(/\/itm\/(\d+)/) || url.match(/item=(\d+)/) || url.match(/itm\/[^\/]+\/(\d+)/)
     return { platform: 'ebay', productId: match?.[1] || null }
   }
   
-  if (urlLower.includes('temu.com')) {
-    const match = url.match(/goods\/(\d+)/) || url.match(/g-(\d+)/)
+  // Temu
+  if (urlLower.includes('temu.com') || urlLower.includes('share.temu')) {
+    const match = url.match(/goods\/(\d+)/) || url.match(/g-(\d+)/) || url.match(/goods_id=(\d+)/)
     return { platform: 'temu', productId: match?.[1] || null }
   }
   
+  // Wish
   if (urlLower.includes('wish.com')) {
-    const match = url.match(/product\/([a-zA-Z0-9]+)/)
+    const match = url.match(/product\/([a-zA-Z0-9]+)/) || url.match(/c\/([a-zA-Z0-9]+)/)
     return { platform: 'wish', productId: match?.[1] || null }
   }
   
-  if (urlLower.includes('cjdropshipping.com')) {
-    const match = url.match(/product\/([^\/\?]+)/)
+  // CJ Dropshipping
+  if (urlLower.includes('cjdropshipping.com') || urlLower.includes('cjdrop')) {
+    const match = url.match(/product\/([^\/\?]+)/) || url.match(/pid=([^&]+)/)
     return { platform: 'cjdropshipping', productId: match?.[1] || null }
   }
   
-  if (urlLower.includes('bigbuy.eu')) {
-    const match = url.match(/\/([^\/]+)\.html/)
+  // BigBuy
+  if (urlLower.includes('bigbuy.eu') || urlLower.includes('bigbuy.com')) {
+    const match = url.match(/\/([^\/]+)\.html/) || url.match(/sku=([^&]+)/)
     return { platform: 'bigbuy', productId: match?.[1] || null }
+  }
+  
+  // Banggood
+  if (urlLower.includes('banggood.com')) {
+    const match = url.match(/-p-(\d+)\.html/) || url.match(/products\/(\d+)/)
+    return { platform: 'banggood', productId: match?.[1] || null }
+  }
+  
+  // DHgate
+  if (urlLower.includes('dhgate.com')) {
+    const match = url.match(/product\/([^\/\.]+)/) || url.match(/\/(\d+)\.html/)
+    return { platform: 'dhgate', productId: match?.[1] || null }
+  }
+  
+  // Shein
+  if (urlLower.includes('shein.com') || urlLower.includes('shein.fr')) {
+    const match = url.match(/-p-(\d+)/) || url.match(/productId=(\d+)/)
+    return { platform: 'shein', productId: match?.[1] || null }
+  }
+  
+  // Shopify stores (generic detection)
+  if (urlLower.includes('/products/') && !urlLower.includes('amazon') && !urlLower.includes('ebay')) {
+    const match = url.match(/\/products\/([^\/\?]+)/)
+    return { platform: 'shopify', productId: match?.[1] || null }
+  }
+  
+  // WooCommerce (generic detection)
+  if (urlLower.includes('/product/') && !urlLower.includes('amazon') && !urlLower.includes('ebay')) {
+    const match = url.match(/\/product\/([^\/\?]+)/)
+    return { platform: 'woocommerce', productId: match?.[1] || null }
+  }
+  
+  // Etsy
+  if (urlLower.includes('etsy.com')) {
+    const match = url.match(/listing\/(\d+)/)
+    return { platform: 'etsy', productId: match?.[1] || null }
+  }
+  
+  // Made in China
+  if (urlLower.includes('made-in-china.com')) {
+    const match = url.match(/product\/([^\/\?]+)/)
+    return { platform: 'made-in-china', productId: match?.[1] || null }
+  }
+  
+  // Walmart
+  if (urlLower.includes('walmart.com')) {
+    const match = url.match(/\/ip\/[^\/]+\/(\d+)/) || url.match(/\/(\d+)\?/)
+    return { platform: 'walmart', productId: match?.[1] || null }
   }
   
   return { platform: 'unknown', productId: null }
@@ -160,7 +215,7 @@ serve(async (req) => {
     console.log(`📍 Platform detected: ${platform}, Product ID: ${productId}`)
     
     if (platform === 'unknown') {
-      throw new Error('Plateforme non reconnue. Plateformes supportées: AliExpress, Amazon, eBay, Temu, Wish, CJ Dropshipping, BigBuy')
+      throw new Error('Plateforme non reconnue. Plateformes supportées: AliExpress, Amazon, eBay, Temu, Wish, CJ Dropshipping, BigBuy, Banggood, DHgate, Shein, Etsy, Walmart, Shopify, WooCommerce')
     }
 
     // Scrape les données du produit
