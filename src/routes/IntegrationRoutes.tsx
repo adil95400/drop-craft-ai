@@ -7,6 +7,7 @@ import { lazy } from 'react';
 // Main integrations hub
 const UnifiedIntegrationsHub = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 const TikTokShopPage = lazy(() => import('@/pages/integrations/TikTokShopPage'));
+const MarketplaceConnectorsPage = lazy(() => import('@/pages/integrations/MarketplaceConnectorsPage'));
 
 // Marketplace (consolidated)
 const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
@@ -45,6 +46,7 @@ export function IntegrationRoutes() {
       <Route path="unified" element={<Navigate to="/integrations" replace />} />
       <Route path="sync-config" element={<SyncConfigPage />} />
       <Route path="tiktok-shop" element={<TikTokShopPage />} />
+      <Route path="connectors" element={<MarketplaceConnectorsPage />} />
       
       {/* Marketplace - Consolidated */}
       <Route path="marketplace" element={<MarketplaceHubPage />} />
