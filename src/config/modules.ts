@@ -1,24 +1,18 @@
 import type { PlanType } from '@/lib/unified-plan-system';
 
 /**
- * Identifiants des groupes de navigation
+ * Identifiants des groupes de navigation - Inspiré Channable
+ * Structure par flux métier simplifié
  */
 export type NavGroupId =
-  | 'overview'
-  | 'products'
-  | 'suppliers'
-  | 'import_feeds'
-  | 'orders'
-  | 'customers'
-  | 'marketing'
-  | 'analytics'
-  | 'ai'
-  | 'automation'
-  | 'stock'
-  | 'stores_channels'
-  | 'billing'
-  | 'settings'
-  | 'support';
+  | 'home'           // Accueil & Dashboard
+  | 'sources'        // Import de données (produits, fournisseurs)
+  | 'catalog'        // Gestion du catalogue
+  | 'channels'       // Export vers canaux de vente
+  | 'orders'         // Commandes & fulfillment
+  | 'insights'       // Analytics & IA
+  | 'marketing'      // Marketing & campagnes
+  | 'settings';      // Configuration
 
 /**
  * Configuration d'un groupe de navigation
@@ -28,27 +22,21 @@ export interface NavGroupConfig {
   label: string;
   icon: string;
   order: number;
+  collapsed?: boolean; // Groupe collapsé par défaut
 }
 
 /**
- * Configuration des groupes de navigation - Structure organisée par métier
+ * Configuration des groupes de navigation - Structure Channable-style
  */
 export const NAV_GROUPS: NavGroupConfig[] = [
-  { id: 'overview', label: 'Vue d\'ensemble', icon: 'Home', order: 1 },
-  { id: 'products', label: 'Catalogue & Produits', icon: 'Package', order: 2 },
-  { id: 'suppliers', label: 'Fournisseurs & Marketplace', icon: 'Truck', order: 3 },
-  { id: 'import_feeds', label: 'Import & Flux', icon: 'Upload', order: 4 },
+  { id: 'home', label: 'Accueil', icon: 'Home', order: 1 },
+  { id: 'sources', label: 'Sources', icon: 'Upload', order: 2 },
+  { id: 'catalog', label: 'Catalogue', icon: 'Package', order: 3 },
+  { id: 'channels', label: 'Canaux', icon: 'Store', order: 4 },
   { id: 'orders', label: 'Commandes', icon: 'ShoppingCart', order: 5 },
-  { id: 'customers', label: 'Clients & CRM', icon: 'Users', order: 6 },
-  { id: 'marketing', label: 'Marketing & Growth', icon: 'Megaphone', order: 7 },
-  { id: 'analytics', label: 'Analytics & BI', icon: 'BarChart3', order: 8 },
-  { id: 'ai', label: 'IA & Intelligence', icon: 'Bot', order: 9 },
-  { id: 'automation', label: 'Automations & Workflows', icon: 'Zap', order: 10 },
-  { id: 'stock', label: 'Stock & Logistique', icon: 'Boxes', order: 11 },
-  { id: 'stores_channels', label: 'Boutiques & Canaux', icon: 'Store', order: 12 },
-  { id: 'billing', label: 'Abonnements & Facturation', icon: 'CreditCard', order: 13 },
-  { id: 'settings', label: 'Paramètres & Administration', icon: 'Settings', order: 14 },
-  { id: 'support', label: 'Support & Aide', icon: 'LifeBuoy', order: 15 },
+  { id: 'insights', label: 'Insights', icon: 'BarChart3', order: 6 },
+  { id: 'marketing', label: 'Marketing', icon: 'Megaphone', order: 7 },
+  { id: 'settings', label: 'Paramètres', icon: 'Settings', order: 8, collapsed: true },
 ];
 
 /**
@@ -79,147 +67,95 @@ export interface ModuleConfig {
   category: 'core' | 'product' | 'learning' | 'analytics' | 'automation' | 'customer' | 'enterprise' | 'integrations' | 'system';
   subModules?: SubModule[];
   order: number;
-  groupId: NavGroupId; // Nouveau: Association au groupe de navigation
+  groupId: NavGroupId;
+  badge?: 'new' | 'beta' | 'pro' | 'ultra';
 }
 
 /**
- * Registry principal de tous les modules de l'application
- * Organisé par plan et catégorie
+ * Registry principal de tous les modules - Structure Channable-style
+ * Organisé par flux métier
  */
 export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
-  // ============= MODULES STANDARD (11 modules) =============
   
-  // Catégorie: Core Business
+  // ==========================================
+  // GROUPE: HOME - Accueil & Vue d'ensemble
+  // ==========================================
+  
   dashboard: {
     id: 'dashboard',
-    name: 'Tableau de Bord',
-    icon: 'BarChart3',
+    name: 'Dashboard',
+    icon: 'LayoutDashboard',
     enabled: true,
     minPlan: 'standard',
     route: '/dashboard',
-    features: ['basic-analytics', 'product-overview'],
+    features: ['overview', 'quick-stats', 'recent-activity'],
     description: 'Vue d\'ensemble de votre activité',
     category: 'core',
     order: 1,
-    groupId: 'overview'
+    groupId: 'home'
   },
-  products: {
-    id: 'products',
-    name: 'Catalogue Produits',
-    icon: 'Package',
+  
+  onboarding: {
+    id: 'onboarding',
+    name: 'Démarrage rapide',
+    icon: 'Rocket',
     enabled: true,
     minPlan: 'standard',
-    route: '/products',
-    features: ['product-management', 'basic-search', 'audit-engine', 'ai-optimization'],
-    description: 'Gestion de votre catalogue produit',
+    route: '/dashboard/onboarding',
+    features: ['tutorials', 'video-guides', 'checklist'],
+    description: 'Guide de démarrage interactif',
+    category: 'learning',
+    order: 2,
+    groupId: 'home'
+  },
+
+  // ==========================================
+  // GROUPE: SOURCES - Import de données
+  // ==========================================
+  
+  import: {
+    id: 'import',
+    name: 'Import',
+    icon: 'Upload',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/import',
+    features: ['csv-import', 'url-import', 'api-import'],
+    description: 'Importer des produits',
     category: 'product',
-    order: 4,
-    groupId: 'products',
+    order: 1,
+    groupId: 'sources',
     subModules: [
       {
-        id: 'products-catalog',
-        name: 'Catalogue',
-        route: '/products',
-        icon: 'Package',
-        description: 'Liste complète de vos produits',
-        features: ['product-list', 'filters', 'bulk-actions'],
+        id: 'import-quick',
+        name: 'Import rapide',
+        route: '/import/quick',
+        icon: 'Zap',
+        description: 'Upload CSV ou URL',
+        features: ['csv-upload', 'drag-drop'],
         order: 1
       },
       {
-        id: 'products-audit',
-        name: 'Audit',
-        route: '/products/audit',
-        icon: 'Target',
-        description: 'Audit qualité du catalogue',
-        features: ['quality-scoring', 'issue-detection', 'recommendations'],
+        id: 'import-advanced',
+        name: 'Import avancé',
+        route: '/import/advanced',
+        icon: 'Settings',
+        description: 'Mapping et transformations',
+        features: ['field-mapping', 'rules'],
         order: 2
       },
       {
-        id: 'products-intelligence',
-        name: 'Intelligence',
-        route: '/products/intelligence',
-        icon: 'Brain',
-        description: 'Hub IA du catalogue',
-        features: ['ai-insights', 'recommendations', 'predictions'],
+        id: 'import-scheduled',
+        name: 'Planifiés',
+        route: '/import/scheduled',
+        icon: 'Calendar',
+        description: 'Imports automatiques',
+        features: ['schedule', 'cron'],
         order: 3
-      },
-      {
-        id: 'products-research',
-        name: 'Recherche',
-        route: '/products/research',
-        icon: 'Search',
-        description: 'Recherche de produits gagnants',
-        features: ['trend-detection', 'winning-products', 'market-analysis'],
-        order: 4
-      },
-      {
-        id: 'products-rules',
-        name: 'Règles',
-        route: '/products/rules',
-        icon: 'Settings',
-        description: 'Automatisation du catalogue',
-        features: ['rule-engine', 'automation', 'bulk-updates'],
-        order: 5
-      },
-      {
-        id: 'products-qa',
-        name: 'QA Finale',
-        route: '/products/qa',
-        icon: 'CheckCircle',
-        description: 'Contrôle qualité avant publication',
-        features: ['quality-check', 'validation', 'pre-publish'],
-        order: 6
-      },
-      {
-        id: 'products-sourcing',
-        name: 'Sourcing',
-        route: '/products/sourcing',
-        icon: 'Search',
-        description: 'Sourcing et import produits',
-        features: ['product-sourcing', 'supplier-search', 'import'],
-        order: 7
       }
     ]
   },
-  winners: {
-    id: 'winners',
-    name: 'Winning Products',
-    icon: 'Trophy',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/products/winners',
-    features: ['product-research', 'trend-analysis', 'competitor-analysis'],
-    description: 'Découvrez les produits gagnants',
-    category: 'product',
-    order: 6,
-    groupId: 'products'
-  },
-  productResearch: {
-    id: 'productResearch',
-    name: 'Product Research',
-    icon: 'Search',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/products/research',
-    features: ['trend-scanner', 'viral-finder', 'saturation-analyzer', 'winning-score'],
-    description: 'Recherche de produits tendances et analyse',
-    category: 'product',
-    order: 7,
-    groupId: 'products'
-  },
-  marketplace: {
-    id: 'marketplace',
-    name: 'AI Marketplace',
-    icon: 'Sparkles',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/products/ai-marketplace',
-    features: ['ai-validated-products', 'virality-score', 'winning-database'],
-    description: '10,000+ produits analysés par IA',
-    category: 'product',
-    order: 8,
-    groupId: 'products'
-  },
+  
   suppliers: {
     id: 'suppliers',
     name: 'Fournisseurs',
@@ -227,330 +163,42 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/suppliers',
-    features: ['supplier-management', 'marketplace', 'supplier-sync', 'analytics'],
-    description: 'Hub central de gestion des fournisseurs',
+    features: ['supplier-management', 'catalog-sync'],
+    description: 'Gérer vos fournisseurs',
     category: 'product',
-    order: 9,
-    groupId: 'suppliers',
+    order: 2,
+    groupId: 'sources',
     subModules: [
       {
         id: 'suppliers-hub',
-        name: 'Hub Fournisseurs',
+        name: 'Hub',
         route: '/suppliers',
         icon: 'Truck',
-        description: 'Vue d\'ensemble des fournisseurs',
-        features: ['overview', 'quick-actions'],
+        description: 'Vue d\'ensemble',
+        features: ['overview', 'stats'],
         order: 1
-      },
-      {
-        id: 'suppliers-marketplace',
-        name: 'Marketplace',
-        route: '/suppliers/marketplace',
-        icon: 'Store',
-        description: 'Découvrir et connecter des fournisseurs',
-        features: ['discovery', 'connect', 'filters'],
-        order: 2
       },
       {
         id: 'suppliers-my',
-        name: 'Mes Fournisseurs',
+        name: 'Mes fournisseurs',
         route: '/suppliers/my',
         icon: 'Users',
         description: 'Fournisseurs connectés',
-        features: ['sync', 'manage', 'import'],
-        order: 3
+        features: ['manage', 'sync'],
+        order: 2
       },
       {
         id: 'suppliers-analytics',
-        name: 'Analytics',
+        name: 'Performances',
         route: '/suppliers/analytics',
         icon: 'BarChart3',
-        description: 'Performances des fournisseurs',
-        features: ['kpis', 'charts', 'reports'],
-        order: 4
-      },
-      {
-        id: 'suppliers-feeds',
-        name: 'Feeds & Marketplaces',
-        route: '/feeds',
-        icon: 'Rss',
-        description: 'Gestion des flux marketplace',
-        features: ['feed-management', 'multi-channel'],
-        order: 5
-      },
-      {
-        id: 'suppliers-settings',
-        name: 'Paramètres',
-        route: '/suppliers/settings',
-        icon: 'Settings',
-        description: 'Configuration et API',
-        features: ['api-keys', 'credentials'],
-        order: 6
-      }
-    ]
-  },
-  
-  // ============= MODULES IMPORT & FEEDS =============
-  
-  import: {
-    id: 'import',
-    name: 'Import Hub',
-    icon: 'Upload',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/import',
-    features: ['import-csv', 'import-url', 'import-api', 'import-db'],
-    description: 'Centre de gestion des imports multi-sources',
-    category: 'product',
-    order: 11,
-    groupId: 'import_feeds',
-    subModules: [
-      {
-        id: 'import-quick',
-        name: 'Import Rapide',
-        route: '/import/quick',
-        icon: 'Zap',
-        description: 'Import simple et rapide',
-        features: ['csv-upload', 'drag-drop'],
-        order: 1
-      },
-      {
-        id: 'import-advanced',
-        name: 'Import Avancé',
-        route: '/import/advanced',
-        icon: 'Settings',
-        description: 'Import avec mapping intelligent',
-        features: ['field-mapping', 'bulk-import'],
-        order: 2
-      },
-      {
-        id: 'import-history',
-        name: 'Historique',
-        route: '/import/history',
-        icon: 'Clock',
-        description: 'Historique des imports',
-        features: ['import-logs', 'tracking'],
+        description: 'KPIs et rapports',
+        features: ['kpis', 'charts'],
         order: 3
-      },
-      {
-        id: 'import-scheduled',
-        name: 'Imports Planifiés',
-        route: '/import/scheduled',
-        icon: 'Calendar',
-        description: 'Automatisation des imports',
-        features: ['schedule', 'automation'],
-        order: 4
-      },
-      {
-        id: 'import-config',
-        name: 'Configurations',
-        route: '/import/config',
-        icon: 'Settings',
-        description: 'Configurations par source',
-        features: ['csv-config', 'xml-config', 'api-config'],
-        order: 5
       }
     ]
   },
   
-  feeds: {
-    id: 'feeds',
-    name: 'Gestion des Feeds',
-    icon: 'Rss',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/feeds',
-    features: ['feed-google', 'feed-meta', 'feed-tiktok', 'feed-amazon'],
-    description: 'Feeds multi-canaux (Google, Meta, TikTok, Amazon)',
-    category: 'product',
-    order: 12,
-    groupId: 'import_feeds',
-    subModules: [
-      {
-        id: 'feeds-manager',
-        name: 'Gestion Feeds',
-        route: '/feeds',
-        icon: 'Rss',
-        description: 'Créer et gérer les feeds',
-        features: ['feed-creation', 'feed-export'],
-        order: 1
-      },
-      {
-        id: 'feeds-optimization',
-        name: 'Optimisation',
-        route: '/feeds/optimization',
-        icon: 'Zap',
-        description: 'Optimiser les feeds avec IA',
-        features: ['ai-optimization', 'feed-quality'],
-        order: 2
-      }
-    ]
-  },
-  
-  premiumCatalog: {
-    id: 'premiumCatalog',
-    name: 'Catalogue Premium',
-    icon: 'ShoppingBag',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/products/premium-catalog',
-    features: ['premium-products', 'quick-import', 'supplier-catalog'],
-    description: 'Produits premium de vos fournisseurs',
-    category: 'product',
-    order: 10,
-    groupId: 'products'
-  },
-  audit: {
-    id: 'audit',
-    name: 'Audit Produits',
-    icon: 'CheckCircle',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/audit',
-    features: ['product-audit', 'quality-scoring', 'seo-audit', 'auto-fix'],
-    description: 'Audit qualité et optimisation des produits',
-    category: 'product',
-    order: 10.5,
-    groupId: 'products'
-  },
-  profitCalculator: {
-    id: 'profitCalculator',
-    name: 'Calculateur de Marge',
-    icon: 'Calculator',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/products/profit-calculator',
-    features: ['margin-calculator', 'pricing-optimizer', 'cost-analysis'],
-    description: 'Calculez vos marges et optimisez vos prix',
-    category: 'product',
-    order: 11,
-    groupId: 'products'
-  },
-  stores: {
-    id: 'stores',
-    name: 'Boutiques & Canaux',
-    icon: 'Store',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/stores-channels',
-    features: ['store-management', 'multi-store', 'store-sync', 'marketplace-publishing'],
-    description: 'Hub unifié boutiques et marketplaces',
-    category: 'core',
-    order: 2,
-    groupId: 'stores_channels',
-    subModules: [
-      {
-        id: 'stores-hub',
-        name: 'Hub Central',
-        route: '/stores-channels',
-        icon: 'Store',
-        description: 'Vue d\'ensemble de vos canaux',
-        features: ['overview', 'stats', 'quick-actions'],
-        order: 1
-      },
-      {
-        id: 'stores-connect',
-        name: 'Connecter',
-        route: '/stores-channels/connect',
-        icon: 'Plug',
-        description: 'Ajouter une boutique ou marketplace',
-        features: ['oauth', 'api-connect', 'wizard'],
-        order: 2
-      },
-      {
-        id: 'stores-integrations',
-        name: 'Intégrations',
-        route: '/stores-channels/integrations',
-        icon: 'Plug',
-        description: 'Gérer vos connexions',
-        features: ['manage', 'sync', 'settings'],
-        order: 3
-      },
-      {
-        id: 'stores-sync',
-        name: 'Synchronisation',
-        route: '/stores-channels/sync',
-        icon: 'RefreshCw',
-        description: 'État des synchronisations',
-        features: ['sync-status', 'logs', 'schedule'],
-        order: 4
-      },
-      {
-        id: 'stores-analytics',
-        name: 'Analytics',
-        route: '/stores-channels/analytics',
-        icon: 'BarChart3',
-        description: 'Performances multi-boutiques',
-        features: ['multi-store-analytics', 'comparison'],
-        order: 5
-      }
-    ]
-  },
-  orders: {
-    id: 'orders',
-    name: 'Commandes',
-    icon: 'ShoppingCart',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/dashboard/orders',
-    features: ['order-management', 'tracking', 'fulfillment'],
-    description: 'Gestion de vos commandes',
-    category: 'core',
-    order: 3,
-    groupId: 'orders'
-  },
-  customers: {
-    id: 'customers',
-    name: 'Clients',
-    icon: 'Users',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/dashboard/customers',
-    features: ['customer-management', 'customer-insights'],
-    description: 'Gestion de vos clients',
-    category: 'customer',
-    order: 4,
-    groupId: 'customers'
-  },
-  reviews: {
-    id: 'reviews',
-    name: 'Avis Clients',
-    icon: 'Star',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/reviews',
-    features: ['review-management', 'review-moderation', 'review-import'],
-    description: 'Gestion des avis et témoignages clients',
-    category: 'customer',
-    order: 4.5,
-    groupId: 'customers'
-  },
-  extensions: {
-    id: 'extensions',
-    name: 'Extensions',
-    icon: 'Puzzle',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/extensions',
-    features: ['extensions-marketplace', 'white-label', 'developer-api'],
-    description: 'Extensions et personnalisations avancées',
-    category: 'system',
-    order: 13,
-    groupId: 'settings'
-  },
-  marketplaceHub: {
-    id: 'marketplaceHub',
-    name: 'Marketplace Hub',
-    icon: 'Globe',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/integrations/marketplace/hub',
-    features: ['marketplace-listing', 'multi-marketplace', 'centralized-management'],
-    description: 'Hub centralisé pour vos marketplaces',
-    category: 'core',
-    order: 5,
-    groupId: 'import_feeds'
-  },
   connectors: {
     id: 'connectors',
     name: 'Connecteurs',
@@ -558,423 +206,366 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/integrations/connectors',
-    features: ['marketplace-connectors', 'supplier-connectors', 'shipping-connectors', 'erp-connectors'],
-    description: '90+ connecteurs marketplaces, fournisseurs et canaux',
+    features: ['90+ connectors', 'api-sync'],
+    description: '90+ intégrations',
     category: 'integrations',
-    order: 2.5,
-    groupId: 'stores_channels',
+    order: 3,
+    groupId: 'sources',
+    badge: 'new'
+  },
+
+  // ==========================================
+  // GROUPE: CATALOG - Gestion du catalogue
+  // ==========================================
+  
+  products: {
+    id: 'products',
+    name: 'Produits',
+    icon: 'Package',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/products',
+    features: ['product-management', 'bulk-actions'],
+    description: 'Gérer votre catalogue',
+    category: 'product',
+    order: 1,
+    groupId: 'catalog',
     subModules: [
       {
-        id: 'connectors-all',
-        name: 'Tous les connecteurs',
-        route: '/integrations/connectors',
-        icon: 'Boxes',
-        description: 'Explorer tous les connecteurs disponibles',
-        features: ['browse', 'search', 'filter'],
+        id: 'products-all',
+        name: 'Tous les produits',
+        route: '/products',
+        icon: 'Package',
+        description: 'Liste complète',
+        features: ['list', 'filters', 'bulk'],
         order: 1
       },
       {
-        id: 'connectors-my',
-        name: 'Mes connecteurs',
-        route: '/integrations/connectors?filter=connected',
+        id: 'products-audit',
+        name: 'Audit qualité',
+        route: '/products/audit',
         icon: 'CheckCircle',
-        description: 'Connecteurs actifs',
-        features: ['manage', 'sync', 'settings'],
+        description: 'Vérification qualité',
+        features: ['quality-scoring', 'issues'],
         order: 2
+      },
+      {
+        id: 'products-rules',
+        name: 'Règles',
+        route: '/products/rules',
+        icon: 'Settings',
+        description: 'Règles de transformation',
+        features: ['rules-engine', 'automation'],
+        order: 3
       }
     ]
   },
-
-  // ============= MODULES PHASE 2 - MARKETPLACE AVANCÉE =============
   
-  dynamicRepricing: {
-    id: 'dynamicRepricing',
-    name: 'Repricing Dynamique',
-    icon: 'TrendingUp',
+  rules: {
+    id: 'rules',
+    name: 'Règles',
+    icon: 'GitBranch',
     enabled: true,
     minPlan: 'pro',
-    route: '/automation/repricing',
-    features: ['dynamic-repricing', 'competitor-analysis', 'buybox-optimization', 'margin-protection'],
-    description: 'Repricing automatique basé sur la concurrence et les marges',
+    route: '/products/rules',
+    features: ['rule-engine', 'conditions', 'actions'],
+    description: 'Règles de transformation',
     category: 'automation',
-    order: 5.5,
-    groupId: 'automation'
+    order: 2,
+    groupId: 'catalog',
+    badge: 'pro'
   },
-
-  predictiveAnalytics: {
-    id: 'predictiveAnalytics',
-    name: 'Analytics Prédictive',
-    icon: 'Brain',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/analytics/predictive',
-    features: ['sales-forecasting', 'restock-recommendations', 'pricing-recommendations', 'trend-analysis'],
-    description: 'Prévisions IA pour stock et prix',
-    category: 'analytics',
-    order: 8.5,
-    groupId: 'analytics'
-  },
-
-  promotionsAutomation: {
-    id: 'promotionsAutomation',
-    name: 'Promotions Auto',
-    icon: 'Tag',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/promotions',
-    features: ['automated-campaigns', 'multi-marketplace-promotions', 'rule-based-triggers', 'performance-tracking'],
-    description: 'Promotions automatisées multi-canaux',
-    category: 'automation',
-    order: 5.7,
-    groupId: 'marketing'
-  },
-
-  // Catégorie: Product Management
-  network: {
-    id: 'network',
-    name: 'Fournisseurs Premium',
-    icon: 'Crown',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/products/premium-network',
-    features: ['premium-suppliers', 'exclusive-deals', 'fast-shipping'],
-    description: 'Réseau de fournisseurs premium',
-    category: 'product',
-    order: 12,
-    groupId: 'suppliers'
-  },
-  bulkContent: {
-    id: 'bulkContent',
-    name: 'Création de Contenu',
-    icon: 'FileText',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/products/bulk-content',
-    features: ['bulk-description-ai', 'seo-content', 'product-naming'],
-    description: 'Création en masse de contenu par IA',
-    category: 'product',
-    order: 13,
-    groupId: 'ai'
-  },
-  inventoryPredictor: {
-    id: 'inventoryPredictor',
-    name: 'Prédiction Stock',
-    icon: 'TrendingUp',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/products/inventory-predictor',
-    features: ['stock-prediction', 'demand-forecasting', 'reorder-alerts'],
-    description: 'Prédiction intelligente des stocks',
-    category: 'product',
-    order: 14,
-    groupId: 'stock'
-  },
-  importSources: {
-    id: 'importSources',
-    name: 'Sources d\'Import',
-    icon: 'Database',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/products/import/manage',
-    features: ['source-management', 'custom-sources', 'api-connectors'],
-    description: 'Gestion des sources d\'importation',
-    category: 'product',
-    order: 15,
-    groupId: 'import_feeds'
-  },
-
-  // Catégorie: Learning
-  academy: {
-    id: 'academy',
-    name: 'Academy',
-    icon: 'GraduationCap',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/integrations/academy',
-    features: ['video-courses', 'guides', 'webinars', 'certifications'],
-    description: 'Formation dropshipping complète',
-    category: 'learning',
-    order: 16,
-    groupId: 'support'
-  },
-
-  // ============= MODULES PRO (+8 modules = 19 total) =============
   
-  // Catégorie: Advanced Analytics
-  analytics: {
-    id: 'analytics',
-    name: 'Analytics Pro',
-    icon: 'TrendingUp',
+  aiOptimization: {
+    id: 'aiOptimization',
+    name: 'Optimisation IA',
+    icon: 'Sparkles',
     enabled: true,
     minPlan: 'pro',
-    route: '/analytics',
-    features: ['advanced-analytics', 'custom-reports', 'ai-insights'],
-    description: 'Analytics avancés avec IA',
-    category: 'analytics',
-    order: 17,
-    groupId: 'analytics'
+    route: '/products/intelligence',
+    features: ['ai-descriptions', 'ai-seo', 'ai-images'],
+    description: 'Optimisation automatique par IA',
+    category: 'automation',
+    order: 3,
+    groupId: 'catalog',
+    badge: 'pro'
   },
-  customerIntelligence: {
-    id: 'customerIntelligence',
-    name: 'Intelligence Client',
-    icon: 'Brain',
+  
+  research: {
+    id: 'research',
+    name: 'Recherche produits',
+    icon: 'Search',
     enabled: true,
-    minPlan: 'pro',
-    route: '/analytics/customer-intelligence',
-    features: ['customer-insights', 'behavior-analysis', 'segmentation'],
-    description: 'Analyse comportementale des clients',
-    category: 'customer',
-    order: 18,
-    groupId: 'customers'
+    minPlan: 'standard',
+    route: '/products/research',
+    features: ['trend-analysis', 'competitor-analysis'],
+    description: 'Trouver des produits gagnants',
+    category: 'product',
+    order: 4,
+    groupId: 'catalog'
   },
-  competitiveComparison: {
-    id: 'competitiveComparison',
-    name: 'Comparaison Concurrentielle',
-    icon: 'GitCompare',
+  
+  winners: {
+    id: 'winners',
+    name: 'Winning Products',
+    icon: 'Trophy',
     enabled: true,
-    minPlan: 'pro',
-    route: '/analytics/competitive-comparison',
-    features: ['competitor-comparison', 'market-positioning', 'competitive-insights'],
-    description: 'Comparez vos concurrents',
-    category: 'analytics',
-    order: 18.5,
-    groupId: 'analytics'
+    minPlan: 'standard',
+    route: '/products/winners',
+    features: ['winning-products', 'virality-score'],
+    description: 'Produits tendances validés',
+    category: 'product',
+    order: 5,
+    groupId: 'catalog'
   },
 
-  // Catégorie: Automation & Tools
-  automation: {
-    id: 'automation',
-    name: 'Automatisation',
-    icon: 'Zap',
+  // ==========================================
+  // GROUPE: CHANNELS - Export vers canaux
+  // ==========================================
+  
+  stores: {
+    id: 'stores',
+    name: 'Boutiques',
+    icon: 'Store',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/stores-channels',
+    features: ['store-management', 'multi-store'],
+    description: 'Gérer vos boutiques',
+    category: 'core',
+    order: 1,
+    groupId: 'channels',
+    subModules: [
+      {
+        id: 'stores-hub',
+        name: 'Hub',
+        route: '/stores-channels',
+        icon: 'Store',
+        description: 'Vue d\'ensemble',
+        features: ['overview'],
+        order: 1
+      },
+      {
+        id: 'stores-connect',
+        name: 'Connecter',
+        route: '/stores-channels/connect',
+        icon: 'Plug',
+        description: 'Ajouter une boutique',
+        features: ['oauth', 'wizard'],
+        order: 2
+      },
+      {
+        id: 'stores-sync',
+        name: 'Synchronisation',
+        route: '/stores-channels/sync',
+        icon: 'RefreshCw',
+        description: 'État des syncs',
+        features: ['sync-status', 'logs'],
+        order: 3
+      }
+    ]
+  },
+  
+  feeds: {
+    id: 'feeds',
+    name: 'Feeds',
+    icon: 'Rss',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/feeds',
+    features: ['google-feed', 'meta-feed', 'amazon-feed'],
+    description: 'Exports vers Google, Meta, etc.',
+    category: 'product',
+    order: 2,
+    groupId: 'channels',
+    subModules: [
+      {
+        id: 'feeds-manager',
+        name: 'Gestion',
+        route: '/feeds',
+        icon: 'Rss',
+        description: 'Créer et gérer',
+        features: ['feed-creation'],
+        order: 1
+      },
+      {
+        id: 'feeds-google',
+        name: 'Google Shopping',
+        route: '/feeds?channel=google',
+        icon: 'Globe',
+        description: 'Feed Google Merchant',
+        features: ['google-merchant'],
+        order: 2
+      },
+      {
+        id: 'feeds-meta',
+        name: 'Meta / Facebook',
+        route: '/feeds?channel=meta',
+        icon: 'Facebook',
+        description: 'Catalogue Meta',
+        features: ['meta-catalog'],
+        order: 3
+      }
+    ]
+  },
+  
+  marketplaces: {
+    id: 'marketplaces',
+    name: 'Marketplaces',
+    icon: 'Globe',
     enabled: true,
     minPlan: 'pro',
-    route: '/automation',
-    features: ['workflow-builder', 'auto-pricing', 'inventory-sync'],
-    description: 'Automatisation des processus',
-    category: 'automation',
-    order: 19,
-    groupId: 'automation'
+    route: '/integrations/marketplace/hub',
+    features: ['amazon', 'ebay', 'cdiscount'],
+    description: 'Amazon, eBay, Cdiscount...',
+    category: 'integrations',
+    order: 3,
+    groupId: 'channels',
+    badge: 'pro'
   },
-  autoFulfillment: {
-    id: 'autoFulfillment',
-    name: 'Auto-Fulfillment',
+
+  // ==========================================
+  // GROUPE: ORDERS - Commandes & Fulfillment
+  // ==========================================
+  
+  orders: {
+    id: 'orders',
+    name: 'Commandes',
+    icon: 'ShoppingCart',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/dashboard/orders',
+    features: ['order-management', 'tracking'],
+    description: 'Gérer les commandes',
+    category: 'core',
+    order: 1,
+    groupId: 'orders'
+  },
+  
+  fulfillment: {
+    id: 'fulfillment',
+    name: 'Fulfillment',
     icon: 'Package',
     enabled: true,
     minPlan: 'pro',
     route: '/automation/fulfillment',
-    features: ['automated-ordering', 'supplier-sync', 'inventory-automation'],
-    description: 'Automatisation du traitement des commandes',
+    features: ['auto-fulfillment', 'supplier-ordering'],
+    description: 'Traitement automatique',
     category: 'automation',
-    order: 20,
-    groupId: 'stock'
+    order: 2,
+    groupId: 'orders',
+    badge: 'pro'
   },
-  adsManager: {
-    id: 'adsManager',
-    name: 'Gestionnaire Pub',
-    icon: 'Megaphone',
+  
+  inventory: {
+    id: 'inventory',
+    name: 'Stock',
+    icon: 'Boxes',
     enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/marketing/ads',
-    features: ['ad-campaigns', 'multi-platform', 'performance-tracking'],
-    description: 'Gestion des campagnes publicitaires',
-    category: 'automation',
-    order: 21,
-    groupId: 'marketing'
+    minPlan: 'standard',
+    route: '/products/inventory-predictor',
+    features: ['stock-management', 'alerts'],
+    description: 'Gestion des stocks',
+    category: 'product',
+    order: 3,
+    groupId: 'orders'
   },
-  extension: {
-    id: 'extension',
-    name: 'Extension Navigateur',
-    icon: 'PuzzlePiece',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/integrations/extensions',
-    features: ['browser-extension', 'quick-import', 'extension-marketplace', 'real-time-sync'],
-    description: 'Extension Chrome pour import rapide',
-    category: 'automation',
-    order: 22,
-    groupId: 'automation'
-  },
-
-  // Catégorie: Customer Relations
-  crm: {
-    id: 'crm',
-    name: 'CRM',
+  
+  customers: {
+    id: 'customers',
+    name: 'Clients',
     icon: 'Users',
     enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/crm',
-    features: ['customer-management', 'lead-tracking', 'sales-pipeline'],
-    description: 'Gestion de la relation client',
+    minPlan: 'standard',
+    route: '/dashboard/customers',
+    features: ['customer-management'],
+    description: 'Base clients',
     category: 'customer',
-    order: 23,
-    groupId: 'customers'
-  },
-  seo: {
-    id: 'seo',
-    name: 'SEO Manager',
-    icon: 'Search',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/seo',
-    features: ['seo-optimization', 'keyword-tracking', 'content-analysis'],
-    description: 'Optimisation SEO avancée',
-    category: 'customer',
-    order: 24,
-    groupId: 'marketing'
+    order: 4,
+    groupId: 'orders'
   },
 
-  // ============= MODULES ULTRA PRO (+7 modules = 23 total) =============
+  // ==========================================
+  // GROUPE: INSIGHTS - Analytics & IA
+  // ==========================================
   
-  // Catégorie: Enterprise
-  ai: {
-    id: 'ai',
-    name: 'IA Avancée',
+  analytics: {
+    id: 'analytics',
+    name: 'Analytics',
+    icon: 'BarChart3',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/analytics',
+    features: ['dashboards', 'reports', 'charts'],
+    description: 'Tableaux de bord et rapports',
+    category: 'analytics',
+    order: 1,
+    groupId: 'insights'
+  },
+  
+  aiInsights: {
+    id: 'aiInsights',
+    name: 'IA Insights',
     icon: 'Brain',
     enabled: true,
-    minPlan: 'ultra_pro',
+    minPlan: 'pro',
     route: '/automation/ai',
-    features: ['ai-analysis', 'predictive-analytics', 'ai-import', 'smart-recommendations'],
-    description: 'Suite complète d\'intelligence artificielle',
-    category: 'enterprise',
-    order: 17,
-    groupId: 'ai'
+    features: ['ai-analysis', 'predictions', 'recommendations'],
+    description: 'Analyses prédictives IA',
+    category: 'analytics',
+    order: 2,
+    groupId: 'insights',
+    badge: 'pro'
   },
-  commerce: {
-    id: 'commerce',
-    name: 'Commerce Pro',
-    icon: 'ShoppingCart',
+  
+  competitive: {
+    id: 'competitive',
+    name: 'Veille concurrentielle',
+    icon: 'Eye',
     enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/enterprise/commerce',
-    features: ['multi-channel', 'inventory-management', 'order-management'],
-    description: 'Solution e-commerce complète',
-    category: 'enterprise',
-    order: 18,
-    groupId: 'stores_channels'
+    minPlan: 'pro',
+    route: '/analytics/competitive-comparison',
+    features: ['competitor-tracking', 'price-monitoring'],
+    description: 'Surveiller la concurrence',
+    category: 'analytics',
+    order: 3,
+    groupId: 'insights',
+    badge: 'pro'
   },
-  multiTenant: {
-    id: 'multiTenant',
-    name: 'Multi-Tenant',
-    icon: 'Building2',
+  
+  repricing: {
+    id: 'repricing',
+    name: 'Repricing',
+    icon: 'TrendingUp',
     enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/enterprise/multi-tenant',
-    features: ['tenant-management', 'white-label', 'tenant-isolation'],
-    description: 'Gestion multi-tenant enterprise',
-    category: 'enterprise',
-    order: 19,
-    groupId: 'settings'
-  },
-  adminPanel: {
-    id: 'adminPanel',
-    name: 'Admin Panel',
-    icon: 'Settings',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/admin',
-    features: ['admin-access', 'user-management', 'system-config', 'advanced-settings'],
-    description: 'Panneau d\'administration système',
-    category: 'enterprise',
-    order: 20,
-    groupId: 'settings'
-  },
-  supplierAdmin: {
-    id: 'supplierAdmin',
-    name: 'Admin Fournisseurs',
-    icon: 'Shield',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/admin/suppliers',
-    features: ['supplier-crud', 'import-api', 'export-data', 'advanced-filters'],
-    description: 'Administration complète des fournisseurs',
-    category: 'enterprise',
-    order: 21,
-    groupId: 'suppliers'
+    minPlan: 'pro',
+    route: '/automation/repricing',
+    features: ['dynamic-pricing', 'buybox'],
+    description: 'Prix dynamiques automatiques',
+    category: 'automation',
+    order: 4,
+    groupId: 'insights',
+    badge: 'pro'
   },
 
-  // Catégorie: Integrations
-  integrations: {
-    id: 'integrations',
-    name: 'Intégrations Premium',
-    icon: 'Plug',
+  // ==========================================
+  // GROUPE: MARKETING - Campagnes & Promo
+  // ==========================================
+  
+  campaigns: {
+    id: 'campaigns',
+    name: 'Campagnes',
+    icon: 'Megaphone',
     enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/integrations',
-    features: ['premium-apis', 'custom-connectors', 'webhooks'],
-    description: 'Intégrations avancées et API premium',
-    category: 'integrations',
-    order: 22,
-    groupId: 'settings'
+    minPlan: 'pro',
+    route: '/marketing/ads',
+    features: ['ad-management', 'multi-platform'],
+    description: 'Campagnes publicitaires',
+    category: 'customer',
+    order: 1,
+    groupId: 'marketing',
+    badge: 'pro'
   },
-  security: {
-    id: 'security',
-    name: 'Sécurité Avancée',
-    icon: 'Shield',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/admin/security',
-    features: ['security-monitoring', 'audit-logs', 'access-control'],
-    description: 'Sécurité et conformité enterprise',
-    category: 'integrations',
-    order: 23,
-    groupId: 'settings'
-  },
-  videoTutorials: {
-    id: 'videoTutorials',
-    name: 'Vidéos Tutoriels',
-    icon: 'Video',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/admin/video-tutorials',
-    features: ['video-management', 'upload-videos', 'tutorial-guides'],
-    description: 'Gestion des vidéos tutoriels marketplace',
-    category: 'integrations',
-    order: 24,
-    groupId: 'support'
-  },
-
-  // Système et configuration
-  observability: {
-    id: 'observability',
-    name: 'Observabilité',
-    icon: 'Activity',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/enterprise/monitoring',
-    features: ['advanced-monitoring', 'real-time-metrics', 'alerts', 'logs-analytics'],
-    description: 'Monitoring et métriques avancés',
-    category: 'system',
-    order: 25,
-    groupId: 'settings'
-  },
-  support: {
-    id: 'support',
-    name: 'Support',
-    icon: 'HelpCircle',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/integrations/support',
-    features: ['faq', 'tickets', 'live-chat', 'documentation'],
-    description: 'Centre de support et assistance',
-    category: 'system',
-    order: 25,
-    groupId: 'support'
-  },
-  onboarding: {
-    id: 'onboarding',
-    name: 'Guide de Démarrage',
-    icon: 'GraduationCap',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/dashboard/onboarding',
-    features: ['tutorials', 'video-guides', 'interactive-onboarding'],
-    description: 'Tutoriels interactifs et vidéos de formation',
-    category: 'learning',
-    order: 26,
-    groupId: 'support'
-  },
-
-  // ============= MODULES MARKETING AVANCÉS =============
   
   emailMarketing: {
     id: 'emailMarketing',
@@ -983,562 +574,257 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'pro',
     route: '/marketing/email',
-    features: ['email-campaigns', 'automation', 'templates', 'analytics'],
-    description: 'Campagnes email automatisées',
+    features: ['email-campaigns', 'automation'],
+    description: 'Emails automatisés',
     category: 'customer',
-    order: 27,
-    groupId: 'marketing'
+    order: 2,
+    groupId: 'marketing',
+    badge: 'pro'
   },
-  abTesting: {
-    id: 'abTesting',
-    name: 'A/B Testing',
-    icon: 'FlaskConical',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/ab-testing',
-    features: ['split-testing', 'variant-analysis', 'conversion-tracking'],
-    description: 'Tests A/B pour optimisation',
-    category: 'analytics',
-    order: 28,
-    groupId: 'marketing'
-  },
-  affiliateMarketing: {
-    id: 'affiliateMarketing',
-    name: 'Affiliation',
-    icon: 'Share2',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/affiliate',
-    features: ['affiliate-program', 'commissions', 'tracking'],
-    description: 'Programme d\'affiliation',
-    category: 'customer',
-    order: 29,
-    groupId: 'marketing'
-  },
-  coupons: {
-    id: 'coupons',
-    name: 'Codes Promo',
-    icon: 'Ticket',
+  
+  promotions: {
+    id: 'promotions',
+    name: 'Promotions',
+    icon: 'Tag',
     enabled: true,
     minPlan: 'standard',
-    route: '/marketing/coupons',
-    features: ['coupon-management', 'discount-rules', 'usage-tracking'],
-    description: 'Gestion des codes promotionnels',
+    route: '/marketing/promotions',
+    features: ['coupons', 'flash-sales'],
+    description: 'Codes promo et ventes flash',
     category: 'customer',
-    order: 30,
+    order: 3,
     groupId: 'marketing'
   },
-  loyaltyProgram: {
-    id: 'loyaltyProgram',
-    name: 'Programme Fidélité',
-    icon: 'Award',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/loyalty',
-    features: ['loyalty-points', 'rewards', 'tiers'],
-    description: 'Programme de fidélité client',
-    category: 'customer',
-    order: 31,
-    groupId: 'marketing'
-  },
-  flashSales: {
-    id: 'flashSales',
-    name: 'Ventes Flash',
-    icon: 'Timer',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/flash-sales',
-    features: ['flash-sales', 'countdown', 'urgency-marketing'],
-    description: 'Promotions limitées dans le temps',
-    category: 'customer',
-    order: 32,
-    groupId: 'marketing'
-  },
-  abandonedCart: {
-    id: 'abandonedCart',
-    name: 'Paniers Abandonnés',
-    icon: 'ShoppingCart',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/abandoned-cart',
-    features: ['cart-recovery', 'email-reminders', 'conversion-tracking'],
-    description: 'Récupération des paniers abandonnés',
-    category: 'customer',
-    order: 33,
-    groupId: 'marketing'
-  },
-  marketingCalendar: {
-    id: 'marketingCalendar',
-    name: 'Calendrier Marketing',
-    icon: 'Calendar',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/marketing/calendar',
-    features: ['campaign-planning', 'event-scheduling', 'timeline-view'],
-    description: 'Planification des campagnes',
-    category: 'customer',
-    order: 34,
-    groupId: 'marketing'
-  },
+  
   socialCommerce: {
     id: 'socialCommerce',
     name: 'Social Commerce',
-    icon: 'Globe',
+    icon: 'Share2',
     enabled: true,
     minPlan: 'pro',
     route: '/marketing/social-commerce',
-    features: ['social-selling', 'instagram-shop', 'facebook-shop'],
+    features: ['instagram-shop', 'tiktok-shop'],
     description: 'Vente sur réseaux sociaux',
     category: 'customer',
-    order: 35,
-    groupId: 'marketing'
+    order: 4,
+    groupId: 'marketing',
+    badge: 'pro'
   },
-  creativeStudio: {
-    id: 'creativeStudio',
-    name: 'Studio Créatif',
-    icon: 'Palette',
+  
+  crm: {
+    id: 'crm',
+    name: 'CRM',
+    icon: 'Heart',
     enabled: true,
     minPlan: 'pro',
-    route: '/marketing/creative-studio',
-    features: ['image-editor', 'banner-creator', 'templates'],
-    description: 'Création de visuels marketing',
+    route: '/marketing/crm',
+    features: ['customer-segments', 'lifecycle'],
+    description: 'Relation client avancée',
     category: 'customer',
-    order: 36,
-    groupId: 'marketing'
+    order: 5,
+    groupId: 'marketing',
+    badge: 'pro'
   },
-
-  // ============= MODULES AUTOMATION AVANCÉS =============
   
-  workflowBuilder: {
-    id: 'workflowBuilder',
-    name: 'Workflow Builder',
-    icon: 'Workflow',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/automation/workflow-builder',
-    features: ['visual-builder', 'triggers', 'actions', 'conditions'],
-    description: 'Créateur de workflows visuels',
-    category: 'automation',
-    order: 37,
-    groupId: 'automation'
-  },
-  aiStudio: {
-    id: 'aiStudio',
-    name: 'AI Studio',
-    icon: 'Sparkles',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/automation/ai-studio',
-    features: ['ai-models', 'training', 'predictions'],
-    description: 'Studio IA avancé',
-    category: 'automation',
-    order: 38,
-    groupId: 'ai'
-  },
-  optimizationHub: {
-    id: 'optimizationHub',
-    name: 'Hub Optimisation',
-    icon: 'Target',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/automation/optimization',
-    features: ['performance-optimization', 'conversion-optimization'],
-    description: 'Centre d\'optimisation',
-    category: 'automation',
-    order: 39,
-    groupId: 'automation'
-  },
-  dynamicPricing: {
-    id: 'dynamicPricing',
-    name: 'Tarification Dynamique',
-    icon: 'DollarSign',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/automation/dynamic-pricing',
-    features: ['price-rules', 'demand-pricing', 'competitor-based'],
-    description: 'Prix dynamiques intelligents',
-    category: 'automation',
-    order: 40,
-    groupId: 'automation'
-  },
-  pricingAutomation: {
-    id: 'pricingAutomation',
-    name: 'Automation Prix',
-    icon: 'RefreshCw',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/automation/pricing-automation',
-    features: ['auto-repricing', 'margin-protection', 'rules-engine'],
-    description: 'Automatisation des prix',
-    category: 'automation',
-    order: 41,
-    groupId: 'automation'
-  },
-  productRecommendations: {
-    id: 'productRecommendations',
-    name: 'Recommandations',
-    icon: 'Lightbulb',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/automation/recommendations',
-    features: ['ai-recommendations', 'cross-sell', 'upsell'],
-    description: 'Recommandations produits IA',
-    category: 'automation',
-    order: 42,
-    groupId: 'ai'
-  },
-
-  // ============= MODULES ANALYTICS AVANCÉS =============
-  
-  reports: {
-    id: 'reports',
-    name: 'Rapports',
-    icon: 'FileText',
+  reviews: {
+    id: 'reviews',
+    name: 'Avis clients',
+    icon: 'Star',
     enabled: true,
     minPlan: 'standard',
-    route: '/analytics/reports',
-    features: ['custom-reports', 'export', 'scheduling'],
-    description: 'Rapports personnalisés',
-    category: 'analytics',
-    order: 43,
-    groupId: 'analytics'
-  },
-  businessIntelligence: {
-    id: 'businessIntelligence',
-    name: 'Business Intelligence',
-    icon: 'PieChart',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/analytics/business-intelligence',
-    features: ['bi-dashboards', 'data-visualization', 'insights'],
-    description: 'Intelligence d\'affaires avancée',
-    category: 'analytics',
-    order: 44,
-    groupId: 'analytics'
-  },
-  profitAnalytics: {
-    id: 'profitAnalytics',
-    name: 'Analytics Profits',
-    icon: 'TrendingUp',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/analytics/profit-analytics',
-    features: ['profit-tracking', 'margin-analysis', 'cost-breakdown'],
-    description: 'Analyse des profits et marges',
-    category: 'analytics',
-    order: 45,
-    groupId: 'analytics'
-  },
-  customerSegmentation: {
-    id: 'customerSegmentation',
-    name: 'Segmentation Clients',
-    icon: 'Users',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/analytics/customer-segmentation',
-    features: ['rfm-analysis', 'behavioral-segments', 'targeting'],
-    description: 'Segmentation client avancée',
-    category: 'analytics',
-    order: 46,
-    groupId: 'customers'
-  },
-  productIntelligence: {
-    id: 'productIntelligence',
-    name: 'Intelligence Produits',
-    icon: 'Brain',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/analytics/product-intelligence',
-    features: ['product-insights', 'trend-analysis', 'recommendations'],
-    description: 'Intelligence produits IA',
-    category: 'analytics',
-    order: 47,
-    groupId: 'analytics'
-  },
-  competitorAnalysis: {
-    id: 'competitorAnalysis',
-    name: 'Analyse Concurrence',
-    icon: 'Eye',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/analytics/competitor-analysis',
-    features: ['competitor-tracking', 'price-comparison', 'market-share'],
-    description: 'Surveillance des concurrents',
-    category: 'analytics',
-    order: 48,
-    groupId: 'analytics'
-  },
-  priceMonitoring: {
-    id: 'priceMonitoring',
-    name: 'Monitoring Prix',
-    icon: 'Activity',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/analytics/price-monitoring',
-    features: ['price-alerts', 'historical-prices', 'market-prices'],
-    description: 'Surveillance des prix marché',
-    category: 'analytics',
-    order: 49,
-    groupId: 'analytics'
+    route: '/reviews',
+    features: ['review-management'],
+    description: 'Gérer les avis',
+    category: 'customer',
+    order: 6,
+    groupId: 'marketing'
   },
 
-  // ============= MODULES ENTERPRISE AVANCÉS =============
+  // ==========================================
+  // GROUPE: SETTINGS - Configuration
+  // ==========================================
   
-  teamManagement: {
-    id: 'teamManagement',
-    name: 'Gestion Équipe',
-    icon: 'Users',
+  settings: {
+    id: 'settings',
+    name: 'Paramètres',
+    icon: 'Settings',
     enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/enterprise/team',
-    features: ['user-roles', 'permissions', 'team-collaboration'],
-    description: 'Gestion des équipes et permissions',
-    category: 'enterprise',
-    order: 50,
+    minPlan: 'standard',
+    route: '/settings',
+    features: ['account', 'preferences'],
+    description: 'Configuration générale',
+    category: 'system',
+    order: 1,
     groupId: 'settings'
   },
-  taxManagement: {
-    id: 'taxManagement',
-    name: 'Gestion Taxes',
-    icon: 'Receipt',
+  
+  integrations: {
+    id: 'integrations',
+    name: 'Intégrations',
+    icon: 'Plug',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/integrations',
+    features: ['api-keys', 'webhooks'],
+    description: 'APIs et webhooks',
+    category: 'integrations',
+    order: 2,
+    groupId: 'settings'
+  },
+  
+  automation: {
+    id: 'automation',
+    name: 'Automatisation',
+    icon: 'Zap',
     enabled: true,
     minPlan: 'pro',
-    route: '/enterprise/tax',
-    features: ['tax-rules', 'vat-management', 'tax-reports'],
-    description: 'Gestion des taxes et TVA',
-    category: 'enterprise',
-    order: 51,
-    groupId: 'billing'
+    route: '/automation',
+    features: ['workflows', 'triggers'],
+    description: 'Workflows automatisés',
+    category: 'automation',
+    order: 3,
+    groupId: 'settings',
+    badge: 'pro'
   },
-  compliance: {
-    id: 'compliance',
-    name: 'Conformité',
+  
+  extensions: {
+    id: 'extensions',
+    name: 'Extensions',
+    icon: 'Puzzle',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/extensions',
+    features: ['marketplace', 'plugins'],
+    description: 'Apps et extensions',
+    category: 'system',
+    order: 4,
+    groupId: 'settings',
+    badge: 'pro'
+  },
+  
+  academy: {
+    id: 'academy',
+    name: 'Academy',
+    icon: 'GraduationCap',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/integrations/academy',
+    features: ['courses', 'tutorials'],
+    description: 'Formation et tutoriels',
+    category: 'learning',
+    order: 5,
+    groupId: 'settings'
+  },
+  
+  support: {
+    id: 'support',
+    name: 'Support',
+    icon: 'HelpCircle',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/integrations/support',
+    features: ['tickets', 'chat'],
+    description: 'Aide et assistance',
+    category: 'system',
+    order: 6,
+    groupId: 'settings'
+  },
+  
+  admin: {
+    id: 'admin',
+    name: 'Administration',
     icon: 'Shield',
     enabled: true,
     minPlan: 'ultra_pro',
-    route: '/enterprise/compliance',
-    features: ['gdpr', 'legal-compliance', 'audit-trail'],
-    description: 'Centre de conformité RGPD',
+    route: '/admin',
+    features: ['admin-panel', 'security'],
+    description: 'Administration système',
     category: 'enterprise',
-    order: 52,
-    groupId: 'settings'
-  },
-  platformManagement: {
-    id: 'platformManagement',
-    name: 'Gestion Plateforme',
-    icon: 'Server',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/enterprise/platform',
-    features: ['system-config', 'infrastructure', 'scaling'],
-    description: 'Administration de la plateforme',
-    category: 'enterprise',
-    order: 53,
-    groupId: 'settings'
-  },
-  performanceMonitoring: {
-    id: 'performanceMonitoring',
-    name: 'Performance',
-    icon: 'Activity',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/enterprise/monitoring',
-    features: ['metrics', 'alerts', 'performance-tracking'],
-    description: 'Monitoring des performances',
-    category: 'enterprise',
-    order: 54,
-    groupId: 'settings'
-  },
-  internationalization: {
-    id: 'internationalization',
-    name: 'Internationalisation',
-    icon: 'Globe',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/enterprise/i18n',
-    features: ['multi-language', 'multi-currency', 'localization'],
-    description: 'Multi-langues et devises',
-    category: 'enterprise',
-    order: 55,
-    groupId: 'settings'
-  },
-  subscriptionManagement: {
-    id: 'subscriptionManagement',
-    name: 'Abonnements',
-    icon: 'CreditCard',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/enterprise/subscriptions',
-    features: ['subscription-plans', 'billing', 'invoices'],
-    description: 'Gestion des abonnements',
-    category: 'enterprise',
-    order: 56,
-    groupId: 'billing'
-  },
-
-  // ============= MODULES STOCK AVANCÉS =============
-  
-  stockRepricing: {
-    id: 'stockRepricing',
-    name: 'Stock Repricing',
-    icon: 'RefreshCw',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/stock/repricing',
-    features: ['stock-based-pricing', 'demand-pricing'],
-    description: 'Repricing basé sur stock',
-    category: 'automation',
-    order: 57,
-    groupId: 'stock'
-  },
-  stockPredictions: {
-    id: 'stockPredictions',
-    name: 'Prédictions Stock',
-    icon: 'TrendingUp',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/stock/predictions',
-    features: ['demand-forecasting', 'reorder-predictions'],
-    description: 'Prédictions de stock IA',
-    category: 'analytics',
-    order: 58,
-    groupId: 'stock'
-  },
-
-  // ============= MODULES SUPPORT AVANCÉS =============
-  
-  liveChat: {
-    id: 'liveChat',
-    name: 'Chat en Direct',
-    icon: 'MessageCircle',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/integrations/support/live-chat',
-    features: ['live-chat', 'chatbot', 'customer-support'],
-    description: 'Support client en temps réel',
-    category: 'system',
-    order: 59,
-    groupId: 'support'
-  },
-  notifications: {
-    id: 'notifications',
-    name: 'Notifications',
-    icon: 'Bell',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/dashboard/notifications',
-    features: ['alerts', 'notifications', 'preferences'],
-    description: 'Centre de notifications',
-    category: 'system',
-    order: 60,
-    groupId: 'settings'
-  },
-
-  // ============= MODULES INTÉGRATIONS AVANCÉS =============
-  
-  tiktokShop: {
-    id: 'tiktokShop',
-    name: 'TikTok Shop',
-    icon: 'Video',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/integrations/tiktok-shop',
-    features: ['tiktok-integration', 'video-commerce', 'live-selling'],
-    description: 'Intégration TikTok Shop',
-    category: 'integrations',
-    order: 61,
-    groupId: 'stores_channels'
-  },
-  apiDeveloper: {
-    id: 'apiDeveloper',
-    name: 'API Développeur',
-    icon: 'Code',
-    enabled: true,
-    minPlan: 'ultra_pro',
-    route: '/integrations/api/developer',
-    features: ['api-keys', 'webhooks', 'documentation'],
-    description: 'Portail développeur API',
-    category: 'integrations',
-    order: 62,
-    groupId: 'settings'
-  },
-  chromeExtension: {
-    id: 'chromeExtension',
-    name: 'Extension Chrome',
-    icon: 'Chrome',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/integrations/extensions/chrome-config',
-    features: ['chrome-extension', 'quick-import', 'product-scraper'],
-    description: 'Configuration extension Chrome',
-    category: 'integrations',
-    order: 63,
-    groupId: 'automation'
-  },
-  contentManagement: {
-    id: 'contentManagement',
-    name: 'Gestion Contenu',
-    icon: 'FileEdit',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/integrations/content',
-    features: ['content-library', 'media-management', 'templates'],
-    description: 'Bibliothèque de contenu',
-    category: 'product',
-    order: 64,
-    groupId: 'products'
+    order: 7,
+    groupId: 'settings',
+    badge: 'ultra'
   }
 };
 
-// Hiérarchie des plans
-export const PLAN_HIERARCHY: Record<PlanType, number> = {
-  'free': 1,
-  'standard': 1,
-  'pro': 2,
-  'ultra_pro': 3,
-};
+/**
+ * Helper: Récupérer les modules par groupe
+ */
+export function getModulesByGroup(groupId: NavGroupId): ModuleConfig[] {
+  return Object.values(MODULE_REGISTRY)
+    .filter(m => m.groupId === groupId && m.enabled)
+    .sort((a, b) => a.order - b.order);
+}
 
-// Hook pour la gestion des modules
-export class ModuleManager {
-  private currentPlan: PlanType = 'standard';
+/**
+ * Helper: Récupérer un groupe par ID
+ */
+export function getNavGroup(groupId: NavGroupId): NavGroupConfig | undefined {
+  return NAV_GROUPS.find(g => g.id === groupId);
+}
+
+/**
+ * Helper: Récupérer les modules par plan
+ */
+export function getModulesByPlan(plan: PlanType): ModuleConfig[] {
+  const planHierarchy: Record<PlanType, number> = {
+    free: 0,
+    standard: 1,
+    pro: 2,
+    ultra_pro: 3
+  };
   
+  const userPlanLevel = planHierarchy[plan] || 0;
+  
+  return Object.values(MODULE_REGISTRY)
+    .filter(m => planHierarchy[m.minPlan] <= userPlanLevel && m.enabled)
+    .sort((a, b) => a.order - b.order);
+}
+
+/**
+ * ModuleManager - Classe pour gérer l'accès aux modules
+ */
+export class ModuleManager {
+  private currentPlan: PlanType;
+  private planHierarchy: Record<PlanType, number> = {
+    free: 0,
+    standard: 1,
+    pro: 2,
+    ultra_pro: 3
+  };
+
   constructor(plan: PlanType) {
     this.currentPlan = plan;
   }
 
-  // Obtenir les modules disponibles pour le plan actuel
-  getAvailableModules(): ModuleConfig[] {
-    return Object.values(MODULE_REGISTRY).filter(module => 
-      PLAN_HIERARCHY[this.currentPlan] >= PLAN_HIERARCHY[module.minPlan]
-    );
-  }
-
-  // Vérifier si un module est accessible
   canAccessModule(moduleId: string): boolean {
     const module = MODULE_REGISTRY[moduleId];
-    if (!module) return false;
+    if (!module || !module.enabled) return false;
     
-    return PLAN_HIERARCHY[this.currentPlan] >= PLAN_HIERARCHY[module.minPlan];
+    const userLevel = this.planHierarchy[this.currentPlan] || 0;
+    const requiredLevel = this.planHierarchy[module.minPlan] || 0;
+    
+    return userLevel >= requiredLevel;
   }
 
-  // Obtenir les fonctionnalités disponibles
-  getAvailableFeatures(): string[] {
-    return this.getAvailableModules()
-      .flatMap(module => module.features);
+  getAvailableModules(): ModuleConfig[] {
+    return Object.values(MODULE_REGISTRY)
+      .filter(m => this.canAccessModule(m.id))
+      .sort((a, b) => a.order - b.order);
   }
 
-  // Vérifier l'accès à une fonctionnalité
-  hasFeature(feature: string): boolean {
-    return this.getAvailableFeatures().includes(feature);
-  }
-
-  // Obtenir la configuration d'un module
   getModuleConfig(moduleId: string): ModuleConfig | null {
     return MODULE_REGISTRY[moduleId] || null;
   }
 
-  // Mettre à jour le plan
-  updatePlan(newPlan: PlanType): void {
-    this.currentPlan = newPlan;
+  hasFeature(feature: string): boolean {
+    const modules = this.getAvailableModules();
+    return modules.some(m => m.features.includes(feature));
+  }
+
+  getAvailableFeatures(): string[] {
+    const modules = this.getAvailableModules();
+    const features = new Set<string>();
+    modules.forEach(m => m.features.forEach(f => features.add(f)));
+    return Array.from(features);
   }
 }
