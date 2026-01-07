@@ -13,6 +13,7 @@ const AIPage = lazy(() => import('@/pages/AIPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const IntegrationsPage = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
+const RepricingPage = lazy(() => import('@/pages/RepricingPage'));
 
 // Composant de chargement
 const ModuleLoadingSkeleton = () => (
@@ -86,6 +87,16 @@ export function ModuleRoutes() {
           element={
             <ModuleGuard moduleId="integrations">
               <IntegrationsPage />
+            </ModuleGuard>
+          } 
+        />
+
+        {/* Repricing Module */}
+        <Route 
+          path="/repricing" 
+          element={
+            <ModuleGuard moduleId="automation">
+              <RepricingPage />
             </ModuleGuard>
           } 
         />
