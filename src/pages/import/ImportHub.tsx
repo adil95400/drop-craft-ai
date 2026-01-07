@@ -100,7 +100,7 @@ export default function ImportHub() {
       {/* 3 grandes cartes de navigation */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Carte Import par URL - NOUVEAU */}
-        <Link to="/import/config" data-testid="supplier-card">
+        <Link to="/import/url" data-testid="url-import-card">
           <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary bg-gradient-to-br from-primary/5 to-primary/10">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
