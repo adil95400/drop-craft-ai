@@ -127,31 +127,58 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'sources',
     subModules: [
       {
-        id: 'import-quick',
-        name: 'Import rapide',
-        route: '/import/quick',
-        icon: 'Zap',
-        description: 'Upload CSV ou URL',
-        features: ['csv-upload', 'drag-drop'],
+        id: 'import-url',
+        name: 'Import par URL',
+        route: '/import/url',
+        icon: 'Link',
+        description: 'Importer depuis une URL',
+        features: ['url-import', 'auto-detect'],
         order: 1
       },
       {
+        id: 'import-quick',
+        name: 'Import Rapide',
+        route: '/import/quick',
+        icon: 'Zap',
+        description: 'Upload CSV rapide',
+        features: ['csv-upload', 'drag-drop'],
+        order: 2
+      },
+      {
         id: 'import-advanced',
-        name: 'Import avancé',
+        name: 'Import Avancé',
         route: '/import/advanced',
         icon: 'Settings',
         description: 'Mapping et transformations',
         features: ['field-mapping', 'rules'],
-        order: 2
+        order: 3
       },
       {
-        id: 'import-scheduled',
-        name: 'Planifiés',
-        route: '/import/scheduled',
-        icon: 'Calendar',
-        description: 'Imports automatiques',
-        features: ['schedule', 'cron'],
-        order: 3
+        id: 'import-management',
+        name: 'Gestion des Imports',
+        route: '/import/management',
+        icon: 'FolderOpen',
+        description: 'Gérer vos imports',
+        features: ['import-history', 'scheduled'],
+        order: 4
+      },
+      {
+        id: 'import-products',
+        name: 'Produits Importés',
+        route: '/import/products',
+        icon: 'Package',
+        description: 'Produits en attente',
+        features: ['review', 'approve'],
+        order: 5
+      },
+      {
+        id: 'import-history',
+        name: 'Historique',
+        route: '/import/history',
+        icon: 'History',
+        description: 'Historique des imports',
+        features: ['logs', 'stats'],
+        order: 6
       }
     ]
   },
