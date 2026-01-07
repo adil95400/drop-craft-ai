@@ -1,4 +1,5 @@
 export { BaseConnector } from './BaseConnector';
+export type { SupplierProduct, ProductVariant, FetchOptions, SyncResult, ConnectorCredentials } from './BaseConnector';
 export { AmazonConnector } from './AmazonConnector';
 export { ShopifyConnector } from './ShopifyConnector';
 export { WooCommerceAdvancedConnector } from './WooCommerceAdvancedConnector';
@@ -21,10 +22,11 @@ export { ShopeeConnector } from './ShopeeConnector';
 export { ZalandoConnector } from './ZalandoConnector';
 export { WishConnector } from './WishConnector';
 export { DropshippingConnector } from './DropshippingConnector';
-export { ConnectorFactory } from './ConnectorFactory';
 export { DropshippingEuropeConnector } from './DropshippingEuropeConnector';
 export { BTSWholesalerConnector } from './BTSWholesalerConnector';
 export { MatterhornConnector } from './MatterhornConnector';
 export { B2BSportsWholesaleConnector } from './B2BSportsWholesaleConnector';
 export { WatchImportConnector } from './WatchImportConnector';
 export { CJDropshippingConnector } from './CJDropshippingConnector';
+export { ConnectorFactory, CONNECTOR_CONFIGS } from './ConnectorFactory';
+export type { ConnectorType, ConnectorConfig } from './ConnectorFactory';
