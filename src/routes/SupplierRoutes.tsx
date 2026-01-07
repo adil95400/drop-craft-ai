@@ -15,9 +15,22 @@ const ChannableFeedManager = lazy(() => import('@/pages/feeds/ChannableFeedManag
 const BTSImportPage = lazy(() => import('@/pages/suppliers/BTSImportPage'))
 const VariantMappingPage = lazy(() => import('@/pages/suppliers/VariantMappingPage'))
 
+// Connecteurs fournisseurs spécifiques
+const BigBuyConnectorPage = lazy(() => import('@/pages/suppliers/connectors/BigBuyConnectorPage'))
+const CJDropshippingConnectorPage = lazy(() => import('@/pages/suppliers/connectors/CJDropshippingConnectorPage'))
+const AliExpressConnectorPage = lazy(() => import('@/pages/suppliers/connectors/AliExpressConnectorPage'))
+const AmazonConnectorPage = lazy(() => import('@/pages/suppliers/connectors/AmazonConnectorPage'))
+const ShopifyConnectorPage = lazy(() => import('@/pages/suppliers/connectors/ShopifyConnectorPage'))
+const WooCommerceConnectorPage = lazy(() => import('@/pages/suppliers/connectors/WooCommerceConnectorPage'))
+const CdiscountConnectorPage = lazy(() => import('@/pages/suppliers/connectors/CdiscountConnectorPage'))
+const ZalandoConnectorPage = lazy(() => import('@/pages/suppliers/connectors/ZalandoConnectorPage'))
+const RakutenConnectorPage = lazy(() => import('@/pages/suppliers/connectors/RakutenConnectorPage'))
+const PrestaShopConnectorPage = lazy(() => import('@/pages/suppliers/connectors/PrestaShopConnectorPage'))
+const EtsyConnectorPage = lazy(() => import('@/pages/suppliers/connectors/EtsyConnectorPage'))
+
 /**
  * ROUTES DU MODULE FOURNISSEURS
- * Architecture unifiée simplifiée
+ * Architecture unifiée simplifiée avec connecteurs spécifiques
  */
 export default function SupplierRoutes() {
   return (
@@ -45,11 +58,34 @@ export default function SupplierRoutes() {
       
       {/* Création */}
       <Route path="create" element={<CreateSupplier />} />
+      <Route path="add" element={<CreateSupplier />} />
       
       {/* Import BTS CSV */}
       <Route path="bts/import" element={<BTSImportPage />} />
+
+      {/* === CONNECTEURS FOURNISSEURS SPÉCIFIQUES === */}
       
-      {/* Routes par fournisseur */}
+      {/* Grossistes européens */}
+      <Route path="bigbuy" element={<BigBuyConnectorPage />} />
+      <Route path="cj-dropshipping" element={<CJDropshippingConnectorPage />} />
+      <Route path="dropshipping" element={<CJDropshippingConnectorPage />} />
+      
+      {/* Marketplaces globales */}
+      <Route path="aliexpress" element={<AliExpressConnectorPage />} />
+      <Route path="amazon" element={<AmazonConnectorPage />} />
+      
+      {/* Marketplaces européennes */}
+      <Route path="cdiscount" element={<CdiscountConnectorPage />} />
+      <Route path="zalando" element={<ZalandoConnectorPage />} />
+      <Route path="rakuten" element={<RakutenConnectorPage />} />
+      
+      {/* Plateformes E-commerce */}
+      <Route path="shopify" element={<ShopifyConnectorPage />} />
+      <Route path="woocommerce" element={<WooCommerceConnectorPage />} />
+      <Route path="prestashop" element={<PrestaShopConnectorPage />} />
+      <Route path="etsy" element={<EtsyConnectorPage />} />
+      
+      {/* Routes par fournisseur (générique avec ID) */}
       <Route path=":supplierId" element={<SupplierDetails />} />
       <Route path=":supplierId/catalog" element={<SupplierCatalogPage />} />
       <Route path=":supplierId/advanced" element={<SupplierAdvancedPage />} />
