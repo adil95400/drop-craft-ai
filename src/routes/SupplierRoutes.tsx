@@ -3,7 +3,6 @@ import { lazy } from 'react'
 
 // Lazy loading des pages - Hub Unifié comme point d'entrée principal
 const SuppliersHubUnified = lazy(() => import('@/pages/suppliers/SuppliersHubUnified'))
-const SupplierMarketplacePage = lazy(() => import('@/pages/suppliers/marketplace/SupplierMarketplacePage'))
 const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'))
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'))
 const SupplierCatalogPage = lazy(() => import('@/pages/suppliers/catalog/SupplierCatalogPage'))
@@ -26,8 +25,8 @@ export default function SupplierRoutes() {
       {/* Hub Unifié - Point d'entrée principal */}
       <Route index element={<SuppliersHubUnified />} />
       
-      {/* Marketplace */}
-      <Route path="marketplace" element={<SupplierMarketplacePage />} />
+      {/* Marketplace - Redirige vers la page connecteurs unifiée */}
+      <Route path="marketplace" element={<Navigate to="/integrations/connectors?category=supplier" replace />} />
       
       {/* Mes fournisseurs */}
       <Route path="my" element={<MySuppliersPage />} />
