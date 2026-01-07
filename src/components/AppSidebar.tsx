@@ -111,7 +111,7 @@ export function AppSidebar() {
   
   // État local
   const [searchQuery, setSearchQuery] = useState("")
-  const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['overview', 'products'])
+  const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['home', 'catalog'])
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({})
   
   // Hooks
