@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   SidebarMenuButton,
@@ -21,7 +21,20 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { NavItem } from "./SidebarConfig";
+
+export interface NavItem {
+  title: string;
+  url?: string;
+  icon: LucideIcon;
+  description?: string;
+  shortcut?: string;
+  status?: 'active' | 'warning' | 'syncing' | 'connected' | 'new';
+  badge?: {
+    text: string;
+    variant?: "default" | "secondary" | "destructive" | "outline";
+  };
+  items?: NavItem[];
+}
 
 interface SidebarItemProps {
   item: NavItem;

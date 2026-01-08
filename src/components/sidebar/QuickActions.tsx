@@ -1,5 +1,5 @@
 import React from "react";
-import { RefreshCw } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { QuickAction } from "./SidebarConfig";
+
+export interface QuickAction {
+  action: string;
+  title: string;
+  icon: LucideIcon;
+  variant?: "default" | "outline" | "ghost" | "secondary" | "destructive";
+  description?: string;
+  shortcut?: string;
+  badge?: string;
+}
 
 interface QuickActionsProps {
   actions: QuickAction[];

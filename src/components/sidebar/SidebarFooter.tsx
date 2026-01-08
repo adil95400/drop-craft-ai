@@ -21,7 +21,19 @@ import {
 } from "@/components/ui/tooltip";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
-import { userActivityConfig } from "./SidebarConfig";
+
+// Configuration utilisateur par défaut
+const userActivityConfig = {
+  name: 'Utilisateur',
+  email: 'user@example.com',
+  avatar: '',
+  plan: 'Pro',
+  status: 'online' as 'online' | 'away' | 'offline',
+  notifications: 0,
+  lastSync: 'À l\'instant',
+  todayRevenue: '0€',
+  pendingTasks: 0,
+};
 
 interface SidebarFooterContentProps {
   collapsed: boolean;
@@ -46,6 +58,9 @@ export const SidebarFooterContent: React.FC<SidebarFooterContentProps> = ({
       console.error('Erreur lors de la déconnexion:', error);
     }
   };
+
+  const displayName = user?.email?.split('@')[0] || userActivityConfig.name;
+  const displayEmail = user?.email || userActivityConfig.email;
 
   // Indicateur d'activité en temps réel
   const ActivityIndicator = () => (
@@ -144,10 +159,10 @@ export const SidebarFooterContent: React.FC<SidebarFooterContentProps> = ({
                     <Avatar className="h-8 w-8">
                       <AvatarImage 
                         src={userActivityConfig.avatar} 
-                        alt={userActivityConfig.name} 
+                        alt={displayName} 
                       />
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {userActivityConfig.name.split(' ').map(n => n[0]).join('')}
+                        {displayName.split(' ').map(n => n[0]).join('').toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     {/* Indicateur de plan */}
@@ -158,7 +173,7 @@ export const SidebarFooterContent: React.FC<SidebarFooterContentProps> = ({
                   {!collapsed && (
                     <div className="flex-1 min-w-0 text-left">
                       <p className="text-sm font-semibold truncate">
-                        {userActivityConfig.name}
+                        {displayName}
                       </p>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className="text-xs">
@@ -181,15 +196,15 @@ export const SidebarFooterContent: React.FC<SidebarFooterContentProps> = ({
                   <Avatar className="h-10 w-10">
                     <AvatarImage 
                       src={userActivityConfig.avatar} 
-                      alt={userActivityConfig.name} 
+                      alt={displayName} 
                     />
                     <AvatarFallback>
-                      {userActivityConfig.name.split(' ').map(n => n[0]).join('')}
+                      {displayName.split(' ').map(n => n[0]).join('').toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{userActivityConfig.name}</p>
-                    <p className="text-xs text-muted-foreground">{userActivityConfig.email}</p>
+                    <p className="text-sm font-semibold">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{displayEmail}</p>
                   </div>
                 </div>
                 <Badge variant="outline" className="text-xs">
