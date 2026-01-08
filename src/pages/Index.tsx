@@ -9,9 +9,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { SoftwareAppSchema, OrganizationSchema } from "@/components/seo/StructuredData";
 import heroImage from "@/assets/hero-automation.jpg";
+import heroImageSm from "@/assets/hero-automation-sm.jpg";
 import featureAI from "@/assets/feature-ai.jpg";
+import featureAISm from "@/assets/feature-ai-sm.jpg";
 import featureIntegration from "@/assets/feature-integration.jpg";
+import featureIntegrationSm from "@/assets/feature-integration-sm.jpg";
 import featureAnalytics from "@/assets/feature-analytics.jpg";
+import featureAnalyticsSm from "@/assets/feature-analytics-sm.jpg";
 
 // Hero Section
 const HeroSection = () => {
@@ -74,15 +78,16 @@ const HeroSection = () => {
           <div className="relative lg:order-last order-first">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50">
               <img 
-                src={heroImage} 
+                src={heroImageSm} 
+                srcSet={`${heroImageSm} 640w, ${heroImage} 1920w`}
                 alt="Dashboard e-commerce automatisé avec gestion produits et analytics" 
                 className="w-full h-auto object-cover"
-                width={1920}
-                height={1080}
+                width={640}
+                height={360}
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="(max-width: 640px) 100vw, 640px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
             </div>
@@ -154,7 +159,8 @@ const FeaturesSection = () => {
       icon: Sparkles,
       title: "IA d'optimisation",
       description: "Optimisez automatiquement vos prix, descriptions produits et SEO grâce à l'intelligence artificielle avancée.",
-      image: featureAI,
+      image: featureAISm,
+      imageLarge: featureAI,
       color: "from-purple-500 to-pink-500",
       link: "/features/ai-optimization"
     },
@@ -162,7 +168,8 @@ const FeaturesSection = () => {
       icon: Globe,
       title: "Multi-marketplace",
       description: "Gérez Shopify, WooCommerce, PrestaShop et plus depuis une seule plateforme centralisée.",
-      image: featureIntegration,
+      image: featureIntegrationSm,
+      imageLarge: featureIntegration,
       color: "from-blue-500 to-cyan-500",
       link: "/features/multi-marketplace"
     },
@@ -170,7 +177,8 @@ const FeaturesSection = () => {
       icon: BarChart3,
       title: "Analytics avancés",
       description: "Tableaux de bord en temps réel avec insights business et prévisions de ventes powered by AI.",
-      image: featureAnalytics,
+      image: featureAnalyticsSm,
+      imageLarge: featureAnalytics,
       color: "from-green-500 to-emerald-500",
       link: "/features/analytics"
     }
@@ -232,13 +240,14 @@ const FeaturesSection = () => {
                   <div className="relative rounded-xl overflow-hidden shadow-xl border border-border">
                     <img 
                       src={feature.image} 
+                      srcSet={`${feature.image} 640w, ${feature.imageLarge} 800w`}
                       alt={`${feature.title} - Interface de ${feature.title.toLowerCase()}`}
                       className="w-full h-auto object-cover"
-                      width={800}
-                      height={800}
+                      width={640}
+                      height={640}
                       loading="lazy"
                       decoding="async"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      sizes="(max-width: 640px) 100vw, 640px"
                     />
                   </div>
                 </div>
