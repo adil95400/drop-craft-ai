@@ -43,10 +43,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   // Actions & outils
   'Zap': Zap, 'Sparkles': Sparkles, 'Search': Search, 'Plus': Package,
   'Link': Database, 'History': Clock, 'RefreshCw': RefreshCw,
+  'Layers': Package,
   
   // Gestion
   'Users': Users, 'Boxes': Boxes, 'Star': Star, 'Eye': Search,
   'GitBranch': GitCompare, 'CheckCircle': CheckCircle, 'Bell': Activity,
+  'RotateCcw': RefreshCw,
   
   // Marketing & Analytics
   'TrendingUp': TrendingUp, 'Megaphone': Megaphone, 'Tag': Tag,

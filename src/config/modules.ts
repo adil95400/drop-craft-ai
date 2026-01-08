@@ -3,6 +3,7 @@ import type { PlanType } from '@/lib/unified-plan-system';
 /**
  * Navigation simplifiée style Channable
  * 7 groupes principaux - Structure claire sans doublons
+ * Inspiré par Channable: Sources → Catalogue → Canaux → Insights
  */
 
 // =============================================================================
@@ -52,7 +53,7 @@ export interface ModuleConfig {
 }
 
 // =============================================================================
-// GROUPES DE NAVIGATION (7 groupes)
+// GROUPES DE NAVIGATION (7 groupes - Style Channable)
 // =============================================================================
 
 export const NAV_GROUPS: NavGroupConfig[] = [
@@ -66,7 +67,7 @@ export const NAV_GROUPS: NavGroupConfig[] = [
 ];
 
 // =============================================================================
-// MODULES REGISTRY - Structure simplifiée et sans doublons
+// MODULE_REGISTRY - Navigation complète sans doublons
 // =============================================================================
 
 export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
@@ -123,7 +124,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'import-quick', name: 'Import Rapide', route: '/import/quick', icon: 'Zap', description: 'Upload CSV rapide', features: ['csv-upload'], order: 1 },
       { id: 'import-url', name: 'Import par URL', route: '/import/url', icon: 'Link', description: 'Importer depuis une URL', features: ['url-import'], order: 2 },
       { id: 'import-advanced', name: 'Import Avancé', route: '/import/advanced', icon: 'Settings', description: 'Mapping et transformations', features: ['field-mapping'], order: 3 },
-      { id: 'import-history', name: 'Historique', route: '/import/history', icon: 'History', description: 'Historique des imports', features: ['logs'], order: 4 },
+      { id: 'import-shopify', name: 'Shopify', route: '/import/shopify', icon: 'Store', description: 'Import depuis Shopify', features: ['shopify'], order: 4 },
+      { id: 'import-history', name: 'Historique', route: '/import/history', icon: 'History', description: 'Historique des imports', features: ['logs'], order: 5 },
     ]
   },
   
@@ -138,12 +140,22 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Connectez vos fournisseurs',
     category: 'product',
     order: 2,
+    groupId: 'sources'
+  },
+
+  research: {
+    id: 'research',
+    name: 'Recherche Produits',
+    icon: 'Search',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/products/research',
+    features: ['product-research', 'winning-products'],
+    description: 'Trouver les produits gagnants',
+    category: 'product',
+    order: 3,
     groupId: 'sources',
-    subModules: [
-      { id: 'suppliers-hub', name: 'Hub', route: '/suppliers', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'suppliers-my', name: 'Mes fournisseurs', route: '/suppliers/my', icon: 'Users', description: 'Fournisseurs connectés', features: ['manage'], order: 2 },
-      { id: 'suppliers-add', name: 'Ajouter', route: '/suppliers/add', icon: 'Plus', description: 'Connecter un fournisseur', features: ['add'], order: 3 },
-    ]
+    badge: 'pro'
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -173,14 +185,13 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     name: 'Règles',
     icon: 'GitBranch',
     enabled: true,
-    minPlan: 'pro',
-    route: '/products/rules',
+    minPlan: 'standard',
+    route: '/rules',
     features: ['rule-engine', 'transformations'],
     description: 'Règles de transformation',
     category: 'automation',
     order: 2,
-    groupId: 'catalog',
-    badge: 'pro'
+    groupId: 'catalog'
   },
   
   audit: {
@@ -251,6 +262,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'feeds-manager', name: 'Gestion', route: '/feeds', icon: 'Rss', description: 'Créer et gérer', features: ['feed-creation'], order: 1 },
       { id: 'feeds-optimization', name: 'Optimisation', route: '/feeds/optimization', icon: 'TrendingUp', description: 'Optimiser les feeds', features: ['optimization'], order: 2 },
       { id: 'feeds-rules', name: 'Règles Feed', route: '/feeds/rules', icon: 'GitBranch', description: 'Règles de transformation', features: ['rules'], order: 3 },
+      { id: 'feeds-categories', name: 'Catégories', route: '/feeds/categories', icon: 'Layers', description: 'Mapping catégories', features: ['mapping'], order: 4 },
     ]
   },
   
@@ -279,7 +291,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'ShoppingCart',
     enabled: true,
     minPlan: 'standard',
-    route: '/dashboard/orders',
+    route: '/orders',
     features: ['order-management', 'tracking'],
     description: 'Gérer les commandes',
     category: 'core',
@@ -293,7 +305,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Users',
     enabled: true,
     minPlan: 'standard',
-    route: '/dashboard/customers',
+    route: '/customers',
     features: ['customer-management'],
     description: 'Base clients',
     category: 'customer',
@@ -326,6 +338,20 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Gérer les avis',
     category: 'customer',
     order: 4,
+    groupId: 'orders'
+  },
+
+  returns: {
+    id: 'returns',
+    name: 'Retours',
+    icon: 'RotateCcw',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/returns',
+    features: ['returns-management'],
+    description: 'Gérer les retours',
+    category: 'core',
+    order: 5,
     groupId: 'orders'
   },
 
@@ -373,7 +399,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Eye',
     enabled: true,
     minPlan: 'pro',
-    route: '/analytics/competitive-comparison',
+    route: '/competitive',
     features: ['competitor-tracking', 'price-monitoring'],
     description: 'Surveiller la concurrence',
     category: 'analytics',
@@ -400,6 +426,21 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'marketing-email', name: 'Email', route: '/marketing/email', icon: 'Mail', description: 'Email marketing', features: ['email'], order: 2 },
       { id: 'marketing-promotions', name: 'Promotions', route: '/marketing/promotions', icon: 'Tag', description: 'Codes promo', features: ['coupons'], order: 3 },
     ]
+  },
+
+  aiAssistant: {
+    id: 'aiAssistant',
+    name: 'IA Assistant',
+    icon: 'Bot',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/ai-assistant',
+    features: ['ai-chat', 'recommendations'],
+    description: 'Assistant IA intelligent',
+    category: 'automation',
+    order: 5,
+    groupId: 'insights',
+    badge: 'pro'
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
