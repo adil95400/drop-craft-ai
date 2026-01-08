@@ -177,6 +177,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     subModules: [
       { id: 'products-all', name: 'Tous les produits', route: '/products', icon: 'Package', description: 'Liste complète', features: ['list'], order: 1 },
       { id: 'products-create', name: 'Créer un produit', route: '/products/create', icon: 'Plus', description: 'Nouveau produit', features: ['create'], order: 2 },
+      { id: 'products-catalogue', name: 'Catalogue', route: '/products/catalogue', icon: 'Layers', description: 'Catalogue produits', features: ['catalog'], order: 3 },
     ]
   },
   
@@ -205,7 +206,12 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Vérification qualité produits',
     category: 'product',
     order: 3,
-    groupId: 'catalog'
+    groupId: 'catalog',
+    subModules: [
+      { id: 'audit-dashboard', name: 'Dashboard', route: '/audit', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'audit-products', name: 'Produits', route: '/audit/products', icon: 'Package', description: 'Auditer produits', features: ['products'], order: 2 },
+      { id: 'audit-batch', name: 'Audit en masse', route: '/audit/batch', icon: 'Layers', description: 'Audit par lot', features: ['batch'], order: 3 },
+    ]
   },
   
   aiOptimization: {
@@ -219,6 +225,21 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Optimisation automatique par IA',
     category: 'automation',
     order: 4,
+    groupId: 'catalog',
+    badge: 'pro'
+  },
+
+  attributes: {
+    id: 'attributes',
+    name: 'Attributs',
+    icon: 'Tag',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/attributes/manager',
+    features: ['attribute-management', 'ai-attributes'],
+    description: 'Gestion des attributs produits',
+    category: 'product',
+    order: 5,
     groupId: 'catalog',
     badge: 'pro'
   },
@@ -243,6 +264,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'stores-hub', name: 'Hub', route: '/stores-channels', icon: 'Store', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'stores-connect', name: 'Connecter', route: '/stores-channels/connect', icon: 'Plug', description: 'Ajouter une boutique', features: ['oauth'], order: 2 },
       { id: 'stores-sync', name: 'Synchronisation', route: '/stores-channels/sync', icon: 'RefreshCw', description: 'État des syncs', features: ['sync-status'], order: 3 },
+      { id: 'stores-analytics', name: 'Analytics', route: '/stores-channels/analytics', icon: 'BarChart3', description: 'Performances', features: ['analytics'], order: 4 },
     ]
   },
   
@@ -278,7 +300,13 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'automation',
     order: 3,
     groupId: 'channels',
-    badge: 'pro'
+    badge: 'pro',
+    subModules: [
+      { id: 'fulfillment-hub', name: 'Hub', route: '/fulfillment', icon: 'PackageCheck', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'fulfillment-dashboard', name: 'Dashboard', route: '/fulfillment/dashboard', icon: 'LayoutDashboard', description: 'Tableau de bord', features: ['dashboard'], order: 2 },
+      { id: 'fulfillment-rules', name: 'Règles', route: '/fulfillment/rules', icon: 'GitBranch', description: 'Règles d\'expédition', features: ['rules'], order: 3 },
+      { id: 'fulfillment-carriers', name: 'Transporteurs', route: '/fulfillment/carriers', icon: 'Truck', description: 'Gestion transporteurs', features: ['carriers'], order: 4 },
+    ]
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -291,12 +319,17 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'ShoppingCart',
     enabled: true,
     minPlan: 'standard',
-    route: '/orders',
+    route: '/dashboard/orders',
     features: ['order-management', 'tracking'],
     description: 'Gérer les commandes',
     category: 'core',
     order: 1,
-    groupId: 'orders'
+    groupId: 'orders',
+    subModules: [
+      { id: 'orders-all', name: 'Toutes les commandes', route: '/dashboard/orders', icon: 'ShoppingCart', description: 'Liste complète', features: ['list'], order: 1 },
+      { id: 'orders-create', name: 'Créer', route: '/orders/create', icon: 'Plus', description: 'Nouvelle commande', features: ['create'], order: 2 },
+      { id: 'orders-bulk', name: 'Commandes en masse', route: '/orders/bulk', icon: 'Layers', description: 'Gestion par lot', features: ['bulk'], order: 3 },
+    ]
   },
   
   customers: {
@@ -305,7 +338,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Users',
     enabled: true,
     minPlan: 'standard',
-    route: '/customers',
+    route: '/dashboard/customers',
     features: ['customer-management'],
     description: 'Base clients',
     category: 'customer',
@@ -324,7 +357,12 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Gestion des stocks',
     category: 'product',
     order: 3,
-    groupId: 'orders'
+    groupId: 'orders',
+    subModules: [
+      { id: 'stock-management', name: 'Gestion', route: '/stock', icon: 'Boxes', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'stock-repricing', name: 'Repricing', route: '/stock/repricing', icon: 'TrendingUp', description: 'Prix dynamiques', features: ['repricing'], order: 2 },
+      { id: 'stock-predictions', name: 'Prédictions', route: '/stock/predictions', icon: 'Brain', description: 'Prédictions IA', features: ['predictions'], order: 3 },
+    ]
   },
   
   reviews: {
@@ -347,7 +385,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'RotateCcw',
     enabled: true,
     minPlan: 'standard',
-    route: '/returns',
+    route: '/dashboard/returns',
     features: ['returns-management'],
     description: 'Gérer les retours',
     category: 'core',
@@ -375,6 +413,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'analytics-dashboard', name: 'Dashboard', route: '/analytics', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'analytics-advanced', name: 'Avancé', route: '/analytics/advanced', icon: 'TrendingUp', description: 'Analytics avancés', features: ['advanced'], order: 2 },
       { id: 'analytics-reports', name: 'Rapports', route: '/analytics/reports', icon: 'FileText', description: 'Rapports personnalisés', features: ['reports'], order: 3 },
+      { id: 'analytics-bi', name: 'Business Intelligence', route: '/analytics/bi', icon: 'Brain', description: 'BI avancée', features: ['bi'], order: 4 },
     ]
   },
   
@@ -384,7 +423,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'TrendingUp',
     enabled: true,
     minPlan: 'pro',
-    route: '/stock/repricing',
+    route: '/repricing',
     features: ['dynamic-pricing', 'buybox'],
     description: 'Prix dynamiques automatiques',
     category: 'automation',
@@ -399,7 +438,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Eye',
     enabled: true,
     minPlan: 'pro',
-    route: '/competitive',
+    route: '/analytics/competitive',
     features: ['competitor-tracking', 'price-monitoring'],
     description: 'Surveiller la concurrence',
     category: 'analytics',
@@ -422,9 +461,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'insights',
     badge: 'pro',
     subModules: [
-      { id: 'marketing-ads', name: 'Campagnes Ads', route: '/marketing/ads', icon: 'Megaphone', description: 'Publicités', features: ['ads'], order: 1 },
-      { id: 'marketing-email', name: 'Email', route: '/marketing/email', icon: 'Mail', description: 'Email marketing', features: ['email'], order: 2 },
-      { id: 'marketing-promotions', name: 'Promotions', route: '/marketing/promotions', icon: 'Tag', description: 'Codes promo', features: ['coupons'], order: 3 },
+      { id: 'marketing-dashboard', name: 'Dashboard', route: '/marketing', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'marketing-ads', name: 'Campagnes Ads', route: '/marketing/ads', icon: 'Megaphone', description: 'Publicités', features: ['ads'], order: 2 },
+      { id: 'marketing-email', name: 'Email', route: '/marketing/email', icon: 'Mail', description: 'Email marketing', features: ['email'], order: 3 },
+      { id: 'marketing-promotions', name: 'Promotions', route: '/marketing/promotions', icon: 'Tag', description: 'Codes promo', features: ['coupons'], order: 4 },
     ]
   },
 
@@ -434,7 +474,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Bot',
     enabled: true,
     minPlan: 'pro',
-    route: '/ai-assistant',
+    route: '/automation/ai-assistant',
     features: ['ai-chat', 'recommendations'],
     description: 'Assistant IA intelligent',
     category: 'automation',
@@ -487,7 +527,12 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'automation',
     order: 3,
     groupId: 'settings',
-    badge: 'pro'
+    badge: 'pro',
+    subModules: [
+      { id: 'automation-hub', name: 'Hub', route: '/automation', icon: 'Zap', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'automation-workflows', name: 'Workflows', route: '/automation/workflows', icon: 'Workflow', description: 'Créer des workflows', features: ['workflows'], order: 2 },
+      { id: 'automation-triggers', name: 'Déclencheurs', route: '/automation/triggers', icon: 'Play', description: 'Gérer les triggers', features: ['triggers'], order: 3 },
+    ]
   },
   
   extensions: {
@@ -502,7 +547,12 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'system',
     order: 4,
     groupId: 'settings',
-    badge: 'pro'
+    badge: 'pro',
+    subModules: [
+      { id: 'extensions-hub', name: 'Hub', route: '/extensions', icon: 'Puzzle', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'extensions-marketplace', name: 'Marketplace', route: '/extensions/marketplace', icon: 'Store', description: 'Découvrir des extensions', features: ['marketplace'], order: 2 },
+      { id: 'extensions-developer', name: 'Développeur', route: '/extensions/developer', icon: 'Code', description: 'Créer des extensions', features: ['developer'], order: 3 },
+    ]
   },
   
   academy: {
@@ -545,7 +595,12 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'enterprise',
     order: 7,
     groupId: 'settings',
-    badge: 'ultra'
+    badge: 'ultra',
+    subModules: [
+      { id: 'admin-panel', name: 'Panel', route: '/admin', icon: 'Shield', description: 'Administration', features: ['admin'], order: 1 },
+      { id: 'admin-security', name: 'Sécurité', route: '/admin/security', icon: 'Lock', description: 'Sécurité', features: ['security'], order: 2 },
+      { id: 'admin-suppliers', name: 'Fournisseurs', route: '/admin/suppliers', icon: 'Truck', description: 'Gestion fournisseurs', features: ['suppliers'], order: 3 },
+    ]
   }
 };
 
