@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: null, // Defer SW registration to avoid render-blocking
       includeAssets: ['icons/*.png', 'og-image.png'],
       manifest: {
         name: 'ShopOpti+',
