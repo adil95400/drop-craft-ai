@@ -13,7 +13,8 @@ import {
   Crown, Calculator, Megaphone, FileText, Globe, Store, Puzzle, GitCompare, 
   Database, ShoppingBag, GraduationCap, HelpCircle, Activity, Building2, 
   Home, Boxes, CreditCard, LifeBuoy, Video, Tag, Rss, RefreshCw, Target,
-  CheckCircle, Clock, Calendar, Star
+  CheckCircle, Clock, Calendar, Star, Eye, Lock, Layers, Plus, Workflow, Play,
+  Mail, Code, LayoutDashboard, PackageCheck
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/ThemeToggle"
 import { 
@@ -36,26 +37,26 @@ import { SidebarFooterSection } from "@/components/sidebar/SidebarFooterSection"
 // Map des icônes - Complète pour tous les modules
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   // Navigation principale
-  'Home': Home, 'LayoutDashboard': Home, 'Store': Store, 'Package': Package,
+  'Home': Home, 'LayoutDashboard': LayoutDashboard, 'Store': Store, 'Package': Package,
   'Upload': Upload, 'Truck': Truck, 'ShoppingCart': ShoppingCart,
   'BarChart3': BarChart3, 'Settings': Settings,
   
   // Actions & outils
-  'Zap': Zap, 'Sparkles': Sparkles, 'Search': Search, 'Plus': Package,
+  'Zap': Zap, 'Sparkles': Sparkles, 'Search': Search, 'Plus': Plus,
   'Link': Database, 'History': Clock, 'RefreshCw': RefreshCw,
-  'Layers': Package,
+  'Layers': Layers,
   
   // Gestion
-  'Users': Users, 'Boxes': Boxes, 'Star': Star, 'Eye': Search,
+  'Users': Users, 'Boxes': Boxes, 'Star': Star, 'Eye': Eye,
   'GitBranch': GitCompare, 'CheckCircle': CheckCircle, 'Bell': Activity,
   'RotateCcw': RefreshCw,
   
   // Marketing & Analytics
   'TrendingUp': TrendingUp, 'Megaphone': Megaphone, 'Tag': Tag,
-  'Mail': FileText, 'FileText': FileText,
+  'Mail': Mail, 'FileText': FileText,
   
   // Feeds & Exports
-  'Rss': Rss, 'PackageCheck': Package,
+  'Rss': Rss, 'PackageCheck': PackageCheck,
   
   // Intégrations
   'Plug': Plug, 'Puzzle': Puzzle, 'PuzzlePiece': Puzzle,
@@ -65,7 +66,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   'LifeBuoy': LifeBuoy, 'Video': Video,
   
   // Admin & Enterprise
-  'Shield': Shield, 'Crown': Crown, 'Brain': Brain,
+  'Shield': Shield, 'Crown': Crown, 'Brain': Brain, 'Lock': Lock,
+  
+  // Automation
+  'Workflow': Workflow, 'Play': Play, 'Code': Code,
   
   // Autres
   'Bot': Bot, 'Calculator': Calculator, 'Globe': Globe,
