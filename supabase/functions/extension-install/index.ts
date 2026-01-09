@@ -33,21 +33,50 @@ serve(async (req) => {
 
     console.log('Installing extension:', { extension_id, user_id: user.id })
 
-    // Installer l'extension
-    const { data: installation, error: installError } = await supabase
+    // Vérifier si l'extension est déjà installée
+    const { data: existing } = await supabase
       .from('installed_extensions')
-      .insert({
-        user_id: user.id,
-        extension_id,
-        config: config || {},
-        status: 'active',
-        installed_at: new Date().toISOString()
-      })
-      .select()
-      .single()
+      .select('id, status')
+      .eq('user_id', user.id)
+      .eq('extension_id', extension_id)
+      .maybeSingle()
 
-    if (installError) {
-      throw installError
+    let installation
+
+    if (existing) {
+      // L'extension existe déjà, on la réactive si inactive
+      if (existing.status === 'inactive') {
+        const { data: updated, error: updateError } = await supabase
+          .from('installed_extensions')
+          .update({ status: 'active', config: config || {} })
+          .eq('id', existing.id)
+          .select()
+          .single()
+
+        if (updateError) throw updateError
+        installation = updated
+        console.log('Extension reactivated:', existing.id)
+      } else {
+        // Déjà active, retourner l'existante
+        installation = existing
+        console.log('Extension already installed:', existing.id)
+      }
+    } else {
+      // Nouvelle installation
+      const { data: newInstall, error: installError } = await supabase
+        .from('installed_extensions')
+        .insert({
+          user_id: user.id,
+          extension_id,
+          config: config || {},
+          status: 'active',
+          installed_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (installError) throw installError
+      installation = newInstall
     }
 
     // Logger l'activité

@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Mail, MessageSquare, Phone, MapPin, Clock, Send } from 'lucide-react';
+import { Mail, MessageSquare, Phone, MapPin, Clock, Send, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -17,12 +18,31 @@ const ContactPage = () => {
     subject: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual form submission
-    toast.success('Message envoyé avec succès ! Nous vous répondrons dans les 24h.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setIsSubmitting(true);
+    
+    try {
+      const { error } = await supabase.from('contact_submissions').insert({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim(),
+        status: 'new'
+      });
+
+      if (error) throw error;
+
+      toast.success('Message envoyé avec succès ! Nous vous répondrons dans les 24h.');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      console.error('Contact form error:', error);
+      toast.error('Erreur lors de l\'envoi. Veuillez réessayer.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactMethods = [
@@ -194,9 +214,13 @@ const ContactPage = () => {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full">
-                    <Send className="w-4 h-4 mr-2" />
-                    Envoyer le message
+                  <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4 mr-2" />
+                    )}
+                    {isSubmitting ? 'Envoi en cours...' : 'Envoyer le message'}
                   </Button>
                 </form>
               </div>

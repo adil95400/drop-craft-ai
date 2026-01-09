@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AutomationBuilder } from '@/components/automation/AutomationBuilder';
 import { AutomationList } from '@/components/automation/AutomationList';
+import { ActivityMonitoring } from '@/components/automation/ActivityMonitoring';
 import { Zap, List, Activity } from 'lucide-react';
 
 export default function AutomationPage() {
@@ -47,9 +48,7 @@ export default function AutomationPage() {
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-6">
-            <div className="text-center py-12 text-muted-foreground">
-              Activity monitoring coming soon...
-            </div>
+            <ActivityMonitoring />
           </TabsContent>
         </Tabs>
       </div>
