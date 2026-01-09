@@ -6,43 +6,126 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings, Zap, Truck, Mail, Printer, Package, Plus, Edit, Trash2 } from 'lucide-react';
+import { Settings, Zap, Truck, Mail, Printer, Package, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface AutomationRule {
   id: string;
   name: string;
-  trigger: string;
-  carrier_selection: string;
-  auto_label: boolean;
-  auto_print: boolean;
-  auto_notify: boolean;
+  conditions: {
+    trigger: string;
+    carrier_selection: string;
+  };
+  actions: {
+    auto_label: boolean;
+    auto_print: boolean;
+    auto_notify: boolean;
+  };
   is_active: boolean;
 }
 
+async function getCurrentUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
 export function FulfillmentAutomation() {
-  const [rules, setRules] = useState<AutomationRule[]>([
-    {
-      id: '1',
-      name: 'Commandes France - Colissimo',
-      trigger: 'paid',
-      carrier_selection: 'cheapest',
-      auto_label: true,
-      auto_print: false,
-      auto_notify: true,
-      is_active: true
-    },
-    {
-      id: '2',
-      name: 'Express - Chronopost',
-      trigger: 'confirmed',
-      carrier_selection: 'fastest',
-      auto_label: true,
-      auto_print: true,
-      auto_notify: true,
-      is_active: false
+  const queryClient = useQueryClient();
+  
+  const { data: rules = [], isLoading } = useQuery({
+    queryKey: ['fulfillment-automation-rules'],
+    queryFn: async () => {
+      const user = await getCurrentUser();
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('fulfilment_rules')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return (data || []).map((rule: any) => ({
+        id: rule.id,
+        name: rule.name,
+        conditions: rule.conditions || { trigger: 'paid', carrier_selection: 'cheapest' },
+        actions: rule.actions || { auto_label: true, auto_print: false, auto_notify: true },
+        is_active: rule.is_active
+      })) as AutomationRule[];
     }
-  ]);
+  });
+  
+  const createMutation = useMutation({
+    mutationFn: async (data: Omit<AutomationRule, 'id'>) => {
+      const user = await getCurrentUser();
+      if (!user) throw new Error('Non authentifié');
+      
+      const { error } = await supabase
+        .from('fulfilment_rules')
+        .insert([{
+          user_id: user.id,
+          name: data.name,
+          conditions: data.conditions,
+          actions: data.actions,
+          is_active: data.is_active
+        }]);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fulfillment-automation-rules'] });
+      toast.success('Règle créée');
+    },
+    onError: (err: Error) => toast.error(err.message)
+  });
+  
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, ...data }: Partial<AutomationRule> & { id: string }) => {
+      const user = await getCurrentUser();
+      if (!user) throw new Error('Non authentifié');
+      
+      const { error } = await supabase
+        .from('fulfilment_rules')
+        .update({
+          name: data.name,
+          conditions: data.conditions,
+          actions: data.actions,
+          is_active: data.is_active
+        })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fulfillment-automation-rules'] });
+      toast.success('Règle mise à jour');
+    },
+    onError: (err: Error) => toast.error(err.message)
+  });
+  
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const user = await getCurrentUser();
+      if (!user) throw new Error('Non authentifié');
+      
+      const { error } = await supabase
+        .from('fulfilment_rules')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fulfillment-automation-rules'] });
+      toast.success('Règle supprimée');
+    },
+    onError: (err: Error) => toast.error(err.message)
+  });
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
@@ -71,10 +154,24 @@ export function FulfillmentAutomation() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const ruleData = {
+      name: formData.name,
+      conditions: {
+        trigger: formData.trigger,
+        carrier_selection: formData.carrier_selection
+      },
+      actions: {
+        auto_label: formData.auto_label,
+        auto_print: formData.auto_print,
+        auto_notify: formData.auto_notify
+      },
+      is_active: true
+    };
+    
     if (editingRule) {
-      setRules(rules.map(r => r.id === editingRule.id ? { ...r, ...formData } : r));
+      updateMutation.mutate({ id: editingRule.id, ...ruleData });
     } else {
-      setRules([...rules, { id: Date.now().toString(), ...formData, is_active: true }]);
+      createMutation.mutate(ruleData);
     }
     
     setIsDialogOpen(false);
@@ -93,24 +190,34 @@ export function FulfillmentAutomation() {
     setEditingRule(rule);
     setFormData({
       name: rule.name,
-      trigger: rule.trigger,
-      carrier_selection: rule.carrier_selection,
-      auto_label: rule.auto_label,
-      auto_print: rule.auto_print,
-      auto_notify: rule.auto_notify
+      trigger: rule.conditions?.trigger || 'paid',
+      carrier_selection: rule.conditions?.carrier_selection || 'cheapest',
+      auto_label: rule.actions?.auto_label ?? true,
+      auto_print: rule.actions?.auto_print ?? false,
+      auto_notify: rule.actions?.auto_notify ?? true
     });
     setIsDialogOpen(true);
   };
   
-  const toggleRule = (id: string) => {
-    setRules(rules.map(r => r.id === id ? { ...r, is_active: !r.is_active } : r));
+  const toggleRule = (rule: AutomationRule) => {
+    updateMutation.mutate({ id: rule.id, is_active: !rule.is_active });
   };
   
   const deleteRule = (id: string) => {
     if (confirm('Supprimer cette règle ?')) {
-      setRules(rules.filter(r => r.id !== id));
+      deleteMutation.mutate(id);
     }
   };
+
+  const isMutating = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -244,7 +351,8 @@ export function FulfillmentAutomation() {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Annuler
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={isMutating}>
+                  {isMutating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {editingRule ? 'Mettre à jour' : 'Créer'}
                 </Button>
               </div>
@@ -269,58 +377,67 @@ export function FulfillmentAutomation() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {rules.map((rule) => (
-            <Card key={rule.id} className={rule.is_active ? '' : 'opacity-60'}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-medium">{rule.name}</h3>
-                      <Badge variant={rule.is_active ? 'default' : 'secondary'}>
-                        {rule.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+          {rules.map((rule) => {
+            const trigger = rule.conditions?.trigger || 'paid';
+            const carrierSelection = rule.conditions?.carrier_selection || 'cheapest';
+            const autoLabel = rule.actions?.auto_label ?? false;
+            const autoPrint = rule.actions?.auto_print ?? false;
+            const autoNotify = rule.actions?.auto_notify ?? false;
+            
+            return (
+              <Card key={rule.id} className={rule.is_active ? '' : 'opacity-60'}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-medium">{rule.name}</h3>
+                        <Badge variant={rule.is_active ? 'default' : 'secondary'}>
+                          {rule.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <Zap className="h-3 w-3" />
+                          {triggerLabels[trigger] || trigger}
+                        </Badge>
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <Truck className="h-3 w-3" />
+                          {selectionLabels[carrierSelection] || carrierSelection}
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex gap-4 text-sm text-muted-foreground">
+                        <span className={autoLabel ? 'text-green-600' : ''}>
+                          {autoLabel ? '✓' : '✗'} Étiquette auto
+                        </span>
+                        <span className={autoPrint ? 'text-green-600' : ''}>
+                          {autoPrint ? '✓' : '✗'} Impression auto
+                        </span>
+                        <span className={autoNotify ? 'text-green-600' : ''}>
+                          {autoNotify ? '✓' : '✗'} Notification client
+                        </span>
+                      </div>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge variant="outline" className="flex items-center gap-1">
-                        <Zap className="h-3 w-3" />
-                        {triggerLabels[rule.trigger]}
-                      </Badge>
-                      <Badge variant="outline" className="flex items-center gap-1">
-                        <Truck className="h-3 w-3" />
-                        {selectionLabels[rule.carrier_selection]}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      <span className={rule.auto_label ? 'text-green-600' : ''}>
-                        {rule.auto_label ? '✓' : '✗'} Étiquette auto
-                      </span>
-                      <span className={rule.auto_print ? 'text-green-600' : ''}>
-                        {rule.auto_print ? '✓' : '✗'} Impression auto
-                      </span>
-                      <span className={rule.auto_notify ? 'text-green-600' : ''}>
-                        {rule.auto_notify ? '✓' : '✗'} Notification client
-                      </span>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={rule.is_active}
+                        onCheckedChange={() => toggleRule(rule)}
+                        disabled={isMutating}
+                      />
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(rule)} disabled={isMutating}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteRule(rule.id)} disabled={isMutating}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={rule.is_active}
-                      onCheckedChange={() => toggleRule(rule.id)}
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(rule)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteRule(rule.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
