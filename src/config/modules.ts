@@ -505,6 +505,209 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     badge: 'pro'
   },
 
+  contentGeneration: {
+    id: 'contentGeneration',
+    name: 'Génération Contenu',
+    icon: 'Wand2',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/content/generation',
+    features: ['ai-content', 'video-generation', 'social-posts'],
+    description: 'Générer du contenu IA',
+    category: 'automation',
+    order: 7,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  emailMarketing: {
+    id: 'emailMarketing',
+    name: 'Email Marketing',
+    icon: 'Mail',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/marketing/email',
+    features: ['email-campaigns', 'automation', 'templates'],
+    description: 'Campagnes email automatisées',
+    category: 'customer',
+    order: 8,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  abTesting: {
+    id: 'abTesting',
+    name: 'Tests A/B',
+    icon: 'FlaskConical',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/marketing/ab-testing',
+    features: ['ab-tests', 'statistics', 'optimization'],
+    description: 'Optimisation par tests A/B',
+    category: 'analytics',
+    order: 9,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  crm: {
+    id: 'crm',
+    name: 'CRM',
+    icon: 'Contact',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/crm',
+    features: ['leads', 'pipeline', 'contacts'],
+    description: 'Gestion relation client',
+    category: 'customer',
+    order: 10,
+    groupId: 'orders',
+    badge: 'pro',
+    subModules: [
+      { id: 'crm-dashboard', name: 'Dashboard', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'crm-leads', name: 'Leads', route: '/crm/leads', icon: 'UserPlus', description: 'Gestion des leads', features: ['leads'], order: 2 },
+      { id: 'crm-emails', name: 'Emails', route: '/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 3 },
+    ]
+  },
+
+  seo: {
+    id: 'seo',
+    name: 'SEO',
+    icon: 'Search',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/seo',
+    features: ['seo-audit', 'keywords', 'rankings'],
+    description: 'Optimisation référencement',
+    category: 'analytics',
+    order: 11,
+    groupId: 'catalog',
+    subModules: [
+      { id: 'seo-manager', name: 'Manager', route: '/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
+      { id: 'seo-keywords', name: 'Mots-clés', route: '/seo/keywords', icon: 'Key', description: 'Recherche mots-clés', features: ['keywords'], order: 2 },
+      { id: 'seo-rank', name: 'Rankings', route: '/seo/rank-tracker', icon: 'TrendingUp', description: 'Suivi positions', features: ['rankings'], order: 3 },
+    ]
+  },
+
+  dynamicPricing: {
+    id: 'dynamicPricing',
+    name: 'Prix Dynamiques',
+    icon: 'DollarSign',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/pricing/dynamic',
+    features: ['dynamic-pricing', 'price-optimization'],
+    description: 'Optimisation automatique des prix',
+    category: 'automation',
+    order: 12,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  promotions: {
+    id: 'promotions',
+    name: 'Promotions',
+    icon: 'Percent',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/marketing/promotions',
+    features: ['coupons', 'flash-sales', 'discounts'],
+    description: 'Gestion des promotions',
+    category: 'customer',
+    order: 13,
+    groupId: 'orders',
+    subModules: [
+      { id: 'promotions-coupons', name: 'Coupons', route: '/marketing/coupons', icon: 'Ticket', description: 'Codes promo', features: ['coupons'], order: 1 },
+      { id: 'promotions-flash', name: 'Ventes Flash', route: '/marketing/flash-sales', icon: 'Zap', description: 'Ventes flash', features: ['flash-sales'], order: 2 },
+    ]
+  },
+
+  shipping: {
+    id: 'shipping',
+    name: 'Expédition',
+    icon: 'Truck',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/shipping',
+    features: ['shipping-management', 'carriers', 'tracking'],
+    description: 'Gestion des expéditions',
+    category: 'core',
+    order: 6,
+    groupId: 'orders'
+  },
+
+  apiDocs: {
+    id: 'apiDocs',
+    name: 'API & Docs',
+    icon: 'Code',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/api/documentation',
+    features: ['api-docs', 'swagger', 'webhooks'],
+    description: 'Documentation API',
+    category: 'integrations',
+    order: 8,
+    groupId: 'settings',
+    badge: 'pro'
+  },
+
+  billing: {
+    id: 'billing',
+    name: 'Facturation',
+    icon: 'CreditCard',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/billing',
+    features: ['invoices', 'payments', 'subscription'],
+    description: 'Gestion abonnement',
+    category: 'system',
+    order: 9,
+    groupId: 'settings'
+  },
+
+  reports: {
+    id: 'reports',
+    name: 'Rapports',
+    icon: 'FileText',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/reports',
+    features: ['reports', 'exports', 'scheduled-reports'],
+    description: 'Rapports et exports',
+    category: 'analytics',
+    order: 14,
+    groupId: 'insights'
+  },
+
+  winners: {
+    id: 'winners',
+    name: 'Produits Gagnants',
+    icon: 'Trophy',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/winners',
+    features: ['winning-products', 'trends', 'analysis'],
+    description: 'Découvrir les produits gagnants',
+    category: 'product',
+    order: 4,
+    groupId: 'sources',
+    badge: 'pro'
+  },
+
+  profitCalculator: {
+    id: 'profitCalculator',
+    name: 'Calculateur Profit',
+    icon: 'Calculator',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/tools/profit-calculator',
+    features: ['profit-calculation', 'margins'],
+    description: 'Calculer vos marges',
+    category: 'analytics',
+    order: 15,
+    groupId: 'insights'
+  },
+
   // ═══════════════════════════════════════════════════════════════════════════
   // 7. SETTINGS - Configuration & Administration
   // ═══════════════════════════════════════════════════════════════════════════
