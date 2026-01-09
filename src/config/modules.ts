@@ -468,6 +468,28 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     ]
   },
 
+  adsSpy: {
+    id: 'adsSpy',
+    name: 'Ads Spy',
+    icon: 'Eye',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/ads-spy',
+    features: ['ads-search', 'competitor-ads', 'winning-products', 'store-spy', 'influencer-spy'],
+    description: 'Espionner les publicités gagnantes',
+    category: 'analytics',
+    order: 5,
+    groupId: 'insights',
+    badge: 'pro',
+    subModules: [
+      { id: 'ads-spy-dashboard', name: 'Dashboard', route: '/ads-spy', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'ads-spy-search', name: 'Recherche Ads', route: '/ads-spy/search', icon: 'Search', description: 'Rechercher des pubs', features: ['search'], order: 2 },
+      { id: 'ads-spy-stores', name: 'Stores', route: '/ads-spy/stores', icon: 'Store', description: 'Espionner les stores', features: ['stores'], order: 3 },
+      { id: 'ads-spy-influencers', name: 'Influenceurs', route: '/ads-spy/influencers', icon: 'Users', description: 'Trouver des influenceurs', features: ['influencers'], order: 4 },
+      { id: 'ads-spy-collections', name: 'Collections', route: '/ads-spy/collections', icon: 'Folder', description: 'Vos collections', features: ['collections'], order: 5 },
+    ]
+  },
+
   aiAssistant: {
     id: 'aiAssistant',
     name: 'IA Assistant',
@@ -478,7 +500,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['ai-chat', 'recommendations'],
     description: 'Assistant IA intelligent',
     category: 'automation',
-    order: 5,
+    order: 6,
     groupId: 'insights',
     badge: 'pro'
   },
