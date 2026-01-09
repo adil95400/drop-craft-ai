@@ -8591,6 +8591,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_kpis: {
+        Row: {
+          created_at: string
+          current_value: number
+          id: string
+          kpi_type: string
+          name: string
+          period: string
+          target: number
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          kpi_type?: string
+          name: string
+          period?: string
+          target?: number
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          kpi_type?: string
+          name?: string
+          period?: string
+          target?: number
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           action_label: string | null
