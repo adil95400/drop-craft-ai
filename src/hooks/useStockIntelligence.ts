@@ -19,6 +19,7 @@ export interface StockPrediction {
   last_calculated_at: string;
   created_at: string;
   updated_at: string;
+  product_name?: string;
 }
 
 export interface ReorderSuggestion {
@@ -39,6 +40,7 @@ export interface ReorderSuggestion {
   expected_delivery_date: string | null;
   created_at: string;
   updated_at: string;
+  product_name?: string;
 }
 
 export interface StockAlert {
@@ -84,39 +86,92 @@ export interface StockSyncRule {
 export function useStockIntelligence() {
   const queryClient = useQueryClient();
 
-  // Fetch stock predictions
+  // Generate predictions via AI
+  const generatePredictions = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('stock-intelligence-ai', {
+        body: { action: 'generate-predictions' },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['stock-predictions'] });
+      queryClient.invalidateQueries({ queryKey: ['reorder-suggestions'] });
+      queryClient.invalidateQueries({ queryKey: ['stock-intelligence-alerts'] });
+      toast.success(`Prédictions générées: ${data.predictions} produits analysés`);
+    },
+    onError: (error) => {
+      console.error('Generation error:', error);
+      toast.error('Erreur lors de la génération des prédictions');
+    },
+  });
+
+  // Fetch stock predictions with product names
   const {
     data: predictions = [],
     isLoading: isLoadingPredictions,
   } = useQuery({
     queryKey: ['stock-predictions'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data: predictionsData, error } = await supabase
         .from('stock_predictions')
         .select('*')
         .order('reorder_urgency', { ascending: false })
         .order('predicted_days_until_stockout', { ascending: true });
 
       if (error) throw error;
-      return (data || []) as StockPrediction[];
+      
+      // Get product names
+      const productIds = (predictionsData || []).map((p: any) => p.product_id);
+      if (productIds.length > 0) {
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, title')
+          .in('id', productIds);
+        
+        const productMap = new Map((products || []).map((p: any) => [p.id, p.title]));
+        return (predictionsData || []).map((p: any) => ({
+          ...p,
+          product_name: productMap.get(p.product_id) || p.product_id,
+        })) as StockPrediction[];
+      }
+      
+      return (predictionsData || []) as StockPrediction[];
     },
   });
 
-  // Fetch reorder suggestions
+  // Fetch reorder suggestions with product names
   const {
     data: suggestions = [],
     isLoading: isLoadingSuggestions,
   } = useQuery({
     queryKey: ['reorder-suggestions'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data: suggestionsData, error } = await supabase
         .from('reorder_suggestions')
         .select('*')
         .eq('status', 'pending')
         .order('priority_score', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as ReorderSuggestion[];
+      
+      // Get product names
+      const productIds = (suggestionsData || []).map((s: any) => s.product_id);
+      if (productIds.length > 0) {
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, title')
+          .in('id', productIds);
+        
+        const productMap = new Map((products || []).map((p: any) => [p.id, p.title]));
+        return (suggestionsData || []).map((s: any) => ({
+          ...s,
+          product_name: productMap.get(s.product_id) || s.product_id,
+        })) as ReorderSuggestion[];
+      }
+      
+      return (suggestionsData || []) as ReorderSuggestion[];
     },
   });
 
@@ -127,44 +182,31 @@ export function useStockIntelligence() {
   } = useQuery({
     queryKey: ['stock-intelligence-alerts'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('stock_alerts')
         .select('*')
         .eq('is_resolved', false)
         .order('severity', { ascending: false })
-        .order('created_at', { ascending: false});
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return (data || []) as StockAlert[];
     },
   });
 
-  // Fetch sync rules
-  const {
-    data: syncRules = [],
-    isLoading: isLoadingSyncRules,
-  } = useQuery({
-    queryKey: ['stock-sync-rules'],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('stock_sync_rules')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return (data || []) as StockSyncRule[];
-    },
-  });
+  // Sync rules - disabled (table doesn't exist)
+  const syncRules: StockSyncRule[] = [];
+  const isLoadingSyncRules = false;
 
   // Approve reorder suggestion
   const approveSuggestion = useMutation({
     mutationFn: async (suggestionId: string) => {
-      const { data: user } = await supabase.auth.getUser();
-      const { error } = await (supabase as any)
+      const { data: userData } = await supabase.auth.getUser();
+      const { error } = await supabase
         .from('reorder_suggestions')
         .update({
           status: 'approved',
-          approved_by: user.user?.id,
+          approved_by: userData.user?.id,
           approved_at: new Date().toISOString(),
         })
         .eq('id', suggestionId);
@@ -183,7 +225,7 @@ export function useStockIntelligence() {
   // Reject reorder suggestion
   const rejectSuggestion = useMutation({
     mutationFn: async (suggestionId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('reorder_suggestions')
         .update({ status: 'rejected' })
         .eq('id', suggestionId);
@@ -202,7 +244,7 @@ export function useStockIntelligence() {
   // Mark alert as read
   const markAlertAsRead = useMutation({
     mutationFn: async (alertId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('stock_alerts')
         .update({ is_read: true })
         .eq('id', alertId);
@@ -217,13 +259,13 @@ export function useStockIntelligence() {
   // Resolve alert
   const resolveAlert = useMutation({
     mutationFn: async (alertId: string) => {
-      const { data: user } = await supabase.auth.getUser();
-      const { error } = await (supabase as any)
+      const { data: userData } = await supabase.auth.getUser();
+      const { error } = await supabase
         .from('stock_alerts')
         .update({
           is_resolved: true,
           resolved_at: new Date().toISOString(),
-          resolved_by: user.user?.id,
+          resolved_by: userData.user?.id,
         })
         .eq('id', alertId);
 
@@ -238,24 +280,10 @@ export function useStockIntelligence() {
     },
   });
 
-  // Toggle sync rule
-  const toggleSyncRule = useMutation({
-    mutationFn: async ({ ruleId, isActive }: { ruleId: string; isActive: boolean }) => {
-      const { error } = await (supabase as any)
-        .from('stock_sync_rules')
-        .update({ is_active: isActive })
-        .eq('id', ruleId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stock-sync-rules'] });
-      toast.success('Règle de synchronisation mise à jour');
-    },
-    onError: () => {
-      toast.error('Erreur lors de la mise à jour');
-    },
-  });
+  // Toggle sync rule - disabled
+  const toggleSyncRule = (_params: { ruleId: string; isActive: boolean }) => {
+    toast.info('Synchronisation non disponible');
+  };
 
   return {
     predictions,
@@ -266,6 +294,8 @@ export function useStockIntelligence() {
     isLoadingSuggestions,
     isLoadingAlerts,
     isLoadingSyncRules,
+    generatePredictions: generatePredictions.mutate,
+    isGeneratingPredictions: generatePredictions.isPending,
     approveSuggestion: approveSuggestion.mutate,
     rejectSuggestion: rejectSuggestion.mutate,
     markAlertAsRead: markAlertAsRead.mutate,
