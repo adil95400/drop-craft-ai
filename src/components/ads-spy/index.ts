@@ -4,3 +4,7 @@ export { AdsTrendingPanel } from './AdsTrendingPanel';
 export { AdsCollectionsPanel } from './AdsCollectionsPanel';
 export { AdsScrapePanel } from './AdsScrapePanel';
 export { AdCard } from './AdCard';
+export { QuickFilters } from './QuickFilters';
+export { TopWinnersSection } from './TopWinnersSection';
+export { StoreSpyPanel } from './StoreSpyPanel';
+export { InfluencerSpyPanel } from './InfluencerSpyPanel';

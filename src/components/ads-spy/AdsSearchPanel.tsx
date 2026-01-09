@@ -11,7 +11,12 @@ import { AdCard } from './AdCard';
 import { Search, Loader2, Filter, SlidersHorizontal } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-export function AdsSearchPanel() {
+interface AdsSearchPanelProps {
+  initialFilter?: string | null;
+  onClearFilter?: () => void;
+}
+
+export function AdsSearchPanel({ initialFilter, onClearFilter }: AdsSearchPanelProps = {}) {
   const [searchParams, setSearchParams] = useState<AdSearchParams>({
     query: '',
     limit: 20,
