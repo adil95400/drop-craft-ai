@@ -45,6 +45,7 @@ export function AnalyticsRoutes() {
       <Route path="global-intelligence" element={<GlobalIntelligencePage />} />
       
       {/* Competitive Analysis */}
+      <Route path="competitive" element={<CompetitorAnalysisPage />} />
       <Route path="competitor-analysis" element={<CompetitorAnalysisPage />} />
       <Route path="competitive-comparison" element={<CompetitiveComparisonPage />} />
       <Route path="price-monitoring" element={<PriceMonitoringPage />} />
