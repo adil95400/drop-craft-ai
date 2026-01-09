@@ -247,21 +247,45 @@ export default function ImportHub() {
     setIsQuickImporting(false)
   }, [quickUrl, navigate, toast])
 
-  const handleRetryImport = useCallback((id: string) => {
-    toast({
-      title: "Relance de l'import",
-      description: "L'import va être relancé..."
-    })
-    // TODO: Implement retry logic
-  }, [toast])
+  const handleRetryImport = useCallback(async (id: string) => {
+    try {
+      // Find the import to get its source_type
+      const importToRetry = importMethods.find(imp => imp.id === id)
+      if (!importToRetry) {
+        throw new Error('Import non trouvé')
+      }
+      await executeImport({ 
+        source_type: importToRetry.source_type,
+        mapping_config: importToRetry.mapping_config
+      })
+      toast({
+        title: "Import relancé",
+        description: "L'import est en cours de traitement"
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de relancer l'import",
+        variant: "destructive"
+      })
+    }
+  }, [executeImport, importMethods, toast])
 
-  const handleCancelImport = useCallback((id: string) => {
-    toast({
-      title: "Import annulé",
-      description: "L'import a été annulé"
-    })
-    // TODO: Implement cancel logic
-  }, [toast])
+  const handleCancelImport = useCallback(async (id: string) => {
+    try {
+      await deleteMethod(id)
+      toast({
+        title: "Import annulé",
+        description: "L'import a été annulé avec succès"
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'annuler l'import",
+        variant: "destructive"
+      })
+    }
+  }, [deleteMethod, toast])
 
   // Status helpers
   const getStatusConfig = useCallback((status: string) => {
