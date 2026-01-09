@@ -74,6 +74,38 @@ export function useMarketplaceConnections() {
     },
   })
 
+  // Helper functions for simplified API
+  const connect = async (marketplaceId: string, name: string) => {
+    connectMutation.mutate({
+      platform: marketplaceId,
+      credentials: { marketplace_id: marketplaceId, name }
+    })
+  }
+
+  const disconnect = async (connectionId: string) => {
+    disconnectMutation.mutate(connectionId)
+  }
+
+  const toggleSync = async (connectionId: string, enabled: boolean) => {
+    try {
+      await marketplaceService.updateConnection(connectionId, { is_active: enabled })
+      queryClient.invalidateQueries({ queryKey: ['marketplace-connections'] })
+      toast({
+        title: enabled ? 'Synchronisation activée' : 'Synchronisation désactivée',
+      })
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message,
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const syncProducts = async (connectionId: string) => {
+    syncMutation.mutate({ connectionId, syncType: 'products' })
+  }
+
   return {
     connections,
     stats,
@@ -81,11 +113,17 @@ export function useMarketplaceConnections() {
     isLoadingStats,
     error,
     refetch,
+    // Legacy API
     connectMarketplace: connectMutation.mutate,
-    isConnecting: connectMutation.isPending,
     syncMarketplace: syncMutation.mutate,
-    isSyncing: syncMutation.isPending,
     disconnectMarketplace: disconnectMutation.mutate,
+    // Simplified API
+    connect,
+    disconnect,
+    toggleSync,
+    syncProducts,
+    isConnecting: connectMutation.isPending,
+    isSyncing: syncMutation.isPending,
     isDisconnecting: disconnectMutation.isPending,
   }
 }

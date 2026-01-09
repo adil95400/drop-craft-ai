@@ -74,10 +74,10 @@ export function FeedbackWidget({ className }: FeedbackWidgetProps) {
 
   return (
     <>
-      {/* Trigger button */}
+      {/* Trigger button - positioned higher on mobile to avoid bottom nav overlap */}
       <motion.button
         className={cn(
-          'fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center',
+          'fixed bottom-24 md:bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center',
           'hover:shadow-xl transition-shadow',
           className
         )}
@@ -102,9 +102,9 @@ export function FeedbackWidget({ className }: FeedbackWidgetProps) {
               onClick={handleClose}
             />
 
-            {/* Modal */}
+            {/* Modal - positioned higher on mobile */}
             <motion.div
-              className="fixed bottom-24 right-6 z-50 w-80 bg-card rounded-xl shadow-xl border overflow-hidden"
+              className="fixed bottom-40 md:bottom-24 right-6 z-50 w-80 bg-card rounded-xl shadow-xl border overflow-hidden max-h-[70vh] overflow-y-auto"
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}

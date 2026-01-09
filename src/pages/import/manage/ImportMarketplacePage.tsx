@@ -42,7 +42,7 @@ export default function ImportMarketplacePage() {
   const publishedProducts = importedProducts.filter(p => p.status === 'published');
 
   const getConnectionForMarketplace = (marketplaceId: string) => {
-    return connections.find(c => c.marketplace_id === marketplaceId);
+    return connections.find(c => c.platform === marketplaceId);
   };
 
   const handleConnect = async (marketplace: typeof MARKETPLACE_CONFIGS[0]) => {
@@ -66,7 +66,7 @@ export default function ImportMarketplacePage() {
   };
 
   const connectedCount = connections.filter(c => c.status === 'connected').length;
-  const totalSynced = connections.reduce((sum, c) => sum + (c.stats?.published || 0), 0);
+  const totalSynced = connections.reduce((sum, c) => sum + (c.total_products_synced || 0), 0);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -155,7 +155,7 @@ export default function ImportMarketplacePage() {
             const Icon = marketplace.icon;
             const connection = getConnectionForMarketplace(marketplace.id);
             const isConnected = connection?.status === 'connected';
-            const stats = connection?.stats || { published: 0, pending: 0, rejected: 0 };
+            const stats = { published: connection?.total_products_synced || 0, pending: 0, rejected: connection?.failed_sync_count || 0 };
             const syncingNow = isSyncing;
             
             return (
@@ -208,7 +208,7 @@ export default function ImportMarketplacePage() {
                       <span className="text-sm font-medium">Synchronisation automatique</span>
                     </div>
                     <Switch
-                      checked={connection?.sync_enabled ?? false}
+                      checked={connection?.is_active ?? false}
                       onCheckedChange={(checked) => {
                         if (connection) {
                           handleToggleSync(connection.id, checked);
