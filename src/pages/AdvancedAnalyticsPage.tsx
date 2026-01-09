@@ -1,6 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CustomReportsBuilder } from '@/components/analytics/CustomReportsBuilder';
 import { TeamManager } from '@/components/teams/TeamManager';
+import { KPIsDashboard } from '@/components/analytics/KPIsDashboard';
+import { ActivityLog } from '@/components/analytics/ActivityLog';
 import { BarChart, Users, Target, Activity } from 'lucide-react';
 
 export default function AdvancedAnalyticsPage() {
@@ -43,9 +45,7 @@ export default function AdvancedAnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="kpis" className="space-y-4 sm:space-y-6">
-          <div className="text-center py-8 sm:py-12 text-muted-foreground text-sm sm:text-base">
-            Module KPIs personnalisés à venir
-          </div>
+          <KPIsDashboard />
         </TabsContent>
 
         <TabsContent value="teams" className="space-y-4 sm:space-y-6">
@@ -53,9 +53,7 @@ export default function AdvancedAnalyticsPage() {
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-4 sm:space-y-6">
-          <div className="text-center py-8 sm:py-12 text-muted-foreground text-sm sm:text-base">
-            Journal d'activité de l'équipe à venir
-          </div>
+          <ActivityLog />
         </TabsContent>
       </Tabs>
     </div>
