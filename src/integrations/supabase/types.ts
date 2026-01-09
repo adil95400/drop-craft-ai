@@ -2210,6 +2210,42 @@ export type Database = {
         }
         Relationships: []
       }
+      carriers: {
+        Row: {
+          carrier_code: string
+          config: Json | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          tracking_url_template: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carrier_code: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          tracking_url_template?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carrier_code?: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          tracking_url_template?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       catalog_products: {
         Row: {
           category: string | null
@@ -7148,6 +7184,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      returns_rma: {
+        Row: {
+          created_at: string
+          customer_notes: string | null
+          id: string
+          images: string[] | null
+          inspected_at: string | null
+          internal_notes: string | null
+          metadata: Json | null
+          order_id: string | null
+          product_id: string | null
+          product_name: string | null
+          product_sku: string | null
+          quantity: number | null
+          reason: string | null
+          reason_category: string
+          received_at: string | null
+          refund_amount: number | null
+          refund_method: string | null
+          refund_status: string | null
+          refunded_at: string | null
+          requested_at: string | null
+          resolved_at: string | null
+          return_carrier: string | null
+          return_label_url: string | null
+          return_tracking_number: string | null
+          rma_number: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_notes?: string | null
+          id?: string
+          images?: string[] | null
+          inspected_at?: string | null
+          internal_notes?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          product_sku?: string | null
+          quantity?: number | null
+          reason?: string | null
+          reason_category: string
+          received_at?: string | null
+          refund_amount?: number | null
+          refund_method?: string | null
+          refund_status?: string | null
+          refunded_at?: string | null
+          requested_at?: string | null
+          resolved_at?: string | null
+          return_carrier?: string | null
+          return_label_url?: string | null
+          return_tracking_number?: string | null
+          rma_number: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_notes?: string | null
+          id?: string
+          images?: string[] | null
+          inspected_at?: string | null
+          internal_notes?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          product_sku?: string | null
+          quantity?: number | null
+          reason?: string | null
+          reason_category?: string
+          received_at?: string | null
+          refund_amount?: number | null
+          refund_method?: string | null
+          refund_status?: string | null
+          refunded_at?: string | null
+          requested_at?: string | null
+          resolved_at?: string | null
+          return_carrier?: string | null
+          return_label_url?: string | null
+          return_tracking_number?: string | null
+          rma_number?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       sales_channels: {
         Row: {

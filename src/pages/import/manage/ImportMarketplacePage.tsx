@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProductImports } from '@/hooks/useProductImports';
-import { useToast } from '@/hooks/use-toast';
+import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections';
+import { toast } from 'sonner';
 import { 
   Store, 
   Globe, 
@@ -17,210 +17,56 @@ import {
   RefreshCw,
   CheckCircle,
   XCircle,
-  AlertCircle,
-  TrendingUp
+  TrendingUp,
+  Loader2
 } from 'lucide-react';
+
+const MARKETPLACE_CONFIGS = [
+  { id: 'amazon', name: 'Amazon', description: 'Marketplace mondiale avec millions de visiteurs', icon: Store, color: 'orange' },
+  { id: 'ebay', name: 'eBay', description: "Plateforme d'enchères et vente directe", icon: ShoppingCart, color: 'blue' },
+  { id: 'tiktok', name: 'TikTok Shop', description: 'Social commerce sur TikTok', icon: Package, color: 'black' },
+  { id: 'meta', name: 'Meta Commerce', description: 'Facebook Marketplace & Instagram Shopping', icon: Store, color: 'blue' },
+  { id: 'google', name: 'Google Shopping', description: 'Plateforme publicitaire de Google', icon: Globe, color: 'green' },
+  { id: 'etsy', name: 'Etsy', description: 'Marketplace pour produits artisanaux et vintage', icon: Package, color: 'orange' },
+  { id: 'walmart', name: 'Walmart', description: 'Géant américain du retail en ligne', icon: Store, color: 'blue' },
+  { id: 'cdiscount', name: 'Cdiscount', description: 'Leader français du e-commerce', icon: ShoppingCart, color: 'red' },
+  { id: 'aliexpress', name: 'AliExpress', description: 'Marketplace chinoise B2C mondiale', icon: Package, color: 'red' },
+  { id: 'wish', name: 'Wish', description: 'Plateforme de commerce à petits prix', icon: Store, color: 'purple' },
+];
 
 export default function ImportMarketplacePage() {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { importedProducts, loading } = useProductImports();
-  const [syncEnabled, setSyncEnabled] = useState<Record<string, boolean>>({
-    amazon: false,
-    ebay: false,
-    tiktok: false,
-    meta: false,
-    google: false,
-    etsy: false,
-    walmart: false,
-    cdiscount: false,
-    aliexpress: false,
-    wish: false,
-  });
+  const { importedProducts } = useProductImports();
+  const { connections, isLoading: loadingConnections, connect, disconnect, toggleSync, syncProducts, isConnecting, isSyncing } = useMarketplaceConnections();
 
   const publishedProducts = importedProducts.filter(p => p.status === 'published');
 
-  const marketplaces = [
-    {
-      id: 'amazon',
-      name: 'Amazon',
-      description: 'Marketplace mondiale avec millions de visiteurs',
-      icon: Store,
-      color: 'orange',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'ebay',
-      name: 'eBay',
-      description: 'Plateforme d\'enchères et vente directe',
-      icon: ShoppingCart,
-      color: 'blue',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'tiktok',
-      name: 'TikTok Shop',
-      description: 'Social commerce sur TikTok',
-      icon: Package,
-      color: 'black',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'meta',
-      name: 'Meta Commerce',
-      description: 'Facebook Marketplace & Instagram Shopping',
-      icon: Store,
-      color: 'blue',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'google',
-      name: 'Google Shopping',
-      description: 'Plateforme publicitaire de Google',
-      icon: Globe,
-      color: 'green',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'etsy',
-      name: 'Etsy',
-      description: 'Marketplace pour produits artisanaux et vintage',
-      icon: Package,
-      color: 'orange',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'walmart',
-      name: 'Walmart',
-      description: 'Géant américain du retail en ligne',
-      icon: Store,
-      color: 'blue',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'cdiscount',
-      name: 'Cdiscount',
-      description: 'Leader français du e-commerce',
-      icon: ShoppingCart,
-      color: 'red',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'aliexpress',
-      name: 'AliExpress',
-      description: 'Marketplace chinoise B2C mondiale',
-      icon: Package,
-      color: 'red',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-    {
-      id: 'wish',
-      name: 'Wish',
-      description: 'Plateforme de commerce à petits prix',
-      icon: Store,
-      color: 'purple',
-      status: 'available',
-      connected: false,
-      stats: {
-        published: 0,
-        pending: 0,
-        rejected: 0,
-      }
-    },
-  ];
-
-  const handleConnectMarketplace = async (marketplaceId: string) => {
-    toast({
-      title: 'Connexion marketplace',
-      description: `Configuration de la connexion à ${marketplaces.find(m => m.id === marketplaceId)?.name}...`,
-    });
-
-    // TODO: Implement actual marketplace connection
-    setTimeout(() => {
-      toast({
-        title: 'Fonctionnalité en développement',
-        description: 'La connexion aux marketplaces sera disponible prochainement.',
-      });
-    }, 1000);
+  const getConnectionForMarketplace = (marketplaceId: string) => {
+    return connections.find(c => c.marketplace_id === marketplaceId);
   };
 
-  const handleSyncProducts = async (marketplaceId: string) => {
+  const handleConnect = async (marketplace: typeof MARKETPLACE_CONFIGS[0]) => {
+    await connect(marketplace.id, marketplace.name);
+  };
+
+  const handleDisconnect = async (connectionId: string) => {
+    await disconnect(connectionId);
+  };
+
+  const handleToggleSync = async (connectionId: string, enabled: boolean) => {
+    await toggleSync(connectionId, enabled);
+  };
+
+  const handleSync = async (connectionId: string) => {
     if (publishedProducts.length === 0) {
-      toast({
-        title: 'Aucun produit à synchroniser',
-        description: 'Publiez d\'abord des produits avant de synchroniser.',
-        variant: 'destructive',
-      });
+      toast.error('Aucun produit à synchroniser');
       return;
     }
-
-    toast({
-      title: 'Synchronisation lancée',
-      description: `${publishedProducts.length} produits en cours de synchronisation...`,
-    });
-
-    // TODO: Implement actual sync logic
-    setTimeout(() => {
-      toast({
-        title: 'Synchronisation terminée',
-        description: 'Les produits ont été synchronisés avec succès.',
-      });
-    }, 2000);
+    await syncProducts(connectionId);
   };
+
+  const connectedCount = connections.filter(c => c.status === 'connected').length;
+  const totalSynced = connections.reduce((sum, c) => sum + (c.stats?.published || 0), 0);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -236,7 +82,11 @@ export default function ImportMarketplacePage() {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="icon">
+        <Button 
+          variant="outline" 
+          size="icon"
+          onClick={() => window.location.reload()}
+        >
           <RefreshCw className="w-4 h-4" />
         </Button>
       </div>
@@ -260,7 +110,7 @@ export default function ImportMarketplacePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Marketplaces Connectées</p>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-2xl font-bold">{connectedCount}</p>
               </div>
               <Store className="w-8 h-8 text-green-600" />
             </div>
@@ -272,7 +122,7 @@ export default function ImportMarketplacePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Produits Synchronisés</p>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-2xl font-bold">{totalSynced}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
@@ -284,7 +134,9 @@ export default function ImportMarketplacePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Taux de Succès</p>
-                <p className="text-2xl font-bold">--%</p>
+                <p className="text-2xl font-bold">
+                  {totalSynced > 0 ? '100%' : '--%'}
+                </p>
               </div>
               <TrendingUp className="w-8 h-8 text-purple-600" />
             </div>
@@ -293,113 +145,123 @@ export default function ImportMarketplacePage() {
       </div>
 
       {/* Marketplaces Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {marketplaces.map((marketplace) => {
-          const Icon = marketplace.icon;
-          return (
-            <Card key={marketplace.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 bg-${marketplace.color}-500/10 rounded-lg flex items-center justify-center`}>
-                      <Icon className={`w-6 h-6 text-${marketplace.color}-600`} />
+      {loadingConnections ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {MARKETPLACE_CONFIGS.map((marketplace) => {
+            const Icon = marketplace.icon;
+            const connection = getConnectionForMarketplace(marketplace.id);
+            const isConnected = connection?.status === 'connected';
+            const stats = connection?.stats || { published: 0, pending: 0, rejected: 0 };
+            const syncingNow = isSyncing;
+            
+            return (
+              <Card key={marketplace.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                        <Icon className="w-6 h-6 text-foreground" />
+                      </div>
+                      <div>
+                        <CardTitle>{marketplace.name}</CardTitle>
+                        <CardDescription>{marketplace.description}</CardDescription>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle>{marketplace.name}</CardTitle>
-                      <CardDescription>{marketplace.description}</CardDescription>
+                    {isConnected ? (
+                      <Badge className="bg-green-500/10 text-green-700 border-green-500/20">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Connecté
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">
+                        <XCircle className="w-3 h-3 mr-1" />
+                        Non connecté
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{stats.published}</p>
+                      <p className="text-xs text-muted-foreground">Publiés</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+                      <p className="text-xs text-muted-foreground">En attente</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+                      <p className="text-xs text-muted-foreground">Rejetés</p>
                     </div>
                   </div>
-                  {marketplace.connected ? (
-                    <Badge className="bg-green-500/10 text-green-700 border-green-500/20">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Connecté
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">
-                      <XCircle className="w-3 h-3 mr-1" />
-                      Non connecté
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">{marketplace.stats.published}</p>
-                    <p className="text-xs text-muted-foreground">Publiés</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-yellow-600">{marketplace.stats.pending}</p>
-                    <p className="text-xs text-muted-foreground">En attente</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-red-600">{marketplace.stats.rejected}</p>
-                    <p className="text-xs text-muted-foreground">Rejetés</p>
-                  </div>
-                </div>
 
-                {/* Sync Toggle */}
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Synchronisation automatique</span>
+                  {/* Sync Toggle */}
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Synchronisation automatique</span>
+                    </div>
+                    <Switch
+                      checked={connection?.sync_enabled ?? false}
+                      onCheckedChange={(checked) => {
+                        if (connection) {
+                          handleToggleSync(connection.id, checked);
+                        }
+                      }}
+                      disabled={!isConnected}
+                    />
                   </div>
-                  <Switch
-                    checked={syncEnabled[marketplace.id as keyof typeof syncEnabled]}
-                    onCheckedChange={(checked) =>
-                      setSyncEnabled({ ...syncEnabled, [marketplace.id]: checked })
-                    }
-                    disabled={!marketplace.connected}
-                  />
-                </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                  {marketplace.connected ? (
-                    <>
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    {isConnected ? (
+                      <>
+                        <Button 
+                          className="flex-1"
+                          onClick={() => connection && handleSync(connection.id)}
+                          disabled={syncingNow || publishedProducts.length === 0}
+                        >
+                          {syncingNow ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                          )}
+                          Synchroniser
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => connection && handleDisconnect(connection.id)}
+                        >
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      </>
+                    ) : (
                       <Button 
                         className="flex-1"
-                        onClick={() => handleSyncProducts(marketplace.id)}
+                        variant="outline"
+                        onClick={() => handleConnect(marketplace)}
+                        disabled={isConnecting}
                       >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Synchroniser
+                        {isConnecting ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : null}
+                        Connecter
                       </Button>
-                      <Button variant="outline" size="icon">
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <Button 
-                      className="flex-1"
-                      variant="outline"
-                      onClick={() => handleConnectMarketplace(marketplace.id)}
-                    >
-                      Connecter
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Info Banner */}
-      <Card className="border-blue-200 bg-blue-50/50">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-4">
-            <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium text-blue-900">Fonctionnalité en développement</p>
-              <p className="text-sm text-blue-700 mt-1">
-                La connexion et la synchronisation avec les marketplaces externes sera disponible prochainement. 
-                En attendant, vous pouvez utiliser la publication vers Shopify et les exports manuels.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
