@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Mail, Send, Users, TrendingUp, Clock, Plus, Eye, Loader2, MoreHorizontal, Edit, Trash2, Play, Pause } from 'lucide-react';
 import { useMarketingCampaigns } from '@/hooks/useMarketingCampaigns';
 import { useRealCustomers } from '@/hooks/useRealCustomers';
+import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -13,10 +14,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 
 const EmailMarketingPage: React.FC = () => {
   const { campaigns, isLoading, createCampaign, updateCampaign, deleteCampaign, isCreating } = useMarketingCampaigns();
   const { stats: customerStats } = useRealCustomers();
+  const { templates } = useEmailTemplates();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newCampaign, setNewCampaign] = useState({ name: '', type: 'email' as const });
 
@@ -199,7 +202,7 @@ const EmailMarketingPage: React.FC = () => {
       <Tabs defaultValue="campaigns" className="space-y-4">
         <TabsList>
           <TabsTrigger value="campaigns">Campagnes ({campaigns.length})</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsTrigger value="templates">Templates ({templates.length})</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -317,27 +320,7 @@ const EmailMarketingPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="templates">
-          <Card>
-            <CardHeader>
-              <CardTitle>Templates d'email</CardTitle>
-              <CardDescription>Vos modèles d'email personnalisés</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
-                {['Bienvenue', 'Promotion', 'Newsletter'].map((name, i) => (
-                  <Card key={i} className="cursor-pointer hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="h-40 bg-muted rounded-lg mb-3 flex items-center justify-center">
-                        <Mail className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                      <h4 className="font-semibold">{name}</h4>
-                      <p className="text-xs text-muted-foreground">Template prédéfini</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <EmailTemplatesManager />
         </TabsContent>
 
         <TabsContent value="analytics">
