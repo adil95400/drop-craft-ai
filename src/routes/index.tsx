@@ -65,6 +65,7 @@ const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 const RepricingPage = lazy(() => import('@/pages/RepricingPage'));
+const AdsSpyPage = lazy(() => import('@/pages/AdsSpyPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -152,6 +153,10 @@ export function AppRoutes() {
         <Route path="/ab-testing" element={<ProtectedRoute><AppLayout><ABTestingPage /></AppLayout></ProtectedRoute>} />
         <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
         <Route path="/repricing" element={<ProtectedRoute><AppLayout><RepricingPage /></AppLayout></ProtectedRoute>} />
+        
+        {/* Ads Spy */}
+        <Route path="/ads-spy" element={<ProtectedRoute><AppLayout><AdsSpyPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/ads-spy/*" element={<ProtectedRoute><AppLayout><AdsSpyPage /></AppLayout></ProtectedRoute>} />
         
         {/* Page Builder */}
         <Route path="/page-builder" element={<ProtectedRoute><AppLayout><PageBuilderPage /></AppLayout></ProtectedRoute>} />
