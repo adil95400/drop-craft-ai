@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -19,8 +19,9 @@ interface CustomerSegment {
   id: string;
   name: string;
   description?: string;
-  criteria: any;
+  criteria: Record<string, unknown>;
   contact_count?: number;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -33,49 +34,69 @@ export function useCustomerManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
 
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch customers from the customers table directly
-        const { data: customersData, error: customersError } = await supabase
-          .from('customers')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+    try {
+      setLoading(true);
+      
+      // Fetch customers
+      const { data: customersData, error: customersError } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-        if (customersError) throw customersError;
+      if (customersError) throw customersError;
 
-        // Map customers data to interface
-        const mappedCustomers: Customer[] = (customersData || []).map((c: any) => ({
-          id: c.id,
-          name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || c.email,
-          email: c.email,
-          phone: c.phone,
-          status: 'active',
-          total_spent: c.total_spent,
-          total_orders: c.total_orders,
-          created_at: c.created_at,
-          updated_at: c.updated_at
-        }));
+      const mappedCustomers: Customer[] = (customersData || []).map((c: Record<string, unknown>) => ({
+        id: c.id as string,
+        name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || (c.email as string),
+        email: c.email as string,
+        phone: c.phone as string | undefined,
+        status: 'active',
+        total_spent: c.total_spent as number | undefined,
+        total_orders: c.total_orders as number | undefined,
+        created_at: c.created_at as string,
+        updated_at: c.updated_at as string
+      }));
 
-        setCustomers(mappedCustomers);
-        setSegments([]); // No marketing_segments table, use empty array
-      } catch (err: any) {
-        console.error('Error fetching customer data:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        setCustomers([]);
-        setSegments([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setCustomers(mappedCustomers);
 
+      // Fetch segments - use customer_analytics_segments table
+      const { data: segmentsData, error: segmentsError } = await supabase
+        .from('customer_analytics_segments')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (segmentsError) throw segmentsError;
+
+      const mappedSegments: CustomerSegment[] = (segmentsData || []).map((s: Record<string, unknown>) => ({
+        id: s.id as string,
+        name: s.name as string,
+        description: s.description as string | undefined,
+        criteria: (s.rules as Record<string, unknown>) || {},
+        contact_count: s.customer_count as number | undefined,
+        is_active: s.is_active as boolean | undefined,
+        created_at: s.created_at as string,
+        updated_at: s.updated_at as string
+      }));
+
+      setSegments(mappedSegments);
+    } catch (err) {
+      console.error('Error fetching customer data:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setCustomers([]);
+      setSegments([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
     fetchData();
-  }, [user, toast]);
+  }, [fetchData]);
 
   const createCustomer = async (customerData: Omit<Customer, 'id' | 'created_at' | 'updated_at'>) => {
     if (!user) throw new Error('User not authenticated');
@@ -133,7 +154,7 @@ export function useCustomerManagement() {
 
   const updateCustomer = async (id: string, updates: Partial<Customer>) => {
     try {
-      const dbUpdates: any = {};
+      const dbUpdates: Record<string, unknown> = {};
       if (updates.name) {
         const nameParts = updates.name.split(' ');
         dbUpdates.first_name = nameParts[0] || '';
@@ -212,27 +233,129 @@ export function useCustomerManagement() {
   };
 
   const createSegment = async (segmentData: Omit<CustomerSegment, 'id' | 'created_at' | 'updated_at'>) => {
-    // Segments not supported yet - return mock data
-    toast({
-      title: "Info",
-      description: "Customer segments feature coming soon"
-    });
-    return null;
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      const { data, error } = await supabase
+        .from('customer_analytics_segments')
+        .insert([
+          {
+            name: segmentData.name,
+            description: segmentData.description,
+            rules: segmentData.criteria,
+            customer_count: segmentData.contact_count || 0,
+            is_active: segmentData.is_active ?? true,
+            user_id: user.id
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newSegment: CustomerSegment = {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        criteria: (data.rules as Record<string, unknown>) || {},
+        contact_count: data.customer_count,
+        is_active: data.is_active,
+        created_at: data.created_at,
+        updated_at: data.updated_at
+      };
+
+      setSegments(prev => [newSegment, ...prev]);
+      toast({
+        title: "Success",
+        description: "Segment created successfully"
+      });
+      
+      return newSegment;
+    } catch (err) {
+      console.error('Error creating segment:', err);
+      toast({
+        title: "Error",
+        description: "Failed to create segment",
+        variant: "destructive"
+      });
+      throw err;
+    }
   };
 
   const updateSegment = async (id: string, updates: Partial<CustomerSegment>) => {
-    toast({
-      title: "Info",
-      description: "Customer segments feature coming soon"
-    });
-    return null;
+    try {
+      const { data, error } = await supabase
+        .from('customer_analytics_segments')
+        .update({
+          name: updates.name,
+          description: updates.description,
+          rules: updates.criteria,
+          customer_count: updates.contact_count,
+          is_active: updates.is_active
+        })
+        .eq('id', id)
+        .eq('user_id', user?.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const updatedSegment: CustomerSegment = {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        criteria: (data.rules as Record<string, unknown>) || {},
+        contact_count: data.customer_count,
+        is_active: data.is_active,
+        created_at: data.created_at,
+        updated_at: data.updated_at
+      };
+
+      setSegments(prev => prev.map(segment => 
+        segment.id === id ? updatedSegment : segment
+      ));
+      
+      toast({
+        title: "Success",
+        description: "Segment updated successfully"
+      });
+      
+      return updatedSegment;
+    } catch (err) {
+      console.error('Error updating segment:', err);
+      toast({
+        title: "Error",
+        description: "Failed to update segment",
+        variant: "destructive"
+      });
+      throw err;
+    }
   };
 
   const deleteSegment = async (id: string) => {
-    toast({
-      title: "Info",
-      description: "Customer segments feature coming soon"
-    });
+    try {
+      const { error } = await supabase
+        .from('customer_analytics_segments')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setSegments(prev => prev.filter(segment => segment.id !== id));
+      toast({
+        title: "Success",
+        description: "Segment deleted successfully"
+      });
+    } catch (err) {
+      console.error('Error deleting segment:', err);
+      toast({
+        title: "Error",
+        description: "Failed to delete segment",
+        variant: "destructive"
+      });
+      throw err;
+    }
   };
 
   return {
@@ -246,10 +369,6 @@ export function useCustomerManagement() {
     createSegment,
     updateSegment,
     deleteSegment,
-    refetch: () => {
-      if (user) {
-        setLoading(true);
-      }
-    }
+    refetch: fetchData
   };
 }
