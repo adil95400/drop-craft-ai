@@ -300,7 +300,7 @@ export function useStockIntelligence() {
     rejectSuggestion: rejectSuggestion.mutate,
     markAlertAsRead: markAlertAsRead.mutate,
     resolveAlert: resolveAlert.mutate,
-    toggleSyncRule: toggleSyncRule.mutate,
+    toggleSyncRule,
     isApprovingSuggestion: approveSuggestion.isPending,
     isRejectingSuggestion: rejectSuggestion.isPending,
     isResolvingAlert: resolveAlert.isPending,
