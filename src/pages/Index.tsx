@@ -85,7 +85,6 @@ const HeroSection = () => {
                 width={640}
                 height={360}
                 loading="eager"
-                fetchPriority="high"
                 decoding="async"
                 sizes="(max-width: 640px) 100vw, 640px"
               />
