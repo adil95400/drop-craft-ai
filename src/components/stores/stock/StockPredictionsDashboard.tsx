@@ -16,7 +16,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export function StockPredictionsDashboard() {
-  const { predictions, isLoadingPredictions } = useStockIntelligence();
+  const { predictions, isLoadingPredictions, generatePredictions, isGeneratingPredictions } = useStockIntelligence();
 
   const getUrgencyColor = (urgency: string) => {
     const colors = {
@@ -53,26 +53,25 @@ export function StockPredictionsDashboard() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Prédictions de Stock</h2>
-          <p className="text-muted-foreground">
-            Analysez les ruptures de stock potentielles
-          </p>
+          <p className="text-muted-foreground">Analysez les ruptures de stock potentielles</p>
         </div>
-        {(criticalCount > 0 || highCount > 0) && (
-          <div className="flex gap-2">
-            {criticalCount > 0 && (
-              <Badge variant="destructive" className="flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                {criticalCount} critique{criticalCount > 1 && 's'}
-              </Badge>
-            )}
-            {highCount > 0 && (
-              <Badge className="bg-orange-500 hover:bg-orange-600 flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                {highCount} urgent{highCount > 1 && 's'}
-              </Badge>
-            )}
-          </div>
-        )}
+        <div className="flex gap-2 items-center">
+          <Button onClick={() => generatePredictions()} disabled={isGeneratingPredictions}>
+            {isGeneratingPredictions ? 'Analyse...' : 'Générer Prédictions IA'}
+          </Button>
+          {criticalCount > 0 && (
+            <Badge variant="destructive" className="flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              {criticalCount} critique{criticalCount > 1 && 's'}
+            </Badge>
+          )}
+          {highCount > 0 && (
+            <Badge className="bg-orange-500 hover:bg-orange-600 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              {highCount} urgent{highCount > 1 && 's'}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {predictions.length === 0 ? (
@@ -103,11 +102,9 @@ export function StockPredictionsDashboard() {
                 <TableRow key={prediction.id}>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">{prediction.product_id}</span>
+                      <span className="font-medium">{(prediction as any).product_name || prediction.product_id}</span>
                       {prediction.store_id && (
-                        <span className="text-xs text-muted-foreground">
-                          Store: {prediction.store_id}
-                        </span>
+                        <span className="text-xs text-muted-foreground">Store: {prediction.store_id}</span>
                       )}
                     </div>
                   </TableCell>

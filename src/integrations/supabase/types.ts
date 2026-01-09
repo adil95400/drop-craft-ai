@@ -7098,6 +7098,66 @@ export type Database = {
         }
         Relationships: []
       }
+      reorder_suggestions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          estimated_cost: number | null
+          expected_delivery_date: string | null
+          id: string
+          order_placed_at: string | null
+          priority_score: number | null
+          product_id: string
+          reasoning: Json | null
+          status: string
+          store_id: string | null
+          suggested_quantity: number
+          suggested_reorder_point: number | null
+          supplier_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          estimated_cost?: number | null
+          expected_delivery_date?: string | null
+          id?: string
+          order_placed_at?: string | null
+          priority_score?: number | null
+          product_id: string
+          reasoning?: Json | null
+          status?: string
+          store_id?: string | null
+          suggested_quantity?: number
+          suggested_reorder_point?: number | null
+          supplier_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          estimated_cost?: number | null
+          expected_delivery_date?: string | null
+          id?: string
+          order_placed_at?: string | null
+          priority_score?: number | null
+          product_id?: string
+          reasoning?: Json | null
+          status?: string
+          store_id?: string | null
+          suggested_quantity?: number
+          suggested_reorder_point?: number | null
+          supplier_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       returns: {
         Row: {
           carrier: string | null
@@ -7648,47 +7708,68 @@ export type Database = {
       }
       stock_alerts: {
         Row: {
+          action_data: Json | null
           alert_type: string
           created_at: string | null
+          current_stock: number | null
           current_value: number | null
           id: string
+          is_read: boolean
           is_resolved: boolean | null
           message: string | null
           product_id: string | null
+          recommended_action: string | null
           resolved_at: string | null
           resolved_by: string | null
           severity: string | null
+          store_id: string | null
           threshold_value: number | null
+          title: string
+          updated_at: string
           user_id: string
           warehouse_id: string | null
         }
         Insert: {
+          action_data?: Json | null
           alert_type: string
           created_at?: string | null
+          current_stock?: number | null
           current_value?: number | null
           id?: string
+          is_read?: boolean
           is_resolved?: boolean | null
           message?: string | null
           product_id?: string | null
+          recommended_action?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           severity?: string | null
+          store_id?: string | null
           threshold_value?: number | null
+          title?: string
+          updated_at?: string
           user_id: string
           warehouse_id?: string | null
         }
         Update: {
+          action_data?: Json | null
           alert_type?: string
           created_at?: string | null
+          current_stock?: number | null
           current_value?: number | null
           id?: string
+          is_read?: boolean
           is_resolved?: boolean | null
           message?: string | null
           product_id?: string | null
+          recommended_action?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           severity?: string | null
+          store_id?: string | null
           threshold_value?: number | null
+          title?: string
+          updated_at?: string
           user_id?: string
           warehouse_id?: string | null
         }
@@ -7840,6 +7921,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stock_predictions: {
+        Row: {
+          confidence_score: number
+          created_at: string
+          current_stock: number
+          daily_sale_velocity: number
+          id: string
+          last_calculated_at: string
+          predicted_days_until_stockout: number | null
+          predicted_stockout_date: string | null
+          product_id: string
+          recommendation: string | null
+          reorder_quantity: number | null
+          reorder_urgency: string
+          store_id: string | null
+          trend_direction: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number
+          created_at?: string
+          current_stock?: number
+          daily_sale_velocity?: number
+          id?: string
+          last_calculated_at?: string
+          predicted_days_until_stockout?: number | null
+          predicted_stockout_date?: string | null
+          product_id: string
+          recommendation?: string | null
+          reorder_quantity?: number | null
+          reorder_urgency?: string
+          store_id?: string | null
+          trend_direction?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string
+          current_stock?: number
+          daily_sale_velocity?: number
+          id?: string
+          last_calculated_at?: string
+          predicted_days_until_stockout?: number | null
+          predicted_stockout_date?: string | null
+          product_id?: string
+          recommendation?: string | null
+          reorder_quantity?: number | null
+          reorder_urgency?: string
+          store_id?: string | null
+          trend_direction?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       store_integrations: {
         Row: {
