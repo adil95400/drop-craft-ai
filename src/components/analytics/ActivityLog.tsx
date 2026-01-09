@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Activity, Search, Filter, User, ShoppingCart, Package, 
   Edit, Trash, Plus, Eye, Download, Upload, Settings,
-  CheckCircle, AlertCircle, Clock
+  CheckCircle, AlertCircle, Clock, RefreshCw
 } from 'lucide-react';
 import {
   Select,
@@ -17,101 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useActivityLogs } from '@/hooks/useActivityLogs';
 
-interface ActivityItem {
-  id: string;
-  user: {
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-  action: string;
-  actionType: 'create' | 'update' | 'delete' | 'view' | 'export' | 'import' | 'settings';
-  target: string;
-  targetType: 'order' | 'product' | 'customer' | 'report' | 'settings' | 'team';
-  timestamp: Date;
-  status: 'success' | 'pending' | 'failed';
-  details?: string;
-}
-
-const mockActivities: ActivityItem[] = [
-  {
-    id: '1',
-    user: { name: 'Jean Dupont', email: 'jean@example.com' },
-    action: 'Commande validée',
-    actionType: 'update',
-    target: 'Commande #12345',
-    targetType: 'order',
-    timestamp: new Date(Date.now() - 5 * 60 * 1000),
-    status: 'success',
-    details: 'Statut changé de "en attente" à "validée"'
-  },
-  {
-    id: '2',
-    user: { name: 'Marie Martin', email: 'marie@example.com' },
-    action: 'Produit ajouté',
-    actionType: 'create',
-    target: 'Casque Bluetooth Pro',
-    targetType: 'product',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    status: 'success',
-  },
-  {
-    id: '3',
-    user: { name: 'Pierre Durand', email: 'pierre@example.com' },
-    action: 'Rapport exporté',
-    actionType: 'export',
-    target: 'Rapport ventes Q4',
-    targetType: 'report',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    status: 'success',
-  },
-  {
-    id: '4',
-    user: { name: 'Sophie Bernard', email: 'sophie@example.com' },
-    action: 'Client modifié',
-    actionType: 'update',
-    target: 'Client #8901',
-    targetType: 'customer',
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    status: 'success',
-    details: 'Adresse de livraison mise à jour'
-  },
-  {
-    id: '5',
-    user: { name: 'Jean Dupont', email: 'jean@example.com' },
-    action: 'Import produits',
-    actionType: 'import',
-    target: '150 produits',
-    targetType: 'product',
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    status: 'pending',
-    details: 'Import en cours...'
-  },
-  {
-    id: '6',
-    user: { name: 'Admin', email: 'admin@example.com' },
-    action: 'Paramètres modifiés',
-    actionType: 'settings',
-    target: 'Notifications email',
-    targetType: 'settings',
-    timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000),
-    status: 'success',
-  },
-  {
-    id: '7',
-    user: { name: 'Marie Martin', email: 'marie@example.com' },
-    action: 'Commande supprimée',
-    actionType: 'delete',
-    target: 'Commande #12340',
-    targetType: 'order',
-    timestamp: new Date(Date.now() - 72 * 60 * 60 * 1000),
-    status: 'failed',
-    details: 'Échec: commande déjà expédiée'
-  },
-];
-
-const actionIcons = {
+const actionIcons: Record<string, React.ElementType> = {
   create: Plus,
   update: Edit,
   delete: Trash,
@@ -119,24 +28,29 @@ const actionIcons = {
   export: Download,
   import: Upload,
   settings: Settings,
+  login: User,
+  logout: User,
 };
 
-const targetIcons = {
+const targetIcons: Record<string, React.ElementType> = {
   order: ShoppingCart,
   product: Package,
   customer: User,
   report: Activity,
   settings: Settings,
   team: User,
+  user: User,
 };
 
-const statusConfig = {
+const severityConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
+  info: { icon: CheckCircle, color: 'text-blue-500', label: 'Info' },
   success: { icon: CheckCircle, color: 'text-green-500', label: 'Succès' },
-  pending: { icon: Clock, color: 'text-yellow-500', label: 'En cours' },
-  failed: { icon: AlertCircle, color: 'text-red-500', label: 'Échec' },
+  warning: { icon: AlertCircle, color: 'text-yellow-500', label: 'Attention' },
+  error: { icon: AlertCircle, color: 'text-red-500', label: 'Erreur' },
 };
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / (1000 * 60));
@@ -150,29 +64,71 @@ function formatTimeAgo(date: Date): string {
   return date.toLocaleDateString('fr-FR');
 }
 
+function getActionType(action: string): string {
+  const lowerAction = action.toLowerCase();
+  if (lowerAction.includes('créé') || lowerAction.includes('ajout') || lowerAction.includes('create')) return 'create';
+  if (lowerAction.includes('modif') || lowerAction.includes('update') || lowerAction.includes('mis à jour')) return 'update';
+  if (lowerAction.includes('supprim') || lowerAction.includes('delete')) return 'delete';
+  if (lowerAction.includes('export')) return 'export';
+  if (lowerAction.includes('import')) return 'import';
+  if (lowerAction.includes('connexion') || lowerAction.includes('login')) return 'login';
+  return 'view';
+}
+
 export function ActivityLog() {
+  const { logs, isLoading } = useActivityLogs();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterSeverity, setFilterSeverity] = useState<string>('all');
 
-  const filteredActivities = mockActivities.filter(activity => {
+  const filteredLogs = logs.filter(log => {
     const matchesSearch = 
-      activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      activity.target.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      activity.user.name.toLowerCase().includes(searchTerm.toLowerCase());
+      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.entity_type || '').toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesType = filterType === 'all' || activity.actionType === filterType;
-    const matchesStatus = filterStatus === 'all' || activity.status === filterStatus;
+    const actionType = getActionType(log.action);
+    const matchesType = filterType === 'all' || actionType === filterType;
+    const matchesSeverity = filterSeverity === 'all' || (log as any).severity === filterSeverity;
 
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType && matchesSeverity;
   });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-10 w-full" />
+          </CardHeader>
+          <CardContent>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-4 p-4 border-b">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1">
+                  <Skeleton className="h-4 w-32 mb-2" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <Skeleton className="h-4 w-16" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-semibold">Journal d'activité</h2>
-          <p className="text-sm text-muted-foreground">Historique des actions de l'équipe</p>
+          <p className="text-sm text-muted-foreground">
+            {logs.length} activité{logs.length > 1 ? 's' : ''} enregistrée{logs.length > 1 ? 's' : ''}
+          </p>
         </div>
       </div>
 
@@ -201,17 +157,19 @@ export function ActivityLog() {
                   <SelectItem value="delete">Suppression</SelectItem>
                   <SelectItem value="export">Export</SelectItem>
                   <SelectItem value="import">Import</SelectItem>
+                  <SelectItem value="login">Connexion</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <Select value={filterSeverity} onValueChange={setFilterSeverity}>
                 <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Statut" />
+                  <SelectValue placeholder="Sévérité" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous</SelectItem>
+                  <SelectItem value="info">Info</SelectItem>
                   <SelectItem value="success">Succès</SelectItem>
-                  <SelectItem value="pending">En cours</SelectItem>
-                  <SelectItem value="failed">Échec</SelectItem>
+                  <SelectItem value="warning">Attention</SelectItem>
+                  <SelectItem value="error">Erreur</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -220,62 +178,67 @@ export function ActivityLog() {
         <CardContent>
           <ScrollArea className="h-[500px] pr-4">
             <div className="space-y-4">
-              {filteredActivities.map((activity) => {
-                const ActionIcon = actionIcons[activity.actionType];
-                const TargetIcon = targetIcons[activity.targetType];
-                const StatusIcon = statusConfig[activity.status].icon;
-                
-                return (
-                  <div 
-                    key={activity.id} 
-                    className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={activity.user.avatar} />
-                      <AvatarFallback>
-                        {activity.user.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium">{activity.user.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          <ActionIcon className="h-3 w-3 mr-1" />
-                          {activity.action}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                        <TargetIcon className="h-3 w-3" />
-                        <span>{activity.target}</span>
-                      </div>
-                      
-                      {activity.details && (
-                        <p className="text-xs text-muted-foreground mt-2 bg-muted p-2 rounded">
-                          {activity.details}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="flex flex-col items-end gap-2">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatTimeAgo(activity.timestamp)}
-                      </span>
-                      <div className={`flex items-center gap-1 text-xs ${statusConfig[activity.status].color}`}>
-                        <StatusIcon className="h-3 w-3" />
-                        <span>{statusConfig[activity.status].label}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-              
-              {filteredActivities.length === 0 && (
+              {filteredLogs.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Aucune activité trouvée</p>
+                  <p className="text-sm mt-1">Les activités apparaîtront ici au fur et à mesure</p>
                 </div>
+              ) : (
+                filteredLogs.map((log) => {
+                  const actionType = getActionType(log.action);
+                  const ActionIcon = actionIcons[actionType] || Activity;
+                  const TargetIcon = targetIcons[log.entity_type || 'user'] || Activity;
+                  const severity = (log as any).severity || 'info';
+                  const severityInfo = severityConfig[severity] || severityConfig.info;
+                  const StatusIcon = severityInfo.icon;
+                  
+                  return (
+                    <div 
+                      key={log.id} 
+                      className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                    >
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback>
+                          <User className="h-5 w-5" />
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium">Utilisateur</span>
+                          <Badge variant="outline" className="text-xs">
+                            <ActionIcon className="h-3 w-3 mr-1" />
+                            {log.action}
+                          </Badge>
+                        </div>
+                        
+                        {log.entity_type && (
+                          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                            <TargetIcon className="h-3 w-3" />
+                            <span>{log.entity_type}{log.entity_id ? ` #${log.entity_id.slice(0, 8)}` : ''}</span>
+                          </div>
+                        )}
+                        
+                        {log.description && (
+                          <p className="text-xs text-muted-foreground mt-2 bg-muted p-2 rounded">
+                            {log.description}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatTimeAgo(log.created_at)}
+                        </span>
+                        <div className={`flex items-center gap-1 text-xs ${severityInfo.color}`}>
+                          <StatusIcon className="h-3 w-3" />
+                          <span>{severityInfo.label}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </ScrollArea>

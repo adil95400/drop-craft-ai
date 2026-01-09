@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Target, TrendingUp, TrendingDown, Plus, Edit2, Trash2, 
-  DollarSign, ShoppingCart, Users, Package, Percent, Clock
+  DollarSign, ShoppingCart, Users, Package, Percent, Clock, Loader2
 } from 'lucide-react';
 import {
   Dialog,
@@ -25,25 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-interface KPI {
-  id: string;
-  name: string;
-  target: number;
-  current: number;
-  unit: string;
-  type: 'revenue' | 'orders' | 'customers' | 'products' | 'conversion' | 'custom';
-  period: 'daily' | 'weekly' | 'monthly' | 'quarterly';
-}
-
-const defaultKPIs: KPI[] = [
-  { id: '1', name: 'Chiffre d\'affaires mensuel', target: 50000, current: 42500, unit: '€', type: 'revenue', period: 'monthly' },
-  { id: '2', name: 'Commandes par jour', target: 50, current: 45, unit: '', type: 'orders', period: 'daily' },
-  { id: '3', name: 'Nouveaux clients', target: 200, current: 180, unit: '', type: 'customers', period: 'monthly' },
-  { id: '4', name: 'Taux de conversion', target: 3.5, current: 2.8, unit: '%', type: 'conversion', period: 'weekly' },
-  { id: '5', name: 'Panier moyen', target: 85, current: 78, unit: '€', type: 'revenue', period: 'monthly' },
-  { id: '6', name: 'Produits vendus', target: 1000, current: 920, unit: '', type: 'products', period: 'monthly' },
-];
+import { useUserKPIs, UserKPI, CreateKPIData } from '@/hooks/useUserKPIs';
 
 const typeIcons = {
   revenue: DollarSign,
@@ -70,37 +53,52 @@ const periodLabels = {
   quarterly: 'Trimestriel',
 };
 
+const defaultKPIs: CreateKPIData[] = [
+  { name: 'Chiffre d\'affaires mensuel', target: 50000, current_value: 0, unit: '€', kpi_type: 'revenue', period: 'monthly' },
+  { name: 'Commandes par jour', target: 50, current_value: 0, unit: '', kpi_type: 'orders', period: 'daily' },
+  { name: 'Nouveaux clients', target: 200, current_value: 0, unit: '', kpi_type: 'customers', period: 'monthly' },
+  { name: 'Taux de conversion', target: 3.5, current_value: 0, unit: '%', kpi_type: 'conversion', period: 'weekly' },
+];
+
 export function KPIsDashboard() {
-  const [kpis, setKpis] = useState<KPI[]>(defaultKPIs);
+  const { kpis, isLoading, createKPI, updateKPI, deleteKPI, isCreating, isUpdating } = useUserKPIs();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingKPI, setEditingKPI] = useState<KPI | null>(null);
-  const [formData, setFormData] = useState({
+  const [editingKPI, setEditingKPI] = useState<UserKPI | null>(null);
+  const [formData, setFormData] = useState<CreateKPIData>({
     name: '',
     target: 0,
-    current: 0,
+    current_value: 0,
     unit: '',
-    type: 'custom' as KPI['type'],
-    period: 'monthly' as KPI['period'],
+    kpi_type: 'custom',
+    period: 'monthly',
   });
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  // Initialize default KPIs if user has none
+  useEffect(() => {
+    if (!isLoading && kpis.length === 0 && !hasInitialized) {
+      setHasInitialized(true);
+      // Create default KPIs for new users
+      defaultKPIs.forEach((kpi) => {
+        createKPI(kpi);
+      });
+    }
+  }, [isLoading, kpis.length, hasInitialized, createKPI]);
 
   const handleAddKPI = () => {
-    const newKPI: KPI = {
-      id: Date.now().toString(),
-      ...formData,
-    };
-    setKpis([...kpis, newKPI]);
-    setFormData({ name: '', target: 0, current: 0, unit: '', type: 'custom', period: 'monthly' });
+    createKPI(formData);
+    setFormData({ name: '', target: 0, current_value: 0, unit: '', kpi_type: 'custom', period: 'monthly' });
     setIsDialogOpen(false);
   };
 
-  const handleEditKPI = (kpi: KPI) => {
+  const handleEditKPI = (kpi: UserKPI) => {
     setEditingKPI(kpi);
     setFormData({
       name: kpi.name,
       target: kpi.target,
-      current: kpi.current,
+      current_value: kpi.current_value,
       unit: kpi.unit,
-      type: kpi.type,
+      kpi_type: kpi.kpi_type,
       period: kpi.period,
     });
     setIsDialogOpen(true);
@@ -108,22 +106,23 @@ export function KPIsDashboard() {
 
   const handleUpdateKPI = () => {
     if (editingKPI) {
-      setKpis(kpis.map(k => k.id === editingKPI.id ? { ...k, ...formData } : k));
+      updateKPI({ id: editingKPI.id, ...formData });
       setEditingKPI(null);
-      setFormData({ name: '', target: 0, current: 0, unit: '', type: 'custom', period: 'monthly' });
+      setFormData({ name: '', target: 0, current_value: 0, unit: '', kpi_type: 'custom', period: 'monthly' });
       setIsDialogOpen(false);
     }
   };
 
   const handleDeleteKPI = (id: string) => {
-    setKpis(kpis.filter(k => k.id !== id));
+    deleteKPI(id);
   };
 
-  const getProgress = (kpi: KPI) => {
-    return Math.min((kpi.current / kpi.target) * 100, 100);
+  const getProgress = (kpi: UserKPI) => {
+    if (kpi.target === 0) return 0;
+    return Math.min((kpi.current_value / kpi.target) * 100, 100);
   };
 
-  const getStatus = (kpi: KPI) => {
+  const getStatus = (kpi: UserKPI) => {
     const progress = getProgress(kpi);
     if (progress >= 100) return 'success';
     if (progress >= 75) return 'warning';
@@ -138,6 +137,30 @@ export function KPIsDashboard() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-24 mb-2" />
+                <Skeleton className="h-2 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -147,7 +170,7 @@ export function KPIsDashboard() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditingKPI(null); setFormData({ name: '', target: 0, current: 0, unit: '', type: 'custom', period: 'monthly' }); }}>
+            <Button onClick={() => { setEditingKPI(null); setFormData({ name: '', target: 0, current_value: 0, unit: '', kpi_type: 'custom', period: 'monthly' }); }}>
               <Plus className="h-4 w-4 mr-2" />
               Ajouter un KPI
             </Button>
@@ -176,23 +199,23 @@ export function KPIsDashboard() {
                     id="target"
                     type="number"
                     value={formData.target}
-                    onChange={(e) => setFormData({ ...formData, target: parseFloat(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, target: parseFloat(e.target.value) || 0 })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="current">Valeur actuelle</Label>
+                  <Label htmlFor="current_value">Valeur actuelle</Label>
                   <Input
-                    id="current"
+                    id="current_value"
                     type="number"
-                    value={formData.current}
-                    onChange={(e) => setFormData({ ...formData, current: parseFloat(e.target.value) })}
+                    value={formData.current_value}
+                    onChange={(e) => setFormData({ ...formData, current_value: parseFloat(e.target.value) || 0 })}
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="type">Type</Label>
-                  <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v as KPI['type'] })}>
+                  <Select value={formData.kpi_type} onValueChange={(v) => setFormData({ ...formData, kpi_type: v as UserKPI['kpi_type'] })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -205,7 +228,7 @@ export function KPIsDashboard() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="period">Période</Label>
-                  <Select value={formData.period} onValueChange={(v) => setFormData({ ...formData, period: v as KPI['period'] })}>
+                  <Select value={formData.period} onValueChange={(v) => setFormData({ ...formData, period: v as UserKPI['period'] })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -229,7 +252,11 @@ export function KPIsDashboard() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Annuler</Button>
-              <Button onClick={editingKPI ? handleUpdateKPI : handleAddKPI}>
+              <Button 
+                onClick={editingKPI ? handleUpdateKPI : handleAddKPI}
+                disabled={isCreating || isUpdating}
+              >
+                {(isCreating || isUpdating) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingKPI ? 'Modifier' : 'Ajouter'}
               </Button>
             </DialogFooter>
@@ -237,68 +264,78 @@ export function KPIsDashboard() {
         </Dialog>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {kpis.map((kpi) => {
-          const Icon = typeIcons[kpi.type];
-          const progress = getProgress(kpi);
-          const status = getStatus(kpi);
-          
-          return (
-            <Card key={kpi.id} className="relative overflow-hidden">
-              <div className={`absolute top-0 left-0 w-1 h-full ${getStatusColor(status)}`} />
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-muted">
-                      <Icon className="h-4 w-4" />
+      {kpis.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground">Aucun KPI configuré</p>
+            <p className="text-sm text-muted-foreground mt-1">Ajoutez vos premiers indicateurs de performance</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {kpis.map((kpi) => {
+            const Icon = typeIcons[kpi.kpi_type] || Target;
+            const progress = getProgress(kpi);
+            const status = getStatus(kpi);
+            
+            return (
+              <Card key={kpi.id} className="relative overflow-hidden">
+                <div className={`absolute top-0 left-0 w-1 h-full ${getStatusColor(status)}`} />
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-muted">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-sm font-medium">{kpi.name}</CardTitle>
+                        <Badge variant="outline" className="text-xs mt-1">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {periodLabels[kpi.period]}
+                        </Badge>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-sm font-medium">{kpi.name}</CardTitle>
-                      <Badge variant="outline" className="text-xs mt-1">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {periodLabels[kpi.period]}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditKPI(kpi)}>
-                      <Edit2 className="h-3 w-3" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteKPI(kpi.id)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-2xl font-bold">
-                        {kpi.current.toLocaleString()}{kpi.unit}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        sur {kpi.target.toLocaleString()}{kpi.unit}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm">
-                      {progress >= 100 ? (
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4 text-muted-foreground" />
-                      )}
-                      <span className={progress >= 100 ? 'text-green-500 font-medium' : 'text-muted-foreground'}>
-                        {progress.toFixed(0)}%
-                      </span>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditKPI(kpi)}>
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteKPI(kpi.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
-                  <Progress value={progress} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {kpi.current_value.toLocaleString()}{kpi.unit}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          sur {kpi.target.toLocaleString()}{kpi.unit}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm">
+                        {progress >= 100 ? (
+                          <TrendingUp className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span className={progress >= 100 ? 'text-green-500 font-medium' : 'text-muted-foreground'}>
+                          {progress.toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
