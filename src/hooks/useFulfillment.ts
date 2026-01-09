@@ -302,7 +302,7 @@ export function useCreateReturn() {
           user_id: user.id,
           order_id: returnData.order_id,
           rma_number: rmaNumber,
-          status: 'pending',
+          status: 'requested',
           reason_category: returnData.reason_category || 'other',
           reason: returnData.reason,
           customer_notes: returnData.customer_notes,
@@ -417,12 +417,12 @@ export function useFulfillmentStats() {
         .select('fulfillment_status, shipping_cost')
         .eq('user_id', user.id);
       
-      // Get pending returns count
+      // Get pending returns count (status = 'requested' or 'pending')
       const { count: pendingReturns } = await supabase
         .from('returns_rma')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .eq('status', 'pending');
+        .in('status', ['pending', 'requested']);
       
       const totalShipments = orders?.length || 0;
       const inTransit = orders?.filter(o => o.fulfillment_status === 'shipped').length || 0;

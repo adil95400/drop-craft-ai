@@ -17,22 +17,21 @@ interface CarriersManagerProps {
 export function CarriersManager({ carriers, isLoading, onCreate }: CarriersManagerProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [newCarrier, setNewCarrier] = useState({
-    carrier_name: '',
+    name: '',
     carrier_code: '',
-    supported_countries: [] as string[],
     is_active: true,
-    is_default: false
+    tracking_url_template: ''
   })
 
   const handleCreate = () => {
+    if (!newCarrier.name || !newCarrier.carrier_code) return;
     onCreate(newCarrier)
     setIsAdding(false)
     setNewCarrier({
-      carrier_name: '',
+      name: '',
       carrier_code: '',
-      supported_countries: [],
       is_active: true,
-      is_default: false
+      tracking_url_template: ''
     })
   }
 
@@ -65,8 +64,8 @@ export function CarriersManager({ carriers, isLoading, onCreate }: CarriersManag
               <div className="space-y-2">
                 <Label>Nom du transporteur</Label>
                 <Input
-                  value={newCarrier.carrier_name}
-                  onChange={(e) => setNewCarrier({ ...newCarrier, carrier_name: e.target.value })}
+                  value={newCarrier.name}
+                  onChange={(e) => setNewCarrier({ ...newCarrier, name: e.target.value })}
                   placeholder="Colissimo, Chronopost, UPS..."
                 />
               </div>
@@ -111,7 +110,7 @@ export function CarriersManager({ carriers, isLoading, onCreate }: CarriersManag
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-lg">{carrier.carrier_name}</CardTitle>
+                    <CardTitle className="text-lg">{carrier.name}</CardTitle>
                     <CardDescription className="uppercase">{carrier.carrier_code}</CardDescription>
                   </div>
                   <Badge variant={carrier.is_active ? 'default' : 'secondary'}>
@@ -121,7 +120,7 @@ export function CarriersManager({ carriers, isLoading, onCreate }: CarriersManag
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Pays supportés: {carrier.supported_countries?.join(', ') || 'Non configuré'}
+                  Template suivi: {carrier.tracking_url_template || 'Non configuré'}
                 </p>
               </CardContent>
             </Card>
