@@ -10,11 +10,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     
-    <!-- Preconnect for performance -->
+    <!-- Preconnect for performance - establish early connections -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://api.ipify.org" crossorigin>
     <link rel="preconnect" href="https://jsmwckzrmqecwwrswwrz.supabase.co" crossorigin>
+    
+    <!-- DNS prefetch for faster resolution -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://jsmwckzrmqecwwrswwrz.supabase.co">
     
     <!-- Preload LCP image for faster rendering -->
     <link rel="preload" as="image" href="/src/assets/hero-automation.jpg" fetchpriority="high" type="image/jpeg">
