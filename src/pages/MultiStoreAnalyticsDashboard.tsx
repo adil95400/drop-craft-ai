@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MultiStorePerformance } from '@/components/stores/analytics/MultiStorePerformance';
 import { InsightsPanel } from '@/components/stores/analytics/InsightsPanel';
+import { PredictionsPanel } from '@/components/stores/analytics/PredictionsPanel';
 import { BarChart3, Lightbulb, TrendingUp } from 'lucide-react';
 
 export default function MultiStoreAnalyticsDashboard() {
@@ -38,9 +39,7 @@ export default function MultiStoreAnalyticsDashboard() {
         </TabsContent>
 
         <TabsContent value="predictions" className="space-y-6">
-          <div className="text-center text-muted-foreground py-12">
-            Module de prédictions en cours de développement
-          </div>
+          <PredictionsPanel />
         </TabsContent>
       </Tabs>
     </div>
