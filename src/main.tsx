@@ -57,6 +57,16 @@ const SentryErrorBoundary = Sentry.withErrorBoundary(App, {
   showDialog: false,
 });
 
+// Remove initial loader immediately when React mounts
+const loaderEl = document.getElementById('initial-loader');
+if (loaderEl) {
+  loaderEl.style.opacity = '0';
+  loaderEl.style.transition = 'opacity 0.2s ease-out';
+  setTimeout(() => {
+    loaderEl.remove();
+  }, 200);
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HelmetProvider>
