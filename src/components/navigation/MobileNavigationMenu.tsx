@@ -12,7 +12,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { useNavigation } from '@/contexts/NavigationContext'
-import { NAV_GROUPS } from '@/config/modules'
 import { getIcon } from '@/lib/icon-map'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
@@ -40,10 +39,9 @@ export function MobileNavigationMenu({ className }: MobileNavigationMenuProps) {
   )
 
   // Get active groups for default open state
-  const activeGroups = NAV_GROUPS.filter((group) => {
-    const navGroup = navigationGroups.find((ng) => ng.category.id === group.id)
-    return navGroup?.modules.some((m) => isActiveRoute(m.route))
-  }).map((g) => g.id)
+  const activeGroups = navigationGroups
+    .filter((group) => group.modules.some((m) => isActiveRoute(m.route)))
+    .map((g) => g.category.id)
 
   return (
     <div className={cn('md:hidden', className)}>
@@ -100,21 +98,18 @@ export function MobileNavigationMenu({ className }: MobileNavigationMenuProps) {
                 defaultValue={activeGroups}
                 className="w-full px-2 py-2"
               >
-                {NAV_GROUPS.map((group) => {
-                  const navGroup = navigationGroups.find(
-                    (ng) => ng.category.id === group.id
-                  )
-                  if (!navGroup || navGroup.modules.length === 0) return null
+                {navigationGroups.map((navGroup) => {
+                  if (navGroup.modules.length === 0) return null
 
-                  const GroupIcon = getIcon(group.icon)
+                  const GroupIcon = getIcon(navGroup.category.icon)
                   const isGroupActive = navGroup.modules.some((m) =>
                     isActiveRoute(m.route)
                   )
 
                   return (
                     <AccordionItem
-                      key={group.id}
-                      value={group.id}
+                      key={navGroup.category.id}
+                      value={navGroup.category.id}
                       className="border-b-0"
                     >
                       <AccordionTrigger
@@ -134,7 +129,7 @@ export function MobileNavigationMenu({ className }: MobileNavigationMenuProps) {
                           >
                             <GroupIcon className="h-4 w-4" />
                           </div>
-                          <span className="font-medium">{group.label}</span>
+                          <span className="font-medium">{navGroup.category.label}</span>
                           <Badge
                             variant="secondary"
                             className="ml-auto mr-2 h-5 px-1.5 text-[10px]"

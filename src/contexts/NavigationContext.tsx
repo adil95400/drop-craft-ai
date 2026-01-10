@@ -2,8 +2,7 @@ import React, { createContext, useContext, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useModules } from '@/hooks/useModules';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
-import { MODULE_REGISTRY, type ModuleConfig } from '@/config/modules';
-import { getAllCategories, type ModuleCategory } from '@/config/module-categories';
+import { MODULE_REGISTRY, NAV_GROUPS, type ModuleConfig, type NavGroupConfig } from '@/config/modules';
 import { getSubModules, type SubModule } from '@/config/sub-modules';
 
 export interface BreadcrumbItem {
@@ -14,7 +13,7 @@ export interface BreadcrumbItem {
 }
 
 export interface NavigationGroup {
-  category: ModuleCategory;
+  category: NavGroupConfig;
   modules: ModuleConfig[];
   accessibleCount: number;
 }
@@ -102,17 +101,17 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
     return crumbs;
   }, [location.pathname, currentModule, currentSubModule]);
 
-  // Groupes de navigation par catégorie
+  // Groupes de navigation par NAV_GROUPS (style Channable)
   const navigationGroups = useMemo<NavigationGroup[]>(() => {
-    const categories = getAllCategories();
-    
-    return categories.map(category => {
-      const categoryModules = availableModules.filter(m => m.category === category.id);
-      const accessibleCount = categoryModules.filter(m => canAccess(m.id)).length;
+    return NAV_GROUPS.map(navGroup => {
+      const groupModules = availableModules
+        .filter(m => m.groupId === navGroup.id)
+        .sort((a, b) => a.order - b.order);
+      const accessibleCount = groupModules.filter(m => canAccess(m.id)).length;
       
       return {
-        category,
-        modules: categoryModules,
+        category: navGroup,
+        modules: groupModules,
         accessibleCount
       };
     }).filter(group => group.modules.length > 0);
