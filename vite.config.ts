@@ -8,12 +8,12 @@ import { VitePWA } from 'vite-plugin-pwa';
 function deferCssPlugin(): Plugin {
   return {
     name: 'defer-css',
+    enforce: 'post',
     transformIndexHtml(html) {
-      // Convert blocking CSS to async loading using media="print" trick
+      // Match various stylesheet link formats Vite may produce
       return html.replace(
-        /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/g,
-        `<link rel="stylesheet" href="$1" media="print" onload="this.media='all'">
-        <noscript><link rel="stylesheet" href="$1"></noscript>`
+        /<link\s+rel="stylesheet"(\s+crossorigin)?\s+href="(\/assets\/[^"]+\.css)">/g,
+        `<link rel="stylesheet" href="$2" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="$2"></noscript>`
       );
     },
   };
