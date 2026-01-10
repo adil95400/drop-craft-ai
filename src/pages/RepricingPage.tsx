@@ -1,7 +1,9 @@
 import { RepricingDashboard } from '@/components/repricing/RepricingDashboard';
 import { CompetitorRepricingPanel } from '@/components/repricing/CompetitorRepricingPanel';
+import { RepricingSchedulePanel } from '@/components/repricing/RepricingSchedulePanel';
+import { RepricingLogsPanel } from '@/components/repricing/RepricingLogsPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, Users, Zap } from 'lucide-react';
+import { TrendingUp, Users, Calendar, FileText } from 'lucide-react';
 
 export default function RepricingPage() {
   return (
@@ -14,7 +16,7 @@ export default function RepricingPage() {
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid grid-cols-3 w-full max-w-md">
+        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             Dashboard
@@ -23,9 +25,13 @@ export default function RepricingPage() {
             <Users className="h-4 w-4" />
             Concurrents
           </TabsTrigger>
-          <TabsTrigger value="automation" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            Automation
+          <TabsTrigger value="schedule" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Planification
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Logs
           </TabsTrigger>
         </TabsList>
 
@@ -37,12 +43,12 @@ export default function RepricingPage() {
           <CompetitorRepricingPanel />
         </TabsContent>
 
-        <TabsContent value="automation" className="mt-6">
-          <div className="text-center py-12 text-muted-foreground">
-            <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-medium">Automation Avancée</h3>
-            <p>Configuration des règles d'automation de repricing à venir</p>
-          </div>
+        <TabsContent value="schedule" className="mt-6">
+          <RepricingSchedulePanel />
+        </TabsContent>
+
+        <TabsContent value="logs" className="mt-6">
+          <RepricingLogsPanel />
         </TabsContent>
       </Tabs>
     </div>
