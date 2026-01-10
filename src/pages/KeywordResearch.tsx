@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
 import { 
   Search, 
   TrendingUp, 
@@ -15,99 +14,39 @@ import {
   Plus,
   ArrowUp,
   ArrowDown,
-  Minus
+  Minus,
+  ArrowLeft
 } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SEO } from "@/components/SEO";
+import { useKeywordResearch, useSEOKeywords } from "@/hooks/useSEOKeywords";
+import { useNavigate } from "react-router-dom";
 
 const KeywordResearch = () => {
+  const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [keywords, setKeywords] = useState<any[]>([]);
-  const [trackedKeywords, setTrackedKeywords] = useState<string[]>([]);
-  const { toast } = useToast();
+  const { results, isSearching, searchKeywords } = useKeywordResearch();
+  const { trackedKeywords, addKeyword, isAdding, removeKeyword } = useSEOKeywords();
 
-  // Données simulées de recherche de mots-clés
-  const generateKeywordData = (baseKeyword: string) => {
-    const variations = [
-      `${baseKeyword}`,
-      `${baseKeyword} pas cher`,
-      `${baseKeyword} qualité`,
-      `${baseKeyword} original`,
-      `${baseKeyword} protection`,
-      `acheter ${baseKeyword}`,
-      `${baseKeyword} livraison rapide`,
-      `${baseKeyword} transparent`,
-      `${baseKeyword} résistant`,
-      `${baseKeyword} design`,
-      `${baseKeyword} antichoc`,
-      `${baseKeyword} magsafe`
-    ];
-
-    return variations.map((kw, index) => ({
-      keyword: kw,
-      volume: Math.floor(Math.random() * 50000) + 1000,
-      difficulty: Math.floor(Math.random() * 100),
-      cpc: (Math.random() * 5).toFixed(2),
-      competition: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
-      trend: Math.random() > 0.5 ? 'up' : 'down',
-      position: index === 0 ? Math.floor(Math.random() * 20) + 1 : null
-    }));
+  const handleSearch = () => {
+    searchKeywords(keyword);
   };
 
-  const searchKeywords = async () => {
-    if (!keyword.trim()) {
-      toast({
-        title: "Mot-clé requis",
-        description: "Veuillez saisir un mot-clé à analyser",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsSearching(true);
-    
-    try {
-      // Simulation de recherche
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const keywordData = generateKeywordData(keyword);
-      setKeywords(keywordData);
-      
-      toast({
-        title: "Recherche terminée",
-        description: `${keywordData.length} mots-clés trouvés pour "${keyword}"`,
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de rechercher les mots-clés",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSearching(false);
+  const handleTrackKeyword = (kw: string) => {
+    const isTracked = trackedKeywords.some(tk => tk.keyword === kw);
+    if (!isTracked) {
+      addKeyword({ keyword: kw, url: `/produits/${kw.replace(/\s+/g, '-')}` });
     }
   };
 
-  const trackKeyword = (kw: string) => {
-    if (!trackedKeywords.includes(kw)) {
-      setTrackedKeywords([...trackedKeywords, kw]);
-      toast({
-        title: "Mot-clé ajouté au suivi",
-        description: `"${kw}" est maintenant suivi`,
-      });
+  const handleUntrackKeyword = (kw: string) => {
+    const tracked = trackedKeywords.find(tk => tk.keyword === kw);
+    if (tracked) {
+      removeKeyword(tracked.id);
     }
   };
 
-  const untrackKeyword = (kw: string) => {
-    setTrackedKeywords(trackedKeywords.filter(k => k !== kw));
-    toast({
-      title: "Mot-clé retiré du suivi",
-      description: `"${kw}" n'est plus suivi`,
-    });
-  };
+  const isKeywordTracked = (kw: string) => trackedKeywords.some(tk => tk.keyword === kw);
 
   const getDifficultyColor = (difficulty: number) => {
     if (difficulty < 30) return "bg-green-100 text-green-800";
@@ -124,28 +63,59 @@ const KeywordResearch = () => {
     }
   };
 
+  const exportToCSV = () => {
+    if (results.length === 0) return;
+    
+    const headers = ['Mot-clé', 'Volume', 'Difficulté', 'CPC', 'Concurrence', 'Tendance'];
+    const rows = results.map(r => [
+      r.keyword,
+      r.volume.toString(),
+      `${r.difficulty}%`,
+      `$${r.cpc}`,
+      r.competition,
+      r.trend
+    ]);
+    
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `keywords-${keyword.replace(/\s+/g, '-')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <SEO
         title="Recherche de Mots-clés - SEO Tools | Shopopti+"
         description="Trouvez les meilleurs mots-clés pour votre stratégie SEO. Analyse de volume de recherche, difficulté et opportunités de positionnement."
-        path="/seo/keyword-research"
-        keywords="recherche mots-clés, volume recherche, difficulté SEO, positionnement Google, analyse concurrentielle"
+        path="/marketing/seo/keywords"
+        keywords="recherche mots-clés, volume recherche, difficulté SEO, positionnement Google"
       />
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
-          <div>
-            <h1 className="text-4xl font-bold flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                <Search className="w-6 h-6 text-white" />
-              </div>
-              Recherche de Mots-clés
-            </h1>
-            <p className="text-lg text-muted-foreground mt-2">
-              Découvrez les mots-clés les plus performants pour votre secteur
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <Button variant="ghost" onClick={() => navigate('/marketing/seo')} className="mb-2">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Retour au SEO Manager
+              </Button>
+              <h1 className="text-4xl font-bold flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                  <Search className="w-6 h-6 text-white" />
+                </div>
+                Recherche de Mots-clés
+              </h1>
+              <p className="text-lg text-muted-foreground mt-2">
+                Découvrez les mots-clés les plus performants pour votre secteur
+              </p>
+            </div>
           </div>
 
           {/* Recherche */}
@@ -168,13 +138,13 @@ const KeywordResearch = () => {
                     placeholder="ex: coque iphone 15"
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && searchKeywords()}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   />
                 </div>
                 <div className="flex items-end">
                   <Button 
-                    onClick={searchKeywords} 
-                    disabled={isSearching}
+                    onClick={handleSearch} 
+                    disabled={isSearching || !keyword.trim()}
                     className="bg-gradient-to-r from-primary to-primary/80"
                   >
                     {isSearching ? (
@@ -195,7 +165,7 @@ const KeywordResearch = () => {
           </Card>
 
           {/* Résultats */}
-          {keywords.length > 0 && (
+          {results.length > 0 && (
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -205,10 +175,10 @@ const KeywordResearch = () => {
                       Résultats de recherche
                     </CardTitle>
                     <CardDescription>
-                      {keywords.length} mots-clés trouvés pour "{keyword}"
+                      {results.length} mots-clés trouvés pour "{keyword}"
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={exportToCSV}>
                     <Download className="w-4 h-4 mr-2" />
                     Exporter CSV
                   </Button>
@@ -225,12 +195,11 @@ const KeywordResearch = () => {
                         <TableHead>CPC</TableHead>
                         <TableHead>Concurrence</TableHead>
                         <TableHead>Tendance</TableHead>
-                        <TableHead>Position</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {keywords.map((kw, index) => (
+                      {results.map((kw, index) => (
                         <TableRow key={index}>
                           <TableCell className="font-medium">{kw.keyword}</TableCell>
                           <TableCell>{kw.volume.toLocaleString()}</TableCell>
@@ -248,25 +217,18 @@ const KeywordResearch = () => {
                           <TableCell>
                             {kw.trend === 'up' ? (
                               <ArrowUp className="w-4 h-4 text-green-500" />
-                            ) : (
+                            ) : kw.trend === 'down' ? (
                               <ArrowDown className="w-4 h-4 text-red-500" />
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {kw.position ? (
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                                #{kw.position}
-                              </Badge>
                             ) : (
-                              <span className="text-muted-foreground">-</span>
+                              <Minus className="w-4 h-4 text-gray-400" />
                             )}
                           </TableCell>
                           <TableCell>
-                            {trackedKeywords.includes(kw.keyword) ? (
+                            {isKeywordTracked(kw.keyword) ? (
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => untrackKeyword(kw.keyword)}
+                                onClick={() => handleUntrackKeyword(kw.keyword)}
                                 className="text-red-600 hover:text-red-700"
                               >
                                 <Minus className="w-4 h-4" />
@@ -275,8 +237,9 @@ const KeywordResearch = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => trackKeyword(kw.keyword)}
+                                onClick={() => handleTrackKeyword(kw.keyword)}
                                 className="text-green-600 hover:text-green-700"
+                                disabled={isAdding}
                               >
                                 <Plus className="w-4 h-4" />
                               </Button>
@@ -305,15 +268,20 @@ const KeywordResearch = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {trackedKeywords.map((kw, index) => (
+                  {trackedKeywords.map((kw) => (
                     <Badge 
-                      key={index} 
+                      key={kw.id} 
                       variant="secondary" 
                       className="flex items-center gap-2 px-3 py-1"
                     >
-                      {kw}
+                      {kw.keyword}
+                      {kw.currentPosition && (
+                        <span className="text-xs text-muted-foreground">
+                          #{kw.currentPosition}
+                        </span>
+                      )}
                       <button
-                        onClick={() => untrackKeyword(kw)}
+                        onClick={() => removeKeyword(kw.id)}
                         className="ml-2 text-muted-foreground hover:text-foreground"
                       >
                         <Minus className="w-3 h-3" />
@@ -326,7 +294,7 @@ const KeywordResearch = () => {
           )}
 
           {/* État vide */}
-          {keywords.length === 0 && !isSearching && (
+          {results.length === 0 && !isSearching && (
             <Card>
               <CardContent className="text-center py-12">
                 <Search className="w-16 h-16 mx-auto text-muted-foreground mb-4" />

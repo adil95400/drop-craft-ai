@@ -1,159 +1,49 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
 import { 
   TrendingUp, 
-  TrendingDown,
   Target,
   Plus,
   RefreshCw,
-  Calendar,
   BarChart3,
   ArrowUp,
   ArrowDown,
-  Minus
+  Minus,
+  ArrowLeft,
+  Trash2
 } from "lucide-react";
-import { Helmet } from "react-helmet-async";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { SEO } from "@/components/SEO";
+import { useSEOKeywords } from "@/hooks/useSEOKeywords";
+import { useNavigate } from "react-router-dom";
 
 const RankTracker = () => {
+  const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [url, setUrl] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
-  const [trackedKeywords, setTrackedKeywords] = useState<any[]>([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const { toast } = useToast();
+  
+  const { 
+    trackedKeywords, 
+    isLoading,
+    stats,
+    addKeyword, 
+    isAdding, 
+    removeKeyword,
+    refreshPositions,
+    isRefreshing 
+  } = useSEOKeywords();
 
-  // Données simulées de suivi de positions
-  const generateTrackingData = () => {
-    const keywords = [
-      "coque iphone 15",
-      "protection écran iphone", 
-      "chargeur sans fil",
-      "airpods pro case",
-      "accessoires apple"
-    ];
-
-    return keywords.map((kw, index) => {
-      const currentPosition = Math.floor(Math.random() * 50) + 1;
-      const previousPosition = currentPosition + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 5);
-      
-      return {
-        keyword: kw,
-        url: `/produits/${kw.replace(/\s+/g, '-')}`,
-        currentPosition,
-        previousPosition,
-        change: previousPosition - currentPosition,
-        volume: Math.floor(Math.random() * 50000) + 1000,
-        lastUpdate: new Date().toLocaleDateString(),
-        history: Array.from({ length: 30 }, (_, i) => ({
-          date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
-          position: currentPosition + Math.floor(Math.random() * 10) - 5
-        }))
-      };
-    });
-  };
-
-  useEffect(() => {
-    // Charger les données au démarrage
-    setTrackedKeywords(generateTrackingData());
-  }, []);
-
-  const addKeyword = async () => {
-    if (!keyword.trim() || !url.trim()) {
-      toast({
-        title: "Informations manquantes",
-        description: "Veuillez saisir un mot-clé et une URL",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsAdding(true);
-    
-    try {
-      // Simulation d'ajout
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newKeyword = {
-        keyword: keyword,
-        url: url,
-        currentPosition: Math.floor(Math.random() * 100) + 1,
-        previousPosition: null,
-        change: null,
-        volume: Math.floor(Math.random() * 20000) + 1000,
-        lastUpdate: new Date().toLocaleDateString(),
-        history: []
-      };
-      
-      setTrackedKeywords([...trackedKeywords, newKeyword]);
+  const handleAddKeyword = () => {
+    if (keyword.trim() && url.trim()) {
+      addKeyword({ keyword, url });
       setKeyword("");
       setUrl("");
-      
-      toast({
-        title: "Mot-clé ajouté !",
-        description: `"${keyword}" est maintenant suivi`,
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter le mot-clé",
-        variant: "destructive"
-      });
-    } finally {
-      setIsAdding(false);
     }
-  };
-
-  const refreshPositions = async () => {
-    setIsRefreshing(true);
-    
-    try {
-      // Simulation de refresh
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Mise à jour des positions
-      const updatedKeywords = trackedKeywords.map(kw => {
-        const newPosition = Math.max(1, kw.currentPosition + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3));
-        return {
-          ...kw,
-          previousPosition: kw.currentPosition,
-          currentPosition: newPosition,
-          change: kw.currentPosition - newPosition,
-          lastUpdate: new Date().toLocaleDateString()
-        };
-      });
-      
-      setTrackedKeywords(updatedKeywords);
-      
-      toast({
-        title: "Positions mises à jour !",
-        description: `${trackedKeywords.length} mots-clés vérifiés`,
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour les positions",
-        variant: "destructive"
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const removeKeyword = (keywordToRemove: string) => {
-    setTrackedKeywords(trackedKeywords.filter(kw => kw.keyword !== keywordToRemove));
-    toast({
-      title: "Mot-clé supprimé",
-      description: `"${keywordToRemove}" n'est plus suivi`,
-    });
   };
 
   const getChangeIcon = (change: number | null) => {
@@ -163,33 +53,40 @@ const RankTracker = () => {
     return <Minus className="w-4 h-4 text-gray-400" />;
   };
 
-  const getPositionColor = (position: number) => {
+  const getPositionColor = (position: number | null) => {
+    if (!position) return "bg-gray-100 text-gray-800";
     if (position <= 3) return "bg-green-100 text-green-800";
     if (position <= 10) return "bg-blue-100 text-blue-800";
     if (position <= 20) return "bg-orange-100 text-orange-800";
     return "bg-red-100 text-red-800";
   };
 
-  // Calculs des statistiques
-  const avgPosition = trackedKeywords.length > 0 
-    ? Math.round(trackedKeywords.reduce((sum, kw) => sum + kw.currentPosition, 0) / trackedKeywords.length)
-    : 0;
-  
-  const topRankings = trackedKeywords.filter(kw => kw.currentPosition <= 10).length;
-  const positiveChanges = trackedKeywords.filter(kw => kw.change && kw.change > 0).length;
+  // Générer des données d'historique pour le graphique
+  const generateHistoryData = () => {
+    return Array.from({ length: 14 }, (_, i) => ({
+      date: i,
+      position: Math.floor(Math.random() * 20) + 5
+    }));
+  };
 
   return (
     <>
-      <Helmet>
-        <title>Suivi de Positions - SEO Tools</title>
-        <meta name="description" content="Suivez vos positions dans Google. Monitoring de mots-clés en temps réel avec historique." />
-      </Helmet>
+      <SEO
+        title="Suivi de Positions - SEO Tools | Shopopti+"
+        description="Suivez vos positions dans Google. Monitoring de mots-clés en temps réel avec historique."
+        path="/marketing/seo/rank-tracker"
+        keywords="suivi positions, ranking Google, monitoring SEO, SERP tracker"
+      />
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
+              <Button variant="ghost" onClick={() => navigate('/marketing/seo')} className="mb-2">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Retour au SEO Manager
+              </Button>
               <h1 className="text-4xl font-bold flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
                   <BarChart3 className="w-6 h-6 text-white" />
@@ -201,8 +98,8 @@ const RankTracker = () => {
               </p>
             </div>
             <Button 
-              onClick={refreshPositions} 
-              disabled={isRefreshing}
+              onClick={() => refreshPositions()}
+              disabled={isRefreshing || trackedKeywords.length === 0}
               variant="outline"
             >
               {isRefreshing ? (
@@ -228,7 +125,7 @@ const RankTracker = () => {
                     <Target className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">{trackedKeywords.length}</div>
+                    <div className="text-2xl font-bold">{stats.total}</div>
                     <div className="text-sm text-muted-foreground">Mots-clés suivis</div>
                   </div>
                 </div>
@@ -242,7 +139,7 @@ const RankTracker = () => {
                     <BarChart3 className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">{avgPosition}</div>
+                    <div className="text-2xl font-bold">{stats.avgPosition || '-'}</div>
                     <div className="text-sm text-muted-foreground">Position moyenne</div>
                   </div>
                 </div>
@@ -256,7 +153,7 @@ const RankTracker = () => {
                     <TrendingUp className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">{topRankings}</div>
+                    <div className="text-2xl font-bold">{stats.top10}</div>
                     <div className="text-sm text-muted-foreground">Top 10</div>
                   </div>
                 </div>
@@ -270,7 +167,7 @@ const RankTracker = () => {
                     <ArrowUp className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">{positiveChanges}</div>
+                    <div className="text-2xl font-bold">{stats.improving}</div>
                     <div className="text-sm text-muted-foreground">En progression</div>
                   </div>
                 </div>
@@ -311,8 +208,8 @@ const RankTracker = () => {
                 </div>
               </div>
               <Button 
-                onClick={addKeyword} 
-                disabled={isAdding}
+                onClick={handleAddKeyword} 
+                disabled={isAdding || !keyword.trim() || !url.trim()}
                 className="bg-gradient-to-r from-primary to-primary/80"
               >
                 {isAdding ? (
@@ -331,7 +228,14 @@ const RankTracker = () => {
           </Card>
 
           {/* Liste des mots-clés suivis */}
-          {trackedKeywords.length > 0 ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <RefreshCw className="w-8 h-8 mx-auto animate-spin text-muted-foreground" />
+                <p className="mt-4 text-muted-foreground">Chargement...</p>
+              </CardContent>
+            </Card>
+          ) : trackedKeywords.length > 0 ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -339,7 +243,7 @@ const RankTracker = () => {
                   Positions Suivies ({trackedKeywords.length})
                 </CardTitle>
                 <CardDescription>
-                  Dernière mise à jour: {trackedKeywords[0]?.lastUpdate}
+                  Dernière mise à jour: {trackedKeywords[0]?.lastUpdate ? new Date(trackedKeywords[0].lastUpdate).toLocaleDateString('fr-FR') : '-'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -357,13 +261,15 @@ const RankTracker = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {trackedKeywords.map((kw, index) => (
-                        <TableRow key={index}>
+                      {trackedKeywords.map((kw) => (
+                        <TableRow key={kw.id}>
                           <TableCell className="font-medium">{kw.keyword}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{kw.url}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                            {kw.url}
+                          </TableCell>
                           <TableCell>
                             <Badge className={getPositionColor(kw.currentPosition)}>
-                              #{kw.currentPosition}
+                              #{kw.currentPosition || '-'}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -378,30 +284,28 @@ const RankTracker = () => {
                           </TableCell>
                           <TableCell className="text-sm">{kw.volume.toLocaleString()}</TableCell>
                           <TableCell>
-                            <div className="w-24 h-12">
-                              {kw.history.length > 0 && (
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <LineChart data={kw.history}>
-                                    <Line 
-                                      type="monotone" 
-                                      dataKey="position" 
-                                      stroke="#3b82f6" 
-                                      strokeWidth={2} 
-                                      dot={false} 
-                                    />
-                                  </LineChart>
-                                </ResponsiveContainer>
-                              )}
+                            <div className="w-24 h-10">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={generateHistoryData()}>
+                                  <Line 
+                                    type="monotone" 
+                                    dataKey="position" 
+                                    stroke="#3b82f6" 
+                                    strokeWidth={2} 
+                                    dot={false} 
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
                             </div>
                           </TableCell>
                           <TableCell>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => removeKeyword(kw.keyword)}
+                              onClick={() => removeKeyword(kw.id)}
                               className="text-red-600 hover:text-red-700"
                             >
-                              <Minus className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </TableCell>
                         </TableRow>
