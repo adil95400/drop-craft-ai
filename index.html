@@ -21,8 +21,15 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://jsmwckzrmqecwwrswwrz.supabase.co">
     
-    <!-- Preload LCP image for faster rendering -->
-    <link rel="preload" as="image" href="/src/assets/hero-automation.jpg" fetchpriority="high" type="image/jpeg">
+    <!-- Preload LCP image for faster rendering with responsive srcset -->
+    <link 
+      rel="preload" 
+      as="image" 
+      href="/assets/hero-automation-sm.jpg" 
+      imagesrcset="/assets/hero-automation-sm.jpg 640w, /assets/hero-automation.jpg 1920w"
+      imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
+      fetchpriority="high"
+    >
     
     <!-- Critical inline styles for above-the-fold content - optimized FCP -->
     <style>
