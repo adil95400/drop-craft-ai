@@ -1,8 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ArrowLeft, Zap, FileSpreadsheet } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { UnifiedImportInterface } from '@/components/import/UnifiedImportInterface'
+import { CSVImportWizard } from '@/components/import/CSVImportWizard'
 
 export default function QuickImportPage() {
   const navigate = useNavigate()
@@ -21,7 +22,26 @@ export default function QuickImportPage() {
         </div>
       </div>
 
-      <UnifiedImportInterface />
+      <Tabs defaultValue="wizard" className="w-full">
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsTrigger value="wizard" className="flex items-center gap-2">
+            <FileSpreadsheet className="h-4 w-4" />
+            Import CSV Guidé
+          </TabsTrigger>
+          <TabsTrigger value="quick" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Import Rapide
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="wizard" className="mt-6">
+          <CSVImportWizard />
+        </TabsContent>
+
+        <TabsContent value="quick" className="mt-6">
+          <UnifiedImportInterface />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
