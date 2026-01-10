@@ -86,7 +86,8 @@ const HeroSection = () => {
                 height={360}
                 loading="eager"
                 decoding="async"
-                sizes="(max-width: 640px) 100vw, 640px"
+                fetchPriority="high"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
             </div>
@@ -246,7 +247,7 @@ const FeaturesSection = () => {
                       height={640}
                       loading="lazy"
                       decoding="async"
-                      sizes="(max-width: 640px) 100vw, 640px"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
                     />
                   </div>
                 </div>
