@@ -83,9 +83,9 @@ const RankTracker = () => {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <Button variant="ghost" onClick={() => navigate('/marketing/seo')} className="mb-2">
+              <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour au SEO Manager
+                Retour
               </Button>
               <h1 className="text-4xl font-bold flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
