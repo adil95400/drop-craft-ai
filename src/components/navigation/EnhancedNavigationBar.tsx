@@ -28,20 +28,22 @@ function EnhancedNavigationBarComponent({
     >
       {/* Main navigation row */}
       <div className="flex h-14 items-center gap-4 px-4">
-        {/* Left: Sidebar trigger (desktop) + Mobile menu (mobile) */}
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="-ml-1 hidden md:flex shrink-0" />
+        {/* Left: Mobile hamburger menu (visible only on mobile) */}
+        <div className="flex items-center gap-2 md:hidden">
           {showModuleMenu && <MobileNavigationMenu />}
         </div>
 
-        {/* Center: Module navigation menu (hidden on mobile) */}
+        {/* Left: Sidebar trigger (visible only on desktop) */}
+        <SidebarTrigger className="-ml-1 hidden md:flex shrink-0" />
+
+        {/* Center: Module navigation menu (desktop only) */}
         {showModuleMenu && (
           <div className="hidden md:flex flex-1 justify-center">
             <ModuleNavigationMenu />
           </div>
         )}
 
-        {/* Right: Quick search */}
+        {/* Right: Quick search (hidden on small screens) */}
         <div className="flex items-center gap-2 ml-auto">
           {showQuickSearch && <QuickNavigationBar className="hidden sm:flex" />}
         </div>

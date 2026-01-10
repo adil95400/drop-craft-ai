@@ -44,7 +44,7 @@ export function MobileNavigationMenu({ className }: MobileNavigationMenuProps) {
     .map((g) => g.category.id)
 
   return (
-    <div className={cn('md:hidden', className)}>
+    <div className={cn(className)}>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="h-9 w-9">
