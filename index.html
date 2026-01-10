@@ -10,26 +10,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     
-    <!-- Preconnect for performance - establish early connections -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Preconnect MUST be first for early connection establishment -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://api.ipify.org" crossorigin>
     <link rel="preconnect" href="https://jsmwckzrmqecwwrswwrz.supabase.co" crossorigin>
     
-    <!-- DNS prefetch for faster resolution -->
+    <!-- DNS prefetch as fallback -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://jsmwckzrmqecwwrswwrz.supabase.co">
     
-    <!-- Preload LCP image for faster rendering with responsive srcset -->
-    <link 
-      rel="preload" 
-      as="image" 
-      href="/assets/hero-automation-sm.jpg" 
-      imagesrcset="/assets/hero-automation-sm.jpg 640w, /assets/hero-automation.jpg 1920w"
-      imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
-      fetchpriority="high"
-    >
+    <!-- Preload LCP image -->
+    <link rel="preload" as="image" href="/assets/hero-automation-sm.jpg" imagesrcset="/assets/hero-automation-sm.jpg 640w, /assets/hero-automation.jpg 1920w" imagesizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px" fetchpriority="high">
     
     <!-- Critical inline styles for above-the-fold content - optimized FCP -->
     <style>
