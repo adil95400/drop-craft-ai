@@ -1,8 +1,23 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
+
+// Custom plugin to defer non-critical CSS loading
+function deferCssPlugin(): Plugin {
+  return {
+    name: 'defer-css',
+    transformIndexHtml(html) {
+      // Convert blocking CSS to async loading using media="print" trick
+      return html.replace(
+        /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/g,
+        `<link rel="stylesheet" href="$1" media="print" onload="this.media='all'">
+        <noscript><link rel="stylesheet" href="$1"></noscript>`
+      );
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -12,6 +27,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
+    mode === 'production' && deferCssPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null, // Defer SW registration to avoid render-blocking
