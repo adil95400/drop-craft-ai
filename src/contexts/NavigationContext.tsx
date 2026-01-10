@@ -101,10 +101,16 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
     return crumbs;
   }, [location.pathname, currentModule, currentSubModule]);
 
+  // Tous les modules activés (pour affichage)
+  const allEnabledModules = useMemo(() => {
+    return Object.values(MODULE_REGISTRY).filter(m => m.enabled);
+  }, []);
+
   // Groupes de navigation par NAV_GROUPS (style Channable)
+  // Affiche TOUS les modules enabled, pas seulement ceux accessibles
   const navigationGroups = useMemo<NavigationGroup[]>(() => {
     return NAV_GROUPS.map(navGroup => {
-      const groupModules = availableModules
+      const groupModules = allEnabledModules
         .filter(m => m.groupId === navGroup.id)
         .sort((a, b) => a.order - b.order);
       const accessibleCount = groupModules.filter(m => canAccess(m.id)).length;
@@ -115,7 +121,7 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
         accessibleCount
       };
     }).filter(group => group.modules.length > 0);
-  }, [availableModules, canAccess]);
+  }, [allEnabledModules, canAccess]);
 
   // Modules spécifiques au plan
   const planSpecificModules = useMemo(() => {
