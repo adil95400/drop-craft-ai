@@ -3,6 +3,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { ModuleNavigationMenu } from './ModuleNavigationMenu'
 import { QuickNavigationBar } from './QuickNavigationBar'
 import { NavigationBreadcrumbs } from './NavigationBreadcrumbs'
+import { MobileNavigationMenu } from './MobileNavigationMenu'
 import { cn } from '@/lib/utils'
 
 interface EnhancedNavigationBarProps {
@@ -27,8 +28,11 @@ function EnhancedNavigationBarComponent({
     >
       {/* Main navigation row */}
       <div className="flex h-14 items-center gap-4 px-4">
-        {/* Left: Sidebar trigger */}
-        <SidebarTrigger className="-ml-1 shrink-0" />
+        {/* Left: Sidebar trigger (desktop) + Mobile menu (mobile) */}
+        <div className="flex items-center gap-2">
+          <SidebarTrigger className="-ml-1 hidden md:flex shrink-0" />
+          {showModuleMenu && <MobileNavigationMenu />}
+        </div>
 
         {/* Center: Module navigation menu (hidden on mobile) */}
         {showModuleMenu && (
@@ -39,7 +43,7 @@ function EnhancedNavigationBarComponent({
 
         {/* Right: Quick search */}
         <div className="flex items-center gap-2 ml-auto">
-          {showQuickSearch && <QuickNavigationBar />}
+          {showQuickSearch && <QuickNavigationBar className="hidden sm:flex" />}
         </div>
       </div>
 
