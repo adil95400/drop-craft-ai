@@ -1,9 +1,9 @@
 /**
- * Page d'audit des produits - Version Optimisée Pro
- * Interface complète avec statistiques, filtres avancés, actions en masse
+ * Page d'audit des produits - Version 100% Fonctionnelle
+ * Audit local instantané sans dépendance externe
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,24 +12,27 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
 import { 
   Search, 
   Package,
   ArrowLeft,
   Sparkles,
   Download,
-  Upload,
   RefreshCw,
-  CheckSquare,
   LayoutGrid,
   List,
   ArrowUpDown,
-  TrendingUp
+  TrendingUp,
+  Eye,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useProductAudit, useProductAudits } from '@/hooks/useProductAudit';
 import { useAuditFilters } from '@/hooks/useAuditFilters';
 import { useProductsAudit } from '@/hooks/useProductAuditEngine';
 import { AuditStatsCards } from '@/components/audit/AuditStatsCards';
@@ -38,6 +41,15 @@ import { ProductAuditRow } from '@/components/audit/ProductAuditRow';
 import { AuditScoreGauge } from '@/components/audit/AuditScoreGauge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ProductAuditResult } from '@/types/audit';
 
 type ProductSource = 'products' | 'imported_products' | 'supplier_products';
 type ViewMode = 'list' | 'grid';
@@ -49,10 +61,12 @@ export default function AuditProductsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<ProductSource>('products');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [sortBy, setSortBy] = useState<SortBy>('name');
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortBy, setSortBy] = useState<SortBy>('score');
+  const [sortAsc, setSortAsc] = useState(false); // Show lowest scores first by default
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const { auditProduct, isAuditing } = useProductAudit();
+  const [auditingIds, setAuditingIds] = useState<Set<string>>(new Set());
+  const [selectedAudit, setSelectedAudit] = useState<ProductAuditResult | null>(null);
+  const [showAuditDialog, setShowAuditDialog] = useState(false);
 
   // Fetch products
   const { data: rawProducts, isLoading, refetch } = useQuery({
@@ -63,7 +77,7 @@ export default function AuditProductsList() {
           .from('products')
           .select('id, name, description, price, category, image_url, sku, cost_price, stock_quantity')
           .eq('user_id', user?.id)
-          .limit(100);
+          .limit(200);
         if (error) throw error;
         return (data || []).map(p => ({
           ...p,
@@ -74,7 +88,7 @@ export default function AuditProductsList() {
           .from('imported_products')
           .select('id, product_id, price, category, source_platform')
           .eq('user_id', user?.id)
-          .limit(100);
+          .limit(200);
         if (error) throw error;
         return (data || []).map(p => ({
           id: p.id,
@@ -92,7 +106,7 @@ export default function AuditProductsList() {
         const { data, error } = await (supabase.from('supplier_products') as any)
           .select('id, title, description, supplier_price, image_url')
           .eq('user_id', user?.id)
-          .limit(100);
+          .limit(200);
         if (error) throw error;
         return (data || []).map((p: any) => ({
           id: p.id,
@@ -114,12 +128,12 @@ export default function AuditProductsList() {
   // Filters
   const { filters, filteredProducts: auditFiltered, updateFilter, resetFilters, activeCount } = useAuditFilters(rawProducts || []);
 
-  // Real-time audit calculation
+  // Real-time audit calculation (LOCAL - no API call needed!)
   const { auditResults, stats } = useProductsAudit(auditFiltered);
 
   // Create audit results map
   const auditMap = useMemo(() => {
-    const map = new Map();
+    const map = new Map<string, ProductAuditResult>();
     auditResults.forEach(result => {
       map.set(result.productId, result);
     });
@@ -162,91 +176,160 @@ export default function AuditProductsList() {
   }, [auditFiltered, searchTerm, sortBy, sortAsc, auditMap]);
 
   // Selection handlers
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
       setSelectedIds(new Set(processedProducts.map(p => p.id)));
     } else {
       setSelectedIds(new Set());
     }
-  };
+  }, [processedProducts]);
 
-  const handleSelectProduct = (id: string, selected: boolean) => {
-    const newSet = new Set(selectedIds);
-    if (selected) {
-      newSet.add(id);
-    } else {
-      newSet.delete(id);
+  const handleSelectProduct = useCallback((id: string, selected: boolean) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(id);
+      } else {
+        newSet.delete(id);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // View audit details (LOCAL - instant!)
+  const handleViewAudit = useCallback((productId: string) => {
+    const audit = auditMap.get(productId);
+    if (audit) {
+      setSelectedAudit(audit);
+      setShowAuditDialog(true);
     }
-    setSelectedIds(newSet);
-  };
+  }, [auditMap]);
 
-  // Audit handlers
-  const handleAuditProduct = async (productId: string) => {
-    if (!user?.id) return;
-    try {
-      await auditProduct.mutateAsync({
-        productId,
-        productSource: activeTab,
-        auditType: 'full',
-        userId: user.id
+  // Simulate audit animation (the audit is already calculated locally)
+  const handleAuditProduct = useCallback((productId: string) => {
+    setAuditingIds(prev => new Set(prev).add(productId));
+    
+    // Simulate brief processing time for UX
+    setTimeout(() => {
+      setAuditingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
       });
-      toast.success('Audit terminé');
-    } catch (error) {
-      toast.error('Erreur lors de l\'audit');
-    }
-  };
+      
+      const audit = auditMap.get(productId);
+      if (audit) {
+        if (audit.score.global >= 80) {
+          toast.success(`Score: ${audit.score.global}/100 - Excellent! ✨`);
+        } else if (audit.score.global >= 60) {
+          toast.info(`Score: ${audit.score.global}/100 - Bon`);
+        } else {
+          toast.warning(`Score: ${audit.score.global}/100 - ${audit.issues.length} problème(s) détecté(s)`);
+        }
+        setSelectedAudit(audit);
+        setShowAuditDialog(true);
+      }
+    }, 800);
+  }, [auditMap]);
 
-  const handleBulkAudit = async () => {
+  // Bulk audit
+  const handleBulkAudit = useCallback(() => {
     if (selectedIds.size === 0) {
       toast.warning('Sélectionnez des produits à auditer');
       return;
     }
-    toast.info(`Audit de ${selectedIds.size} produits en cours...`);
-    // Implement bulk audit logic
-  };
+    
+    const selectedAudits = Array.from(selectedIds)
+      .map(id => auditMap.get(id))
+      .filter(Boolean) as ProductAuditResult[];
+    
+    const avgScore = selectedAudits.length > 0
+      ? Math.round(selectedAudits.reduce((sum, a) => sum + a.score.global, 0) / selectedAudits.length)
+      : 0;
+    
+    const criticalCount = selectedAudits.reduce(
+      (sum, a) => sum + a.issues.filter(i => i.severity === 'critical').length, 
+      0
+    );
+    
+    toast.success(
+      `${selectedIds.size} produits audités • Score moyen: ${avgScore}/100 • ${criticalCount} problèmes critiques`,
+      { duration: 5000 }
+    );
+    
+    setSelectedIds(new Set());
+  }, [selectedIds, auditMap]);
 
-  const handleExportAudit = () => {
+  // Export audit
+  const handleExportAudit = useCallback(() => {
+    if (processedProducts.length === 0) {
+      toast.warning('Aucun produit à exporter');
+      return;
+    }
+    
     const data = processedProducts.map(p => {
       const audit = auditMap.get(p.id);
       return {
-        name: p.name,
-        price: p.price,
-        category: p.category,
-        sku: p.sku,
-        score: audit?.score.global || 'N/A',
-        seoScore: audit?.score.seo || 'N/A',
-        contentScore: audit?.score.content || 'N/A',
-        imagesScore: audit?.score.images || 'N/A',
-        issues: audit?.issues.length || 0,
-        needsCorrection: audit?.needsCorrection ? 'Oui' : 'Non'
+        nom: p.name || 'Sans nom',
+        prix: p.price || 0,
+        categorie: p.category || '',
+        sku: p.sku || '',
+        score_global: audit?.score.global || 0,
+        score_seo: audit?.score.seo || 0,
+        score_contenu: audit?.score.content || 0,
+        score_images: audit?.score.images || 0,
+        score_donnees: audit?.score.dataCompleteness || 0,
+        score_ai: audit?.score.aiReadiness || 0,
+        nb_problemes: audit?.issues.length || 0,
+        nb_critiques: audit?.issues.filter(i => i.severity === 'critical').length || 0,
+        a_corriger: audit?.needsCorrection ? 'Oui' : 'Non'
       };
     });
 
+    const headers = Object.keys(data[0] || {});
     const csv = [
-      Object.keys(data[0] || {}).join(','),
-      ...data.map(row => Object.values(row).join(','))
+      headers.join(';'),
+      ...data.map(row => headers.map(h => `"${row[h as keyof typeof row]}"`).join(';'))
     ].join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `audit-${activeTab}-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
     toast.success('Export CSV téléchargé');
-  };
+  }, [processedProducts, auditMap, activeTab]);
 
-  const toggleSort = (field: SortBy) => {
+  const toggleSort = useCallback((field: SortBy) => {
     if (sortBy === field) {
       setSortAsc(!sortAsc);
     } else {
       setSortBy(field);
-      setSortAsc(true);
+      setSortAsc(field === 'name');
     }
-  };
+  }, [sortBy, sortAsc]);
 
   const allSelected = processedProducts.length > 0 && selectedIds.size === processedProducts.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < processedProducts.length;
+
+  // Severity helpers
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'critical': return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      default: return <CheckCircle2 className="h-4 w-4 text-blue-500" />;
+    }
+  };
+
+  const getSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case 'critical': return <Badge variant="destructive">Critique</Badge>;
+      case 'warning': return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Attention</Badge>;
+      default: return <Badge variant="outline">Info</Badge>;
+    }
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6 max-w-7xl">
@@ -262,7 +345,7 @@ export default function AuditProductsList() {
               Audit Qualité Produits
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Analysez et optimisez la qualité de votre catalogue
+              Analyse en temps réel • {rawProducts?.length || 0} produits chargés
             </p>
           </div>
         </div>
@@ -273,7 +356,7 @@ export default function AuditProductsList() {
           </Button>
           <Button variant="outline" size="sm" onClick={handleExportAudit}>
             <Download className="h-4 w-4 mr-2" />
-            Export
+            Export CSV
           </Button>
         </div>
       </div>
@@ -286,9 +369,9 @@ export default function AuditProductsList() {
         <CardHeader className="pb-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-xl">Sélection des Produits</CardTitle>
+              <CardTitle className="text-xl">Catalogue Produits</CardTitle>
               <CardDescription>
-                {processedProducts.length} produits • {stats.criticalIssuesCount} problèmes critiques
+                {processedProducts.length} produits affichés • {stats.criticalIssuesCount} problèmes critiques
               </CardDescription>
             </div>
 
@@ -297,7 +380,7 @@ export default function AuditProductsList() {
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder="Rechercher par nom, SKU..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -339,7 +422,7 @@ export default function AuditProductsList() {
             setActiveTab(v as ProductSource);
             setSelectedIds(new Set());
           }}>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <TabsList>
                 <TabsTrigger value="products" className="gap-2">
                   <Package className="h-4 w-4" />
@@ -358,7 +441,7 @@ export default function AuditProductsList() {
                 >
                   <Badge variant="secondary">{selectedIds.size} sélectionné(s)</Badge>
                   <Button size="sm" onClick={handleBulkAudit}>
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <Zap className="h-4 w-4 mr-2" />
                     Auditer la sélection
                   </Button>
                 </motion.div>
@@ -367,7 +450,7 @@ export default function AuditProductsList() {
 
             <TabsContent value={activeTab} className="mt-4 space-y-3">
               {/* Sort Header */}
-              <div className="flex items-center gap-4 px-4 py-2 bg-muted/50 rounded-lg text-sm">
+              <div className="flex items-center gap-4 px-4 py-2 bg-muted/50 rounded-lg text-sm flex-wrap">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     checked={allSelected}
@@ -378,34 +461,37 @@ export default function AuditProductsList() {
                   />
                   <span className="text-muted-foreground">Tout</span>
                 </div>
-                <Separator orientation="vertical" className="h-4" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1"
-                  onClick={() => toggleSort('name')}
-                >
-                  Nom
-                  {sortBy === 'name' && <ArrowUpDown className="h-3 w-3" />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1"
-                  onClick={() => toggleSort('score')}
-                >
-                  Score
-                  {sortBy === 'score' && <ArrowUpDown className="h-3 w-3" />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1"
-                  onClick={() => toggleSort('issues')}
-                >
-                  Problèmes
-                  {sortBy === 'issues' && <ArrowUpDown className="h-3 w-3" />}
-                </Button>
+                <Separator orientation="vertical" className="h-4 hidden sm:block" />
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-muted-foreground text-xs mr-2">Trier:</span>
+                  <Button
+                    variant={sortBy === 'score' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="h-7 gap-1"
+                    onClick={() => toggleSort('score')}
+                  >
+                    Score
+                    {sortBy === 'score' && <ArrowUpDown className="h-3 w-3" />}
+                  </Button>
+                  <Button
+                    variant={sortBy === 'issues' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="h-7 gap-1"
+                    onClick={() => toggleSort('issues')}
+                  >
+                    Problèmes
+                    {sortBy === 'issues' && <ArrowUpDown className="h-3 w-3" />}
+                  </Button>
+                  <Button
+                    variant={sortBy === 'name' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="h-7 gap-1"
+                    onClick={() => toggleSort('name')}
+                  >
+                    Nom
+                    {sortBy === 'name' && <ArrowUpDown className="h-3 w-3" />}
+                  </Button>
+                </div>
               </div>
 
               {/* Products List */}
@@ -421,8 +507,8 @@ export default function AuditProductsList() {
                   <h3 className="text-lg font-semibold mb-2">Aucun produit trouvé</h3>
                   <p className="text-muted-foreground mb-4">
                     {searchTerm || activeCount > 0
-                      ? 'Essayez de modifier vos filtres'
-                      : 'Commencez par ajouter des produits'}
+                      ? 'Essayez de modifier vos filtres ou votre recherche'
+                      : 'Commencez par ajouter des produits à votre catalogue'}
                   </p>
                   {activeCount > 0 && (
                     <Button variant="outline" onClick={resetFilters}>
@@ -441,8 +527,8 @@ export default function AuditProductsList() {
                         isSelected={selectedIds.has(product.id)}
                         onSelect={(selected) => handleSelectProduct(product.id, selected)}
                         onAudit={() => handleAuditProduct(product.id)}
-                        onViewAudit={() => navigate(`/products/${product.id}`)}
-                        isAuditing={isAuditing}
+                        onViewAudit={() => handleViewAudit(product.id)}
+                        isAuditing={auditingIds.has(product.id)}
                         index={index}
                       />
                     ))}
@@ -452,29 +538,140 @@ export default function AuditProductsList() {
 
               {/* Quick Stats Footer */}
               {processedProducts.length > 0 && (
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center justify-between pt-4 border-t flex-wrap gap-4">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
                       {stats.excellentCount} excellents
                     </span>
-                    <span>|</span>
+                    <span className="hidden sm:inline">•</span>
                     <span>{stats.goodCount} bons</span>
-                    <span>|</span>
+                    <span className="hidden sm:inline">•</span>
                     <span className="text-destructive">{stats.poorCount} à améliorer</span>
                   </div>
-                  <AuditScoreGauge 
-                    score={stats.averageScore} 
-                    size="sm" 
-                    showLabel 
-                    label="Score moyen"
-                  />
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">Score moyen</span>
+                    <AuditScoreGauge 
+                      score={stats.averageScore} 
+                      size="sm" 
+                      showLabel={false}
+                    />
+                  </div>
                 </div>
               )}
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Audit Details Dialog */}
+      <Dialog open={showAuditDialog} onOpenChange={setShowAuditDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Résultat de l'Audit
+            </DialogTitle>
+            <DialogDescription>
+              {selectedAudit?.productName || 'Produit'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedAudit && (
+            <ScrollArea className="max-h-[60vh]">
+              <div className="space-y-6 pr-4">
+                {/* Score Overview */}
+                <div className="flex items-center justify-center gap-8 py-4">
+                  <AuditScoreGauge 
+                    score={selectedAudit.score.global} 
+                    size="lg" 
+                    showLabel 
+                    label="Score Global"
+                  />
+                </div>
+
+                {/* Score Breakdown */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {[
+                    { label: 'SEO', score: selectedAudit.score.seo },
+                    { label: 'Contenu', score: selectedAudit.score.content },
+                    { label: 'Images', score: selectedAudit.score.images },
+                    { label: 'Données', score: selectedAudit.score.dataCompleteness },
+                    { label: 'AI Ready', score: selectedAudit.score.aiReadiness },
+                  ].map(item => (
+                    <div key={item.label} className="text-center p-3 bg-muted/50 rounded-lg">
+                      <div className="text-2xl font-bold">{item.score}</div>
+                      <div className="text-xs text-muted-foreground">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Issues */}
+                {selectedAudit.issues.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      Problèmes détectés ({selectedAudit.issues.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedAudit.issues.map((issue, i) => (
+                        <div key={i} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                          {getSeverityIcon(issue.severity)}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{issue.message}</span>
+                              {getSeverityBadge(issue.severity)}
+                            </div>
+                            {issue.recommendation && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                💡 {issue.recommendation}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Strengths */}
+                {selectedAudit.strengths.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2 text-green-600">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Points forts ({selectedAudit.strengths.length})
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAudit.strengths.map((strength, i) => (
+                        <Badge key={i} variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          ✓ {strength}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button 
+                    className="flex-1"
+                    onClick={() => {
+                      setShowAuditDialog(false);
+                      navigate(`/products/${selectedAudit.productId}`);
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Voir le produit
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowAuditDialog(false)}>
+                    Fermer
+                  </Button>
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

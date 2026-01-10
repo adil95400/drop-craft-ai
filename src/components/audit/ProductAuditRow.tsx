@@ -190,41 +190,28 @@ export function ProductAuditRow({
 
       {/* Actions */}
       <div className="shrink-0 flex items-center gap-2">
-        {hasAudit ? (
-          <>
-            <Badge variant={getScoreLabel(score).variant} className="hidden sm:inline-flex">
-              {score}/100
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onViewAudit}
-              className="gap-1"
-            >
-              Détails
-              <ArrowRight className="h-3 w-3" />
-            </Button>
-          </>
-        ) : (
-          <Button
-            size="sm"
-            onClick={onAudit}
-            disabled={isAuditing}
-            className="gap-1"
-          >
-            {isAuditing ? (
-              <>
-                <Clock className="h-3 w-3 animate-spin" />
-                Audit...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-3 w-3" />
-                Auditer
-              </>
-            )}
-          </Button>
-        )}
+        <Badge variant={getScoreLabel(score).variant} className="hidden sm:inline-flex">
+          {score}/100
+        </Badge>
+        <Button
+          variant={hasAudit && score >= 60 ? "outline" : "default"}
+          size="sm"
+          onClick={hasAudit ? onViewAudit : onAudit}
+          disabled={isAuditing}
+          className="gap-1"
+        >
+          {isAuditing ? (
+            <>
+              <Clock className="h-3 w-3 animate-spin" />
+              Analyse...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-3 w-3" />
+              Voir l'audit
+            </>
+          )}
+        </Button>
       </div>
     </motion.div>
   );
