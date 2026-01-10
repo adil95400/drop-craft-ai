@@ -96,25 +96,25 @@ const SEO = () => {
       title: "Recherche de mots-clés",
       description: "Découvrez les meilleurs mots-clés pour votre secteur",
       icon: Search,
-      action: () => navigate("/seo/keyword-research")
+      action: () => navigate("/marketing/seo/keywords")
     },
     {
       title: "Analyse concurrentielle", 
       description: "Analysez la stratégie SEO de vos concurrents",
       icon: TrendingUp,
-      action: () => navigate("/seo/competitor-analysis")
+      action: () => navigate("/marketing/seo")
     },
     {
       title: "Génération Schema.org",
       description: "Créez des données structurées automatiquement",
       icon: FileText,
-      action: () => navigate("/seo/schema-generator")
+      action: () => navigate("/marketing/seo/schema")
     },
     {
       title: "Suivi positions",
       description: "Suivez vos positions dans les moteurs de recherche",
       icon: BarChart3,
-      action: () => navigate("/seo/rank-tracker")
+      action: () => navigate("/marketing/seo/rank-tracker")
     }
   ];
 
@@ -241,7 +241,7 @@ Contactez nos experts pour une consultation gratuite.
                 Optimisez votre référencement avec nos outils SEO avancés
               </p>
             </div>
-            <Button onClick={() => navigate("/seo/analytics")} variant="outline">
+            <Button onClick={() => navigate("/marketing/seo")} variant="outline">
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics SEO
             </Button>

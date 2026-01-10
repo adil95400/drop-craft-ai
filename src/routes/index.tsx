@@ -97,6 +97,17 @@ export function AppRoutes() {
         <Route path="/orders" element={<Navigate to="/dashboard/orders" replace />} />
         <Route path="/modern" element={<Navigate to="/dashboard" replace />} />
         <Route path="/catalog" element={<Navigate to="/products/catalogue" replace />} />
+        
+        {/* SEO Routes Direct - Redirect to marketing/seo */}
+        <Route path="/seo" element={<Navigate to="/marketing/seo" replace />} />
+        <Route path="/seo/rank-tracker" element={<Navigate to="/marketing/seo/rank-tracker" replace />} />
+        <Route path="/seo/keywords" element={<Navigate to="/marketing/seo/keywords" replace />} />
+        <Route path="/seo/keyword-research" element={<Navigate to="/marketing/seo/keywords" replace />} />
+        <Route path="/seo/schema-generator" element={<Navigate to="/marketing/seo/schema" replace />} />
+        <Route path="/seo/schema" element={<Navigate to="/marketing/seo/schema" replace />} />
+        <Route path="/seo/competitor-analysis" element={<Navigate to="/marketing/seo" replace />} />
+        <Route path="/seo/analytics" element={<Navigate to="/marketing/seo" replace />} />
+        <Route path="/seo/tools" element={<Navigate to="/marketing/seo/tools" replace />} />
         <Route path="/subscription" element={<Navigate to="/dashboard/subscription" replace />} />
         
         {/* Protected App Routes - Authentification requise */}
