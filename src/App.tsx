@@ -1,17 +1,25 @@
 /**
  * Application principale - Architecture simplifiée et modulaire
  * Routing délégué aux modules spécialisés pour une meilleure maintenance
+ * 
+ * PERFORMANCE: Heavy dependencies (supabase, framer-motion, i18n) are lazy loaded
+ * to improve initial page load for public pages like the landing page.
  */
 import { memo, useEffect, lazy, Suspense } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
-import { UnifiedAuthProvider } from '@/contexts/UnifiedAuthContext';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ThemeProvider } from 'next-themes';
 import { ModalContextProvider } from '@/hooks/useModalHelpers';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import { OfflineIndicatorLite } from '@/components/offline/OfflineIndicatorLite';
+import { LightAuthProvider } from '@/contexts/LightAuthContext';
+
+// Lazy load auth provider (pulls in supabase ~30KB)
+const UnifiedAuthProvider = lazy(() => 
+  import('@/contexts/UnifiedAuthContext').then(m => ({ default: m.UnifiedAuthProvider }))
+);
 
 // Lazy load heavy components to reduce initial bundle
 const PWAInstallBanner = lazy(() => import('@/components/mobile/PWAInstallBanner').then(m => ({ default: m.PWAInstallBanner })));
@@ -109,15 +117,21 @@ function App() {
       disableTransitionOnChange
     >
       <ErrorBoundary>
-        <UnifiedAuthProvider>
+        {/* LightAuthProvider provides quick session check without loading supabase */}
+        <LightAuthProvider>
+          {/* UnifiedAuthProvider lazy loaded - only loads supabase when needed */}
           <Suspense fallback={null}>
-            <UnifiedProvider>
-              <ModalContextProvider>
-                <AppContent />
-              </ModalContextProvider>
-            </UnifiedProvider>
+            <UnifiedAuthProvider>
+              <Suspense fallback={null}>
+                <UnifiedProvider>
+                  <ModalContextProvider>
+                    <AppContent />
+                  </ModalContextProvider>
+                </UnifiedProvider>
+              </Suspense>
+            </UnifiedAuthProvider>
           </Suspense>
-        </UnifiedAuthProvider>
+        </LightAuthProvider>
       </ErrorBoundary>
     </ThemeProvider>
   );

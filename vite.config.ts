@@ -143,48 +143,66 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui-core': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-          ],
-          'vendor-ui-extended': [
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-alert-dialog',
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-checkbox',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-progress',
-            '@radix-ui/react-scroll-area',
-            '@radix-ui/react-slider',
-            '@radix-ui/react-switch',
-            '@radix-ui/react-tooltip',
-          ],
-          'vendor-data': [
-            '@tanstack/react-query',
-            '@tanstack/react-query-devtools',
-            '@tanstack/react-table',
-          ],
-          'vendor-backend': ['@supabase/supabase-js'],
-          'vendor-charts': ['recharts'],
-          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          'vendor-utils': [
-            'date-fns',
-            'clsx',
-            'class-variance-authority',
-            'tailwind-merge',
-            'lucide-react',
-          ],
-          'vendor-heavy': [
-            'framer-motion',
-            '@sentry/react',
-            'i18next',
-            'react-i18next',
-          ],
+        manualChunks: (id) => {
+          // React core - needed on all pages
+          if (id.includes('node_modules/react/') || 
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-router-dom/')) {
+            return 'vendor-react';
+          }
+          
+          // Charts - only load when dashboard/analytics pages need them
+          if (id.includes('recharts')) {
+            return 'vendor-charts';
+          }
+          
+          // Supabase - lazy loaded via auth context
+          if (id.includes('@supabase/')) {
+            return 'vendor-backend';
+          }
+          
+          // Heavy deps - framer-motion, i18n, sentry - defer until needed
+          if (id.includes('framer-motion') || 
+              id.includes('i18next') || 
+              id.includes('react-i18next') ||
+              id.includes('@sentry/')) {
+            return 'vendor-heavy';
+          }
+          
+          // UI Core - dialogs/dropdowns used on many pages
+          if (id.includes('@radix-ui/react-dialog') ||
+              id.includes('@radix-ui/react-dropdown-menu') ||
+              id.includes('@radix-ui/react-select') ||
+              id.includes('@radix-ui/react-tabs') ||
+              id.includes('@radix-ui/react-toast')) {
+            return 'vendor-ui-core';
+          }
+          
+          // Extended UI components
+          if (id.includes('@radix-ui/')) {
+            return 'vendor-ui-extended';
+          }
+          
+          // Data/Query layer
+          if (id.includes('@tanstack/')) {
+            return 'vendor-data';
+          }
+          
+          // Forms
+          if (id.includes('react-hook-form') || 
+              id.includes('@hookform/') ||
+              id.includes('node_modules/zod/')) {
+            return 'vendor-forms';
+          }
+          
+          // Utilities
+          if (id.includes('date-fns') ||
+              id.includes('clsx') ||
+              id.includes('class-variance-authority') ||
+              id.includes('tailwind-merge') ||
+              id.includes('lucide-react')) {
+            return 'vendor-utils';
+          }
         },
       },
     },

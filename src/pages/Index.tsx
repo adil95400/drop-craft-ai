@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useLightAuth } from "@/contexts/LightAuthContext";
 import { Helmet } from 'react-helmet-async';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { Button } from "@/components/ui/button";
@@ -636,11 +636,11 @@ const FinalCTASection = () => {
 
 // Main Index Component
 const Index = () => {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, isLoading } = useLightAuth();
   const navigate = useNavigate();
 
-  // Show loading while auth is being determined
-  if (loading) {
+  // Show loading while auth is being determined (very fast - local storage check)
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -652,7 +652,7 @@ const Index = () => {
   }
 
   // If user is logged in, redirect to dashboard
-  if (user) {
+  if (isAuthenticated) {
     navigate('/dashboard');
     return null;
   }
