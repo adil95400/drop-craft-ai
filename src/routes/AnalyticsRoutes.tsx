@@ -1,5 +1,6 @@
 /**
  * Routes Analytics - Reports, Intelligence, Insights
+ * Module complet avec données réelles et BI avancée
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -30,6 +31,9 @@ const CustomerSegmentationPage = lazy(() => import('@/pages/CustomerSegmentation
 const ProductIntelligencePage = lazy(() => import('@/pages/ProductIntelligencePage'));
 const AdvancedAnalyticsDashboardPage = lazy(() => import('@/pages/analytics/AdvancedAnalyticsPage'));
 
+// Real Data Analytics
+const RealDataAnalyticsPage = lazy(() => import('@/pages/analytics/RealDataAnalyticsPage'));
+
 export function AnalyticsRoutes() {
   return (
     <Routes>
@@ -38,6 +42,10 @@ export function AnalyticsRoutes() {
       <Route path="unified" element={<UnifiedAnalyticsDashboard />} />
       <Route path="studio" element={<AnalyticsStudio />} />
       <Route path="predictive" element={<PredictiveAnalyticsPage />} />
+      
+      {/* Real Data Analytics */}
+      <Route path="real-data" element={<RealDataAnalyticsPage />} />
+      <Route path="bi" element={<BusinessIntelligencePage />} />
       
       {/* Intelligence */}
       <Route path="ai-intelligence" element={<AIIntelligencePage />} />
@@ -55,6 +63,7 @@ export function AnalyticsRoutes() {
       <Route path="profit-analytics" element={<ProfitAnalyticsDashboard />} />
       
       {/* Advanced Analytics */}
+      <Route path="advanced" element={<AdvancedAnalyticsDashboardPage />} />
       <Route path="business-intelligence" element={<BusinessIntelligencePage />} />
       <Route path="customer-segmentation" element={<CustomerSegmentationPage />} />
       <Route path="product-intelligence" element={<ProductIntelligencePage />} />
