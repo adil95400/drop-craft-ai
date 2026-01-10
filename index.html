@@ -24,13 +24,20 @@
     <!-- Preload LCP image for faster rendering -->
     <link rel="preload" as="image" href="/src/assets/hero-automation.jpg" fetchpriority="high" type="image/jpeg">
     
-    <!-- Critical inline styles for above-the-fold content -->
+    <!-- Critical inline styles for above-the-fold content - optimized FCP -->
     <style>
       /* Critical CSS for initial render - prevents FOUC */
       *,*::before,*::after{box-sizing:border-box}
       html{line-height:1.5;-webkit-text-size-adjust:100%;font-family:Inter,system-ui,-apple-system,sans-serif;scroll-behavior:smooth}
       body{margin:0;background:#fff;color:#0f172a}
       #root{min-height:100vh;display:flex;flex-direction:column}
+      /* Initial loading state - visible immediately for better FCP */
+      .initial-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:9999}
+      .initial-loader-content{text-align:center}
+      .initial-loader-spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      .initial-loader-text{margin-top:16px;color:#64748b;font-size:14px}
+      /* Skeleton loading for perceived performance */
       .loading-skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
       @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
       /* Critical layout & button styles */
@@ -42,11 +49,22 @@
       button{font-family:inherit;cursor:pointer}
       a{color:inherit;text-decoration:none}
       img{max-width:100%;height:auto}
+      /* Hero section critical styles */
+      .hero-section{min-height:100vh;display:flex;align-items:center}
+      .text-primary{color:#3b82f6}
+      .bg-primary{background:#3b82f6}
+      .text-white{color:#fff}
+      h1{font-size:2.25rem;font-weight:700;line-height:1.2}
+      @media(min-width:768px){h1{font-size:3rem}}
       /* Dark mode support */
-      .dark body{background:#0f172a;color:#f8fafc}
+      .dark body,.dark .initial-loader{background:#0f172a;color:#f8fafc}
+      .dark .initial-loader-spinner{border-color:#334155;border-top-color:#3b82f6}
+      .dark .initial-loader-text{color:#94a3b8}
       /* Skip link for a11y */
       .skip-link{position:absolute;left:-9999px;z-index:999}
       .skip-link:focus{left:50%;transform:translateX(-50%);top:0;padding:8px 16px;background:#3b82f6;color:#fff;text-decoration:none}
+      /* Hide loader when app is ready */
+      .app-ready .initial-loader{display:none}
     </style>
     
     <!-- Google Fonts - Deferred loading -->
@@ -107,7 +125,20 @@
   </head>
 
   <body>
+    <!-- Initial loader for immediate FCP -->
+    <div class="initial-loader" id="initial-loader">
+      <div class="initial-loader-content">
+        <div class="initial-loader-spinner"></div>
+        <p class="initial-loader-text">Chargement...</p>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Remove loader when app is interactive
+      window.addEventListener('load', function() {
+        document.documentElement.classList.add('app-ready');
+      });
+    </script>
   </body>
 </html>
