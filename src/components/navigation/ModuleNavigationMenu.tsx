@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/navigation-menu'
 import { Badge } from '@/components/ui/badge'
 import { useNavigation } from '@/contexts/NavigationContext'
-import { NAV_GROUPS } from '@/config/modules'
 import { getIcon } from '@/lib/icon-map'
 import { cn } from '@/lib/utils'
 
@@ -24,13 +23,10 @@ export function ModuleNavigationMenu({ className }: ModuleNavigationMenuProps) {
   return (
     <NavigationMenu className={cn('hidden md:flex', className)}>
       <NavigationMenuList>
-        {NAV_GROUPS.map((group) => {
-          const navGroup = navigationGroups.find(
-            (ng) => ng.category.id === group.id
-          )
-          if (!navGroup || navGroup.modules.length === 0) return null
+        {navigationGroups.map((navGroup) => {
+          if (navGroup.modules.length === 0) return null
 
-          const GroupIcon = getIcon(group.icon)
+          const GroupIcon = getIcon(navGroup.category.icon)
           const isGroupActive = navGroup.modules.some((m) =>
             isActiveRoute(m.route)
           )
@@ -39,7 +35,7 @@ export function ModuleNavigationMenu({ className }: ModuleNavigationMenuProps) {
           if (navGroup.modules.length === 1) {
             const module = navGroup.modules[0]
             return (
-              <NavigationMenuItem key={group.id}>
+              <NavigationMenuItem key={navGroup.category.id}>
                 <Link to={module.route}>
                   <NavigationMenuLink
                     className={cn(
@@ -48,7 +44,7 @@ export function ModuleNavigationMenu({ className }: ModuleNavigationMenuProps) {
                     )}
                   >
                     <GroupIcon className="mr-2 h-4 w-4" />
-                    {group.label}
+                    {navGroup.category.label}
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -56,14 +52,14 @@ export function ModuleNavigationMenu({ className }: ModuleNavigationMenuProps) {
           }
 
           return (
-            <NavigationMenuItem key={group.id}>
+            <NavigationMenuItem key={navGroup.category.id}>
               <NavigationMenuTrigger
                 className={cn(
                   isGroupActive && 'bg-accent text-accent-foreground'
                 )}
               >
                 <GroupIcon className="mr-2 h-4 w-4" />
-                {group.label}
+                {navGroup.category.label}
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid gap-3 p-4 w-[400px] md:w-[500px] md:grid-cols-2 lg:w-[600px] lg:grid-cols-3 bg-popover">

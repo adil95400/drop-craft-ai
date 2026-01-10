@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/command'
 import { Badge } from '@/components/ui/badge'
 import { useNavigation } from '@/contexts/NavigationContext'
-import { NAV_GROUPS } from '@/config/modules'
 import { getIcon } from '@/lib/icon-map'
 import { cn } from '@/lib/utils'
 
@@ -87,13 +86,10 @@ export function QuickNavigationBar({ className }: QuickNavigationBarProps) {
           <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
 
           {filteredGroups.map((group) => {
-            const groupConfig = NAV_GROUPS.find((g) => g.id === group.category.id)
-            if (!groupConfig) return null
-
             return (
               <CommandGroup
                 key={group.category.id}
-                heading={groupConfig.label}
+                heading={group.category.label}
               >
                 {group.modules.map((module) => {
                   const IconComponent = getIcon(module.icon)
