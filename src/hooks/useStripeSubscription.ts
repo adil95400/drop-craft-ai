@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,10 +12,25 @@ interface SubscriptionData {
   subscription_end: string | null;
 }
 
-const PLAN_PRICES = {
-  standard: 'price_1S7KZaFdyZLEbAYa8kA9hCUb',
-  pro: 'price_1S7Ka5FdyZLEbAYaszKu4XDM',
-  ultra_pro: 'price_1S7KaNFdyZLEbAYaovKWFgc4',
+// Product IDs from Stripe
+export const STRIPE_PRODUCTS = {
+  standard: 'prod_T3RS5DA7XYPWBP',
+  pro: 'prod_T3RTReiXnCg9hy',
+  ultra_pro: 'prod_T3RTMipVwUA7Ud',
+} as const;
+
+// Price IDs from Stripe (recurring monthly)
+export const STRIPE_PRICES = {
+  standard: 'price_1S7KZaFdyZLEbAYa8kA9hCUb',   // 19€/mois
+  pro: 'price_1S7Ka5FdyZLEbAYaszKu4XDM',        // 29€/mois
+  ultra_pro: 'price_1S7KaNFdyZLEbAYaovKWFgc4', // 99€/mois
+} as const;
+
+// Map product IDs to plan types
+const productToPlan: Record<string, PlanType> = {
+  [STRIPE_PRODUCTS.standard]: 'standard',
+  [STRIPE_PRODUCTS.pro]: 'pro',
+  [STRIPE_PRODUCTS.ultra_pro]: 'ultra_pro',
 };
 
 export function useStripeSubscription() {
@@ -23,20 +38,27 @@ export function useStripeSubscription() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
+  const lastCheckRef = useRef<number>(0);
 
-  const checkSubscription = useCallback(async () => {
+  const checkSubscription = useCallback(async (force = false) => {
     if (!user) {
       setSubscription(null);
       setLoading(false);
       return;
     }
 
+    // Rate limiting: prevent multiple calls within 5 seconds unless forced
+    const now = Date.now();
+    if (!force && now - lastCheckRef.current < 5000) {
+      return;
+    }
+    lastCheckRef.current = now;
+
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');
 
       if (error) {
-        // Handle specific error cases
         if (error.message?.includes('Rate limit')) {
           toast({
             title: "Limite atteinte",
@@ -50,24 +72,23 @@ export function useStripeSubscription() {
             variant: "destructive"
           });
         } else {
-          throw error;
+          console.error('Subscription check error:', error);
         }
         return;
       }
 
+      // Map product_id to plan if not already set correctly
+      if (data?.product_id && !data.plan) {
+        data.plan = productToPlan[data.product_id] || 'free';
+      }
+
       setSubscription(data);
       
-      // Trigger plan refetch to sync UI
-      if (data?.subscribed && data?.product_id) {
-        console.log('Subscription verified and synced with profile');
+      if (data?.subscribed) {
+        console.log('[Stripe] Subscription verified:', data.plan, 'until', data.subscription_end);
       }
     } catch (error) {
       console.error('Error checking subscription:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de vérifier l'abonnement",
-        variant: "destructive"
-      });
     } finally {
       setLoading(false);
     }
@@ -76,15 +97,24 @@ export function useStripeSubscription() {
   const createCheckout = useCallback(async (plan: Exclude<PlanType, 'free'>) => {
     if (!user) {
       toast({
-        title: "Erreur",
-        description: "Vous devez être connecté",
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour souscrire",
         variant: "destructive"
       });
       return;
     }
 
     try {
-      const priceId = PLAN_PRICES[plan];
+      const priceId = STRIPE_PRICES[plan];
+      if (!priceId) {
+        throw new Error(`Prix invalide pour le plan: ${plan}`);
+      }
+
+      toast({
+        title: "Redirection...",
+        description: "Préparation de la page de paiement Stripe",
+      });
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId }
       });
@@ -93,12 +123,14 @@ export function useStripeSubscription() {
 
       if (data?.url) {
         window.open(data.url, '_blank');
+      } else {
+        throw new Error('URL de checkout non reçue');
       }
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer la session de paiement",
+        description: error instanceof Error ? error.message : "Impossible de créer la session de paiement",
         variant: "destructive"
       });
     }
@@ -107,7 +139,7 @@ export function useStripeSubscription() {
   const openCustomerPortal = useCallback(async () => {
     if (!user) {
       toast({
-        title: "Erreur",
+        title: "Connexion requise",
         description: "Vous devez être connecté",
         variant: "destructive"
       });
@@ -115,46 +147,78 @@ export function useStripeSubscription() {
     }
 
     try {
+      toast({
+        title: "Redirection...",
+        description: "Ouverture du portail de gestion",
+      });
+
       const { data, error } = await supabase.functions.invoke('stripe-portal');
 
       if (error) throw error;
 
       if (data?.url) {
         window.open(data.url, '_blank');
+      } else {
+        throw new Error('URL du portail non reçue');
       }
     } catch (error) {
       console.error('Error opening customer portal:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'ouvrir le portail client",
+        description: error instanceof Error ? error.message : "Impossible d'ouvrir le portail client",
         variant: "destructive"
       });
     }
   }, [user, toast]);
 
+  // Initial check and periodic refresh
   useEffect(() => {
-    checkSubscription();
+    checkSubscription(true);
     
-    // Refresh every minute
-    const interval = setInterval(checkSubscription, 60000);
+    // Refresh every 60 seconds
+    const interval = setInterval(() => checkSubscription(), 60000);
     
     return () => clearInterval(interval);
   }, [checkSubscription]);
 
+  // Check on URL params (success redirect from Stripe)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      // Force refresh after successful checkout
+      setTimeout(() => checkSubscription(true), 2000);
+      toast({
+        title: "🎉 Paiement réussi!",
+        description: "Votre abonnement est maintenant actif",
+      });
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (urlParams.get('canceled') === 'true') {
+      toast({
+        title: "Paiement annulé",
+        description: "Aucun montant n'a été débité",
+        variant: "destructive"
+      });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [checkSubscription, toast]);
+
   return {
     subscription,
     loading,
-    checkSubscription,
+    checkSubscription: () => checkSubscription(true),
     createCheckout,
     openCustomerPortal,
+    isPro: subscription?.plan === 'pro' || subscription?.plan === 'ultra_pro',
+    isUltraPro: subscription?.plan === 'ultra_pro',
     hasFeature: (feature: string) => {
       if (!subscription) return false;
       
-      const featureAccess = {
+      const featureAccess: Record<PlanType, string[]> = {
         free: [],
-        standard: ['basic_import', 'basic_analytics'],
-        pro: ['basic_import', 'basic_analytics', 'ai_import', 'advanced_analytics', 'unlimited_integrations'],
-        ultra_pro: ['basic_import', 'basic_analytics', 'ai_import', 'advanced_analytics', 'unlimited_integrations', 'white_label', 'priority_support']
+        standard: ['basic_import', 'basic_analytics', '1000_products', '3_integrations'],
+        pro: ['basic_import', 'basic_analytics', 'ai_import', 'advanced_analytics', 'unlimited_integrations', '10000_products', 'automation'],
+        ultra_pro: ['basic_import', 'basic_analytics', 'ai_import', 'advanced_analytics', 'unlimited_integrations', 'unlimited_products', 'white_label', 'priority_support', 'api_access', 'automation']
       };
       
       return featureAccess[subscription.plan]?.includes(feature) || false;
