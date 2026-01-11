@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // Custom plugin to defer non-critical CSS loading
 function deferCssPlugin(): Plugin {
@@ -74,6 +75,23 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     mode === 'production' && deferCssPlugin(),
     mode === 'production' && modulePreloadPlugin(),
+    // Optimize images at build time - compress JPG/PNG and convert to WebP
+    ViteImageOptimizer({
+      jpg: {
+        quality: 80,
+      },
+      jpeg: {
+        quality: 80,
+      },
+      png: {
+        quality: 80,
+      },
+      webp: {
+        lossless: false,
+        quality: 80,
+        alphaQuality: 80,
+      },
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null, // Defer SW registration to avoid render-blocking
