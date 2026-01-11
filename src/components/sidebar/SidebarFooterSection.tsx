@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { SidebarFooter } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { HelpCircle, Settings, LogOut, Crown } from 'lucide-react'
+import { HelpCircle, Settings, LogOut, Crown, Map } from 'lucide-react'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { cn } from '@/lib/utils'
@@ -45,6 +45,7 @@ export const SidebarFooterSection = memo<SidebarFooterSectionProps>(({ collapsed
               size="sm"
               className="flex-1 h-7 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => handleNavigate('/dashboard/settings')}
+              title="Paramètres"
             >
               <Settings className="h-3.5 w-3.5" />
             </Button>
@@ -52,7 +53,17 @@ export const SidebarFooterSection = memo<SidebarFooterSectionProps>(({ collapsed
               variant="ghost"
               size="sm"
               className="flex-1 h-7 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => handleNavigate('/sitemap')}
+              title="Plan du site"
+            >
+              <Map className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 h-7 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => handleNavigate('/support')}
+              title="Aide"
             >
               <HelpCircle className="h-3.5 w-3.5" />
             </Button>
