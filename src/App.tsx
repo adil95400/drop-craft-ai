@@ -67,13 +67,13 @@ const AppContent = memo(() => {
         {/* Lightweight offline status indicator (no framer-motion) */}
         <OfflineIndicatorLite />
         
-        <main id="main-content" className="pb-20 md:pb-0">
+        <div className="pb-20 md:pb-0">
           <Suspense fallback={null}>
             <NotificationProvider>
               <AppRoutes />
             </NotificationProvider>
           </Suspense>
-        </main>
+        </div>
         
         <Suspense fallback={null}>
           <GlobalModals />

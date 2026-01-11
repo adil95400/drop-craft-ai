@@ -125,13 +125,15 @@
 
   <body>
     <!-- Initial loader for immediate FCP -->
-    <div class="initial-loader" id="initial-loader">
+    <div class="initial-loader" id="initial-loader" aria-hidden="true">
       <div class="initial-loader-content">
         <div class="initial-loader-spinner"></div>
         <p class="initial-loader-text">Chargement...</p>
       </div>
     </div>
-    <div id="root"></div>
+    <main id="main-content" role="main">
+      <div id="root"></div>
+    </main>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       // Remove loader when app is interactive
