@@ -54,10 +54,9 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
           <AppSidebar />
           
           <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear flex-1 min-w-0">
-            {/* Enhanced navigation bar with module menu and quick search */}
+            {/* Enhanced navigation bar */}
             <EnhancedNavigationBar 
               showBreadcrumbs={true}
-              showModuleMenu={true}
               showQuickSearch={true}
             />
 
