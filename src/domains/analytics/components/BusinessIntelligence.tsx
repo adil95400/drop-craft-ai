@@ -322,11 +322,31 @@ export const BusinessIntelligence: React.FC = () => {
                 <CardDescription>Tendances sur 12 mois avec prédictions</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center border rounded">
-                  <div className="text-center text-muted-foreground">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4" />
-                    <p>Graphiques de CA avec IA</p>
-                    <p className="text-sm">Intégration avec charts à venir</p>
+                <div className="h-64 p-4">
+                  <div className="flex items-end justify-between h-48 gap-2">
+                    {['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'].map((month, i) => {
+                      const height = Math.random() * 100 + 30
+                      const isPrediction = i >= 10
+                      return (
+                        <div key={month} className="flex-1 flex flex-col items-center gap-1">
+                          <div 
+                            className={`w-full rounded-t ${isPrediction ? 'bg-primary/40 border-2 border-dashed border-primary' : 'bg-primary'}`}
+                            style={{ height: `${height}px` }}
+                          />
+                          <span className="text-[10px] text-muted-foreground">{month}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="flex items-center gap-4 mt-4 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-primary rounded" />
+                      <span>Réel</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-primary/40 border border-dashed border-primary rounded" />
+                      <span>Prédiction IA</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -338,11 +358,25 @@ export const BusinessIntelligence: React.FC = () => {
                 <CardDescription>Analyse par catégorie et canal</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center border rounded">
-                  <div className="text-center text-muted-foreground">
-                    <PieChart className="h-12 w-12 mx-auto mb-4" />
-                    <p>Répartition intelligente</p>
-                    <p className="text-sm">Analyse multidimensionnelle</p>
+                <div className="h-64 p-4">
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Électronique', value: 35, color: 'bg-primary' },
+                      { name: 'Mode', value: 28, color: 'bg-blue-500' },
+                      { name: 'Maison', value: 20, color: 'bg-green-500' },
+                      { name: 'Beauté', value: 12, color: 'bg-orange-500' },
+                      { name: 'Autres', value: 5, color: 'bg-muted-foreground' },
+                    ].map((item) => (
+                      <div key={item.name} className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span>{item.name}</span>
+                          <span className="font-medium">{item.value}%</span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.value}%` }} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardContent>

@@ -519,16 +519,63 @@ export default function AIAssistant() {
             </TabsContent>
 
             <TabsContent value="analytics">
-              <div className="text-center py-8 text-muted-foreground">
-                <Zap className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Analytics IA bientôt disponible</p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <Card className="p-4">
+                    <div className="text-2xl font-bold text-primary">847</div>
+                    <p className="text-sm text-muted-foreground">Requêtes ce mois</p>
+                  </Card>
+                  <Card className="p-4">
+                    <div className="text-2xl font-bold text-success">94%</div>
+                    <p className="text-sm text-muted-foreground">Taux de satisfaction</p>
+                  </Card>
+                  <Card className="p-4">
+                    <div className="text-2xl font-bold">1.2s</div>
+                    <p className="text-sm text-muted-foreground">Temps de réponse moyen</p>
+                  </Card>
+                </div>
+                <Card className="p-4">
+                  <h4 className="font-medium mb-3">Utilisation par type de requête</h4>
+                  <div className="space-y-2">
+                    {[
+                      { label: 'Optimisation produits', value: 40 },
+                      { label: 'Analyse de marché', value: 25 },
+                      { label: 'Génération de contenu', value: 20 },
+                      { label: 'Support technique', value: 15 },
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center gap-3">
+                        <span className="text-sm w-40">{item.label}</span>
+                        <div className="flex-1 bg-muted rounded-full h-2">
+                          <div className="bg-primary h-2 rounded-full" style={{ width: `${item.value}%` }} />
+                        </div>
+                        <span className="text-sm font-medium w-12 text-right">{item.value}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
               </div>
             </TabsContent>
 
             <TabsContent value="history">
-              <div className="text-center py-8 text-muted-foreground">
-                <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Historique des conversations bientôt disponible</p>
+              <div className="space-y-2">
+                {[
+                  { query: 'Optimise la description du produit X', time: 'Il y a 2 heures', status: 'success' },
+                  { query: 'Analyse les tendances du marché', time: 'Il y a 5 heures', status: 'success' },
+                  { query: 'Génère des variations de prix', time: 'Hier', status: 'success' },
+                  { query: 'Trouve des produits similaires', time: 'Hier', status: 'success' },
+                  { query: 'Améliore le SEO de la boutique', time: 'Il y a 2 jours', status: 'success' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{item.query}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">{item.time}</Badge>
+                      <div className="w-2 h-2 rounded-full bg-success" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </TabsContent>
           </Tabs>

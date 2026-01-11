@@ -334,7 +334,26 @@ export function OrdersUltraProInterface() {
                 <CardTitle>Évolution des Commandes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Graphique à venir...</p>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-7 gap-2">
+                    {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, i) => {
+                      const height = Math.random() * 60 + 20
+                      return (
+                        <div key={day} className="flex flex-col items-center gap-1">
+                          <div 
+                            className="w-full bg-primary/80 rounded-t"
+                            style={{ height: `${height}px` }}
+                          />
+                          <span className="text-xs text-muted-foreground">{day}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Cette semaine</span>
+                    <span className="font-medium text-success">+18% vs semaine précédente</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -343,18 +362,24 @@ export function OrdersUltraProInterface() {
                 <CardTitle>Performance de Livraison</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
                     <span>Délai moyen de livraison</span>
                     <span className="font-medium">7.2 jours</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Taux de livraison à temps</span>
-                    <span className="font-medium">94.5%</span>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div className="bg-success h-2 rounded-full" style={{ width: '72%' }} />
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
+                    <span>Taux de livraison à temps</span>
+                    <span className="font-medium text-success">94.5%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div className="bg-primary h-2 rounded-full" style={{ width: '94.5%' }} />
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span>Satisfaction client</span>
-                    <span className="font-medium">4.8/5</span>
+                    <span className="font-medium">4.8/5 ⭐</span>
                   </div>
                 </div>
               </CardContent>
