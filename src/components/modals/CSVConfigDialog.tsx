@@ -303,12 +303,12 @@ export const CSVConfigDialog = ({ open, onOpenChange }: CSVConfigDialogProps) =>
                     </div>
                     <div className="flex-1 ml-4">
                       <Select
-                        value={mappedColumn}
+                        value={mappedColumn || "none"}
                         onValueChange={(value) => setFormData({
                           ...formData,
                           fieldMapping: {
                             ...formData.fieldMapping,
-                            [field]: value
+                            [field]: value === "none" ? "" : value
                           }
                         })}
                       >
@@ -316,10 +316,10 @@ export const CSVConfigDialog = ({ open, onOpenChange }: CSVConfigDialogProps) =>
                           <SelectValue placeholder="Sélectionner une colonne" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Aucune</SelectItem>
+                          <SelectItem value="none">Aucune</SelectItem>
                           {csvPreview.headers.map((header, index) => (
-                            <SelectItem key={index} value={header}>
-                              {header}
+                            <SelectItem key={index} value={header || `col_${index}`}>
+                              {header || `Colonne ${index + 1}`}
                             </SelectItem>
                           ))}
                         </SelectContent>

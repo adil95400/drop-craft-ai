@@ -571,14 +571,14 @@ export function APIImportWizard() {
                         </div>
                         <div className="w-48">
                           <Select
-                            value={config.field_mapping[apiField] || ''}
-                            onValueChange={(value) => handleFieldMapping(apiField, value)}
+                            value={config.field_mapping[apiField] || 'ignore'}
+                            onValueChange={(value) => handleFieldMapping(apiField, value === 'ignore' ? '' : value)}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Sélectionner" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Ignorer</SelectItem>
+                              <SelectItem value="ignore">Ignorer</SelectItem>
                               {Object.entries(PRODUCT_FIELDS).map(([field, label]) => (
                                 <SelectItem key={field} value={field}>
                                   {label}

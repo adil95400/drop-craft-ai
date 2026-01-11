@@ -62,14 +62,14 @@ export const ProductResearchConfig = () => {
           <div className="space-y-2">
             <Label>Catégorie</Label>
             <Select 
-              value={criteria.category} 
-              onValueChange={(value) => setCriteria({ ...criteria, category: value })}
+              value={criteria.category || "all"} 
+              onValueChange={(value) => setCriteria({ ...criteria, category: value === "all" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Toutes les catégories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes</SelectItem>
+                <SelectItem value="all">Toutes</SelectItem>
                 <SelectItem value="Electronics">Électronique</SelectItem>
                 <SelectItem value="Fashion">Mode</SelectItem>
                 <SelectItem value="Home">Maison</SelectItem>

@@ -300,7 +300,7 @@ export function XMLImportWizard() {
                     {config.required && <Badge variant="destructive" className="text-xs">Requis</Badge>}
                   </Label>
                   <Select
-                    value={Object.entries(mapping).find(([_, v]) => v === field)?.[0] || ''}
+                    value={Object.entries(mapping).find(([_, v]) => v === field)?.[0] || 'unmapped'}
                     onValueChange={(value) => {
                       setMapping(prev => {
                         const newMapping = { ...prev }
@@ -308,7 +308,7 @@ export function XMLImportWizard() {
                         Object.keys(newMapping).forEach(key => {
                           if (newMapping[key] === field) delete newMapping[key]
                         })
-                        if (value) newMapping[value] = field
+                        if (value && value !== 'unmapped') newMapping[value] = field
                         return newMapping
                       })
                     }}
@@ -317,9 +317,9 @@ export function XMLImportWizard() {
                       <SelectValue placeholder="Sélectionner un champ XML" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Non mappé</SelectItem>
+                      <SelectItem value="unmapped">Non mappé</SelectItem>
                       {xmlFields.map(xmlField => (
-                        <SelectItem key={xmlField} value={xmlField}>
+                        <SelectItem key={xmlField} value={xmlField || `field_${Math.random()}`}>
                           {xmlField}
                         </SelectItem>
                       ))}

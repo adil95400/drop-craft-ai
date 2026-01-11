@@ -244,12 +244,12 @@ export function ReviewsUltraProInterface() {
               />
             </div>
             
-            <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <Select value={selectedPlatform || "all"} onValueChange={(v) => setSelectedPlatform(v === "all" ? "" : v)}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Toutes les plateformes" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes les plateformes</SelectItem>
+                <SelectItem value="all">Toutes les plateformes</SelectItem>
                 <SelectItem value="Loox">Loox</SelectItem>
                 <SelectItem value="Judge.me">Judge.me</SelectItem>
                 <SelectItem value="Trustpilot">Trustpilot</SelectItem>
@@ -257,12 +257,12 @@ export function ReviewsUltraProInterface() {
               </SelectContent>
             </Select>
 
-            <Select value={filterRating} onValueChange={setFilterRating}>
+            <Select value={filterRating || "all"} onValueChange={(v) => setFilterRating(v === "all" ? "" : v)}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Note" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes</SelectItem>
+                <SelectItem value="all">Toutes</SelectItem>
                 <SelectItem value="5">5 étoiles</SelectItem>
                 <SelectItem value="4">4 étoiles</SelectItem>
                 <SelectItem value="3">3 étoiles</SelectItem>

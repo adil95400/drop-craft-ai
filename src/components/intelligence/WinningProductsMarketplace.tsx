@@ -142,14 +142,14 @@ export function WinningProductsMarketplace() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Catégorie</label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select value={selectedCategory || "all"} onValueChange={(v) => setSelectedCategory(v === "all" ? "" : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Toutes catégories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes catégories</SelectItem>
+                  <SelectItem value="all">Toutes catégories</SelectItem>
                   {categories.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    <SelectItem key={cat} value={cat || `cat_${Math.random()}`}>{cat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
