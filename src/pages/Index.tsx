@@ -8,8 +8,9 @@ import { Loader2, Crown, Zap, Users, Star, ArrowRight, TrendingUp, Shield, Globe
 import { useNavigate, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { SoftwareAppSchema, OrganizationSchema } from "@/components/seo/StructuredData";
-import heroImage from "@/assets/hero-automation.jpg";
-import heroImageSm from "@/assets/hero-automation-sm.jpg";
+// Hero images in public folder for LCP discovery
+const heroImage = "/images/hero-automation.jpg";
+const heroImageSm = "/images/hero-automation-sm.jpg";
 import featureAI from "@/assets/feature-ai.jpg";
 import featureAISm from "@/assets/feature-ai-sm.jpg";
 import featureIntegration from "@/assets/feature-integration.jpg";
