@@ -215,18 +215,10 @@ export default defineConfig(({ mode }) => ({
             return 'vendor-heavy';
           }
           
-          // UI Core - dialogs/dropdowns used on many pages
-          if (id.includes('@radix-ui/react-dialog') ||
-              id.includes('@radix-ui/react-dropdown-menu') ||
-              id.includes('@radix-ui/react-select') ||
-              id.includes('@radix-ui/react-tabs') ||
-              id.includes('@radix-ui/react-toast')) {
-            return 'vendor-ui-core';
-          }
-          
-          // Extended UI components
+          // All Radix UI components in single chunk to avoid cross-chunk dependencies
+          // This prevents "l is not a function" errors from minification issues
           if (id.includes('@radix-ui/')) {
-            return 'vendor-ui-extended';
+            return 'vendor-ui';
           }
           
           // Data/Query layer
