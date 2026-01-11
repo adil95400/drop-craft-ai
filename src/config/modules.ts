@@ -329,6 +329,9 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'orders-all', name: 'Toutes les commandes', route: '/dashboard/orders', icon: 'ShoppingCart', description: 'Liste complète', features: ['list'], order: 1 },
       { id: 'orders-create', name: 'Créer', route: '/orders/create', icon: 'Plus', description: 'Nouvelle commande', features: ['create'], order: 2 },
       { id: 'orders-bulk', name: 'Commandes en masse', route: '/orders/bulk', icon: 'Layers', description: 'Gestion par lot', features: ['bulk'], order: 3 },
+      { id: 'orders-returns', name: 'Retours', route: '/dashboard/orders/returns', icon: 'RotateCcw', description: 'Gestion retours', features: ['returns'], order: 4 },
+      { id: 'orders-tracking', name: 'Suivi', route: '/dashboard/orders/tracking', icon: 'Truck', description: 'Suivi livraisons', features: ['tracking'], order: 5 },
+      { id: 'orders-notifications', name: 'Notifications Client', route: '/dashboard/orders/notifications', icon: 'Bell', description: 'Alertes clients', features: ['notifications'], order: 6 },
     ]
   },
   
@@ -414,6 +417,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'analytics-advanced', name: 'Avancé', route: '/analytics/advanced', icon: 'TrendingUp', description: 'Analytics avancés', features: ['advanced'], order: 2 },
       { id: 'analytics-reports', name: 'Rapports', route: '/analytics/reports', icon: 'FileText', description: 'Rapports personnalisés', features: ['reports'], order: 3 },
       { id: 'analytics-bi', name: 'Business Intelligence', route: '/analytics/bi', icon: 'Brain', description: 'BI avancée', features: ['bi'], order: 4 },
+      { id: 'analytics-studio', name: 'Studio', route: '/analytics/studio', icon: 'Palette', description: 'Studio analytics', features: ['studio'], order: 5 },
+      { id: 'analytics-predictive', name: 'Prédictif', route: '/analytics/predictive', icon: 'Brain', description: 'Analytics prédictifs', features: ['predictive'], order: 6 },
+      { id: 'analytics-real-data', name: 'Données Réelles', route: '/analytics/real-data', icon: 'Database', description: 'Analytics temps réel', features: ['real-data'], order: 7 },
+      { id: 'analytics-intelligence', name: 'Intelligence Client', route: '/analytics/customer-intelligence', icon: 'Users', description: 'Intelligence client', features: ['customer-intelligence'], order: 8 },
+      { id: 'analytics-price-monitoring', name: 'Prix Concurrence', route: '/analytics/price-monitoring', icon: 'DollarSign', description: 'Surveillance des prix', features: ['price-monitoring'], order: 9 },
     ]
   },
   
@@ -567,6 +575,9 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'crm-dashboard', name: 'Dashboard', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'crm-leads', name: 'Leads', route: '/crm/leads', icon: 'UserPlus', description: 'Gestion des leads', features: ['leads'], order: 2 },
       { id: 'crm-emails', name: 'Emails', route: '/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 3 },
+      { id: 'crm-activity', name: 'Activité', route: '/marketing/crm/activity', icon: 'Activity', description: 'Historique activité', features: ['activity'], order: 4 },
+      { id: 'crm-calls', name: 'Appels', route: '/marketing/crm/calls', icon: 'Phone', description: 'Gestion appels', features: ['calls'], order: 5 },
+      { id: 'crm-calendar', name: 'Calendrier', route: '/marketing/crm/calendar', icon: 'Calendar', description: 'Calendrier CRM', features: ['calendar'], order: 6 },
     ]
   },
 
@@ -757,6 +768,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'automation-hub', name: 'Hub', route: '/automation', icon: 'Zap', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'automation-workflows', name: 'Workflows', route: '/automation/workflows', icon: 'Workflow', description: 'Créer des workflows', features: ['workflows'], order: 2 },
       { id: 'automation-triggers', name: 'Déclencheurs', route: '/automation/triggers', icon: 'Play', description: 'Gérer les triggers', features: ['triggers'], order: 3 },
+      { id: 'automation-studio', name: 'Studio', route: '/automation/studio', icon: 'Palette', description: 'Studio automation', features: ['studio'], order: 4 },
+      { id: 'automation-ai-hub', name: 'AI Hub', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub IA', features: ['ai'], order: 5 },
+      { id: 'automation-ai-studio', name: 'AI Studio', route: '/automation/ai-studio', icon: 'Sparkles', description: 'Studio IA', features: ['ai-studio'], order: 6 },
+      { id: 'automation-dynamic-pricing', name: 'Prix Dynamiques', route: '/automation/dynamic-pricing', icon: 'TrendingUp', description: 'Pricing automatique', features: ['dynamic-pricing'], order: 7 },
+      { id: 'automation-recommendations', name: 'Recommandations', route: '/automation/recommendations', icon: 'Lightbulb', description: 'Recommandations IA', features: ['recommendations'], order: 8 },
     ]
   },
   
@@ -826,6 +842,394 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'admin-security', name: 'Sécurité', route: '/admin/security', icon: 'Lock', description: 'Sécurité', features: ['security'], order: 2 },
       { id: 'admin-suppliers', name: 'Fournisseurs', route: '/admin/suppliers', icon: 'Truck', description: 'Gestion fournisseurs', features: ['suppliers'], order: 3 },
     ]
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NOUVEAUX MODULES - Pages manquantes ajoutées à la navigation
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // --- INSIGHTS GROUP ---
+  
+  abandonedCart: {
+    id: 'abandonedCart',
+    name: 'Paniers Abandonnés',
+    icon: 'ShoppingCart',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/marketing/abandoned-cart',
+    features: ['abandoned-cart-recovery', 'email-reminders'],
+    description: 'Récupérer les paniers abandonnés',
+    category: 'customer',
+    order: 16,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  loyaltyProgram: {
+    id: 'loyaltyProgram',
+    name: 'Programme Fidélité',
+    icon: 'Award',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/marketing/loyalty',
+    features: ['loyalty-points', 'rewards'],
+    description: 'Fidélisation clients',
+    category: 'customer',
+    order: 17,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  flashSales: {
+    id: 'flashSales',
+    name: 'Ventes Flash',
+    icon: 'Zap',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/marketing/flash-sales',
+    features: ['flash-sales', 'countdown'],
+    description: 'Ventes flash et urgence',
+    category: 'customer',
+    order: 18,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  socialCommerce: {
+    id: 'socialCommerce',
+    name: 'Social Commerce',
+    icon: 'Share2',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/marketing/social-commerce',
+    features: ['social-selling', 'social-proof'],
+    description: 'Vente sur réseaux sociaux',
+    category: 'customer',
+    order: 19,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  creativeStudio: {
+    id: 'creativeStudio',
+    name: 'Studio Créatif',
+    icon: 'Palette',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/marketing/creative-studio',
+    features: ['image-editing', 'video-creation'],
+    description: 'Création de contenu visuel',
+    category: 'automation',
+    order: 20,
+    groupId: 'insights',
+    badge: 'pro'
+  },
+
+  // --- CATALOG GROUP ---
+
+  productScoring: {
+    id: 'productScoring',
+    name: 'Scoring Produits',
+    icon: 'Star',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/products/scoring',
+    features: ['product-scoring', 'quality-metrics'],
+    description: 'Score qualité produits',
+    category: 'product',
+    order: 6,
+    groupId: 'catalog',
+    badge: 'pro'
+  },
+
+  productSourcing: {
+    id: 'productSourcing',
+    name: 'Sourcing Produits',
+    icon: 'Search',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/products/sourcing',
+    features: ['product-sourcing', 'supplier-matching'],
+    description: 'Trouver les meilleurs fournisseurs',
+    category: 'product',
+    order: 7,
+    groupId: 'catalog',
+    badge: 'pro'
+  },
+
+  aiContent: {
+    id: 'aiContent',
+    name: 'Contenu IA',
+    icon: 'Wand2',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/products/ai-content',
+    features: ['ai-descriptions', 'ai-images'],
+    description: 'Génération contenu IA',
+    category: 'automation',
+    order: 8,
+    groupId: 'catalog',
+    badge: 'pro'
+  },
+
+  priceRules: {
+    id: 'priceRules',
+    name: 'Règles de Prix',
+    icon: 'DollarSign',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/products/price-rules',
+    features: ['price-rules', 'margin-control'],
+    description: 'Règles de tarification',
+    category: 'automation',
+    order: 9,
+    groupId: 'catalog'
+  },
+
+  catalogIntelligence: {
+    id: 'catalogIntelligence',
+    name: 'Intelligence Catalogue',
+    icon: 'Brain',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/catalog-intelligence',
+    features: ['catalog-ai', 'smart-recommendations'],
+    description: 'IA pour votre catalogue',
+    category: 'automation',
+    order: 10,
+    groupId: 'catalog',
+    badge: 'pro'
+  },
+
+  // --- CHANNELS GROUP ---
+
+  tiktokShop: {
+    id: 'tiktokShop',
+    name: 'TikTok Shop',
+    icon: 'Video',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/integrations/tiktok-shop',
+    features: ['tiktok-integration', 'live-shopping'],
+    description: 'Vendre sur TikTok Shop',
+    category: 'integrations',
+    order: 4,
+    groupId: 'channels',
+    badge: 'new'
+  },
+
+  multiChannel: {
+    id: 'multiChannel',
+    name: 'Multi-Canal',
+    icon: 'Layers',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/integrations/multi-channel',
+    features: ['multi-channel-sync', 'unified-inventory'],
+    description: 'Gestion multi-canal unifiée',
+    category: 'integrations',
+    order: 5,
+    groupId: 'channels',
+    badge: 'pro'
+  },
+
+  // --- ORDERS GROUP ---
+
+  customerSegmentation: {
+    id: 'customerSegmentation',
+    name: 'Segmentation Clients',
+    icon: 'PieChart',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/dashboard/customers/segmentation',
+    features: ['customer-segments', 'targeting'],
+    description: 'Segmenter vos clients',
+    category: 'customer',
+    order: 7,
+    groupId: 'orders',
+    badge: 'pro'
+  },
+
+  bulkOrders: {
+    id: 'bulkOrders',
+    name: 'Commandes en Masse',
+    icon: 'Layers',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/bulk-orders',
+    features: ['bulk-processing', 'mass-actions'],
+    description: 'Traitement groupé',
+    category: 'core',
+    order: 8,
+    groupId: 'orders'
+  },
+
+  // --- SETTINGS GROUP ---
+
+  qa: {
+    id: 'qa',
+    name: 'Contrôle Qualité',
+    icon: 'CheckCircle',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/qa',
+    features: ['quality-control', 'testing'],
+    description: 'Tests et contrôle qualité',
+    category: 'system',
+    order: 10,
+    groupId: 'settings',
+    badge: 'pro',
+    subModules: [
+      { id: 'qa-products', name: 'Produits', route: '/qa/products', icon: 'Package', description: 'QA Produits', features: ['products'], order: 1 },
+      { id: 'qa-orders', name: 'Commandes', route: '/qa/orders', icon: 'ShoppingCart', description: 'QA Commandes', features: ['orders'], order: 2 },
+    ]
+  },
+
+  pageBuilder: {
+    id: 'pageBuilder',
+    name: 'Page Builder',
+    icon: 'Layout',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/page-builder',
+    features: ['page-builder', 'landing-pages'],
+    description: 'Créer des pages personnalisées',
+    category: 'system',
+    order: 11,
+    groupId: 'settings',
+    badge: 'pro'
+  },
+
+  enrichment: {
+    id: 'enrichment',
+    name: 'Enrichissement',
+    icon: 'Sparkles',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/enrichment',
+    features: ['data-enrichment', 'auto-fill'],
+    description: 'Enrichissement automatique des données',
+    category: 'automation',
+    order: 12,
+    groupId: 'settings',
+    badge: 'pro'
+  },
+
+  syncManager: {
+    id: 'syncManager',
+    name: 'Gestionnaire Sync',
+    icon: 'RefreshCw',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/sync-manager',
+    features: ['sync-management', 'sync-logs'],
+    description: 'Gérer les synchronisations',
+    category: 'system',
+    order: 13,
+    groupId: 'settings'
+  },
+
+  liveChat: {
+    id: 'liveChat',
+    name: 'Chat en Direct',
+    icon: 'MessageCircle',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/integrations/support/live-chat',
+    features: ['live-chat', 'customer-support'],
+    description: 'Support client en direct',
+    category: 'customer',
+    order: 14,
+    groupId: 'settings'
+  },
+
+  storeBuilder: {
+    id: 'storeBuilder',
+    name: 'Store Builder IA',
+    icon: 'Store',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/dashboard/store/builder',
+    features: ['ai-store-builder', 'templates'],
+    description: 'Créer une boutique avec l\'IA',
+    category: 'enterprise',
+    order: 15,
+    groupId: 'settings',
+    badge: 'ultra'
+  },
+
+  brandingInvoices: {
+    id: 'brandingInvoices',
+    name: 'Factures Personnalisées',
+    icon: 'FileText',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/dashboard/invoices',
+    features: ['custom-invoices', 'branding'],
+    description: 'Factures à votre image',
+    category: 'core',
+    order: 16,
+    groupId: 'settings',
+    badge: 'pro'
+  },
+
+  printOnDemand: {
+    id: 'printOnDemand',
+    name: 'Print On Demand',
+    icon: 'Printer',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/dashboard/pod',
+    features: ['pod', 'custom-products'],
+    description: 'Produits personnalisés',
+    category: 'product',
+    order: 17,
+    groupId: 'settings',
+    badge: 'pro'
+  },
+
+  // --- SOURCES GROUP ---
+
+  importConfig: {
+    id: 'importConfig',
+    name: 'Configuration Import',
+    icon: 'Settings',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/import/config',
+    features: ['import-config', 'field-mapping'],
+    description: 'Configuration des imports',
+    category: 'product',
+    order: 5,
+    groupId: 'sources'
+  },
+
+  supplierOrders: {
+    id: 'supplierOrders',
+    name: 'Commandes Fournisseurs',
+    icon: 'Package',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/suppliers/orders',
+    features: ['supplier-orders', 'purchase-orders'],
+    description: 'Gérer les commandes fournisseurs',
+    category: 'product',
+    order: 6,
+    groupId: 'sources'
+  },
+
+  supplierCatalog: {
+    id: 'supplierCatalog',
+    name: 'Catalogues Fournisseurs',
+    icon: 'Book',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/suppliers/catalog',
+    features: ['supplier-catalog', 'product-sync'],
+    description: 'Catalogues fournisseurs',
+    category: 'product',
+    order: 7,
+    groupId: 'sources'
   }
 };
 
