@@ -71,6 +71,7 @@ const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 const RepricingPage = lazy(() => import('@/pages/RepricingPage'));
 const AdsSpyPage = lazy(() => import('@/pages/AdsSpyPage'));
 const Reports = lazy(() => import('@/pages/Reports'));
+const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const SEOManagerPage = lazy(() => import('@/pages/SEOManager'));
 const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
 const RankTracker = lazy(() => import('@/pages/RankTracker'));
@@ -223,6 +224,9 @@ export function AppRoutes() {
             </AdminRoute>
           </ProtectedRoute>
         } />
+        
+        {/* Sitemap */}
+        <Route path="/sitemap" element={<ProtectedRoute><AppLayout><Sitemap /></AppLayout></ProtectedRoute>} />
         
         {/* 404 */}
         <Route path="*" element={<NotFoundPage />} />
