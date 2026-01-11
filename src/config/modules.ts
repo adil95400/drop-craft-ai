@@ -22,6 +22,7 @@ export type NavGroupId =
   | 'channels'    // Boutiques & Feeds (données sortantes)
   | 'orders'      // Commandes & Clients
   | 'insights'    // Analytics & Intelligence
+  | 'tools'       // Outils & Calculateurs
   | 'settings';   // Configuration & Admin
 
 export interface NavGroupConfig {
@@ -68,7 +69,8 @@ export const NAV_GROUPS: NavGroupConfig[] = [
   { id: 'channels', label: 'Canaux', icon: 'Store', order: 4 },
   { id: 'orders', label: 'Commandes', icon: 'ShoppingCart', order: 5 },
   { id: 'insights', label: 'Insights', icon: 'BarChart3', order: 6 },
-  { id: 'settings', label: 'Paramètres', icon: 'Settings', order: 7 },
+  { id: 'tools', label: 'Outils', icon: 'Wrench', order: 7 },
+  { id: 'settings', label: 'Paramètres', icon: 'Settings', order: 8 },
 ];
 
 // =============================================================================
@@ -589,22 +591,81 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'insights'
   },
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 7. TOOLS - Outils & Calculateurs (4 modules)
+  // ═══════════════════════════════════════════════════════════════════════════
+
   profitCalculator: {
     id: 'profitCalculator',
-    name: 'Calculateur Profit',
+    name: 'Calculateur Profits',
     icon: 'Calculator',
     enabled: true,
     minPlan: 'standard',
     route: '/tools/profit-calculator',
-    features: ['profit-calculation', 'margins'],
-    description: 'Calculer vos marges',
+    features: ['profit-calculation', 'margins', 'roi-analysis'],
+    description: 'Calculez vos marges et rentabilité',
     category: 'analytics',
-    order: 6,
-    groupId: 'insights'
+    order: 1,
+    groupId: 'tools'
+  },
+
+  inventoryPredictor: {
+    id: 'inventoryPredictor',
+    name: 'Prédicteur Stock IA',
+    icon: 'Brain',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/tools/inventory-predictor',
+    features: ['stock-predictions', 'restock-alerts', 'demand-forecast'],
+    description: 'Prédictions IA pour anticiper vos besoins en stock',
+    category: 'automation',
+    order: 2,
+    groupId: 'tools',
+    badge: 'pro',
+    subModules: [
+      { id: 'inventory-overview', name: 'Vue Stock', route: '/tools/inventory-predictor', icon: 'Package', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'inventory-predictions', name: 'Prédictions', route: '/tools/inventory-predictor#predictions', icon: 'TrendingUp', description: 'Prédictions IA', features: ['predictions'], order: 2 },
+      { id: 'inventory-alerts', name: 'Alertes', route: '/tools/inventory-predictor#alerts', icon: 'AlertTriangle', description: 'Alertes stock', features: ['alerts'], order: 3 },
+      { id: 'inventory-restock', name: 'Réapprovisionnement', route: '/tools/inventory-predictor#restock', icon: 'RefreshCw', description: 'Suggestions réappro', features: ['restock'], order: 4 },
+    ]
+  },
+
+  bulkContent: {
+    id: 'bulkContent',
+    name: 'Création en Masse',
+    icon: 'Images',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/tools/bulk-content',
+    features: ['bulk-videos', 'bulk-images', 'ai-generation'],
+    description: 'Génération en masse de vidéos et images IA',
+    category: 'automation',
+    order: 3,
+    groupId: 'tools',
+    badge: 'pro',
+    subModules: [
+      { id: 'bulk-videos', name: 'Vidéos en Masse', route: '/tools/bulk-content', icon: 'Video', description: 'Générer des vidéos TikTok', features: ['videos'], order: 1 },
+      { id: 'bulk-images', name: 'Images en Masse', route: '/tools/bulk-content#images', icon: 'Images', description: 'Générer des images produits', features: ['images'], order: 2 },
+      { id: 'bulk-jobs', name: 'Jobs en Cours', route: '/tools/bulk-content#jobs', icon: 'Activity', description: 'Suivi des générations', features: ['jobs'], order: 3 },
+    ]
+  },
+
+  schemaGenerator: {
+    id: 'schemaGenerator',
+    name: 'Générateur Schema',
+    icon: 'Code',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/tools/schema-generator',
+    features: ['schema-org', 'seo-markup', 'structured-data'],
+    description: 'Créez des données structurées Schema.org',
+    category: 'customer',
+    order: 4,
+    groupId: 'tools'
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 7. SETTINGS - Configuration & Administration (8 modules)
+  // 8. SETTINGS - Configuration & Administration (8 modules)
   // ═══════════════════════════════════════════════════════════════════════════
   
   settings: {
