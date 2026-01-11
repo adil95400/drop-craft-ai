@@ -222,36 +222,194 @@ export default function WinnersPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="trending">
-          <Card>
-            <CardHeader>
-              <CardTitle>Produits en Tendance</CardTitle>
-              <CardDescription>
-                Produits avec la plus forte croissance
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-center py-8">
-                Contenu à venir - Filtrez par tendance
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="trending" className="space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+              {filteredProducts
+                .sort((a, b) => parseFloat(b.trend.replace(/[+%]/g, '')) - parseFloat(a.trend.replace(/[+%]/g, '')))
+                .slice(0, 10)
+                .map((product) => (
+                  <Card key={product.id} className="hover:shadow-lg transition-shadow border-green-200 dark:border-green-800">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex gap-3">
+                          {product.image && (
+                            <img src={product.image} alt={product.name} className="w-16 h-16 rounded-lg object-cover" />
+                          )}
+                          <div className="space-y-1">
+                            <CardTitle className="text-lg">{product.name}</CardTitle>
+                            <CardDescription className="flex items-center gap-2">
+                              {product.category}
+                              <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">
+                                <TrendingUp className="h-3 w-3 mr-1" />
+                                {product.trend}
+                              </Badge>
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                          Tendance
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Croissance</p>
+                          <p className="font-bold text-green-500 text-lg flex items-center gap-1">
+                            <TrendingUp className="h-5 w-5" />
+                            {product.trend}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Score IA</p>
+                          <p className="font-bold">{product.score}/100</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Prix</p>
+                          <p className="font-bold">{product.avgPrice.toFixed(2)}€</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Profit</p>
+                          <p className="font-bold text-purple-500">{product.profit.toFixed(2)}€</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          className="flex-1" 
+                          size="sm"
+                          onClick={() => handleImport(product)}
+                          disabled={isImporting}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          {isImporting ? 'Import...' : 'Importer'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(product.name)}`, '_blank')}
+                        >
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Analyser
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              {filteredProducts.length === 0 && (
+                <div className="col-span-2 text-center py-12 text-muted-foreground">
+                  Aucun produit en tendance trouvé
+                </div>
+              )}
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="best">
-          <Card>
-            <CardHeader>
-              <CardTitle>Meilleurs Scores</CardTitle>
-              <CardDescription>
-                Produits avec les scores IA les plus élevés
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-center py-8">
-                Contenu à venir - Triés par score IA
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="best" className="space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+              {filteredProducts
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 10)
+                .map((product) => (
+                  <Card key={product.id} className="hover:shadow-lg transition-shadow border-yellow-200 dark:border-yellow-800">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex gap-3">
+                          {product.image && (
+                            <img src={product.image} alt={product.name} className="w-16 h-16 rounded-lg object-cover" />
+                          )}
+                          <div className="space-y-1">
+                            <CardTitle className="text-lg">{product.name}</CardTitle>
+                            <CardDescription className="flex items-center gap-2">
+                              {product.category}
+                              <Badge variant="outline" className="text-xs">{product.source}</Badge>
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-lg px-3">
+                          {product.score}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Score IA</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full" 
+                                style={{ width: `${product.score}%` }}
+                              />
+                            </div>
+                            <span className="font-bold">{product.score}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Tendance</p>
+                          <p className="font-bold text-green-500 flex items-center gap-1">
+                            <TrendingUp className="h-4 w-4" />
+                            {product.trend}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Prix</p>
+                          <p className="font-bold">{product.avgPrice.toFixed(2)}€</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Commandes</p>
+                          <p className="font-bold">{product.orders.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-medium">{product.rating.toFixed(1)}</span>
+                        </div>
+                        <Badge variant={product.competition === 'low' ? 'default' : 'secondary'}>
+                          Concurrence {product.competition === 'low' ? 'Faible' : product.competition === 'medium' ? 'Moyenne' : 'Élevée'}
+                        </Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          className="flex-1" 
+                          size="sm"
+                          onClick={() => handleImport(product)}
+                          disabled={isImporting}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          {isImporting ? 'Import...' : 'Importer'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(product.name)}`, '_blank')}
+                        >
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Analyser
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              {filteredProducts.length === 0 && (
+                <div className="col-span-2 text-center py-12 text-muted-foreground">
+                  Aucun produit trouvé
+                </div>
+              )}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
