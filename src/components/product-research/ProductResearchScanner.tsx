@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResearchHeader } from './ResearchHeader';
 import { ProductFilters, ProductFiltersState } from './ProductFilters';
@@ -11,70 +11,25 @@ import { SaturationAnalyzer } from './SaturationAnalyzer';
 import { TrendPredictor } from './TrendPredictor';
 import { WinnerProduct } from './WinnerProductCard';
 import { 
+  useRealProductResearch,
+  useFavoriteProducts,
+  useImportProduct,
+  useResearchStats
+} from '@/hooks/useRealProductResearch';
+import { 
   Search, 
   TrendingUp, 
   Zap, 
   Activity, 
-  Target,
   Sparkles,
-  Star
+  Star,
+  RefreshCw
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-
-// Mock data generator for demo
-const generateMockProducts = (count: number): WinnerProduct[] => {
-  const categories = ['Mode', 'Électronique', 'Maison', 'Beauté', 'Sport', 'Jouets'];
-  const platforms = ['TikTok', 'Facebook', 'Instagram', 'AliExpress', 'Amazon'];
-  const names = [
-    'LED Strip Lights RGB',
-    'Portable Blender Pro',
-    'Smart Watch Fitness',
-    'Massage Gun Mini',
-    'Phone Holder Car Mount',
-    'Wireless Earbuds V5',
-    'Ring Light Selfie',
-    'Yoga Mat Premium',
-    'Pet Hair Remover',
-    'Solar Power Bank',
-    'Neck Massager Electric',
-    'Mini Projector HD',
-    'Air Fryer Digital',
-    'Smart Bulb WiFi',
-    'Posture Corrector Pro'
-  ];
-
-  return Array.from({ length: count }, (_, i) => {
-    const price = Math.floor(Math.random() * 80) + 15;
-    const costPrice = price * (0.3 + Math.random() * 0.3);
-    
-    return {
-      id: `product-${i}-${Date.now()}`,
-      name: names[i % names.length],
-      image: `https://picsum.photos/400/400?random=${i}`,
-      category: categories[Math.floor(Math.random() * categories.length)],
-      platform: platforms[Math.floor(Math.random() * platforms.length)],
-      winnerScore: Math.floor(Math.random() * 40) + 60,
-      trendScore: Math.floor(Math.random() * 40) + 60,
-      engagementRate: Math.floor(Math.random() * 20) + 5,
-      estimatedProfit: price - costPrice,
-      price,
-      costPrice: Math.floor(costPrice),
-      views: Math.floor(Math.random() * 5000000) + 100000,
-      orders: Math.floor(Math.random() * 10000) + 500,
-      saturation: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
-      tags: ['viral', 'tendance', 'bestseller'].slice(0, Math.floor(Math.random() * 3) + 1),
-      createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      isFavorite: false,
-      supplierUrl: 'https://aliexpress.com'
-    };
-  });
-};
 
 export function ProductResearchScanner() {
   const [activeTab, setActiveTab] = useState('browse');
-  const [products, setProducts] = useState<WinnerProduct[]>([]);
-  const [favorites, setFavorites] = useState<WinnerProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState<ProductFiltersState>({
     search: '',
     category: 'all',
@@ -86,95 +41,90 @@ export function ProductResearchScanner() {
   });
   const { toast } = useToast();
 
-  // Load initial products
+  // Real data hooks
+  const { 
+    data: products = [], 
+    isLoading, 
+    refetch,
+    isFetching 
+  } = useRealProductResearch({
+    search: filters.search,
+    category: filters.category,
+    platform: filters.platform,
+    minScore: filters.minScore,
+    maxPrice: filters.priceRange[1],
+    saturation: filters.saturation,
+    sources: ['trends', 'amazon']
+  });
+
+  const { favorites, toggleFavorite, removeFavorite } = useFavoriteProducts();
+  const importMutation = useImportProduct();
+  const { data: stats } = useResearchStats();
+
+  // Local products state with favorite status
+  const [localProducts, setLocalProducts] = useState<WinnerProduct[]>([]);
+
+  // Sync products with favorites
   useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setProducts(generateMockProducts(12));
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    const syncedProducts = products.map(p => ({
+      ...p,
+      isFavorite: favorites.some(f => f.id === p.id)
+    }));
+    setLocalProducts(syncedProducts);
+  }, [products, favorites]);
 
-  // Filter products
+  // Filter and sort products
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      if (filters.search && !product.name.toLowerCase().includes(filters.search.toLowerCase())) {
-        return false;
-      }
-      if (filters.category !== 'all' && product.category.toLowerCase() !== filters.category) {
-        return false;
-      }
-      if (filters.platform !== 'all' && product.platform.toLowerCase() !== filters.platform) {
-        return false;
-      }
-      if (filters.saturation !== 'all' && product.saturation !== filters.saturation) {
-        return false;
-      }
-      if (product.winnerScore < filters.minScore) {
-        return false;
-      }
-      if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) {
-        return false;
-      }
-      return true;
-    }).sort((a, b) => {
-      switch (filters.sortBy) {
-        case 'score':
-          return b.winnerScore - a.winnerScore;
-        case 'trending':
-          return b.trendScore - a.trendScore;
-        case 'engagement':
-          return b.engagementRate - a.engagementRate;
-        case 'profit':
-          return (b.price - b.costPrice) - (a.price - a.costPrice);
-        case 'recent':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        default:
-          return 0;
-      }
-    });
-  }, [products, filters]);
-
-  const handleSearch = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setProducts(generateMockProducts(16));
-      setIsLoading(false);
-      toast({
-        title: "Recherche terminée",
-        description: `${16} produits trouvés`,
+    return localProducts
+      .filter(product => {
+        if (product.winnerScore < filters.minScore) return false;
+        if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        switch (filters.sortBy) {
+          case 'score':
+            return b.winnerScore - a.winnerScore;
+          case 'trending':
+            return b.trendScore - a.trendScore;
+          case 'engagement':
+            return b.engagementRate - a.engagementRate;
+          case 'profit':
+            return (b.price - b.costPrice) - (a.price - a.costPrice);
+          case 'recent':
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          default:
+            return 0;
+        }
       });
-    }, 1500);
+  }, [localProducts, filters]);
+
+  const handleSearch = async () => {
+    await refetch();
+    toast({
+      title: "Recherche terminée",
+      description: `${products.length} produits trouvés`,
+    });
   };
 
   const handleToggleFavorite = (id: string) => {
-    setProducts(prev => prev.map(p => 
-      p.id === id ? { ...p, isFavorite: !p.isFavorite } : p
-    ));
-    
-    const product = products.find(p => p.id === id);
+    const product = localProducts.find(p => p.id === id);
     if (product) {
-      if (product.isFavorite) {
-        setFavorites(prev => prev.filter(p => p.id !== id));
-        toast({ title: "Retiré des favoris" });
-      } else {
-        setFavorites(prev => [...prev, { ...product, isFavorite: true }]);
-        toast({ title: "Ajouté aux favoris", description: product.name });
-      }
+      toggleFavorite(product);
+      setLocalProducts(prev => prev.map(p => 
+        p.id === id ? { ...p, isFavorite: !p.isFavorite } : p
+      ));
     }
   };
 
-  const handleImport = (product: WinnerProduct) => {
-    toast({
-      title: "Produit importé",
-      description: `${product.name} a été ajouté à votre catalogue`,
-    });
+  const handleImport = async (product: WinnerProduct) => {
+    await importMutation.mutateAsync(product);
   };
 
   const handleViewDetails = (product: WinnerProduct) => {
     toast({
-      title: "Détails",
-      description: `Affichage des détails de ${product.name}`,
+      title: product.name,
+      description: `Score: ${product.winnerScore}% | Prix: ${product.price}€ | Profit: ${Math.round(product.estimatedProfit)}€`,
     });
   };
 
@@ -182,18 +132,14 @@ export function ProductResearchScanner() {
     setFilters(prev => ({ ...prev, category }));
   };
 
-  const handleLoadMore = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setProducts(prev => [...prev, ...generateMockProducts(8)]);
-      setIsLoading(false);
-    }, 1000);
+  const handleLoadMore = async () => {
+    await refetch();
   };
 
   return (
     <div className="space-y-6">
-      {/* Header with Stats */}
-      <ResearchHeader />
+      {/* Header with Real Stats */}
+      <ResearchHeader stats={stats} />
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -249,6 +195,7 @@ export function ProductResearchScanner() {
             filters={filters}
             onFiltersChange={setFilters}
             onSearch={handleSearch}
+            isSearching={isFetching}
           />
 
           {/* Quick Categories */}
@@ -256,6 +203,20 @@ export function ProductResearchScanner() {
             selectedCategory={filters.category}
             onSelectCategory={handleCategorySelect}
           />
+
+          {/* Refresh Button */}
+          <div className="flex justify-end">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+              Actualiser
+            </Button>
+          </div>
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -267,19 +228,14 @@ export function ProductResearchScanner() {
                 onImport={handleImport}
                 onViewDetails={handleViewDetails}
                 onLoadMore={handleLoadMore}
-                hasMore={true}
+                hasMore={filteredProducts.length >= 20}
               />
             </div>
             <div className="hidden lg:block">
               <div className="sticky top-6">
                 <FavoritesPanel
                   favorites={favorites}
-                  onRemoveFavorite={(id) => {
-                    setFavorites(prev => prev.filter(p => p.id !== id));
-                    setProducts(prev => prev.map(p => 
-                      p.id === id ? { ...p, isFavorite: false } : p
-                    ));
-                  }}
+                  onRemoveFavorite={removeFavorite}
                   onImport={handleImport}
                 />
               </div>
@@ -312,12 +268,7 @@ export function ProductResearchScanner() {
           <div className="lg:hidden">
             <FavoritesPanel
               favorites={favorites}
-              onRemoveFavorite={(id) => {
-                setFavorites(prev => prev.filter(p => p.id !== id));
-                setProducts(prev => prev.map(p => 
-                  p.id === id ? { ...p, isFavorite: false } : p
-                ));
-              }}
+              onRemoveFavorite={removeFavorite}
               onImport={handleImport}
             />
           </div>

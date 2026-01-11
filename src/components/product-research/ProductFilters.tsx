@@ -42,6 +42,7 @@ interface ProductFiltersProps {
   filters: ProductFiltersState;
   onFiltersChange: (filters: ProductFiltersState) => void;
   onSearch: () => void;
+  isSearching?: boolean;
 }
 
 const categories = [
@@ -82,7 +83,7 @@ const saturationOptions = [
   { value: 'high', label: '🔴 Élevée' },
 ];
 
-export function ProductFilters({ filters, onFiltersChange, onSearch }: ProductFiltersProps) {
+export function ProductFilters({ filters, onFiltersChange, onSearch, isSearching = false }: ProductFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const updateFilter = <K extends keyof ProductFiltersState>(
@@ -269,9 +270,9 @@ export function ProductFilters({ filters, onFiltersChange, onSearch }: ProductFi
             </SheetContent>
           </Sheet>
 
-          <Button className="h-11 gap-2" onClick={onSearch}>
-            <TrendingUp className="w-4 h-4" />
-            Rechercher
+          <Button className="h-11 gap-2" onClick={onSearch} disabled={isSearching}>
+            <TrendingUp className={`w-4 h-4 ${isSearching ? 'animate-spin' : ''}`} />
+            {isSearching ? 'Recherche...' : 'Rechercher'}
           </Button>
         </div>
       </div>
