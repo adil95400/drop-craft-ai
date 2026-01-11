@@ -4,10 +4,12 @@ import { SecureInput } from '@/components/common/SecureInput';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, User, Building2 } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
+import { FacebookAuthButton } from './FacebookAuthButton';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 export const AuthInterface = () => {
@@ -222,7 +224,10 @@ export const AuthInterface = () => {
                     </div>
                   </div>
 
-                  <GoogleAuthButton mode="signin" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <GoogleAuthButton mode="signin" />
+                    <FacebookAuthButton mode="signin" />
+                  </div>
                 </form>
 
                 <div className="text-center">
@@ -359,7 +364,10 @@ export const AuthInterface = () => {
                     </div>
                   </div>
 
-                  <GoogleAuthButton mode="signup" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <GoogleAuthButton mode="signup" />
+                    <FacebookAuthButton mode="signup" />
+                  </div>
                 </form>
               </TabsContent>
             </Tabs>

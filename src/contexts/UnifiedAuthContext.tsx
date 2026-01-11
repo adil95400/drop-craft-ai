@@ -293,9 +293,19 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return profile.plan || 'standard';
   }, [profile]);
 
-  // Optional methods that can be implemented later
+  // OAuth methods
   const signInWithGoogle = async () => {
-    return { error: new Error('Google sign-in not implemented yet') };
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+    return { error };
   };
 
   const getUserSessions = async () => {
