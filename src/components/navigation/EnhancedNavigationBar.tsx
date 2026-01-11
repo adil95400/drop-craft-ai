@@ -1,6 +1,5 @@
 import { memo } from 'react'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import { ModuleNavigationMenu } from './ModuleNavigationMenu'
 import { QuickNavigationBar } from './QuickNavigationBar'
 import { NavigationBreadcrumbs } from './NavigationBreadcrumbs'
 import { MobileNavigationMenu } from './MobileNavigationMenu'
@@ -9,14 +8,12 @@ import { cn } from '@/lib/utils'
 interface EnhancedNavigationBarProps {
   className?: string
   showBreadcrumbs?: boolean
-  showModuleMenu?: boolean
   showQuickSearch?: boolean
 }
 
 function EnhancedNavigationBarComponent({
   className,
   showBreadcrumbs = true,
-  showModuleMenu = true,
   showQuickSearch = true,
 }: EnhancedNavigationBarProps) {
   return (
@@ -26,35 +23,28 @@ function EnhancedNavigationBarComponent({
         className
       )}
     >
-      {/* Main navigation row */}
-      <div className="flex h-14 items-center gap-4 px-4">
-        {/* Left: Mobile hamburger menu (visible only on mobile) */}
-        <div className="flex items-center gap-2 md:hidden">
-          {showModuleMenu && <MobileNavigationMenu />}
+      {/* Main navigation row - simplified */}
+      <div className="flex h-12 items-center gap-3 px-4">
+        {/* Mobile: Hamburger menu */}
+        <div className="flex items-center md:hidden">
+          <MobileNavigationMenu />
         </div>
 
-        {/* Left: Sidebar trigger (visible only on desktop) */}
+        {/* Desktop: Sidebar trigger */}
         <SidebarTrigger className="-ml-1 hidden md:flex shrink-0" />
 
-        {/* Center: Module navigation menu (desktop only) */}
-        {showModuleMenu && (
-          <div className="hidden md:flex flex-1 justify-center">
-            <ModuleNavigationMenu />
+        {/* Breadcrumbs - inline on desktop */}
+        {showBreadcrumbs && (
+          <div className="hidden md:flex flex-1 items-center min-w-0">
+            <NavigationBreadcrumbs />
           </div>
         )}
 
-        {/* Right: Quick search (hidden on small screens) */}
+        {/* Right: Quick search */}
         <div className="flex items-center gap-2 ml-auto">
           {showQuickSearch && <QuickNavigationBar className="hidden sm:flex" />}
         </div>
       </div>
-
-      {/* Breadcrumbs row (optional) */}
-      {showBreadcrumbs && (
-        <div className="hidden md:flex h-10 items-center border-t bg-muted/30 px-4">
-          <NavigationBreadcrumbs />
-        </div>
-      )}
     </header>
   )
 }
@@ -63,7 +53,6 @@ export const EnhancedNavigationBar = memo(
   EnhancedNavigationBarComponent,
   (prevProps, nextProps) =>
     prevProps.showBreadcrumbs === nextProps.showBreadcrumbs &&
-    prevProps.showModuleMenu === nextProps.showModuleMenu &&
     prevProps.showQuickSearch === nextProps.showQuickSearch &&
     prevProps.className === nextProps.className
 )
