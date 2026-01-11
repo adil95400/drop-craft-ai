@@ -63,26 +63,41 @@ export interface Shipment {
   updated_at: string;
 }
 
+// Default carriers (fallback when table is empty)
+const defaultCarriers: Carrier[] = [
+  { id: 'colissimo', user_id: '', carrier_code: 'colissimo', name: 'Colissimo', is_active: true, tracking_url_template: 'https://www.laposte.fr/outils/suivre-vos-envois?code={tracking}', created_at: '', updated_at: '' },
+  { id: 'chronopost', user_id: '', carrier_code: 'chronopost', name: 'Chronopost', is_active: true, tracking_url_template: 'https://www.chronopost.fr/tracking-no-cms/suivi-page?liession={tracking}', created_at: '', updated_at: '' },
+  { id: 'dhl', user_id: '', carrier_code: 'dhl', name: 'DHL Express', is_active: true, tracking_url_template: 'https://www.dhl.com/fr-fr/home/tracking.html?tracking-id={tracking}', created_at: '', updated_at: '' },
+  { id: 'ups', user_id: '', carrier_code: 'ups', name: 'UPS', is_active: true, tracking_url_template: 'https://www.ups.com/track?tracknum={tracking}', created_at: '', updated_at: '' },
+  { id: 'fedex', user_id: '', carrier_code: 'fedex', name: 'FedEx', is_active: true, tracking_url_template: 'https://www.fedex.com/fedextrack/?trknbr={tracking}', created_at: '', updated_at: '' },
+  { id: 'mondial_relay', user_id: '', carrier_code: 'mondial_relay', name: 'Mondial Relay', is_active: true, tracking_url_template: 'https://www.mondialrelay.fr/suivi-de-colis/?numeroExpedition={tracking}', created_at: '', updated_at: '' },
+];
+
 // Carriers
 export function useCarriers() {
   return useQuery({
     queryKey: ['fulfillment-carriers'],
     queryFn: async (): Promise<Carrier[]> => {
       const user = await getCurrentUser();
-      if (!user) return [];
+      if (!user) return defaultCarriers;
       
-      const { data, error } = await supabase
-        .from('carriers')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('name', { ascending: true });
-      
-      if (error) {
-        console.error('Error fetching carriers:', error);
-        return [];
+      try {
+        const { data, error } = await supabase
+          .from('carriers')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('name', { ascending: true });
+        
+        if (error) {
+          console.warn('Carriers table not available, using defaults:', error.message);
+          return defaultCarriers;
+        }
+        
+        return data && data.length > 0 ? (data as Carrier[]) : defaultCarriers;
+      } catch (e) {
+        console.warn('Error fetching carriers, using defaults');
+        return defaultCarriers;
       }
-      
-      return (data || []) as Carrier[];
     }
   });
 }
@@ -190,33 +205,38 @@ export function useShipments(status?: string) {
       const user = await getCurrentUser();
       if (!user) return [];
       
-      let query = supabase
-        .from('orders')
-        .select('id, user_id, carrier, tracking_number, fulfillment_status, shipping_cost, created_at, updated_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (status) {
-        query = query.eq('fulfillment_status', status);
-      }
-      
-      const { data, error } = await query;
-      if (error) {
-        console.error('Shipments error:', error);
+      try {
+        let query = supabase
+          .from('orders')
+          .select('id, user_id, carrier, tracking_number, status, shipping_cost, created_at, updated_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (status) {
+          query = query.eq('status', status);
+        }
+        
+        const { data, error } = await query;
+        if (error) {
+          console.warn('Shipments query error:', error.message);
+          return [];
+        }
+        
+        return (data || []).map((order: Record<string, unknown>) => ({
+          id: order.id as string,
+          user_id: order.user_id as string,
+          order_id: order.id as string,
+          carrier_name: (order.carrier as string) || 'Non défini',
+          tracking_number: order.tracking_number as string | undefined,
+          status: (order.status as string) || 'pending',
+          shipping_cost: order.shipping_cost as number | undefined,
+          created_at: order.created_at as string,
+          updated_at: order.updated_at as string
+        }));
+      } catch (e) {
+        console.warn('Error fetching shipments');
         return [];
       }
-      
-      return (data || []).map((order: Record<string, unknown>) => ({
-        id: order.id as string,
-        user_id: order.user_id as string,
-        order_id: order.id as string,
-        carrier_name: (order.carrier as string) || 'Unknown',
-        tracking_number: order.tracking_number as string | undefined,
-        status: (order.fulfillment_status as string) || 'pending',
-        shipping_cost: order.shipping_cost as number | undefined,
-        created_at: order.created_at as string,
-        updated_at: order.updated_at as string
-      }));
     }
   });
 }
@@ -235,7 +255,7 @@ export function useCreateShipment() {
           .update({
             carrier: shipment.carrier_name,
             tracking_number: shipment.tracking_number,
-            fulfillment_status: 'shipped',
+            status: 'shipped',
             shipping_cost: shipment.shipping_cost
           })
           .eq('id', shipment.order_id)
@@ -401,8 +421,7 @@ export function useFulfillmentStats() {
   return useQuery({
     queryKey: ['fulfillment-stats'],
     queryFn: async () => {
-      const user = await getCurrentUser();
-      if (!user) return {
+      const defaultStats = {
         total_shipments: 0,
         in_transit: 0,
         delivered: 0,
@@ -411,33 +430,41 @@ export function useFulfillmentStats() {
         delivery_rate: 0
       };
       
-      // Get order stats
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('fulfillment_status, shipping_cost')
-        .eq('user_id', user.id);
+      const user = await getCurrentUser();
+      if (!user) return defaultStats;
       
-      // Get pending returns count (status = 'requested' or 'pending')
-      const { count: pendingReturns } = await supabase
-        .from('returns_rma')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .in('status', ['pending', 'requested']);
-      
-      const totalShipments = orders?.length || 0;
-      const inTransit = orders?.filter(o => o.fulfillment_status === 'shipped').length || 0;
-      const delivered = orders?.filter(o => o.fulfillment_status === 'delivered').length || 0;
-      const totalShippingCost = orders?.reduce((sum, o) => sum + (o.shipping_cost || 0), 0) || 0;
-      const deliveryRate = totalShipments ? (delivered / totalShipments) * 100 : 0;
-      
-      return {
-        total_shipments: totalShipments,
-        in_transit: inTransit,
-        delivered: delivered,
-        pending_returns: pendingReturns || 0,
-        total_shipping_cost: totalShippingCost,
-        delivery_rate: Math.round(deliveryRate * 100) / 100
-      };
+      try {
+        // Get order stats
+        const { data: orders } = await supabase
+          .from('orders')
+          .select('status, shipping_cost')
+          .eq('user_id', user.id);
+        
+        // Get pending returns count (status = 'requested' or 'pending')
+        const { count: pendingReturns } = await supabase
+          .from('returns_rma')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .in('status', ['pending', 'requested']);
+        
+        const totalShipments = orders?.length || 0;
+        const inTransit = orders?.filter(o => o.status === 'shipped').length || 0;
+        const delivered = orders?.filter(o => o.status === 'delivered').length || 0;
+        const totalShippingCost = orders?.reduce((sum, o) => sum + (o.shipping_cost || 0), 0) || 0;
+        const deliveryRate = totalShipments ? (delivered / totalShipments) * 100 : 0;
+        
+        return {
+          total_shipments: totalShipments,
+          in_transit: inTransit,
+          delivered: delivered,
+          pending_returns: pendingReturns || 0,
+          total_shipping_cost: totalShippingCost,
+          delivery_rate: Math.round(deliveryRate * 100) / 100
+        };
+      } catch (e) {
+        console.warn('Error fetching fulfillment stats');
+        return defaultStats;
+      }
     }
   });
 }
