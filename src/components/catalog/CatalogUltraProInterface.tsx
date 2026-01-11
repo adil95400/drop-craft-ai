@@ -346,14 +346,14 @@ export function CatalogUltraProInterface() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
                 <label className="text-sm font-medium mb-2 block">Catégorie</label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Select value={selectedCategory || "all"} onValueChange={(v) => setSelectedCategory(v === "all" ? "" : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Toutes les catégories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes les catégories</SelectItem>
+                    <SelectItem value="all">Toutes les catégories</SelectItem>
                     {categories.map((category: string) => (
-                      <SelectItem key={category} value={category}>
+                      <SelectItem key={category} value={category || `cat_${Math.random()}`}>
                         {category}
                       </SelectItem>
                     ))}
@@ -363,14 +363,14 @@ export function CatalogUltraProInterface() {
 
               <div>
                 <label className="text-sm font-medium mb-2 block">Fournisseur</label>
-                <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
+                <Select value={selectedSupplier || "all"} onValueChange={(v) => setSelectedSupplier(v === "all" ? "" : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Tous les fournisseurs" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les fournisseurs</SelectItem>
+                    <SelectItem value="all">Tous les fournisseurs</SelectItem>
                     {suppliers.map((supplier) => (
-                      <SelectItem key={typeof supplier === 'string' ? supplier : supplier.id} value={typeof supplier === 'string' ? supplier : supplier.id}>
+                      <SelectItem key={typeof supplier === 'string' ? supplier : supplier.id} value={typeof supplier === 'string' ? supplier || `sup_${Math.random()}` : supplier.id || `sup_${Math.random()}`}>
                         {typeof supplier === 'string' ? supplier : supplier.name}
                       </SelectItem>
                     ))}

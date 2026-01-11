@@ -106,16 +106,16 @@ export const AdvancedFilters = ({
           <div>
             <Label>Catégorie</Label>
             <Select 
-              value={localFilters.category || ''} 
-              onValueChange={(value) => updateFilter('category', value)}
+              value={localFilters.category || 'all'} 
+              onValueChange={(value) => updateFilter('category', value === 'all' ? '' : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Toutes les catégories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes les catégories</SelectItem>
+                <SelectItem value="all">Toutes les catégories</SelectItem>
                 {categories.map(category => (
-                  <SelectItem key={category} value={category}>
+                  <SelectItem key={category} value={category || `cat_${Math.random()}`}>
                     {category}
                   </SelectItem>
                 ))}
@@ -126,16 +126,16 @@ export const AdvancedFilters = ({
           <div>
             <Label>Fournisseur</Label>
             <Select 
-              value={localFilters.supplier || ''} 
-              onValueChange={(value) => updateFilter('supplier', value)}
+              value={localFilters.supplier || 'all'} 
+              onValueChange={(value) => updateFilter('supplier', value === 'all' ? '' : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Tous les fournisseurs" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les fournisseurs</SelectItem>
+                <SelectItem value="all">Tous les fournisseurs</SelectItem>
                 {suppliers.map(supplier => (
-                  <SelectItem key={supplier.id} value={supplier.id}>
+                  <SelectItem key={supplier.id} value={supplier.id || `sup_${Math.random()}`}>
                     {supplier.name}
                   </SelectItem>
                 ))}
