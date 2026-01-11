@@ -1,13 +1,87 @@
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Eye, Activity, AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Eye, Activity, AlertTriangle, CheckCircle, XCircle, Clock, Plus, Loader2, Bell } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
+import { useToast } from '@/hooks/use-toast';
+
+interface AlertRule {
+  id: number;
+  name: string;
+  enabled: boolean;
+  channels: string[];
+}
 
 export default function ObservabilityPage() {
+  const { toast } = useToast();
+  const [showCreateAlertModal, setShowCreateAlertModal] = useState(false);
+  const [isCreatingAlert, setIsCreatingAlert] = useState(false);
+  
+  const [alertRules, setAlertRules] = useState<AlertRule[]>([
+    { id: 1, name: 'CPU > 80%', enabled: true, channels: ['Email', 'Slack'] },
+    { id: 2, name: 'Mémoire > 90%', enabled: true, channels: ['Email'] },
+    { id: 3, name: 'Erreur Rate > 1%', enabled: false, channels: ['Email', 'SMS'] },
+  ]);
+
+  const [newAlert, setNewAlert] = useState({
+    name: '',
+    metric: 'cpu',
+    threshold: '',
+    operator: 'greater',
+    channels: ['Email']
+  });
+
+  const handleToggleAlert = (alertId: number) => {
+    setAlertRules(rules => rules.map(rule => 
+      rule.id === alertId ? { ...rule, enabled: !rule.enabled } : rule
+    ));
+    const rule = alertRules.find(r => r.id === alertId);
+    toast({
+      title: rule?.enabled ? 'Alerte désactivée' : 'Alerte activée',
+      description: `"${rule?.name}" a été ${rule?.enabled ? 'désactivée' : 'activée'}`,
+    });
+  };
+
+  const handleCreateAlert = async () => {
+    if (!newAlert.name || !newAlert.threshold) {
+      toast({
+        title: "Erreur",
+        description: "Le nom et le seuil sont requis",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsCreatingAlert(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const alert: AlertRule = {
+      id: Date.now(),
+      name: newAlert.name,
+      enabled: true,
+      channels: newAlert.channels
+    };
+
+    setAlertRules([...alertRules, alert]);
+    setShowCreateAlertModal(false);
+    setNewAlert({ name: '', metric: 'cpu', threshold: '', operator: 'greater', channels: ['Email'] });
+    setIsCreatingAlert(false);
+
+    toast({
+      title: "Alerte créée",
+      description: `L'alerte "${alert.name}" a été créée avec succès`,
+    });
+  };
+
   return (
     <>
       <Helmet>
@@ -192,7 +266,11 @@ export default function ObservabilityPage() {
                     '[ERROR] 2024-01-15 10:27:18 - Database connection timeout',
                     '[INFO] 2024-01-15 10:26:42 - Cache invalidation completed',
                   ].map((log, index) => (
-                    <div key={index} className="p-2 bg-muted/50 rounded border-l-4 border-primary">
+                    <div key={index} className={`p-2 rounded border-l-4 ${
+                      log.includes('[ERROR]') ? 'bg-red-50 border-red-500' :
+                      log.includes('[WARN]') ? 'bg-orange-50 border-orange-500' :
+                      'bg-muted/50 border-primary'
+                    }`}>
                       {log}
                     </div>
                   ))}
@@ -204,37 +282,145 @@ export default function ObservabilityPage() {
           <TabsContent value="alerts" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Configuration des Alertes</CardTitle>
-                <CardDescription>Gérer les seuils et notifications d'alerte</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Configuration des Alertes</CardTitle>
+                    <CardDescription>Gérer les seuils et notifications d'alerte</CardDescription>
+                  </div>
+                  <Button onClick={() => setShowCreateAlertModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Créer Nouvelle Alerte
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <Button>Créer Nouvelle Alerte</Button>
-                  <div className="space-y-3">
-                    {[
-                      { name: 'CPU > 80%', enabled: true, channels: ['Email', 'Slack'] },
-                      { name: 'Mémoire > 90%', enabled: true, channels: ['Email'] },
-                      { name: 'Erreur Rate > 1%', enabled: false, channels: ['Email', 'SMS'] },
-                    ].map((rule, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="space-y-3">
+                  {alertRules.map((rule) => (
+                    <div key={rule.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Bell className={`h-4 w-4 ${rule.enabled ? 'text-green-500' : 'text-muted-foreground'}`} />
                         <div>
                           <p className="font-medium">{rule.name}</p>
                           <p className="text-sm text-muted-foreground">
                             Canaux: {rule.channels.join(', ')}
                           </p>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-3">
                         <Badge variant={rule.enabled ? 'default' : 'secondary'}>
                           {rule.enabled ? 'Activé' : 'Désactivé'}
                         </Badge>
+                        <Switch 
+                          checked={rule.enabled} 
+                          onCheckedChange={() => handleToggleAlert(rule.id)}
+                        />
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Create Alert Modal */}
+      <Dialog open={showCreateAlertModal} onOpenChange={setShowCreateAlertModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Créer une Nouvelle Alerte</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nom de l'alerte</Label>
+              <Input 
+                placeholder="Ex: CPU > 80%"
+                value={newAlert.name}
+                onChange={(e) => setNewAlert({...newAlert, name: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Métrique</Label>
+                <Select 
+                  value={newAlert.metric} 
+                  onValueChange={(v) => setNewAlert({...newAlert, metric: v})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cpu">CPU</SelectItem>
+                    <SelectItem value="memory">Mémoire</SelectItem>
+                    <SelectItem value="disk">Disque</SelectItem>
+                    <SelectItem value="error_rate">Taux d'erreur</SelectItem>
+                    <SelectItem value="latency">Latence</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Opérateur</Label>
+                <Select 
+                  value={newAlert.operator} 
+                  onValueChange={(v) => setNewAlert({...newAlert, operator: v})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="greater">Supérieur à</SelectItem>
+                    <SelectItem value="less">Inférieur à</SelectItem>
+                    <SelectItem value="equals">Égal à</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Seuil (%)</Label>
+              <Input 
+                type="number"
+                placeholder="80"
+                value={newAlert.threshold}
+                onChange={(e) => setNewAlert({...newAlert, threshold: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Canaux de notification</Label>
+              <div className="flex gap-2">
+                {['Email', 'Slack', 'SMS'].map((channel) => (
+                  <Badge 
+                    key={channel}
+                    variant={newAlert.channels.includes(channel) ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setNewAlert({
+                        ...newAlert,
+                        channels: newAlert.channels.includes(channel)
+                          ? newAlert.channels.filter(c => c !== channel)
+                          : [...newAlert.channels, channel]
+                      });
+                    }}
+                  >
+                    {channel}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateAlertModal(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleCreateAlert} disabled={isCreatingAlert}>
+              {isCreatingAlert ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Création...</>
+              ) : (
+                'Créer l\'alerte'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

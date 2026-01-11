@@ -5,12 +5,36 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Star, DollarSign, Truck, Award, TrendingUp } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Search, Star, DollarSign, Truck, Award, TrendingUp, Loader2, ExternalLink, Mail } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+
+interface SourcingResult {
+  supplier: string;
+  rating: number;
+  orders: number;
+  price: number;
+  shipping: string;
+  shippingCost: number;
+  moq: number;
+  samples: boolean;
+  verified: boolean;
+  advantages: string[];
+}
 
 export default function ProductSourcingAssistant() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
+  const [additionalDetails, setAdditionalDetails] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [sortBy, setSortBy] = useState<'price' | 'rating' | 'orders'>('price');
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<SourcingResult | null>(null);
+  const [contactMessage, setContactMessage] = useState('');
+  const [isSendingContact, setIsSendingContact] = useState(false);
 
-  const sourcingResults = [
+  const [sourcingResults, setSourcingResults] = useState<SourcingResult[]>([
     {
       supplier: 'AliExpress - Premium Supplier',
       rating: 4.8,
@@ -47,13 +71,76 @@ export default function ProductSourcingAssistant() {
       verified: true,
       advantages: ['Free shipping', 'No MOQ', 'Quality control']
     }
-  ];
+  ]);
 
   const recentSourcings = [
     { product: 'Wireless Earbuds', status: 'completed', suppliers: 5, bestPrice: 7.50 },
     { product: 'Smart Watch Band', status: 'pending', suppliers: 3, bestPrice: 4.20 },
     { product: 'Phone Case', status: 'completed', suppliers: 8, bestPrice: 2.80 }
   ];
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "Recherche requise",
+        description: "Veuillez entrer un produit à rechercher",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSearching(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    toast({
+      title: "Recherche terminée",
+      description: `${sourcingResults.length} fournisseurs trouvés pour "${searchQuery}"`,
+    });
+    setIsSearching(false);
+  };
+
+  const handleContactSupplier = (supplier: SourcingResult) => {
+    setSelectedSupplier(supplier);
+    setContactMessage(`Bonjour,\n\nJe suis intéressé par vos produits "${searchQuery}".\n\nPouvez-vous me fournir plus d'informations sur :\n- Prix pour différentes quantités\n- Options de personnalisation\n- Délais de livraison\n\nCordialement`);
+    setShowContactModal(true);
+  };
+
+  const handleSendContact = async () => {
+    setIsSendingContact(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    toast({
+      title: "Message envoyé",
+      description: `Votre demande a été envoyée à ${selectedSupplier?.supplier}`,
+    });
+    
+    setIsSendingContact(false);
+    setShowContactModal(false);
+    setContactMessage('');
+    setSelectedSupplier(null);
+  };
+
+  const handleViewSourcing = (productName: string) => {
+    setSearchQuery(productName);
+    toast({
+      title: "Recherche chargée",
+      description: `Résultats pour "${productName}" affichés`,
+    });
+  };
+
+  const handleSort = (type: 'price' | 'rating' | 'orders') => {
+    setSortBy(type);
+    const sorted = [...sourcingResults].sort((a, b) => {
+      if (type === 'price') return a.price - b.price;
+      if (type === 'rating') return b.rating - a.rating;
+      return b.orders - a.orders;
+    });
+    setSourcingResults(sorted);
+    toast({
+      title: "Tri appliqué",
+      description: `Résultats triés par ${type === 'price' ? 'prix' : type === 'rating' ? 'note' : 'commandes'}`,
+    });
+  };
 
   return (
     <>
@@ -85,23 +172,37 @@ export default function ProductSourcingAssistant() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1"
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
-              <Button>
-                <Search className="h-4 w-4 mr-2" />
-                Rechercher
+              <Button onClick={handleSearch} disabled={isSearching}>
+                {isSearching ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Recherche...</>
+                ) : (
+                  <><Search className="h-4 w-4 mr-2" /> Rechercher</>
+                )}
               </Button>
             </div>
             
             <Textarea
               placeholder="Détails additionnels: couleurs souhaitées, spécifications techniques, quantité estimée..."
               rows={3}
+              value={additionalDetails}
+              onChange={(e) => setAdditionalDetails(e.target.value)}
             />
 
             <div className="flex gap-2 flex-wrap">
-              <Badge variant="outline">MOQ &lt; 10</Badge>
-              <Badge variant="outline">Fast Shipping</Badge>
-              <Badge variant="outline">Free Samples</Badge>
-              <Badge variant="outline">Rating &gt; 4.5</Badge>
+              <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                MOQ &lt; 10
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                Fast Shipping
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                Free Samples
+              </Badge>
+              <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                Rating &gt; 4.5
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -110,9 +211,29 @@ export default function ProductSourcingAssistant() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Résultats du Sourcing</h2>
-            <Button variant="outline">
-              Trier par Prix
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant={sortBy === 'price' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => handleSort('price')}
+              >
+                Prix
+              </Button>
+              <Button 
+                variant={sortBy === 'rating' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => handleSort('rating')}
+              >
+                Note
+              </Button>
+              <Button 
+                variant={sortBy === 'orders' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => handleSort('orders')}
+              >
+                Commandes
+              </Button>
+            </div>
           </div>
 
           {sourcingResults.map((result, idx) => (
@@ -151,7 +272,10 @@ export default function ProductSourcingAssistant() {
                   <div className="text-right">
                     <div className="text-3xl font-bold mb-1">${result.price}</div>
                     <div className="text-sm text-muted-foreground mb-3">par unité</div>
-                    <Button>Contacter Fournisseur</Button>
+                    <Button onClick={() => handleContactSupplier(result)}>
+                      <Mail className="h-4 w-4 mr-2" />
+                      Contacter
+                    </Button>
                   </div>
                 </div>
 
@@ -208,7 +332,14 @@ export default function ProductSourcingAssistant() {
                     <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>
                       {item.status === 'completed' ? 'Complété' : 'En attente'}
                     </Badge>
-                    <Button size="sm" variant="outline">Voir</Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleViewSourcing(item.product)}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Voir
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -242,6 +373,37 @@ export default function ProductSourcingAssistant() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Contact Supplier Modal */}
+      <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Contacter {selectedSupplier?.supplier}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Votre message</Label>
+              <Textarea
+                rows={8}
+                value={contactMessage}
+                onChange={(e) => setContactMessage(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowContactModal(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendContact} disabled={isSendingContact}>
+              {isSendingContact ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Envoi...</>
+              ) : (
+                <><Mail className="h-4 w-4 mr-2" /> Envoyer</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
