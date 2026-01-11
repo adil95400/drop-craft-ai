@@ -7,15 +7,66 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
 import { 
   TrendingUp, TrendingDown, DollarSign, AlertTriangle, 
-  Settings, Play, Pause, History, Target 
+  Settings, Play, Pause, History, Target, Plus, Loader2, Check
 } from 'lucide-react';
 
-export default function PriceMonitoringPage() {
-  const [autoPricingEnabled, setAutoPricingEnabled] = useState(false);
+interface PriceRule {
+  id: number;
+  name: string;
+  description: string;
+  status: 'active' | 'paused';
+  products: number;
+  savings: string;
+}
 
-  const priceRules = [
+interface MonitoredProduct {
+  id: number;
+  name: string;
+  myPrice: number;
+  competitors: { name: string; price: number; change: number }[];
+  recommended: number;
+  lastUpdate: string;
+}
+
+interface PriceHistoryItem {
+  id: number;
+  product: string;
+  oldPrice: number;
+  newPrice: number;
+  reason: string;
+  date: string;
+}
+
+export default function PriceMonitoringPage() {
+  const { toast } = useToast();
+  const [autoPricingEnabled, setAutoPricingEnabled] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showNewRuleModal, setShowNewRuleModal] = useState(false);
+  const [applyingPrice, setApplyingPrice] = useState<number | null>(null);
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  // Form states
+  const [settings, setSettings] = useState({
+    checkFrequency: 15,
+    minMargin: 20,
+    maxMargin: 60,
+    notifications: true
+  });
+
+  const [newRule, setNewRule] = useState({
+    name: '',
+    type: 'competitive',
+    margin: '',
+    description: ''
+  });
+
+  const [priceRules, setPriceRules] = useState<PriceRule[]>([
     {
       id: 1,
       name: 'Competitive Pricing',
@@ -40,9 +91,9 @@ export default function PriceMonitoringPage() {
       products: 67,
       savings: '+15%'
     }
-  ];
+  ]);
 
-  const monitoredProducts = [
+  const [monitoredProducts, setMonitoredProducts] = useState<MonitoredProduct[]>([
     {
       id: 1,
       name: 'Wireless Headphones Pro',
@@ -67,7 +118,79 @@ export default function PriceMonitoringPage() {
       recommended: 147.99,
       lastUpdate: '5 min ago'
     }
-  ];
+  ]);
+
+  const [priceHistory] = useState<PriceHistoryItem[]>([
+    { id: 1, product: 'Wireless Headphones Pro', oldPrice: 82.99, newPrice: 79.99, reason: 'Concurrence', date: '2024-01-15 14:30' },
+    { id: 2, product: 'Smart Watch X5', oldPrice: 155.00, newPrice: 149.99, reason: 'Marge optimisée', date: '2024-01-15 12:15' },
+    { id: 3, product: 'Bluetooth Speaker', oldPrice: 45.00, newPrice: 42.99, reason: 'Stock élevé', date: '2024-01-15 10:00' },
+    { id: 4, product: 'USB-C Hub', oldPrice: 28.00, newPrice: 29.99, reason: 'Rupture concurrence', date: '2024-01-14 18:45' },
+  ]);
+
+  const handleApplyPrice = async (productId: number, recommendedPrice: number) => {
+    setApplyingPrice(productId);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setMonitoredProducts(products => 
+      products.map(p => 
+        p.id === productId ? { ...p, myPrice: recommendedPrice } : p
+      )
+    );
+    
+    toast({
+      title: "Prix mis à jour",
+      description: `Le prix a été ajusté à $${recommendedPrice}`,
+    });
+    setApplyingPrice(null);
+  };
+
+  const handleToggleRule = (ruleId: number) => {
+    setPriceRules(rules => rules.map(rule => 
+      rule.id === ruleId 
+        ? { ...rule, status: rule.status === 'active' ? 'paused' : 'active' }
+        : rule
+    ));
+    const rule = priceRules.find(r => r.id === ruleId);
+    toast({ 
+      title: rule?.status === 'active' ? 'Règle mise en pause' : 'Règle activée',
+      description: `"${rule?.name}" a été ${rule?.status === 'active' ? 'mise en pause' : 'activée'}`
+    });
+  };
+
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast({
+      title: "Paramètres enregistrés",
+      description: "Les paramètres de monitoring ont été mis à jour",
+    });
+    setSavingSettings(false);
+  };
+
+  const handleCreateRule = async () => {
+    if (!newRule.name) {
+      toast({ title: "Erreur", description: "Le nom de la règle est requis", variant: "destructive" });
+      return;
+    }
+    
+    const rule: PriceRule = {
+      id: Date.now(),
+      name: newRule.name,
+      description: newRule.description || `Règle ${newRule.type} avec marge ${newRule.margin}%`,
+      status: 'active',
+      products: 0,
+      savings: '+0%'
+    };
+    
+    setPriceRules(rules => [...rules, rule]);
+    setShowNewRuleModal(false);
+    setNewRule({ name: '', type: 'competitive', margin: '', description: '' });
+    
+    toast({
+      title: "Règle créée",
+      description: `La règle "${rule.name}" a été créée avec succès`,
+    });
+  };
 
   return (
     <>
@@ -91,10 +214,18 @@ export default function PriceMonitoringPage() {
               <Switch 
                 id="auto-pricing"
                 checked={autoPricingEnabled}
-                onCheckedChange={setAutoPricingEnabled}
+                onCheckedChange={(checked) => {
+                  setAutoPricingEnabled(checked);
+                  toast({
+                    title: checked ? "Auto-Pricing activé" : "Auto-Pricing désactivé",
+                    description: checked 
+                      ? "Les prix seront ajustés automatiquement selon vos règles" 
+                      : "Les ajustements de prix nécessiteront votre approbation"
+                  });
+                }}
               />
             </div>
-            <Button>
+            <Button onClick={() => setShowConfigModal(true)}>
               <Settings className="h-4 w-4 mr-2" />
               Configurer
             </Button>
@@ -204,8 +335,19 @@ export default function PriceMonitoringPage() {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-2xl font-bold text-green-900">${product.recommended}</div>
-                          <Button size="sm" variant="default">
-                            Appliquer
+                          <Button 
+                            size="sm" 
+                            variant="default"
+                            onClick={() => handleApplyPrice(product.id, product.recommended)}
+                            disabled={applyingPrice === product.id || product.myPrice === product.recommended}
+                          >
+                            {applyingPrice === product.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : product.myPrice === product.recommended ? (
+                              <><Check className="h-4 w-4 mr-1" /> Appliqué</>
+                            ) : (
+                              'Appliquer'
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -224,8 +366,8 @@ export default function PriceMonitoringPage() {
                   Définissez des stratégies de pricing intelligentes
                 </p>
               </div>
-              <Button>
-                <Play className="h-4 w-4 mr-2" />
+              <Button onClick={() => setShowNewRuleModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
                 Nouvelle Règle
               </Button>
             </div>
@@ -255,14 +397,24 @@ export default function PriceMonitoringPage() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleToggleRule(rule.id)}
+                        >
                           {rule.status === 'active' ? (
                             <><Pause className="h-4 w-4 mr-2" />Pause</>
                           ) : (
                             <><Play className="h-4 w-4 mr-2" />Activer</>
                           )}
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            toast({ title: "Modification", description: `Édition de "${rule.name}"` });
+                          }}
+                        >
                           <Settings className="h-4 w-4" />
                         </Button>
                       </div>
@@ -282,10 +434,37 @@ export default function PriceMonitoringPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Historique des prix et analytics disponible prochainement</p>
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Produit</TableHead>
+                      <TableHead>Ancien Prix</TableHead>
+                      <TableHead>Nouveau Prix</TableHead>
+                      <TableHead>Raison</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {priceHistory.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.product}</TableCell>
+                        <TableCell className="text-muted-foreground">${item.oldPrice}</TableCell>
+                        <TableCell className={item.newPrice < item.oldPrice ? 'text-red-600' : 'text-green-600'}>
+                          ${item.newPrice}
+                          {item.newPrice < item.oldPrice ? (
+                            <TrendingDown className="inline h-3 w-3 ml-1" />
+                          ) : (
+                            <TrendingUp className="inline h-3 w-3 ml-1" />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{item.reason}</Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{item.date}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
@@ -300,19 +479,31 @@ export default function PriceMonitoringPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Fréquence de vérification</Label>
-                  <Input type="number" placeholder="15" defaultValue="15" />
+                  <Label>Fréquence de vérification (minutes)</Label>
+                  <Input 
+                    type="number" 
+                    value={settings.checkFrequency}
+                    onChange={(e) => setSettings({...settings, checkFrequency: parseInt(e.target.value) || 15})}
+                  />
                   <p className="text-xs text-muted-foreground">Minutes entre chaque vérification</p>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Marge minimum (%)</Label>
-                  <Input type="number" placeholder="20" defaultValue="20" />
+                  <Input 
+                    type="number" 
+                    value={settings.minMargin}
+                    onChange={(e) => setSettings({...settings, minMargin: parseInt(e.target.value) || 20})}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label>Marge maximum (%)</Label>
-                  <Input type="number" placeholder="60" defaultValue="60" />
+                  <Input 
+                    type="number" 
+                    value={settings.maxMargin}
+                    onChange={(e) => setSettings({...settings, maxMargin: parseInt(e.target.value) || 60})}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -322,15 +513,117 @@ export default function PriceMonitoringPage() {
                       Alertes quand un concurrent baisse ses prix
                     </p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch 
+                    checked={settings.notifications}
+                    onCheckedChange={(checked) => setSettings({...settings, notifications: checked})}
+                  />
                 </div>
 
-                <Button className="w-full">Enregistrer les Paramètres</Button>
+                <Button className="w-full" onClick={handleSaveSettings} disabled={savingSettings}>
+                  {savingSettings ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enregistrement...</>
+                  ) : (
+                    'Enregistrer les Paramètres'
+                  )}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Config Modal */}
+      <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configuration Auto-Pricing</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Mode de pricing</Label>
+              <Select defaultValue="competitive">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="competitive">Compétitif - Toujours sous la concurrence</SelectItem>
+                  <SelectItem value="margin">Marge - Optimiser les profits</SelectItem>
+                  <SelectItem value="dynamic">Dynamique - IA adaptative</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Sources de prix à surveiller</Label>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="default">Amazon</Badge>
+                <Badge variant="default">eBay</Badge>
+                <Badge variant="default">AliExpress</Badge>
+                <Badge variant="outline">+ Ajouter</Badge>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfigModal(false)}>Annuler</Button>
+            <Button onClick={() => {
+              setShowConfigModal(false);
+              toast({ title: "Configuration enregistrée" });
+            }}>Enregistrer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Rule Modal */}
+      <Dialog open={showNewRuleModal} onOpenChange={setShowNewRuleModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Créer une Règle de Prix</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nom de la règle</Label>
+              <Input 
+                placeholder="Ex: Prix compétitif -5%"
+                value={newRule.name}
+                onChange={(e) => setNewRule({...newRule, name: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Type de règle</Label>
+              <Select value={newRule.type} onValueChange={(v) => setNewRule({...newRule, type: v})}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="competitive">Prix compétitif</SelectItem>
+                  <SelectItem value="margin">Marge fixe</SelectItem>
+                  <SelectItem value="flash">Flash sale</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Marge/Réduction (%)</Label>
+              <Input 
+                type="number"
+                placeholder="5"
+                value={newRule.margin}
+                onChange={(e) => setNewRule({...newRule, margin: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description (optionnel)</Label>
+              <Input 
+                placeholder="Description de la règle..."
+                value={newRule.description}
+                onChange={(e) => setNewRule({...newRule, description: e.target.value})}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewRuleModal(false)}>Annuler</Button>
+            <Button onClick={handleCreateRule}>Créer la règle</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
