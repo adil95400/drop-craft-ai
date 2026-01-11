@@ -9,16 +9,7 @@ export default function ProductResearchPage() {
         <meta name="description" content="Découvrez les produits gagnants avec notre scanner AI. Analyse de tendances TikTok, Instagram, score de potentiel et détection de saturation marché." />
       </Helmet>
       
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">
-            🤖 AI Product Research Scanner
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Trouvez les produits gagnants avant vos concurrents avec notre intelligence artificielle
-          </p>
-        </div>
-
+      <div className="container mx-auto px-4 py-6 space-y-6 max-w-[1600px]">
         <ProductResearchScanner />
       </div>
     </>
