@@ -3,29 +3,43 @@ import {
   FileText, 
   Download, 
   Calendar, 
-  Filter, 
   TrendingUp, 
   Users, 
   ShoppingCart,
   DollarSign,
   Package,
   Printer,
-  Mail
+  Mail,
+  Loader2,
+  CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  downloadPDFReport, 
+  generateSalesReport, 
+  generateInventoryReport,
+  generateCustomersReport,
+  generateOrdersReport 
+} from '@/utils/pdfExport';
 
 export default function Reports() {
+  const { toast } = useToast();
   const [reportType, setReportType] = useState('sales');
   const [dateRange, setDateRange] = useState('30d');
   const [format, setFormat] = useState('pdf');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [includeCharts, setIncludeCharts] = useState(true);
+  const [includeTables, setIncludeTables] = useState(true);
+  const [includeSummary, setIncludeSummary] = useState(true);
+  const [includeRecommendations, setIncludeRecommendations] = useState(false);
 
   const reportTemplates = [
     {
@@ -122,6 +136,165 @@ export default function Reports() {
     return iconMap[category] || FileText;
   };
 
+  const getDateRangeValues = () => {
+    const end = new Date();
+    let start = new Date();
+    
+    switch (dateRange) {
+      case '7d':
+        start.setDate(end.getDate() - 7);
+        break;
+      case '30d':
+        start.setDate(end.getDate() - 30);
+        break;
+      case '90d':
+        start.setDate(end.getDate() - 90);
+        break;
+      case '1y':
+        start.setFullYear(end.getFullYear(), 0, 1);
+        break;
+      default:
+        start.setDate(end.getDate() - 30);
+    }
+    
+    return { start, end };
+  };
+
+  const generateMockData = (type: string) => {
+    const { start, end } = getDateRangeValues();
+    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    
+    switch (type) {
+      case 'sales':
+        return Array.from({ length: Math.min(days, 30) }, (_, i) => {
+          const date = new Date(start);
+          date.setDate(date.getDate() + i);
+          return {
+            date: date.toISOString().split('T')[0],
+            orders: Math.floor(Math.random() * 50) + 10,
+            revenue: Math.floor(Math.random() * 5000) + 1000,
+          };
+        });
+      case 'inventory':
+        return Array.from({ length: 20 }, (_, i) => ({
+          id: `prod-${i}`,
+          title: `Produit ${i + 1}`,
+          sku: `SKU-${1000 + i}`,
+          stock: Math.floor(Math.random() * 15),
+          low_stock_threshold: 10,
+          price: Math.floor(Math.random() * 100) + 10,
+        }));
+      case 'customers':
+        return Array.from({ length: 50 }, (_, i) => ({
+          id: `cust-${i}`,
+          name: `Client ${i + 1}`,
+          email: `client${i + 1}@example.com`,
+          orders_count: Math.floor(Math.random() * 20) + 1,
+          total_spent: Math.floor(Math.random() * 2000) + 100,
+          created_at: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString(),
+        }));
+      case 'orders':
+        const statuses = ['pending', 'processing', 'shipped', 'delivered'];
+        return Array.from({ length: 30 }, (_, i) => ({
+          id: `order-${i}`,
+          order_number: `ORD-${10000 + i}`,
+          customer_name: `Client ${Math.floor(Math.random() * 50) + 1}`,
+          status: statuses[Math.floor(Math.random() * statuses.length)],
+          total: Math.floor(Math.random() * 500) + 50,
+          created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        }));
+      default:
+        return [];
+    }
+  };
+
+  const handleGenerateReport = async () => {
+    setIsGenerating(true);
+    
+    try {
+      const { start, end } = getDateRangeValues();
+      const mockData = generateMockData(reportType);
+      
+      let reportData;
+      switch (reportType) {
+        case 'sales':
+          reportData = generateSalesReport(mockData, { start, end });
+          break;
+        case 'inventory':
+          reportData = generateInventoryReport(mockData);
+          break;
+        case 'customers':
+          reportData = generateCustomersReport(mockData);
+          break;
+        case 'orders':
+          reportData = generateOrdersReport(mockData);
+          break;
+        default:
+          reportData = generateSalesReport(mockData, { start, end });
+      }
+
+      if (format === 'pdf') {
+        downloadPDFReport(reportData, {
+          includeCharts,
+          includeTables,
+          includeSummary,
+          includeRecommendations,
+        });
+      } else {
+        // Pour les autres formats, afficher un message
+        toast({
+          title: "Format non disponible",
+          description: `L'export ${format.toUpperCase()} sera bientôt disponible.`,
+        });
+        return;
+      }
+
+      toast({
+        title: "Rapport généré avec succès",
+        description: "Votre rapport PDF a été téléchargé.",
+      });
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le rapport.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleQuickExport = (templateId: string) => {
+    const template = reportTemplates.find(t => t.id === templateId);
+    if (template) {
+      setReportType(template.category);
+      setTimeout(() => handleGenerateReport(), 100);
+    }
+  };
+
+  const getReportTypeName = () => {
+    const names: Record<string, string> = {
+      sales: 'Rapport des Ventes',
+      inventory: 'État des Stocks',
+      customers: 'Analyse Clientèle',
+      orders: 'Performance Commandes',
+      finance: 'Vue Financière'
+    };
+    return names[reportType] || 'Rapport';
+  };
+
+  const getDateRangeName = () => {
+    const names: Record<string, string> = {
+      '7d': '7 derniers jours',
+      '30d': '30 derniers jours',
+      '90d': '90 derniers jours',
+      '1y': 'Cette année',
+      'custom': 'Période personnalisée'
+    };
+    return names[dateRange] || '30 derniers jours';
+  };
+
   return (
     <div className="container-fluid">
       <div className="flex items-center justify-between mb-6">
@@ -129,9 +302,18 @@ export default function Reports() {
           <h1 className="text-3xl font-bold text-foreground">Centre de Rapports</h1>
           <p className="text-muted-foreground">Générez et gérez vos rapports d'activité</p>
         </div>
-        <Button className="gap-2">
-          <FileText className="h-4 w-4" />
-          Nouveau Rapport
+        <Button className="gap-2" onClick={handleGenerateReport} disabled={isGenerating}>
+          {isGenerating ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Génération...
+            </>
+          ) : (
+            <>
+              <FileText className="h-4 w-4" />
+              Nouveau Rapport
+            </>
+          )}
         </Button>
       </div>
 
@@ -189,19 +371,35 @@ export default function Reports() {
                     <Label>Options d'Inclusion</Label>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="include-charts" defaultChecked />
+                        <Checkbox 
+                          id="include-charts" 
+                          checked={includeCharts}
+                          onCheckedChange={(checked) => setIncludeCharts(checked as boolean)}
+                        />
                         <Label htmlFor="include-charts">Graphiques</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="include-tables" defaultChecked />
+                        <Checkbox 
+                          id="include-tables" 
+                          checked={includeTables}
+                          onCheckedChange={(checked) => setIncludeTables(checked as boolean)}
+                        />
                         <Label htmlFor="include-tables">Tableaux détaillés</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="include-summary" defaultChecked />
+                        <Checkbox 
+                          id="include-summary" 
+                          checked={includeSummary}
+                          onCheckedChange={(checked) => setIncludeSummary(checked as boolean)}
+                        />
                         <Label htmlFor="include-summary">Résumé exécutif</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="include-recommendations" />
+                        <Checkbox 
+                          id="include-recommendations" 
+                          checked={includeRecommendations}
+                          onCheckedChange={(checked) => setIncludeRecommendations(checked as boolean)}
+                        />
                         <Label htmlFor="include-recommendations">Recommandations</Label>
                       </div>
                     </div>
@@ -214,7 +412,12 @@ export default function Reports() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pdf">PDF</SelectItem>
+                        <SelectItem value="pdf">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-success" />
+                            PDF
+                          </div>
+                        </SelectItem>
                         <SelectItem value="excel">Excel (.xlsx)</SelectItem>
                         <SelectItem value="csv">CSV</SelectItem>
                         <SelectItem value="powerpoint">PowerPoint (.pptx)</SelectItem>
@@ -232,18 +435,26 @@ export default function Reports() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-4 bg-muted/50 rounded-lg">
-                    <h4 className="font-medium text-foreground mb-2">Rapport des Ventes</h4>
+                    <h4 className="font-medium text-foreground mb-2">{getReportTypeName()}</h4>
                     <p className="text-sm text-muted-foreground">
-                      Période: 30 derniers jours<br />
-                      Format: PDF<br />
+                      Période: {getDateRangeName()}<br />
+                      Format: {format.toUpperCase()}<br />
                       Taille estimée: ~2.5 MB
                     </p>
                   </div>
                   
                   <div className="space-y-2">
-                    <Button className="w-full gap-2">
-                      <Download className="h-4 w-4" />
-                      Générer Rapport
+                    <Button 
+                      className="w-full gap-2" 
+                      onClick={handleGenerateReport}
+                      disabled={isGenerating}
+                    >
+                      {isGenerating ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
+                      {isGenerating ? 'Génération...' : 'Générer Rapport'}
                     </Button>
                     <Button variant="outline" className="w-full gap-2">
                       <Printer className="h-4 w-4" />
@@ -289,7 +500,14 @@ export default function Reports() {
                       </div>
                       <Separator />
                       <div className="flex gap-2">
-                        <Button size="sm" className="flex-1">Utiliser</Button>
+                        <Button 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleQuickExport(template.id)}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Exporter PDF
+                        </Button>
                         <Button size="sm" variant="outline">Modifier</Button>
                       </div>
                     </div>
