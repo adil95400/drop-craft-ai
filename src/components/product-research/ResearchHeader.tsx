@@ -8,53 +8,57 @@ import {
   Sparkles,
   BarChart3
 } from 'lucide-react';
-
-interface ResearchStats {
-  totalProducts: number;
-  trendingNow: number;
-  winnersFound: number;
-  lastUpdated: string;
-}
+import { ResearchStats } from '@/hooks/useRealProductResearch';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface ResearchHeaderProps {
   stats?: ResearchStats;
 }
 
 export function ResearchHeader({ stats }: ResearchHeaderProps) {
-  const defaultStats: ResearchStats = {
-    totalProducts: 7000000,
-    trendingNow: 12845,
-    winnersFound: 847,
-    lastUpdated: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
   };
 
-  const displayStats = stats || defaultStats;
+  const lastUpdatedText = stats?.lastUpdated 
+    ? formatDistanceToNow(new Date(stats.lastUpdated), { addSuffix: true, locale: fr })
+    : 'il y a quelques secondes';
+
+  const displayStats = {
+    totalProducts: stats?.totalProducts || 0,
+    trendingNow: stats?.activeTrends || 0,
+    winnersFound: Math.floor((stats?.avgScore || 0) * 10),
+    avgScore: stats?.avgScore || 0
+  };
 
   const statCards = [
     {
       label: 'Produits analysés',
-      value: displayStats.totalProducts.toLocaleString('fr-FR'),
+      value: formatNumber(displayStats.totalProducts),
       icon: BarChart3,
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10'
     },
     {
       label: 'Tendances actives',
-      value: displayStats.trendingNow.toLocaleString('fr-FR'),
+      value: formatNumber(displayStats.trendingNow),
       icon: TrendingUp,
       color: 'text-green-500',
       bgColor: 'bg-green-500/10'
     },
     {
-      label: 'Winners détectés',
-      value: displayStats.winnersFound.toLocaleString('fr-FR'),
+      label: 'Score moyen',
+      value: `${displayStats.avgScore}%`,
       icon: Target,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10'
     },
     {
       label: 'Mise à jour',
-      value: displayStats.lastUpdated,
+      value: lastUpdatedText,
       icon: Zap,
       color: 'text-purple-500',
       bgColor: 'bg-purple-500/10'
@@ -93,7 +97,7 @@ export function ResearchHeader({ stats }: ResearchHeaderProps) {
             </Badge>
             <Badge className="gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-500 to-red-500 border-0">
               <TrendingUp className="w-3.5 h-3.5" />
-              +847 Winners Today
+              Données réelles
             </Badge>
           </div>
         </div>
