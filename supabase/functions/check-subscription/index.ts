@@ -7,7 +7,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Helper logging function for enhanced debugging
+// Product IDs mapping
+const PRODUCT_TO_PLAN: Record<string, string> = {
+  "prod_T3RS5DA7XYPWBP": "standard",
+  "prod_T3RTReiXnCg9hy": "pro",
+  "prod_T3RTMipVwUA7Ud": "ultra_pro"
+};
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
@@ -20,7 +26,8 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
   try {
@@ -32,11 +39,8 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
-    logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
-    logStep("Authenticating user with token");
-    
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
@@ -62,43 +66,52 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Check for active subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 1,
     });
     
-    const hasActiveSub = subscriptions.data.length > 0;
-    let productId = null;
-    let subscriptionEnd = null;
+    let hasActiveSub = subscriptions.data.length > 0;
+    let productId: string | null = null;
+    let subscriptionEnd: string | null = null;
     let plan = 'free';
 
-    if (hasActiveSub) {
+    // Also check for trialing subscriptions
+    if (!hasActiveSub) {
+      const trialingSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "trialing",
+        limit: 1,
+      });
+      if (trialingSubscriptions.data.length > 0) {
+        hasActiveSub = true;
+        const subscription = trialingSubscriptions.data[0];
+        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        productId = subscription.items.data[0].price.product as string;
+        plan = PRODUCT_TO_PLAN[productId] || 'standard';
+        logStep("Trial subscription found", { productId, plan });
+      }
+    }
+
+    if (hasActiveSub && !productId) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
-      
       productId = subscription.items.data[0].price.product as string;
-      logStep("Determined product ID", { productId });
-      
-      // Map product ID to plan type
-      const planMap: Record<string, string> = {
-        "prod_T3RS5DA7XYPWBP": "standard",
-        "prod_T3RTReiXnCg9hy": "pro",
-        "prod_T3RTMipVwUA7Ud": "ultra_pro"
-      };
-      
-      plan = planMap[productId] || 'standard';
-      
-      // Sync with profiles table
-      logStep("Syncing plan with profiles", { plan, productId });
-      
+      plan = PRODUCT_TO_PLAN[productId] || 'standard';
+      logStep("Active subscription found", { subscriptionId: subscription.id, productId, plan, endDate: subscriptionEnd });
+    }
+
+    // Sync with profiles table
+    if (hasActiveSub) {
       const { error: updateError } = await supabaseClient
         .from('profiles')
         .update({ 
           plan,
           subscription_plan: plan,
           subscription_status: 'active',
+          stripe_customer_id: customerId,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -106,23 +119,31 @@ serve(async (req) => {
       if (updateError) {
         logStep("Error syncing profile", { error: updateError.message });
       } else {
-        logStep("Profile synced successfully");
+        logStep("Profile synced successfully", { plan });
       }
     } else {
       logStep("No active subscription found");
       
-      // Reset to standard if no active subscription
-      const { error: resetError } = await supabaseClient
+      // Check current profile plan to avoid unnecessary updates
+      const { data: profile } = await supabaseClient
         .from('profiles')
-        .update({ 
-          plan: 'standard',
-          subscription_status: 'inactive',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+        .select('plan, subscription_status')
+        .eq('id', user.id)
+        .single();
       
-      if (resetError) {
-        logStep("Error resetting profile", { error: resetError.message });
+      if (profile?.subscription_status === 'active') {
+        const { error: resetError } = await supabaseClient
+          .from('profiles')
+          .update({ 
+            plan: 'standard',
+            subscription_status: 'inactive',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+        
+        if (resetError) {
+          logStep("Error resetting profile", { error: resetError.message });
+        }
       }
     }
 
