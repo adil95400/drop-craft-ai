@@ -1,0 +1,29 @@
+/**
+ * Routes Tools - Outils et calculateurs
+ */
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy } from 'react';
+
+// Tools pages
+const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
+const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
+const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPage'));
+const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
+
+export function ToolsRoutes() {
+  return (
+    <Routes>
+      {/* Tools Overview - redirect to profit calculator */}
+      <Route index element={<ProfitCalculatorPage />} />
+      
+      {/* Tool Modules */}
+      <Route path="profit-calculator" element={<ProfitCalculatorPage />} />
+      <Route path="inventory-predictor" element={<InventoryPredictorPage />} />
+      <Route path="bulk-content" element={<BulkContentCreationPage />} />
+      <Route path="schema-generator" element={<SchemaGenerator />} />
+      
+      {/* Legacy redirects */}
+      <Route path="calculator" element={<Navigate to="/tools/profit-calculator" replace />} />
+    </Routes>
+  );
+}

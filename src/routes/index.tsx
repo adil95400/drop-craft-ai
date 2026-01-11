@@ -31,6 +31,10 @@ import { AdminRoutes } from './AdminRoutes';
 import SupplierRoutes from './SupplierRoutes';
 import { ChannelRoutes } from './ChannelRoutes';
 import { FulfillmentRoutes } from './FulfillmentRoutes';
+import { PricingRoutes } from './PricingRoutes';
+import { AIRoutes } from './AIRoutes';
+import { ResearchRoutes } from './ResearchRoutes';
+import { ToolsRoutes } from './ToolsRoutes';
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -66,6 +70,10 @@ const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 const RepricingPage = lazy(() => import('@/pages/RepricingPage'));
 const AdsSpyPage = lazy(() => import('@/pages/AdsSpyPage'));
+const Reports = lazy(() => import('@/pages/Reports'));
+const SEOManagerPage = lazy(() => import('@/pages/SEOManager'));
+const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
+const RankTracker = lazy(() => import('@/pages/RankTracker'));
 
 // Loading component
 const PageLoader = () => (
@@ -129,6 +137,10 @@ export function AppRoutes() {
         <Route path="/stores-channels/*" element={<ProtectedRoute><AppLayout><ChannelRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/channels/*" element={<ProtectedRoute><AppLayout><ChannelRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/fulfillment/*" element={<ProtectedRoute><AppLayout><FulfillmentRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/pricing/*" element={<ProtectedRoute><AppLayout><PricingRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/ai/*" element={<ProtectedRoute><AppLayout><AIRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/research/*" element={<ProtectedRoute><AppLayout><ResearchRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/tools/*" element={<ProtectedRoute><AppLayout><ToolsRoutes /></AppLayout></ProtectedRoute>} />
         
         {/* Reviews */}
         <Route path="/reviews" element={<ProtectedRoute><AppLayout><AvisPositifUltraPro /></AppLayout></ProtectedRoute>} />
@@ -181,6 +193,12 @@ export function AppRoutes() {
         <Route path="/api-docs" element={<ProtectedRoute><AppLayout><SwaggerPage /></AppLayout></ProtectedRoute>} />
         <Route path="/swagger" element={<Navigate to="/api-docs" replace />} />
         <Route path="/pwa-install" element={<PWAInstallPage />} />
+        
+        {/* Reports & SEO direct routes */}
+        <Route path="/reports" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
+        <Route path="/seo" element={<ProtectedRoute><AppLayout><SEOManagerPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/seo/keywords" element={<ProtectedRoute><AppLayout><KeywordResearch /></AppLayout></ProtectedRoute>} />
+        <Route path="/seo/rank-tracker" element={<ProtectedRoute><AppLayout><RankTracker /></AppLayout></ProtectedRoute>} />
         
         {/* Public pages */}
         <Route path="/guides/getting-started" element={<GettingStartedPage />} />
