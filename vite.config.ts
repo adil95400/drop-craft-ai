@@ -19,6 +19,51 @@ function deferCssPlugin(): Plugin {
   };
 }
 
+// Custom plugin to add modulepreload hints for critical chunks
+// This breaks the network dependency tree by preloading JS in parallel with HTML parsing
+function modulePreloadPlugin(): Plugin {
+  return {
+    name: 'module-preload-hints',
+    enforce: 'post',
+    transformIndexHtml(html, ctx) {
+      // Only apply in production builds
+      if (!ctx.bundle) return html;
+      
+      // Find critical chunk filenames from the bundle
+      const criticalChunks: string[] = [];
+      const chunkPriority = ['vendor-react', 'vendor-utils', 'index'];
+      
+      for (const [fileName, chunk] of Object.entries(ctx.bundle)) {
+        if (chunk.type === 'chunk' && fileName.endsWith('.js')) {
+          // Prioritize vendor-react, vendor-utils, and main index chunks
+          for (const priority of chunkPriority) {
+            if (fileName.includes(priority)) {
+              criticalChunks.push(`/assets/${fileName.split('/').pop()}`);
+              break;
+            }
+          }
+        }
+      }
+      
+      // Generate modulepreload link tags
+      const preloadTags = criticalChunks
+        .slice(0, 4) // Limit to 4 preloads to avoid bandwidth contention
+        .map(chunk => `<link rel="modulepreload" href="${chunk}" crossorigin>`)
+        .join('\n    ');
+      
+      // Insert after the last preconnect tag
+      if (preloadTags) {
+        return html.replace(
+          /(<link rel="dns-prefetch"[^>]*>\s*)+/,
+          `$&\n    <!-- Modulepreload critical JS chunks to break network dependency tree -->\n    ${preloadTags}\n    `
+        );
+      }
+      
+      return html;
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -28,6 +73,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
     mode === 'production' && deferCssPlugin(),
+    mode === 'production' && modulePreloadPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null, // Defer SW registration to avoid render-blocking
