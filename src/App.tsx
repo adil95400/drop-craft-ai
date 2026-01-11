@@ -28,6 +28,7 @@ const MobileGlobalOptimizer = lazy(() => import('@/components/mobile/MobileGloba
 const AdaptiveBottomNav = lazy(() => import('@/components/mobile/AdaptiveBottomNav').then(m => ({ default: m.AdaptiveBottomNav })));
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour').then(m => ({ default: m.OnboardingTour })));
 const NotificationProvider = lazy(() => import('@/components/notifications/NotificationService').then(m => ({ default: m.NotificationProvider })));
+const ChatSupportWidget = lazy(() => import('@/components/support/ChatSupportWidget').then(m => ({ default: m.ChatSupportWidget })));
 
 // Lazy load modal systems (pulls in many dialog components with supabase/heavy deps)
 const GlobalModals = lazy(() => import('@/components/GlobalModals').then(m => ({ default: m.GlobalModals })));
@@ -95,6 +96,11 @@ const AppContent = memo(() => {
         {/* Feedback widget for continuous user feedback */}
         <Suspense fallback={null}>
           <FeedbackWidget />
+        </Suspense>
+        
+        {/* Chat support widget */}
+        <Suspense fallback={null}>
+          <ChatSupportWidget />
         </Suspense>
         
         {/* Adaptive bottom navigation for mobile */}
