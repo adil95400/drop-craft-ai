@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/useResponsive';
 import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { ExtensionMenu } from '@/components/navigation/ExtensionMenu';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SupportWidget } from '@/components/layout/SupportWidget';
+import { preloadAnimationStyles } from '@/hooks/useAnimationStyles';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -21,6 +22,11 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
   const { user, signOut } = useAuth();
+  
+  // Preload animation CSS when dashboard is accessed
+  useEffect(() => {
+    preloadAnimationStyles();
+  }, []);
 
   // Version mobile optimisée avec navigation fixe
   if (isMobile) {

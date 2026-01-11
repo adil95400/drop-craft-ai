@@ -7,11 +7,17 @@ import { Navigate, useSearchParams } from 'react-router-dom'
 import { AuthInterface } from '@/components/auth/AuthInterface'
 import { Helmet } from 'react-helmet-async'
 import { useToast } from '@/hooks/use-toast'
+import { preloadAnimationStyles } from '@/hooks/useAnimationStyles'
 
 export default function AuthPage() {
   const { user, loading } = useAuth()
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
+
+  // Preload animation CSS for loading state animation
+  useEffect(() => {
+    preloadAnimationStyles();
+  }, []);
 
   // Show welcome message if redirected after signup confirmation
   useEffect(() => {

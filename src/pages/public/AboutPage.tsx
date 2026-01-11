@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,9 +8,15 @@ import { Target, Users, TrendingUp, Sparkles, Shield, Globe, Heart, Zap, Award, 
 import { useNavigate } from 'react-router-dom';
 import { VideoPlayer } from '@/components/public/VideoPlayer';
 import featureAI from '@/assets/feature-ai.jpg';
+import { preloadAnimationStyles } from '@/hooks/useAnimationStyles';
 
 const AboutPage = () => {
   const navigate = useNavigate();
+  
+  // Preload animation CSS for animations used on this page
+  useEffect(() => {
+    preloadAnimationStyles();
+  }, []);
 
   const timeline = [
     {

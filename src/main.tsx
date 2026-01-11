@@ -9,7 +9,7 @@ import { initSentry } from '@/utils/sentry'
 import { logger } from '@/utils/logger'
 import App from './App'
 import './index.css'
-import './styles/import-animations.css'
+// Animation CSS is loaded lazily via useAnimationStyles hook to reduce initial CSS bundle
 import { PWAService } from './services/PWAService'
 
 // Initialize PWA
