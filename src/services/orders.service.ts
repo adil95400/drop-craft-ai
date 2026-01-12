@@ -48,7 +48,33 @@ export class OrdersService {
   /**
    * Crée une nouvelle commande
    */
-  static async createOrder(order: OrderInsert, items?: any[]) {
+  static async createOrder(userId: string, orderData: any, items?: any[]) {
+    // Generate order number if not provided
+    const orderNumber = orderData.order_number || `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+    
+    // Build shipping_address with customer info for display
+    const shippingAddress = orderData.shipping_address || {}
+    if (orderData.customer_name) {
+      shippingAddress.name = orderData.customer_name
+    }
+    if (orderData.customer_email) {
+      shippingAddress.email = orderData.customer_email
+    }
+    
+    const order: OrderInsert = {
+      user_id: userId,
+      order_number: orderNumber,
+      customer_id: orderData.customer_id || null,
+      status: orderData.status || 'pending',
+      payment_status: orderData.payment_status || 'pending',
+      subtotal: orderData.subtotal || 0,
+      shipping_cost: orderData.shipping_cost || 0,
+      total_amount: orderData.total_amount || 0,
+      shipping_address: Object.keys(shippingAddress).length > 0 ? shippingAddress : null,
+      carrier: orderData.carrier || null,
+      notes: orderData.notes || null,
+      currency: orderData.currency || 'EUR',
+    }
     const { data: newOrder, error: orderError } = await supabase
       .from('orders')
       .insert(order)

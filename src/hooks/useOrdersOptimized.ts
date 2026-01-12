@@ -26,7 +26,7 @@ export function useOrdersOptimized() {
 
   const createMutation = useMutation({
     mutationFn: ({ order, items }: { order: OrderInsert; items?: any[] }) =>
-      OrdersService.createOrder(order, items),
+      OrdersService.createOrder(order.user_id, order, items),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['order-stats'] });

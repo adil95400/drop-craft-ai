@@ -121,7 +121,32 @@ export function CreateOrderDialog({ open, onOpenChange, onSuccess }: CreateOrder
   const createMutation = useMutation({
     mutationFn: async (data: OrderFormData) => {
       if (!user) throw new Error('Non authentifié')
-      return OrdersService.createOrder(user.id, data) as any
+      
+      const orderData = {
+        customer_id: data.customer_id,
+        customer_name: data.customer_name,
+        customer_email: data.customer_email,
+        status: data.status,
+        payment_status: data.payment_status,
+        subtotal: subtotal,
+        shipping_cost: shippingCost,
+        total_amount: total,
+        shipping_address: data.shipping_address,
+        carrier: data.carrier || null,
+        notes: data.notes,
+        currency: 'EUR',
+      }
+      
+      const orderItems = data.items?.map(item => ({
+        product_id: item.product_id,
+        product_sku: item.sku || '',
+        product_title: item.product_name || item.name || 'Produit',
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price,
+      }))
+      
+      return OrdersService.createOrder(user.id, orderData, orderItems)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unified-orders'] })
