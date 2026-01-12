@@ -1,29 +1,13 @@
-// DEPRECATED: Use useUnifiedCustomers instead
+// DEPRECATED: Use useCustomersUnified instead
 // This file is kept for backward compatibility only
-import { useUnifiedCustomers as useUnifiedCustomersBase } from './useUnifiedData'
-import { useToast } from '@/hooks/use-toast'
+import { useCustomersUnified, useCustomerStatsUnified, type UnifiedCustomer } from './unified/useCustomersUnified'
 
-export interface Customer {
-  id: string;
-  user_id: string;
-  email: string;
-  first_name?: string;
-  last_name?: string;
-  phone?: string;
-  status: 'active' | 'inactive';
-  total_orders: number;
-  total_spent: number;
-  last_order_date?: string;
-  address?: any;
-  platform_customer_id?: string;
-  tags?: string[];
-  created_at: string;
-  updated_at: string;
-}
+export type Customer = UnifiedCustomer
 
 // Backward compatibility wrapper
 export function useCustomers(search?: string) {
-  const result = useUnifiedCustomersBase({ search })
+  console.warn('[DEPRECATED] useCustomers - utilisez useCustomersUnified à la place')
+  const result = useCustomersUnified({ filters: { search } })
   
   return {
     data: result.data,
@@ -34,25 +18,20 @@ export function useCustomers(search?: string) {
 }
 
 export function useUpdateCustomer() {
-  const { toast } = useToast()
+  const result = useCustomersUnified()
   
   return {
-    mutate: async () => {
-      toast({
-        title: "Info",
-        description: "Utilisez useUnifiedCustomers pour les mises à jour",
-      })
-    },
-    mutateAsync: async () => {},
-    isPending: false
+    mutate: result.update,
+    mutateAsync: result.updateAsync,
+    isPending: result.isUpdating
   }
 }
 
 export function useCustomerStats() {
-  const result = useUnifiedCustomersBase()
+  const result = useCustomerStatsUnified()
   
   return {
-    data: result.stats,
+    data: result.data,
     isLoading: result.isLoading
   }
 }
