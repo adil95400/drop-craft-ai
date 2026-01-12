@@ -6,7 +6,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Products
-const ModernProductsPage = lazy(() => import('@/pages/products/ProductsMainPage'));
+const ChannableProductsPage = lazy(() => import('@/pages/products/ChannableProductsPage'));
 const EnhancedCatalog = lazy(() => import('@/pages/products/EnhancedCatalog'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
@@ -49,7 +49,7 @@ export function ProductRoutes() {
   return (
     <Routes>
       {/* Products Management */}
-      <Route index element={<ModernProductsPage />} />
+      <Route index element={<ChannableProductsPage />} />
       <Route path="enhanced-catalog" element={<EnhancedCatalog />} />
       <Route path=":id" element={<ProductDetailsPage />} />
       <Route path="publish" element={<ProductPublishing />} />

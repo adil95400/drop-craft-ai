@@ -1,9 +1,5 @@
-import { ModularDashboard } from '@/components/dashboard/ModularDashboard';
+import { ChannableDashboard } from '@/components/dashboard/ChannableDashboard';
 
 export default function Dashboard() {
-  return (
-    <div className="p-3 sm:p-6">
-      <ModularDashboard />
-    </div>
-  );
+  return <ChannableDashboard />;
 }
