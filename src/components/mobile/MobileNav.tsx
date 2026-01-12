@@ -130,7 +130,7 @@ const mobileNavGroups = [
     label: 'Commandes',
     icon: 'ShoppingCart',
     items: [
-      { id: 'orders', name: 'Commandes', route: '/dashboard/orders', icon: 'ShoppingCart', minPlan: 'standard' },
+      { id: 'orders', name: 'Commandes', route: '/orders', icon: 'ShoppingCart', minPlan: 'standard' },
       { id: 'orders-center', name: 'Centre Commandes', route: '/orders-center', icon: 'BarChart3', minPlan: 'standard' },
       { id: 'fulfillment', name: 'Fulfillment', route: '/fulfillment', icon: 'Truck', minPlan: 'pro' },
     ]
@@ -140,7 +140,7 @@ const mobileNavGroups = [
     label: 'Clients',
     icon: 'Users',
     items: [
-      { id: 'customers', name: 'Clients', route: '/dashboard/customers', icon: 'Users', minPlan: 'standard' },
+      { id: 'customers', name: 'Clients', route: '/customers', icon: 'Users', minPlan: 'standard' },
       { id: 'reviews', name: 'Avis Clients', route: '/reviews', icon: 'Star', minPlan: 'standard' },
     ]
   },
@@ -185,7 +185,7 @@ const mobileNavGroups = [
     label: 'Paramètres',
     icon: 'Settings',
     items: [
-      { id: 'settings', name: 'Paramètres', route: '/dashboard/settings', icon: 'Settings', minPlan: 'standard' },
+      { id: 'settings', name: 'Paramètres', route: '/settings', icon: 'Settings', minPlan: 'standard' },
       { id: 'integrations', name: 'Intégrations', route: '/integrations', icon: 'Plug', minPlan: 'standard' },
       { id: 'extensions', name: 'Extensions', route: '/extensions', icon: 'Plug', minPlan: 'pro' },
     ]
@@ -215,7 +215,7 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
   const bottomNavItems = [
     { icon: Home, label: 'Accueil', path: '/dashboard', color: 'text-blue-500' },
     { icon: Package, label: 'Produits', path: '/products', color: 'text-green-500' },
-    { icon: ShoppingCart, label: 'Commandes', path: '/dashboard/orders', color: 'text-orange-500' },
+    { icon: ShoppingCart, label: 'Commandes', path: '/orders', color: 'text-orange-500' },
     { icon: BarChart3, label: 'Analytics', path: '/analytics', color: 'text-purple-500' }
   ];
 
@@ -482,7 +482,7 @@ export function MobileQuickActions() {
     { icon: Upload, label: 'Importer', description: 'Nouveaux produits', color: 'bg-blue-500', path: '/import' },
     { icon: Bot, label: 'IA Insights', description: 'Recommandations', color: 'bg-purple-500', path: '/ai-assistant' },
     { icon: BarChart3, label: 'Analytics', description: 'Temps réel', color: 'bg-green-500', path: '/analytics' },
-    { icon: Users, label: 'Clients', description: 'Gestion', color: 'bg-orange-500', path: '/dashboard/customers' }
+    { icon: Users, label: 'Clients', description: 'Gestion', color: 'bg-orange-500', path: '/customers' }
   ];
 
   return (

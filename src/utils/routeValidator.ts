@@ -16,25 +16,42 @@ interface ValidationIssue {
 
 /**
  * Routes définies dans les fichiers de routing
- * Basé sur l'analyse des fichiers CoreRoutes, ProductRoutes, etc.
+ * Uniformisées sans préfixe /dashboard/
  */
 const DEFINED_ROUTES: Set<string> = new Set([
   // Dashboard / Core
   '/dashboard',
-  '/dashboard/profile',
-  '/dashboard/settings',
-  '/dashboard/parametres',
-  '/dashboard/stores',
-  '/dashboard/stores/connect',
-  '/dashboard/stores/integrations',
-  '/dashboard/stores/integrations/:id',
-  '/dashboard/orders',
-  '/dashboard/orders/center',
-  '/dashboard/orders/returns',
-  '/dashboard/orders/shipping',
-  '/dashboard/customers',
-  '/dashboard/sync-manager',
-  '/dashboard/marketplace-sync',
+  '/profile',
+  '/settings',
+  '/settings/api',
+  '/settings/billing',
+  '/settings/security',
+  '/parametres',
+  '/stores-channels',
+  '/stores-channels/connect',
+  '/stores-channels/integrations',
+  '/stores-channels/integrations/:id',
+  
+  // Orders - uniformisées
+  '/orders',
+  '/orders/:id',
+  '/orders/center',
+  '/orders/returns',
+  '/orders/tracking',
+  '/orders/notifications',
+  '/orders/shipping',
+  '/orders/bulk',
+  '/orders/create',
+  
+  // Customers - uniformisées
+  '/customers',
+  '/customers/:id',
+  '/customers/segmentation',
+  '/customers/create',
+  
+  // Autres routes Core
+  '/sync-manager',
+  '/marketplace-sync',
   
   // Products
   '/products',
@@ -124,6 +141,21 @@ const DEFINED_ROUTES: Set<string> = new Set([
   '/automation/pricing-automation',
   '/automation/recommendations',
   '/automation/dynamic-pricing',
+  
+  // Fulfillment
+  '/fulfillment',
+  '/fulfillment/dashboard',
+  '/fulfillment/rules',
+  '/fulfillment/carriers',
+  
+  // Stock
+  '/stock',
+  '/stock/repricing',
+  '/stock/predictions',
+  '/stock/management',
+  
+  // Feeds
+  '/feeds',
   
   // Integrations
   '/integrations',

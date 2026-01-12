@@ -33,7 +33,7 @@ export default function ManageIntegrationPage() {
   const handleDelete = () => {
     if (id && confirm('Êtes-vous sûr de vouloir supprimer cette intégration ? Cette action est irréversible.')) {
       deleteIntegration(id);
-      navigate('/dashboard/stores/integrations');
+      navigate('/stores-channels/integrations');
     }
   };
 
@@ -91,7 +91,7 @@ export default function ManageIntegrationPage() {
             <p className="text-muted-foreground mb-6">
               L'intégration demandée n'existe pas ou vous n'avez pas l'autorisation de la voir.
             </p>
-            <Button onClick={() => navigate('/dashboard/stores/integrations')}>
+            <Button onClick={() => navigate('/stores-channels/integrations')}>
               Retour aux intégrations
             </Button>
           </CardContent>
@@ -103,7 +103,7 @@ export default function ManageIntegrationPage() {
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="mb-6">
-        <BackButton to="/dashboard/stores/integrations" label="Retour aux intégrations" />
+        <BackButton to="/stores-channels/integrations" label="Retour aux intégrations" />
       </div>
 
       {/* Header */}

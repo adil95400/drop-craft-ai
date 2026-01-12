@@ -101,7 +101,7 @@ export const AdminNotificationsCenter: React.FC = () => {
             timestamp: new Date(order.created_at),
             read: false,
             priority: (order.total_amount || 0) > 500 ? 'high' : 'medium',
-            actionUrl: `/dashboard/orders/${order.id}`
+            actionUrl: `/orders/${order.id}`
           });
         });
       }

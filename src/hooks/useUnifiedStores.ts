@@ -111,7 +111,7 @@ export function useUnifiedStores() {
   const createStore = useMutation({
     mutationFn: async (storeData: Partial<Store>) => {
       toast.info('Redirection vers la page de connexion...');
-      window.location.href = '/dashboard/stores/connect';
+      window.location.href = '/stores-channels/connect';
       return null;
     },
     onSuccess: () => {

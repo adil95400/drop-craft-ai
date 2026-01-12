@@ -15,25 +15,25 @@ export function StoreQuickActions({ onSync, isSyncing }: StoreQuickActionsProps)
     {
       label: 'Nouvelle Boutique',
       icon: Plus,
-      onClick: () => navigate('/dashboard/stores/connect'),
+      onClick: () => navigate('/stores-channels/connect'),
       variant: 'default' as const,
     },
     {
       label: 'Multi-Store',
       icon: Settings,
-      onClick: () => navigate('/dashboard/multi-store'),
+      onClick: () => navigate('/multi-store'),
       variant: 'outline' as const,
     },
     {
       label: 'Stock IA',
       icon: TrendingUp,
-      onClick: () => navigate('/dashboard/stores/stock-intelligence'),
+      onClick: () => navigate('/stock/predictions'),
       variant: 'outline' as const,
     },
     {
       label: 'Synchronisation',
       icon: Activity,
-      onClick: () => navigate('/dashboard/stores/sync'),
+      onClick: () => navigate('/sync-manager'),
       variant: 'outline' as const,
     },
     {

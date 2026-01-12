@@ -674,7 +674,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Settings',
     enabled: true,
     minPlan: 'standard',
-    route: '/dashboard/settings',
+    route: '/settings',
     features: ['account', 'preferences'],
     description: 'Configuration générale',
     category: 'system',

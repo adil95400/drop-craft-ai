@@ -197,7 +197,7 @@ export default function CreateOrder() {
       if (itemsError) throw itemsError;
 
       toast.success('Commande créée avec succès');
-      navigate('/dashboard/orders');
+      navigate('/orders');
     } catch (error) {
       console.error('Erreur création commande:', error);
       toast.error('Erreur lors de la création de la commande');
@@ -218,7 +218,7 @@ export default function CreateOrder() {
           <div className="flex items-center justify-between mb-6">
             <Button
               variant="ghost"
-              onClick={() => navigate('/dashboard/orders')}
+              onClick={() => navigate('/orders')}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Retour aux commandes

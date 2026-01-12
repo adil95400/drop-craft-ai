@@ -78,7 +78,7 @@ export default function OrderDetail() {
             <p className="text-muted-foreground mb-4">
               La commande que vous recherchez n'existe pas ou a été supprimée.
             </p>
-            <Button onClick={() => navigate('/dashboard/orders')}>
+            <Button onClick={() => navigate('/orders')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Retour aux commandes
             </Button>
@@ -114,7 +114,7 @@ export default function OrderDetail() {
       <div className="container mx-auto py-8 px-4 max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/orders')}>
+          <Button variant="ghost" onClick={() => navigate('/orders')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour aux commandes
           </Button>

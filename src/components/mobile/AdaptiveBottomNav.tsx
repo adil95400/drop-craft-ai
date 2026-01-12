@@ -35,15 +35,15 @@ interface NavItem {
 const primaryNavItems: NavItem[] = [
   { id: 'home', label: 'Accueil', icon: Home, path: '/' },
   { id: 'products', label: 'Produits', icon: Package, path: '/products' },
-  { id: 'orders', label: 'Commandes', icon: ShoppingCart, path: '/dashboard/orders' },
+  { id: 'orders', label: 'Commandes', icon: ShoppingCart, path: '/orders' },
   { id: 'channels', label: 'Canaux', icon: Store, path: '/stores-channels' },
   { id: 'analytics', label: 'Stats', icon: BarChart3, path: '/analytics' }
 ]
 
 const moreNavItems: NavItem[] = [
   { id: 'suppliers', label: 'Fournisseurs', icon: Package, path: '/suppliers' },
-  { id: 'customers', label: 'Clients', icon: User, path: '/dashboard/customers' },
-  { id: 'settings', label: 'Paramètres', icon: Settings, path: '/dashboard/settings' }
+  { id: 'customers', label: 'Clients', icon: User, path: '/customers' },
+  { id: 'settings', label: 'Paramètres', icon: Settings, path: '/settings' }
 ]
 
 interface AdaptiveBottomNavProps {

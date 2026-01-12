@@ -59,7 +59,7 @@ export function StoresOverview() {
             <p className="text-muted-foreground mb-4">
               Aucune boutique connectée
             </p>
-            <Button onClick={() => navigate('/dashboard/stores')}>
+            <Button onClick={() => navigate('/stores-channels')}>
               <Plus className="mr-2 h-4 w-4" />
               Connecter une boutique
             </Button>
@@ -149,7 +149,7 @@ export function StoresOverview() {
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Actualiser
               </Button>
-              <Button size="sm" onClick={() => navigate('/dashboard/stores')}>
+              <Button size="sm" onClick={() => navigate('/stores-channels')}>
                 Voir toutes
               </Button>
             </div>
