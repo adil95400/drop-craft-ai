@@ -10,10 +10,11 @@ import { ChannableHexagons } from './ChannableHexagons'
 import { cn } from '@/lib/utils'
 import { LucideIcon, ArrowRight, Sparkles } from 'lucide-react'
 
-interface ChannableHeroSectionProps {
+export interface ChannableHeroSectionProps {
   title: string
   subtitle?: string
   description?: string
+  icon?: LucideIcon
   badge?: {
     label: string
     icon?: LucideIcon

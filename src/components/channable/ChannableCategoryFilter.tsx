@@ -10,25 +10,28 @@ import { cn } from '@/lib/utils'
 import { ChannableCategory } from './types'
 import { Globe } from 'lucide-react'
 
-interface ChannableCategoryFilterProps {
+export interface ChannableCategoryFilterProps {
   categories: ChannableCategory[]
   selectedCategory: string
-  onCategoryChange: (categoryId: string) => void
+  onCategoryChange?: (categoryId: string) => void
+  onSelectCategory?: (categoryId: string) => void
   showAll?: boolean
   allLabel?: string
   className?: string
-  variant?: 'default' | 'pills' | 'underline'
+  variant?: 'default' | 'pills' | 'underline' | 'compact'
 }
 
 export function ChannableCategoryFilter({
   categories,
   selectedCategory,
   onCategoryChange,
+  onSelectCategory,
   showAll = true,
   allLabel = 'Tous',
   className,
   variant = 'default'
 }: ChannableCategoryFilterProps) {
+  const handleChange = onCategoryChange || onSelectCategory || (() => {})
   const allCategories = showAll 
     ? [{ id: 'all', label: allLabel, icon: Globe }, ...categories]
     : categories
