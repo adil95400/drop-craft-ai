@@ -17,12 +17,12 @@ export interface ChannableStat {
   change?: number
   changeLabel?: string
   icon: LucideIcon
-  trend?: 'up' | 'down' | 'neutral'
+  trend?: string
   color?: 'primary' | 'success' | 'warning' | 'destructive' | 'info'
 }
 
 export interface ChannableQuickAction {
-  id: string
+  id?: string
   label: string
   description?: string
   icon: LucideIcon
