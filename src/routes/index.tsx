@@ -7,7 +7,7 @@ import { lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 
 // Layouts
-import { AppLayout } from '@/layouts/AppLayout';
+import { ChannableLayout } from '@/components/channable/navigation';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AdminRoute } from '@/components/auth/AdminRoute';
 
@@ -120,40 +120,40 @@ export function AppRoutes() {
         <Route path="/subscription" element={<Navigate to="/dashboard/subscription" replace />} />
         
         {/* Protected App Routes - Authentification requise */}
-        <Route path="/dashboard/*" element={<ProtectedRoute><AppLayout><CoreRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/products/*" element={<ProtectedRoute><AppLayout><ProductRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/analytics/*" element={<ProtectedRoute><AppLayout><AnalyticsRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/automation/*" element={<ProtectedRoute><AppLayout><AutomationRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/marketing/*" element={<ProtectedRoute><AppLayout><MarketingRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/integrations/*" element={<ProtectedRoute><AppLayout><IntegrationRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/enterprise/*" element={<ProtectedRoute><AppLayout><EnterpriseRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/extensions/*" element={<ProtectedRoute><AppLayout><ExtensionRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/audit/*" element={<ProtectedRoute><AppLayout><AuditRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/rewrite/*" element={<ProtectedRoute><AppLayout><RewriteRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/attributes/*" element={<ProtectedRoute><AppLayout><AttributesRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/stock/*" element={<ProtectedRoute><AppLayout><StockRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/import/*" element={<ProtectedRoute><AppLayout><ImportRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/feeds/*" element={<ProtectedRoute><AppLayout><FeedRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/suppliers/*" element={<ProtectedRoute><AppLayout><SupplierRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/stores-channels/*" element={<ProtectedRoute><AppLayout><ChannelRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/channels/*" element={<ProtectedRoute><AppLayout><ChannelRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/fulfillment/*" element={<ProtectedRoute><AppLayout><FulfillmentRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/pricing/*" element={<ProtectedRoute><AppLayout><PricingRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/ai/*" element={<ProtectedRoute><AppLayout><AIRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/research/*" element={<ProtectedRoute><AppLayout><ResearchRoutes /></AppLayout></ProtectedRoute>} />
-        <Route path="/tools/*" element={<ProtectedRoute><AppLayout><ToolsRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/dashboard/*" element={<ProtectedRoute><ChannableLayout><CoreRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/products/*" element={<ProtectedRoute><ChannableLayout><ProductRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/analytics/*" element={<ProtectedRoute><ChannableLayout><AnalyticsRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/automation/*" element={<ProtectedRoute><ChannableLayout><AutomationRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/marketing/*" element={<ProtectedRoute><ChannableLayout><MarketingRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/integrations/*" element={<ProtectedRoute><ChannableLayout><IntegrationRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/enterprise/*" element={<ProtectedRoute><ChannableLayout><EnterpriseRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/extensions/*" element={<ProtectedRoute><ChannableLayout><ExtensionRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/audit/*" element={<ProtectedRoute><ChannableLayout><AuditRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/rewrite/*" element={<ProtectedRoute><ChannableLayout><RewriteRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/attributes/*" element={<ProtectedRoute><ChannableLayout><AttributesRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/stock/*" element={<ProtectedRoute><ChannableLayout><StockRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/import/*" element={<ProtectedRoute><ChannableLayout><ImportRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/feeds/*" element={<ProtectedRoute><ChannableLayout><FeedRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/suppliers/*" element={<ProtectedRoute><ChannableLayout><SupplierRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/stores-channels/*" element={<ProtectedRoute><ChannableLayout><ChannelRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/channels/*" element={<ProtectedRoute><ChannableLayout><ChannelRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/fulfillment/*" element={<ProtectedRoute><ChannableLayout><FulfillmentRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/pricing/*" element={<ProtectedRoute><ChannableLayout><PricingRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/ai/*" element={<ProtectedRoute><ChannableLayout><AIRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/research/*" element={<ProtectedRoute><ChannableLayout><ResearchRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/tools/*" element={<ProtectedRoute><ChannableLayout><ToolsRoutes /></ChannableLayout></ProtectedRoute>} />
         
         {/* Reviews */}
-        <Route path="/reviews" element={<ProtectedRoute><AppLayout><AvisPositifUltraPro /></AppLayout></ProtectedRoute>} />
+        <Route path="/reviews" element={<ProtectedRoute><ChannableLayout><AvisPositifUltraPro /></ChannableLayout></ProtectedRoute>} />
         
         {/* Sync & Orders */}
-        <Route path="/sync-manager" element={<ProtectedRoute><AppLayout><SyncManagerPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/orders-center" element={<ProtectedRoute><AppLayout><OrdersCenterPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/sync-manager" element={<ProtectedRoute><ChannableLayout><SyncManagerPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/orders-center" element={<ProtectedRoute><ChannableLayout><OrdersCenterPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* QA Routes */}
-        <Route path="/qa" element={<ProtectedRoute><AppLayout><QADashboard /></AppLayout></ProtectedRoute>} />
-        <Route path="/qa/products" element={<ProtectedRoute><AppLayout><ProductsQA /></AppLayout></ProtectedRoute>} />
-        <Route path="/qa/orders" element={<ProtectedRoute><AppLayout><OrdersQA /></AppLayout></ProtectedRoute>} />
+        <Route path="/qa" element={<ProtectedRoute><ChannableLayout><QADashboard /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/qa/products" element={<ProtectedRoute><ChannableLayout><ProductsQA /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/qa/orders" element={<ProtectedRoute><ChannableLayout><OrdersQA /></ChannableLayout></ProtectedRoute>} />
         
         {/* Shopify Store (public) */}
         <Route path="/store" element={<ShopifyStore />} />
@@ -162,44 +162,44 @@ export function AppRoutes() {
         {/* Creation Pages */}
         <Route path="/products/create" element={<ProtectedRoute><CreateProduct /></ProtectedRoute>} />
         <Route path="/orders/create" element={<ProtectedRoute><CreateOrder /></ProtectedRoute>} />
-        <Route path="/orders/bulk" element={<ProtectedRoute><AppLayout><BulkOrdersPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/orders/bulk" element={<ProtectedRoute><ChannableLayout><BulkOrdersPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/customers/create" element={<ProtectedRoute><CreateCustomer /></ProtectedRoute>} />
         <Route path="/notifications/create" element={<ProtectedRoute><CreateNotification /></ProtectedRoute>} />
-        <Route path="/notifications" element={<ProtectedRoute><AppLayout><NotificationsPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><ChannableLayout><NotificationsPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Feature Pages */}
-        <Route path="/advanced" element={<ProtectedRoute><AppLayout><AdvancedModulesPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/monitoring" element={<ProtectedRoute><AppLayout><MonitoringPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/rules" element={<ProtectedRoute><AppLayout><ProductRulesPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/catalog-intelligence" element={<ProtectedRoute><AppLayout><CatalogIntelligencePage /></AppLayout></ProtectedRoute>} />
-        <Route path="/coupons" element={<ProtectedRoute><AppLayout><CouponsManagementPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/trial" element={<ProtectedRoute><AppLayout><FreeTrialActivationPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/ab-testing" element={<ProtectedRoute><AppLayout><ABTestingPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/repricing" element={<ProtectedRoute><AppLayout><RepricingPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/advanced" element={<ProtectedRoute><ChannableLayout><AdvancedModulesPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/monitoring" element={<ProtectedRoute><ChannableLayout><MonitoringPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/rules" element={<ProtectedRoute><ChannableLayout><ProductRulesPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/catalog-intelligence" element={<ProtectedRoute><ChannableLayout><CatalogIntelligencePage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/coupons" element={<ProtectedRoute><ChannableLayout><CouponsManagementPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/trial" element={<ProtectedRoute><ChannableLayout><FreeTrialActivationPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/ab-testing" element={<ProtectedRoute><ChannableLayout><ABTestingPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/production-readiness" element={<ProtectedRoute><ChannableLayout><ProductionReadinessPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/repricing" element={<ProtectedRoute><ChannableLayout><RepricingPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Ads Spy */}
-        <Route path="/ads-spy" element={<ProtectedRoute><AppLayout><AdsSpyPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/ads-spy/*" element={<ProtectedRoute><AppLayout><AdsSpyPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/ads-spy" element={<ProtectedRoute><ChannableLayout><AdsSpyPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/ads-spy/*" element={<ProtectedRoute><ChannableLayout><AdsSpyPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Page Builder */}
-        <Route path="/page-builder" element={<ProtectedRoute><AppLayout><PageBuilderPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/page-builder" element={<ProtectedRoute><ChannableLayout><PageBuilderPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/page-builder/:pageId" element={<ProtectedRoute><PageEditorPage /></ProtectedRoute>} />
         
         {/* Enrichment */}
-        <Route path="/enrichment" element={<ProtectedRoute><AppLayout><EnrichmentSettingsPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/enrichment" element={<ProtectedRoute><ChannableLayout><EnrichmentSettingsPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/enrichment/settings" element={<Navigate to="/enrichment" replace />} />
         
         {/* Documentation & API */}
-        <Route path="/api-docs" element={<ProtectedRoute><AppLayout><SwaggerPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/api-docs" element={<ProtectedRoute><ChannableLayout><SwaggerPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/swagger" element={<Navigate to="/api-docs" replace />} />
         <Route path="/pwa-install" element={<PWAInstallPage />} />
         
         {/* Reports & SEO direct routes */}
-        <Route path="/reports" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
-        <Route path="/seo" element={<ProtectedRoute><AppLayout><SEOManagerPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/seo/keywords" element={<ProtectedRoute><AppLayout><KeywordResearch /></AppLayout></ProtectedRoute>} />
-        <Route path="/seo/rank-tracker" element={<ProtectedRoute><AppLayout><RankTracker /></AppLayout></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute><ChannableLayout><Reports /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/seo" element={<ProtectedRoute><ChannableLayout><SEOManagerPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/seo/keywords" element={<ProtectedRoute><ChannableLayout><KeywordResearch /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/seo/rank-tracker" element={<ProtectedRoute><ChannableLayout><RankTracker /></ChannableLayout></ProtectedRoute>} />
         
         {/* Public pages */}
         <Route path="/guides/getting-started" element={<GettingStartedPage />} />
@@ -218,15 +218,15 @@ export function AppRoutes() {
         <Route path="/admin/*" element={
           <ProtectedRoute>
             <AdminRoute>
-              <AppLayout>
+              <ChannableLayout>
                 <AdminRoutes />
-              </AppLayout>
+              </ChannableLayout>
             </AdminRoute>
           </ProtectedRoute>
         } />
         
         {/* Sitemap */}
-        <Route path="/sitemap" element={<ProtectedRoute><AppLayout><Sitemap /></AppLayout></ProtectedRoute>} />
+        <Route path="/sitemap" element={<ProtectedRoute><ChannableLayout><Sitemap /></ChannableLayout></ProtectedRoute>} />
         
         {/* 404 */}
         <Route path="*" element={<NotFoundPage />} />
