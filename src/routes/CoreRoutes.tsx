@@ -11,17 +11,9 @@ const Settings = lazy(() => import('@/pages/Settings'));
 
 // Stores - Now handled by ChannelRoutes, keeping redirects for compatibility
 
-// Orders
-const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
-const OrderDetail = lazy(() => import('@/pages/orders/OrderDetail'));
-const OrdersCenterPage = lazy(() => import('@/pages/OrdersCenterPage'));
-const ReturnsManagementPage = lazy(() => import('@/pages/orders/ReturnsManagementPage'));
-const TrackingDashboardPage = lazy(() => import('@/pages/orders/TrackingDashboardPage'));
-const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNotificationsPage'));
+// Orders & Customers - Now handled by OrderRoutes & CustomerRoutes
 
-// Customers
-const CustomersPage = lazy(() => import('@/pages/CustomersPage'));
-const CustomerSegmentationPage = lazy(() => import('@/pages/customers/CustomerSegmentationPage'));
+// Quick actions
 
 // Quick actions
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
@@ -84,14 +76,10 @@ export function CoreRoutes() {
       {/* Stores Management - Redirect to new unified channel hub */}
       <Route path="stores/*" element={<Navigate to="/stores-channels" replace />} />
       
-      {/* Orders Management */}
-      <Route path="orders" element={<OrdersPage />} />
-      <Route path="orders/:id" element={<OrderDetail />} />
-      <Route path="orders-center" element={<OrdersCenterPage />} />
-      <Route path="orders/returns" element={<ReturnsManagementPage />} />
-      <Route path="orders/tracking" element={<TrackingDashboardPage />} />
-      <Route path="orders/notifications" element={<CustomerNotificationsPage />} />
-      <Route path="orders/shipping" element={<ShippingManagementPage />} />
+      {/* Orders & Customers - Now handled by dedicated routes, keeping redirects for compatibility */}
+      <Route path="orders/*" element={<Navigate to="/orders" replace />} />
+      <Route path="orders-center" element={<Navigate to="/orders/center" replace />} />
+      <Route path="customers/*" element={<Navigate to="/customers" replace />} />
       
       {/* Module E: AI Store Builder */}
       <Route path="store/builder" element={<AIStoreBuilderHub />} />
@@ -104,13 +92,6 @@ export function CoreRoutes() {
       
       {/* Module F: Competitive Intelligence */}
       <Route path="research/intelligence" element={<CompetitiveIntelligenceHub />} />
-      
-      {/* Import */}
-      {/* Import routes are now in ImportRoutes module */}
-      
-      {/* Customers */}
-      <Route path="customers" element={<CustomersPage />} />
-      <Route path="customers/segmentation" element={<CustomerSegmentationPage />} />
       
       {/* Quick Actions */}
       <Route path="sync-manager" element={<SyncManagerPage />} />
@@ -133,7 +114,7 @@ export function CoreRoutes() {
       <Route path="ai-insights" element={<AIInsightsPage />} />
       <Route path="workflows" element={<WorkflowsPage />} />
       
-      {/* Settings & Management */}
+      {/* Settings & Management - Now handled by SettingsRoutes, keeping redirects */}
       <Route path="api" element={<APIManagementPage />} />
       <Route path="billing" element={<BillingPage />} />
       
@@ -149,7 +130,7 @@ export function CoreRoutes() {
       <Route path="notifications" element={<NotificationsPage />} />
       
       {/* Settings (accessible from sidebar) */}
-      <Route path="parametres" element={<Settings />} />
+      <Route path="parametres" element={<Navigate to="/settings" replace />} />
     </Routes>
   );
 }

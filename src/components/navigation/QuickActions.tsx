@@ -33,7 +33,7 @@ const quickActions = [
   {
     title: "Centre Commandes",
     description: "Gestion multi-plateformes",
-    href: "/dashboard/orders-center", 
+    href: "/orders/center", 
     icon: ShoppingCart,
     badge: "Nouveau",
     color: "text-purple-600"

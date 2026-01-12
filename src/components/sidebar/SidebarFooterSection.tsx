@@ -44,7 +44,7 @@ export const SidebarFooterSection = memo<SidebarFooterSectionProps>(({ collapsed
               variant="ghost"
               size="sm"
               className="flex-1 h-7 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => handleNavigate('/dashboard/settings')}
+              onClick={() => handleNavigate('/settings')}
               title="Paramètres"
             >
               <Settings className="h-3.5 w-3.5" />
@@ -76,7 +76,7 @@ export const SidebarFooterSection = memo<SidebarFooterSectionProps>(({ collapsed
             "flex items-center gap-2 p-1.5 rounded-md bg-sidebar-accent/30 hover:bg-sidebar-accent/50 transition-colors cursor-pointer",
             collapsed && "justify-center p-1"
           )} 
-          onClick={() => handleNavigate('/dashboard/profile')}
+          onClick={() => handleNavigate('/profile')}
         >
           <div className="relative flex-shrink-0">
             <div className={cn(

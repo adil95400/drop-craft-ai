@@ -19,15 +19,14 @@ const pageTitles: Record<string, string> = {
   '/dashboard-super': 'Dashboard Pro',
   '/products': 'Produits',
   '/products/create': 'Nouveau produit',
-  '/dashboard/orders': 'Commandes',
-  '/dashboard/customers': 'Clients',
+  '/orders': 'Commandes',
+  '/customers': 'Clients',
   '/suppliers': 'Fournisseurs',
   '/import': 'Import',
   '/analytics': 'Analytics',
   '/ai-assistant': 'Assistant IA',
   '/stores-channels': 'Boutiques & Canaux',
   '/settings': 'Paramètres',
-  '/dashboard/settings': 'Paramètres',
 }
 
 interface MobileHeaderProps {

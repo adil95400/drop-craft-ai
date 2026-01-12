@@ -35,6 +35,9 @@ import { PricingRoutes } from './PricingRoutes';
 import { AIRoutes } from './AIRoutes';
 import { ResearchRoutes } from './ResearchRoutes';
 import { ToolsRoutes } from './ToolsRoutes';
+import { OrderRoutes } from './OrderRoutes';
+import { CustomerRoutes } from './CustomerRoutes';
+import { SettingsRoutes } from './SettingsRoutes';
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -97,13 +100,17 @@ export function AppRoutes() {
         {/* Public Routes - Non authentifiés */}
         <Route path="/*" element={<PublicRoutes />} />
         
-        {/* Redirections standardisées */}
+        {/* Redirections de compatibilité: /dashboard/* → /* */}
+        <Route path="/dashboard/orders/*" element={<Navigate to="/orders" replace />} />
+        <Route path="/dashboard/orders" element={<Navigate to="/orders" replace />} />
+        <Route path="/dashboard/customers/*" element={<Navigate to="/customers" replace />} />
+        <Route path="/dashboard/customers" element={<Navigate to="/customers" replace />} />
+        <Route path="/dashboard/settings" element={<Navigate to="/settings" replace />} />
+        
+        {/* Autres redirections standardisées */}
         <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
-        <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
-        <Route path="/tracking" element={<Navigate to="/dashboard/orders" replace />} />
-        <Route path="/crm" element={<Navigate to="/dashboard/customers" replace />} />
-        <Route path="/customers" element={<Navigate to="/dashboard/customers" replace />} />
-        <Route path="/orders" element={<Navigate to="/dashboard/orders" replace />} />
+        <Route path="/tracking" element={<Navigate to="/orders" replace />} />
+        <Route path="/crm" element={<Navigate to="/customers" replace />} />
         <Route path="/modern" element={<Navigate to="/dashboard" replace />} />
         <Route path="/catalog" element={<Navigate to="/products/catalogue" replace />} />
         
@@ -121,6 +128,9 @@ export function AppRoutes() {
         
         {/* Protected App Routes - Authentification requise */}
         <Route path="/dashboard/*" element={<ProtectedRoute><ChannableLayout><CoreRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/orders/*" element={<ProtectedRoute><ChannableLayout><OrderRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/customers/*" element={<ProtectedRoute><ChannableLayout><CustomerRoutes /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/settings/*" element={<ProtectedRoute><ChannableLayout><SettingsRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/products/*" element={<ProtectedRoute><ChannableLayout><ProductRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/analytics/*" element={<ProtectedRoute><ChannableLayout><AnalyticsRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/automation/*" element={<ProtectedRoute><ChannableLayout><AutomationRoutes /></ChannableLayout></ProtectedRoute>} />

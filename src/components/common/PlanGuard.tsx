@@ -71,7 +71,7 @@ export function PlanGuard({
                 </div>
               </div>
               <Button 
-                onClick={() => navigate('/dashboard/subscription')}
+                onClick={() => navigate('/subscription')}
                 className="w-full"
               >
                 Mettre à niveau vers {requiredPlan}
@@ -103,7 +103,7 @@ export function PlanGuard({
           </CardHeader>
           <CardContent>
             <Button 
-              onClick={() => navigate('/dashboard/subscription')}
+              onClick={() => navigate('/subscription')}
               variant="outline"
               className="w-full"
             >

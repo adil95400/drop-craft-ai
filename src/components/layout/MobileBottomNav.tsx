@@ -18,7 +18,7 @@ interface NavItem {
 const bottomNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Accueil', icon: LayoutDashboard },
   { href: '/products', label: 'Produits', icon: Package },
-  { href: '/dashboard/orders', label: 'Commandes', icon: ShoppingCart },
+  { href: '/orders', label: 'Commandes', icon: ShoppingCart },
   { href: '/analytics', label: 'Stats', icon: BarChart3 },
 ];
 
