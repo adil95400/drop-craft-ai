@@ -59,12 +59,12 @@ export class NavigationService {
   }
 
   static isValidPath(path: string): boolean {
-    // Define valid paths
+    // Define valid paths - uniformized without /dashboard/ prefix
     const validPaths = [
       '/', '/auth', '/dashboard',
       '/products', '/products/import', '/products/import/quick', '/products/import/advanced', '/products/import/manage',
       '/products/catalogue', '/products/inventory-predictor',
-      '/dashboard/orders', '/dashboard/customers', '/dashboard/marketplace-sync',
+      '/orders', '/customers', '/marketplace-sync',
       '/analytics', '/analytics/advanced',
       '/automation', '/automation/ai-hub', '/automation/stock-sync',
       '/marketing', '/marketing/crm', '/marketing/seo',
@@ -74,9 +74,11 @@ export class NavigationService {
 
     return validPaths.includes(path) || 
            path.startsWith('/products/') || 
-           path.startsWith('/dashboard/') || 
+           path.startsWith('/orders/') || 
+           path.startsWith('/customers/') ||
            path.startsWith('/marketing/') || 
            path.startsWith('/integrations/') ||
-           path.startsWith('/admin/');
+           path.startsWith('/admin/') ||
+           path.startsWith('/settings/');
   }
 }

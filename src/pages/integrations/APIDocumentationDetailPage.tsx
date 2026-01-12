@@ -189,7 +189,7 @@ curl -X GET "https://api.shopopti.io/v1/products?limit=10&offset=0" \\
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  <Button onClick={() => navigate('/dashboard/settings/api')}>
+                  <Button onClick={() => navigate('/settings/api')}>
                     <Shield className="h-4 w-4 mr-2" />
                     Générer une clé API
                   </Button>

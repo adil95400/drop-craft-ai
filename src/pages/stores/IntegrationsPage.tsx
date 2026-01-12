@@ -111,7 +111,7 @@ export default function IntegrationsPage() {
 
   const handleWizardComplete = (integration: Integration) => {
     refetch()
-    navigate(`/dashboard/stores/integrations/${integration.id}`)
+    navigate(`/stores-channels/integrations/${integration.id}`)
   }
 
   if (isLoading) {
@@ -127,7 +127,7 @@ export default function IntegrationsPage() {
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="mb-4">
-        <BackButton to="/dashboard/stores" />
+        <BackButton to="/stores-channels" />
       </div>
 
       {/* Header with stats */}
@@ -142,7 +142,7 @@ export default function IntegrationsPage() {
           <div className="flex gap-2">
             {integrations.some(i => i.platform_type === 'shopify') && (
               <Button 
-                onClick={() => navigate('/dashboard/stores/shopify-management')} 
+                onClick={() => navigate('/stores-channels/shopify-management')} 
                 variant="outline" 
                 size="sm"
               >
@@ -183,7 +183,7 @@ export default function IntegrationsPage() {
                   📦 Amazon
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/dashboard/stores/connect')}>
+                <DropdownMenuItem onClick={() => navigate('/stores-channels/connect')}>
                   Configuration manuelle...
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -232,7 +232,7 @@ export default function IntegrationsPage() {
                 variant="ghost" 
                 size="sm" 
                 className="w-full mt-3 text-xs"
-                onClick={() => navigate('/dashboard/stores/imported-products')}
+                onClick={() => navigate('/stores-channels/imported-products')}
               >
                 Voir les produits →
               </Button>
@@ -303,7 +303,7 @@ export default function IntegrationsPage() {
                 : 'Essayez de modifier vos filtres de recherche'}
             </p>
             {integrations.length === 0 && (
-              <Button onClick={() => navigate('/dashboard/stores/connect')}>
+              <Button onClick={() => navigate('/stores-channels/connect')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Ajouter une intégration
               </Button>
@@ -370,12 +370,12 @@ export default function IntegrationsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => navigate(`/dashboard/stores/integrations/${integration.id}`)}>
+                        <DropdownMenuItem onClick={() => navigate(`/stores-channels/integrations/${integration.id}`)}>
                           <Settings className="h-4 w-4 mr-2" />
                           Paramètres
                         </DropdownMenuItem>
                         {integration.platform_type === 'shopify' && (
-                          <DropdownMenuItem onClick={() => navigate('/dashboard/stores/shopify-management')}>
+                          <DropdownMenuItem onClick={() => navigate('/stores-channels/shopify-management')}>
                             <Zap className="h-4 w-4 mr-2" />
                             Gestion Shopify
                           </DropdownMenuItem>

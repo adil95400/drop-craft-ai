@@ -159,7 +159,7 @@ export default function UnifiedIntegrationsHub() {
                 <Plus className="h-4 w-4 mr-2" />
                 Ajouter Fournisseur
               </Button>
-              <Button size="sm" variant="outline" onClick={() => navigate('/dashboard/stores/integrations')}>
+              <Button size="sm" variant="outline" onClick={() => navigate('/stores-channels/integrations')}>
                 <ShoppingBag className="h-4 w-4 mr-2" />
                 Connecter Boutique
               </Button>
@@ -302,7 +302,7 @@ export default function UnifiedIntegrationsHub() {
                       <Plus className="h-4 w-4 mr-2" />
                       Ajouter Fournisseur
                     </Button>
-                    <Button variant="outline" onClick={() => navigate('/dashboard/stores/integrations')}>
+                    <Button variant="outline" onClick={() => navigate('/stores-channels/integrations')}>
                       <ShoppingBag className="h-4 w-4 mr-2" />
                       Connecter Boutique
                     </Button>
@@ -370,7 +370,7 @@ function IntegrationCard({
     if (integration.type === 'supplier') {
       navigate(`/suppliers/${integration.id.replace('supplier-', '')}`)
     } else if (integration.type === 'marketplace') {
-      navigate('/dashboard/stores/integrations')
+      navigate('/stores-channels/integrations')
     }
   }
 

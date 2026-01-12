@@ -47,7 +47,7 @@ export default function OrdersCenterPage() {
 
       <div className="space-y-8">
         <div className="mb-4">
-          <BackButton to="/dashboard/orders" label="Retour aux commandes" />
+          <BackButton to="/orders" label="Retour aux commandes" />
         </div>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -167,7 +167,7 @@ export default function OrdersCenterPage() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => navigate(`/dashboard/orders/${order.id}`)}
+                            onClick={() => navigate(`/orders/${order.id}`)}
                           >
                             Voir
                           </Button>

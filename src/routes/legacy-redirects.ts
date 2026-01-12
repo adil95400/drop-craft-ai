@@ -24,12 +24,26 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   '/import-advanced': '/products/import/advanced',
   '/import-ultra-pro': '/products/import/advanced',
   
-  // Orders
-  '/orders-ultra-pro': '/dashboard/orders',
-  '/orders-center': '/dashboard/orders/center',
+  // Orders - Routes uniformisées
+  '/orders-ultra-pro': '/orders',
+  '/orders-center': '/orders/center',
+  '/dashboard/orders': '/orders',
+  '/dashboard/orders/center': '/orders/center',
+  '/dashboard/orders/returns': '/orders/returns',
+  '/dashboard/orders/shipping': '/orders/shipping',
   
-  // Customers
-  '/customers-page': '/dashboard/customers',
+  // Customers - Routes uniformisées
+  '/customers-page': '/customers',
+  '/dashboard/customers': '/customers',
+  
+  // Settings - Routes uniformisées
+  '/dashboard/settings': '/settings',
+  '/dashboard/settings/api': '/settings/api',
+  
+  // Stores - Routes uniformisées
+  '/dashboard/stores': '/stores-channels',
+  '/dashboard/stores/connect': '/stores-channels/connect',
+  '/dashboard/stores/integrations': '/stores-channels/integrations',
   
   // Analytics
   '/analytics-ultra-pro': '/analytics/advanced',
@@ -53,9 +67,9 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   '/inventory-ultra-pro': '/products/inventory-predictor',
   '/stock': '/automation/stock-sync',
   
-  // Tracking
-  '/tracking-ultra-pro': '/dashboard/orders',
-  '/tracking': '/dashboard/orders',
+  // Tracking - Routes uniformisées
+  '/tracking-ultra-pro': '/orders/tracking',
+  '/tracking': '/orders/tracking',
   
   // Reviews
   '/reviews-ultra-pro': '/marketing/crm',
@@ -85,7 +99,8 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   
   // Marketplace
   '/marketplace-hub': '/integrations/marketplace/hub',
-  '/marketplace-sync': '/dashboard/marketplace-sync',
+  '/marketplace-sync': '/marketplace-sync',
+  '/dashboard/marketplace-sync': '/marketplace-sync',
   '/feed-manager': '/integrations/marketplace/feed-manager',
   
   // Extensions
