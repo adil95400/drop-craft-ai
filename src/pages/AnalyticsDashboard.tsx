@@ -16,7 +16,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
-import { TrendingUp, ShoppingCart, Users, Package, DollarSign } from 'lucide-react'
+import { TrendingUp, ShoppingCart, Users, Package, DollarSign, BarChart3 } from 'lucide-react'
+import { ChannablePageLayout, ChannablePageHero, ChannableStatsGrid } from '@/components/channable'
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))']
 
@@ -61,10 +62,7 @@ export default function AnalyticsDashboard() {
     return acc
   }, {})
 
-  const statusData = Object.entries(ordersByStatus || {}).map(([name, value]) => ({
-    name,
-    value,
-  }))
+  const statusData = Object.entries(ordersByStatus || {}).map(([name, value]) => ({ name, value }))
 
   const revenueByMonth = orders?.reduce((acc: any, order) => {
     const month = new Date(order.created_at).toLocaleString('default', { month: 'short' })
@@ -73,71 +71,65 @@ export default function AnalyticsDashboard() {
     return acc
   }, {})
 
-  const revenueData = Object.entries(revenueByMonth || {}).map(([month, revenue]) => ({
-    month,
-    revenue,
-  }))
+  const revenueData = Object.entries(revenueByMonth || {}).map(([month, revenue]) => ({ month, revenue }))
+
+  const statsItems = [
+    {
+      label: 'Revenu Total',
+      value: `€${totalRevenue.toFixed(2)}`,
+      icon: DollarSign,
+      change: 12,
+      changeLabel: 'vs mois dernier',
+      color: 'success' as const
+    },
+    {
+      label: 'Commandes',
+      value: totalOrders.toString(),
+      icon: ShoppingCart,
+      change: 8,
+      changeLabel: 'vs mois dernier',
+      color: 'primary' as const
+    },
+    {
+      label: 'Produits',
+      value: totalProducts.toString(),
+      icon: Package,
+      change: 5,
+      changeLabel: 'nouveaux ce mois',
+      color: 'info' as const
+    },
+    {
+      label: 'Clients',
+      value: totalCustomers.toString(),
+      icon: Users,
+      change: 15,
+      changeLabel: 'vs mois dernier',
+      color: 'warning' as const
+    }
+  ]
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-        <p className="text-muted-foreground">Track your business performance</p>
-      </div>
+    <ChannablePageLayout title="Analytics Dashboard" maxWidth="2xl">
+      {/* Hero Section */}
+      <ChannablePageHero
+        title="Analytics Dashboard"
+        subtitle="Business Intelligence"
+        description="Suivez les performances de votre boutique en temps réel avec des métriques détaillées et des visualisations avancées."
+        icon={BarChart3}
+        category="analytics"
+        badge={{ label: "Temps réel", icon: TrendingUp }}
+      />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Revenue</p>
-              <p className="text-2xl font-bold">€{totalRevenue.toFixed(2)}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-green-500/10">
-              <DollarSign className="w-6 h-6 text-green-500" />
-            </div>
-          </div>
-        </Card>
+      {/* Stats Grid */}
+      <ChannableStatsGrid stats={statsItems} columns={4} />
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Orders</p>
-              <p className="text-2xl font-bold">{totalOrders}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-blue-500/10">
-              <ShoppingCart className="w-6 h-6 text-blue-500" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Products</p>
-              <p className="text-2xl font-bold">{totalProducts}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-purple-500/10">
-              <Package className="w-6 h-6 text-purple-500" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Customers</p>
-              <p className="text-2xl font-bold">{totalCustomers}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-orange-500/10">
-              <Users className="w-6 h-6 text-orange-500" />
-            </div>
-          </div>
-        </Card>
-      </div>
-
+      {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Revenue Trend</h3>
+        <Card className="p-6 border-border/50">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            Tendance des revenus
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -145,23 +137,22 @@ export default function AnalyticsDashboard() {
               <YAxis stroke="hsl(var(--foreground))" />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--background))',
+                  backgroundColor: 'hsl(var(--card))',
                   border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
                 }}
               />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-              />
+              <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ fill: 'hsl(var(--primary))' }} />
             </LineChart>
           </ResponsiveContainer>
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Orders by Status</h3>
+        <Card className="p-6 border-border/50">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <ShoppingCart className="w-5 h-5 text-primary" />
+            Commandes par statut
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -170,7 +161,7 @@ export default function AnalyticsDashboard() {
                 cy="50%"
                 labelLine={false}
                 label={(entry) => entry.name}
-                outerRadius={80}
+                outerRadius={100}
                 fill="hsl(var(--primary))"
                 dataKey="value"
               >
@@ -180,8 +171,9 @@ export default function AnalyticsDashboard() {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--background))',
+                  backgroundColor: 'hsl(var(--card))',
                   border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
                 }}
               />
             </PieChart>
@@ -189,43 +181,50 @@ export default function AnalyticsDashboard() {
         </Card>
       </div>
 
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Performance Metrics</h3>
+      {/* Performance Metrics */}
+      <Card className="p-6 border-border/50">
+        <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-primary" />
+          Métriques de performance
+        </h3>
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="p-4 rounded-lg bg-muted/50">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-5 h-5 text-green-500" />
-              <span className="text-sm text-muted-foreground">Avg Order Value</span>
+          <div className="p-5 rounded-xl bg-gradient-to-br from-muted/50 to-muted/20 border border-border/30">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-green-500" />
+              </div>
+              <span className="text-sm text-muted-foreground font-medium">Panier moyen</span>
             </div>
-            <p className="text-2xl font-bold">
+            <p className="text-3xl font-bold">
               €{totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : '0.00'}
             </p>
           </div>
 
-          <div className="p-4 rounded-lg bg-muted/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="w-5 h-5 text-blue-500" />
-              <span className="text-sm text-muted-foreground">Customer LTV</span>
+          <div className="p-5 rounded-xl bg-gradient-to-br from-muted/50 to-muted/20 border border-border/30">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-500" />
+              </div>
+              <span className="text-sm text-muted-foreground font-medium">LTV Client</span>
             </div>
-            <p className="text-2xl font-bold">
+            <p className="text-3xl font-bold">
               €{totalCustomers > 0 ? (totalRevenue / totalCustomers).toFixed(2) : '0.00'}
             </p>
           </div>
 
-          <div className="p-4 rounded-lg bg-muted/50">
-            <div className="flex items-center gap-2 mb-2">
-              <ShoppingCart className="w-5 h-5 text-purple-500" />
-              <span className="text-sm text-muted-foreground">Conversion Rate</span>
+          <div className="p-5 rounded-xl bg-gradient-to-br from-muted/50 to-muted/20 border border-border/30">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 text-purple-500" />
+              </div>
+              <span className="text-sm text-muted-foreground font-medium">Taux conversion</span>
             </div>
-            <p className="text-2xl font-bold">
-              {totalCustomers > 0
-                ? ((totalOrders / totalCustomers) * 100).toFixed(1)
-                : '0.0'}
-              %
+            <p className="text-3xl font-bold">
+              {totalCustomers > 0 ? ((totalOrders / totalCustomers) * 100).toFixed(1) : '0.0'}%
             </p>
           </div>
         </div>
       </Card>
-    </div>
+    </ChannablePageLayout>
   )
 }

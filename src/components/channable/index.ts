@@ -5,6 +5,7 @@
 
 export { ChannablePageLayout } from './ChannablePageLayout'
 export { ChannableHeroSection } from './ChannableHeroSection'
+export { ChannablePageHero, type HeroCategory, type ChannablePageHeroProps } from './ChannablePageHero'
 export { ChannableCard } from './ChannableCard'
 export { ChannableStatsGrid } from './ChannableStatsGrid'
 export { ChannableCategoryFilter } from './ChannableCategoryFilter'
