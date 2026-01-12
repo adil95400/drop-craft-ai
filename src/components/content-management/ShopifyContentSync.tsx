@@ -360,7 +360,7 @@ export function ShopifyContentSync() {
                   <Store className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Aucune boutique connectée</p>
                   <Button className="mt-4" asChild>
-                    <a href="/dashboard/stores/connect">Connecter une boutique</a>
+                    <a href="/stores-channels/connect">Connecter une boutique</a>
                   </Button>
                 </div>
               ) : (

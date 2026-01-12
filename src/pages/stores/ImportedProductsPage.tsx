@@ -303,7 +303,7 @@ export default function ImportedProductsPage() {
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="mb-4">
-        <BackButton to="/dashboard/stores/integrations" label="Retour aux intégrations" />
+        <BackButton to="/stores-channels/integrations" label="Retour aux intégrations" />
       </div>
 
       <div className="flex flex-col gap-4">

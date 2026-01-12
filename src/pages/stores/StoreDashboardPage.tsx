@@ -96,7 +96,7 @@ export function StoreDashboardPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <NavLink to="/dashboard/stores">
+            <NavLink to="/stores-channels">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Retour aux boutiques
             </NavLink>
@@ -144,7 +144,7 @@ export function StoreDashboardPage() {
             Synchroniser
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <NavLink to={`/dashboard/stores/${storeId}/settings`}>
+            <NavLink to={`/stores-channels/${storeId}/settings`}>
               <Settings className="h-4 w-4 mr-2" />
               Paramètres
             </NavLink>

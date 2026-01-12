@@ -48,7 +48,7 @@ const Header = () => {
     },
     {
       title: "Commandes",
-      href: "/dashboard/orders", 
+      href: "/orders", 
       description: "Suivez vos commandes en temps réel",
       icon: TrendingUp
     },

@@ -76,7 +76,7 @@ export function DashboardLayout() {
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => navigate('/dashboard/notifications')}
+                onClick={() => navigate('/notifications')}
                 className="relative"
               >
                 <Bell className="h-4 w-4" />

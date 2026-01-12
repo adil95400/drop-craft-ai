@@ -206,7 +206,7 @@ export default function Orders() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => navigate(`/dashboard/orders/${order.id}`)}
+                      onClick={() => navigate(`/orders/${order.id}`)}
                     >
                       Détails
                     </Button>

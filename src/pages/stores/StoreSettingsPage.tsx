@@ -48,7 +48,7 @@ export function StoreSettingsPage() {
       <div className="container mx-auto py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Boutique non trouvée</h1>
-          <Button onClick={() => navigate('/dashboard/stores')}>
+          <Button onClick={() => navigate('/stores-channels')}>
             Retour aux boutiques
           </Button>
         </div>
@@ -68,7 +68,7 @@ export function StoreSettingsPage() {
   const handleDisconnectStore = async () => {
     if (confirm('Êtes-vous sûr de vouloir déconnecter cette boutique ? Cette action est irréversible.')) {
       await disconnectStore(store.id)
-      navigate('/dashboard/stores')
+      navigate('/stores-channels')
     }
   }
 
@@ -81,7 +81,7 @@ export function StoreSettingsPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/dashboard/stores')}
+          onClick={() => navigate('/stores-channels')}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Retour
