@@ -19,7 +19,7 @@ import {
   MoreHorizontal
 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { useProducts } from '@/hooks/useProducts'
+import { useProductsUnified } from '@/hooks/unified'
 
 export function ProductsTable() {
   const [search, setSearch] = useState('')
@@ -27,7 +27,7 @@ export function ProductsTable() {
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
 
-  const { products, stats, isLoading, updateProduct, deleteProduct } = useProducts()
+  const { products, stats, isLoading, update: updateProduct, delete: deleteProduct } = useProductsUnified()
 
   const handleSelectAll = () => {
     if (selectedProducts.length === products.length) {

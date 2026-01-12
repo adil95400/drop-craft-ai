@@ -26,7 +26,7 @@ import {
   AlertTriangle,
   Star
 } from "lucide-react"
-import { useIntegrations } from "@/hooks/useIntegrations"
+import { useIntegrationsUnified } from "@/hooks/unified"
 
 // Définir tous les marketplaces et intégrations disponibles
 const COMPLETE_MARKETPLACE = [
@@ -357,7 +357,7 @@ export const CompleteMarketplace = () => {
   const [marketplaces, setMarketplaces] = useState(COMPLETE_MARKETPLACE)
   const [selectedMarketplace, setSelectedMarketplace] = useState<any>(null)
   const { toast } = useToast()
-  const { integrations, updateIntegration, deleteIntegration } = useIntegrations()
+  const { integrations, update: updateIntegration, delete: deleteIntegration } = useIntegrationsUnified()
 
   // Filtrer les marketplaces
   const filteredMarketplaces = marketplaces.filter(marketplace => {
