@@ -1,9 +1,15 @@
-// DEPRECATED: Use useUnifiedOrders instead
-// This file is kept for backward compatibility only
-import { useUnifiedOrders } from './useUnifiedOrders'
+/**
+ * @deprecated Use useOrdersUnified from '@/hooks/unified' instead
+ * This file is kept for backward compatibility only
+ */
+import { useOrdersUnified, UnifiedOrder } from '@/hooks/unified'
+
+export type Order = UnifiedOrder
 
 export const useOrders = () => {
-  const result = useUnifiedOrders()
+  console.warn('[DEPRECATED] useOrders - utilisez useOrdersUnified de @/hooks/unified')
+  
+  const result = useOrdersUnified()
 
   return {
     orders: result.data,

@@ -22,7 +22,7 @@ export interface UnifiedOrder {
   updated_at: string
 }
 
-export function useUnifiedOrders(filters?: {
+export function useOrdersUnified(filters?: {
   status?: UnifiedOrder['status']
   search?: string
   page?: number
@@ -35,7 +35,7 @@ export function useUnifiedOrders(filters?: {
   const page = filters?.page || 0
   const pageSize = filters?.pageSize || 50
 
-  const { data = [], isLoading, error } = useQuery({
+  const { data = [], isLoading, error, refetch } = useQuery({
     queryKey: ['unified-orders', user?.id, filters],
     queryFn: async () => {
       if (!user) return []
@@ -90,8 +90,8 @@ export function useUnifiedOrders(filters?: {
       return orders
     },
     enabled: !!user,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 
   const updateMutation = useMutation({
@@ -141,12 +141,17 @@ export function useUnifiedOrders(filters?: {
   }
 
   return {
+    orders: data,
     data,
     stats,
     isLoading,
     error,
     update: updateMutation.mutate,
+    updateAsync: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
-    refetch: () => queryClient.invalidateQueries({ queryKey: ['unified-orders'] })
+    refetch: () => {
+      refetch()
+      queryClient.invalidateQueries({ queryKey: ['unified-orders'] })
+    }
   }
 }

@@ -1,49 +1,11 @@
-// DEPRECATED: Use useUnifiedSuppliers instead
-// This file is kept for backward compatibility only
-import { useUnifiedSuppliers as useUnifiedSuppliersBase } from './useUnifiedData'
+/**
+ * @deprecated Use useSuppliersUnified from '@/hooks/unified' instead
+ * This file is kept for backward compatibility only
+ */
+import { useSuppliersUnified, UnifiedSupplier } from '@/hooks/unified'
 import { useToast } from '@/hooks/use-toast'
 
-export interface Supplier {
-  id: string
-  user_id: string
-  name: string
-  display_name: string
-  description?: string
-  category: string
-  logo_url?: string
-  website?: string
-  country?: string
-  supplier_type: string
-  sector?: string
-  status: string
-  connection_status: string
-  product_count: number
-  tags: string[]
-  rating: number
-  success_rate: number
-  error_count: number
-  last_sync_at?: string
-  last_access_at?: string
-  credentials_updated_at?: string
-  access_count: number
-  is_premium: boolean
-  created_at: string
-  updated_at: string
-  api_endpoint?: string
-  sync_frequency?: string
-}
-
-export interface CreateSupplierData {
-  name: string
-  supplier_type: 'api' | 'email' | 'csv' | 'xml' | 'ftp'
-  country?: string
-  sector?: string
-  logo_url?: string
-  website?: string
-  description?: string
-  api_endpoint?: string
-  sync_frequency?: 'daily' | 'weekly' | 'manual' | 'hourly'
-}
+export type Supplier = UnifiedSupplier
 
 export interface SupplierTemplate {
   id: string
@@ -67,15 +29,29 @@ export interface SupplierTemplate {
   setupComplexity: 'easy' | 'medium' | 'advanced'
 }
 
+export interface CreateSupplierData {
+  name: string
+  supplier_type: 'api' | 'email' | 'csv' | 'xml' | 'ftp'
+  country?: string
+  sector?: string
+  logo_url?: string
+  website?: string
+  description?: string
+  api_endpoint?: string
+  sync_frequency?: 'daily' | 'weekly' | 'manual' | 'hourly'
+}
+
 // Backward compatibility wrapper
-export function useSuppliers() {
+export function useSuppliers(filters?: any) {
+  console.warn('[DEPRECATED] useSuppliers - utilisez useSuppliersUnified de @/hooks/unified')
+  
   const { toast } = useToast()
-  const result = useUnifiedSuppliersBase()
+  const result = useSuppliersUnified(filters)
 
   const connectSupplier = async (template: SupplierTemplate, credentials: any) => {
     toast({
       title: "Info",
-      description: "Utilisez useUnifiedSuppliers pour gérer les fournisseurs",
+      description: "Utilisez useSuppliersUnified pour gérer les fournisseurs",
     })
     return false
   }
@@ -83,27 +59,30 @@ export function useSuppliers() {
   const disconnectSupplier = async (supplierId: string) => {
     toast({
       title: "Info",
-      description: "Utilisez useUnifiedSuppliers pour gérer les fournisseurs",
+      description: "Utilisez useSuppliersUnified pour gérer les fournisseurs",
     })
   }
 
   const syncSupplier = async (supplierId: string) => {
     toast({
       title: "Info",
-      description: "Utilisez useUnifiedSuppliers pour gérer les fournisseurs",
+      description: "Utilisez useSuppliersUnified pour gérer les fournisseurs",
     })
   }
 
   const updateSupplierCredentials = async (supplierId: string, credentials: any) => {
     toast({
       title: "Info",
-      description: "Utilisez useUnifiedSuppliers pour gérer les fournisseurs",
+      description: "Utilisez useSuppliersUnified pour gérer les fournisseurs",
     })
   }
 
   return {
     suppliers: result.data,
     loading: result.isLoading,
+    isLoading: result.isLoading,
+    error: result.error,
+    stats: result.stats,
     connectSupplier,
     disconnectSupplier,
     syncSupplier,
