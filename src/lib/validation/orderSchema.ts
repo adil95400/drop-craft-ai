@@ -1,8 +1,10 @@
 import { z } from 'zod'
 
 export const orderItemSchema = z.object({
-  product_id: z.string().uuid({ message: "ID produit invalide" }),
+  product_id: z.string().uuid({ message: "ID produit invalide" }).optional(),
   product_name: z.string().min(1, { message: "Nom du produit requis" }),
+  sku: z.string().optional(),
+  name: z.string().optional(), // Alias for product_name
   quantity: z.number().int().min(1, { message: "Quantité minimum: 1" }).max(9999),
   unit_price: z.number().min(0, { message: "Prix unitaire invalide" }),
   total_price: z.number().min(0),
@@ -21,15 +23,16 @@ export const shippingAddressSchema = z.object({
 export const orderSchema = z.object({
   customer_id: z.string().uuid({ message: "Client requis" }).optional(),
   customer_email: z.string().email({ message: "Email invalide" }).optional(),
-  customer_name: z.string().min(1, { message: "Nom client requis" }).max(100),
+  customer_name: z.string().min(1, { message: "Nom client requis" }).max(100).optional(),
   
-  items: z.array(orderItemSchema).min(1, { message: "Au moins un produit requis" }),
+  items: z.array(orderItemSchema).min(1, { message: "Au moins un produit requis" }).optional(),
   
-  shipping_address: shippingAddressSchema,
+  shipping_address: shippingAddressSchema.optional(),
   
-  shipping_method: z.string().min(1, { message: "Mode de livraison requis" }),
-  shipping_cost: z.number().min(0).default(0),
+  shipping_method: z.string().optional(),
+  shipping_cost: z.number().min(0).default(0).optional(),
   
+  carrier: z.string().max(50).optional(),
   notes: z.string().max(1000).optional(),
   
   status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).default('pending'),
