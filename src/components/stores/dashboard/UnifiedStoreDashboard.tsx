@@ -23,7 +23,7 @@ export function UnifiedStoreDashboard() {
   } = useUnifiedStores();
 
   const handleEdit = (store: Store) => {
-    navigate(`/dashboard/stores/${store.id}/settings`);
+    navigate(`/stores-channels/${store.id}/settings`);
   };
 
   const handleDelete = (storeId: string) => {
@@ -92,7 +92,7 @@ export function UnifiedStoreDashboard() {
           >
             <List className="h-4 w-4" />
           </Button>
-          <Button onClick={() => navigate('/dashboard/stores/connect')}>
+          <Button onClick={() => navigate('/stores-channels/connect')}>
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle Boutique
           </Button>
@@ -116,7 +116,7 @@ export function UnifiedStoreDashboard() {
           {stores.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed rounded-lg">
               <p className="text-muted-foreground mb-4">Aucune boutique connectée</p>
-              <Button onClick={() => navigate('/dashboard/stores/connect')}>
+              <Button onClick={() => navigate('/stores-channels/connect')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Connecter une boutique
               </Button>

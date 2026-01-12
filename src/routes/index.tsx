@@ -106,9 +106,12 @@ export function AppRoutes() {
         <Route path="/dashboard/customers/*" element={<Navigate to="/customers" replace />} />
         <Route path="/dashboard/customers" element={<Navigate to="/customers" replace />} />
         <Route path="/dashboard/settings" element={<Navigate to="/settings" replace />} />
+        <Route path="/dashboard/stores/*" element={<Navigate to="/stores-channels" replace />} />
+        <Route path="/dashboard/stores" element={<Navigate to="/stores-channels" replace />} />
+        <Route path="/dashboard/profile" element={<Navigate to="/profile" replace />} />
+        <Route path="/dashboard/subscription" element={<Navigate to="/subscription" replace />} />
         
         {/* Autres redirections standardisées */}
-        <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
         <Route path="/tracking" element={<Navigate to="/orders" replace />} />
         <Route path="/crm" element={<Navigate to="/customers" replace />} />
         <Route path="/modern" element={<Navigate to="/dashboard" replace />} />
@@ -124,7 +127,6 @@ export function AppRoutes() {
         <Route path="/seo/competitor-analysis" element={<Navigate to="/marketing/seo" replace />} />
         <Route path="/seo/analytics" element={<Navigate to="/marketing/seo" replace />} />
         <Route path="/seo/tools" element={<Navigate to="/marketing/seo/tools" replace />} />
-        <Route path="/subscription" element={<Navigate to="/dashboard/subscription" replace />} />
         
         {/* Protected App Routes - Authentification requise */}
         <Route path="/dashboard/*" element={<ProtectedRoute><ChannableLayout><CoreRoutes /></ChannableLayout></ProtectedRoute>} />

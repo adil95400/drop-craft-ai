@@ -48,7 +48,7 @@ const ConnectStorePage = () => {
         description: `Votre boutique ${data.name} a été connectée avec succès`,
       })
 
-      navigate('/dashboard/stores')
+      navigate('/stores-channels')
     } catch (error) {
       console.error('Connection error:', error)
       toast({

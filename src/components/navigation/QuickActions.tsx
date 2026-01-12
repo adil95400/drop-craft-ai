@@ -25,7 +25,7 @@ const quickActions = [
   {
     title: "Sync Manager", 
     description: "Synchronisation bidirectionnelle",
-    href: "/dashboard/sync-manager",
+    href: "/sync-manager",
     icon: Activity,
     badge: "Nouveau",
     color: "text-green-600"

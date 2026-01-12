@@ -180,7 +180,7 @@ export default function ShopifyDiagnostic() {
               vous devez reconnecter votre magasin Shopify pour générer un nouveau token d'accès.
             </p>
             <Button variant="outline" size="sm" asChild>
-              <a href="/dashboard/stores/integrations">Gérer les intégrations</a>
+              <a href="/stores-channels/integrations">Gérer les intégrations</a>
             </Button>
           </div>
         </CardContent>

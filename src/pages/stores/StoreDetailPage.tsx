@@ -180,7 +180,7 @@ export default function StoreDetailPage() {
           <p className="text-muted-foreground mb-6">
             Cette boutique n'existe pas ou a été supprimée.
           </p>
-          <Button onClick={() => navigate('/dashboard/stores')} className="gap-2">
+          <Button onClick={() => navigate('/stores-channels')} className="gap-2">
             <ArrowLeft className="w-4 h-4" />
             Retour aux boutiques
           </Button>
@@ -217,7 +217,7 @@ export default function StoreDetailPage() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate('/dashboard/stores')}
+            onClick={() => navigate('/stores-channels')}
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
@@ -424,7 +424,7 @@ export default function StoreDetailPage() {
             
             <Button 
               variant="outline" 
-              onClick={() => navigate(`/dashboard/stores/${store?.id}/settings`)}
+              onClick={() => navigate(`/stores-channels/${store?.id}/settings`)}
               className="gap-2 justify-start"
             >
               <ArrowLeft className="w-4 h-4" />

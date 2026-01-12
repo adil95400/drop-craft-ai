@@ -92,7 +92,7 @@ const mobileNavGroups = [
     icon: 'Home',
     items: [
       { id: 'dashboard', name: 'Dashboard', route: '/dashboard', icon: 'BarChart3', minPlan: 'standard' },
-      { id: 'stores', name: 'Mes Boutiques', route: '/dashboard/stores', icon: 'Store', minPlan: 'standard' },
+      { id: 'stores', name: 'Mes Boutiques', route: '/stores-channels', icon: 'Store', minPlan: 'standard' },
     ]
   },
   {

@@ -202,7 +202,7 @@ export function StoresOverview() {
 
             {stores.length > 3 && (
               <div className="text-center pt-2">
-                <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/stores')}>
+                <Button variant="outline" size="sm" onClick={() => navigate('/stores-channels')}>
                   Voir {stores.length - 3} boutique(s) de plus
                 </Button>
               </div>

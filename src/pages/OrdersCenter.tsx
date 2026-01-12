@@ -76,7 +76,7 @@ const OrdersCenter = () => {
   };
 
   const handleViewOrder = (orderId: string) => {
-    navigate(`/dashboard/orders/${orderId}`);
+    navigate(`/orders/${orderId}`);
   };
 
   const handlePrintLabel = (orderId: string) => {

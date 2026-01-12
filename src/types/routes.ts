@@ -1,23 +1,24 @@
 /**
  * Types de routes générés automatiquement
  * Synchronisé avec modules.ts et sub-modules.ts
+ * Routes uniformisées sans préfixe /dashboard/
  */
 
 export type AppRoute = 
   | '/dashboard'
-  | '/dashboard/profile'
-  | '/dashboard/settings'
-  | '/dashboard/parametres'
-  | '/dashboard/stores'
-  | '/dashboard/stores/connect'
-  | '/dashboard/stores/integrations'
-  | '/dashboard/orders'
-  | '/dashboard/orders/center'
-  | '/dashboard/orders/returns'
-  | '/dashboard/orders/shipping'
-  | '/dashboard/customers'
-  | '/dashboard/sync-manager'
-  | '/dashboard/marketplace-sync'
+  | '/profile'
+  | '/settings'
+  | '/subscription'
+  | '/stores-channels'
+  | '/stores-channels/connect'
+  | '/stores-channels/integrations'
+  | '/orders'
+  | '/orders/center'
+  | '/orders/returns'
+  | '/orders/shipping'
+  | '/customers'
+  | '/sync-manager'
+  | '/marketplace-sync'
   | '/products'
   | '/products/publish'
   | '/products/catalogue'
@@ -108,6 +109,12 @@ export type AppRoute =
   | '/integrations/support/qa'
   | '/integrations/academy'
   | '/integrations/content'
+  | '/extensions'
+  | '/extensions/marketplace'
+  | '/extensions/cli'
+  | '/extensions/developer'
+  | '/extensions/white-label'
+  | '/extensions/sso'
   | '/enterprise/commerce'
   | '/enterprise/multi-tenant'
   | '/enterprise/monitoring'
@@ -121,19 +128,19 @@ export type AppRoute =
 export function isValidRoute(route: string): route is AppRoute {
   const validRoutes: AppRoute[] = [
     '/dashboard',
-    '/dashboard/profile',
-    '/dashboard/settings',
-    '/dashboard/parametres',
-    '/dashboard/stores',
-    '/dashboard/stores/connect',
-    '/dashboard/stores/integrations',
-    '/dashboard/orders',
-    '/dashboard/orders/center',
-    '/dashboard/orders/returns',
-    '/dashboard/orders/shipping',
-    '/dashboard/customers',
-    '/dashboard/sync-manager',
-    '/dashboard/marketplace-sync',
+    '/profile',
+    '/settings',
+    '/subscription',
+    '/stores-channels',
+    '/stores-channels/connect',
+    '/stores-channels/integrations',
+    '/orders',
+    '/orders/center',
+    '/orders/returns',
+    '/orders/shipping',
+    '/customers',
+    '/sync-manager',
+    '/marketplace-sync',
     '/products',
     '/products/publish',
     '/products/catalogue',
@@ -224,6 +231,12 @@ export function isValidRoute(route: string): route is AppRoute {
     '/integrations/support/qa',
     '/integrations/academy',
     '/integrations/content',
+    '/extensions',
+    '/extensions/marketplace',
+    '/extensions/cli',
+    '/extensions/developer',
+    '/extensions/white-label',
+    '/extensions/sso',
     '/enterprise/commerce',
     '/enterprise/multi-tenant',
     '/enterprise/monitoring',
@@ -240,19 +253,19 @@ export function isValidRoute(route: string): route is AppRoute {
 export function getAllRoutes(): AppRoute[] {
   return [
     '/dashboard',
-    '/dashboard/profile',
-    '/dashboard/settings',
-    '/dashboard/parametres',
-    '/dashboard/stores',
-    '/dashboard/stores/connect',
-    '/dashboard/stores/integrations',
-    '/dashboard/orders',
-    '/dashboard/orders/center',
-    '/dashboard/orders/returns',
-    '/dashboard/orders/shipping',
-    '/dashboard/customers',
-    '/dashboard/sync-manager',
-    '/dashboard/marketplace-sync',
+    '/profile',
+    '/settings',
+    '/subscription',
+    '/stores-channels',
+    '/stores-channels/connect',
+    '/stores-channels/integrations',
+    '/orders',
+    '/orders/center',
+    '/orders/returns',
+    '/orders/shipping',
+    '/customers',
+    '/sync-manager',
+    '/marketplace-sync',
     '/products',
     '/products/publish',
     '/products/catalogue',
@@ -343,6 +356,12 @@ export function getAllRoutes(): AppRoute[] {
     '/integrations/support/qa',
     '/integrations/academy',
     '/integrations/content',
+    '/extensions',
+    '/extensions/marketplace',
+    '/extensions/cli',
+    '/extensions/developer',
+    '/extensions/white-label',
+    '/extensions/sso',
     '/enterprise/commerce',
     '/enterprise/multi-tenant',
     '/enterprise/monitoring',

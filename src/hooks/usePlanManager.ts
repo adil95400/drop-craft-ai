@@ -90,7 +90,7 @@ export function usePlanManager() {
         description: `Passez à un plan supérieur pour augmenter vos limites`,
         action: {
           label: 'Voir les plans',
-          onClick: () => window.location.href = '/dashboard/subscription',
+          onClick: () => window.location.href = '/subscription',
         },
       });
       return false;

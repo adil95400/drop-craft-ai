@@ -124,14 +124,14 @@ export function StoreCard({ store, onSync, onDisconnect }: StoreCardProps) {
               Synchroniser maintenant
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to={`/dashboard/stores/${store.id}`}>
+              <Link to={`/stores-channels/${store.id}`}>
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Tableau de bord
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to={`/dashboard/stores/${store.id}/settings`}>
+              <Link to={`/stores-channels/${store.id}/settings`}>
                 <Settings className="mr-2 h-4 w-4" />
                 Paramètres avancés
               </Link>
@@ -194,7 +194,7 @@ export function StoreCard({ store, onSync, onDisconnect }: StoreCardProps) {
         
         <div className="flex gap-2">
           <Button asChild size="sm" className="flex-1">
-            <Link to={`/dashboard/stores/${store.id}`}>
+            <Link to={`/stores-channels/${store.id}`}>
               <TrendingUp className="mr-2 h-4 w-4" />
               Dashboard
             </Link>
