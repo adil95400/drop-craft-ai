@@ -38,20 +38,18 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
   // Version desktop avec sidebar Channable
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full bg-background">
-        <ChannableSidebar />
+      <ChannableSidebar />
+      
+      <SidebarInset>
+        <ChannableHeader />
         
-        <SidebarInset className="flex-1 flex flex-col min-w-0">
-          <ChannableHeader />
-          
-          {/* Contenu scrollable */}
-          <div className={cn("flex-1 overflow-auto", className)}>
-            <div className="p-4 sm:p-6">
-              {children}
-            </div>
+        {/* Contenu scrollable */}
+        <div className={cn("flex-1 overflow-auto bg-background", className)}>
+          <div className="p-4 sm:p-6">
+            {children}
           </div>
-        </SidebarInset>
-      </div>
+        </div>
+      </SidebarInset>
       
       <InteractiveOnboarding />
     </SidebarProvider>
