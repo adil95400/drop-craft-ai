@@ -403,19 +403,19 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'ShoppingCart',
     enabled: true,
     minPlan: 'standard',
-    route: '/dashboard/orders',
+    route: '/orders',
     features: ['order-management', 'tracking', 'returns'],
     description: 'Gérer les commandes',
     category: 'core',
     order: 1,
     groupId: 'orders',
     subModules: [
-      { id: 'orders-all', name: 'Toutes les commandes', route: '/dashboard/orders', icon: 'ShoppingCart', description: 'Liste complète', features: ['list'], order: 1 },
+      { id: 'orders-all', name: 'Toutes les commandes', route: '/orders', icon: 'ShoppingCart', description: 'Liste complète', features: ['list'], order: 1 },
       { id: 'orders-create', name: 'Créer', route: '/orders/create', icon: 'Plus', description: 'Nouvelle commande', features: ['create'], order: 2 },
       { id: 'orders-bulk', name: 'Commandes en masse', route: '/orders/bulk', icon: 'Layers', description: 'Gestion par lot', features: ['bulk'], order: 3 },
-      { id: 'orders-returns', name: 'Retours', route: '/dashboard/orders/returns', icon: 'RotateCcw', description: 'Gestion retours', features: ['returns'], order: 4 },
-      { id: 'orders-tracking', name: 'Suivi', route: '/dashboard/orders/tracking', icon: 'Truck', description: 'Suivi livraisons', features: ['tracking'], order: 5 },
-      { id: 'orders-notifications', name: 'Notifications Client', route: '/dashboard/orders/notifications', icon: 'Bell', description: 'Alertes clients', features: ['notifications'], order: 6 },
+      { id: 'orders-returns', name: 'Retours', route: '/orders/returns', icon: 'RotateCcw', description: 'Gestion retours', features: ['returns'], order: 4 },
+      { id: 'orders-tracking', name: 'Suivi', route: '/orders/tracking', icon: 'Truck', description: 'Suivi livraisons', features: ['tracking'], order: 5 },
+      { id: 'orders-notifications', name: 'Notifications Client', route: '/orders/notifications', icon: 'Bell', description: 'Alertes clients', features: ['notifications'], order: 6 },
     ]
   },
   
@@ -425,15 +425,15 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Users',
     enabled: true,
     minPlan: 'standard',
-    route: '/dashboard/customers',
+    route: '/customers',
     features: ['customer-management', 'segmentation'],
     description: 'Base clients',
     category: 'customer',
     order: 2,
     groupId: 'orders',
     subModules: [
-      { id: 'customers-all', name: 'Tous les clients', route: '/dashboard/customers', icon: 'Users', description: 'Liste clients', features: ['list'], order: 1 },
-      { id: 'customers-segmentation', name: 'Segmentation', route: '/dashboard/customers/segmentation', icon: 'PieChart', description: 'Segmenter les clients', features: ['segmentation'], order: 2 },
+      { id: 'customers-all', name: 'Tous les clients', route: '/customers', icon: 'Users', description: 'Liste clients', features: ['list'], order: 1 },
+      { id: 'customers-segmentation', name: 'Segmentation', route: '/customers/segmentation', icon: 'PieChart', description: 'Segmenter les clients', features: ['segmentation'], order: 2 },
     ]
   },
   

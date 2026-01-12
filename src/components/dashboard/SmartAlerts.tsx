@@ -132,7 +132,7 @@ export function SmartAlerts() {
         actionable: true,
         action: {
           label: 'Voir les commandes',
-          onClick: () => window.location.href = '/dashboard/orders'
+          onClick: () => window.location.href = '/orders'
         }
       })
     }

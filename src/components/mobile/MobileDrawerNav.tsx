@@ -36,8 +36,8 @@ const navGroups = [
     label: 'Commerce',
     items: [
       { id: 'products', label: 'Produits', icon: Package, path: '/products', badge: null },
-      { id: 'orders', label: 'Commandes', icon: ShoppingCart, path: '/dashboard/orders', badge: null },
-      { id: 'customers', label: 'Clients', icon: Users, path: '/dashboard/customers', badge: null },
+      { id: 'orders', label: 'Commandes', icon: ShoppingCart, path: '/orders', badge: null },
+      { id: 'customers', label: 'Clients', icon: Users, path: '/customers', badge: null },
     ]
   },
   {
@@ -89,9 +89,9 @@ const navGroups = [
     id: 'settings',
     label: 'Paramètres',
     items: [
-      { id: 'settings', label: 'Paramètres', icon: Settings, path: '/dashboard/settings', badge: null },
-      { id: 'billing', label: 'Facturation', icon: CreditCard, path: '/billing', badge: null },
-      { id: 'security', label: 'Sécurité', icon: Shield, path: '/security', badge: null },
+      { id: 'settings', label: 'Paramètres', icon: Settings, path: '/settings', badge: null },
+      { id: 'billing', label: 'Facturation', icon: CreditCard, path: '/settings/billing', badge: null },
+      { id: 'security', label: 'Sécurité', icon: Shield, path: '/settings/security', badge: null },
     ]
   },
   {
