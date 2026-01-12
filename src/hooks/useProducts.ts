@@ -1,6 +1,6 @@
-// DEPRECATED: Use useUnifiedProducts instead
+// DEPRECATED: Use useProductsUnified instead
 // This file is kept for backward compatibility only
-import { useUnifiedProducts as useUnifiedProductsBase, UnifiedProduct } from './useUnifiedData'
+import { useProductsUnified } from './unified/useProductsUnified'
 
 // Backward compatibility wrapper
 export const useProducts = (filters?: {
@@ -8,10 +8,11 @@ export const useProducts = (filters?: {
   search?: string
   status?: 'active' | 'inactive' | 'archived'
 }) => {
-  const result = useUnifiedProductsBase(filters)
+  console.warn('[DEPRECATED] useProducts - utilisez useProductsUnified à la place')
+  const result = useProductsUnified({ filters: filters as any })
   
   return {
-    products: result.data,
+    products: result.products,
     stats: result.stats,
     isLoading: result.isLoading,
     error: result.error,
