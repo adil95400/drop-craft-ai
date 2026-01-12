@@ -8,8 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Edit, Package, DollarSign, Tag, AlertCircle, CheckCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Edit, AlertCircle, CheckCircle } from 'lucide-react';
+import { useBulkEdit } from '@/hooks/useBulkEdit';
 
 interface BulkEditField {
   key: string;
@@ -19,12 +19,15 @@ interface BulkEditField {
   unit?: string;
 }
 
+export type BulkEditItemType = 'products' | 'orders' | 'customers' | 'campaigns';
+
 interface BulkEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedItems: string[];
-  itemType: 'products' | 'orders' | 'customers' | 'campaigns';
+  itemType: BulkEditItemType;
   onApply?: (changes: Record<string, any>, selectedItems: string[]) => void;
+  onSuccess?: () => void;
 }
 
 const fieldConfigs: Record<string, BulkEditField[]> = {
@@ -94,14 +97,15 @@ export const BulkEditDialog: React.FC<BulkEditDialogProps> = ({
   onOpenChange,
   selectedItems,
   itemType,
-  onApply
+  onApply,
+  onSuccess
 }) => {
-  const { toast } = useToast();
   const [changes, setChanges] = useState<Record<string, any>>({});
   const [enabledFields, setEnabledFields] = useState<Set<string>>(new Set());
-  const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('fields');
+  
+  const bulkEditMutation = useBulkEdit(itemType);
 
   const fields = fieldConfigs[itemType] || [];
 
@@ -129,44 +133,49 @@ export const BulkEditDialog: React.FC<BulkEditDialogProps> = ({
 
   const handleApply = async () => {
     if (enabledFields.size === 0) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner au moins un champ à modifier",
-        variant: "destructive"
-      });
       return;
     }
 
-    setIsProcessing(true);
     setActiveTab('preview');
-    
-    // Simulate processing with progress
-    for (let i = 0; i <= 100; i += 10) {
-      setProgress(i);
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
 
     const filteredChanges = Object.fromEntries(
       Object.entries(changes).filter(([key]) => enabledFields.has(key))
     );
 
-    onApply?.(filteredChanges, selectedItems);
-    
-    toast({
-      title: "Succès",
-      description: `${selectedItems.length} élément(s) modifié(s) avec succès`,
-      variant: "default"
-    });
+    // Progress animation
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 10, 90));
+    }, 100);
 
-    setIsProcessing(false);
-    setProgress(0);
-    onOpenChange(false);
-    
-    // Reset state
-    setChanges({});
-    setEnabledFields(new Set());
-    setActiveTab('fields');
+    try {
+      await bulkEditMutation.mutateAsync({ 
+        ids: selectedItems, 
+        changes: filteredChanges 
+      });
+      
+      clearInterval(progressInterval);
+      setProgress(100);
+
+      // Also call the legacy onApply if provided
+      onApply?.(filteredChanges, selectedItems);
+      onSuccess?.();
+      
+      // Close dialog after short delay
+      setTimeout(() => {
+        onOpenChange(false);
+        // Reset state
+        setChanges({});
+        setEnabledFields(new Set());
+        setActiveTab('fields');
+        setProgress(0);
+      }, 500);
+    } catch (error) {
+      clearInterval(progressInterval);
+      setProgress(0);
+    }
   };
+
+  const isProcessing = bulkEditMutation.isPending;
 
   const renderFieldInput = (field: BulkEditField) => {
     const isEnabled = enabledFields.has(field.key);

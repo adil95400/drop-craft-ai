@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { MultiChannelDashboard } from '@/components/multi-channel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MultiChannelDashboard, ChannelFeedManager } from '@/components/multi-channel';
 
 export default function MultiChannelPage() {
+  const [activeView, setActiveView] = useState('dashboard');
+
   return (
     <>
       <Helmet>
@@ -18,7 +21,20 @@ export default function MultiChannelPage() {
           </p>
         </div>
 
-        <MultiChannelDashboard />
+        <Tabs value={activeView} onValueChange={setActiveView}>
+          <TabsList>
+            <TabsTrigger value="dashboard">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="feed-manager">Gestionnaire de Feeds</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dashboard">
+            <MultiChannelDashboard />
+          </TabsContent>
+
+          <TabsContent value="feed-manager">
+            <ChannelFeedManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );
