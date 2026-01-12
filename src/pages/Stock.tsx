@@ -4,11 +4,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AlertTriangle, Package, Search, Plus, Loader2 } from 'lucide-react'
+import { AlertTriangle, Package, Search, Plus, Loader2, Warehouse, TrendingDown, DollarSign } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
+import { ChannablePageWrapper, ChannableStatsGrid } from '@/components/channable'
 
 interface StockItem {
   id: string;
@@ -43,9 +43,9 @@ const Stock = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'in_stock': return <Badge className="bg-green-100 text-green-800">En stock</Badge>
-      case 'low_stock': return <Badge className="bg-orange-100 text-orange-800">Stock faible</Badge>
-      case 'out_of_stock': return <Badge className="bg-red-100 text-red-800">Rupture</Badge>
+      case 'in_stock': return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">En stock</Badge>
+      case 'low_stock': return <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">Stock faible</Badge>
+      case 'out_of_stock': return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Rupture</Badge>
       default: return <Badge variant="outline">{status}</Badge>
     }
   }
@@ -97,66 +97,61 @@ const Stock = () => {
   };
 
   const lowStockCount = stockData.filter(item => item.status === 'low_stock' || item.status === 'out_of_stock').length;
+  const totalValue = stockData.reduce((acc, item) => acc + (item.price * item.currentStock), 0);
+  const totalUnits = stockData.reduce((acc, item) => acc + item.currentStock, 0);
+
+  const stats = [
+    {
+      label: 'Produits en stock',
+      value: stockData.length,
+      icon: Package,
+      color: 'primary' as const,
+    },
+    {
+      label: 'Alertes stock',
+      value: lowStockCount,
+      icon: AlertTriangle,
+      color: 'destructive' as const,
+      trend: lowStockCount > 0 ? 'down' as const : undefined,
+    },
+    {
+      label: 'Valeur totale',
+      value: `${totalValue.toLocaleString()} €`,
+      icon: DollarSign,
+      color: 'success' as const,
+    },
+    {
+      label: 'Unités totales',
+      value: totalUnits,
+      icon: Warehouse,
+      color: 'info' as const,
+    },
+  ];
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Gestion des Stocks</h1>
+    <ChannablePageWrapper
+      title="Gestion des Stocks"
+      subtitle="Inventaire"
+      description="Gérez votre inventaire, suivez les niveaux de stock et recevez des alertes automatiques."
+      heroImage="stock"
+      badge={{ label: `${stockData.length} produits`, icon: Package }}
+      actions={
         <Button onClick={() => setShowAddModal(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Ajouter un produit
         </Button>
-      </div>
+      }
+    >
+      {/* Stats Grid */}
+      <ChannableStatsGrid stats={stats} columns={4} />
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm">Produits en stock</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stockData.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm">Alertes stock</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{lowStockCount}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm">Valeur totale</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stockData.reduce((acc, item) => acc + (item.price * item.currentStock), 0).toLocaleString()}€
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm">Unités totales</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stockData.reduce((acc, item) => acc + item.currentStock, 0)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
+      {/* Table Card */}
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle>Inventaire</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Warehouse className="h-5 w-5 text-primary" />
+            Inventaire
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 mb-4">
@@ -184,14 +179,14 @@ const Stock = () => {
             </TableHeader>
             <TableBody>
               {filteredStock.map((item) => (
-                <TableRow key={item.id}>
+                <TableRow key={item.id} className="hover:bg-muted/50">
                   <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.sku}</TableCell>
-                  <TableCell className={item.currentStock <= item.minStock ? 'text-red-600 font-bold' : 'text-green-600 font-bold'}>
+                  <TableCell className="font-mono text-sm">{item.sku}</TableCell>
+                  <TableCell className={item.currentStock <= item.minStock ? 'text-destructive font-bold' : 'text-green-600 font-bold'}>
                     {item.currentStock}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{item.minStock}</TableCell>
-                  <TableCell>{item.price}€</TableCell>
+                  <TableCell>{item.price} €</TableCell>
                   <TableCell>{getStatusBadge(item.status)}</TableCell>
                 </TableRow>
               ))}
@@ -271,7 +266,7 @@ const Stock = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </ChannablePageWrapper>
   )
 }
 

@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useRealOrders } from '@/hooks/useRealOrders';
-import { RefreshCw, Search, Download, Filter } from 'lucide-react';
+import { RefreshCw, Search, Download, Filter, ShoppingCart, TrendingUp, Package, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { ChannablePageWrapper } from '@/components/channable';
+import { ChannableStatsGrid } from '@/components/channable';
 import {
   Select,
   SelectContent,
@@ -40,7 +42,6 @@ export default function Orders() {
       return;
     }
 
-    // Créer les données CSV
     const headers = ['Numéro', 'Client', 'Date', 'Statut', 'Montant', 'Devise', 'Articles'];
     const csvData = orders.map(order => [
       order.order_number || '',
@@ -57,7 +58,6 @@ export default function Orders() {
       ...csvData.map(row => row.join(','))
     ].join('\n');
 
-    // Télécharger le fichier
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -78,33 +78,72 @@ export default function Orders() {
     return matchesSearch && matchesStatus;
   }) || [];
 
+  const totalRevenue = orders?.reduce((acc, order) => acc + (order.total_amount || 0), 0) || 0;
+  const pendingOrders = orders?.filter(o => o.status === 'pending').length || 0;
+  const shippedOrders = orders?.filter(o => o.status === 'shipped').length || 0;
+
+  const stats = [
+    {
+      label: 'Total commandes',
+      value: orders?.length || 0,
+      icon: ShoppingCart,
+      color: 'primary' as const,
+      change: 12.5,
+      trend: 'up' as const,
+    },
+    {
+      label: 'Revenus',
+      value: `${totalRevenue.toLocaleString()} €`,
+      icon: TrendingUp,
+      color: 'success' as const,
+      change: 8.3,
+      trend: 'up' as const,
+    },
+    {
+      label: 'Expédiées',
+      value: shippedOrders,
+      icon: Package,
+      color: 'info' as const,
+    },
+    {
+      label: 'En attente',
+      value: pendingOrders,
+      icon: Clock,
+      color: 'warning' as const,
+    },
+  ];
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
-        <Skeleton className="h-32" />
+        <Skeleton className="h-48 rounded-2xl" />
         <Skeleton className="h-96" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Commandes</h1>
-          <p className="text-muted-foreground">Gérez vos commandes et suivez leur statut</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={refetch}>
+    <ChannablePageWrapper
+      title="Commandes"
+      subtitle="Centre de commandes"
+      description="Gérez vos commandes, suivez leur statut et optimisez votre logistique de livraison."
+      heroImage="orders"
+      badge={{ label: `${orders?.length || 0} commandes`, icon: ShoppingCart }}
+      actions={
+        <>
+          <Button variant="outline" onClick={refetch} className="bg-background/50">
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualiser
           </Button>
-          <Button variant="outline" onClick={handleExport}>
+          <Button variant="outline" onClick={handleExport} className="bg-background/50">
             <Download className="h-4 w-4 mr-2" />
             Exporter CSV
           </Button>
-        </div>
-      </div>
+        </>
+      }
+    >
+      {/* Stats Grid */}
+      <ChannableStatsGrid stats={stats} columns={4} />
 
       {/* Filters */}
       <div className="flex gap-4">
@@ -134,9 +173,12 @@ export default function Orders() {
       </div>
 
       {/* Orders Table */}
-      <Card>
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle>{filteredOrders.length} commande(s)</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5 text-primary" />
+            {filteredOrders.length} commande(s)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -144,7 +186,7 @@ export default function Orders() {
               const statusInfo = statusConfig[order.status as keyof typeof statusConfig];
               
               return (
-                <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={order.id} className="flex items-center justify-between p-4 border rounded-xl bg-background/50 hover:bg-background/80 transition-colors">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{order.order_number}</span>
@@ -180,6 +222,6 @@ export default function Orders() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }
