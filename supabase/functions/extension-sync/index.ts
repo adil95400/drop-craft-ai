@@ -1,17 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { corsHeaders } from '../_shared/cors.ts'
+import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts'
+import { parseJsonValidated, z } from '../_shared/validators.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const BodySchema = z.object({
+  extension_id: z.string().min(1, 'extension_id required'),
+  job_type: z.string().min(1, 'job_type required'),
+  parameters: z.record(z.unknown()).optional()
+})
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+serve(
+  withErrorHandler(async (req) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders })
+    }
 
-  try {
-    const { extension_id, job_type, parameters } = await req.json()
+    const { extension_id, job_type, parameters } = await parseJsonValidated(req, BodySchema)
     
     console.log(`🔄 Extension sync: ${job_type} for ${extension_id}`)
 
@@ -33,14 +37,5 @@ serve(async (req) => {
         status: 200,
       }
     )
-
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    )
-  }
-})
+  }, corsHeaders)
+)
