@@ -134,10 +134,10 @@ export const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({
                 <div className="flex items-start gap-3">
                   <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div className="space-y-1">
-                    {customer.address.street && <div>{customer.address.street}</div>}
+                    {(customer.address.line1 || customer.address.line2) && <div>{customer.address.line1 || customer.address.line2}</div>}
                     <div>
                       {customer.address.city && `${customer.address.city}`}
-                      {customer.address.postalCode && ` ${customer.address.postalCode}`}
+                      {customer.address.postal_code && ` ${customer.address.postal_code}`}
                     </div>
                     {customer.address.country && <div>{customer.address.country}</div>}
                   </div>
