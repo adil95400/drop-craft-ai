@@ -11,7 +11,7 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Grid3X3, Edit, Trash2, Copy, Download, Upload, Package, Tag, Archive } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface ProductBulkOperationsProps {
@@ -21,7 +21,7 @@ interface ProductBulkOperationsProps {
 
 export function ProductBulkOperations({ selectedProducts, onClearSelection }: ProductBulkOperationsProps) {
   const { toast } = useToast()
-  const { updateProduct, deleteProduct } = useRealProducts()
+  const { update: updateProduct, delete: deleteProduct } = useProductsUnified()
   const { confirm, confirmState } = useConfirm()
   const queryClient = useQueryClient()
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)

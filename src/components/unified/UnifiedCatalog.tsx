@@ -26,8 +26,8 @@ import {
 import { useAuthWithPlan } from '@/components/unified/UnifiedProvider'
 import { usePlanConditionalRender, ConditionalFeature } from '@/components/unified/UnifiedComponent'
 import { ProFeature, UltraProFeature } from '@/components/unified/UnifiedFeatureGate'
-import { Product } from '@/hooks/useRealProducts'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified, UnifiedProduct } from '@/hooks/unified'
+export type Product = UnifiedProduct
 
 // Import des composants existants
 import { CatalogUltraProInterface } from '@/components/catalog/CatalogUltraProInterface'
@@ -48,7 +48,7 @@ export function UnifiedCatalog() {
     isLoading: productsLoading, 
     error, 
     stats 
-  } = useRealProducts()
+  } = useProductsUnified()
 
   const handleSearch = (term: string) => {
     setSearchTerm(term)

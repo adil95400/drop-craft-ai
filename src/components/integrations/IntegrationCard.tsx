@@ -35,7 +35,8 @@ import {
   TrendingUp,
   Zap
 } from 'lucide-react';
-import { Integration, useIntegrations } from '@/hooks/useIntegrations';
+import { useIntegrationsUnified, UnifiedIntegration } from '@/hooks/unified';
+type Integration = UnifiedIntegration;
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/consoleCleanup';
@@ -58,7 +59,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
   const [testResult, setTestResult] = useState<any>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState<string>('');
-  const { updateIntegration, deleteIntegration, testConnection, syncData } = useIntegrations();
+  const { update: updateIntegration, delete: deleteIntegration, testConnection, sync: syncData } = useIntegrationsUnified();
   const { toast } = useToast();
 
   const statusConfig = {
@@ -93,7 +94,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
       }
       
       // Update integration metadata
-      await updateIntegration(integration.id, updateData);
+      await updateIntegration({ id: integration.id, updates: updateData });
       setIsConfigOpen(false);
       onEdit?.(updateData as Integration);
       
@@ -170,7 +171,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
             </Badge>
             <Switch
               checked={integration.is_active}
-              onCheckedChange={(checked) => updateIntegration(integration.id, { is_active: checked })}
+              onCheckedChange={(checked) => updateIntegration({ id: integration.id, updates: { is_active: checked } })}
             />
           </div>
         </div>

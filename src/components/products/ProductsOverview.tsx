@@ -2,7 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useProducts } from '@/hooks/useProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { 
   Package, TrendingUp, AlertTriangle, DollarSign, 
   ShoppingBag, Star, Eye, Plus, Download, Upload
@@ -12,7 +12,7 @@ import { ProductCategoriesSection } from './ProductCategoriesSection'
 import { useState } from 'react'
 
 export function ProductsOverview() {
-  const { stats, isLoading } = useProducts()
+  const { stats, isLoading } = useProductsUnified()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)

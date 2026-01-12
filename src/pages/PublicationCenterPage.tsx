@@ -8,7 +8,7 @@ import { ProductPublisher } from '@/domains/marketplace/components/ProductPublis
 import { BulkPublisher } from '@/domains/marketplace/components/BulkPublisher'
 import { ConnectMarketplaceDialog } from '@/components/marketplace/ConnectMarketplaceDialog'
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections'
-import { useProducts } from '@/hooks/useProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { seedSampleProducts } from '@/lib/seedProducts'
 import { Search, Upload, Package, Loader2 } from 'lucide-react'
 
@@ -30,7 +30,7 @@ export default function PublicationCenterPage() {
   const [selectedProductForPublish, setSelectedProductForPublish] = useState<string | null>(null)
   const [seeding, setSeeding] = useState(false)
   const { connections } = useMarketplaceConnections()
-  const { products, isLoading } = useProducts({ search: searchQuery, status: 'active' })
+  const { products, isLoading } = useProductsUnified({ filters: { search: searchQuery, status: 'active' } })
 
   useEffect(() => {
     // Seed products if none exist

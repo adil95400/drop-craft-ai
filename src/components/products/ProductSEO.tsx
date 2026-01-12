@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useProducts } from '@/hooks/useProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { useSEOOptimization } from '@/hooks/useSEOOptimization'
 import { SEOOptimizationDialog } from '@/components/modals/SEOOptimizationDialog'
 import { Search, TrendingUp, AlertTriangle, CheckCircle2, Sparkles, BarChart3, RefreshCw } from 'lucide-react'
@@ -56,7 +56,7 @@ const getSEOStatus = (score: number) => {
 }
 
 export function ProductSEO() {
-  const { products, isLoading } = useProducts()
+  const { products, isLoading } = useProductsUnified()
   const { startOptimization, isOptimizing } = useSEOOptimization()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)

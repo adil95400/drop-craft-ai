@@ -23,7 +23,7 @@ import {
   Star
 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { useProducts } from '@/hooks/useProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { ProductCreateDialog } from './ProductCreateDialog'
 import { ProductEditDialog } from './ProductEditDialog'
 import { ProductImportDialog } from './ProductImportDialog'
@@ -44,7 +44,7 @@ export function ProductsList() {
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
 
-  const { products, stats, isLoading, updateProduct, deleteProduct } = useProducts()
+  const { products, stats, isLoading, update: updateProduct, delete: deleteProduct } = useProductsUnified()
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = !search || 

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, UserPlus, Mail, Phone, TrendingUp, Target, Search, Loader2, MoreHorizontal, Edit, Trash2 } from "lucide-react";
-import { useRealCustomers } from "@/hooks/useRealCustomers";
+import { useCustomersUnified } from "@/hooks/unified";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +18,7 @@ export default function CrmPage() {
   const [newContact, setNewContact] = useState({ first_name: "", last_name: "", email: "", phone: "" });
   const [isDeleting, setIsDeleting] = useState(false);
   
-  const { customers, stats, isLoading, addCustomer, isAdding } = useRealCustomers({ search });
+  const { customers, stats, isLoading, add: addCustomer, isAdding } = useCustomersUnified({ filters: { search } });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

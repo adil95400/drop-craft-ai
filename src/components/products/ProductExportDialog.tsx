@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Download, Loader2, FileText } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { importExportService } from '@/services/importExportService'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified } from '@/hooks/unified'
 
 interface ProductExportDialogProps {
   open: boolean
@@ -17,7 +17,7 @@ interface ProductExportDialogProps {
 
 export function ProductExportDialog({ open, onOpenChange }: ProductExportDialogProps) {
   const { toast } = useToast()
-  const { products } = useRealProducts()
+  const { products } = useProductsUnified()
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
   const [exportFormat, setExportFormat] = useState('csv')

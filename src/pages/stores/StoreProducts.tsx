@@ -1,10 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Package, AlertTriangle, TrendingUp, ShoppingBag } from 'lucide-react'
 import { ProductsTable } from '@/components/stores/products/ProductsTable'
-import { useProducts } from '@/hooks/useProducts'
+import { useProductsUnified } from '@/hooks/unified'
 
 export function StoreProducts() {
-  const { stats, isLoading } = useProducts()
+  const { stats, isLoading } = useProductsUnified()
 
   if (isLoading) {
     return (

@@ -24,7 +24,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { useAI } from '@/hooks/useAI'
-import { useProducts } from '@/hooks/useProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { EnhancedCard } from '@/components/ui/enhanced-card'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { AnimatedCounter } from '@/components/ui/animated-counter'
@@ -32,7 +32,7 @@ import { LoadingSpinner, LoadingCard } from '@/components/ui/loading-states'
 import { FloatingElement, AnimatedBadge, GlowingIcon } from '@/components/ui/floating-elements'
 
 export function AIUltraProInterface() {
-  const { products } = useProducts()
+  const { products } = useProductsUnified()
   const {
     aiTasks,
     isOptimizing,
