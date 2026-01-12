@@ -532,7 +532,7 @@ export function ChannableSidebar() {
   return (
     <Sidebar 
       collapsible="icon" 
-      className="border-r border-border/50 bg-background/95 backdrop-blur transition-all duration-300"
+      className="border-r border-border/50 bg-background/95 backdrop-blur transition-all duration-300 z-40"
     >
       <SidebarHeader className="p-4 border-b border-border/50">
         <ChannableLogo collapsed={collapsed} />
