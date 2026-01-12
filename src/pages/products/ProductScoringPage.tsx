@@ -1,9 +1,17 @@
 import { ProductScoringDashboard } from '@/components/product-scoring';
+import { ChannablePageWrapper } from '@/components/channable';
+import { Star } from 'lucide-react';
 
 export default function ProductScoringPage() {
   return (
-    <div className="container mx-auto py-6 px-4">
+    <ChannablePageWrapper
+      title="Scoring Produits"
+      subtitle="Évaluation IA"
+      description="Analysez et améliorez le score de qualité de vos fiches produits avec notre algorithme d'IA."
+      heroImage="products"
+      badge={{ label: 'IA Score', icon: Star }}
+    >
       <ProductScoringDashboard />
-    </div>
+    </ChannablePageWrapper>
   );
 }
