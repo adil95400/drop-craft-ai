@@ -1,10 +1,12 @@
 /**
  * Routes Integrations - APIs, Marketplace, Extensions (consolidées)
+ * Style Channable - Hub d'intégrations multicanal moderne
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-// Main integrations hub
+// Main integrations hub - Style Channable
+const ChannableStyleIntegrationsPage = lazy(() => import('@/pages/integrations/ChannableStyleIntegrationsPage'));
 const UnifiedIntegrationsHub = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 const TikTokShopPage = lazy(() => import('@/pages/integrations/TikTokShopPage'));
 const MarketplaceConnectorsPage = lazy(() => import('@/pages/integrations/MarketplaceConnectorsPage'));
@@ -40,10 +42,13 @@ const MultiChannelPage = lazy(() => import('@/pages/integrations/MultiChannelPag
 export function IntegrationRoutes() {
   return (
     <Routes>
-      {/* Integrations Hub - Point d'entrée unique */}
-      <Route index element={<UnifiedIntegrationsHub />} />
+      {/* Integrations Hub - Style Channable (principal) */}
+      <Route index element={<ChannableStyleIntegrationsPage />} />
+      
+      {/* Ancien hub (accès via /integrations/hub) */}
+      <Route path="legacy" element={<UnifiedIntegrationsHub />} />
       <Route path="hub" element={<Navigate to="/integrations" replace />} />
-      <Route path="unified" element={<Navigate to="/integrations" replace />} />
+      <Route path="unified" element={<UnifiedIntegrationsHub />} />
       <Route path="sync-config" element={<SyncConfigPage />} />
       <Route path="tiktok-shop" element={<TikTokShopPage />} />
       <Route path="connectors" element={<MarketplaceConnectorsPage />} />
