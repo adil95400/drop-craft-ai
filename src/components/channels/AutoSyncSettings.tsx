@@ -98,29 +98,51 @@ export function AutoSyncSettings({
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
+      // NOTE: Certains environnements n'ont pas les colonnes auto_sync_*.
+      // On persiste donc la configuration dans le champ JSON existant `sync_settings`.
+      const syncSettingsPayload = {
+        auto_sync: config.enabled,
+        interval_minutes: config.interval,
+        types: {
+          products: config.syncProducts,
+          orders: config.syncOrders,
+          inventory: config.syncInventory,
+          prices: config.syncPrices,
+        },
+        notifications: {
+          success: config.notifyOnSuccess,
+          error: config.notifyOnError,
+        },
+        retry: {
+          enabled: config.retryOnError,
+          max_retries: config.maxRetries,
+        },
+      }
+
       const { error } = await supabase
         .from('integrations')
         .update({
-          auto_sync_config: JSON.parse(JSON.stringify(config)),
-          auto_sync_enabled: config.enabled,
-          auto_sync_interval: config.interval,
-          updated_at: new Date().toISOString()
-        })
+          // Sauvegarde principale
+          sync_settings: syncSettingsPayload as any,
+          updated_at: new Date().toISOString(),
+        } as any)
         .eq('id', channelId)
-      
+
       if (error) throw error
-      
+
       // If enabled, register the sync schedule
       if (config.enabled) {
-        await supabase.functions.invoke('auto-sync-channels', {
-          body: { 
+        const { error: scheduleError } = await supabase.functions.invoke('auto-sync-channels', {
+          body: {
             action: 'schedule',
             channelId,
-            intervalMinutes: config.interval
-          }
+            intervalMinutes: config.interval,
+          },
         })
+
+        if (scheduleError) throw scheduleError
       }
-      
+
       return config
     },
     onSuccess: () => {
