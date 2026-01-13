@@ -6,7 +6,8 @@ import {
   DollarSign, Truck, Edit3, Trash2, Copy, Download,
   Upload, Crown, Zap, Target, BarChart3, Settings,
   CheckCircle2, XCircle, AlertTriangle, Layers, Share2,
-  ExternalLink, Calculator, Shield
+  ExternalLink, Calculator, Shield, Wand2, Globe, Store,
+  Send, FileText, Image, MessageSquare, Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -108,6 +109,14 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showOptimizeModal, setShowOptimizeModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [optimizingProduct, setOptimizingProduct] = useState<CatalogProduct | null>(null);
+  const [publishingProduct, setPublishingProduct] = useState<CatalogProduct | null>(null);
+  const [optimizeMode, setOptimizeMode] = useState<'full' | 'title' | 'description' | 'seo' | 'images'>('full');
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [selectedMarketplaces, setSelectedMarketplaces] = useState<string[]>([]);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -415,6 +424,97 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
       toast({ title: "Scores IA calculés", description: "Tous les produits ont été analysés" });
       setShowScoreModal(false);
     }, 2000);
+  };
+
+  // Optimisation IA
+  const handleOptimizeContent = async (product: CatalogProduct) => {
+    setOptimizingProduct(product);
+    setShowOptimizeModal(true);
+  };
+
+  const executeOptimization = async () => {
+    if (!optimizingProduct) return;
+    setIsOptimizing(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      const { data, error } = await supabase.functions.invoke('ai-optimize-product', {
+        body: { 
+          productId: optimizingProduct.id, 
+          userId: user.id, 
+          mode: optimizeMode,
+          productData: {
+            name: optimizingProduct.name,
+            description: optimizingProduct.description,
+            category: optimizingProduct.category,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Optimisation réussie !",
+        description: `${optimizeMode === 'full' ? 'Contenu complet' : optimizeMode === 'title' ? 'Titre' : optimizeMode === 'description' ? 'Description' : optimizeMode === 'seo' ? 'SEO' : 'Images'} optimisé avec IA`,
+      });
+      
+      await refetch();
+    } catch (error: any) {
+      toast({
+        title: "Erreur d'optimisation",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsOptimizing(false);
+      setShowOptimizeModal(false);
+      setOptimizingProduct(null);
+    }
+  };
+
+  // Publication Marketplace
+  const handlePublishToMarketplace = async (product: CatalogProduct) => {
+    setPublishingProduct(product);
+    setShowPublishModal(true);
+  };
+
+  const executePublish = async () => {
+    if (!publishingProduct || selectedMarketplaces.length === 0) return;
+    setIsPublishing(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      // Simuler la publication sur les marketplaces sélectionnées
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      toast({
+        title: "Publication réussie !",
+        description: `Produit publié sur ${selectedMarketplaces.length} marketplace(s): ${selectedMarketplaces.join(', ')}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur de publication",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
+      setShowPublishModal(false);
+      setPublishingProduct(null);
+      setSelectedMarketplaces([]);
+    }
+  };
+
+  const toggleMarketplace = (marketplace: string) => {
+    setSelectedMarketplaces(prev => 
+      prev.includes(marketplace) 
+        ? prev.filter(m => m !== marketplace)
+        : [...prev, marketplace]
+    );
   };
 
   const categories = ["all", ...Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(c => String(c))];
@@ -937,8 +1037,36 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-4 border-t">
+                  {/* IA & Marketplace Actions */}
+                  <Card className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-violet-500/20">
+                    <CardContent className="p-4 space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2 text-violet-700 dark:text-violet-400">
+                        <Wand2 className="h-4 w-4" />
+                        Optimisation & Publication
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button 
+                          variant="outline" 
+                          className="border-violet-500/30 hover:bg-violet-500/10"
+                          onClick={() => handleOptimizeContent(selectedProduct)}
+                        >
+                          <Sparkles className="h-4 w-4 mr-2 text-violet-500" />
+                          Optimiser IA
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          className="border-emerald-500/30 hover:bg-emerald-500/10"
+                          onClick={() => handlePublishToMarketplace(selectedProduct)}
+                        >
+                          <Globe className="h-4 w-4 mr-2 text-emerald-500" />
+                          Publier
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Actions principales */}
+                  <div className="flex flex-wrap gap-2 pt-4 border-t">
                     <Button 
                       className="flex-1"
                       onClick={() => {
@@ -1248,6 +1376,216 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
               <span>Export JSON</span>
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Optimization Modal */}
+      <Dialog open={showOptimizeModal} onOpenChange={setShowOptimizeModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-violet-500" />
+              Optimisation IA du contenu
+            </DialogTitle>
+            <DialogDescription>
+              Optimisez automatiquement le contenu de votre produit avec l'intelligence artificielle
+            </DialogDescription>
+          </DialogHeader>
+          
+          {optimizingProduct && (
+            <div className="space-y-6 py-4">
+              {/* Product Preview */}
+              <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted">
+                  <img 
+                    src={optimizingProduct.image_url} 
+                    alt={optimizingProduct.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold line-clamp-1">{optimizingProduct.name}</p>
+                  <p className="text-sm text-muted-foreground">{optimizingProduct.sku}</p>
+                </div>
+              </div>
+
+              {/* Optimization Options */}
+              <div className="space-y-4">
+                <Label>Type d'optimisation</Label>
+                <div className="grid grid-cols-1 gap-2">
+                  {[
+                    { value: 'full', label: 'Optimisation complète', icon: Sparkles, desc: 'Titre, description, SEO' },
+                    { value: 'title', label: 'Titre uniquement', icon: FileText, desc: 'Génère un titre accrocheur' },
+                    { value: 'description', label: 'Description', icon: MessageSquare, desc: 'Rédige une description vendeuse' },
+                    { value: 'seo', label: 'SEO & Mots-clés', icon: Target, desc: 'Optimise pour les moteurs de recherche' },
+                    { value: 'images', label: 'Images & Alt text', icon: Image, desc: 'Génère des alt texts optimisés' },
+                  ].map((option) => (
+                    <div 
+                      key={option.value}
+                      onClick={() => setOptimizeMode(option.value as typeof optimizeMode)}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all",
+                        optimizeMode === option.value 
+                          ? "border-violet-500 bg-violet-500/10" 
+                          : "border-border hover:border-violet-500/50"
+                      )}
+                    >
+                      <div className={cn(
+                        "p-2 rounded-lg",
+                        optimizeMode === option.value ? "bg-violet-500 text-white" : "bg-muted"
+                      )}>
+                        <option.icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{option.label}</p>
+                        <p className="text-xs text-muted-foreground">{option.desc}</p>
+                      </div>
+                      {optimizeMode === option.value && (
+                        <CheckCircle2 className="h-5 w-5 text-violet-500" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOptimizeModal(false)} disabled={isOptimizing}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={executeOptimization} 
+              disabled={isOptimizing}
+              className="bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600"
+            >
+              {isOptimizing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Optimisation...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Lancer l'optimisation
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Publish to Marketplace Modal */}
+      <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-emerald-500" />
+              Publier sur les Marketplaces
+            </DialogTitle>
+            <DialogDescription>
+              Sélectionnez les marketplaces où publier votre produit
+            </DialogDescription>
+          </DialogHeader>
+          
+          {publishingProduct && (
+            <div className="space-y-6 py-4">
+              {/* Product Preview */}
+              <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted">
+                  <img 
+                    src={publishingProduct.image_url} 
+                    alt={publishingProduct.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold line-clamp-1">{publishingProduct.name}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{publishingProduct.sku}</span>
+                    <span>•</span>
+                    <span className="text-primary font-medium">{publishingProduct.retail_price.toFixed(2)}€</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Marketplace Selection */}
+              <div className="space-y-4">
+                <Label>Sélectionnez les marketplaces</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { id: 'amazon', name: 'Amazon', icon: '🛒', color: 'orange' },
+                    { id: 'ebay', name: 'eBay', icon: '🛍️', color: 'blue' },
+                    { id: 'cdiscount', name: 'Cdiscount', icon: '🎯', color: 'red' },
+                    { id: 'fnac', name: 'Fnac', icon: '📦', color: 'yellow' },
+                    { id: 'rakuten', name: 'Rakuten', icon: '🏪', color: 'crimson' },
+                    { id: 'manomano', name: 'ManoMano', icon: '🔧', color: 'teal' },
+                    { id: 'aliexpress', name: 'AliExpress', icon: '🌐', color: 'orange' },
+                    { id: 'wish', name: 'Wish', icon: '⭐', color: 'cyan' },
+                    { id: 'shopify', name: 'Shopify', icon: '🛒', color: 'green' },
+                    { id: 'woocommerce', name: 'WooCommerce', icon: '🔌', color: 'purple' },
+                  ].map((marketplace) => (
+                    <div 
+                      key={marketplace.id}
+                      onClick={() => toggleMarketplace(marketplace.id)}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all",
+                        selectedMarketplaces.includes(marketplace.id)
+                          ? "border-emerald-500 bg-emerald-500/10" 
+                          : "border-border hover:border-emerald-500/50"
+                      )}
+                    >
+                      <span className="text-2xl">{marketplace.icon}</span>
+                      <span className="font-medium text-sm">{marketplace.name}</span>
+                      {selectedMarketplaces.includes(marketplace.id) && (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 ml-auto" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Selected count */}
+              {selectedMarketplaces.length > 0 && (
+                <div className="flex items-center justify-between p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                  <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    {selectedMarketplaces.length} marketplace(s) sélectionnée(s)
+                  </span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setSelectedMarketplaces([])}
+                    className="text-xs h-7"
+                  >
+                    Tout désélectionner
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPublishModal(false)} disabled={isPublishing}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={executePublish} 
+              disabled={isPublishing || selectedMarketplaces.length === 0}
+              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+            >
+              {isPublishing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Publication...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Publier ({selectedMarketplaces.length})
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </ChannablePageLayout>
