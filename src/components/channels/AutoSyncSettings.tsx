@@ -101,7 +101,7 @@ export function AutoSyncSettings({
       const { error } = await supabase
         .from('integrations')
         .update({
-          auto_sync_config: config,
+          auto_sync_config: JSON.parse(JSON.stringify(config)),
           auto_sync_enabled: config.enabled,
           auto_sync_interval: config.interval,
           updated_at: new Date().toISOString()

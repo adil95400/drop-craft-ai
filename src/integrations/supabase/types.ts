@@ -4685,6 +4685,9 @@ export type Database = {
           access_token_encrypted: string | null
           api_key_encrypted: string | null
           api_secret_encrypted: string | null
+          auto_sync_config: Json | null
+          auto_sync_enabled: boolean | null
+          auto_sync_interval: number | null
           config: Json | null
           connection_status: string | null
           created_at: string | null
@@ -4705,6 +4708,9 @@ export type Database = {
           access_token_encrypted?: string | null
           api_key_encrypted?: string | null
           api_secret_encrypted?: string | null
+          auto_sync_config?: Json | null
+          auto_sync_enabled?: boolean | null
+          auto_sync_interval?: number | null
           config?: Json | null
           connection_status?: string | null
           created_at?: string | null
@@ -4725,6 +4731,9 @@ export type Database = {
           access_token_encrypted?: string | null
           api_key_encrypted?: string | null
           api_secret_encrypted?: string | null
+          auto_sync_config?: Json | null
+          auto_sync_enabled?: boolean | null
+          auto_sync_interval?: number | null
           config?: Json | null
           connection_status?: string | null
           created_at?: string | null
