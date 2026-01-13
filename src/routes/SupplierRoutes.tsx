@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy } from 'react'
 
-// Lazy loading des pages - Hub Unifié comme point d'entrée principal
+// Lazy loading des pages - Page Channable-style comme point d'entrée principal
+const ChannableStyleSuppliersPage = lazy(() => import('@/pages/suppliers/ChannableStyleSuppliersPage'))
 const SuppliersHubUnified = lazy(() => import('@/pages/suppliers/SuppliersHubUnified'))
 const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'))
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'))
@@ -58,8 +59,11 @@ const EtsyConnectorPage = lazy(() => import('@/pages/suppliers/connectors/EtsyCo
 export default function SupplierRoutes() {
   return (
     <Routes>
-      {/* Hub Unifié - Point d'entrée principal */}
-      <Route index element={<SuppliersHubUnified />} />
+      {/* Page Channable-style - Point d'entrée principal */}
+      <Route index element={<ChannableStyleSuppliersPage />} />
+      
+      {/* Hub unifié legacy */}
+      <Route path="hub" element={<SuppliersHubUnified />} />
       
       {/* Marketplace - Redirige vers la page connecteurs unifiée */}
       <Route path="marketplace" element={<Navigate to="/integrations/connectors?category=supplier" replace />} />
