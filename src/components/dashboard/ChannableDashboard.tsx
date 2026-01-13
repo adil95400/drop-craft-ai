@@ -56,10 +56,10 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 // Demo sync events
 const DEMO_SYNC_EVENTS: SyncEvent[] = [
-  { id: '1', type: 'full', status: 'success', platform: 'Shopify', message: 'Synchronisation terminée', timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), productsAffected: 1234 },
-  { id: '2', type: 'products', status: 'in_progress', platform: 'Amazon', message: 'Synchronisation en cours', timestamp: new Date(Date.now() - 1000 * 60 * 2).toISOString(), productsAffected: 567 },
-  { id: '3', type: 'prices', status: 'success', platform: 'WooCommerce', message: 'Prix mis à jour', timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), productsAffected: 89 },
-  { id: '4', type: 'inventory', status: 'error', platform: 'eBay', message: 'Erreur de connexion API', timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), productsAffected: 0 },
+  { id: '1', type: 'full', status: 'success', timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), items_processed: 1234, duration_ms: 2340, message: 'Synchronisation Shopify terminée' },
+  { id: '2', type: 'products', status: 'in_progress', timestamp: new Date(Date.now() - 1000 * 60 * 2).toISOString(), items_processed: 567, message: 'Synchronisation Amazon en cours' },
+  { id: '3', type: 'prices', status: 'success', timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), items_processed: 89, duration_ms: 1560, message: 'Prix WooCommerce mis à jour' },
+  { id: '4', type: 'inventory', status: 'error', timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), items_processed: 0, items_failed: 12, message: 'Erreur de connexion API eBay' },
 ];
 
 export function ChannableDashboard() {
