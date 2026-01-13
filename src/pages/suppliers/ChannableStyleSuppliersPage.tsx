@@ -823,6 +823,608 @@ const supplierDefinitions: SupplierDefinition[] = [
     shippingTime: '10-25 jours',
     setupFields: []
   },
+
+  // ========== NOUVEAUX FOURNISSEURS ==========
+  
+  // Mode & Vêtements
+  { 
+    id: 'fashiongo', 
+    name: 'FashionGo', 
+    logo: 'https://www.fashiongo.net/favicon.ico', 
+    category: 'fashion', 
+    country: 'US',
+    popular: true,
+    description: 'Marketplace B2B mode avec 2000+ marques de mode en gros',
+    features: ['2000+ marques', 'Mode féminine', 'Tendances actuelles', 'US based'],
+    rating: 4.4,
+    productsCount: 800000,
+    shippingTime: '2-5 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'faire', 
+    name: 'Faire', 
+    logo: 'https://www.faire.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'US',
+    popular: true,
+    premium: true,
+    description: 'Marketplace wholesale premium avec marques artisanales et indépendantes',
+    features: ['Marques artisanales', 'Net 60 paiement', 'Retours gratuits', 'Qualité premium'],
+    rating: 4.7,
+    productsCount: 600000,
+    shippingTime: '3-7 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'tundra', 
+    name: 'Tundra', 
+    logo: 'https://www.tundra.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'US',
+    description: 'Wholesale marketplace sans frais avec paiement différé',
+    features: ['Pas de frais', 'Net 60', 'Marques émergentes', 'US shipping'],
+    rating: 4.3,
+    productsCount: 150000,
+    shippingTime: '3-8 jours',
+    setupFields: []
+  },
+  { 
+    id: 'abound', 
+    name: 'Abound', 
+    logo: 'https://helloabound.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'US',
+    description: 'Marketplace B2B pour produits artisanaux et uniques',
+    features: ['Produits artisanaux', 'Marques indépendantes', 'Curation qualité', 'Support dédié'],
+    rating: 4.2,
+    productsCount: 100000,
+    shippingTime: '5-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'shein', 
+    name: 'SHEIN', 
+    logo: 'https://www.shein.com/favicon.ico', 
+    category: 'fashion', 
+    country: 'CN',
+    popular: true,
+    description: 'Fast fashion leader mondial avec prix ultra-compétitifs',
+    features: ['Prix ultra-bas', 'Nouvelles tendances', 'Mode femme', 'Livraison mondiale'],
+    rating: 4.0,
+    productsCount: 600000,
+    shippingTime: '10-20 jours',
+    setupFields: []
+  },
+  { 
+    id: 'zaful', 
+    name: 'Zaful', 
+    logo: 'https://www.zaful.com/favicon.ico', 
+    category: 'fashion', 
+    country: 'CN',
+    description: 'Mode jeune et tendance avec maillots de bain et streetwear',
+    features: ['Maillots de bain', 'Streetwear', 'Mode jeune', 'Prix accessibles'],
+    rating: 3.9,
+    productsCount: 100000,
+    shippingTime: '15-25 jours',
+    setupFields: []
+  },
+  { 
+    id: 'romwe', 
+    name: 'Romwe', 
+    logo: 'https://www.romwe.com/favicon.ico', 
+    category: 'fashion', 
+    country: 'CN',
+    description: 'Mode tendance et streetwear à prix abordables',
+    features: ['Streetwear', 'Mode ado', 'Prix bas', 'Nouvelles arrivées quotidiennes'],
+    rating: 3.8,
+    productsCount: 200000,
+    shippingTime: '12-25 jours',
+    setupFields: []
+  },
+  
+  // Bijoux & Accessoires
+  { 
+    id: 'nihaojewelry', 
+    name: 'Nihao Jewelry', 
+    logo: 'https://www.nihaojewelry.com/favicon.ico', 
+    category: 'fashion', 
+    country: 'CN',
+    popular: true,
+    description: 'Grossiste bijoux et accessoires avec des millions de produits',
+    features: ['Bijoux fantaisie', 'Accessoires cheveux', 'MOQ bas', 'Prix usine'],
+    rating: 4.2,
+    productsCount: 1500000,
+    shippingTime: '10-20 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'jewelrybase', 
+    name: 'JewelryBase', 
+    logo: 'https://jewelrybase.com/favicon.ico', 
+    category: 'fashion', 
+    country: 'US',
+    description: 'Bijoux en gros américains avec dropshipping',
+    features: ['Bijoux argent', 'Pierres semi-précieuses', 'US based', 'Dropship'],
+    rating: 4.1,
+    productsCount: 15000,
+    shippingTime: '3-7 jours',
+    setupFields: []
+  },
+  
+  // Maison & Décoration
+  { 
+    id: 'wayfair', 
+    name: 'Wayfair', 
+    logo: 'https://www.wayfair.com/favicon.ico', 
+    category: 'home', 
+    country: 'US',
+    popular: true,
+    premium: true,
+    description: 'Leader US de la décoration et du mobilier avec programme partenaire',
+    features: ['Mobilier', 'Décoration', 'Programme partenaire', 'Qualité premium'],
+    rating: 4.5,
+    productsCount: 22000000,
+    shippingTime: '3-10 jours',
+    setupFields: [
+      { name: 'partner_id', label: 'Partner ID', type: 'text', required: true },
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'overstock', 
+    name: 'Overstock', 
+    logo: 'https://www.overstock.com/favicon.ico', 
+    category: 'home', 
+    country: 'US',
+    description: 'Maison et décoration avec programme affiliate et dropship',
+    features: ['Décoration maison', 'Mobilier', 'Prix réduits', 'US shipping'],
+    rating: 4.2,
+    productsCount: 1000000,
+    shippingTime: '5-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'aspire', 
+    name: 'Aspire Home Accents', 
+    logo: 'https://aspirehomeaccents.com/favicon.ico', 
+    category: 'home', 
+    country: 'US',
+    description: 'Décoration intérieure et accents maison en gros',
+    features: ['Décoration murale', 'Miroirs', 'Accents', 'Wholesale US'],
+    rating: 4.0,
+    productsCount: 5000,
+    shippingTime: '5-10 jours',
+    setupFields: []
+  },
+  
+  // Sport & Fitness
+  { 
+    id: 'alphalete', 
+    name: 'Alphalete', 
+    logo: 'https://alphalete.com/favicon.ico', 
+    category: 'sports', 
+    country: 'US',
+    description: 'Vêtements sport et fitness premium',
+    features: ['Sportswear premium', 'Fitness', 'Qualité gym', 'US brand'],
+    rating: 4.4,
+    productsCount: 500,
+    shippingTime: '5-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'gymshark', 
+    name: 'Gymshark', 
+    logo: 'https://gymshark.com/favicon.ico', 
+    category: 'sports', 
+    country: 'UK',
+    premium: true,
+    description: 'Marque fitness leader avec programme ambassadeur',
+    features: ['Fitness premium', 'Programme ambassadeur', 'Qualité UK', 'Tendance'],
+    rating: 4.6,
+    productsCount: 300,
+    shippingTime: '5-12 jours',
+    setupFields: []
+  },
+  { 
+    id: 'ssactivewear', 
+    name: 'S&S Activewear', 
+    logo: 'https://ssactivewear.com/favicon.ico', 
+    category: 'sports', 
+    country: 'US',
+    description: 'Distributeur vêtements sport et activewear US',
+    features: ['Activewear', 'Marques multiples', 'Wholesale US', 'Fulfillment rapide'],
+    rating: 4.3,
+    productsCount: 150000,
+    shippingTime: '2-5 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  
+  // Électronique & Tech
+  { 
+    id: 'anker', 
+    name: 'Anker', 
+    logo: 'https://www.anker.com/favicon.ico', 
+    category: 'electronics', 
+    country: 'CN',
+    popular: true,
+    description: 'Leader accessoires tech et chargeurs avec qualité premium',
+    features: ['Chargeurs', 'Accessoires tech', 'Qualité premium', 'Garantie'],
+    rating: 4.6,
+    productsCount: 500,
+    shippingTime: '5-15 jours',
+    setupFields: []
+  },
+  { 
+    id: 'tomtop', 
+    name: 'Focalprice', 
+    logo: 'https://www.focalprice.com/favicon.ico', 
+    category: 'electronics', 
+    country: 'CN',
+    description: 'Gadgets et électronique avec programme dropship',
+    features: ['Gadgets', 'Électronique', 'Prix bas', 'Dropship'],
+    rating: 3.9,
+    productsCount: 50000,
+    shippingTime: '15-30 jours',
+    setupFields: []
+  },
+  { 
+    id: 'chinavasion', 
+    name: 'Chinavasion', 
+    logo: 'https://www.chinavasion.com/favicon.ico', 
+    category: 'electronics', 
+    country: 'CN',
+    description: 'Électronique et gadgets chinois avec dropshipping intégré',
+    features: ['Électronique', 'Gadgets uniques', 'Prix usine', 'Dropship programme'],
+    rating: 4.0,
+    productsCount: 25000,
+    shippingTime: '10-25 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  
+  // Beauté & Cosmétiques
+  { 
+    id: 'bsquared', 
+    name: 'BSquared Beauty', 
+    logo: 'https://bsquaredbeauty.com/favicon.ico', 
+    category: 'beauty', 
+    country: 'US',
+    description: 'Produits beauté et cosmétiques avec dropshipping US',
+    features: ['Cosmétiques', 'Soins peau', 'US dropship', 'Marques variées'],
+    rating: 4.1,
+    productsCount: 10000,
+    shippingTime: '3-7 jours',
+    setupFields: []
+  },
+  { 
+    id: 'cosmeticsupply', 
+    name: 'Cosmetic Supply', 
+    logo: 'https://cosmeticsupply.com/favicon.ico', 
+    category: 'beauty', 
+    country: 'US',
+    description: 'Grossiste cosmétiques professionnels',
+    features: ['Cosmétiques pro', 'Soins', 'Wholesale', 'US based'],
+    rating: 4.0,
+    productsCount: 8000,
+    shippingTime: '3-7 jours',
+    setupFields: []
+  },
+  { 
+    id: 'sephora', 
+    name: 'Sephora Wholesale', 
+    logo: 'https://www.sephora.com/favicon.ico', 
+    category: 'beauty', 
+    country: 'FR',
+    premium: true,
+    description: 'Programme partenaire avec marques beauté premium',
+    features: ['Marques luxe', 'Cosmétiques premium', 'Programme partenaire', 'EU/US'],
+    rating: 4.7,
+    productsCount: 45000,
+    shippingTime: '3-7 jours',
+    setupFields: [
+      { name: 'partner_id', label: 'Partner ID', type: 'text', required: true }
+    ]
+  },
+  
+  // Animaux
+  { 
+    id: 'petstore', 
+    name: 'Pet Store Global', 
+    logo: 'https://petstores.com/favicon.ico', 
+    category: 'pets', 
+    country: 'US',
+    description: 'Produits animaux en gros avec programme dropship',
+    features: ['Animaux', 'Accessoires', 'Nourriture', 'Wholesale US'],
+    rating: 4.1,
+    productsCount: 25000,
+    shippingTime: '3-8 jours',
+    setupFields: []
+  },
+  { 
+    id: 'pawsource', 
+    name: 'PawSource', 
+    logo: 'https://pawsource.com/favicon.ico', 
+    category: 'pets', 
+    country: 'US',
+    description: 'Fournisseur spécialisé produits animaux premium',
+    features: ['Produits premium', 'Chiens/Chats', 'US dropship', 'Qualité'],
+    rating: 4.2,
+    productsCount: 5000,
+    shippingTime: '3-6 jours',
+    setupFields: []
+  },
+  
+  // Jouets & Enfants
+  { 
+    id: 'toyworld', 
+    name: 'Toy World Inc', 
+    logo: 'https://toyworldinc.com/favicon.ico', 
+    category: 'toys', 
+    country: 'US',
+    description: 'Distributeur jouets en gros avec dropshipping',
+    features: ['Jouets', 'Jeux', 'Wholesale US', 'Dropship'],
+    rating: 4.0,
+    productsCount: 15000,
+    shippingTime: '4-8 jours',
+    setupFields: []
+  },
+  { 
+    id: 'funko', 
+    name: 'Funko', 
+    logo: 'https://funko.com/favicon.ico', 
+    category: 'toys', 
+    country: 'US',
+    popular: true,
+    description: 'Figurines Pop! et collectibles avec programme partenaire',
+    features: ['Funko Pop!', 'Collectibles', 'Marque forte', 'Programme partenaire'],
+    rating: 4.5,
+    productsCount: 10000,
+    shippingTime: '5-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'hasbro', 
+    name: 'Hasbro', 
+    logo: 'https://hasbro.com/favicon.ico', 
+    category: 'toys', 
+    country: 'US',
+    premium: true,
+    description: 'Marques jouets iconiques (Monopoly, Transformers, Nerf)',
+    features: ['Marques iconiques', 'Qualité premium', 'Programme distributeur', 'Global'],
+    rating: 4.6,
+    productsCount: 5000,
+    shippingTime: '5-12 jours',
+    setupFields: []
+  },
+  
+  // Automotive
+  { 
+    id: 'autopartswarehouse', 
+    name: 'Auto Parts Warehouse', 
+    logo: 'https://autopartswarehouse.com/favicon.ico', 
+    category: 'automotive', 
+    country: 'US',
+    description: 'Pièces auto et accessoires avec dropshipping US',
+    features: ['Pièces auto', 'Accessoires voiture', 'US dropship', 'Large catalogue'],
+    rating: 4.1,
+    productsCount: 500000,
+    shippingTime: '3-7 jours',
+    setupFields: []
+  },
+  { 
+    id: 'carid', 
+    name: 'CARiD', 
+    logo: 'https://www.carid.com/favicon.ico', 
+    category: 'automotive', 
+    country: 'US',
+    description: 'Pièces et accessoires auto premium avec programme partenaire',
+    features: ['Pièces premium', 'Accessoires', 'Programme partenaire', 'US based'],
+    rating: 4.2,
+    productsCount: 1000000,
+    shippingTime: '3-10 jours',
+    setupFields: []
+  },
+  
+  // Alimentaire
+  { 
+    id: 'gourmetfoodworld', 
+    name: 'Gourmet Food World', 
+    logo: 'https://gourmetfoodworld.com/favicon.ico', 
+    category: 'food', 
+    country: 'US',
+    description: 'Produits alimentaires gourmet et spécialités',
+    features: ['Gourmet', 'Spécialités', 'Produits fins', 'US shipping'],
+    rating: 4.3,
+    productsCount: 3000,
+    shippingTime: '3-7 jours',
+    setupFields: []
+  },
+  { 
+    id: 'webstaurant', 
+    name: 'WebstaurantStore', 
+    logo: 'https://www.webstaurantstore.com/favicon.ico', 
+    category: 'food', 
+    country: 'US',
+    description: 'Fournitures restaurant et alimentaire en gros',
+    features: ['Équipement restaurant', 'Alimentaire', 'Wholesale', 'US dropship'],
+    rating: 4.4,
+    productsCount: 500000,
+    shippingTime: '3-8 jours',
+    setupFields: []
+  },
+  
+  // Print on Demand additionnels
+  { 
+    id: 'scalablepress', 
+    name: 'Scalable Press', 
+    logo: 'https://scalablepress.com/favicon.ico', 
+    category: 'print_on_demand', 
+    country: 'US',
+    description: 'POD industriel avec grands volumes et prix compétitifs',
+    features: ['Grands volumes', 'Prix industriels', 'API robuste', 'US fulfillment'],
+    rating: 4.2,
+    productsCount: 400,
+    shippingTime: '3-7 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'printaura', 
+    name: 'Print Aura', 
+    logo: 'https://printaura.com/favicon.ico', 
+    category: 'print_on_demand', 
+    country: 'US',
+    description: 'POD avec white label complet et branding personnalisé',
+    features: ['White label', 'Branding complet', 'Pas de minimum', 'US based'],
+    rating: 4.1,
+    productsCount: 200,
+    shippingTime: '4-8 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'subliminator', 
+    name: 'Subliminator', 
+    logo: 'https://subliminator.app/favicon.ico', 
+    category: 'print_on_demand', 
+    country: 'US',
+    description: 'Spécialiste sublimation all-over print',
+    features: ['Sublimation', 'All-over print', 'Qualité premium', 'Mockups'],
+    rating: 4.3,
+    productsCount: 150,
+    shippingTime: '5-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'apliiq', 
+    name: 'Apliiq', 
+    logo: 'https://www.apliiq.com/favicon.ico', 
+    category: 'print_on_demand', 
+    country: 'US',
+    description: 'POD avec cut & sew et personnalisation avancée',
+    features: ['Cut & Sew', 'Custom labels', 'Personnalisation poussée', 'Premium'],
+    rating: 4.4,
+    productsCount: 100,
+    shippingTime: '7-14 jours',
+    setupFields: []
+  },
+  
+  // Agents supplémentaires
+  { 
+    id: 'sourcify', 
+    name: 'Sourcify', 
+    logo: 'https://sourcify.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'CN',
+    premium: true,
+    description: 'Plateforme sourcing premium avec usines vérifiées',
+    features: ['Usines vérifiées', 'Sourcing premium', 'QC inclus', 'Account manager'],
+    rating: 4.5,
+    productsCount: 1000000,
+    shippingTime: '20-40 jours',
+    setupFields: []
+  },
+  { 
+    id: 'leeline', 
+    name: 'Leeline Sourcing', 
+    logo: 'https://leelinesourcing.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'CN',
+    description: 'Agent sourcing Chine avec services complets',
+    features: ['Sourcing complet', 'QC', 'Négociation', 'Shipping management'],
+    rating: 4.2,
+    productsCount: 500000,
+    shippingTime: '15-35 jours',
+    setupFields: []
+  },
+  { 
+    id: 'supplyia', 
+    name: 'Supplyia', 
+    logo: 'https://supplyia.com/favicon.ico', 
+    category: 'general', 
+    country: 'CN',
+    description: 'Agent dropshipping intelligent avec IA',
+    features: ['IA sourcing', 'Automatisation', 'Multi-sources', 'Analytics'],
+    rating: 4.0,
+    productsCount: 300000,
+    shippingTime: '8-20 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  
+  // Europe additionnels
+  { 
+    id: 'dropshippingeurope', 
+    name: 'Dropshipping Europe', 
+    logo: 'https://dropshipping-europe.eu/favicon.ico', 
+    category: 'general', 
+    country: 'DE',
+    description: 'Réseau de fournisseurs européens avec livraison rapide',
+    features: ['Fournisseurs EU', 'Livraison 24-72h', 'Multi-catégories', 'Support FR'],
+    rating: 4.1,
+    productsCount: 50000,
+    shippingTime: '24-72 heures',
+    setupFields: []
+  },
+  { 
+    id: 'zentrada', 
+    name: 'Zentrada', 
+    logo: 'https://www.zentrada.eu/favicon.ico', 
+    category: 'wholesale', 
+    country: 'DE',
+    popular: true,
+    description: 'Marketplace B2B européen avec 400+ fournisseurs',
+    features: ['400+ fournisseurs', 'EU based', 'Multi-catégories', 'B2B vérifié'],
+    rating: 4.3,
+    productsCount: 200000,
+    shippingTime: '2-5 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'orderchamp', 
+    name: 'Orderchamp', 
+    logo: 'https://www.orderchamp.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'NL',
+    description: 'Marketplace wholesale européen avec marques émergentes',
+    features: ['Marques émergentes', 'EU shipping', 'Paiement différé', 'Curation'],
+    rating: 4.4,
+    productsCount: 100000,
+    shippingTime: '3-7 jours',
+    setupFields: []
+  },
+  { 
+    id: 'ankorstore', 
+    name: 'Ankorstore', 
+    logo: 'https://www.ankorstore.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'FR',
+    popular: true,
+    premium: true,
+    description: 'Marketplace B2B français avec marques créatives européennes',
+    features: ['Marques françaises', 'Net 60 paiement', 'EU shipping', 'Qualité curatée'],
+    rating: 4.5,
+    productsCount: 300000,
+    shippingTime: '3-7 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
 ]
 
 // Mapping pays vers drapeaux emoji
@@ -835,11 +1437,28 @@ const countryFlags: Record<string, string> = {
   'DE': '🇩🇪',
   'FR': '🇫🇷',
   'UK': '🇬🇧',
+  'GB': '🇬🇧',
   'PL': '🇵🇱',
   'HU': '🇭🇺',
   'NZ': '🇳🇿',
   'AU': '🇦🇺',
   'NO': '🇳🇴',
+  'CA': '🇨🇦',
+  'JP': '🇯🇵',
+  'KR': '🇰🇷',
+  'BR': '🇧🇷',
+  'MX': '🇲🇽',
+  'IN': '🇮🇳',
+  'SG': '🇸🇬',
+  'HK': '🇭🇰',
+  'TW': '🇹🇼',
+  'SE': '🇸🇪',
+  'DK': '🇩🇰',
+  'BE': '🇧🇪',
+  'AT': '🇦🇹',
+  'CH': '🇨🇭',
+  'PT': '🇵🇹',
+  'IE': '🇮🇪',
 }
 
 // Composant Modal de configuration
