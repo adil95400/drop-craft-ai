@@ -8,7 +8,7 @@ import { lazy } from 'react';
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const VideoTutorialsPage = lazy(() => import('@/pages/admin/VideoTutorialsPage'));
-const SuppliersHubUnified = lazy(() => import('@/pages/suppliers/SuppliersHubUnified'));
+const ChannableStyleSuppliersPage = lazy(() => import('@/pages/suppliers/ChannableStyleSuppliersPage'));
 
 export function AdminRoutes() {
   return (
@@ -23,7 +23,7 @@ export function AdminRoutes() {
       <Route path="video-tutorials" element={<VideoTutorialsPage />} />
       
       {/* Suppliers Management */}
-      <Route path="suppliers" element={<SuppliersHubUnified />} />
+      <Route path="suppliers" element={<ChannableStyleSuppliersPage />} />
     </Routes>
   );
 }
