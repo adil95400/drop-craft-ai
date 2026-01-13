@@ -80,6 +80,7 @@ interface SupplierDefinition {
   logo: string
   category: 'general' | 'fashion' | 'electronics' | 'home' | 'beauty' | 'sports' | 'toys' | 'food' | 'pets' | 'automotive' | 'print_on_demand' | 'wholesale'
   country: string
+  shippingZones?: ('europe' | 'usa' | 'asia' | 'worldwide' | 'uk' | 'australia' | 'canada' | 'south_america')[]
   popular?: boolean
   premium?: boolean
   description?: string
@@ -96,6 +97,40 @@ interface SupplierDefinition {
     required?: boolean
   }[]
 }
+
+// Zones d'expédition
+const shippingZones = [
+  { id: 'all', label: 'Toutes zones', icon: Globe },
+  { id: 'europe', label: 'Europe', icon: Ship },
+  { id: 'usa', label: 'États-Unis', icon: Ship },
+  { id: 'asia', label: 'Asie', icon: Ship },
+  { id: 'worldwide', label: 'Mondial', icon: Globe },
+  { id: 'uk', label: 'Royaume-Uni', icon: Ship },
+  { id: 'canada', label: 'Canada', icon: Ship },
+  { id: 'australia', label: 'Australie', icon: Ship },
+]
+
+// Liste des pays disponibles
+const countryOptions = [
+  { id: 'all', label: 'Tous les pays' },
+  { id: 'CN', label: '🇨🇳 Chine' },
+  { id: 'US', label: '🇺🇸 États-Unis' },
+  { id: 'FR', label: '🇫🇷 France' },
+  { id: 'DE', label: '🇩🇪 Allemagne' },
+  { id: 'UK', label: '🇬🇧 Royaume-Uni' },
+  { id: 'IT', label: '🇮🇹 Italie' },
+  { id: 'ES', label: '🇪🇸 Espagne' },
+  { id: 'NL', label: '🇳🇱 Pays-Bas' },
+  { id: 'PL', label: '🇵🇱 Pologne' },
+  { id: 'AU', label: '🇦🇺 Australie' },
+  { id: 'CA', label: '🇨🇦 Canada' },
+  { id: 'IN', label: '🇮🇳 Inde' },
+  { id: 'JP', label: '🇯🇵 Japon' },
+  { id: 'KR', label: '🇰🇷 Corée du Sud' },
+  { id: 'TR', label: '🇹🇷 Turquie' },
+  { id: 'BR', label: '🇧🇷 Brésil' },
+  { id: 'MX', label: '🇲🇽 Mexique' },
+]
 
 // Catégories de fournisseurs
 const categories = [
@@ -1414,6 +1449,7 @@ const supplierDefinitions: SupplierDefinition[] = [
     logo: 'https://www.ankorstore.com/favicon.ico', 
     category: 'wholesale', 
     country: 'FR',
+    shippingZones: ['europe', 'uk'],
     popular: true,
     premium: true,
     description: 'Marketplace B2B français avec marques créatives européennes',
@@ -1424,6 +1460,660 @@ const supplierDefinitions: SupplierDefinition[] = [
     setupFields: [
       { name: 'api_key', label: 'API Key', type: 'password', required: true }
     ]
+  },
+
+  // ========== NOUVEAUX FOURNISSEURS 2024 ==========
+  
+  // Turquie - Mode & Textile
+  { 
+    id: 'trendyol', 
+    name: 'Trendyol', 
+    logo: 'https://www.trendyol.com/favicon.ico', 
+    category: 'fashion', 
+    country: 'TR',
+    shippingZones: ['europe', 'asia', 'worldwide'],
+    popular: true,
+    description: 'Plus grande marketplace turque avec mode et lifestyle',
+    features: ['Mode turque', 'Prix compétitifs', 'Expédition rapide', 'Large catalogue'],
+    rating: 4.3,
+    productsCount: 30000000,
+    shippingTime: '5-15 jours',
+    setupFields: []
+  },
+  { 
+    id: 'hepsiburada', 
+    name: 'Hepsiburada', 
+    logo: 'https://www.hepsiburada.com/favicon.ico', 
+    category: 'general', 
+    country: 'TR',
+    shippingZones: ['europe', 'asia'],
+    description: 'Marketplace turc généraliste avec millions de produits',
+    features: ['Généraliste', 'Électronique', 'Mode', 'Maison'],
+    rating: 4.2,
+    productsCount: 40000000,
+    shippingTime: '7-20 jours',
+    setupFields: []
+  },
+  { 
+    id: 'n11', 
+    name: 'N11', 
+    logo: 'https://www.n11.com/favicon.ico', 
+    category: 'general', 
+    country: 'TR',
+    shippingZones: ['europe'],
+    description: 'Plateforme e-commerce turque avec produits variés',
+    features: ['Multi-catégories', 'Mode', 'Tech', 'Maison'],
+    rating: 4.0,
+    productsCount: 25000000,
+    shippingTime: '7-18 jours',
+    setupFields: []
+  },
+
+  // Inde - Textile & Artisanat
+  { 
+    id: 'indiamart', 
+    name: 'IndiaMart', 
+    logo: 'https://www.indiamart.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'IN',
+    shippingZones: ['worldwide', 'asia'],
+    popular: true,
+    description: 'Plus grande marketplace B2B indienne avec fabricants',
+    features: ['Fabricants indiens', 'Prix usine', 'Artisanat', 'Textile'],
+    rating: 4.1,
+    productsCount: 75000000,
+    shippingTime: '15-35 jours',
+    setupFields: []
+  },
+  { 
+    id: 'tradeindia', 
+    name: 'TradeIndia', 
+    logo: 'https://www.tradeindia.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'IN',
+    shippingZones: ['worldwide', 'asia'],
+    description: 'Plateforme B2B indienne avec fournisseurs vérifiés',
+    features: ['Fournisseurs vérifiés', 'Artisanat', 'Textile', 'Bijoux'],
+    rating: 4.0,
+    productsCount: 10000000,
+    shippingTime: '15-30 jours',
+    setupFields: []
+  },
+  { 
+    id: 'exportersindia', 
+    name: 'ExportersIndia', 
+    logo: 'https://www.exportersindia.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'IN',
+    shippingZones: ['worldwide'],
+    description: 'Exportateurs indiens avec produits artisanaux',
+    features: ['Export ready', 'Artisanat', 'Bijoux', 'Textiles'],
+    rating: 3.9,
+    productsCount: 5000000,
+    shippingTime: '15-35 jours',
+    setupFields: []
+  },
+
+  // Japon & Corée - Tech & Beauté
+  { 
+    id: 'rakuten', 
+    name: 'Rakuten Japan', 
+    logo: 'https://www.rakuten.co.jp/favicon.ico', 
+    category: 'general', 
+    country: 'JP',
+    shippingZones: ['asia', 'worldwide'],
+    popular: true,
+    description: 'Plus grande marketplace japonaise avec produits exclusifs',
+    features: ['Produits japonais', 'Tech', 'Beauté', 'Anime/Manga'],
+    rating: 4.4,
+    productsCount: 250000000,
+    shippingTime: '7-20 jours',
+    setupFields: []
+  },
+  { 
+    id: 'yahoo-japan', 
+    name: 'Yahoo! Japan Shopping', 
+    logo: 'https://shopping.yahoo.co.jp/favicon.ico', 
+    category: 'general', 
+    country: 'JP',
+    shippingZones: ['asia', 'worldwide'],
+    description: 'Marketplace japonais avec produits authentiques',
+    features: ['Produits authentiques', 'Électronique', 'Mode japonaise', 'Cosmétiques'],
+    rating: 4.2,
+    productsCount: 100000000,
+    shippingTime: '7-21 jours',
+    setupFields: []
+  },
+  { 
+    id: 'gmarket', 
+    name: 'Gmarket', 
+    logo: 'https://www.gmarket.co.kr/favicon.ico', 
+    category: 'general', 
+    country: 'KR',
+    shippingZones: ['asia', 'worldwide'],
+    popular: true,
+    description: 'Plus grande marketplace coréenne avec K-beauty et K-fashion',
+    features: ['K-beauty', 'K-fashion', 'Électronique', 'K-pop merch'],
+    rating: 4.3,
+    productsCount: 150000000,
+    shippingTime: '7-18 jours',
+    setupFields: []
+  },
+  { 
+    id: 'coupang', 
+    name: 'Coupang', 
+    logo: 'https://www.coupang.com/favicon.ico', 
+    category: 'general', 
+    country: 'KR',
+    shippingZones: ['asia'],
+    description: 'Amazon coréen avec livraison ultra-rapide',
+    features: ['Livraison rapide', 'K-beauty', 'Tech', 'Mode coréenne'],
+    rating: 4.5,
+    productsCount: 200000000,
+    shippingTime: '5-15 jours',
+    setupFields: []
+  },
+  { 
+    id: '11street', 
+    name: '11Street', 
+    logo: 'https://www.11st.co.kr/favicon.ico', 
+    category: 'general', 
+    country: 'KR',
+    shippingZones: ['asia', 'worldwide'],
+    description: 'Marketplace coréen avec produits lifestyle',
+    features: ['Lifestyle coréen', 'Beauté', 'Mode', 'Électronique'],
+    rating: 4.1,
+    productsCount: 50000000,
+    shippingTime: '7-20 jours',
+    setupFields: []
+  },
+
+  // Amérique Latine
+  { 
+    id: 'mercadolibre', 
+    name: 'MercadoLibre', 
+    logo: 'https://www.mercadolibre.com/favicon.ico', 
+    category: 'general', 
+    country: 'MX',
+    shippingZones: ['south_america', 'usa'],
+    popular: true,
+    description: 'Plus grande marketplace d\'Amérique Latine',
+    features: ['Amérique Latine', 'Multi-catégories', 'Paiements locaux', 'Logistique intégrée'],
+    rating: 4.4,
+    productsCount: 300000000,
+    shippingTime: '5-20 jours',
+    setupFields: []
+  },
+  { 
+    id: 'americanas', 
+    name: 'Americanas', 
+    logo: 'https://www.americanas.com.br/favicon.ico', 
+    category: 'general', 
+    country: 'BR',
+    shippingZones: ['south_america'],
+    description: 'Grande marketplace brésilienne',
+    features: ['Brésil', 'Électronique', 'Mode', 'Maison'],
+    rating: 4.0,
+    productsCount: 50000000,
+    shippingTime: '7-25 jours',
+    setupFields: []
+  },
+  { 
+    id: 'buscape', 
+    name: 'Buscapé', 
+    logo: 'https://www.buscape.com.br/favicon.ico', 
+    category: 'general', 
+    country: 'BR',
+    shippingZones: ['south_america'],
+    description: 'Comparateur et marketplace brésilien',
+    features: ['Comparateur prix', 'Multi-vendeurs', 'Brésil', 'Electronics'],
+    rating: 3.9,
+    productsCount: 20000000,
+    shippingTime: '7-20 jours',
+    setupFields: []
+  },
+
+  // Asie du Sud-Est
+  { 
+    id: 'shopee', 
+    name: 'Shopee', 
+    logo: 'https://shopee.com/favicon.ico', 
+    category: 'general', 
+    country: 'SG',
+    shippingZones: ['asia', 'worldwide'],
+    popular: true,
+    description: 'Leader du e-commerce en Asie du Sud-Est',
+    features: ['Asie du Sud-Est', 'Prix bas', 'Multi-catégories', 'Livraison gratuite'],
+    rating: 4.3,
+    productsCount: 400000000,
+    shippingTime: '10-25 jours',
+    setupFields: []
+  },
+  { 
+    id: 'lazada', 
+    name: 'Lazada', 
+    logo: 'https://www.lazada.com/favicon.ico', 
+    category: 'general', 
+    country: 'SG',
+    shippingZones: ['asia'],
+    popular: true,
+    description: 'Marketplace Alibaba pour Asie du Sud-Est',
+    features: ['Alibaba Group', 'Asie du Sud-Est', 'Multi-catégories', 'Fulfillment'],
+    rating: 4.2,
+    productsCount: 300000000,
+    shippingTime: '10-20 jours',
+    setupFields: []
+  },
+  { 
+    id: 'tokopedia', 
+    name: 'Tokopedia', 
+    logo: 'https://www.tokopedia.com/favicon.ico', 
+    category: 'general', 
+    country: 'ID',
+    shippingZones: ['asia'],
+    description: 'Plus grande marketplace indonésienne',
+    features: ['Indonésie', 'Multi-catégories', 'Artisanat local', 'Prix bas'],
+    rating: 4.1,
+    productsCount: 150000000,
+    shippingTime: '10-25 jours',
+    setupFields: []
+  },
+
+  // Royaume-Uni & Australie
+  { 
+    id: 'asos-marketplace', 
+    name: 'ASOS Marketplace', 
+    logo: 'https://marketplace.asos.com/favicon.ico', 
+    category: 'fashion', 
+    country: 'UK',
+    shippingZones: ['uk', 'europe', 'worldwide'],
+    popular: true,
+    description: 'Marketplace mode vintage et designers indépendants',
+    features: ['Mode vintage', 'Designers indie', 'UK based', 'Mode durable'],
+    rating: 4.3,
+    productsCount: 500000,
+    shippingTime: '3-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'notonthehighstreet', 
+    name: 'notonthehighstreet', 
+    logo: 'https://www.notonthehighstreet.com/favicon.ico', 
+    category: 'home', 
+    country: 'UK',
+    shippingZones: ['uk', 'europe'],
+    description: 'Marketplace artisanal britannique avec produits uniques',
+    features: ['Artisanat UK', 'Cadeaux uniques', 'Personnalisation', 'Fait main'],
+    rating: 4.4,
+    productsCount: 200000,
+    shippingTime: '3-8 jours',
+    setupFields: []
+  },
+  { 
+    id: 'catch', 
+    name: 'Catch.com.au', 
+    logo: 'https://www.catch.com.au/favicon.ico', 
+    category: 'general', 
+    country: 'AU',
+    shippingZones: ['australia'],
+    popular: true,
+    description: 'Leader australien du e-commerce discount',
+    features: ['Australie', 'Deals quotidiens', 'Multi-catégories', 'Prix réduits'],
+    rating: 4.2,
+    productsCount: 2000000,
+    shippingTime: '3-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'kogan', 
+    name: 'Kogan', 
+    logo: 'https://www.kogan.com/favicon.ico', 
+    category: 'electronics', 
+    country: 'AU',
+    shippingZones: ['australia', 'worldwide'],
+    description: 'Marketplace tech et électronique australien',
+    features: ['Électronique', 'Prix bas', 'Marque propre', 'Australie'],
+    rating: 4.0,
+    productsCount: 500000,
+    shippingTime: '5-15 jours',
+    setupFields: []
+  },
+
+  // Canada
+  { 
+    id: 'canadianTire', 
+    name: 'Canadian Tire', 
+    logo: 'https://www.canadiantire.ca/favicon.ico', 
+    category: 'home', 
+    country: 'CA',
+    shippingZones: ['canada', 'usa'],
+    description: 'Grande enseigne canadienne multi-catégories',
+    features: ['Canada', 'Auto', 'Maison', 'Sport'],
+    rating: 4.1,
+    productsCount: 150000,
+    shippingTime: '3-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'bestbuy-ca', 
+    name: 'Best Buy Canada', 
+    logo: 'https://www.bestbuy.ca/favicon.ico', 
+    category: 'electronics', 
+    country: 'CA',
+    shippingZones: ['canada'],
+    description: 'Leader électronique au Canada',
+    features: ['Électronique', 'Tech', 'Gaming', 'Canada'],
+    rating: 4.3,
+    productsCount: 200000,
+    shippingTime: '2-7 jours',
+    setupFields: []
+  },
+
+  // Dropshipping spécialisés supplémentaires
+  { 
+    id: 'eprolo', 
+    name: 'Eprolo', 
+    logo: 'https://www.eprolo.com/favicon.ico', 
+    category: 'general', 
+    country: 'CN',
+    shippingZones: ['worldwide', 'usa', 'europe'],
+    popular: true,
+    description: 'Plateforme dropshipping gratuite avec branding',
+    features: ['100% gratuit', 'Branding', 'Entrepôts US/EU', 'POD intégré'],
+    rating: 4.3,
+    productsCount: 300000,
+    shippingTime: '7-15 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'dropified', 
+    name: 'Dropified', 
+    logo: 'https://www.dropified.com/favicon.ico', 
+    category: 'general', 
+    country: 'US',
+    shippingZones: ['usa', 'worldwide'],
+    description: 'Automatisation dropshipping avancée',
+    features: ['Automatisation', 'Multi-sources', 'Import en 1 clic', 'Règles de pricing'],
+    rating: 4.2,
+    productsCount: 1000000,
+    shippingTime: '5-20 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'inventory-source', 
+    name: 'Inventory Source', 
+    logo: 'https://www.inventorysource.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'US',
+    shippingZones: ['usa', 'canada'],
+    description: 'Automatisation avec 230+ fournisseurs intégrés',
+    features: ['230+ fournisseurs', 'Sync automatique', 'US based', 'Multi-canaux'],
+    rating: 4.1,
+    productsCount: 2000000,
+    shippingTime: '3-8 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'sunrise-wholesale', 
+    name: 'Sunrise Wholesale', 
+    logo: 'https://www.sunrisewholesalemerchandise.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'US',
+    shippingZones: ['usa'],
+    description: 'Grossiste US avec 30K+ produits et dropshipping intégré',
+    features: ['30K+ produits', 'US fulfillment', 'Électronique', 'Maison'],
+    rating: 4.0,
+    productsCount: 30000,
+    shippingTime: '2-5 jours',
+    setupFields: []
+  },
+  { 
+    id: 'worldwide-brands', 
+    name: 'Worldwide Brands', 
+    logo: 'https://www.worldwidebrands.com/favicon.ico', 
+    category: 'wholesale', 
+    country: 'US',
+    shippingZones: ['worldwide'],
+    premium: true,
+    description: 'Annuaire premium de grossistes certifiés',
+    features: ['Grossistes certifiés', '16M+ produits', 'Accès à vie', 'Support dédié'],
+    rating: 4.4,
+    productsCount: 16000000,
+    shippingTime: 'Variable',
+    setupFields: []
+  },
+
+  // Print on Demand supplémentaires
+  { 
+    id: 'tshirtgang', 
+    name: 'T-Shirt Gang', 
+    logo: 'https://tshirtgang.com/favicon.ico', 
+    category: 'print_on_demand', 
+    country: 'US',
+    shippingZones: ['usa', 'worldwide'],
+    description: 'POD spécialisé t-shirts avec fulfillment US rapide',
+    features: ['T-shirts', 'Fulfillment rapide', 'Prix bas', 'US based'],
+    rating: 4.1,
+    productsCount: 100,
+    shippingTime: '3-7 jours',
+    setupFields: []
+  },
+  { 
+    id: 'mww', 
+    name: 'MWW On Demand', 
+    logo: 'https://mwwondemand.com/favicon.ico', 
+    category: 'print_on_demand', 
+    country: 'US',
+    shippingZones: ['usa', 'worldwide'],
+    description: 'POD premium avec produits maison et décoration',
+    features: ['Décoration maison', 'Qualité premium', 'Custom packaging', 'US based'],
+    rating: 4.3,
+    productsCount: 300,
+    shippingTime: '4-8 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'prodigi', 
+    name: 'Prodigi', 
+    logo: 'https://www.prodigi.com/favicon.ico', 
+    category: 'print_on_demand', 
+    country: 'UK',
+    shippingZones: ['uk', 'europe', 'worldwide'],
+    popular: true,
+    description: 'POD global avec réseau de production dans 50+ pays',
+    features: ['50+ pays', 'Éco-responsable', 'API puissante', 'Wall art'],
+    rating: 4.5,
+    productsCount: 400,
+    shippingTime: '3-8 jours',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+  { 
+    id: 'sanmar', 
+    name: 'SanMar', 
+    logo: 'https://www.sanmar.com/favicon.ico', 
+    category: 'print_on_demand', 
+    country: 'US',
+    shippingZones: ['usa', 'canada'],
+    description: 'Distributeur vêtements blancs pour impression',
+    features: ['Vêtements blancs', 'Marques premium', 'US based', 'B2B'],
+    rating: 4.4,
+    productsCount: 50000,
+    shippingTime: '2-5 jours',
+    setupFields: []
+  },
+
+  // Niche spécialisés
+  { 
+    id: 'oberlo', 
+    name: 'Oberlo', 
+    logo: 'https://oberlo.com/favicon.ico', 
+    category: 'general', 
+    country: 'US',
+    shippingZones: ['worldwide'],
+    description: 'App Shopify historique pour dropshipping (acquis par Shopify)',
+    features: ['Intégration Shopify', 'Import facile', 'Produits tendance', 'Automatisation'],
+    rating: 4.0,
+    productsCount: 500000,
+    shippingTime: '10-30 jours',
+    setupFields: []
+  },
+  { 
+    id: 'dser', 
+    name: 'Dropship.io', 
+    logo: 'https://dropship.io/favicon.ico', 
+    category: 'general', 
+    country: 'US',
+    shippingZones: ['worldwide'],
+    description: 'Outil de recherche produits winning avec données réelles',
+    features: ['Produits winning', 'Analyse concurrence', 'Données ventes', 'Trends'],
+    rating: 4.2,
+    productsCount: 1000000,
+    shippingTime: 'Variable',
+    setupFields: []
+  },
+  { 
+    id: 'sell-the-trend', 
+    name: 'Sell The Trend', 
+    logo: 'https://www.sellthetrend.com/favicon.ico', 
+    category: 'general', 
+    country: 'US',
+    shippingZones: ['worldwide'],
+    description: 'Plateforme all-in-one avec IA pour trouver produits gagnants',
+    features: ['IA produits', 'Analyse tendances', 'Import automatique', 'Store builder'],
+    rating: 4.3,
+    productsCount: 2000000,
+    shippingTime: 'Variable',
+    setupFields: [
+      { name: 'api_key', label: 'API Key', type: 'password', required: true }
+    ]
+  },
+
+  // Européens supplémentaires
+  { 
+    id: 'emag', 
+    name: 'eMAG', 
+    logo: 'https://www.emag.ro/favicon.ico', 
+    category: 'general', 
+    country: 'RO',
+    shippingZones: ['europe'],
+    description: 'Plus grande marketplace d\'Europe de l\'Est',
+    features: ['Europe de l\'Est', 'Électronique', 'Multi-catégories', 'Fulfillment'],
+    rating: 4.2,
+    productsCount: 5000000,
+    shippingTime: '3-10 jours',
+    setupFields: []
+  },
+  { 
+    id: 'allegro', 
+    name: 'Allegro', 
+    logo: 'https://allegro.pl/favicon.ico', 
+    category: 'general', 
+    country: 'PL',
+    shippingZones: ['europe'],
+    popular: true,
+    description: 'Plus grande marketplace polonaise et d\'Europe Centrale',
+    features: ['Pologne', 'Multi-catégories', 'Fulfillment', 'B2C/C2C'],
+    rating: 4.4,
+    productsCount: 135000000,
+    shippingTime: '2-7 jours',
+    setupFields: []
+  },
+  { 
+    id: 'otto', 
+    name: 'Otto', 
+    logo: 'https://www.otto.de/favicon.ico', 
+    category: 'general', 
+    country: 'DE',
+    shippingZones: ['europe'],
+    description: 'Deuxième plus grande marketplace allemande',
+    features: ['Allemagne', 'Mode', 'Maison', 'Électronique'],
+    rating: 4.3,
+    productsCount: 10000000,
+    shippingTime: '2-5 jours',
+    setupFields: []
+  },
+  { 
+    id: 'kaufland', 
+    name: 'Kaufland Marketplace', 
+    logo: 'https://www.kaufland.de/favicon.ico', 
+    category: 'general', 
+    country: 'DE',
+    shippingZones: ['europe'],
+    description: 'Marketplace du géant allemand de la distribution',
+    features: ['Allemagne', 'Multi-catégories', 'Fulfillment', 'Base clients massive'],
+    rating: 4.1,
+    productsCount: 30000000,
+    shippingTime: '2-5 jours',
+    setupFields: []
+  },
+  { 
+    id: 'bol', 
+    name: 'Bol.com', 
+    logo: 'https://www.bol.com/favicon.ico', 
+    category: 'general', 
+    country: 'NL',
+    shippingZones: ['europe'],
+    popular: true,
+    description: 'Plus grande marketplace du Benelux',
+    features: ['Pays-Bas', 'Belgique', 'Fulfillment', 'Multi-catégories'],
+    rating: 4.5,
+    productsCount: 35000000,
+    shippingTime: '1-3 jours',
+    setupFields: []
+  },
+  { 
+    id: 'cdiscount', 
+    name: 'Cdiscount', 
+    logo: 'https://www.cdiscount.com/favicon.ico', 
+    category: 'general', 
+    country: 'FR',
+    shippingZones: ['europe'],
+    popular: true,
+    description: 'Deuxième marketplace français après Amazon',
+    features: ['France', 'Prix bas', 'Multi-catégories', 'Fulfillment'],
+    rating: 4.1,
+    productsCount: 100000000,
+    shippingTime: '2-5 jours',
+    setupFields: []
+  },
+  { 
+    id: 'fnac', 
+    name: 'Fnac Marketplace', 
+    logo: 'https://www.fnac.com/favicon.ico', 
+    category: 'electronics', 
+    country: 'FR',
+    shippingZones: ['europe'],
+    description: 'Marketplace tech et culture français',
+    features: ['France', 'Tech', 'Culture', 'Livres'],
+    rating: 4.2,
+    productsCount: 20000000,
+    shippingTime: '2-5 jours',
+    setupFields: []
+  },
+  { 
+    id: 'manomano', 
+    name: 'ManoMano', 
+    logo: 'https://www.manomano.fr/favicon.ico', 
+    category: 'home', 
+    country: 'FR',
+    shippingZones: ['europe'],
+    popular: true,
+    description: 'Spécialiste bricolage et maison en Europe',
+    features: ['Bricolage', 'Jardin', 'Maison', 'Europe'],
+    rating: 4.3,
+    productsCount: 16000000,
+    shippingTime: '3-7 jours',
+    setupFields: []
   },
 ]
 
@@ -1879,6 +2569,8 @@ export default function ChannableStyleSuppliersPage() {
   
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
+  const [selectedCountry, setSelectedCountry] = useState('all')
+  const [selectedShippingZone, setSelectedShippingZone] = useState('all')
   const [sortBy, setSortBy] = useState<'popular' | 'name' | 'rating' | 'products'>('popular')
   const [selectedDefinition, setSelectedDefinition] = useState<SupplierDefinition | null>(null)
   const [activeView, setActiveView] = useState<'all' | 'connected'>('all')
@@ -1908,7 +2600,11 @@ export default function ChannableStyleSuppliersPage() {
                            (def.description?.toLowerCase().includes(searchTerm.toLowerCase())) ||
                            def.country.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = activeCategory === 'all' || def.category === activeCategory
-      return matchesSearch && matchesCategory
+      const matchesCountry = selectedCountry === 'all' || def.country === selectedCountry
+      const matchesShippingZone = selectedShippingZone === 'all' || 
+                                  def.shippingZones?.includes(selectedShippingZone as any) ||
+                                  (selectedShippingZone === 'worldwide' && !def.shippingZones)
+      return matchesSearch && matchesCategory && matchesCountry && matchesShippingZone
     })
 
     // Tri
@@ -1927,7 +2623,13 @@ export default function ChannableStyleSuppliersPage() {
     }
 
     return result
-  }, [searchTerm, activeCategory, sortBy])
+  }, [searchTerm, activeCategory, selectedCountry, selectedShippingZone, sortBy])
+
+  // Compteurs pour les filtres
+  const uniqueCountries = useMemo(() => {
+    const countries = new Set(supplierDefinitions.map(d => d.country))
+    return Array.from(countries).sort()
+  }, [])
 
   const handleConnect = useCallback((data: any) => {
     addSupplier(data)
@@ -1949,7 +2651,7 @@ export default function ChannableStyleSuppliersPage() {
     <>
       <Helmet>
         <title>Fournisseurs Dropshipping | DropShipper</title>
-        <meta name="description" content="Découvrez 50+ fournisseurs dropshipping vérifiés. AliExpress, CJ Dropshipping, Spocket, BigBuy et bien plus." />
+        <meta name="description" content="Découvrez 150+ fournisseurs dropshipping vérifiés. AliExpress, CJ Dropshipping, Spocket, BigBuy et bien plus." />
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -1960,7 +2662,7 @@ export default function ChannableStyleSuppliersPage() {
             <div className="max-w-3xl mx-auto text-center">
               <Badge className="mb-4" variant="secondary">
                 <Sparkles className="w-3 h-3 mr-1" />
-                50+ Fournisseurs Vérifiés
+                {supplierDefinitions.length}+ Fournisseurs Vérifiés
               </Badge>
               <h1 className="text-3xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                 Fournisseurs Dropshipping
@@ -1982,7 +2684,7 @@ export default function ChannableStyleSuppliersPage() {
                 <Card className="bg-background/50 backdrop-blur">
                   <CardContent className="p-4 text-center">
                     <Globe className="w-6 h-6 mx-auto mb-2 text-blue-500" />
-                    <p className="text-2xl font-bold">15+</p>
+                    <p className="text-2xl font-bold">{uniqueCountries.length}+</p>
                     <p className="text-xs text-muted-foreground">Pays</p>
                   </CardContent>
                 </Card>
@@ -2051,6 +2753,39 @@ export default function ChannableStyleSuppliersPage() {
               />
             </div>
 
+            {/* Country Filter */}
+            <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+              <SelectTrigger className="w-48">
+                <MapPin className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Pays" />
+              </SelectTrigger>
+              <SelectContent>
+                {countryOptions.map(country => (
+                  <SelectItem key={country.id} value={country.id}>
+                    {country.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Shipping Zone Filter */}
+            <Select value={selectedShippingZone} onValueChange={setSelectedShippingZone}>
+              <SelectTrigger className="w-48">
+                <Ship className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Zone d'expédition" />
+              </SelectTrigger>
+              <SelectContent>
+                {shippingZones.map(zone => (
+                  <SelectItem key={zone.id} value={zone.id}>
+                    <span className="flex items-center gap-2">
+                      <zone.icon className="w-4 h-4" />
+                      {zone.label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             {/* Sort */}
             <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
               <SelectTrigger className="w-48">
@@ -2064,6 +2799,58 @@ export default function ChannableStyleSuppliersPage() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Active Filters */}
+          {(selectedCountry !== 'all' || selectedShippingZone !== 'all' || activeCategory !== 'all') && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="text-sm text-muted-foreground">Filtres actifs:</span>
+              {activeCategory !== 'all' && (
+                <Badge variant="secondary" className="gap-1">
+                  {categories.find(c => c.id === activeCategory)?.label}
+                  <button 
+                    onClick={() => setActiveCategory('all')}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+              {selectedCountry !== 'all' && (
+                <Badge variant="secondary" className="gap-1">
+                  {countryOptions.find(c => c.id === selectedCountry)?.label}
+                  <button 
+                    onClick={() => setSelectedCountry('all')}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+              {selectedShippingZone !== 'all' && (
+                <Badge variant="secondary" className="gap-1">
+                  {shippingZones.find(z => z.id === selectedShippingZone)?.label}
+                  <button 
+                    onClick={() => setSelectedShippingZone('all')}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2 text-xs"
+                onClick={() => {
+                  setActiveCategory('all')
+                  setSelectedCountry('all')
+                  setSelectedShippingZone('all')
+                }}
+              >
+                Réinitialiser
+              </Button>
+            </div>
+          )}
 
           {/* Categories */}
           <ScrollArea className="w-full pb-4 mb-6">
