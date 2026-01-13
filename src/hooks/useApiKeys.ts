@@ -46,32 +46,24 @@ export function useApiKeys() {
 
   const generateApiKey = async (name: string, scopes: string[] = []) => {
     try {
-      // Generate a secure API key
-      const keyPrefix = 'sk_' + Math.random().toString(36).substring(2, 10);
-      const keyBody = Array.from(crypto.getRandomValues(new Uint8Array(24)))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-      const fullKey = `${keyPrefix}_${keyBody}`;
-
-      const { data, error } = await supabase
-        .from('api_keys')
-        .insert({
-          user_id: user?.id,
-          name: name || 'Nouvelle API Key',
-          key: fullKey,
-          key_prefix: keyPrefix,
-          scopes: scopes,
-          environment: 'production',
-          is_active: true
-        })
-        .select()
-        .single();
+      // Use secure server-side key generation with automatic hashing
+      const { data: fullKey, error } = await supabase.rpc('generate_api_key', {
+        key_name: name || 'Nouvelle API Key',
+        key_scopes: scopes
+      });
 
       if (error) throw error;
 
-      setApiKeys(prev => [data, ...prev]);
+      // Refetch to get the new key in the list (key will be masked in DB)
+      await fetchApiKeys();
+      
       toast.success('Clé API créée avec succès');
-      return data;
+      
+      // Return the full key (this is the only time user will see it)
+      return { 
+        fullKey, 
+        message: 'Copiez cette clé maintenant, elle ne sera plus visible après.' 
+      };
     } catch (error) {
       console.error('Error generating API key:', error);
       toast.error('Erreur lors de la génération de la clé API');
