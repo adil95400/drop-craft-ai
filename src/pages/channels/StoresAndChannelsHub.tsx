@@ -1,51 +1,62 @@
 /**
- * Hub Boutiques & Canaux - Interface unifiée style Channable/AutoDS
+ * Hub Boutiques & Canaux - Design Channable
  * Gestion centralisée des connexions boutiques et marketplaces
  */
 
 import { useState } from 'react'
-import { PlatformLogo } from '@/components/ui/platform-logo'
 import { Helmet } from 'react-helmet-async'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import {
-  Store, ShoppingCart, Plus, RefreshCw, Settings, Search, 
-  CheckCircle2, AlertCircle, Clock, Wifi, WifiOff, ExternalLink,
-  ArrowRight, Zap, Package, TrendingUp, Globe, Link2, Unplug,
-  LayoutGrid, List, Filter, ChevronRight, Loader2, ShoppingBag, Play
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
+
+// Channable Components
+import { 
+  ChannablePageLayout,
+  ChannableHeroSection,
+  ChannableStatsGrid,
+  ChannableSearchBar,
+  ChannableCategoryFilter,
+  ChannableEmptyState
+} from '@/components/channable'
+
+// UI Components
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PlatformLogo } from '@/components/ui/platform-logo'
+import {
+  Store, ShoppingCart, Plus, RefreshCw, Settings, 
+  CheckCircle2, AlertCircle, Clock, WifiOff,
+  Package, TrendingUp, Globe, Link2, Loader2,
+  LayoutGrid, List, ChevronRight
+} from 'lucide-react'
 
 // Platform definitions
 const STORE_PLATFORMS = [
-  { id: 'shopify', name: 'Shopify', color: '#95BF47', logo: '/logos/shopify-text.svg', category: 'store' },
-  { id: 'woocommerce', name: 'WooCommerce', color: '#96588A', logo: '/logos/woocommerce.svg', category: 'store' },
-  { id: 'prestashop', name: 'PrestaShop', color: '#DF0067', logo: '/logos/prestashop.svg', category: 'store' },
-  { id: 'magento', name: 'Magento', color: '#EE672F', logo: '/logos/magento.svg', category: 'store' },
-  { id: 'wix', name: 'Wix', color: '#000000', logo: '/logos/wix-text.svg', category: 'store' },
-  { id: 'squarespace', name: 'Squarespace', color: '#000000', logo: '/logos/squarespace-text.svg', category: 'store' },
-  { id: 'bigcommerce', name: 'BigCommerce', color: '#34313F', logo: '/logos/bigcommerce-icon.svg', category: 'store' },
+  { id: 'shopify', name: 'Shopify', color: '#95BF47', category: 'store' },
+  { id: 'woocommerce', name: 'WooCommerce', color: '#96588A', category: 'store' },
+  { id: 'prestashop', name: 'PrestaShop', color: '#DF0067', category: 'store' },
+  { id: 'magento', name: 'Magento', color: '#EE672F', category: 'store' },
+  { id: 'wix', name: 'Wix', color: '#000000', category: 'store' },
+  { id: 'squarespace', name: 'Squarespace', color: '#000000', category: 'store' },
+  { id: 'bigcommerce', name: 'BigCommerce', color: '#34313F', category: 'store' },
 ]
 
 const MARKETPLACE_PLATFORMS = [
-  { id: 'amazon', name: 'Amazon Seller', color: '#FF9900', logo: '/logos/amazon-text.svg', category: 'marketplace' },
-  { id: 'ebay', name: 'eBay', color: '#E53238', logo: '/logos/ebay-icon.svg', category: 'marketplace' },
-  { id: 'etsy', name: 'Etsy', color: '#F56400', logo: '/logos/etsy.svg', category: 'marketplace' },
-  { id: 'google', name: 'Google Merchant', color: '#4285F4', logo: '/logos/google.svg', category: 'marketplace' },
-  { id: 'facebook', name: 'Meta Commerce', color: '#1877F2', logo: '/logos/meta-color.svg', category: 'marketplace' },
-  { id: 'tiktok', name: 'TikTok Shop', color: '#000000', logo: '/logos/tiktok.svg', category: 'marketplace' },
-  { id: 'cdiscount', name: 'Cdiscount', color: '#C4161C', logo: '/logos/cdiscount-text.svg', category: 'marketplace' },
-  { id: 'fnac', name: 'Fnac', color: '#E4A400', logo: '/logos/fnac-text.svg', category: 'marketplace' },
-  { id: 'rakuten', name: 'Rakuten', color: '#BF0000', logo: '/logos/rakuten-text.svg', category: 'marketplace' },
-  { id: 'zalando', name: 'Zalando', color: '#FF6900', logo: '/logos/zalando-text.svg', category: 'marketplace' },
+  { id: 'amazon', name: 'Amazon Seller', color: '#FF9900', category: 'marketplace' },
+  { id: 'ebay', name: 'eBay', color: '#E53238', category: 'marketplace' },
+  { id: 'etsy', name: 'Etsy', color: '#F56400', category: 'marketplace' },
+  { id: 'google', name: 'Google Merchant', color: '#4285F4', category: 'marketplace' },
+  { id: 'facebook', name: 'Meta Commerce', color: '#1877F2', category: 'marketplace' },
+  { id: 'tiktok', name: 'TikTok Shop', color: '#000000', category: 'marketplace' },
+  { id: 'cdiscount', name: 'Cdiscount', color: '#C4161C', category: 'marketplace' },
+  { id: 'fnac', name: 'Fnac', color: '#E4A400', category: 'marketplace' },
+  { id: 'rakuten', name: 'Rakuten', color: '#BF0000', category: 'marketplace' },
+  { id: 'zalando', name: 'Zalando', color: '#FF6900', category: 'marketplace' },
 ]
 
 interface ChannelConnection {
@@ -60,7 +71,7 @@ interface ChannelConnection {
   created_at: string
 }
 
-// Demo data for international showcase
+// Demo data
 const DEMO_CONNECTIONS: ChannelConnection[] = [
   {
     id: 'demo-shopify-1',
@@ -95,28 +106,6 @@ const DEMO_CONNECTIONS: ChannelConnection[] = [
     orders_synced: 321,
     created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
   },
-  {
-    id: 'demo-ebay-1',
-    platform_type: 'ebay',
-    platform_name: 'eBay',
-    shop_domain: 'eBay DE - ElektroShop',
-    connection_status: 'connected',
-    last_sync_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    products_synced: 678,
-    orders_synced: 1543,
-    created_at: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'demo-etsy-1',
-    platform_type: 'etsy',
-    platform_name: 'Etsy',
-    shop_domain: 'ArtisanCreations',
-    connection_status: 'error',
-    last_sync_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    products_synced: 234,
-    orders_synced: 567,
-    created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
-  },
 ]
 
 export default function StoresAndChannelsHub() {
@@ -129,7 +118,7 @@ export default function StoresAndChannelsHub() {
   const [searchTerm, setSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  // Fetch all channel connections
+  // Fetch connections
   const { data: dbConnections = [], isLoading } = useQuery({
     queryKey: ['channel-connections'],
     queryFn: async () => {
@@ -138,7 +127,6 @@ export default function StoresAndChannelsHub() {
         .select('*')
         .order('created_at', { ascending: false })
       if (error) throw error
-      // Map to ChannelConnection format
       return (data || []).map(d => ({
         id: d.id,
         platform_type: d.platform,
@@ -153,71 +141,75 @@ export default function StoresAndChannelsHub() {
     }
   })
 
-  // Merge demo data with real connections (demo shown if no real connections)
   const connections = dbConnections.length > 0 ? dbConnections : DEMO_CONNECTIONS
 
-  // Sync mutation
+  // Mutations
   const syncMutation = useMutation({
     mutationFn: async (connectionId: string) => {
-      const { error } = await supabase
-        .from('integrations')
-        .update({ 
-          connection_status: 'connecting',
-          last_sync_at: new Date().toISOString()
-        })
-        .eq('id', connectionId)
-      if (error) throw error
-      
-      // Simulate sync completion
+      await supabase.from('integrations').update({ 
+        connection_status: 'connecting',
+        last_sync_at: new Date().toISOString()
+      }).eq('id', connectionId)
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      await supabase
-        .from('integrations')
-        .update({ connection_status: 'connected' })
-        .eq('id', connectionId)
+      await supabase.from('integrations').update({ connection_status: 'connected' }).eq('id', connectionId)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['channel-connections'] })
-      toast({ title: 'Synchronisation terminée', description: 'Vos données ont été mises à jour' })
-    },
-    onError: () => {
-      toast({ title: 'Erreur', description: 'La synchronisation a échoué', variant: 'destructive' })
+      toast({ title: 'Synchronisation terminée' })
     }
   })
 
-  // Disconnect mutation
-  const disconnectMutation = useMutation({
-    mutationFn: async (connectionId: string) => {
-      const { error } = await supabase
-        .from('integrations')
-        .update({ connection_status: 'disconnected', is_active: false })
-        .eq('id', connectionId)
-      if (error) throw error
+  const setActiveTab = (tab: string) => setSearchParams({ tab })
+
+  // Stats Channable
+  const stats = [
+    {
+      label: 'Connectés',
+      value: connections.filter(c => c.connection_status === 'connected').length,
+      icon: Link2,
+      trend: '+1',
+      color: 'primary' as const
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['channel-connections'] })
-      toast({ title: 'Déconnexion réussie' })
+    {
+      label: 'Boutiques',
+      value: connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length,
+      icon: Store,
+      trend: '+0',
+      color: 'success' as const
+    },
+    {
+      label: 'Marketplaces',
+      value: connections.filter(c => MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length,
+      icon: ShoppingCart,
+      trend: '+0',
+      color: 'warning' as const
+    },
+    {
+      label: 'Produits',
+      value: connections.reduce((acc, c) => acc + (c.products_synced || 0), 0),
+      icon: Package,
+      trend: '+156',
+      color: 'primary' as const
+    },
+    {
+      label: 'Commandes',
+      value: connections.reduce((acc, c) => acc + (c.orders_synced || 0), 0),
+      icon: TrendingUp,
+      trend: '+89',
+      color: 'success' as const
     }
-  })
+  ]
 
-  const setActiveTab = (tab: string) => {
-    setSearchParams({ tab })
-  }
-
-  // Stats
-  const stats = {
-    total: connections.length,
-    connected: connections.filter(c => c.connection_status === 'connected').length,
-    stores: connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length,
-    marketplaces: connections.filter(c => MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length,
-    errors: connections.filter(c => c.connection_status === 'error').length,
-    totalProducts: connections.reduce((acc, c) => acc + (c.products_synced || 0), 0),
-    totalOrders: connections.reduce((acc, c) => acc + (c.orders_synced || 0), 0),
-  }
+  // Categories Channable
+  const categories = [
+    { id: 'all', label: 'Tous', icon: LayoutGrid, count: connections.length },
+    { id: 'stores', label: 'Boutiques', icon: Store, count: connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length },
+    { id: 'marketplaces', label: 'Marketplaces', icon: ShoppingCart, count: connections.filter(c => MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length },
+  ]
 
   // Filter connections
   const filteredConnections = connections.filter(c => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = !searchTerm || 
       c.platform_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.shop_domain?.toLowerCase().includes(searchTerm.toLowerCase())
     
@@ -228,267 +220,168 @@ export default function StoresAndChannelsHub() {
     return matchesSearch && matchesTab
   })
 
-  // Available platforms (not connected)
+  // Available platforms
   const connectedPlatformIds = connections.map(c => c.platform_type?.toLowerCase())
   const availableStores = STORE_PLATFORMS.filter(p => !connectedPlatformIds.includes(p.id))
   const availableMarketplaces = MARKETPLACE_PLATFORMS.filter(p => !connectedPlatformIds.includes(p.id))
+
+  if (isLoading) {
+    return (
+      <ChannablePageLayout>
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </ChannablePageLayout>
+    )
+  }
 
   return (
     <>
       <Helmet>
         <title>Boutiques & Canaux - ShopOpti</title>
-        <meta name="description" content="Gérez vos boutiques e-commerce et marketplaces depuis un seul endroit" />
       </Helmet>
 
-      <div className="container mx-auto p-4 md:p-6 space-y-6 pb-24 md:pb-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary via-purple-600 to-pink-600 shadow-lg">
-                  <Globe className="h-6 w-6 text-white" />
-                </div>
-                Boutiques & Canaux
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Connectez vos boutiques et publiez sur les marketplaces
-              </p>
-            </div>
+      <ChannablePageLayout>
+        {/* Hero Channable */}
+        <ChannableHeroSection
+          title="Boutiques & Canaux"
+          description="Connectez vos boutiques et publiez sur les marketplaces"
+          primaryAction={{
+            label: 'Connecter Boutique',
+            onClick: () => navigate('/stores-channels/connect?type=store'),
+            icon: Store
+          }}
+          secondaryAction={{
+            label: 'Ajouter Marketplace',
+            onClick: () => navigate('/stores-channels/connect?type=marketplace')
+          }}
+        />
 
-            <div className="flex flex-wrap gap-2">
-              <Button 
-                size="sm" 
-                onClick={() => navigate('/stores-channels/connect?type=store')}
-                className="gap-2"
-              >
-                <Store className="h-4 w-4" />
-                <span className="hidden sm:inline">Connecter</span> Boutique
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => navigate('/stores-channels/connect?type=marketplace')}
-                className="gap-2"
-              >
-                <ShoppingCart className="h-4 w-4" />
-                <span className="hidden sm:inline">Ajouter</span> Marketplace
-              </Button>
-            </div>
-          </div>
+        {/* Stats Channable */}
+        <ChannableStatsGrid stats={stats} />
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <StatsCard 
-              icon={<Link2 className="h-5 w-5" />}
-              value={stats.connected}
-              label="Connectés"
-              color="primary"
+        {/* Filters Channable */}
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+          <ChannableCategoryFilter
+            categories={categories}
+            selectedCategory={activeTab}
+            onSelectCategory={setActiveTab}
+          />
+          <div className="flex gap-2 items-center">
+            <ChannableSearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Rechercher..."
             />
-            <StatsCard 
-              icon={<Store className="h-5 w-5" />}
-              value={stats.stores}
-              label="Boutiques"
-              color="blue"
-            />
-            <StatsCard 
-              icon={<ShoppingCart className="h-5 w-5" />}
-              value={stats.marketplaces}
-              label="Marketplaces"
-              color="green"
-            />
-            <StatsCard 
-              icon={<Package className="h-5 w-5" />}
-              value={stats.totalProducts}
-              label="Produits"
-              color="purple"
-            />
-            <StatsCard 
-              icon={<TrendingUp className="h-5 w-5" />}
-              value={stats.totalOrders}
-              label="Commandes"
-              color="orange"
-              className="hidden md:flex"
-            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setViewMode(v => v === 'grid' ? 'list' : 'grid')}
+            >
+              {viewMode === 'grid' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+            </Button>
           </div>
         </div>
 
-        {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4 justify-between">
-            <TabsList className="grid w-full md:w-auto grid-cols-3">
-              <TabsTrigger value="all" className="gap-2">
-                <LayoutGrid className="h-4 w-4" />
-                <span>Tous</span>
-                <Badge variant="secondary" className="ml-1 hidden sm:inline">{stats.total}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="stores" className="gap-2">
-                <Store className="h-4 w-4" />
-                <span>Boutiques</span>
-              </TabsTrigger>
-              <TabsTrigger value="marketplaces" className="gap-2">
-                <ShoppingCart className="h-4 w-4" />
-                <span>Marketplaces</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <div className="flex gap-2">
-              <div className="relative flex-1 md:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setViewMode(v => v === 'grid' ? 'list' : 'grid')}
-              >
-                {viewMode === 'grid' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-              </Button>
+        {/* Connected Channels */}
+        {filteredConnections.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              Canaux connectés
+            </h2>
+            <div className={cn(
+              viewMode === 'grid' 
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+                : 'flex flex-col gap-3'
+            )}>
+              <AnimatePresence>
+                {filteredConnections.map((connection, index) => (
+                  <ChannelCard
+                    key={connection.id}
+                    connection={connection}
+                    viewMode={viewMode}
+                    onSync={() => syncMutation.mutate(connection.id)}
+                    onManage={() => navigate(`/stores-channels/${connection.id}`)}
+                    isSyncing={syncMutation.isPending}
+                    index={index}
+                  />
+                ))}
+              </AnimatePresence>
             </div>
-          </div>
+          </section>
+        )}
 
-          <TabsContent value={activeTab} className="space-y-6">
-            {isLoading ? (
-              <LoadingGrid />
-            ) : (
-              <>
-                {/* Connected Channels */}
-                {filteredConnections.length > 0 && (
-                  <section>
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                      Canaux connectés
-                    </h2>
-                    <div className={cn(
-                      viewMode === 'grid' 
-                        ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
-                        : 'flex flex-col gap-3'
-                    )}>
-                      <AnimatePresence>
-                        {filteredConnections.map((connection, index) => (
-                          <ChannelCard
-                            key={connection.id}
-                            connection={connection}
-                            viewMode={viewMode}
-                            onSync={() => syncMutation.mutate(connection.id)}
-                            onDisconnect={() => disconnectMutation.mutate(connection.id)}
-                            onManage={() => navigate(`/stores-channels/${connection.id}`)}
-                            isSyncing={syncMutation.isPending}
-                            index={index}
-                          />
-                        ))}
-                      </AnimatePresence>
-                    </div>
-                  </section>
-                )}
+        {/* Available Stores */}
+        {(activeTab === 'all' || activeTab === 'stores') && availableStores.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Store className="h-5 w-5 text-primary" />
+              Boutiques disponibles
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {availableStores.map(platform => (
+                <PlatformCard 
+                  key={platform.id}
+                  platform={platform}
+                  onConnect={() => navigate(`/stores-channels/connect/${platform.id}`)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-                {/* Available Platforms */}
-                {(activeTab === 'all' || activeTab === 'stores') && availableStores.length > 0 && (
-                  <section>
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Store className="h-5 w-5 text-blue-500" />
-                      Boutiques disponibles
-                    </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                      {availableStores.map(platform => (
-                        <PlatformCard 
-                          key={platform.id}
-                          platform={platform}
-                          onConnect={() => navigate(`/stores-channels/connect/${platform.id}`)}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                )}
+        {/* Available Marketplaces */}
+        {(activeTab === 'all' || activeTab === 'marketplaces') && availableMarketplaces.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-green-500" />
+              Marketplaces disponibles
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {availableMarketplaces.map(platform => (
+                <PlatformCard 
+                  key={platform.id}
+                  platform={platform}
+                  onConnect={() => navigate(`/stores-channels/connect/${platform.id}`)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-                {(activeTab === 'all' || activeTab === 'marketplaces') && availableMarketplaces.length > 0 && (
-                  <section>
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <ShoppingCart className="h-5 w-5 text-green-500" />
-                      Marketplaces disponibles
-                    </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                      {availableMarketplaces.map(platform => (
-                        <PlatformCard 
-                          key={platform.id}
-                          platform={platform}
-                          onConnect={() => navigate(`/stores-channels/connect/${platform.id}`)}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Empty State */}
-                {connections.length === 0 && (
-                  <EmptyState onConnect={() => navigate('/stores-channels/connect')} />
-                )}
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
+        {/* Empty State */}
+        {connections.length === 0 && (
+          <ChannableEmptyState
+            icon={Globe}
+            title="Aucun canal connecté"
+            description="Connectez votre boutique e-commerce ou ajoutez une marketplace pour synchroniser vos produits"
+            action={{
+              label: 'Connecter une boutique',
+              onClick: () => navigate('/stores-channels/connect')
+            }}
+          />
+        )}
+      </ChannablePageLayout>
     </>
   )
 }
 
-// Sub-components
-function StatsCard({ icon, value, label, color, className }: {
-  icon: React.ReactNode
-  value: number
-  label: string
-  color: string
-  className?: string
-}) {
-  const colorClasses: Record<string, string> = {
-    primary: 'bg-primary/10 text-primary',
-    blue: 'bg-blue-500/10 text-blue-600',
-    green: 'bg-green-500/10 text-green-600',
-    purple: 'bg-purple-500/10 text-purple-600',
-    orange: 'bg-orange-500/10 text-orange-600',
-  }
-
-  return (
-    <Card className={cn("hover:shadow-md transition-shadow", className)}>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={cn("p-2 rounded-lg", colorClasses[color])}>
-            {icon}
-          </div>
-          <div>
-            <p className="text-2xl font-bold">{value.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function ChannelCard({ connection, viewMode, onSync, onDisconnect, onManage, isSyncing, index }: {
+// Channel Card Component
+function ChannelCard({ connection, viewMode, onSync, onManage, isSyncing, index }: {
   connection: ChannelConnection
   viewMode: 'grid' | 'list'
   onSync: () => void
-  onDisconnect: () => void
   onManage: () => void
   isSyncing: boolean
   index: number
 }) {
-  const platform = [...STORE_PLATFORMS, ...MARKETPLACE_PLATFORMS].find(
-    p => p.id === connection.platform_type?.toLowerCase()
-  )
-
   const getStatusBadge = () => {
     switch (connection.connection_status) {
       case 'connected':
-        return <Badge className="bg-green-500/20 text-green-700 border-green-500/30 gap-1"><CheckCircle2 className="h-3 w-3" />Connecté</Badge>
+        return <Badge className="bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30 gap-1"><CheckCircle2 className="h-3 w-3" />Connecté</Badge>
       case 'connecting':
-        return <Badge className="bg-blue-500/20 text-blue-700 border-blue-500/30 gap-1"><Loader2 className="h-3 w-3 animate-spin" />Sync...</Badge>
+        return <Badge className="bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30 gap-1"><Loader2 className="h-3 w-3 animate-spin" />Sync...</Badge>
       case 'error':
         return <Badge variant="destructive" className="gap-1"><AlertCircle className="h-3 w-3" />Erreur</Badge>
       default:
@@ -503,10 +396,10 @@ function ChannelCard({ connection, viewMode, onSync, onDisconnect, onManage, isS
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05 }}
       >
-        <Card className="hover:shadow-md transition-all cursor-pointer group" onClick={onManage}>
+        <Card className="hover:shadow-md transition-all cursor-pointer group border-border/50 hover:border-primary/30" onClick={onManage}>
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md bg-white">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md bg-card border">
                 <PlatformLogo platform={connection.platform_type || ''} size="lg" />
               </div>
               <div className="flex-1 min-w-0">
@@ -545,15 +438,15 @@ function ChannelCard({ connection, viewMode, onSync, onDisconnect, onManage, isS
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: index * 0.05 }}
     >
-      <Card className="hover:shadow-lg transition-all h-full group">
+      <Card className="hover:shadow-lg transition-all h-full group border-border/50 hover:border-primary/30">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md bg-white">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md bg-card border">
                 <PlatformLogo platform={connection.platform_type || ''} size="lg" />
               </div>
               <div>
-                <CardTitle className="text-base">{connection.platform_name}</CardTitle>
+                <CardTitle className="text-base group-hover:text-primary transition-colors">{connection.platform_name}</CardTitle>
                 <p className="text-xs text-muted-foreground truncate max-w-[150px]">
                   {connection.shop_domain || 'Non configuré'}
                 </p>
@@ -585,8 +478,8 @@ function ChannelCard({ connection, viewMode, onSync, onDisconnect, onManage, isS
             <Button 
               size="sm" 
               variant="outline" 
-              className="flex-1"
-              onClick={onSync}
+              className="flex-1 group-hover:border-primary group-hover:text-primary"
+              onClick={(e) => { e.stopPropagation(); onSync() }}
               disabled={isSyncing}
             >
               <RefreshCw className={cn("h-4 w-4 mr-1", isSyncing && "animate-spin")} />
@@ -603,17 +496,18 @@ function ChannelCard({ connection, viewMode, onSync, onDisconnect, onManage, isS
   )
 }
 
+// Platform Card Component
 function PlatformCard({ platform, onConnect }: {
-  platform: { id: string; name: string; color: string; logo: string }
+  platform: { id: string; name: string; color: string }
   onConnect: () => void
 }) {
   return (
     <Card 
-      className="hover:shadow-lg hover:scale-105 transition-all cursor-pointer group"
+      className="hover:shadow-lg hover:scale-105 transition-all cursor-pointer group border-border/50 hover:border-primary/30"
       onClick={onConnect}
     >
       <CardContent className="p-4 text-center">
-        <div className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center shadow-md mb-3 bg-white">
+        <div className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center shadow-md mb-3 bg-card border">
           <PlatformLogo platform={platform.id} size="lg" />
         </div>
         <p className="font-medium text-sm truncate">{platform.name}</p>
@@ -625,52 +519,6 @@ function PlatformCard({ platform, onConnect }: {
           <Plus className="h-4 w-4 mr-1" />
           Connecter
         </Button>
-      </CardContent>
-    </Card>
-  )
-}
-
-function LoadingGrid() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {[...Array(6)].map((_, i) => (
-        <Card key={i} className="animate-pulse">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-muted" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-muted rounded w-3/4" />
-                <div className="h-3 bg-muted rounded w-1/2" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  )
-}
-
-function EmptyState({ onConnect }: { onConnect: () => void }) {
-  return (
-    <Card className="border-dashed">
-      <CardContent className="p-12 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
-          <Globe className="h-8 w-8 text-primary" />
-        </div>
-        <h3 className="text-xl font-semibold mb-2">Aucun canal connecté</h3>
-        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          Connectez votre boutique e-commerce ou ajoutez une marketplace pour commencer à synchroniser vos produits
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button onClick={onConnect} size="lg" className="gap-2">
-            <Store className="h-5 w-5" />
-            Connecter une boutique
-          </Button>
-          <Button variant="outline" size="lg" className="gap-2" onClick={onConnect}>
-            <ShoppingCart className="h-5 w-5" />
-            Ajouter une marketplace
-          </Button>
-        </div>
       </CardContent>
     </Card>
   )
