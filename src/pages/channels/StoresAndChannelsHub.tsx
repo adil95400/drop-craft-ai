@@ -1,9 +1,10 @@
 /**
  * Hub Boutiques & Canaux - Design Channable Avancé
  * Gestion centralisée des connexions boutiques et marketplaces
+ * Version optimisée avec options avancées inspirées de Channable
  */
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -24,10 +25,12 @@ import {
   ChannableBulkActions,
   ChannableActivityFeed,
   ChannableChannelHealth,
+  ChannableSyncTimeline,
   DEMO_ACTIVITY_EVENTS,
   DEFAULT_CHANNEL_HEALTH_METRICS,
   DEFAULT_CHANNEL_BULK_ACTIONS,
-  type FilterConfig
+  type FilterConfig,
+  type SyncEvent
 } from '@/components/channable'
 
 // UI Components
@@ -36,12 +39,23 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PlatformLogo } from '@/components/ui/platform-logo'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Progress } from '@/components/ui/progress'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Store, ShoppingCart, Plus, RefreshCw, Settings, 
   CheckCircle2, AlertCircle, Clock, WifiOff,
   Package, TrendingUp, Globe, Link2, Loader2,
   LayoutGrid, List, ChevronRight, Zap, Activity,
-  BarChart3, Eye, EyeOff
+  BarChart3, Eye, EyeOff, History, Download, Upload,
+  Filter, Sparkles, Target, ArrowUpRight
 } from 'lucide-react'
 
 // Platform definitions
