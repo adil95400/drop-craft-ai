@@ -953,6 +953,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           key: string
+          key_hash: string | null
           key_prefix: string | null
           last_used_at: string | null
           last_used_ip: string | null
@@ -970,6 +971,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           key: string
+          key_hash?: string | null
           key_prefix?: string | null
           last_used_at?: string | null
           last_used_ip?: string | null
@@ -987,6 +989,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           key?: string
+          key_hash?: string | null
           key_prefix?: string | null
           last_used_at?: string | null
           last_used_ip?: string | null
@@ -9517,6 +9520,15 @@ export type Database = {
       is_admin_secure: { Args: never; Returns: boolean }
       is_token_revoked: { Args: { token_id?: string }; Returns: boolean }
       unlock_stuck_import_jobs: { Args: never; Returns: number }
+      validate_api_key: {
+        Args: { input_key: string }
+        Returns: {
+          is_active: boolean
+          key_name: string
+          scopes: string[]
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

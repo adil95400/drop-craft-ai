@@ -54,47 +54,56 @@ export const useSecureApiKeys = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      // Use the existing generate_api_key function
+      // Use the secure server-side key generation with automatic hashing
       const { data, error } = await supabase.rpc('generate_api_key', {
         key_name: apiKeyData.key_name,
         key_scopes: [apiKeyData.platform]
       })
       
       if (error) throw error
-      return { key: data }
+      // Return the full key - user must copy it now, it won't be visible again
+      return { 
+        key: data,
+        message: 'Copiez cette clé maintenant, elle ne sera plus visible après.'
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['secure-api-keys'] })
       toast({
         title: "Clé API créée",
-        description: "La clé API a été créée avec succès et stockée de manière sécurisée",
+        description: "Copiez la clé maintenant - elle ne sera plus visible après fermeture",
       })
     }
   })
 
   const rotateApiKey = useMutation({
     mutationFn: async (keyId: string) => {
-      // Delete old key and create new one
+      // Delete old key and create new one with secure hashing
       const oldKey = apiKeys.find(k => k.id === keyId)
       if (!oldKey) throw new Error('Clé non trouvée')
       
-      // Delete old
+      // Delete old key
       await supabase.from('api_keys').delete().eq('id', keyId)
       
-      // Create new with same name
+      // Create new key with same name (will be automatically hashed)
       const { data, error } = await supabase.rpc('generate_api_key', {
         key_name: oldKey.key_name,
         key_scopes: [oldKey.platform]
       })
       
       if (error) throw error
-      return { success: true, key: data }
+      // Return the new full key - user must copy it now
+      return { 
+        success: true, 
+        key: data,
+        message: 'Nouvelle clé générée. Copiez-la maintenant, elle ne sera plus visible après.'
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['secure-api-keys'] })
       toast({
         title: "Clé API rotée",
-        description: "La clé API a été régénérée avec succès pour des raisons de sécurité",
+        description: "Copiez la nouvelle clé maintenant - elle ne sera plus visible après",
       })
     }
   })
