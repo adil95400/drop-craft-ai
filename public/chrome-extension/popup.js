@@ -9,7 +9,7 @@ class ShopOptiPopup {
     this.activities = [];
     this.pendingItems = [];
     this.currentPlatform = null;
-    this.API_URL = 'https://dtozyrmmekdnvekissuh.supabase.co/functions/v1';
+    this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
   }
 
   async init() {
@@ -482,7 +482,7 @@ class ShopOptiPopup {
   }
 
   openDashboard() {
-    chrome.tabs.create({ url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/dashboard' });
+    chrome.tabs.create({ url: 'https://drop-craft-ai.lovable.app/dashboard' });
   }
 
   showFeature(name) {
@@ -492,7 +492,7 @@ class ShopOptiPopup {
   showPremiumFeature() {
     if (this.userPlan !== 'pro') {
       this.showToast('Fonctionnalité PRO - Mettez à niveau', 'warning');
-      chrome.tabs.create({ url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/pricing' });
+      chrome.tabs.create({ url: 'https://drop-craft-ai.lovable.app/pricing' });
     } else {
       this.showFeature('AI Optimize');
     }

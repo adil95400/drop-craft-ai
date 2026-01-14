@@ -382,7 +382,7 @@ class AliExpressDetector {
     this.showLoadingToast('⏳ Import en cours...');
     
     try {
-      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/product-url-scraper', {
+      const response = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/product-url-scraper', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
