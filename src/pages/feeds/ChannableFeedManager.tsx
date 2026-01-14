@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Label } from '@/components/ui/label'
 import { useProductFeeds, ProductFeed } from '@/hooks/useProductFeeds'
 import { useToast } from '@/hooks/use-toast'
+import { FeedSubNavigation } from '@/components/feeds/FeedSubNavigation'
 import {
   Rss, Plus, RefreshCw, CheckCircle, AlertTriangle, XCircle,
   ExternalLink, Trash2, Clock, Package, TrendingUp, Search, Loader2, Store
@@ -104,6 +105,8 @@ export default function ChannableFeedManager() {
       </Helmet>
 
       <div className="container mx-auto p-4 sm:p-6 space-y-6">
+        <FeedSubNavigation />
+        
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
