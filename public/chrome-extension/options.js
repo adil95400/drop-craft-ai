@@ -1,7 +1,10 @@
 // ShopOpti+ Chrome Extension - Options Script v3.0
 
+const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
+const APP_URL = 'https://drop-craft-ai.lovable.app';
+
 const DEFAULT_SETTINGS = {
-  apiUrl: 'https://dtozyrmmekdnvekissuh.supabase.co',
+  apiUrl: API_URL,
   extensionToken: '',
   autoPriceMonitoring: false,
   autoStockAlerts: false,
@@ -152,7 +155,7 @@ async function testConnection() {
       throw new Error('Token d\'extension requis');
     }
     
-    const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-sync-realtime', {
+    const response = await fetch(`${API_URL}/extension-sync-realtime`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
