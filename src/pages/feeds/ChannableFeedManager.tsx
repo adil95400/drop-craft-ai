@@ -33,101 +33,173 @@ const MARKETPLACE_CATEGORIES = [
   { id: 'affiliate', name: 'Affiliation', icon: '🔗' },
 ]
 
+// Marketplace logo mapping to SVG files
+const getMarketplaceLogoPath = (id: string): string | null => {
+  const logoMap: Record<string, string> = {
+    amazon: '/logos/amazon.svg',
+    ebay: '/logos/ebay.svg',
+    google_shopping: '/logos/google.svg',
+    meta: '/logos/meta-color.svg',
+    shopify: '/logos/shopify.svg',
+    woocommerce: '/logos/woocommerce.svg',
+    prestashop: '/logos/prestashop.svg',
+    magento: '/logos/magento.svg',
+    tiktok: '/logos/tiktok-shop.svg',
+    instagram: '/logos/instagram-color.svg',
+    pinterest: '/logos/pinterest.svg',
+    facebook: '/logos/facebook.svg',
+    cdiscount: '/logos/cdiscount.svg',
+    fnac: '/logos/fnac.svg',
+    zalando: '/logos/zalando.svg',
+    aliexpress: '/logos/aliexpress.svg',
+    rakuten: '/logos/rakuten.svg',
+    etsy: '/logos/etsy.svg',
+    asos: '/logos/asos.svg',
+    costco: '/logos/costco.svg',
+    bigcommerce: '/logos/bigcommerce.svg',
+    squarespace: '/logos/squarespace.svg',
+    wix: '/logos/wix.svg',
+    google: '/logos/google.svg',
+    google_ads: '/logos/google-ads.svg',
+    linkedin: '/logos/linkedin.svg',
+    whatsapp: '/logos/whatsapp.svg',
+    stripe: '/logos/stripe.svg',
+    paypal: '/logos/paypal.svg',
+    klaviyo: '/logos/klaviyo.svg',
+    zapier: '/logos/zapier.svg',
+    canva: '/logos/canva.svg',
+    bigbuy: '/logos/bigbuy.svg',
+    excel: '/logos/excel.svg',
+    twitter: '/logos/x.svg',
+    x: '/logos/x.svg',
+  }
+  return logoMap[id] || null
+}
+
 const MARKETPLACES = [
   // Popular Marketplaces
-  { id: 'amazon', name: 'Amazon', logo: '🛒', category: 'popular', status: 'popular' },
-  { id: 'ebay', name: 'eBay', logo: '🏷️', category: 'popular', status: 'popular' },
-  { id: 'google_shopping', name: 'Google Shopping', logo: '🔍', category: 'popular', status: 'popular' },
-  { id: 'meta', name: 'Meta Commerce', logo: '📘', category: 'popular', status: 'popular' },
-  { id: 'shopify', name: 'Shopify', logo: '🛍️', category: 'popular', status: 'popular' },
-  { id: 'woocommerce', name: 'WooCommerce', logo: '🔮', category: 'popular', status: 'popular' },
-  { id: 'prestashop', name: 'PrestaShop', logo: '🛒', category: 'popular', status: 'popular' },
-  { id: 'magento', name: 'Magento', logo: '🧱', category: 'popular', status: 'popular' },
+  { id: 'amazon', name: 'Amazon', emoji: '🛒', category: 'popular', status: 'popular' },
+  { id: 'ebay', name: 'eBay', emoji: '🏷️', category: 'popular', status: 'popular' },
+  { id: 'google_shopping', name: 'Google Shopping', emoji: '🔍', category: 'popular', status: 'popular' },
+  { id: 'meta', name: 'Meta Commerce', emoji: '📘', category: 'popular', status: 'popular' },
+  { id: 'shopify', name: 'Shopify', emoji: '🛍️', category: 'popular', status: 'popular' },
+  { id: 'woocommerce', name: 'WooCommerce', emoji: '🔮', category: 'popular', status: 'popular' },
+  { id: 'prestashop', name: 'PrestaShop', emoji: '🛒', category: 'popular', status: 'popular' },
+  { id: 'magento', name: 'Magento', emoji: '🧱', category: 'popular', status: 'popular' },
   
   // Social Commerce
-  { id: 'tiktok', name: 'TikTok Shop', logo: '🎵', category: 'social', status: 'trending' },
-  { id: 'instagram', name: 'Instagram Shopping', logo: '📸', category: 'social', status: 'trending' },
-  { id: 'pinterest', name: 'Pinterest', logo: '📌', category: 'social', status: 'popular' },
-  { id: 'snapchat', name: 'Snapchat Ads', logo: '👻', category: 'social', status: 'new' },
-  { id: 'youtube', name: 'YouTube Shopping', logo: '▶️', category: 'social', status: 'trending' },
-  { id: 'twitter', name: 'X Shopping', logo: '✖️', category: 'social', status: 'new' },
+  { id: 'tiktok', name: 'TikTok Shop', emoji: '🎵', category: 'social', status: 'trending' },
+  { id: 'instagram', name: 'Instagram Shopping', emoji: '📸', category: 'social', status: 'trending' },
+  { id: 'pinterest', name: 'Pinterest', emoji: '📌', category: 'social', status: 'popular' },
+  { id: 'snapchat', name: 'Snapchat Ads', emoji: '👻', category: 'social', status: 'new' },
+  { id: 'youtube', name: 'YouTube Shopping', emoji: '▶️', category: 'social', status: 'trending' },
+  { id: 'twitter', name: 'X Shopping', emoji: '✖️', category: 'social', status: 'new' },
+  { id: 'facebook', name: 'Facebook Shop', emoji: '📘', category: 'social', status: 'popular' },
+  { id: 'linkedin', name: 'LinkedIn Ads', emoji: '💼', category: 'social', status: 'popular' },
+  { id: 'whatsapp', name: 'WhatsApp Business', emoji: '💬', category: 'social', status: 'new' },
   
   // Comparateurs / Shopping Engines
-  { id: 'bing_shopping', name: 'Bing Shopping', logo: '🔷', category: 'shopping', status: 'popular' },
-  { id: 'idealo', name: 'Idealo', logo: '💡', category: 'shopping', status: 'eu' },
-  { id: 'kelkoo', name: 'Kelkoo', logo: '🔶', category: 'shopping', status: 'eu' },
-  { id: 'leguide', name: 'LeGuide', logo: '📘', category: 'shopping', status: 'eu' },
-  { id: 'twenga', name: 'Twenga', logo: '🔄', category: 'shopping', status: 'eu' },
-  { id: 'pricerunner', name: 'PriceRunner', logo: '🏃', category: 'shopping', status: 'eu' },
-  { id: 'shopzilla', name: 'Shopzilla', logo: '🦎', category: 'shopping', status: 'popular' },
-  { id: 'nextag', name: 'Nextag', logo: '🏷️', category: 'shopping', status: 'popular' },
-  { id: 'shopping_com', name: 'Shopping.com', logo: '🛒', category: 'shopping', status: 'popular' },
-  { id: 'become', name: 'Become', logo: '🔄', category: 'shopping', status: 'popular' },
+  { id: 'bing_shopping', name: 'Bing Shopping', emoji: '🔷', category: 'shopping', status: 'popular' },
+  { id: 'idealo', name: 'Idealo', emoji: '💡', category: 'shopping', status: 'eu' },
+  { id: 'kelkoo', name: 'Kelkoo', emoji: '🔶', category: 'shopping', status: 'eu' },
+  { id: 'leguide', name: 'LeGuide', emoji: '📘', category: 'shopping', status: 'eu' },
+  { id: 'twenga', name: 'Twenga', emoji: '🔄', category: 'shopping', status: 'eu' },
+  { id: 'pricerunner', name: 'PriceRunner', emoji: '🏃', category: 'shopping', status: 'eu' },
+  { id: 'shopzilla', name: 'Shopzilla', emoji: '🦎', category: 'shopping', status: 'popular' },
+  { id: 'nextag', name: 'Nextag', emoji: '🏷️', category: 'shopping', status: 'popular' },
+  { id: 'shopping_com', name: 'Shopping.com', emoji: '🛒', category: 'shopping', status: 'popular' },
+  { id: 'become', name: 'Become', emoji: '🔄', category: 'shopping', status: 'popular' },
+  { id: 'google_ads', name: 'Google Ads', emoji: '📢', category: 'shopping', status: 'popular' },
   
   // Europe
-  { id: 'cdiscount', name: 'Cdiscount', logo: '🇫🇷', category: 'europe', status: 'eu' },
-  { id: 'fnac', name: 'Fnac', logo: '🇫🇷', category: 'europe', status: 'eu' },
-  { id: 'darty', name: 'Darty', logo: '🇫🇷', category: 'europe', status: 'eu' },
-  { id: 'rue_du_commerce', name: 'Rue du Commerce', logo: '🇫🇷', category: 'europe', status: 'eu' },
-  { id: 'manomano', name: 'ManoMano', logo: '🔧', category: 'europe', status: 'eu' },
-  { id: 'showroomprive', name: 'Showroomprivé', logo: '👗', category: 'europe', status: 'eu' },
-  { id: 'veepee', name: 'Veepee', logo: '🛍️', category: 'europe', status: 'eu' },
-  { id: 'galeries_lafayette', name: 'Galeries Lafayette', logo: '🇫🇷', category: 'europe', status: 'eu' },
-  { id: 'bol_com', name: 'Bol.com', logo: '🇳🇱', category: 'europe', status: 'eu' },
-  { id: 'zalando', name: 'Zalando', logo: '👟', category: 'europe', status: 'eu' },
-  { id: 'otto', name: 'Otto', logo: '🇩🇪', category: 'europe', status: 'eu' },
-  { id: 'kaufland', name: 'Kaufland', logo: '🇩🇪', category: 'europe', status: 'eu' },
-  { id: 'mediamarkt', name: 'MediaMarkt', logo: '📺', category: 'europe', status: 'eu' },
-  { id: 'allegro', name: 'Allegro', logo: '🇵🇱', category: 'europe', status: 'eu' },
-  { id: 'emag', name: 'eMAG', logo: '🇷🇴', category: 'europe', status: 'eu' },
-  { id: 'asos', name: 'ASOS', logo: '👔', category: 'europe', status: 'eu' },
-  { id: 'privalia', name: 'Privalia', logo: '🇪🇸', category: 'europe', status: 'eu' },
-  { id: 'el_corte_ingles', name: 'El Corte Inglés', logo: '🇪🇸', category: 'europe', status: 'eu' },
+  { id: 'cdiscount', name: 'Cdiscount', emoji: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'fnac', name: 'Fnac', emoji: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'darty', name: 'Darty', emoji: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'rue_du_commerce', name: 'Rue du Commerce', emoji: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'manomano', name: 'ManoMano', emoji: '🔧', category: 'europe', status: 'eu' },
+  { id: 'showroomprive', name: 'Showroomprivé', emoji: '👗', category: 'europe', status: 'eu' },
+  { id: 'veepee', name: 'Veepee', emoji: '🛍️', category: 'europe', status: 'eu' },
+  { id: 'galeries_lafayette', name: 'Galeries Lafayette', emoji: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'bol_com', name: 'Bol.com', emoji: '🇳🇱', category: 'europe', status: 'eu' },
+  { id: 'zalando', name: 'Zalando', emoji: '👟', category: 'europe', status: 'eu' },
+  { id: 'otto', name: 'Otto', emoji: '🇩🇪', category: 'europe', status: 'eu' },
+  { id: 'kaufland', name: 'Kaufland', emoji: '🇩🇪', category: 'europe', status: 'eu' },
+  { id: 'mediamarkt', name: 'MediaMarkt', emoji: '📺', category: 'europe', status: 'eu' },
+  { id: 'allegro', name: 'Allegro', emoji: '🇵🇱', category: 'europe', status: 'eu' },
+  { id: 'emag', name: 'eMAG', emoji: '🇷🇴', category: 'europe', status: 'eu' },
+  { id: 'asos', name: 'ASOS', emoji: '👔', category: 'europe', status: 'eu' },
+  { id: 'privalia', name: 'Privalia', emoji: '🇪🇸', category: 'europe', status: 'eu' },
+  { id: 'el_corte_ingles', name: 'El Corte Inglés', emoji: '🇪🇸', category: 'europe', status: 'eu' },
   
   // International
-  { id: 'walmart', name: 'Walmart', logo: '🏪', category: 'international', status: 'popular' },
-  { id: 'target', name: 'Target', logo: '🎯', category: 'international', status: 'popular' },
-  { id: 'aliexpress', name: 'AliExpress', logo: '🇨🇳', category: 'international', status: 'popular' },
-  { id: 'wish', name: 'Wish', logo: '⭐', category: 'international', status: 'popular' },
-  { id: 'rakuten', name: 'Rakuten', logo: '🇯🇵', category: 'international', status: 'popular' },
-  { id: 'mercado_libre', name: 'Mercado Libre', logo: '🇧🇷', category: 'international', status: 'popular' },
-  { id: 'newegg', name: 'Newegg', logo: '💻', category: 'international', status: 'popular' },
-  { id: 'overstock', name: 'Overstock', logo: '📦', category: 'international', status: 'popular' },
-  { id: 'jet', name: 'Jet', logo: '✈️', category: 'international', status: 'popular' },
-  { id: 'lazada', name: 'Lazada', logo: '🌏', category: 'international', status: 'popular' },
-  { id: 'shopee', name: 'Shopee', logo: '🧡', category: 'international', status: 'trending' },
-  { id: 'flipkart', name: 'Flipkart', logo: '🇮🇳', category: 'international', status: 'popular' },
+  { id: 'walmart', name: 'Walmart', emoji: '🏪', category: 'international', status: 'popular' },
+  { id: 'target', name: 'Target', emoji: '🎯', category: 'international', status: 'popular' },
+  { id: 'aliexpress', name: 'AliExpress', emoji: '🇨🇳', category: 'international', status: 'popular' },
+  { id: 'wish', name: 'Wish', emoji: '⭐', category: 'international', status: 'popular' },
+  { id: 'rakuten', name: 'Rakuten', emoji: '🇯🇵', category: 'international', status: 'popular' },
+  { id: 'mercado_libre', name: 'Mercado Libre', emoji: '🇧🇷', category: 'international', status: 'popular' },
+  { id: 'newegg', name: 'Newegg', emoji: '💻', category: 'international', status: 'popular' },
+  { id: 'overstock', name: 'Overstock', emoji: '📦', category: 'international', status: 'popular' },
+  { id: 'jet', name: 'Jet', emoji: '✈️', category: 'international', status: 'popular' },
+  { id: 'lazada', name: 'Lazada', emoji: '🌏', category: 'international', status: 'popular' },
+  { id: 'shopee', name: 'Shopee', emoji: '🧡', category: 'international', status: 'trending' },
+  { id: 'flipkart', name: 'Flipkart', emoji: '🇮🇳', category: 'international', status: 'popular' },
   
   // Niche
-  { id: 'etsy', name: 'Etsy', logo: '🎨', category: 'niche', status: 'popular' },
-  { id: 'wayfair', name: 'Wayfair', logo: '🏠', category: 'niche', status: 'popular' },
-  { id: 'houzz', name: 'Houzz', logo: '🏡', category: 'niche', status: 'popular' },
-  { id: 'decathlon', name: 'Decathlon', logo: '⚽', category: 'niche', status: 'eu' },
-  { id: 'catch', name: 'Catch', logo: '🎣', category: 'niche', status: 'popular' },
-  { id: 'bestbuy', name: 'Best Buy', logo: '🔌', category: 'niche', status: 'popular' },
-  { id: 'home_depot', name: 'Home Depot', logo: '🔨', category: 'niche', status: 'popular' },
-  { id: 'lowes', name: "Lowe's", logo: '🪚', category: 'niche', status: 'popular' },
-  { id: 'sephora', name: 'Sephora', logo: '💄', category: 'niche', status: 'popular' },
-  { id: 'nordstrom', name: 'Nordstrom', logo: '👠', category: 'niche', status: 'popular' },
-  { id: 'macys', name: "Macy's", logo: '🛍️', category: 'niche', status: 'popular' },
-  { id: 'kohls', name: "Kohl's", logo: '🎁', category: 'niche', status: 'popular' },
-  { id: 'costco', name: 'Costco', logo: '📦', category: 'niche', status: 'popular' },
-  { id: 'kroger', name: 'Kroger', logo: '🛒', category: 'niche', status: 'popular' },
+  { id: 'etsy', name: 'Etsy', emoji: '🎨', category: 'niche', status: 'popular' },
+  { id: 'wayfair', name: 'Wayfair', emoji: '🏠', category: 'niche', status: 'popular' },
+  { id: 'houzz', name: 'Houzz', emoji: '🏡', category: 'niche', status: 'popular' },
+  { id: 'decathlon', name: 'Decathlon', emoji: '⚽', category: 'niche', status: 'eu' },
+  { id: 'catch', name: 'Catch', emoji: '🎣', category: 'niche', status: 'popular' },
+  { id: 'bestbuy', name: 'Best Buy', emoji: '🔌', category: 'niche', status: 'popular' },
+  { id: 'home_depot', name: 'Home Depot', emoji: '🔨', category: 'niche', status: 'popular' },
+  { id: 'lowes', name: "Lowe's", emoji: '🪚', category: 'niche', status: 'popular' },
+  { id: 'sephora', name: 'Sephora', emoji: '💄', category: 'niche', status: 'popular' },
+  { id: 'nordstrom', name: 'Nordstrom', emoji: '👠', category: 'niche', status: 'popular' },
+  { id: 'macys', name: "Macy's", emoji: '🛍️', category: 'niche', status: 'popular' },
+  { id: 'kohls', name: "Kohl's", emoji: '🎁', category: 'niche', status: 'popular' },
+  { id: 'costco', name: 'Costco', emoji: '📦', category: 'niche', status: 'popular' },
+  { id: 'kroger', name: 'Kroger', emoji: '🛒', category: 'niche', status: 'popular' },
   
   // Affiliate Networks
-  { id: 'awin', name: 'Awin', logo: '🔗', category: 'affiliate', status: 'popular' },
-  { id: 'tradedoubler', name: 'Tradedoubler', logo: '💱', category: 'affiliate', status: 'eu' },
-  { id: 'cj', name: 'CJ Affiliate', logo: '🤝', category: 'affiliate', status: 'popular' },
-  { id: 'shareasale', name: 'ShareASale', logo: '💰', category: 'affiliate', status: 'popular' },
-  { id: 'rakuten_ads', name: 'Rakuten Advertising', logo: '📢', category: 'affiliate', status: 'popular' },
-  { id: 'impact', name: 'Impact', logo: '💥', category: 'affiliate', status: 'popular' },
-  { id: 'partnerize', name: 'Partnerize', logo: '🤝', category: 'affiliate', status: 'popular' },
-  { id: 'webgains', name: 'Webgains', logo: '🌐', category: 'affiliate', status: 'eu' },
-  { id: 'effiliation', name: 'Effiliation', logo: '🇫🇷', category: 'affiliate', status: 'eu' },
-  { id: 'affilinet', name: 'Affilinet', logo: '🔗', category: 'affiliate', status: 'eu' },
-  { id: 'daisycon', name: 'Daisycon', logo: '🌼', category: 'affiliate', status: 'eu' },
-  { id: 'criteo', name: 'Criteo', logo: '🎯', category: 'affiliate', status: 'popular' },
+  { id: 'awin', name: 'Awin', emoji: '🔗', category: 'affiliate', status: 'popular' },
+  { id: 'tradedoubler', name: 'Tradedoubler', emoji: '💱', category: 'affiliate', status: 'eu' },
+  { id: 'cj', name: 'CJ Affiliate', emoji: '🤝', category: 'affiliate', status: 'popular' },
+  { id: 'shareasale', name: 'ShareASale', emoji: '💰', category: 'affiliate', status: 'popular' },
+  { id: 'rakuten_ads', name: 'Rakuten Advertising', emoji: '📢', category: 'affiliate', status: 'popular' },
+  { id: 'impact', name: 'Impact', emoji: '💥', category: 'affiliate', status: 'popular' },
+  { id: 'partnerize', name: 'Partnerize', emoji: '🤝', category: 'affiliate', status: 'popular' },
+  { id: 'webgains', name: 'Webgains', emoji: '🌐', category: 'affiliate', status: 'eu' },
+  { id: 'effiliation', name: 'Effiliation', emoji: '🇫🇷', category: 'affiliate', status: 'eu' },
+  { id: 'affilinet', name: 'Affilinet', emoji: '🔗', category: 'affiliate', status: 'eu' },
+  { id: 'daisycon', name: 'Daisycon', emoji: '🌼', category: 'affiliate', status: 'eu' },
+  { id: 'criteo', name: 'Criteo', emoji: '🎯', category: 'affiliate', status: 'popular' },
 ]
+
+// Component for marketplace logo with fallback to emoji
+const MarketplaceLogo = ({ id, emoji, size = 24 }: { id: string; emoji: string; size?: number }) => {
+  const logoPath = getMarketplaceLogoPath(id)
+  
+  if (logoPath) {
+    return (
+      <img 
+        src={logoPath} 
+        alt={id} 
+        className="object-contain"
+        style={{ width: size, height: size }}
+        onError={(e) => {
+          // Fallback to emoji if image fails to load
+          const parent = e.currentTarget.parentElement
+          if (parent) {
+            parent.innerHTML = `<span style="font-size: ${size}px">${emoji}</span>`
+          }
+        }}
+      />
+    )
+  }
+  
+  return <span style={{ fontSize: size }}>{emoji}</span>
+}
 
 export default function ChannableFeedManager() {
   const { toast } = useToast()
@@ -174,7 +246,15 @@ export default function ChannableFeedManager() {
 
   const getMarketplaceLogo = (feedType: string) => {
     const mp = MARKETPLACES.find(m => m.id === feedType)
-    return mp?.logo || '📦'
+    return mp?.emoji || '📦'
+  }
+  
+  const renderMarketplaceLogo = (feedType: string, size = 24) => {
+    const mp = MARKETPLACES.find(m => m.id === feedType)
+    if (mp) {
+      return <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={size} />
+    }
+    return <span style={{ fontSize: size }}>📦</span>
   }
 
   const getMarketplaceName = (feedType: string) => {
@@ -279,7 +359,7 @@ export default function ChannableFeedManager() {
                             setShowCreateDialog(true)
                           }}
                         >
-                          <span className="text-xl">{mp.logo}</span>
+                          <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={28} />
                           <span className="text-[10px] font-medium text-center leading-tight">{mp.name}</span>
                           {mp.status === 'trending' && (
                             <Badge className="bg-orange-500 text-[8px] px-1 py-0">Hot</Badge>
@@ -358,7 +438,7 @@ export default function ChannableFeedManager() {
                     <TableRow key={feed.id} className="hover:bg-muted/50">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <span className="text-2xl">{getMarketplaceLogo(feed.feed_type)}</span>
+                          {renderMarketplaceLogo(feed.feed_type, 32)}
                           <div>
                             <p className="font-medium">{feed.name}</p>
                             {feed.created_at && (
@@ -453,7 +533,7 @@ export default function ChannableFeedManager() {
                     {MARKETPLACES.map(mp => (
                       <SelectItem key={mp.id} value={mp.id}>
                         <span className="flex items-center gap-2">
-                          <span>{mp.logo}</span>
+                          <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={20} />
                           <span>{mp.name}</span>
                         </span>
                       </SelectItem>
