@@ -14,6 +14,7 @@ const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'))
 const ChannableFeedManager = lazy(() => import('@/pages/feeds/ChannableFeedManager'))
 const BTSImportPage = lazy(() => import('@/pages/suppliers/BTSImportPage'))
 const VariantMappingPage = lazy(() => import('@/pages/suppliers/VariantMappingPage'))
+const AdvancedSupplierEnginePage = lazy(() => import('@/pages/suppliers/AdvancedSupplierEnginePage'))
 
 /**
  * ROUTES DU MODULE FOURNISSEURS
@@ -42,6 +43,9 @@ export default function SupplierRoutes() {
       
       {/* Variant Mapping */}
       <Route path="variant-mapping" element={<VariantMappingPage />} />
+      
+      {/* Moteur Fournisseur Avancé */}
+      <Route path="engine" element={<AdvancedSupplierEnginePage />} />
       
       {/* Création */}
       <Route path="create" element={<CreateSupplier />} />
