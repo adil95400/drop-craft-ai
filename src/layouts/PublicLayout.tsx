@@ -59,7 +59,7 @@ export function PublicLayout({
               <Button variant="ghost" size={isMobile ? "sm" : "default"} onClick={() => navigate('/auth')}>
                 Connexion
               </Button>
-              <Button size={isMobile ? "sm" : "default"} onClick={() => navigate('/auth')} className="bg-gradient-hero hover:opacity-90 transition-opacity bg-primary text-secondary-foreground text-center border-primary">
+              <Button size={isMobile ? "sm" : "default"} onClick={() => navigate('/auth')} className="bg-gradient-hero hover:opacity-90 transition-opacity bg-primary text-primary-foreground text-center border-primary">
                 Essai Gratuit
               </Button>
             </div>
