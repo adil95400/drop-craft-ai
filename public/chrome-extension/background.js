@@ -1,7 +1,7 @@
 // ShopOpti+ Chrome Extension - Background Service Worker v3.0
 
-const API_URL = 'https://dtozyrmmekdnvekissuh.supabase.co/functions/v1';
-const APP_URL = 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com';
+const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
+const APP_URL = 'https://drop-craft-ai.lovable.app';
 
 class ShopOptiBackground {
   constructor() {

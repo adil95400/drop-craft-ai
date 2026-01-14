@@ -4082,6 +4082,42 @@ export type Database = {
           },
         ]
       }
+      extension_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          extension_id: string
+          id: string
+          is_active: boolean
+          last_used_at: string | null
+          metadata: Json | null
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          extension_id?: string
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          metadata?: Json | null
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          extension_id?: string
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          metadata?: Json | null
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       extensions: {
         Row: {
           code: string

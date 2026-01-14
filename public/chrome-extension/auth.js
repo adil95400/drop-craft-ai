@@ -1,6 +1,6 @@
 // ShopOpti+ Chrome Extension - Authentication v3.0
 
-const API_URL = 'https://dtozyrmmekdnvekissuh.supabase.co/functions/v1';
+const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const tokenInput = document.getElementById('tokenInput');
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Open dashboard
   getDashboard.addEventListener('click', () => {
     chrome.tabs.create({ 
-      url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/integrations/extensions' 
+      url: 'https://drop-craft-ai.lovable.app/integrations/extensions' 
     });
   });
 
