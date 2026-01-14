@@ -1,247 +1,200 @@
-# Drop Craft AI - Extension Chrome
+# ShopOpti+ Chrome Extension v3.0
 
-Extension Chrome professionnelle pour scraper automatiquement les produits e-commerce et les synchroniser avec votre plateforme Drop Craft AI.
+Extension Chrome professionnelle pour le dropshipping avec import 1-click, surveillance des prix et automatisation.
 
-## 🚀 Fonctionnalités
+## 🚀 Installation pour Développeurs
 
-### Scraping Intelligent
-- **Détection automatique** des produits sur toutes les plateformes e-commerce
-- **Support multi-plateformes** : Shopify, WooCommerce, Magento, PrestaShop, OpenCart
-- **Extraction de données structurées** (JSON-LD, Microdata)
-- **Scraping par lots** avec pagination automatique
-- **Déduplication intelligente** des produits
+### Mode Développeur (Local)
 
-### Interface Utilisateur
-- **Popup moderne** avec design glassmorphism
-- **Indicateurs visuels** de scraping en temps réel
-- **Statistiques en direct** des produits scrapés
-- **Tooltips informatifs** sur survol des produits
-- **Notifications système** pour les actions importantes
+1. Ouvrez Chrome et allez à `chrome://extensions/`
+2. Activez le "Mode développeur" (coin supérieur droit)
+3. Cliquez sur "Charger l'extension non empaquetée"
+4. Sélectionnez le dossier `public/chrome-extension/`
 
-### Synchronisation Avancée
-- **Sync temps réel** avec Drop Craft AI
-- **Stockage local** pour travail hors ligne
-- **Retry automatique** en cas d'échec
-- **Compression des données** pour optimiser le transfert
+### Publication sur Chrome Web Store
 
-### Automatisation
-- **Auto-scraping** sur sites configurés
-- **Scraping programmé** par intervalles
-- **Détection contextuelle** des pages e-commerce
-- **Actions en arrière-plan** sans interruption
+1. Compressez tout le contenu du dossier en `.zip`
+2. Allez sur [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+3. Payez les frais d'inscription (5$ une seule fois)
+4. Créez un nouvel élément et uploadez le `.zip`
+5. Remplissez les informations (voir `STORE_LISTING.md`)
+6. Soumettez pour révision
 
-## 📦 Installation
+## 📁 Structure des Fichiers
 
-### Méthode 1 : Installation directe
-1. Téléchargez le dossier `chrome-extension`
-2. Ouvrez Chrome et allez dans `chrome://extensions/`
-3. Activez le "Mode développeur"
-4. Cliquez sur "Charger l'extension non empaquetée"
-5. Sélectionnez le dossier `chrome-extension`
+```
+chrome-extension/
+├── manifest.json          # Configuration de l'extension (Manifest V3)
+├── background.js          # Service Worker (582 lignes)
+├── content.js             # Script injecté sur les pages (765 lignes)
+├── content.css            # Styles pour content script
+├── injected.js            # Script avancé de détection
+├── popup.html             # Interface popup principale
+├── popup.js               # Logique du popup (557 lignes)
+├── popup.css              # Styles du popup
+├── options.html           # Page de configuration
+├── options.js             # Logique des options
+├── auth.html              # Page d'authentification
+├── auth.js                # Logique d'authentification
+├── icons/                 # Icônes de l'extension
+│   ├── icon16.png
+│   ├── icon32.png
+│   ├── icon48.png
+│   └── icon128.png
+├── README.md              # Ce fichier
+├── PRIVACY_POLICY.md      # Politique de confidentialité (requis)
+└── STORE_LISTING.md       # Informations pour le Store
+```
 
-### Méthode 2 : Depuis Drop Craft AI
-1. Connectez-vous à votre compte Drop Craft AI
-2. Allez dans Extensions Hub
-3. Cliquez sur "Télécharger Extension Chrome"
-4. Suivez les instructions d'installation
+## 🔧 Configuration API
 
-## 🛠️ Utilisation
+L'extension se connecte à l'API ShopOpti+ :
 
-### Scraping Manuel
-1. **Clic sur l'icône** de l'extension dans la barre d'outils
-2. **"Scraper cette page"** pour extraire les produits de la page actuelle
-3. **"Scraper tous les produits"** pour un scraping automatique avec pagination
-
-### Scraping par Sélection
-1. **Sélectionnez du texte** contenant des informations produit
-2. **Clic droit** → "Scraper la sélection"
-3. L'extension extrait automatiquement nom et prix
-
-### Auto-Scraping
-1. **Activez l'auto-scraping** dans les paramètres
-2. **Configurez les sites cibles** à surveiller
-3. L'extension scrape automatiquement lors de la navigation
-
-### Menu Contextuel
-- **Clic droit** sur une page → "Scraper avec Drop Craft AI"
-- **Accès rapide** au dashboard depuis n'importe quelle page
-- **Scraping instantané** sans ouvrir le popup
-
-## ⚙️ Configuration
-
-### Paramètres Avancés
 ```javascript
+const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
+const APP_URL = 'https://drop-craft-ai.lovable.app';
+```
+
+### Endpoints Utilisés
+
+| Endpoint | Description |
+|----------|-------------|
+| `/extension-sync` | Synchronisation des données |
+| `/extension-sync-realtime` | Sync temps réel |
+| `/product-url-scraper` | Import par URL |
+
+## ⚙️ Fonctionnalités Complètes
+
+### 📦 Import 1-Click
+- Détection automatique des pages produit
+- Extraction des données (titre, prix, images, description)
+- Import direct vers le dashboard ShopOpti+
+- Support JSON-LD et Microdata
+
+### ⭐ Import d'Avis
+- Extraction des reviews depuis les pages produit
+- Filtrage par note et pertinence
+- Import bulk possible
+
+### 📊 Surveillance des Prix
+- Monitoring automatique toutes les 30 minutes
+- Alertes push en cas de changement
+- Historique des prix
+
+### 🤖 Automatisation
+- Auto-injection des boutons d'import
+- Alertes de stock automatiques
+- Synchronisation temps réel
+- Menu contextuel (clic droit)
+
+## 🌐 Plateformes Supportées (16+)
+
+| Plateforme | Import | Avis | Prix |
+|------------|--------|------|------|
+| AliExpress | ✅ | ✅ | ✅ |
+| Amazon | ✅ | ✅ | ✅ |
+| eBay | ✅ | ✅ | ✅ |
+| Temu | ✅ | ✅ | ✅ |
+| Walmart | ✅ | ✅ | ✅ |
+| Etsy | ✅ | ✅ | ✅ |
+| Wish | ✅ | ✅ | ✅ |
+| Banggood | ✅ | ✅ | ✅ |
+| DHgate | ✅ | ✅ | ✅ |
+| 1688 | ✅ | ⚠️ | ✅ |
+| Taobao | ✅ | ⚠️ | ✅ |
+| Shein | ✅ | ✅ | ✅ |
+| CJ Dropshipping | ✅ | ✅ | ✅ |
+| LightInTheBox | ✅ | ✅ | ✅ |
+| Gearbest | ✅ | ✅ | ✅ |
+
+### CMS E-commerce Détectés
+- Shopify
+- WooCommerce
+- Magento
+- PrestaShop
+- OpenCart
+- Sites génériques
+
+## 🔐 Authentification
+
+1. L'utilisateur se connecte via `auth.html`
+2. Un token est généré et stocké dans `chrome.storage.local`
+3. Le token est envoyé via header `x-extension-token`
+4. Le token expire après 30 jours
+
+## 📋 Permissions Requises
+
+```json
 {
-  "autoScrape": false,           // Auto-scraping activé
-  "scrapingInterval": 30,        // Intervalle en minutes
-  "enableNotifications": true,   // Notifications système
-  "targetSites": [               // Sites à surveiller
-    "example-shop.com",
-    "another-store.fr"
+  "permissions": [
+    "activeTab",      // Accès à l'onglet actif
+    "storage",        // Sauvegarde locale des préférences
+    "tabs",           // Détection des sites e-commerce
+    "scripting",      // Injection des boutons d'import
+    "notifications",  // Alertes de prix
+    "alarms",         // Vérifications programmées
+    "contextMenus"    // Menu clic droit
   ],
-  "dataRetention": 30,          // Jours de rétention locale
-  "syncFrequency": "realtime",  // Fréquence de sync
-  "compressionLevel": "high"    // Niveau de compression
+  "host_permissions": [
+    "https://*/*",    // Accès aux sites HTTPS
+    "http://*/*"      // Accès aux sites HTTP
+  ]
 }
 ```
 
-### Sites Supportés
-- **Shopify** : Détection via `/cdn/shop/` et `myshopify.com`
-- **WooCommerce** : Détection via `wp-content` et classes CSS
-- **Magento** : Détection via `/static/version` et structure
-- **PrestaShop** : Détection via métadonnées et sélecteurs
-- **OpenCart** : Détection via structure JavaScript
-- **Générique** : Algorithme de fallback pour autres plateformes
+## 🧪 Tests
 
-## 🔧 Architecture Technique
+### Test Manuel
 
-### Scripts Principaux
-- **`manifest.json`** : Configuration extension
-- **`background.js`** : Service worker, gestion événements
-- **`content.js`** : Injection dans pages web, extraction données
-- **`popup.js`** : Interface utilisateur popup
+1. Installer l'extension en mode développeur
+2. Aller sur AliExpress/Amazon
+3. Ouvrir le popup de l'extension
+4. Tester chaque fonctionnalité
 
-### Extraction de Données
-```javascript
-// Stratégies d'extraction (ordre de priorité)
-1. Données structurées (JSON-LD)
-2. Microdata (schema.org)
-3. Sélecteurs CSS spécifiques à la plateforme
-4. Extraction générique par heuristiques
-```
+### Vérification de la Connexion API
 
-### Sécurité
-- **Permissions minimales** requises
-- **Chiffrement local** des données sensibles
-- **Validation** de toutes les entrées utilisateur
-- **Sandbox** pour l'exécution du code injecté
-
-## 📊 Métriques & Analytics
-
-### Données Collectées
-- **Nombre de produits** scrapés par session
-- **Sites visités** et temps passé
-- **Taux de succès** du scraping par plateforme
-- **Performance** (temps d'extraction, taille des données)
-
-### Rapports Disponibles
-- **Dashboard temps réel** dans le popup
-- **Historique complet** dans Drop Craft AI
-- **Analyses de performance** par site
-- **Recommandations d'optimisation**
-
-## 🔄 Synchronisation
-
-### Mécanismes de Sync
-- **WebSocket** pour updates temps réel
-- **HTTP REST** pour sync par lots
-- **IndexedDB** pour cache local performant
-- **Service Worker** pour sync en arrière-plan
-
-### Gestion des Conflits
-- **Timestamp-based resolution**
-- **Merge intelligent** des données
-- **Backup automatique** avant modifications
-- **Rollback** en cas d'erreur
-
-## 🛡️ Confidentialité
-
-### Données Locales
-- **Stockage chiffré** avec clés rotatives
-- **Nettoyage automatique** après expiration
-- **Aucune donnée personnelle** collectée sans consentement
-
-### Données Transmises
-- **Chiffrement TLS 1.3** pour toutes les communications
-- **Anonymisation** des URLs sensibles
-- **Conformité RGPD** complète
-
-## 🚨 Dépannage
-
-### Problèmes Courants
-
-**Extension ne se charge pas**
 ```bash
-1. Vérifiez que le mode développeur est activé
-2. Rechargez l'extension dans chrome://extensions/
-3. Vérifiez les erreurs dans la console
+curl -X POST https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/extension-sync \
+  -H "Content-Type: application/json" \
+  -d '{"action": "sync_status"}'
 ```
 
-**Scraping ne fonctionne pas**
-```bash
-1. Actualisez la page cible
-2. Vérifiez les permissions de l'extension
-3. Testez sur une autre page e-commerce
-```
+## ✅ Checklist Publication Chrome Web Store
 
-**Sync avec Drop Craft AI échoue**
-```bash
-1. Vérifiez votre connexion internet
-2. Reconnectez-vous à Drop Craft AI
-3. Videz le cache de l'extension
-```
+- [x] Manifest V3 configuré
+- [x] Toutes les icônes (16, 32, 48, 128px)
+- [x] Privacy Policy (`PRIVACY_POLICY.md`)
+- [x] Store Listing (`STORE_LISTING.md`)
+- [x] Popup fonctionnel
+- [x] Options page fonctionnelle
+- [x] Authentification fonctionnelle
+- [x] Content scripts injectés
+- [x] Background service worker
+- [x] Menu contextuel
+- [x] Notifications
+- [x] Alarms pour surveillance
+- [ ] Screenshots (1280x800 ou 640x400)
+- [ ] Promotional tiles
+- [ ] Compte développeur Chrome ($5)
 
-### Logs de Debug
-```javascript
-// Activer les logs détaillés
-chrome.storage.local.set({ debugMode: true });
+## 📝 Notes de Version
 
-// Voir les logs dans
-chrome.extension.getBackgroundPage().console
-```
+### v3.0.0 (Janvier 2025)
+- Migration vers Manifest V3
+- Nouveau design du popup (style AutoDS)
+- Support de 16+ plateformes
+- Système d'authentification amélioré
+- Import d'avis
+- Surveillance des prix en temps réel
+- Menu contextuel complet
+- Synchronisation avec ShopOpti+ Cloud
 
-## 📈 Performances
+## 📄 Licence
 
-### Optimisations
-- **Lazy loading** des composants non critiques
-- **Debouncing** des requêtes rapprochées
-- **Mise en cache** intelligente des sélecteurs
-- **Batch processing** des requêtes API
-
-### Benchmarks
-- **< 50ms** : Temps d'injection content script
-- **< 200ms** : Extraction page simple (< 20 produits)
-- **< 2s** : Scraping complet avec pagination
-- **< 10MB** : Empreinte mémoire maximale
-
-## 🔮 Roadmap
-
-### V1.1 - Intelligence Artificielle
-- **Classification automatique** des produits
-- **Analyse de sentiment** des reviews
-- **Détection de tendances** en temps réel
-- **Recommandations de prix** basées sur l'IA
-
-### V1.2 - Collaboration
-- **Partage de sessions** de scraping
-- **Équipes** avec rôles et permissions
-- **Templates** de configuration partagés
-- **Marketplace** d'extensions communautaires
-
-### V1.3 - Multi-Browser
-- **Support Firefox** complet
-- **Extension Safari** (Mac/iOS)
-- **Extension Edge** optimisée
-- **Sync inter-navigateurs**
+Propriétaire - ShopOpti+ © 2025
 
 ## 📞 Support
 
-### Documentation
-- **Guide utilisateur** : [docs.dropcraft.ai/chrome-extension](https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/docs/chrome-extension)
-- **API Reference** : [api.dropcraft.ai/extension](https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/api/extension/docs)
-- **Exemples de code** : [github.com/dropcraft-ai/chrome-extension](https://github.com/dropcraft-ai/chrome-extension)
-
-### Communauté
-- **Discord** : [discord.gg/dropcraft](https://discord.gg/dropcraft)
-- **Forum** : [community.dropcraft.ai](https://community.dropcraft.ai)
-- **Stack Overflow** : Tag `dropcraft-ai`
-
-### Contact Direct
-- **Email** : support@dropcraft.ai
-- **Chat** : Depuis l'application Drop Craft AI
-- **Téléphone** : +33 1 XX XX XX XX (support premium)
-
----
-
-**Drop Craft AI Chrome Extension v1.0.0**  
-© 2024 Drop Craft AI. Tous droits réservés.
+- **Website:** https://drop-craft-ai.lovable.app
+- **Support:** https://drop-craft-ai.lovable.app/support
+- **Email:** support@shopopti.com
