@@ -15,7 +15,6 @@ export interface ProductFeed {
   generation_status: string | null;
   validation_errors: unknown[] | null;
   settings: Record<string, unknown> | null;
-  campaign_id: string | null;
   user_id: string;
   created_at: string | null;
   updated_at: string | null;
@@ -25,7 +24,6 @@ export interface CreateFeedInput {
   name: string;
   feed_type: string;
   settings?: Record<string, unknown>;
-  campaign_id?: string;
 }
 
 export interface UpdateFeedInput {
@@ -52,7 +50,7 @@ export function useProductFeeds() {
       const user = await getCurrentUser();
       
       const { data, error } = await supabase
-        .from('campaign_product_feeds')
+        .from('product_feeds')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -68,12 +66,11 @@ export function useProductFeeds() {
       const user = await getCurrentUser();
 
       const { data, error } = await supabase
-        .from('campaign_product_feeds')
+        .from('product_feeds')
         .insert([{
           name: input.name,
           feed_type: input.feed_type,
           settings: (input.settings || {}) as unknown as null,
-          campaign_id: input.campaign_id || null,
           user_id: user.id,
           generation_status: 'pending',
           product_count: 0
@@ -106,7 +103,7 @@ export function useProductFeeds() {
       if (updateData.settings) updatePayload.settings = updateData.settings as unknown as null;
 
       const { error } = await supabase
-        .from('campaign_product_feeds')
+        .from('product_feeds')
         .update(updatePayload as { name?: string; feed_type?: string; feed_url?: string; generation_status?: string; updated_at?: string })
         .eq('id', id);
 
@@ -125,7 +122,7 @@ export function useProductFeeds() {
   const deleteFeedMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('campaign_product_feeds')
+        .from('product_feeds')
         .delete()
         .eq('id', id);
 
@@ -145,7 +142,7 @@ export function useProductFeeds() {
     mutationFn: async (feedId: string) => {
       // Update status to generating
       await supabase
-        .from('campaign_product_feeds')
+        .from('product_feeds')
         .update({ generation_status: 'generating' })
         .eq('id', feedId);
 
@@ -157,7 +154,7 @@ export function useProductFeeds() {
       if (error) {
         // Revert status on error
         await supabase
-          .from('campaign_product_feeds')
+          .from('product_feeds')
           .update({ 
             generation_status: 'error',
             validation_errors: [{ error: error.message }]
@@ -168,7 +165,7 @@ export function useProductFeeds() {
 
       // Update with result
       await supabase
-        .from('campaign_product_feeds')
+        .from('product_feeds')
         .update({
           generation_status: 'completed',
           last_generated_at: new Date().toISOString(),
