@@ -1,11 +1,11 @@
 /**
  * Dashboard style Channable avec hexagones et design moderne
- * Version complète avec tous les composants Channable avancés
+ * Version complète avec données RÉELLES depuis la base de données
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,16 +14,13 @@ import {
   ChannableHeroSection,
   ChannableStatsGrid,
   ChannableQuickActions,
-  ChannableCard,
   ChannableActivityFeed,
   ChannableChannelHealth,
   ChannableSyncTimeline,
-  DEMO_ACTIVITY_EVENTS,
-  DEFAULT_CHANNEL_HEALTH_METRICS,
-  type SyncEvent
 } from '@/components/channable';
-import { Settings2, RefreshCw, Plus, LayoutGrid, RotateCcw, Loader2, TrendingUp, ShoppingCart, Users, DollarSign, Package, AlertTriangle, BarChart3, Zap, Target, Activity, Clock, Sparkles } from 'lucide-react';
+import { Settings2, RefreshCw, Plus, LayoutGrid, RotateCcw, Loader2, BarChart3, Zap, TrendingUp, Activity, Clock, Sparkles } from 'lucide-react';
 import { useDashboardConfig, getTimeRangeLabel } from '@/hooks/useDashboardConfig';
+import { useRealDashboardData } from '@/hooks/useRealDashboardData';
 import { DashboardWidgetWrapper } from './DashboardWidgetWrapper';
 import { TimeRangeSelector } from './TimeRangeSelector';
 import { WidgetLibrary } from './WidgetLibrary';
@@ -46,23 +43,17 @@ import { ConnectedStoresWidget } from './widgets/ConnectedStoresWidget';
 import { MarketplacesWidget } from './widgets/MarketplacesWidget';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { ChannableStat, ChannableQuickAction } from '@/components/channable/types';
+import { ChannableQuickAction } from '@/components/channable/types';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-
-// Demo sync events
-const DEMO_SYNC_EVENTS: SyncEvent[] = [
-  { id: '1', type: 'full', status: 'success', timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), items_processed: 1234, duration_ms: 2340, message: 'Synchronisation Shopify terminée' },
-  { id: '2', type: 'products', status: 'in_progress', timestamp: new Date(Date.now() - 1000 * 60 * 2).toISOString(), items_processed: 567, message: 'Synchronisation Amazon en cours' },
-  { id: '3', type: 'prices', status: 'success', timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), items_processed: 89, duration_ms: 1560, message: 'Prix WooCommerce mis à jour' },
-  { id: '4', type: 'inventory', status: 'error', timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), items_processed: 0, items_failed: 12, message: 'Erreur de connexion API eBay' },
-];
+import { useQueryClient } from '@tanstack/react-query';
 
 export function ChannableDashboard() {
+  const queryClient = useQueryClient();
   const {
     widgets,
     timeRange,
@@ -73,6 +64,9 @@ export function ChannableDashboard() {
     reorderWidgets,
     resetToDefaults,
   } = useDashboardConfig();
+
+  // Utiliser les données RÉELLES
+  const { stats: dashboardStats, activityEvents, syncEvents, healthMetrics, isLoading: dataLoading } = useRealDashboardData();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
@@ -97,77 +91,23 @@ export function ChannableDashboard() {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     setLastRefresh(new Date());
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Invalider les queries pour rafraîchir les données réelles
+    await queryClient.invalidateQueries({ queryKey: ['dashboard-real-stats'] });
+    await queryClient.invalidateQueries({ queryKey: ['dashboard-activity'] });
+    await queryClient.invalidateQueries({ queryKey: ['dashboard-sync-events'] });
+    await queryClient.invalidateQueries({ queryKey: ['dashboard-health-metrics'] });
     setIsRefreshing(false);
-    toast.success('Dashboard actualisé');
-  }, []);
+    toast.success('Dashboard actualisé avec les données réelles');
+  }, [queryClient]);
 
   // Auto-refresh
   useEffect(() => {
     if (!autoRefresh) return;
     const interval = setInterval(() => {
-      setLastRefresh(new Date());
+      handleRefresh();
     }, refreshInterval * 1000);
     return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval]);
-
-  // Stats Channable avec couleurs vibrantes
-  const dashboardStats: ChannableStat[] = [
-    {
-      label: 'Revenus du jour',
-      value: '12 450 €',
-      icon: DollarSign,
-      color: 'success',
-      change: 12.5,
-      trend: 'up',
-      changeLabel: 'vs hier'
-    },
-    {
-      label: 'Commandes',
-      value: '147',
-      icon: ShoppingCart,
-      color: 'primary',
-      change: 8.3,
-      trend: 'up',
-      changeLabel: 'vs hier'
-    },
-    {
-      label: 'Clients actifs',
-      value: '2,847',
-      icon: Users,
-      color: 'info',
-      change: 3.2,
-      trend: 'up',
-      changeLabel: 'ce mois'
-    },
-    {
-      label: 'Taux conversion',
-      value: '4.2%',
-      icon: Target,
-      color: 'warning',
-      change: -0.5,
-      trend: 'down',
-      changeLabel: 'vs hier'
-    },
-    {
-      label: 'Produits actifs',
-      value: '1,234',
-      icon: Package,
-      color: 'primary',
-      change: 15,
-      trend: 'up',
-      changeLabel: 'nouveaux'
-    },
-    {
-      label: 'Alertes',
-      value: '3',
-      icon: AlertTriangle,
-      color: 'destructive',
-      change: -2,
-      trend: 'down',
-      changeLabel: 'résolues'
-    }
-  ];
+  }, [autoRefresh, refreshInterval, handleRefresh]);
 
   // Quick Actions Channable
   const quickActions: ChannableQuickAction[] = [
@@ -357,8 +297,10 @@ export function ChannableDashboard() {
           {/* Smart Alerts Channable */}
           <SmartAlertsChannable />
 
-          {/* Sync Timeline */}
-          <ChannableSyncTimeline events={DEMO_SYNC_EVENTS} />
+          {/* Sync Timeline - Données réelles */}
+          {syncEvents.length > 0 && (
+            <ChannableSyncTimeline events={syncEvents} />
+          )}
 
           {/* Time Range Badge */}
           <div className="flex items-center gap-2">
@@ -435,7 +377,7 @@ export function ChannableDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-2"
               >
-                <ChannableChannelHealth metrics={DEFAULT_CHANNEL_HEALTH_METRICS} />
+                <ChannableChannelHealth metrics={healthMetrics} />
               </motion.div>
             </CollapsibleContent>
           </Collapsible>
@@ -461,36 +403,18 @@ export function ChannableDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-2"
               >
-                <ChannableActivityFeed events={DEMO_ACTIVITY_EVENTS} />
+                <ChannableActivityFeed events={activityEvents} realtime />
               </motion.div>
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Quick Stats Cards */}
-          <div className="space-y-3">
-            <ChannableCard
-              title="Performance IA"
-              description="Optimisations automatiques"
-              icon={Sparkles}
-              stats={[
-                { label: 'Économies', value: '+2,450€' },
-                { label: 'Optimisations', value: '147' }
-              ]}
-              delay={0.1}
-            />
-            
-            <ChannableCard
-              title="Synchronisation"
-              description="État des connexions"
-              icon={RefreshCw}
-              status="connected"
-              stats={[
-                { label: 'Canaux actifs', value: '5' },
-                { label: 'Dernière sync', value: '2min' }
-              ]}
-              delay={0.2}
-            />
-          </div>
+          {/* Loading Indicator */}
+          {dataLoading && (
+            <div className="flex items-center justify-center p-4 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <span className="text-sm">Chargement des données...</span>
+            </div>
+          )}
         </div>
       </div>
 
