@@ -112,6 +112,8 @@ const mobileNavGroups = [
     icon: 'Truck',
     items: [
       { id: 'suppliers', name: 'Fournisseurs', route: '/suppliers', icon: 'Truck', minPlan: 'standard' },
+      { id: 'connectors', name: 'Connecteurs API', route: '/suppliers/connectors', icon: 'Plug', minPlan: 'standard' },
+      { id: 'engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', minPlan: 'pro' },
       { id: 'premium-suppliers', name: 'Premium', route: '/suppliers/premium', icon: 'Crown', minPlan: 'pro' },
     ]
   },
