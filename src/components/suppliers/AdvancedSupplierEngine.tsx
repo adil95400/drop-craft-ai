@@ -36,6 +36,7 @@ import {
   Package,
   ShoppingCart,
   Link2,
+  Plug,
   FileJson,
   FileSpreadsheet,
   Code,
@@ -56,6 +57,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface EngineStats {
   totalProducts: number;
@@ -483,7 +485,14 @@ export function AdvancedSupplierEngine() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-5">
+            <Button asChild className="h-auto py-4 flex-col gap-2" variant="outline">
+              <Link to="/suppliers/connectors">
+                <Plug className="h-6 w-6 text-primary" />
+                <span>Connecteurs API</span>
+                <span className="text-xs text-muted-foreground">15 plateformes</span>
+              </Link>
+            </Button>
             <Button className="h-auto py-4 flex-col gap-2" variant="outline">
               <Upload className="h-6 w-6" />
               <span>Import Rapide</span>
