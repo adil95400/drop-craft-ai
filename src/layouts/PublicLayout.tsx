@@ -49,7 +49,7 @@ export function PublicLayout({
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-1">
-              {navigation.map(item => <Link key={item.name} to={item.href} className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+              {navigation.map(item => <Link key={item.name} to={item.href} className="px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors text-primary font-sans">
                   {item.name}
                 </Link>)}
             </nav>
