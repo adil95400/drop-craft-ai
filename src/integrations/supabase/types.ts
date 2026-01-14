@@ -8557,6 +8557,48 @@ export type Database = {
           },
         ]
       }
+      supplier_connections: {
+        Row: {
+          connected_at: string | null
+          connector_id: string
+          connector_name: string
+          credentials_encrypted: string | null
+          id: string
+          last_sync_at: string | null
+          settings: Json | null
+          status: string | null
+          sync_stats: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string | null
+          connector_id: string
+          connector_name: string
+          credentials_encrypted?: string | null
+          id?: string
+          last_sync_at?: string | null
+          settings?: Json | null
+          status?: string | null
+          sync_stats?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          connected_at?: string | null
+          connector_id?: string
+          connector_name?: string
+          credentials_encrypted?: string | null
+          id?: string
+          last_sync_at?: string | null
+          settings?: Json | null
+          status?: string | null
+          sync_stats?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       supplier_credentials_vault: {
         Row: {
           created_at: string | null
@@ -8653,6 +8695,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      supplier_orders: {
+        Row: {
+          carrier: string | null
+          created_at: string | null
+          delivered_at: string | null
+          estimated_delivery: string | null
+          id: string
+          items: Json | null
+          metadata: Json | null
+          order_id: string | null
+          shipped_at: string | null
+          shipping_cost: number | null
+          status: string | null
+          supplier_id: string
+          supplier_order_id: string | null
+          total_cost: number | null
+          tracking_number: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          items?: Json | null
+          metadata?: Json | null
+          order_id?: string | null
+          shipped_at?: string | null
+          shipping_cost?: number | null
+          status?: string | null
+          supplier_id: string
+          supplier_order_id?: string | null
+          total_cost?: number | null
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          items?: Json | null
+          metadata?: Json | null
+          order_id?: string | null
+          shipped_at?: string | null
+          shipping_cost?: number | null
+          status?: string | null
+          supplier_id?: string
+          supplier_order_id?: string | null
+          total_cost?: number | null
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       supplier_pricing_rules: {
         Row: {
