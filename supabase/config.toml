@@ -681,3 +681,6 @@ verify_jwt = true
 
 [functions.ebay-connector]
 verify_jwt = true
+
+[functions.feed-optimization-ai]
+verify_jwt = true
