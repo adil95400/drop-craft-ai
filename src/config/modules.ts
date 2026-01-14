@@ -151,8 +151,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'sources',
     subModules: [
       { id: 'suppliers-list', name: 'Liste', route: '/suppliers', icon: 'Truck', description: 'Tous les fournisseurs', features: ['list'], order: 1 },
-      { id: 'suppliers-orders', name: 'Commandes', route: '/suppliers/orders', icon: 'Package', description: 'Commandes fournisseurs', features: ['orders'], order: 2 },
-      { id: 'suppliers-catalog', name: 'Catalogues', route: '/suppliers/catalog', icon: 'Book', description: 'Catalogues fournisseurs', features: ['catalog'], order: 3 },
+      { id: 'suppliers-connectors', name: 'Connecteurs API', route: '/suppliers/connectors', icon: 'Plug', description: 'AliExpress, CJ, BigBuy...', features: ['api-connectors'], order: 2 },
+      { id: 'suppliers-engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', description: 'Auto-import & fulfillment', features: ['advanced'], order: 3 },
+      { id: 'suppliers-orders', name: 'Commandes', route: '/suppliers/orders', icon: 'Package', description: 'Commandes fournisseurs', features: ['orders'], order: 4 },
+      { id: 'suppliers-catalog', name: 'Catalogues', route: '/suppliers/catalog', icon: 'Book', description: 'Catalogues fournisseurs', features: ['catalog'], order: 5 },
     ]
   },
 
