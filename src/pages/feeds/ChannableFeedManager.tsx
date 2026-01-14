@@ -22,16 +22,111 @@ import {
   ExternalLink, Trash2, Clock, Package, TrendingUp, Search, Loader2, Store
 } from 'lucide-react'
 
-// Marketplace configurations
+// Marketplace configurations - Complete like Channable
+const MARKETPLACE_CATEGORIES = [
+  { id: 'popular', name: 'Populaires', icon: '⭐' },
+  { id: 'shopping', name: 'Comparateurs', icon: '🔍' },
+  { id: 'social', name: 'Social Commerce', icon: '📱' },
+  { id: 'europe', name: 'Europe', icon: '🇪🇺' },
+  { id: 'international', name: 'International', icon: '🌍' },
+  { id: 'niche', name: 'Niche', icon: '🎯' },
+  { id: 'affiliate', name: 'Affiliation', icon: '🔗' },
+]
+
 const MARKETPLACES = [
-  { id: 'amazon', name: 'Amazon', logo: '🛒', status: 'popular' },
-  { id: 'ebay', name: 'eBay', logo: '🏷️', status: 'popular' },
-  { id: 'google_shopping', name: 'Google Shopping', logo: '🔍', status: 'popular' },
-  { id: 'meta', name: 'Meta Commerce', logo: '📘', status: 'popular' },
-  { id: 'tiktok', name: 'TikTok Shop', logo: '🎵', status: 'trending' },
-  { id: 'cdiscount', name: 'Cdiscount', logo: '🇫🇷', status: 'eu' },
-  { id: 'etsy', name: 'Etsy', logo: '🎨', status: 'popular' },
-  { id: 'shopify', name: 'Shopify', logo: '🛍️', status: 'popular' },
+  // Popular Marketplaces
+  { id: 'amazon', name: 'Amazon', logo: '🛒', category: 'popular', status: 'popular' },
+  { id: 'ebay', name: 'eBay', logo: '🏷️', category: 'popular', status: 'popular' },
+  { id: 'google_shopping', name: 'Google Shopping', logo: '🔍', category: 'popular', status: 'popular' },
+  { id: 'meta', name: 'Meta Commerce', logo: '📘', category: 'popular', status: 'popular' },
+  { id: 'shopify', name: 'Shopify', logo: '🛍️', category: 'popular', status: 'popular' },
+  { id: 'woocommerce', name: 'WooCommerce', logo: '🔮', category: 'popular', status: 'popular' },
+  { id: 'prestashop', name: 'PrestaShop', logo: '🛒', category: 'popular', status: 'popular' },
+  { id: 'magento', name: 'Magento', logo: '🧱', category: 'popular', status: 'popular' },
+  
+  // Social Commerce
+  { id: 'tiktok', name: 'TikTok Shop', logo: '🎵', category: 'social', status: 'trending' },
+  { id: 'instagram', name: 'Instagram Shopping', logo: '📸', category: 'social', status: 'trending' },
+  { id: 'pinterest', name: 'Pinterest', logo: '📌', category: 'social', status: 'popular' },
+  { id: 'snapchat', name: 'Snapchat Ads', logo: '👻', category: 'social', status: 'new' },
+  { id: 'youtube', name: 'YouTube Shopping', logo: '▶️', category: 'social', status: 'trending' },
+  { id: 'twitter', name: 'X Shopping', logo: '✖️', category: 'social', status: 'new' },
+  
+  // Comparateurs / Shopping Engines
+  { id: 'bing_shopping', name: 'Bing Shopping', logo: '🔷', category: 'shopping', status: 'popular' },
+  { id: 'idealo', name: 'Idealo', logo: '💡', category: 'shopping', status: 'eu' },
+  { id: 'kelkoo', name: 'Kelkoo', logo: '🔶', category: 'shopping', status: 'eu' },
+  { id: 'leguide', name: 'LeGuide', logo: '📘', category: 'shopping', status: 'eu' },
+  { id: 'twenga', name: 'Twenga', logo: '🔄', category: 'shopping', status: 'eu' },
+  { id: 'pricerunner', name: 'PriceRunner', logo: '🏃', category: 'shopping', status: 'eu' },
+  { id: 'shopzilla', name: 'Shopzilla', logo: '🦎', category: 'shopping', status: 'popular' },
+  { id: 'nextag', name: 'Nextag', logo: '🏷️', category: 'shopping', status: 'popular' },
+  { id: 'shopping_com', name: 'Shopping.com', logo: '🛒', category: 'shopping', status: 'popular' },
+  { id: 'become', name: 'Become', logo: '🔄', category: 'shopping', status: 'popular' },
+  
+  // Europe
+  { id: 'cdiscount', name: 'Cdiscount', logo: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'fnac', name: 'Fnac', logo: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'darty', name: 'Darty', logo: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'rue_du_commerce', name: 'Rue du Commerce', logo: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'manomano', name: 'ManoMano', logo: '🔧', category: 'europe', status: 'eu' },
+  { id: 'showroomprive', name: 'Showroomprivé', logo: '👗', category: 'europe', status: 'eu' },
+  { id: 'veepee', name: 'Veepee', logo: '🛍️', category: 'europe', status: 'eu' },
+  { id: 'galeries_lafayette', name: 'Galeries Lafayette', logo: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'bol_com', name: 'Bol.com', logo: '🇳🇱', category: 'europe', status: 'eu' },
+  { id: 'zalando', name: 'Zalando', logo: '👟', category: 'europe', status: 'eu' },
+  { id: 'otto', name: 'Otto', logo: '🇩🇪', category: 'europe', status: 'eu' },
+  { id: 'kaufland', name: 'Kaufland', logo: '🇩🇪', category: 'europe', status: 'eu' },
+  { id: 'mediamarkt', name: 'MediaMarkt', logo: '📺', category: 'europe', status: 'eu' },
+  { id: 'allegro', name: 'Allegro', logo: '🇵🇱', category: 'europe', status: 'eu' },
+  { id: 'emag', name: 'eMAG', logo: '🇷🇴', category: 'europe', status: 'eu' },
+  { id: 'asos', name: 'ASOS', logo: '👔', category: 'europe', status: 'eu' },
+  { id: 'privalia', name: 'Privalia', logo: '🇪🇸', category: 'europe', status: 'eu' },
+  { id: 'el_corte_ingles', name: 'El Corte Inglés', logo: '🇪🇸', category: 'europe', status: 'eu' },
+  
+  // International
+  { id: 'walmart', name: 'Walmart', logo: '🏪', category: 'international', status: 'popular' },
+  { id: 'target', name: 'Target', logo: '🎯', category: 'international', status: 'popular' },
+  { id: 'aliexpress', name: 'AliExpress', logo: '🇨🇳', category: 'international', status: 'popular' },
+  { id: 'wish', name: 'Wish', logo: '⭐', category: 'international', status: 'popular' },
+  { id: 'rakuten', name: 'Rakuten', logo: '🇯🇵', category: 'international', status: 'popular' },
+  { id: 'mercado_libre', name: 'Mercado Libre', logo: '🇧🇷', category: 'international', status: 'popular' },
+  { id: 'newegg', name: 'Newegg', logo: '💻', category: 'international', status: 'popular' },
+  { id: 'overstock', name: 'Overstock', logo: '📦', category: 'international', status: 'popular' },
+  { id: 'jet', name: 'Jet', logo: '✈️', category: 'international', status: 'popular' },
+  { id: 'lazada', name: 'Lazada', logo: '🌏', category: 'international', status: 'popular' },
+  { id: 'shopee', name: 'Shopee', logo: '🧡', category: 'international', status: 'trending' },
+  { id: 'flipkart', name: 'Flipkart', logo: '🇮🇳', category: 'international', status: 'popular' },
+  
+  // Niche
+  { id: 'etsy', name: 'Etsy', logo: '🎨', category: 'niche', status: 'popular' },
+  { id: 'wayfair', name: 'Wayfair', logo: '🏠', category: 'niche', status: 'popular' },
+  { id: 'houzz', name: 'Houzz', logo: '🏡', category: 'niche', status: 'popular' },
+  { id: 'decathlon', name: 'Decathlon', logo: '⚽', category: 'niche', status: 'eu' },
+  { id: 'catch', name: 'Catch', logo: '🎣', category: 'niche', status: 'popular' },
+  { id: 'bestbuy', name: 'Best Buy', logo: '🔌', category: 'niche', status: 'popular' },
+  { id: 'home_depot', name: 'Home Depot', logo: '🔨', category: 'niche', status: 'popular' },
+  { id: 'lowes', name: "Lowe's", logo: '🪚', category: 'niche', status: 'popular' },
+  { id: 'sephora', name: 'Sephora', logo: '💄', category: 'niche', status: 'popular' },
+  { id: 'nordstrom', name: 'Nordstrom', logo: '👠', category: 'niche', status: 'popular' },
+  { id: 'macys', name: "Macy's", logo: '🛍️', category: 'niche', status: 'popular' },
+  { id: 'kohls', name: "Kohl's", logo: '🎁', category: 'niche', status: 'popular' },
+  { id: 'costco', name: 'Costco', logo: '📦', category: 'niche', status: 'popular' },
+  { id: 'kroger', name: 'Kroger', logo: '🛒', category: 'niche', status: 'popular' },
+  
+  // Affiliate Networks
+  { id: 'awin', name: 'Awin', logo: '🔗', category: 'affiliate', status: 'popular' },
+  { id: 'tradedoubler', name: 'Tradedoubler', logo: '💱', category: 'affiliate', status: 'eu' },
+  { id: 'cj', name: 'CJ Affiliate', logo: '🤝', category: 'affiliate', status: 'popular' },
+  { id: 'shareasale', name: 'ShareASale', logo: '💰', category: 'affiliate', status: 'popular' },
+  { id: 'rakuten_ads', name: 'Rakuten Advertising', logo: '📢', category: 'affiliate', status: 'popular' },
+  { id: 'impact', name: 'Impact', logo: '💥', category: 'affiliate', status: 'popular' },
+  { id: 'partnerize', name: 'Partnerize', logo: '🤝', category: 'affiliate', status: 'popular' },
+  { id: 'webgains', name: 'Webgains', logo: '🌐', category: 'affiliate', status: 'eu' },
+  { id: 'effiliation', name: 'Effiliation', logo: '🇫🇷', category: 'affiliate', status: 'eu' },
+  { id: 'affilinet', name: 'Affilinet', logo: '🔗', category: 'affiliate', status: 'eu' },
+  { id: 'daisycon', name: 'Daisycon', logo: '🌼', category: 'affiliate', status: 'eu' },
+  { id: 'criteo', name: 'Criteo', logo: '🎯', category: 'affiliate', status: 'popular' },
 ]
 
 export default function ChannableFeedManager() {
@@ -151,36 +246,54 @@ export default function ChannableFeedManager() {
           ))}
         </div>
 
-        {/* Marketplace Quick Actions */}
+        {/* Marketplace Quick Actions - Organized by Category */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <Store className="h-5 w-5" />
-              Marketplaces Supportés
+              Marketplaces Supportés ({MARKETPLACES.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="w-full">
-              <div className="flex gap-3 pb-2">
-                {MARKETPLACES.map(mp => (
-                  <Button
-                    key={mp.id}
-                    variant="outline"
-                    className="flex-shrink-0 h-auto py-3 px-4 flex flex-col items-center gap-2 hover:border-primary"
-                    onClick={() => {
-                      setNewFeed({ name: `${mp.name} Feed`, marketplace: mp.id })
-                      setShowCreateDialog(true)
-                    }}
-                  >
-                    <span className="text-2xl">{mp.logo}</span>
-                    <span className="text-xs font-medium">{mp.name}</span>
-                    {mp.status === 'trending' && (
-                      <Badge variant="secondary" className="text-[10px]">Trending</Badge>
-                    )}
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
+          <CardContent className="space-y-6">
+            {MARKETPLACE_CATEGORIES.map(category => {
+              const categoryMarketplaces = MARKETPLACES.filter(mp => mp.category === category.id)
+              if (categoryMarketplaces.length === 0) return null
+              
+              return (
+                <div key={category.id} className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <span>{category.icon}</span>
+                    <span>{category.name}</span>
+                    <Badge variant="outline" className="text-[10px]">{categoryMarketplaces.length}</Badge>
+                  </div>
+                  <ScrollArea className="w-full">
+                    <div className="flex gap-2 pb-2">
+                      {categoryMarketplaces.map(mp => (
+                        <Button
+                          key={mp.id}
+                          variant="outline"
+                          size="sm"
+                          className="flex-shrink-0 h-auto py-2 px-3 flex flex-col items-center gap-1 hover:border-primary min-w-[80px]"
+                          onClick={() => {
+                            setNewFeed({ name: `${mp.name} Feed`, marketplace: mp.id })
+                            setShowCreateDialog(true)
+                          }}
+                        >
+                          <span className="text-xl">{mp.logo}</span>
+                          <span className="text-[10px] font-medium text-center leading-tight">{mp.name}</span>
+                          {mp.status === 'trending' && (
+                            <Badge className="bg-orange-500 text-[8px] px-1 py-0">Hot</Badge>
+                          )}
+                          {mp.status === 'new' && (
+                            <Badge className="bg-blue-500 text-[8px] px-1 py-0">New</Badge>
+                          )}
+                        </Button>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )
+            })}
           </CardContent>
         </Card>
 
