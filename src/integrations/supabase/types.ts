@@ -6528,6 +6528,51 @@ export type Database = {
           },
         ]
       }
+      product_feeds: {
+        Row: {
+          created_at: string
+          feed_type: string
+          feed_url: string | null
+          generation_status: string | null
+          id: string
+          last_generated_at: string | null
+          name: string
+          product_count: number | null
+          settings: Json | null
+          updated_at: string
+          user_id: string
+          validation_errors: Json | null
+        }
+        Insert: {
+          created_at?: string
+          feed_type: string
+          feed_url?: string | null
+          generation_status?: string | null
+          id?: string
+          last_generated_at?: string | null
+          name: string
+          product_count?: number | null
+          settings?: Json | null
+          updated_at?: string
+          user_id: string
+          validation_errors?: Json | null
+        }
+        Update: {
+          created_at?: string
+          feed_type?: string
+          feed_url?: string | null
+          generation_status?: string | null
+          id?: string
+          last_generated_at?: string | null
+          name?: string
+          product_count?: number | null
+          settings?: Json | null
+          updated_at?: string
+          user_id?: string
+          validation_errors?: Json | null
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           alt_text: string | null
