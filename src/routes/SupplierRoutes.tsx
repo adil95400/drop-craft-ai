@@ -1,11 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy } from 'react'
 
-// Lazy loading des pages - Page Channable-style comme point d'entrée principal
+// Lazy loading des pages - Architecture simplifiée et optimisée
 const ChannableStyleSuppliersPage = lazy(() => import('@/pages/suppliers/ChannableStyleSuppliersPage'))
 const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'))
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'))
-const SupplierCatalogPage = lazy(() => import('@/pages/suppliers/catalog/SupplierCatalogPage'))
+const EnhancedUnifiedCatalog = lazy(() => import('@/pages/suppliers/catalog/EnhancedUnifiedCatalog'))
 const SupplierAdvancedPage = lazy(() => import('@/pages/suppliers/SupplierAdvancedPage'))
 const SupplierImportPage = lazy(() => import('@/pages/suppliers/import/SupplierImportPage'))
 const SupplierAnalyticsDashboard = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsDashboard'))
@@ -19,7 +19,15 @@ const SupplierConnectorsHub = lazy(() => import('@/pages/suppliers/SupplierConne
 
 /**
  * ROUTES DU MODULE FOURNISSEURS
- * Architecture simplifiée avec page Channable-style unifiée
+ * Architecture simplifiée et optimisée
+ * 
+ * Structure:
+ * /suppliers - Vue d'ensemble (Channable-style)
+ * /suppliers/catalog - Catalogue Unifié (tous produits, par fournisseur, catégorie, connecteur)
+ * /suppliers/connectors - Hub des connecteurs API
+ * /suppliers/engine - Moteur fournisseur avancé
+ * /suppliers/my - Mes fournisseurs
+ * /suppliers/analytics - Analytics fournisseurs
  */
 export default function SupplierRoutes() {
   return (
@@ -27,8 +35,14 @@ export default function SupplierRoutes() {
       {/* Page Channable-style - Point d'entrée principal */}
       <Route index element={<ChannableStyleSuppliersPage />} />
       
-      {/* Marketplace - Redirige vers la page connecteurs unifiée */}
-      <Route path="marketplace" element={<Navigate to="/integrations/connectors?category=supplier" replace />} />
+      {/* Catalogue Unifié - NOUVEAU: une seule page pour tout */}
+      <Route path="catalog" element={<EnhancedUnifiedCatalog />} />
+      
+      {/* Hub Connecteurs API */}
+      <Route path="connectors" element={<SupplierConnectorsHub />} />
+      
+      {/* Moteur Fournisseur Avancé */}
+      <Route path="engine" element={<AdvancedSupplierEnginePage />} />
       
       {/* Mes fournisseurs */}
       <Route path="my" element={<MySuppliersPage />} />
@@ -39,17 +53,11 @@ export default function SupplierRoutes() {
       {/* Settings */}
       <Route path="settings" element={<SupplierSettingsPage />} />
       
-      {/* Feeds - redirige vers Channable-style */}
+      {/* Feeds */}
       <Route path="feeds" element={<ChannableFeedManager />} />
       
       {/* Variant Mapping */}
       <Route path="variant-mapping" element={<VariantMappingPage />} />
-      
-      {/* Moteur Fournisseur Avancé */}
-      <Route path="engine" element={<AdvancedSupplierEnginePage />} />
-      
-      {/* Hub Connecteurs */}
-      <Route path="connectors" element={<SupplierConnectorsHub />} />
       
       {/* Création */}
       <Route path="create" element={<CreateSupplier />} />
@@ -58,20 +66,23 @@ export default function SupplierRoutes() {
       {/* Import BTS CSV */}
       <Route path="bts/import" element={<BTSImportPage />} />
 
-      {/* Redirections des anciennes routes de connecteurs vers la page principale */}
-      <Route path="bigbuy" element={<Navigate to="/suppliers?supplier=bigbuy" replace />} />
-      <Route path="cj-dropshipping" element={<Navigate to="/suppliers?supplier=cj-dropshipping" replace />} />
-      <Route path="dropshipping" element={<Navigate to="/suppliers?supplier=cj-dropshipping" replace />} />
-      <Route path="bts" element={<Navigate to="/suppliers?supplier=bts" replace />} />
-      <Route path="aliexpress" element={<Navigate to="/suppliers?supplier=aliexpress" replace />} />
-      <Route path="amazon" element={<Navigate to="/suppliers?supplier=amazon" replace />} />
-      <Route path="shopify" element={<Navigate to="/suppliers?supplier=shopify" replace />} />
-      <Route path="woocommerce" element={<Navigate to="/suppliers?supplier=woocommerce" replace />} />
-      <Route path="prestashop" element={<Navigate to="/suppliers?supplier=prestashop" replace />} />
+      {/* Marketplace - Redirige vers connecteurs */}
+      <Route path="marketplace" element={<Navigate to="/suppliers/connectors" replace />} />
+
+      {/* Redirections des anciennes routes de connecteurs vers le catalogue avec filtre */}
+      <Route path="bigbuy" element={<Navigate to="/suppliers/catalog?connector=bigbuy" replace />} />
+      <Route path="cj-dropshipping" element={<Navigate to="/suppliers/catalog?connector=cj_dropshipping" replace />} />
+      <Route path="dropshipping" element={<Navigate to="/suppliers/catalog?connector=cj_dropshipping" replace />} />
+      <Route path="bts" element={<Navigate to="/suppliers/catalog?connector=bts" replace />} />
+      <Route path="aliexpress" element={<Navigate to="/suppliers/catalog?connector=aliexpress" replace />} />
+      <Route path="amazon" element={<Navigate to="/suppliers/catalog?connector=amazon" replace />} />
+      <Route path="shopify" element={<Navigate to="/suppliers/catalog?connector=shopify" replace />} />
+      <Route path="woocommerce" element={<Navigate to="/suppliers/catalog?connector=woocommerce" replace />} />
+      <Route path="prestashop" element={<Navigate to="/suppliers/catalog?connector=prestashop" replace />} />
       
       {/* Routes par fournisseur (générique avec ID) */}
       <Route path=":supplierId" element={<SupplierDetails />} />
-      <Route path=":supplierId/catalog" element={<SupplierCatalogPage />} />
+      <Route path=":supplierId/catalog" element={<EnhancedUnifiedCatalog />} />
       <Route path=":supplierId/advanced" element={<SupplierAdvancedPage />} />
       <Route path=":supplierId/import" element={<SupplierImportPage />} />
       <Route path=":supplierId/feeds" element={<ChannableFeedManager />} />

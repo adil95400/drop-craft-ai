@@ -150,11 +150,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 2,
     groupId: 'sources',
     subModules: [
-      { id: 'suppliers-list', name: 'Liste', route: '/suppliers', icon: 'Truck', description: 'Tous les fournisseurs', features: ['list'], order: 1 },
-      { id: 'suppliers-connectors', name: 'Connecteurs API', route: '/suppliers/connectors', icon: 'Plug', description: 'AliExpress, CJ, BigBuy...', features: ['api-connectors'], order: 2 },
-      { id: 'suppliers-engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', description: 'Auto-import & fulfillment', features: ['advanced'], order: 3 },
-      { id: 'suppliers-orders', name: 'Commandes', route: '/suppliers/orders', icon: 'Package', description: 'Commandes fournisseurs', features: ['orders'], order: 4 },
-      { id: 'suppliers-catalog', name: 'Catalogues', route: '/suppliers/catalog', icon: 'Book', description: 'Catalogues fournisseurs', features: ['catalog'], order: 5 },
+      { id: 'suppliers-overview', name: 'Vue d\'ensemble', route: '/suppliers', icon: 'LayoutDashboard', description: 'Dashboard fournisseurs', features: ['overview'], order: 1 },
+      { id: 'suppliers-catalog', name: 'Catalogue Unifié', route: '/suppliers/catalog', icon: 'Package', description: 'Tous les produits', features: ['catalog'], order: 2 },
+      { id: 'suppliers-connectors', name: 'Connecteurs API', route: '/suppliers/connectors', icon: 'Plug', description: 'AliExpress, CJ, BigBuy...', features: ['api-connectors'], order: 3 },
+      { id: 'suppliers-engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', description: 'Auto-import & fulfillment', features: ['advanced'], order: 4 },
+      { id: 'suppliers-my', name: 'Mes Fournisseurs', route: '/suppliers/my', icon: 'Truck', description: 'Fournisseurs connectés', features: ['list'], order: 5 },
     ]
   },
 
