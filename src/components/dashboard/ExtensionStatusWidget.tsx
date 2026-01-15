@@ -118,6 +118,14 @@ export const ExtensionStatusWidget: React.FC = () => {
         {/* Action Buttons */}
         <div className="flex flex-col gap-2 pt-2">
           <Button 
+            className="w-full justify-between bg-primary hover:bg-primary/90"
+            onClick={() => navigate('/extensions/download')}
+          >
+            <span>Télécharger l'Extension</span>
+            <Download className="w-4 h-4" />
+          </Button>
+          
+          <Button 
             variant="outline" 
             className="w-full justify-between"
             onClick={() => navigate('/extensions/marketplace')}
