@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '@/components/navigation/BackButton';
 import { 
@@ -18,7 +17,8 @@ import {
   CreditCard, 
   Database,
   LogOut,
-  Save
+  Save,
+  ExternalLink
 } from "lucide-react";
 
 // Import refactored tab components
@@ -109,7 +109,6 @@ const Settings = () => {
     { id: 'profile', label: 'Profil', icon: User, mobileLabel: 'Profil' },
     { id: 'notifications', label: t('settings:tabs.notifications'), icon: Bell, mobileLabel: 'Notifs' },
     { id: 'security', label: t('settings:tabs.security'), icon: Shield, mobileLabel: 'Sécurité' },
-    { id: 'integrations', label: t('settings:tabs.integrations'), icon: Database, mobileLabel: 'Intégr.' },
     { id: 'billing', label: 'Facturation', icon: CreditCard, mobileLabel: 'Billing' },
     { id: 'api', label: 'API', icon: Key, mobileLabel: 'API' },
     { id: 'appearance', label: t('settings:tabs.appearance'), icon: Palette, mobileLabel: 'Thème' },
@@ -194,6 +193,19 @@ const Settings = () => {
                   </TabsTrigger>
                 ))}
               </TabsList>
+              
+              {/* Lien vers Intégrations */}
+              <div className="border-t border-border mt-2 pt-2 px-2 pb-2 hidden lg:block">
+                <Button 
+                  variant="ghost" 
+                  className="justify-start w-full text-sm px-3 py-2.5 text-muted-foreground hover:text-foreground"
+                  onClick={() => navigate('/integrations')}
+                >
+                  <Database className="mr-2 h-4 w-4" />
+                  {t('settings:tabs.integrations')}
+                  <ExternalLink className="ml-auto h-3 w-3" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -217,10 +229,6 @@ const Settings = () => {
 
             <TabsContent value="security" className="mt-0">
               <SecurityTab />
-            </TabsContent>
-
-            <TabsContent value="integrations" className="mt-0">
-              <RealIntegrationsTab />
             </TabsContent>
 
             <TabsContent value="billing" className="mt-0">
