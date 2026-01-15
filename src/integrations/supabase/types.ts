@@ -7653,6 +7653,7 @@ export type Database = {
       }
       returns: {
         Row: {
+          attachments: Json | null
           carrier: string | null
           created_at: string
           customer_id: string | null
@@ -7676,6 +7677,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: Json | null
           carrier?: string | null
           created_at?: string
           customer_id?: string | null
@@ -7699,6 +7701,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: Json | null
           carrier?: string | null
           created_at?: string
           customer_id?: string | null
