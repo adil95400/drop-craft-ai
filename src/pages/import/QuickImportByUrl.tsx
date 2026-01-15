@@ -314,7 +314,7 @@ export default function QuickImportByUrl() {
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Prix fournisseur</Label>
                       <div className="text-lg font-medium text-muted-foreground line-through">
-                        {preview.price.toFixed(2)} {preview.currency}
+                        {(preview.price ?? 0).toFixed(2)} {preview.currency}
                       </div>
                     </div>
                     <div className="space-y-1">
@@ -338,10 +338,10 @@ export default function QuickImportByUrl() {
                       <span className="text-sm text-muted-foreground">Bénéfice estimé</span>
                       <div className="text-right">
                         <span className="text-xl font-bold text-green-600">
-                          +{(editedPrice - preview.price).toFixed(2)} €
+                          +{(editedPrice - (preview.price ?? 0)).toFixed(2)} €
                         </span>
                         <span className="text-sm text-green-600 ml-2">
-                          ({Math.round(((editedPrice - preview.price) / editedPrice) * 100)}%)
+                          ({editedPrice > 0 ? Math.round(((editedPrice - (preview.price ?? 0)) / editedPrice) * 100) : 0}%)
                         </span>
                       </div>
                     </div>
