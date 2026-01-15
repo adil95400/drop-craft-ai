@@ -22,7 +22,8 @@ import {
   ExternalLink,
   Copy,
   Edit3,
-  ShoppingCart
+  ShoppingCart,
+  Star
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -44,6 +45,9 @@ interface ProductPreview {
   sku: string
   platform_detected: string
   source_url: string
+  has_reviews?: boolean
+  reviews_count?: number
+  extracted_reviews?: any[]
 }
 
 const supportedPlatforms = [
