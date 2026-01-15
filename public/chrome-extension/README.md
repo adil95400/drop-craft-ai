@@ -59,9 +59,10 @@ const APP_URL = 'https://drop-craft-ai.lovable.app';
 
 | Endpoint | Description |
 |----------|-------------|
-| `/extension-sync` | Synchronisation des données |
-| `/extension-sync-realtime` | Sync temps réel |
-| `/product-url-scraper` | Import par URL |
+| `/extension-sync` | Synchronisation des données et import produits |
+| `/product-url-scraper` | Import par URL avec Firecrawl |
+| `/analyze-competitor` | Analyse concurrentielle |
+| `/ai-optimize-product` | Optimisation IA des produits |
 
 ## ⚙️ Fonctionnalités Complètes
 
@@ -188,6 +189,10 @@ curl -X POST https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/extension-syn
 - Surveillance des prix en temps réel
 - Menu contextuel complet
 - Synchronisation avec ShopOpti+ Cloud
+- **Auto-Order** : Commandes automatiques
+- **Spy Competitor** : Analyse concurrentielle
+- **Bulk Import CSV** : Import en masse depuis fichier
+- **AI Optimize** : Optimisation IA des descriptions (PRO)
 
 ## 📄 Licence
 

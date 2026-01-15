@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token',
 };
 
 interface ScrapedProduct {
@@ -32,22 +32,45 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify authentication
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      throw new Error('Non authentifié');
+    // Check for extension token OR standard auth
+    const extensionToken = req.headers.get('x-extension-token');
+    const authHeader = req.headers.get('Authorization');
+    
+    let userId: string | null = null;
+
+    // Try extension token first
+    if (extensionToken) {
+      const { data: tokenData } = await supabase
+        .from("extension_tokens")
+        .select("user_id, is_active, expires_at")
+        .eq("token", extensionToken)
+        .single();
+
+      if (tokenData?.is_active) {
+        if (!tokenData.expires_at || new Date(tokenData.expires_at) > new Date()) {
+          userId = tokenData.user_id;
+          console.log('✅ Authenticated via extension token');
+        }
+      }
+    }
+    
+    // Fallback to standard auth
+    if (!userId && authHeader) {
+      const supabaseClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (user) {
+        userId = user.id;
+        console.log('✅ Authenticated via JWT');
+      }
     }
 
+    // Allow unauthenticated scraping for extension (limited)
     const { url } = await req.json();
 
     if (!url) {
@@ -76,8 +99,8 @@ serve(async (req) => {
       body: JSON.stringify({
         url: url,
         formats: ['markdown', 'html'],
-        onlyMainContent: false, // Get full page content for better extraction
-        waitFor: 2000, // Wait for dynamic content to load
+        onlyMainContent: false,
+        waitFor: 2000,
         includeTags: ['img', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'meta'],
       }),
     });
@@ -96,17 +119,20 @@ serve(async (req) => {
 
     console.log('✅ Product extracted:', product.name);
 
-    // Log activity
-    await supabaseClient.from('activity_logs').insert({
-      user_id: user.id,
-      action: 'product_url_scrape',
-      description: `Produit extrait depuis URL: ${product.name}`,
-      metadata: {
-        supplier: product.supplier_name,
-        source_url: url,
-        scrape_timestamp: new Date().toISOString()
-      }
-    });
+    // Log activity if authenticated
+    if (userId) {
+      await supabase.from('activity_logs').insert({
+        user_id: userId,
+        action: 'product_url_scrape',
+        description: `Produit extrait depuis URL: ${product.name}`,
+        source: extensionToken ? 'chrome_extension' : 'web',
+        metadata: {
+          supplier: product.supplier_name,
+          source_url: url,
+          scrape_timestamp: new Date().toISOString()
+        }
+      });
+    }
 
     return new Response(
       JSON.stringify({
@@ -133,7 +159,6 @@ serve(async (req) => {
     );
   }
 });
-
 function detectSupplier(url: string): string {
   const urlLower = url.toLowerCase();
   
