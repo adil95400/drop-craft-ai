@@ -18,7 +18,8 @@ import {
   Loader2, Plus, Trash2, Package, CreditCard, FileText, 
   CheckCircle2, AlertTriangle, ChevronRight, ChevronLeft,
   RotateCcw, Wallet, RefreshCw, Euro, ShoppingBag, Search,
-  Barcode, Hash, Image as ImageIcon, Keyboard, User, Mail, AtSign
+  Barcode, Hash, Image as ImageIcon, Keyboard, User, Mail, AtSign,
+  ChevronDown
 } from 'lucide-react'
 import { useReturns, ReturnItem } from '@/hooks/useReturns'
 import { cn } from '@/lib/utils'
@@ -143,6 +144,9 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
   const [customerResults, setCustomerResults] = useState<CustomerSearchResult[]>([])
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerSearchResult | null>(null)
   const [isSearchingCustomer, setIsSearchingCustomer] = useState(false)
+  const [showAllCustomers, setShowAllCustomers] = useState(false)
+  const [allCustomers, setAllCustomers] = useState<CustomerSearchResult[]>([])
+  const [isLoadingAllCustomers, setIsLoadingAllCustomers] = useState(false)
   const debouncedCustomerQuery = useDebounce(customerSearchQuery, 300)
 
   // États pour la recherche intelligente
@@ -310,6 +314,8 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     setCustomerSearchQuery('')
     setCustomerResults([])
     setSelectedCustomer(null)
+    setShowAllCustomers(false)
+    setAllCustomers([])
   }, [])
 
   const handleOpenChange = useCallback((open: boolean) => {
@@ -390,6 +396,7 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     }
     
     setIsSearchingCustomer(true)
+    setShowAllCustomers(false)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -410,6 +417,37 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
       setIsSearchingCustomer(false)
     }
   }, [])
+
+  // Charger tous les clients (dropdown)
+  const loadAllCustomers = useCallback(async () => {
+    if (showAllCustomers) {
+      setShowAllCustomers(false)
+      return
+    }
+    
+    setIsLoadingAllCustomers(true)
+    setCustomerResults([])
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, email, first_name, last_name, total_orders, total_spent')
+        .eq('user_id', user.id)
+        .order('first_name', { ascending: true })
+        .limit(50)
+      
+      if (error) throw error
+      setAllCustomers(data || [])
+      setShowAllCustomers(true)
+    } catch (error) {
+      console.error('Erreur chargement clients:', error)
+      setAllCustomers([])
+    } finally {
+      setIsLoadingAllCustomers(false)
+    }
+  }, [showAllCustomers])
 
   // Effet pour recherche client
   useEffect(() => {
@@ -573,22 +611,96 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
             </motion.div>
           ) : (
             <div className="space-y-3">
-              {/* Recherche client */}
-              <div className="relative">
-                <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                {isSearchingCustomer && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                )}
-                <Input
-                  placeholder="Rechercher par email ou nom..."
-                  value={customerSearchQuery}
-                  onChange={(e) => setCustomerSearchQuery(e.target.value)}
-                  className="pl-10 pr-10"
-                />
+              {/* Recherche client avec dropdown */}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  {isSearchingCustomer && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                  <Input
+                    placeholder="Rechercher par email ou nom..."
+                    value={customerSearchQuery}
+                    onChange={(e) => {
+                      setCustomerSearchQuery(e.target.value)
+                      setShowAllCustomers(false)
+                    }}
+                    className="pl-10 pr-10"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className={cn(
+                    "flex-shrink-0 transition-all",
+                    showAllCustomers && "bg-primary/10 border-primary"
+                  )}
+                  onClick={loadAllCustomers}
+                  disabled={isLoadingAllCustomers}
+                >
+                  {isLoadingAllCustomers ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ChevronDown className={cn(
+                      "h-4 w-4 transition-transform",
+                      showAllCustomers && "rotate-180"
+                    )} />
+                  )}
+                </Button>
               </div>
 
+              {/* Liste tous les clients (dropdown) */}
+              {showAllCustomers && allCustomers.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    {allCustomers.length} client(s) disponible(s)
+                  </p>
+                  <div className="max-h-[200px] overflow-y-auto space-y-2 border rounded-lg p-2 bg-background">
+                    {allCustomers.map((customer) => (
+                      <Card 
+                        key={customer.id}
+                        className="cursor-pointer hover:border-primary/50 transition-all"
+                        onClick={() => {
+                          handleSelectCustomer(customer)
+                          setShowAllCustomers(false)
+                        }}
+                      >
+                        <CardContent className="flex items-center gap-3 p-3">
+                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">
+                              {customer.first_name || customer.last_name 
+                                ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+                                : customer.email.split('@')[0]}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
+                          </div>
+                          <div className="text-right text-xs text-muted-foreground">
+                            {customer.total_orders !== null && (
+                              <p>{customer.total_orders} cmd</p>
+                            )}
+                            {customer.total_spent !== null && (
+                              <p>{customer.total_spent.toFixed(2)} €</p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {showAllCustomers && allCustomers.length === 0 && !isLoadingAllCustomers && (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  Aucun client enregistré
+                </p>
+              )}
+
               {/* Résultats de recherche client */}
-              {customerResults.length > 0 && (
+              {!showAllCustomers && customerResults.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground">{customerResults.length} client(s) trouvé(s)</p>
                   {customerResults.map((customer) => (
@@ -623,13 +735,13 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
                 </div>
               )}
 
-              {debouncedCustomerQuery && !isSearchingCustomer && customerResults.length === 0 && (
+              {!showAllCustomers && debouncedCustomerQuery && !isSearchingCustomer && customerResults.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-2">
                   Aucun client trouvé pour "{debouncedCustomerQuery}"
                 </p>
               )}
 
-              {!debouncedCustomerQuery && (
+              {!showAllCustomers && !debouncedCustomerQuery && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
                   <AlertTriangle className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />
                   <span>Sans client identifié, le retour sera créé sans lien avec un compte client.</span>
