@@ -14,7 +14,7 @@ import {
   Database, ShoppingBag, GraduationCap, HelpCircle, Activity, Building2, 
   Home, Boxes, CreditCard, LifeBuoy, Video, Tag, Rss, RefreshCw, Target,
   CheckCircle, Clock, Calendar, Star, Eye, Lock, Layers, Plus, Workflow, Play,
-  Mail, Code, LayoutDashboard, PackageCheck
+  Mail, Code, LayoutDashboard, PackageCheck, Chrome, Key, Terminal
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme/ThemeToggle"
 import { 
@@ -70,6 +70,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   
   // Automation
   'Workflow': Workflow, 'Play': Play, 'Code': Code,
+  
+  // Extensions
+  'Chrome': Chrome, 'Key': Key, 'Terminal': Terminal,
   
   // Autres
   'Bot': Bot, 'Calculator': Calculator, 'Globe': Globe,

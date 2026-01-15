@@ -182,6 +182,29 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     ]
   },
 
+  // Extensions de navigateur et outils
+  extensions: {
+    id: 'extensions',
+    name: 'Extensions',
+    icon: 'Puzzle',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/extensions',
+    features: ['chrome-extension', 'api-access', 'cli-tools', 'marketplace'],
+    description: 'Extensions navigateur et outils',
+    category: 'integrations',
+    order: 4,
+    groupId: 'sources',
+    subModules: [
+      { id: 'extensions-hub', name: 'Hub Extensions', route: '/extensions', icon: 'LayoutDashboard', description: 'Vue d\'ensemble des extensions', features: ['overview'], order: 1 },
+      { id: 'extensions-chrome', name: 'Chrome Extension', route: '/extensions/chrome', icon: 'Chrome', description: 'Extension navigateur Chrome', features: ['chrome-extension'], order: 2 },
+      { id: 'extensions-marketplace', name: 'Marketplace', route: '/extensions/marketplace', icon: 'Store', description: 'Découvrir des extensions', features: ['marketplace'], order: 3 },
+      { id: 'extensions-api', name: 'API & Tokens', route: '/extension', icon: 'Key', description: 'Gestion des tokens API', features: ['api-tokens'], order: 4 },
+      { id: 'extensions-cli', name: 'CLI Tools', route: '/extensions/cli', icon: 'Terminal', description: 'Outils en ligne de commande', features: ['cli'], order: 5 },
+      { id: 'extensions-developer', name: 'Développeur', route: '/extensions/developer', icon: 'Code', description: 'Documentation développeur', features: ['developer'], order: 6 },
+    ]
+  },
+
   // ═══════════════════════════════════════════════════════════════════════════
   // 3. CATALOG - Gestion du catalogue produits (6 modules)
   // ═══════════════════════════════════════════════════════════════════════════
@@ -718,28 +741,6 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'automation-triggers', name: 'Déclencheurs', route: '/automation/triggers', icon: 'Play', description: 'Gérer les triggers', features: ['triggers'], order: 3 },
       { id: 'automation-studio', name: 'Studio', route: '/automation/studio', icon: 'Palette', description: 'Studio automation', features: ['studio'], order: 4 },
       { id: 'automation-ai-hub', name: 'AI Hub', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub IA', features: ['ai'], order: 5 },
-    ]
-  },
-  
-  extensions: {
-    id: 'extensions',
-    name: 'Extensions',
-    icon: 'Puzzle',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/extensions',
-    features: ['marketplace', 'plugins'],
-    description: 'Apps et extensions',
-    category: 'system',
-    order: 4,
-    groupId: 'settings',
-    badge: 'pro',
-    subModules: [
-      { id: 'extensions-hub', name: 'Hub', route: '/extensions', icon: 'Puzzle', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'extensions-chrome', name: 'Chrome Extension', route: '/extensions/chrome', icon: 'Chrome', description: 'Extension navigateur', features: ['chrome'], order: 2 },
-      { id: 'extensions-reviews', name: 'Import Avis', route: '/extensions/reviews', icon: 'Star', description: 'Importer des avis produits', features: ['reviews-import'], order: 3 },
-      { id: 'extensions-marketplace', name: 'Marketplace', route: '/extensions/marketplace', icon: 'Store', description: 'Découvrir des extensions', features: ['marketplace'], order: 4 },
-      { id: 'extensions-developer', name: 'Développeur', route: '/extensions/developer', icon: 'Code', description: 'Créer des extensions', features: ['developer'], order: 5 },
     ]
   },
   
