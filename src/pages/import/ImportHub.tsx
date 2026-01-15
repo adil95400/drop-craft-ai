@@ -50,8 +50,8 @@ import { useToast } from '@/hooks/use-toast'
 const importMethodsConfig = [
   {
     id: 'autods-style',
-    title: 'Import AutoDS-Style',
-    description: 'Import en masse style AutoDS avec URL et images. Le plus puissant.',
+    title: 'Import Rapide',
+    description: 'Import en masse avec URL et images. Le plus puissant.',
     icon: Bolt,
     color: 'from-orange-500 to-red-600',
     bgColor: 'bg-orange-500/10',
