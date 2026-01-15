@@ -132,6 +132,201 @@
       </div>
     </section>
 
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="main">🏠 Accueil</button>
+      <button class="tab-btn" data-tab="profit">💰 Profit</button>
+      <button class="tab-btn" data-tab="variants">🔄 Variantes</button>
+      <button class="tab-btn" data-tab="sync">🔗 Sync</button>
+    </nav>
+
+    <!-- Profit Calculator Tab -->
+    <section id="profitTab" class="tab-panel hidden">
+      <div class="tab-header">
+        <h3>💰 Calculateur de Profit</h3>
+      </div>
+      
+      <div class="calc-container">
+        <div class="calc-section">
+          <h4>Coûts</h4>
+          <div class="calc-row">
+            <label>Prix d'achat (€)</label>
+            <input type="number" id="costPrice" value="0" step="0.01" min="0" />
+          </div>
+          <div class="calc-row">
+            <label>Livraison (€)</label>
+            <input type="number" id="shippingCost" value="0" step="0.01" min="0" />
+          </div>
+          <div class="calc-row">
+            <label>Frais marketplace (€)</label>
+            <input type="number" id="marketplaceFees" value="0" step="0.01" min="0" />
+          </div>
+          <div class="calc-row">
+            <label>Frais transaction (%)</label>
+            <input type="number" id="transactionFee" value="2.9" step="0.1" min="0" />
+          </div>
+        </div>
+        
+        <div class="calc-section">
+          <h4>Prix de vente</h4>
+          <div class="calc-row">
+            <label>Prix de vente (€)</label>
+            <input type="number" id="sellingPrice" value="0" step="0.01" min="0" />
+          </div>
+          <div class="calc-row">
+            <label>Quantité estimée</label>
+            <input type="number" id="estimatedQty" value="100" step="1" min="1" />
+          </div>
+        </div>
+        
+        <div class="profit-results">
+          <div class="profit-card">
+            <span class="profit-label">Profit/unité</span>
+            <span id="profitPerUnit" class="profit-value">0.00 €</span>
+          </div>
+          <div class="profit-card">
+            <span class="profit-label">Marge</span>
+            <span id="marginPercent" class="profit-value">0%</span>
+          </div>
+          <div class="profit-card">
+            <span class="profit-label">ROI</span>
+            <span id="roiPercent" class="profit-value">0%</span>
+          </div>
+          <div class="profit-card highlight">
+            <span class="profit-label">Profit total</span>
+            <span id="totalProfit" class="profit-value">0.00 €</span>
+          </div>
+        </div>
+        
+        <div class="recommendations-box" id="profitRecommendations"></div>
+        
+        <div class="suggested-prices">
+          <span class="suggested-label">Prix suggérés:</span>
+          <div class="price-btns">
+            <button class="price-btn" data-margin="20">+20%</button>
+            <button class="price-btn" data-margin="30">+30%</button>
+            <button class="price-btn" data-margin="50">+50%</button>
+            <button class="price-btn" data-margin="100">x2</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Variant Mapping Tab -->
+    <section id="variantsTab" class="tab-panel hidden">
+      <div class="tab-header">
+        <h3>🔄 Mapping Variantes</h3>
+      </div>
+      
+      <div class="mapping-container">
+        <div class="mapping-templates">
+          <h4>Templates prédéfinis</h4>
+          <div class="template-grid">
+            <button class="template-btn" data-template="sizes-eu">📏 Tailles EU</button>
+            <button class="template-btn" data-template="sizes-us">📏 Tailles US</button>
+            <button class="template-btn" data-template="colors-fr">🎨 Couleurs FR</button>
+            <button class="template-btn" data-template="colors-en">🎨 Colors EN</button>
+          </div>
+        </div>
+        
+        <div class="mapping-type">
+          <button class="type-btn active" data-type="size">Tailles</button>
+          <button class="type-btn" data-type="color">Couleurs</button>
+          <button class="type-btn" data-type="custom">Custom</button>
+        </div>
+        
+        <div id="mappingRules" class="mapping-rules">
+          <div class="mapping-rule">
+            <input type="text" placeholder="Source (ex: XL)" class="source-input" />
+            <span class="arrow">→</span>
+            <input type="text" placeholder="Cible (ex: Extra Large)" class="target-input" />
+            <button class="remove-btn">×</button>
+          </div>
+        </div>
+        
+        <button id="addRuleBtn" class="add-rule-btn">+ Ajouter règle</button>
+        
+        <div class="mapping-actions">
+          <button id="saveMappingBtn" class="action-btn primary">💾 Sauvegarder</button>
+          <button id="autoMapBtn" class="action-btn ai">🤖 IA Mapping</button>
+        </div>
+        
+        <div class="saved-mappings">
+          <h4>Mappings sauvegardés</h4>
+          <div id="savedMappingsList" class="mappings-list">
+            <span class="empty-msg">Aucun mapping</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Store Sync Tab -->
+    <section id="syncTab" class="tab-panel hidden">
+      <div class="tab-header">
+        <h3>🔗 Synchronisation Boutiques</h3>
+      </div>
+      
+      <div class="sync-container">
+        <div class="stores-section">
+          <h4>Boutiques connectées</h4>
+          <div id="storesList" class="stores-list">
+            <span class="loading-msg">Chargement...</span>
+          </div>
+          <button id="addStoreBtn" class="add-store-btn">+ Connecter boutique</button>
+        </div>
+        
+        <div class="sync-options">
+          <h4>Options de synchronisation</h4>
+          <label class="sync-toggle">
+            <input type="checkbox" id="syncStock" checked />
+            <span class="toggle-switch"></span>
+            Sync automatique du stock
+          </label>
+          <label class="sync-toggle">
+            <input type="checkbox" id="syncPrices" checked />
+            <span class="toggle-switch"></span>
+            Sync automatique des prix
+          </label>
+          <label class="sync-toggle">
+            <input type="checkbox" id="syncOrders" />
+            <span class="toggle-switch"></span>
+            Sync des commandes
+          </label>
+          <label class="sync-toggle">
+            <input type="checkbox" id="autoOrderEnabled" />
+            <span class="toggle-switch"></span>
+            Auto-commande fournisseur
+          </label>
+        </div>
+        
+        <div class="sync-actions">
+          <button id="syncAllBtn" class="sync-btn primary">🔄 Tout synchroniser</button>
+          <button id="syncStockBtn" class="sync-btn">📦 Sync Stock</button>
+          <button id="syncPricesBtn" class="sync-btn">💵 Sync Prix</button>
+        </div>
+        
+        <div class="sync-status">
+          <h4>Statut</h4>
+          <div class="status-row"><span>Dernière sync:</span><span id="lastSyncTime">Jamais</span></div>
+          <div class="status-row"><span>Produits synchronisés:</span><span id="syncedCount">0</span></div>
+          <div class="status-row"><span>Erreurs:</span><span id="syncErrors">0</span></div>
+        </div>
+        
+        <div class="push-section">
+          <h4>📤 Envoyer vers boutique</h4>
+          <select id="targetStore" class="store-select">
+            <option value="">Sélectionner une boutique</option>
+          </select>
+          <div class="push-options">
+            <label><input type="checkbox" id="pushImages" checked /> Images</label>
+            <label><input type="checkbox" id="pushVariants" checked /> Variantes</label>
+            <label><input type="checkbox" id="pushAsDraft" /> Brouillon</label>
+          </div>
+          <button id="pushProductBtn" class="push-btn">Envoyer le produit actuel</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Advanced Features -->
     <section class="features-section">
       <h3 class="section-title">Outils Avancés</h3>
