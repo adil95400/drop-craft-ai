@@ -155,11 +155,6 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
 
     return u
   }
-
-    return u
-  }
-
-  // Helper to add unique image
   const addImage = (url: string) => {
     if (!url || images.length >= 30) return
 
