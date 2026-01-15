@@ -128,12 +128,14 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 1,
     groupId: 'sources',
     subModules: [
-      { id: 'import-quick', name: 'Import Rapide', route: '/import/quick', icon: 'Zap', description: 'Upload CSV rapide', features: ['csv-upload'], order: 1 },
+      { id: 'import-autods', name: 'AutoDS Style', route: '/import/autods', icon: 'Bolt', description: 'Import masse style AutoDS', features: ['bulk-url', 'image-import'], order: 1 },
       { id: 'import-url', name: 'Import par URL', route: '/import/url', icon: 'Link', description: 'Importer depuis une URL', features: ['url-import'], order: 2 },
-      { id: 'import-advanced', name: 'Import Avancé', route: '/import/advanced', icon: 'Settings', description: 'Mapping et transformations', features: ['field-mapping'], order: 3 },
-      { id: 'import-shopify', name: 'Shopify', route: '/import/shopify', icon: 'Store', description: 'Import depuis Shopify', features: ['shopify'], order: 4 },
-      { id: 'import-history', name: 'Historique', route: '/import/history', icon: 'History', description: 'Historique des imports', features: ['logs'], order: 5 },
-      { id: 'import-config', name: 'Configuration', route: '/import/config', icon: 'Settings', description: 'Configuration des imports', features: ['config'], order: 6 },
+      { id: 'import-quick', name: 'Import CSV', route: '/import/quick', icon: 'FileSpreadsheet', description: 'Upload CSV rapide', features: ['csv-upload'], order: 3 },
+      { id: 'import-aliexpress', name: 'AliExpress', route: '/import/aliexpress', icon: 'Globe', description: 'Import AliExpress optimisé', features: ['aliexpress'], order: 4 },
+      { id: 'import-shopify', name: 'Shopify', route: '/import/shopify', icon: 'Store', description: 'Import depuis Shopify', features: ['shopify'], order: 5 },
+      { id: 'import-advanced', name: 'Import Avancé', route: '/import/advanced', icon: 'Settings', description: 'Mapping et transformations', features: ['field-mapping'], order: 6 },
+      { id: 'import-history', name: 'Historique', route: '/import/history', icon: 'History', description: 'Historique des imports', features: ['logs'], order: 7 },
+      { id: 'import-config', name: 'Configuration', route: '/import/config', icon: 'Settings', description: 'Configuration des imports', features: ['config'], order: 8 },
     ]
   },
   
@@ -735,8 +737,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     badge: 'pro',
     subModules: [
       { id: 'extensions-hub', name: 'Hub', route: '/extensions', icon: 'Puzzle', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'extensions-marketplace', name: 'Marketplace', route: '/extensions/marketplace', icon: 'Store', description: 'Découvrir des extensions', features: ['marketplace'], order: 2 },
-      { id: 'extensions-developer', name: 'Développeur', route: '/extensions/developer', icon: 'Code', description: 'Créer des extensions', features: ['developer'], order: 3 },
+      { id: 'extensions-chrome', name: 'Chrome Extension', route: '/extensions/chrome', icon: 'Chrome', description: 'Extension navigateur', features: ['chrome'], order: 2 },
+      { id: 'extensions-reviews', name: 'Import Avis', route: '/extensions/reviews', icon: 'Star', description: 'Importer des avis produits', features: ['reviews-import'], order: 3 },
+      { id: 'extensions-marketplace', name: 'Marketplace', route: '/extensions/marketplace', icon: 'Store', description: 'Découvrir des extensions', features: ['marketplace'], order: 4 },
+      { id: 'extensions-developer', name: 'Développeur', route: '/extensions/developer', icon: 'Code', description: 'Créer des extensions', features: ['developer'], order: 5 },
     ]
   },
   

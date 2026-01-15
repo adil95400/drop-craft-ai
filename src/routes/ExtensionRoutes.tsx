@@ -1,5 +1,5 @@
 /**
- * Routes Extensions - Hub, Marketplace, CLI, White-Label, SSO, Download, Documentation
+ * Routes Extensions - Hub, Marketplace, CLI, White-Label, SSO, Download, Documentation, Reviews, Chrome
  */
 import { Routes, Route } from 'react-router-dom';
 import { lazy } from 'react';
@@ -15,6 +15,8 @@ const ExtensionInstallationPage = lazy(() => import('@/pages/extensions/Extensio
 const ExtensionDocumentationPage = lazy(() => import('@/pages/extensions/ExtensionDocumentationPage'));
 const ExtensionTutorialsPage = lazy(() => import('@/pages/extensions/ExtensionTutorialsPage'));
 const ExtensionFAQPage = lazy(() => import('@/pages/extensions/ExtensionFAQPage'));
+const ReviewsImportPage = lazy(() => import('@/pages/extensions/ReviewsImportPage'));
+const ChromeExtensionPage = lazy(() => import('@/pages/extensions/ChromeExtensionPage'));
 
 export function ExtensionRoutes() {
   return (
@@ -30,6 +32,8 @@ export function ExtensionRoutes() {
       <Route path="documentation" element={<ExtensionDocumentationPage />} />
       <Route path="tutorials" element={<ExtensionTutorialsPage />} />
       <Route path="faq" element={<ExtensionFAQPage />} />
+      <Route path="reviews" element={<ReviewsImportPage />} />
+      <Route path="chrome" element={<ChromeExtensionPage />} />
     </Routes>
   );
 }
