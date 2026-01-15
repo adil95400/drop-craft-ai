@@ -13,6 +13,13 @@ export interface ReturnItem {
   image_url?: string
 }
 
+export interface ReturnAttachment {
+  name: string
+  url: string
+  type: string
+  size: number
+}
+
 export interface Return {
   id: string
   order_id?: string
@@ -24,6 +31,7 @@ export interface Return {
   reason_category?: 'defective' | 'wrong_item' | 'not_as_described' | 'changed_mind' | 'damaged_shipping' | 'other'
   description?: string
   items: ReturnItem[]
+  attachments?: ReturnAttachment[]
   refund_amount?: number
   refund_method?: 'original_payment' | 'store_credit' | 'exchange'
   tracking_number?: string
@@ -84,7 +92,8 @@ export function useReturns(filters?: { status?: string; search?: string }) {
           ...returnData,
           user_id: user.id,
           rma_number: rmaNumber,
-          items: returnData.items as any
+          items: returnData.items as any,
+          attachments: returnData.attachments as any
         }])
         .select()
         .single()
@@ -110,7 +119,8 @@ export function useReturns(filters?: { status?: string; search?: string }) {
         .from('returns')
         .update({
           ...updates,
-          items: updates.items as any
+          items: updates.items as any,
+          attachments: updates.attachments as any
         })
         .eq('id', id)
         .eq('user_id', user.id)

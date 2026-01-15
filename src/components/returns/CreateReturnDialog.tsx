@@ -19,12 +19,20 @@ import {
   CheckCircle2, AlertTriangle, ChevronRight, ChevronLeft,
   RotateCcw, Wallet, RefreshCw, Euro, ShoppingBag, Search,
   Barcode, Hash, Image as ImageIcon, Keyboard, User, Mail, AtSign,
-  ChevronDown
+  ChevronDown, Upload, X, Paperclip
 } from 'lucide-react'
 import { useReturns, ReturnItem } from '@/hooks/useReturns'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/integrations/supabase/client'
 import { useDebounce } from '@/hooks/useDebounce'
+import { toast } from 'sonner'
+
+interface Attachment {
+  name: string
+  url: string
+  type: string
+  size: number
+}
 
 interface CreateReturnDialogProps {
   open: boolean
@@ -45,6 +53,7 @@ interface FormData {
   refund_method: RefundMethod | ''
   refund_amount: string
   items: ReturnItem[]
+  attachments: Attachment[]
 }
 
 interface CustomerSearchResult {
@@ -136,7 +145,8 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     description: '',
     refund_method: '',
     refund_amount: '',
-    items: []
+    items: [],
+    attachments: []
   })
 
   // États pour la recherche client
@@ -166,6 +176,7 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false)
 
   // Calcul du total
   const totalRefund = useMemo(() => 
@@ -270,6 +281,87 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     }))
   }, [])
 
+  // Upload de fichiers
+  const handleFileUpload = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']
+    
+    setIsUploadingFiles(true)
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error('Vous devez être connecté pour uploader des fichiers')
+        return
+      }
+      
+      const newAttachments: Attachment[] = []
+      
+      for (const file of Array.from(files)) {
+        // Validation taille
+        if (file.size > maxSize) {
+          toast.error(`Le fichier "${file.name}" dépasse 5MB`)
+          continue
+        }
+        
+        // Validation type
+        if (!allowedTypes.includes(file.type)) {
+          toast.error(`Type de fichier non supporté: ${file.name}`)
+          continue
+        }
+        
+        // Upload vers Supabase Storage
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+        
+        const { data, error } = await supabase.storage
+          .from('return-attachments')
+          .upload(fileName, file)
+        
+        if (error) {
+          console.error('Upload error:', error)
+          toast.error(`Erreur upload: ${file.name}`)
+          continue
+        }
+        
+        // Obtenir l'URL publique
+        const { data: publicUrl } = supabase.storage
+          .from('return-attachments')
+          .getPublicUrl(data.path)
+        
+        newAttachments.push({
+          name: file.name,
+          url: publicUrl.publicUrl,
+          type: file.type,
+          size: file.size
+        })
+      }
+      
+      if (newAttachments.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          attachments: [...prev.attachments, ...newAttachments]
+        }))
+        toast.success(`${newAttachments.length} fichier(s) ajouté(s)`)
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error('Erreur lors de l\'upload')
+    } finally {
+      setIsUploadingFiles(false)
+    }
+  }, [])
+
+  // Supprimer un fichier
+  const handleRemoveAttachment = useCallback((index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      attachments: prev.attachments.filter((_, i) => i !== index)
+    }))
+  }, [])
+
   // Soumission
   const handleSubmit = useCallback(() => {
     if (!validateStep(3)) return
@@ -283,6 +375,7 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
       refund_method: formData.refund_method || undefined,
       refund_amount: formData.refund_amount ? parseFloat(formData.refund_amount) : totalRefund,
       items: formData.items,
+      attachments: formData.attachments,
       status: 'pending'
     }, {
       onSuccess: () => {
@@ -302,7 +395,8 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
       description: '',
       refund_method: '',
       refund_amount: '',
-      items: []
+      items: [],
+      attachments: []
     })
     setCurrentStep(1)
     setErrors({})
@@ -316,6 +410,7 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     setSelectedCustomer(null)
     setShowAllCustomers(false)
     setAllCustomers([])
+    setIsUploadingFiles(false)
   }, [])
 
   const handleOpenChange = useCallback((open: boolean) => {
@@ -805,6 +900,107 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
         />
         {errors.reason && (
           <p className="text-sm text-destructive">{errors.reason}</p>
+        )}
+      </div>
+
+      {/* Zone d'upload de fichiers */}
+      <div className="space-y-3">
+        <Label className="text-muted-foreground flex items-center gap-2">
+          <Paperclip className="h-4 w-4" />
+          Pièces jointes (optionnel)
+        </Label>
+        
+        {/* Zone de drop */}
+        <div 
+          className={cn(
+            "border-2 border-dashed rounded-lg p-4 text-center transition-all cursor-pointer",
+            "hover:border-primary/50 hover:bg-primary/5",
+            isUploadingFiles && "opacity-50 pointer-events-none"
+          )}
+          onClick={() => document.getElementById('file-upload')?.click()}
+          onDragOver={(e) => {
+            e.preventDefault()
+            e.currentTarget.classList.add('border-primary', 'bg-primary/10')
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault()
+            e.currentTarget.classList.remove('border-primary', 'bg-primary/10')
+          }}
+          onDrop={(e) => {
+            e.preventDefault()
+            e.currentTarget.classList.remove('border-primary', 'bg-primary/10')
+            handleFileUpload(e.dataTransfer.files)
+          }}
+        >
+          <input
+            id="file-upload"
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+            className="hidden"
+            onChange={(e) => handleFileUpload(e.target.files)}
+          />
+          {isUploadingFiles ? (
+            <div className="flex items-center justify-center gap-2 py-2">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">Upload en cours...</span>
+            </div>
+          ) : (
+            <div className="py-2">
+              <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm font-medium">Glissez vos fichiers ici</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                ou cliquez pour sélectionner (JPG, PNG, GIF, WEBP, PDF - max 5MB)
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Liste des fichiers uploadés */}
+        {formData.attachments.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              {formData.attachments.length} fichier(s) ajouté(s)
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {formData.attachments.map((attachment, index) => (
+                <Card key={index} className="overflow-hidden">
+                  <CardContent className="p-2">
+                    <div className="flex items-center gap-2">
+                      {attachment.type.startsWith('image/') ? (
+                        <div className="h-10 w-10 rounded overflow-hidden bg-muted flex-shrink-0">
+                          <img 
+                            src={attachment.url} 
+                            alt={attachment.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                          <FileText className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{attachment.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(attachment.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleRemoveAttachment(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
