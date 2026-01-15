@@ -1,14 +1,15 @@
 /**
  * Modal optimisé de création de retour
  * UX améliorée avec stepper, validation et animations
+ * Recherche intelligente par SKU ou numéro de commande
  */
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -16,10 +17,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Loader2, Plus, Trash2, Package, CreditCard, FileText, 
   CheckCircle2, AlertTriangle, ChevronRight, ChevronLeft,
-  RotateCcw, Wallet, RefreshCw, Euro, ShoppingBag
+  RotateCcw, Wallet, RefreshCw, Euro, ShoppingBag, Search,
+  Barcode, Hash, Image as ImageIcon, Keyboard
 } from 'lucide-react'
 import { useReturns, ReturnItem } from '@/hooks/useReturns'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/integrations/supabase/client'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface CreateReturnDialogProps {
   open: boolean
@@ -37,6 +41,45 @@ interface FormData {
   refund_method: RefundMethod | ''
   refund_amount: string
   items: ReturnItem[]
+}
+
+interface ProductSearchResult {
+  id: string
+  title: string
+  sku: string | null
+  barcode: string | null
+  price: number | null
+  image_url: string | null
+  stock_quantity: number | null
+}
+
+interface OrderItemResult {
+  id: string
+  product_id: string | null
+  product_name: string
+  product_sku: string | null
+  qty: number | null
+  unit_price: number | null
+  variant_title: string | null
+}
+
+interface OrderSearchResult {
+  id: string
+  order_number: string
+  status: string | null
+  total_amount: number | null
+  order_items: OrderItemResult[]
+}
+
+interface SelectedProduct {
+  product_id: string
+  product_name: string
+  sku?: string
+  price: number
+  quantity: number
+  image_url?: string
+  order_id?: string
+  order_item_id?: string
 }
 
 const REASON_CATEGORIES = [
@@ -72,6 +115,16 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     refund_amount: '',
     items: []
   })
+
+  // États pour la recherche intelligente
+  const [searchMode, setSearchMode] = useState<'sku' | 'order' | 'manual'>('sku')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<ProductSearchResult[]>([])
+  const [orderResults, setOrderResults] = useState<OrderSearchResult[]>([])
+  const [selectedProduct, setSelectedProduct] = useState<SelectedProduct | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
 
   const [newItem, setNewItem] = useState({
     product_name: '',
@@ -192,12 +245,146 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     })
     setCurrentStep(1)
     setErrors({})
+    setSearchQuery('')
+    setSearchResults([])
+    setOrderResults([])
+    setSelectedProduct(null)
+    setSearchMode('sku')
   }, [])
 
   const handleOpenChange = useCallback((open: boolean) => {
     if (!open) resetForm()
     onOpenChange(open)
   }, [onOpenChange, resetForm])
+
+  // Recherche par SKU/barcode
+  const searchProductBySku = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([])
+      return
+    }
+    
+    setIsSearching(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, title, sku, barcode, price, image_url, stock_quantity')
+        .eq('user_id', user.id)
+        .or(`sku.ilike.%${query}%,barcode.ilike.%${query}%,title.ilike.%${query}%`)
+        .limit(5)
+      
+      if (error) throw error
+      setSearchResults(data || [])
+    } catch (error) {
+      console.error('Erreur recherche produit:', error)
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  // Recherche par numéro de commande
+  const searchOrderByNumber = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setOrderResults([])
+      return
+    }
+    
+    setIsSearching(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          id, order_number, status, total_amount,
+          order_items (
+            id, product_id, product_name, product_sku, 
+            qty, unit_price, variant_title
+          )
+        `)
+        .eq('user_id', user.id)
+        .ilike('order_number', `%${query}%`)
+        .limit(3)
+      
+      if (error) throw error
+      setOrderResults((data || []) as OrderSearchResult[])
+    } catch (error) {
+      console.error('Erreur recherche commande:', error)
+      setOrderResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  // Effet pour déclencher la recherche
+  useEffect(() => {
+    if (debouncedSearchQuery && searchMode !== 'manual') {
+      if (searchMode === 'sku') {
+        searchProductBySku(debouncedSearchQuery)
+      } else if (searchMode === 'order') {
+        searchOrderByNumber(debouncedSearchQuery)
+      }
+    } else {
+      setSearchResults([])
+      setOrderResults([])
+    }
+  }, [debouncedSearchQuery, searchMode, searchProductBySku, searchOrderByNumber])
+
+  // Sélectionner un produit depuis la recherche
+  const handleSelectProduct = useCallback((product: ProductSearchResult) => {
+    setSelectedProduct({
+      product_id: product.id,
+      product_name: product.title,
+      sku: product.sku || undefined,
+      price: product.price || 0,
+      quantity: 1,
+      image_url: product.image_url || undefined
+    })
+    setSearchQuery('')
+    setSearchResults([])
+  }, [])
+
+  // Sélectionner un article depuis une commande
+  const handleSelectOrderItem = useCallback((order: OrderSearchResult, item: OrderItemResult) => {
+    setSelectedProduct({
+      product_id: item.product_id || `order_item_${item.id}`,
+      product_name: item.product_name + (item.variant_title ? ` - ${item.variant_title}` : ''),
+      sku: item.product_sku || undefined,
+      price: item.unit_price || 0,
+      quantity: item.qty || 1,
+      order_id: order.id,
+      order_item_id: item.id
+    })
+    setSearchQuery('')
+    setOrderResults([])
+    // Auto-remplir l'order_id du formulaire
+    setFormData(prev => ({ ...prev }))
+  }, [])
+
+  // Ajouter le produit sélectionné aux articles
+  const handleAddSelectedProduct = useCallback(() => {
+    if (!selectedProduct) return
+    
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, {
+        product_id: selectedProduct.product_id,
+        product_name: selectedProduct.product_name,
+        sku: selectedProduct.sku,
+        quantity: selectedProduct.quantity,
+        price: selectedProduct.price,
+        order_item_id: selectedProduct.order_item_id,
+        image_url: selectedProduct.image_url
+      }]
+    }))
+    setSelectedProduct(null)
+    setErrors(prev => ({ ...prev, items: '' }))
+  }, [selectedProduct])
 
   // Rendu des étapes
   const renderStep1 = () => (
@@ -293,7 +480,7 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
           </Badge>
         </div>
 
-        {/* Liste des articles */}
+        {/* Liste des articles ajoutés */}
         <AnimatePresence mode="popLayout">
           {formData.items.map((item, index) => (
             <motion.div
@@ -305,14 +492,23 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
             >
               <Card className="bg-muted/50">
                 <CardContent className="flex items-center gap-4 p-4">
-                  <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center">
-                    <Package className="h-5 w-5 text-muted-foreground" />
+                  <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center overflow-hidden">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.product_name} className="h-full w-full object-cover" />
+                    ) : (
+                      <Package className="h-5 w-5 text-muted-foreground" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{item.product_name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Quantité: {item.quantity} × {item.price.toFixed(2)} €
-                    </p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {item.sku && (
+                        <Badge variant="secondary" className="text-xs">
+                          SKU: {item.sku}
+                        </Badge>
+                      )}
+                      <span>Qté: {item.quantity} × {item.price.toFixed(2)} €</span>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">{(item.price * item.quantity).toFixed(2)} €</p>
@@ -332,11 +528,10 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
           ))}
         </AnimatePresence>
 
-        {formData.items.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p>Aucun article ajouté</p>
-            <p className="text-sm">Utilisez le formulaire ci-dessous pour ajouter des articles</p>
+        {formData.items.length === 0 && !selectedProduct && (
+          <div className="text-center py-6 text-muted-foreground">
+            <Package className="h-10 w-10 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">Recherchez un article par SKU ou numéro de commande</p>
           </div>
         )}
 
@@ -344,127 +539,381 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
           <p className="text-sm text-destructive text-center">{errors.items}</p>
         )}
 
-        {/* Formulaire d'ajout amélioré */}
+        {/* Zone de recherche intelligente */}
         <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardContent className="p-5 space-y-5">
-            <div className="flex items-center gap-2">
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center gap-2 mb-2">
               <div className="p-2 rounded-lg bg-primary/10">
-                <Plus className="h-4 w-4 text-primary" />
+                <Search className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="font-medium">Ajouter un article</p>
-                <p className="text-xs text-muted-foreground">Renseignez les détails du produit à retourner</p>
+                <p className="font-medium">Rechercher un article</p>
+                <p className="text-xs text-muted-foreground">Par SKU, code-barres ou numéro de commande</p>
               </div>
             </div>
-            
-            <div className="space-y-4">
-              {/* Nom du produit */}
-              <div className="space-y-2">
-                <Label htmlFor="product_name" className="text-sm">
-                  Nom du produit <span className="text-destructive">*</span>
-                </Label>
+
+            {/* Tabs de recherche */}
+            <Tabs value={searchMode} onValueChange={(v) => {
+              setSearchMode(v as 'sku' | 'order' | 'manual')
+              setSearchQuery('')
+              setSearchResults([])
+              setOrderResults([])
+              setSelectedProduct(null)
+            }}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="sku" className="gap-2 text-xs">
+                  <Barcode className="h-3 w-3" />
+                  SKU / Code-barres
+                </TabsTrigger>
+                <TabsTrigger value="order" className="gap-2 text-xs">
+                  <Hash className="h-3 w-3" />
+                  N° Commande
+                </TabsTrigger>
+                <TabsTrigger value="manual" className="gap-2 text-xs">
+                  <Keyboard className="h-3 w-3" />
+                  Saisie manuelle
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Recherche par SKU */}
+              <TabsContent value="sku" className="space-y-4 mt-4">
                 <div className="relative">
-                  <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  {isSearching && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
                   <Input
-                    id="product_name"
-                    placeholder="Ex: T-shirt bleu taille M"
-                    value={newItem.product_name}
-                    onChange={(e) => {
-                      setNewItem(prev => ({ ...prev, product_name: e.target.value }))
-                      if (errors.newItem) setErrors(prev => ({ ...prev, newItem: '' }))
-                    }}
-                    className={cn("pl-10", errors.newItem?.includes('Nom') && "border-destructive")}
+                    placeholder="Entrez le SKU, code-barres ou nom du produit..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10"
                   />
                 </div>
-              </div>
 
-              {/* Quantité et Prix */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="quantity" className="text-sm">Quantité</Label>
-                  <div className="flex items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 rounded-r-none"
-                      onClick={() => setNewItem(prev => ({ ...prev, quantity: Math.max(1, prev.quantity - 1) }))}
+                {/* Résultats de recherche produit */}
+                {searchResults.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">{searchResults.length} résultat(s)</p>
+                    {searchResults.map((product) => (
+                      <Card 
+                        key={product.id}
+                        className="cursor-pointer hover:border-primary/50 transition-all"
+                        onClick={() => handleSelectProduct(product)}
+                      >
+                        <CardContent className="flex items-center gap-3 p-3">
+                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                            {product.image_url ? (
+                              <img src={product.image_url} alt={product.title} className="h-full w-full object-cover" />
+                            ) : (
+                              <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{product.title}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              {product.sku && <span>SKU: {product.sku}</span>}
+                              {product.barcode && <span>• {product.barcode}</span>}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">{(product.price || 0).toFixed(2)} €</p>
+                            <p className="text-xs text-muted-foreground">
+                              Stock: {product.stock_quantity || 0}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {debouncedSearchQuery && !isSearching && searchResults.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Aucun produit trouvé pour "{debouncedSearchQuery}"
+                  </p>
+                )}
+              </TabsContent>
+
+              {/* Recherche par commande */}
+              <TabsContent value="order" className="space-y-4 mt-4">
+                <div className="relative">
+                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  {isSearching && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                  <Input
+                    placeholder="Entrez le numéro de commande..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                </div>
+
+                {/* Résultats de recherche commande */}
+                {orderResults.map((order) => (
+                  <Card key={order.id} className="overflow-hidden">
+                    <CardContent className="p-0">
+                      <div className="p-3 bg-muted/50 border-b">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Package className="h-4 w-4" />
+                            <span className="font-medium">{order.order_number}</span>
+                          </div>
+                          <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
+                            {order.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="divide-y">
+                        {order.order_items.map((item) => (
+                          <div 
+                            key={item.id}
+                            className="flex items-center gap-3 p-3 hover:bg-muted/30 cursor-pointer transition-colors"
+                            onClick={() => handleSelectOrderItem(order, item)}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{item.product_name}</p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {item.product_sku && <span>SKU: {item.product_sku}</span>}
+                                {item.variant_title && <span>• {item.variant_title}</span>}
+                              </div>
+                            </div>
+                            <div className="text-right text-sm">
+                              <p>{item.qty}x {(item.unit_price || 0).toFixed(2)} €</p>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {debouncedSearchQuery && !isSearching && orderResults.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Aucune commande trouvée pour "{debouncedSearchQuery}"
+                  </p>
+                )}
+              </TabsContent>
+
+              {/* Saisie manuelle */}
+              <TabsContent value="manual" className="space-y-4 mt-4">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="product_name" className="text-sm">
+                      Nom du produit <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="product_name"
+                        placeholder="Ex: T-shirt bleu taille M"
+                        value={newItem.product_name}
+                        onChange={(e) => {
+                          setNewItem(prev => ({ ...prev, product_name: e.target.value }))
+                          if (errors.newItem) setErrors(prev => ({ ...prev, newItem: '' }))
+                        }}
+                        className={cn("pl-10", errors.newItem?.includes('Nom') && "border-destructive")}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="quantity" className="text-sm">Quantité</Label>
+                      <div className="flex items-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10 rounded-r-none"
+                          onClick={() => setNewItem(prev => ({ ...prev, quantity: Math.max(1, prev.quantity - 1) }))}
+                        >
+                          <span className="text-lg">−</span>
+                        </Button>
+                        <Input
+                          id="quantity"
+                          type="number"
+                          min="1"
+                          value={newItem.quantity}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, quantity: Math.max(1, parseInt(e.target.value) || 1) }))}
+                          className="h-10 rounded-none text-center border-x-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10 rounded-l-none"
+                          onClick={() => setNewItem(prev => ({ ...prev, quantity: prev.quantity + 1 }))}
+                        >
+                          <span className="text-lg">+</span>
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="price" className="text-sm">
+                        Prix unitaire <span className="text-destructive">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="price"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          value={newItem.price || ''}
+                          onChange={(e) => {
+                            setNewItem(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))
+                            if (errors.newItem) setErrors(prev => ({ ...prev, newItem: '' }))
+                          }}
+                          className={cn("pl-10", errors.newItem?.includes('Prix') && "border-destructive")}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Sous-total: </span>
+                      <span className="font-semibold">
+                        {(newItem.price * newItem.quantity).toFixed(2)} €
+                      </span>
+                    </div>
+                    <Button 
+                      type="button" 
+                      onClick={handleAddItem}
+                      disabled={!newItem.product_name.trim() || newItem.price <= 0}
+                      className="gap-2"
                     >
-                      <span className="text-lg">−</span>
-                    </Button>
-                    <Input
-                      id="quantity"
-                      type="number"
-                      min="1"
-                      value={newItem.quantity}
-                      onChange={(e) => setNewItem(prev => ({ ...prev, quantity: Math.max(1, parseInt(e.target.value) || 1) }))}
-                      className="h-10 rounded-none text-center border-x-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 rounded-l-none"
-                      onClick={() => setNewItem(prev => ({ ...prev, quantity: prev.quantity + 1 }))}
-                    >
-                      <span className="text-lg">+</span>
+                      <Plus className="h-4 w-4" />
+                      Ajouter
                     </Button>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="price" className="text-sm">
-                    Prix unitaire <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      value={newItem.price || ''}
-                      onChange={(e) => {
-                        setNewItem(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))
-                        if (errors.newItem) setErrors(prev => ({ ...prev, newItem: '' }))
-                      }}
-                      className={cn("pl-10", errors.newItem?.includes('Prix') && "border-destructive")}
-                    />
+                  {errors.newItem && (
+                    <motion.p 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm text-destructive flex items-center gap-2"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      {errors.newItem}
+                    </motion.p>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {/* Article sélectionné (depuis recherche) */}
+            {selectedProduct && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4"
+              >
+                <Separator className="mb-4" />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">Article sélectionné</span>
+                    <Badge variant="secondary" className="ml-auto text-xs">Auto-rempli</Badge>
                   </div>
+                  
+                  <Card className="bg-primary/5 border-primary/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="h-14 w-14 rounded-lg bg-background flex items-center justify-center overflow-hidden">
+                          {selectedProduct.image_url ? (
+                            <img src={selectedProduct.image_url} alt={selectedProduct.product_name} className="h-full w-full object-cover" />
+                          ) : (
+                            <Package className="h-6 w-6 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">{selectedProduct.product_name}</p>
+                          {selectedProduct.sku && (
+                            <p className="text-xs text-muted-foreground">SKU: {selectedProduct.sku}</p>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => setSelectedProduct(null)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <Separator className="my-3" />
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs">Quantité à retourner</Label>
+                          <div className="flex items-center">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-r-none"
+                              onClick={() => setSelectedProduct(prev => prev ? {...prev, quantity: Math.max(1, prev.quantity - 1)} : null)}
+                            >
+                              <span className="text-base">−</span>
+                            </Button>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={selectedProduct.quantity}
+                              onChange={(e) => setSelectedProduct(prev => prev ? {...prev, quantity: Math.max(1, parseInt(e.target.value) || 1)} : null)}
+                              className="h-9 rounded-none text-center border-x-0 w-14 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-l-none"
+                              onClick={() => setSelectedProduct(prev => prev ? {...prev, quantity: prev.quantity + 1} : null)}
+                            >
+                              <span className="text-base">+</span>
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-xs">Prix unitaire (€)</Label>
+                          <div className="relative">
+                            <Euro className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={selectedProduct.price}
+                              onChange={(e) => setSelectedProduct(prev => prev ? {...prev, price: parseFloat(e.target.value) || 0} : null)}
+                              className="h-9 pl-8"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t">
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Sous-total: </span>
+                          <span className="font-bold text-primary">
+                            {(selectedProduct.price * selectedProduct.quantity).toFixed(2)} €
+                          </span>
+                        </div>
+                        <Button onClick={handleAddSelectedProduct} className="gap-2">
+                          <Plus className="h-4 w-4" />
+                          Ajouter l'article
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
-
-              {/* Sous-total et bouton */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Sous-total: </span>
-                  <span className="font-semibold">
-                    {(newItem.price * newItem.quantity).toFixed(2)} €
-                  </span>
-                </div>
-                <Button 
-                  type="button" 
-                  onClick={handleAddItem}
-                  disabled={!newItem.product_name.trim() || newItem.price <= 0}
-                  className="gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Ajouter l'article
-                </Button>
-              </div>
-
-              {errors.newItem && (
-                <motion.p 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-sm text-destructive flex items-center gap-2"
-                >
-                  <AlertTriangle className="h-4 w-4" />
-                  {errors.newItem}
-                </motion.p>
-              )}
-            </div>
+              </motion.div>
+            )}
           </CardContent>
         </Card>
 

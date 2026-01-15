@@ -5,9 +5,12 @@ import { useToast } from '@/hooks/use-toast'
 export interface ReturnItem {
   product_id: string
   product_name: string
+  sku?: string
   quantity: number
   price: number
   reason?: string
+  order_item_id?: string
+  image_url?: string
 }
 
 export interface Return {
