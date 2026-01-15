@@ -26,7 +26,6 @@ const MultiStoreAnalyticsDashboard = lazy(() => import('@/pages/MultiStoreAnalyt
 
 // Order Management
 const ReturnManagementPage = lazy(() => import('@/pages/ReturnManagementPage'));
-const ShippingManagementPage = lazy(() => import('@/pages/ShippingManagementPage'));
 const AIStoreBuilderHub = lazy(() => import('@/pages/store/AIStoreBuilderHub'));
 const BrandingInvoicesHub = lazy(() => import('@/pages/invoices/BrandingInvoicesHub'));
 const PrintOnDemandHub = lazy(() => import('@/pages/pod/PrintOnDemandHub'));

@@ -39,7 +39,7 @@ const DEFINED_ROUTES: Set<string> = new Set([
   '/orders/returns',
   '/orders/tracking',
   '/orders/notifications',
-  '/orders/shipping',
+  '/fulfillment',
   '/orders/bulk',
   '/orders/create',
   

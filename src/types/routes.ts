@@ -15,7 +15,7 @@ export type AppRoute =
   | '/orders'
   | '/orders/center'
   | '/orders/returns'
-  | '/orders/shipping'
+  | '/fulfillment'
   | '/customers'
   | '/sync-manager'
   | '/marketplace-sync'
@@ -137,7 +137,7 @@ export function isValidRoute(route: string): route is AppRoute {
     '/orders',
     '/orders/center',
     '/orders/returns',
-    '/orders/shipping',
+    '/fulfillment',
     '/customers',
     '/sync-manager',
     '/marketplace-sync',
@@ -262,7 +262,7 @@ export function getAllRoutes(): AppRoute[] {
     '/orders',
     '/orders/center',
     '/orders/returns',
-    '/orders/shipping',
+    '/fulfillment',
     '/customers',
     '/sync-manager',
     '/marketplace-sync',

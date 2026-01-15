@@ -502,7 +502,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Truck',
     enabled: true,
     minPlan: 'standard',
-    route: '/shipping',
+    route: '/fulfillment',
     features: ['shipping-management', 'carriers', 'tracking'],
     description: 'Gestion des expéditions',
     category: 'core',
