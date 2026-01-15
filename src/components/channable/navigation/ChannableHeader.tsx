@@ -52,6 +52,7 @@ const routeLabels: Record<string, string> = {
   'analytics': 'Analytics',
   'settings': 'Paramètres',
   'import': 'Import',
+  'autods': 'Import Rapide',
   'feeds': 'Feeds',
   'ai': 'Intelligence IA',
   'pricing': 'Tarification',
