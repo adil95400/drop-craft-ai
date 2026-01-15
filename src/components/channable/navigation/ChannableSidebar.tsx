@@ -3,6 +3,7 @@
  * Structure claire, couleurs vibrantes, animations fluides
  */
 import { useState, useMemo, useCallback, memo } from "react"
+import shopoptiLogo from "@/assets/shopopti-logo.png"
 import { useLocation, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
@@ -71,44 +72,23 @@ function HexagonIcon({ className }: { className?: string }) {
   )
 }
 
-// Logo Channable Style
+// Logo ShopOpti
 const ChannableLogo = memo(({ collapsed }: { collapsed: boolean }) => (
   <motion.div 
     className={cn("flex items-center gap-3", collapsed && "justify-center")}
     initial={false}
     animate={{ opacity: 1 }}
   >
-    <div className="relative">
-      <motion.div
-        className="w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25"
-        whileHover={{ scale: 1.05, rotate: 5 }}
-        transition={{ type: "spring", stiffness: 300 }}
-      >
-        <HexagonIcon className="w-6 h-6 text-primary-foreground" />
-      </motion.div>
-      <motion.div
-        className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background"
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-      />
-    </div>
-    <AnimatePresence>
-      {!collapsed && (
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -10 }}
-          className="flex flex-col"
-        >
-          <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            ShopOpti
-          </span>
-          <span className="text-[10px] text-muted-foreground -mt-0.5">
-            by Channable Style
-          </span>
-        </motion.div>
+    <motion.img
+      src={shopoptiLogo}
+      alt="ShopOpti"
+      className={cn(
+        "object-contain",
+        collapsed ? "w-10 h-10" : "h-12 w-auto"
       )}
-    </AnimatePresence>
+      whileHover={{ scale: 1.05 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    />
   </motion.div>
 ))
 ChannableLogo.displayName = 'ChannableLogo'
