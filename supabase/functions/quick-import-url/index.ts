@@ -104,11 +104,95 @@ function detectPlatform(url: string): { platform: string; productId: string | nu
 }
 
 // Extract high quality images from various sources
-function extractHQImages(html: string, platform: string): string[] {
+function extractHQImages(html: string, platform: string, markdown: string = ''): string[] {
   const images: string[] = []
   const seenUrls = new Set<string>()
   
+  // Helper to add unique image
+  const addImage = (url: string) => {
+    if (url && !seenUrls.has(url) && url.startsWith('http') && images.length < 30) {
+      // Clean up URL
+      const cleanUrl = url.replace(/\\u002F/g, '/').replace(/\\/g, '')
+      if (!seenUrls.has(cleanUrl) && !cleanUrl.includes('icon') && !cleanUrl.includes('sprite')) {
+        images.push(cleanUrl)
+        seenUrls.add(cleanUrl)
+      }
+    }
+  }
+  
   // Platform-specific high-quality image extraction
+  if (platform === 'amazon') {
+    console.log('🔍 Extracting Amazon images...')
+    
+    // Try colorImages JSON data first (most reliable)
+    const colorImagesMatch = html.match(/colorImages['"]\s*:\s*({[^}]+\[[^\]]+\][^}]*})/s) ||
+                             html.match(/'colorImages'\s*:\s*({.+?})\s*,\s*'color/s)
+    if (colorImagesMatch) {
+      console.log('📷 Found colorImages data')
+      const hiResMatches = colorImagesMatch[1].matchAll(/"hiRes"\s*:\s*"([^"]+)"/g)
+      for (const m of hiResMatches) {
+        addImage(m[1])
+      }
+      const largeMatches = colorImagesMatch[1].matchAll(/"large"\s*:\s*"([^"]+)"/g)
+      for (const m of largeMatches) {
+        addImage(m[1])
+      }
+    }
+    
+    // Try imageGalleryData
+    const galleryMatch = html.match(/imageGalleryData['"]\s*:\s*\[([^\]]+)\]/s)
+    if (galleryMatch) {
+      console.log('📷 Found imageGalleryData')
+      const imgMatches = galleryMatch[1].matchAll(/"mainUrl"\s*:\s*"([^"]+)"/g)
+      for (const m of imgMatches) {
+        addImage(m[1])
+      }
+    }
+    
+    // Try data-old-hires or data-a-dynamic-image
+    const dynamicImgMatches = html.matchAll(/data-(?:old-hires|a-dynamic-image)=["']([^"']+)["']/gi)
+    for (const m of dynamicImgMatches) {
+      // data-a-dynamic-image contains JSON
+      if (m[1].includes('{')) {
+        try {
+          const imgJson = JSON.parse(m[1].replace(/&quot;/g, '"'))
+          for (const url of Object.keys(imgJson)) {
+            addImage(url)
+          }
+        } catch (e) {}
+      } else {
+        addImage(m[1])
+      }
+    }
+    
+    // Amazon image URLs with specific patterns
+    const amazonImgMatches = html.matchAll(/(https?:\/\/m\.media-amazon\.com\/images\/I\/[^"'\s]+\.(?:jpg|png|webp))/gi)
+    for (const m of amazonImgMatches) {
+      // Convert to high quality by replacing size indicators
+      let imgUrl = m[1]
+        .replace(/\._[A-Z]{2}\d+_\./, '.')
+        .replace(/\._S[LXSMXY]\d+_\./, '.')
+        .replace(/\._AC_[^.]+\./, '.')
+      addImage(imgUrl)
+    }
+    
+    // Fallback: extract from markdown (Firecrawl often puts images here)
+    if (markdown) {
+      const mdImgMatches = markdown.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)]+\.(?:jpg|jpeg|png|webp)[^)]*)\)/gi)
+      for (const m of mdImgMatches) {
+        if (m[1].includes('amazon') || m[1].includes('media-amazon')) {
+          addImage(m[1])
+        }
+      }
+      
+      // Also raw URLs
+      const rawUrlMatches = markdown.matchAll(/(https?:\/\/m\.media-amazon\.com\/images\/I\/[^\s"'\)]+\.(?:jpg|png|webp))/gi)
+      for (const m of rawUrlMatches) {
+        addImage(m[1])
+      }
+    }
+  }
+  
   if (platform === 'aliexpress') {
     // AliExpress uses imagePathList in JSON
     const jsonMatch = html.match(/imagePathList['"]\s*:\s*\[(.*?)\]/s)
@@ -119,39 +203,14 @@ function extractHQImages(html: string, platform: string): string[] {
         let imgUrl = m[1].replace(/_\d+x\d+\.[a-z]+$/i, '.jpg')
           .replace(/\.jpg_\d+x\d+\.jpg$/i, '.jpg')
           .replace(/_\d+x\d+xz\.jpg$/i, '.jpg')
-        if (!seenUrls.has(imgUrl)) {
-          images.push(imgUrl)
-          seenUrls.add(imgUrl)
-        }
+        addImage(imgUrl)
       }
     }
     
     // Also check for data-zoom-image
     const zoomMatches = html.matchAll(/data-zoom-image="([^"]+)"/gi)
     for (const m of zoomMatches) {
-      if (!seenUrls.has(m[1])) {
-        images.push(m[1])
-        seenUrls.add(m[1])
-      }
-    }
-  }
-  
-  if (platform === 'amazon') {
-    // Amazon uses hiRes or large images in imageGalleryData or colorImages
-    const hiResMatches = html.matchAll(/"hiRes"\s*:\s*"([^"]+)"/g)
-    for (const m of hiResMatches) {
-      if (!seenUrls.has(m[1])) {
-        images.push(m[1])
-        seenUrls.add(m[1])
-      }
-    }
-    
-    const largeMatches = html.matchAll(/"large"\s*:\s*"([^"]+)"/g)
-    for (const m of largeMatches) {
-      if (!seenUrls.has(m[1])) {
-        images.push(m[1])
-        seenUrls.add(m[1])
-      }
+      addImage(m[1])
     }
   }
   
@@ -159,30 +218,24 @@ function extractHQImages(html: string, platform: string): string[] {
   const ogImages = html.matchAll(/og:image"[^>]*content="([^"]+)"/gi)
   for (const m of ogImages) {
     const imgUrl = m[1]
-    if (!seenUrls.has(imgUrl) && !imgUrl.includes('logo') && !imgUrl.includes('icon')) {
-      images.push(imgUrl)
-      seenUrls.add(imgUrl)
+    if (!imgUrl.includes('logo')) {
+      addImage(imgUrl)
     }
   }
   
   // Data-src with high resolution
   const dataSrcMatches = html.matchAll(/data-(?:src|original|zoom|large-src|big-src)="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)
   for (const m of dataSrcMatches) {
-    if (!seenUrls.has(m[1]) && images.length < 20) {
-      images.push(m[1])
-      seenUrls.add(m[1])
-    }
+    addImage(m[1])
   }
   
   // Standard src with quality indicators
   const srcMatches = html.matchAll(/src="(https?:\/\/[^"]*(?:product|goods|item|main|large|original|zoom)[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)
   for (const m of srcMatches) {
-    if (!seenUrls.has(m[1]) && images.length < 20) {
-      images.push(m[1])
-      seenUrls.add(m[1])
-    }
+    addImage(m[1])
   }
   
+  console.log(`📸 Extracted ${images.length} images`)
   return images.slice(0, 20)
 }
 
@@ -192,6 +245,24 @@ function extractVideos(html: string, platform: string): string[] {
   const seenUrls = new Set<string>()
   
   // Platform-specific video extraction
+  if (platform === 'amazon') {
+    // Amazon video URLs
+    const videoMatches = html.matchAll(/["'](https?:\/\/[^"']*\.(?:mp4|webm|m3u8)[^"']*)["']/gi)
+    for (const m of videoMatches) {
+      if (!seenUrls.has(m[1]) && !m[1].includes('blank')) {
+        videos.push(m[1])
+        seenUrls.add(m[1])
+      }
+    }
+    
+    // Amazon video data
+    const videoDataMatch = html.match(/videoUrl['"]\s*:\s*['"](https?:\/\/[^'"]+)['"]/i)
+    if (videoDataMatch && !seenUrls.has(videoDataMatch[1])) {
+      videos.push(videoDataMatch[1])
+      seenUrls.add(videoDataMatch[1])
+    }
+  }
+  
   if (platform === 'aliexpress') {
     // AliExpress video URLs
     const videoMatches = html.matchAll(/["'](https?:\/\/[^"']+\.(?:mp4|webm|m3u8)[^"']*)["']/gi)
@@ -207,17 +278,6 @@ function extractVideos(html: string, platform: string): string[] {
     if (videoJsonMatch && !seenUrls.has(videoJsonMatch[1])) {
       videos.push(videoJsonMatch[1])
       seenUrls.add(videoJsonMatch[1])
-    }
-  }
-  
-  if (platform === 'amazon') {
-    // Amazon video
-    const videoMatches = html.matchAll(/["'](https?:\/\/[^"']*amazon[^"']*\.(?:mp4|webm)[^"']*)["']/gi)
-    for (const m of videoMatches) {
-      if (!seenUrls.has(m[1])) {
-        videos.push(m[1])
-        seenUrls.add(m[1])
-      }
     }
   }
   
@@ -251,8 +311,168 @@ function extractVideos(html: string, platform: string): string[] {
   return videos.slice(0, 5)
 }
 
+// Extract product variants for Amazon
+function extractAmazonVariants(html: string, markdown: string = ''): any[] {
+  const variants: any[] = []
+  const seenVariants = new Set<string>()
+  
+  console.log('🎨 Extracting Amazon variants...')
+  
+  // Try to find twister/variation data
+  const twisterMatch = html.match(/variationValues['"]\s*:\s*({[^}]+})/s) ||
+                       html.match(/"twister-plus-js-data"[^>]*>([^<]+)</s)
+  if (twisterMatch) {
+    console.log('📋 Found twister/variation data')
+    try {
+      const data = JSON.parse(twisterMatch[1])
+      for (const [key, values] of Object.entries(data)) {
+        if (Array.isArray(values)) {
+          for (const val of values) {
+            const varId = `${key}:${val}`
+            if (!seenVariants.has(varId)) {
+              variants.push({
+                sku: '',
+                name: `${key}: ${val}`,
+                price: 0,
+                stock: 0,
+                image: null,
+                attributes: { [key]: val }
+              })
+              seenVariants.add(varId)
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.log('Error parsing twister data:', e)
+    }
+  }
+  
+  // Try asinVariationValues
+  const asinMatch = html.match(/asinVariationValues['"]\s*:\s*({[^}]+})/s)
+  if (asinMatch) {
+    console.log('📋 Found asinVariationValues')
+    try {
+      const data = JSON.parse(asinMatch[1])
+      for (const [asin, values] of Object.entries(data)) {
+        if (typeof values === 'object' && values !== null) {
+          const attrs = values as Record<string, string>
+          const name = Object.values(attrs).join(' / ')
+          if (!seenVariants.has(name)) {
+            variants.push({
+              sku: asin,
+              name,
+              price: 0,
+              stock: 0,
+              image: null,
+              attributes: attrs
+            })
+            seenVariants.add(name)
+          }
+        }
+      }
+    } catch (e) {
+      console.log('Error parsing asin data:', e)
+    }
+  }
+  
+  // Extract color/size options from HTML
+  const colorMatches = html.matchAll(/id="color_name_(\d+)"[^>]*>.*?alt="([^"]+)"/gis)
+  for (const m of colorMatches) {
+    const colorName = m[2].trim()
+    if (!seenVariants.has(`color:${colorName}`)) {
+      variants.push({
+        sku: m[1],
+        name: `Couleur: ${colorName}`,
+        price: 0,
+        stock: 0,
+        image: null,
+        attributes: { color: colorName }
+      })
+      seenVariants.add(`color:${colorName}`)
+    }
+  }
+  
+  // Extract sizes from dropdown or buttons
+  const sizeMatches = html.matchAll(/data-csa-c-item-id="([^"]*size[^"]*)"[^>]*>([^<]+)</gi) ||
+                      html.matchAll(/id="size_name_(\d+)"[^>]*>.*?class="[^"]*swatch[^"]*"[^>]*>([^<]+)</gis)
+  for (const m of sizeMatches) {
+    const sizeName = m[2].trim()
+    if (sizeName && !seenVariants.has(`size:${sizeName}`)) {
+      variants.push({
+        sku: m[1],
+        name: `Taille: ${sizeName}`,
+        price: 0,
+        stock: 0,
+        image: null,
+        attributes: { size: sizeName }
+      })
+      seenVariants.add(`size:${sizeName}`)
+    }
+  }
+  
+  // Try select dropdowns
+  const selectMatches = html.matchAll(/dropdown_selected_size_name[^>]*>([^<]+)</gi)
+  for (const m of selectMatches) {
+    const sizeName = m[1].trim()
+    if (sizeName && sizeName !== 'Taille' && !seenVariants.has(`size:${sizeName}`)) {
+      variants.push({
+        sku: '',
+        name: `Taille: ${sizeName}`,
+        price: 0,
+        stock: 0,
+        image: null,
+        attributes: { size: sizeName }
+      })
+      seenVariants.add(`size:${sizeName}`)
+    }
+  }
+  
+  // Extract from markdown if available
+  if (markdown && variants.length === 0) {
+    // Look for color/size mentions in markdown
+    const mdColorMatches = markdown.matchAll(/(?:couleur|color)[:\s]+([^\n,]+)/gi)
+    for (const m of mdColorMatches) {
+      const colorName = m[1].trim()
+      if (!seenVariants.has(`color:${colorName}`)) {
+        variants.push({
+          sku: '',
+          name: `Couleur: ${colorName}`,
+          price: 0,
+          stock: 0,
+          image: null,
+          attributes: { color: colorName }
+        })
+        seenVariants.add(`color:${colorName}`)
+      }
+    }
+    
+    const mdSizeMatches = markdown.matchAll(/(?:taille|size)[:\s]+([^\n,]+)/gi)
+    for (const m of mdSizeMatches) {
+      const sizeName = m[1].trim()
+      if (!seenVariants.has(`size:${sizeName}`)) {
+        variants.push({
+          sku: '',
+          name: `Taille: ${sizeName}`,
+          price: 0,
+          stock: 0,
+          image: null,
+          attributes: { size: sizeName }
+        })
+        seenVariants.add(`size:${sizeName}`)
+      }
+    }
+  }
+  
+  return variants.slice(0, 100)
+}
+
 // Extract product variants
-function extractVariants(html: string, platform: string): any[] {
+function extractVariants(html: string, platform: string, markdown: string = ''): any[] {
+  if (platform === 'amazon') {
+    return extractAmazonVariants(html, markdown)
+  }
+  
   const variants: any[] = []
   
   try {
@@ -303,28 +523,6 @@ function extractVariants(html: string, platform: string): any[] {
       }
     }
     
-    if (platform === 'amazon') {
-      // Amazon variations
-      const varMatch = html.match(/dimensionToAsinMap['"]\s*:\s*({[^}]+})/s)
-      if (varMatch) {
-        try {
-          const varData = JSON.parse(varMatch[1].replace(/'/g, '"'))
-          for (const [key, asin] of Object.entries(varData)) {
-            variants.push({
-              sku: asin as string,
-              name: key,
-              price: 0,
-              stock: 0,
-              image: null,
-              attributes: { variation: key }
-            })
-          }
-        } catch (e) {
-          console.log('Error parsing Amazon variants:', e)
-        }
-      }
-    }
-    
     // Generic variant extraction using common patterns
     if (variants.length === 0) {
       // Look for variant selectors
@@ -365,10 +563,37 @@ function extractVariants(html: string, platform: string): any[] {
 }
 
 // Extract specifications/attributes
-function extractSpecifications(html: string): Record<string, string> {
+function extractSpecifications(html: string, platform: string = ''): Record<string, string> {
   const specs: Record<string, string> = {}
   
   try {
+    if (platform === 'amazon') {
+      // Amazon product details table
+      const detailsMatch = html.match(/id="productDetails_techSpec_section_1"[^>]*>([\s\S]*?)<\/table>/i) ||
+                           html.match(/id="technicalSpecifications_section_1"[^>]*>([\s\S]*?)<\/table>/i)
+      if (detailsMatch) {
+        const rowMatches = detailsMatch[1].matchAll(/<th[^>]*>([^<]+)<\/th>\s*<td[^>]*>([^<]+)<\/td>/gi)
+        for (const m of rowMatches) {
+          const key = m[1].trim()
+          const value = m[2].trim()
+          if (key && value) {
+            specs[key] = value
+          }
+        }
+      }
+      
+      // Amazon detail bullets
+      const bulletMatches = html.matchAll(/<li[^>]*>\s*<span[^>]*class="[^"]*a-list-item[^"]*"[^>]*>([^<]+)<\/span>/gi)
+      let bulletNum = 1
+      for (const m of bulletMatches) {
+        const text = m[1].trim()
+        if (text && text.length > 10 && bulletNum <= 10) {
+          specs[`Détail ${bulletNum}`] = text
+          bulletNum++
+        }
+      }
+    }
+    
     // Common spec table patterns
     const specMatches = html.matchAll(/<tr[^>]*>\s*<t[hd][^>]*>([^<]+)<\/t[hd]>\s*<t[hd][^>]*>([^<]+)<\/t[hd]>/gi)
     for (const m of specMatches) {
@@ -382,16 +607,6 @@ function extractSpecifications(html: string): Record<string, string> {
     // DL/DT/DD patterns
     const dlMatches = html.matchAll(/<dt[^>]*>([^<]+)<\/dt>\s*<dd[^>]*>([^<]+)<\/dd>/gi)
     for (const m of dlMatches) {
-      const key = m[1].trim().replace(/:$/, '')
-      const value = m[2].trim()
-      if (key && value && key.length < 50 && value.length < 200) {
-        specs[key] = value
-      }
-    }
-    
-    // Label/value patterns
-    const labelMatches = html.matchAll(/class="[^"]*(?:spec|attribute|property)[^"]*"[^>]*>\s*<[^>]+>([^<]+)<\/[^>]+>\s*<[^>]+>([^<]+)</gi)
-    for (const m of labelMatches) {
       const key = m[1].trim().replace(/:$/, '')
       const value = m[2].trim()
       if (key && value && key.length < 50 && value.length < 200) {
@@ -415,15 +630,22 @@ function extractShippingInfo(html: string, platform: string): any {
   
   try {
     // Check for free shipping
-    if (/free\s*(?:shipping|delivery)|livraison\s*gratuite|envoi\s*gratuit/i.test(html)) {
+    if (/free\s*(?:shipping|delivery)|livraison\s*gratuite|envoi\s*gratuit|retours?\s*gratuit/i.test(html)) {
+      shipping.free_shipping = true
+    }
+    
+    // Amazon Prime
+    if (platform === 'amazon' && /prime/i.test(html)) {
+      shipping.methods.push('prime')
       shipping.free_shipping = true
     }
     
     // Extract delivery estimates
     const deliveryMatch = html.match(/(?:delivered?|livr[ée]|arrival?|arriv[ée])[^<]*?(\d{1,2}[-–]\d{1,2})\s*(?:days?|jours?|business days?)/i) ||
-                          html.match(/(\d{1,2}[-–]\d{1,2})\s*(?:days?|jours?|business days?)[^<]*?(?:shipping|delivery|livraison)/i)
+                          html.match(/(\d{1,2}[-–]\d{1,2})\s*(?:days?|jours?|business days?)[^<]*?(?:shipping|delivery|livraison)/i) ||
+                          html.match(/livraison[^<]*?(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+\d+/i)
     if (deliveryMatch) {
-      shipping.estimated_delivery = deliveryMatch[1] + ' jours'
+      shipping.estimated_delivery = deliveryMatch[1] + (deliveryMatch[1].includes('-') ? ' jours' : '')
     }
     
     // Extract shipping methods
@@ -450,12 +672,24 @@ function extractSellerInfo(html: string, platform: string): any {
   }
   
   try {
-    // Seller name
-    const sellerMatch = html.match(/(?:sold\s*by|vendeur|seller|shop)[^<]*?[>:]([^<]{2,50})</i) ||
-                        html.match(/store-name[^>]*>([^<]+)</i) ||
-                        html.match(/shop-name[^>]*>([^<]+)</i)
-    if (sellerMatch) {
-      seller.name = sellerMatch[1].trim()
+    if (platform === 'amazon') {
+      // Amazon seller
+      const sellerMatch = html.match(/id="sellerProfileTriggerId"[^>]*>([^<]+)</i) ||
+                          html.match(/sold\s*by[^<]*<a[^>]*>([^<]+)</i) ||
+                          html.match(/Vendu\s*par[^<]*<a[^>]*>([^<]+)</i)
+      if (sellerMatch) {
+        seller.name = sellerMatch[1].trim()
+      } else {
+        seller.name = 'Amazon'
+      }
+    } else {
+      // Generic seller extraction
+      const sellerMatch = html.match(/(?:sold\s*by|vendeur|seller|shop)[^<]*?[>:]([^<]{2,50})</i) ||
+                          html.match(/store-name[^>]*>([^<]+)</i) ||
+                          html.match(/shop-name[^>]*>([^<]+)</i)
+      if (sellerMatch) {
+        seller.name = sellerMatch[1].trim()
+      }
     }
     
     // Seller rating
@@ -466,9 +700,9 @@ function extractSellerInfo(html: string, platform: string): any {
     }
     
     // Reviews count
-    const reviewsMatch = html.match(/(\d+(?:,\d+)?(?:\.\d+)?[kKmM]?)\s*(?:reviews?|avis|évaluations?|ratings?)/i)
+    const reviewsMatch = html.match(/(\d+(?:[,.\s]\d+)?[kKmM]?)\s*(?:reviews?|avis|évaluations?|ratings?)/i)
     if (reviewsMatch) {
-      let count = reviewsMatch[1].replace(',', '')
+      let count = reviewsMatch[1].replace(/[,\s]/g, '')
       if (count.toLowerCase().includes('k')) {
         count = String(parseFloat(count) * 1000)
       } else if (count.toLowerCase().includes('m')) {
@@ -483,12 +717,117 @@ function extractSellerInfo(html: string, platform: string): any {
   return seller
 }
 
+// Extract title specifically for Amazon
+function extractAmazonTitle(html: string, markdown: string = ''): string {
+  // Try productTitle span
+  const titleMatch = html.match(/id="productTitle"[^>]*>([^<]+)</i)
+  if (titleMatch) {
+    return titleMatch[1].trim()
+  }
+  
+  // Try title from JSON-LD
+  const jsonLdMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)
+  if (jsonLdMatch) {
+    for (const match of jsonLdMatch) {
+      try {
+        const jsonContent = match.replace(/<\/?script[^>]*>/gi, '')
+        const data = JSON.parse(jsonContent)
+        if (data.name) return data.name
+        if (data['@graph']) {
+          for (const item of data['@graph']) {
+            if (item.name) return item.name
+          }
+        }
+      } catch (e) {}
+    }
+  }
+  
+  // Try og:title
+  const ogMatch = html.match(/og:title"[^>]*content="([^"]+)"/i)
+  if (ogMatch) {
+    return ogMatch[1].replace(/\s*[-|:].*Amazon.*$/i, '').trim()
+  }
+  
+  // Try <title>
+  const htmlTitleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+  if (htmlTitleMatch) {
+    return htmlTitleMatch[1].replace(/\s*[-|:].*Amazon.*$/i, '').trim()
+  }
+  
+  // Try markdown
+  if (markdown) {
+    const mdTitleMatch = markdown.match(/^#\s+(.+)$/m)
+    if (mdTitleMatch) {
+      return mdTitleMatch[1].trim()
+    }
+  }
+  
+  return 'Produit importé'
+}
+
+// Extract price specifically for Amazon
+function extractAmazonPrice(html: string): { price: number; currency: string; originalPrice: number | null } {
+  let price = 0
+  let originalPrice: number | null = null
+  let currency = 'EUR'
+  
+  // Try corePrice container
+  const corePriceMatch = html.match(/id="corePrice[^"]*"[\s\S]*?class="[^"]*a-price[^"]*"[\s\S]*?aria-hidden="true"[^>]*>\s*<span[^>]*>([^<]+)<\/span>\s*<span[^>]*>([^<]+)<\/span>/i)
+  if (corePriceMatch) {
+    const priceStr = (corePriceMatch[1] + corePriceMatch[2]).replace(/[^\d,]/g, '').replace(',', '.')
+    price = parseFloat(priceStr) || 0
+  }
+  
+  // Try priceblock
+  if (price === 0) {
+    const priceBlockMatch = html.match(/id="priceblock_[^"]*price"[^>]*>([^<]*[\d,]+[^<]*)</i)
+    if (priceBlockMatch) {
+      const priceStr = priceBlockMatch[1].replace(/[^\d,]/g, '').replace(',', '.')
+      price = parseFloat(priceStr) || 0
+    }
+  }
+  
+  // Try a-price-whole and a-price-fraction
+  if (price === 0) {
+    const wholeMatch = html.match(/class="[^"]*a-price-whole[^"]*"[^>]*>(\d+)/i)
+    const fractionMatch = html.match(/class="[^"]*a-price-fraction[^"]*"[^>]*>(\d+)/i)
+    if (wholeMatch) {
+      price = parseFloat(`${wholeMatch[1]}.${fractionMatch?.[1] || '00'}`) || 0
+    }
+  }
+  
+  // Try generic price patterns
+  if (price === 0) {
+    const genericMatch = html.match(/(\d+)[,.](\d{2})\s*[€$£]/i) ||
+                         html.match(/[€$£]\s*(\d+)[,.](\d{2})/i)
+    if (genericMatch) {
+      price = parseFloat(`${genericMatch[1]}.${genericMatch[2]}`) || 0
+    }
+  }
+  
+  // Extract original price (before discount)
+  const oldPriceMatch = html.match(/class="[^"]*a-text-price[^"]*"[^>]*>[\s\S]*?<span[^>]*>([^<]+)</i) ||
+                        html.match(/Ancien\s*prix[^<]*:\s*([\d,]+)/i)
+  if (oldPriceMatch) {
+    const oldPriceStr = oldPriceMatch[1].replace(/[^\d,]/g, '').replace(',', '.')
+    originalPrice = parseFloat(oldPriceStr) || null
+  }
+  
+  // Detect currency
+  if (/[£]/.test(html)) currency = 'GBP'
+  else if (/[$]/.test(html) && !/€/.test(html)) currency = 'USD'
+  
+  console.log(`💰 Amazon price: ${price} ${currency} (original: ${originalPrice})`)
+  return { price, currency, originalPrice }
+}
+
 // Scrape product data using Firecrawl if available, otherwise fallback
 async function scrapeProductData(url: string, platform: string): Promise<any> {
   console.log(`📦 Scraping product from ${platform}: ${url}`)
   
   const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
   let html = ''
+  let markdown = ''
   
   try {
     if (firecrawlKey) {
@@ -502,36 +841,46 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
         },
         body: JSON.stringify({
           url,
-          formats: ['html', 'markdown'],
+          formats: ['html', 'markdown', 'rawHtml'],
           onlyMainContent: false,
-          waitFor: 3000, // Wait for JS rendering
+          waitFor: 5000, // Wait for JS rendering (increased for Amazon)
         }),
       })
       
       if (firecrawlResponse.ok) {
         const firecrawlData = await firecrawlResponse.json()
-        html = firecrawlData.data?.html || firecrawlData.html || ''
-        console.log(`✅ Firecrawl returned ${html.length} chars`)
+        html = firecrawlData.data?.rawHtml || firecrawlData.data?.html || firecrawlData.rawHtml || firecrawlData.html || ''
+        markdown = firecrawlData.data?.markdown || firecrawlData.markdown || ''
+        console.log(`✅ Firecrawl returned ${html.length} chars HTML, ${markdown.length} chars markdown`)
       } else {
-        console.log('⚠️ Firecrawl failed, falling back to direct fetch')
+        const errorText = await firecrawlResponse.text()
+        console.log('⚠️ Firecrawl failed:', errorText)
       }
     }
     
     // Fallback to direct fetch
-    if (!html) {
+    if (!html || html.length < 5000) {
+      console.log('📡 Using direct fetch...')
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
           'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
         }
       })
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+      if (response.ok) {
+        const fetchedHtml = await response.text()
+        console.log(`📡 Direct fetch returned ${fetchedHtml.length} chars`)
+        // Only use if better than Firecrawl
+        if (fetchedHtml.length > html.length) {
+          html = fetchedHtml
+        }
       }
-      
-      html = await response.text()
     }
     
     // Extract all product data
@@ -541,30 +890,38 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
       scraped_at: new Date().toISOString()
     }
     
-    // Title extraction
-    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i) ||
-                       html.match(/og:title"[^>]*content="([^"]+)"/i) ||
-                       html.match(/product-title[^>]*>([^<]+)</i) ||
-                       html.match(/<h1[^>]*>([^<]+)</i)
-    productData.title = titleMatch?.[1]?.trim()
-      .replace(/\s*[-|].*$/, '')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .slice(0, 500) || 'Produit importé'
-    
-    // Price extraction
-    const priceMatch = html.match(/product:price:amount"[^>]*content="([\d,.]+)"/i) ||
-                       html.match(/og:price:amount"[^>]*content="([\d,.]+)"/i) ||
-                       html.match(/price[^>]*>[\s]*[€$£¥]?\s*([\d,.]+)/i) ||
-                       html.match(/class="[^"]*price[^"]*"[^>]*>[\s€$£¥]*([\d,.]+)/i)
-    productData.price = priceMatch ? parseFloat(priceMatch[1].replace(/[,\s]/g, '.').replace(/\.(?=.*\.)/g, '')) : 0
-    
-    // Currency
-    const currencyMatch = html.match(/product:price:currency"[^>]*content="([^"]+)"/i) ||
-                          html.match(/og:price:currency"[^>]*content="([^"]+)"/i) ||
-                          html.match(/currency[^>]*>([A-Z]{3})</i)
-    productData.currency = currencyMatch?.[1]?.toUpperCase() || (platform === 'aliexpress' ? 'USD' : 'EUR')
+    // Platform-specific extraction
+    if (platform === 'amazon') {
+      productData.title = extractAmazonTitle(html, markdown)
+      const priceData = extractAmazonPrice(html)
+      productData.price = priceData.price
+      productData.currency = priceData.currency
+      productData.original_price = priceData.originalPrice
+    } else {
+      // Generic title extraction
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i) ||
+                         html.match(/og:title"[^>]*content="([^"]+)"/i) ||
+                         html.match(/product-title[^>]*>([^<]+)</i) ||
+                         html.match(/<h1[^>]*>([^<]+)</i)
+      productData.title = titleMatch?.[1]?.trim()
+        .replace(/\s*[-|].*$/, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .slice(0, 500) || 'Produit importé'
+      
+      // Generic price extraction
+      const priceMatch = html.match(/product:price:amount"[^>]*content="([\d,.]+)"/i) ||
+                         html.match(/og:price:amount"[^>]*content="([\d,.]+)"/i) ||
+                         html.match(/price[^>]*>[\s]*[€$£¥]?\s*([\d,.]+)/i) ||
+                         html.match(/class="[^"]*price[^"]*"[^>]*>[\s€$£¥]*([\d,.]+)/i)
+      productData.price = priceMatch ? parseFloat(priceMatch[1].replace(/[,\s]/g, '.').replace(/\.(?=.*\.)/g, '')) : 0
+      
+      // Currency
+      const currencyMatch = html.match(/product:price:currency"[^>]*content="([^"]+)"/i) ||
+                            html.match(/og:price:currency"[^>]*content="([^"]+)"/i)
+      productData.currency = currencyMatch?.[1]?.toUpperCase() || (platform === 'aliexpress' ? 'USD' : 'EUR')
+    }
     
     // Description
     const descMatch = html.match(/og:description"[^>]*content="([^"]+)"/i) ||
@@ -584,14 +941,15 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
     productData.sku = skuMatch?.[1]?.trim() || `IMPORT-${Date.now()}`
     
     // Brand
-    const brandMatch = html.match(/brand[^>]*>([^<]+)</i) ||
+    const brandMatch = html.match(/id="bylineInfo"[^>]*>([^<]+)</i) ||
+                       html.match(/Visiter\s*la\s*boutique\s*([^<]+)</i) ||
+                       html.match(/brand[^>]*>([^<]+)</i) ||
                        html.match(/og:brand"[^>]*content="([^"]+)"/i) ||
-                       html.match(/"brand"\s*:\s*"([^"]+)"/i) ||
-                       html.match(/seller-name[^>]*>([^<]+)</i)
-    productData.brand = brandMatch?.[1]?.trim().slice(0, 100) || platform
+                       html.match(/"brand"\s*:\s*"([^"]+)"/i)
+    productData.brand = brandMatch?.[1]?.trim().replace(/^Visiter\s*la\s*boutique\s*/i, '').slice(0, 100) || platform
     
     // Extract HQ images
-    productData.images = extractHQImages(html, platform)
+    productData.images = extractHQImages(html, platform, markdown)
     console.log(`📸 Found ${productData.images.length} high-quality images`)
     
     // Extract videos
@@ -599,11 +957,11 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
     console.log(`🎬 Found ${productData.videos.length} videos`)
     
     // Extract variants
-    productData.variants = extractVariants(html, platform)
+    productData.variants = extractVariants(html, platform, markdown)
     console.log(`🎨 Found ${productData.variants.length} variants`)
     
     // Extract specifications
-    productData.specifications = extractSpecifications(html)
+    productData.specifications = extractSpecifications(html, platform)
     console.log(`📋 Found ${Object.keys(productData.specifications).length} specifications`)
     
     // Extract shipping info
@@ -613,12 +971,13 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
     productData.seller = extractSellerInfo(html, platform)
     
     // Extract reviews summary
-    const ratingMatch = html.match(/(\d+\.?\d*)\s*(?:out of|\/)\s*5/i) ||
-                        html.match(/rating[^>]*>(\d+\.?\d*)/i)
-    const reviewCountMatch = html.match(/(\d+(?:,\d+)?)\s*(?:reviews?|avis|évaluations?)/i)
+    const ratingMatch = html.match(/(\d+[,.]?\d*)\s*(?:out of|sur|\/)\s*5/i) ||
+                        html.match(/class="[^"]*rating[^"]*"[^>]*>(\d+[,.]?\d*)/i) ||
+                        html.match(/(\d+[,.]?\d*)\s*★/i)
+    const reviewCountMatch = html.match(/(\d+(?:[,.\s]\d+)?)\s*(?:reviews?|avis|évaluations?|notes?)/i)
     productData.reviews = {
-      rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
-      count: reviewCountMatch ? parseInt(reviewCountMatch[1].replace(',', '')) : null
+      rating: ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : null,
+      count: reviewCountMatch ? parseInt(reviewCountMatch[1].replace(/[,.\s]/g, '')) : null
     }
     
     console.log(`✅ Scraped: "${productData.title}" - ${productData.price} ${productData.currency}`)
@@ -673,7 +1032,7 @@ serve(async (req) => {
           data: {
             ...productData,
             suggested_price: suggestedPrice,
-            profit_margin: Math.round(((suggestedPrice - productData.price) / suggestedPrice) * 100),
+            profit_margin: productData.price > 0 ? Math.round(((suggestedPrice - productData.price) / suggestedPrice) * 100) : 0,
             platform_detected: platform,
             product_id: productId,
             has_variants: productData.variants?.length > 0,
@@ -707,7 +1066,7 @@ serve(async (req) => {
           brand: productData.brand,
           sku: productData.sku,
           image_urls: productData.images,
-          original_images: productData.images, // Store originals
+          original_images: productData.images,
           video_urls: productData.videos,
           variants: productData.variants,
           specifications: productData.specifications,
