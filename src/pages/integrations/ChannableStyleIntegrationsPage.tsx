@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Input } from '@/components/ui/input'
@@ -1077,6 +1078,7 @@ function IntegrationCard({
 
 // Page principale
 export default function ChannableStyleIntegrationsPage() {
+  const navigate = useNavigate()
   const { 
     integrations, 
     connectedIntegrations, 
@@ -1411,11 +1413,11 @@ export default function ChannableStyleIntegrationsPage() {
                 Nous ajoutons régulièrement de nouvelles intégrations.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
-                <Button size="lg">
+                <Button size="lg" onClick={() => navigate('/support')}>
                   <Plus className="w-4 h-4 mr-2" />
                   Demander une intégration
                 </Button>
-                <Button size="lg" variant="outline">
+                <Button size="lg" variant="outline" onClick={() => navigate('/api-docs')}>
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Documentation API
                 </Button>
