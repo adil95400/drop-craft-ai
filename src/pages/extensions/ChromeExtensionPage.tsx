@@ -4,22 +4,17 @@
 import { useState } from 'react';
 import { 
   Chrome, Download, Play, CheckCircle, Settings, Zap, Star,
-  Package, RefreshCw, Shield, Globe, ArrowRight, ExternalLink,
-  Copy, Check, MonitorSmartphone, Puzzle
+  Package, RefreshCw, Globe, ArrowRight, ExternalLink, Key
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { ExtensionAuthManager } from '@/components/extensions/ExtensionAuthManager';
 
 export default function ChromeExtensionPage() {
-  const [apiKey, setApiKey] = useState('');
-  const [copied, setCopied] = useState(false);
   const [settings, setSettings] = useState({
     autoImport: true,
     importReviews: true,
@@ -27,13 +22,6 @@ export default function ChromeExtensionPage() {
     priceTracking: true,
     notifications: true,
   });
-
-  const handleCopyApiKey = () => {
-    navigator.clipboard.writeText('shp_xxxxx_demo_key_xxxxx');
-    setCopied(true);
-    toast.success('Clé API copiée');
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const features = [
     {
@@ -229,87 +217,73 @@ export default function ChromeExtensionPage() {
           </CardContent>
         </Card>
 
-        {/* Configuration */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Configuration
-            </CardTitle>
-            <CardDescription>
-              Personnalisez le comportement de l'extension
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* API Key */}
-            <div className="space-y-2">
-              <Label>Clé API</Label>
-              <div className="flex gap-2">
-                <Input 
-                  type="password" 
-                  value="shp_xxxxx_demo_key_xxxxx" 
-                  readOnly 
-                  className="font-mono"
-                />
-                <Button variant="outline" onClick={handleCopyApiKey}>
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-            
-            {/* Settings Toggles */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Import automatique</p>
-                  <p className="text-sm text-muted-foreground">Ajouter directement au catalogue</p>
-                </div>
-                <Switch 
-                  checked={settings.autoImport}
-                  onCheckedChange={(v) => setSettings(s => ({ ...s, autoImport: v }))}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Importer les avis</p>
-                  <p className="text-sm text-muted-foreground">Récupérer les avis clients</p>
-                </div>
-                <Switch 
-                  checked={settings.importReviews}
-                  onCheckedChange={(v) => setSettings(s => ({ ...s, importReviews: v }))}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Images HD</p>
-                  <p className="text-sm text-muted-foreground">Télécharger toutes les images</p>
-                </div>
-                <Switch 
-                  checked={settings.importImages}
-                  onCheckedChange={(v) => setSettings(s => ({ ...s, importImages: v }))}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Suivi des prix</p>
-                  <p className="text-sm text-muted-foreground">Alertes de changement</p>
-                </div>
-                <Switch 
-                  checked={settings.priceTracking}
-                  onCheckedChange={(v) => setSettings(s => ({ ...s, priceTracking: v }))}
-                />
-              </div>
-            </div>
-            
-            <Button className="w-full">
-              Sauvegarder les paramètres
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Token Authentication */}
+        <ExtensionAuthManager />
       </div>
+
+      {/* Extension Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Paramètres de l'extension
+          </CardTitle>
+          <CardDescription>
+            Personnalisez le comportement de l'extension
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div>
+                <p className="font-medium">Import automatique</p>
+                <p className="text-sm text-muted-foreground">Ajouter directement au catalogue</p>
+              </div>
+              <Switch 
+                checked={settings.autoImport}
+                onCheckedChange={(v) => setSettings(s => ({ ...s, autoImport: v }))}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div>
+                <p className="font-medium">Importer les avis</p>
+                <p className="text-sm text-muted-foreground">Récupérer les avis clients</p>
+              </div>
+              <Switch 
+                checked={settings.importReviews}
+                onCheckedChange={(v) => setSettings(s => ({ ...s, importReviews: v }))}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div>
+                <p className="font-medium">Images HD</p>
+                <p className="text-sm text-muted-foreground">Télécharger toutes les images</p>
+              </div>
+              <Switch 
+                checked={settings.importImages}
+                onCheckedChange={(v) => setSettings(s => ({ ...s, importImages: v }))}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div>
+                <p className="font-medium">Suivi des prix</p>
+                <p className="text-sm text-muted-foreground">Alertes de changement</p>
+              </div>
+              <Switch 
+                checked={settings.priceTracking}
+                onCheckedChange={(v) => setSettings(s => ({ ...s, priceTracking: v }))}
+              />
+            </div>
+          </div>
+          
+          <Button className="w-full mt-6" onClick={() => toast.success('Paramètres sauvegardés')}>
+            Sauvegarder les paramètres
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Supported Platforms */}
       <Card>
