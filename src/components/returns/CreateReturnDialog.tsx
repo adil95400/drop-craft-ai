@@ -344,57 +344,127 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
           <p className="text-sm text-destructive text-center">{errors.items}</p>
         )}
 
-        {/* Formulaire d'ajout */}
-        <Card className="border-dashed border-2">
-          <CardContent className="p-4 space-y-4">
-            <p className="text-sm font-medium text-muted-foreground">Ajouter un article</p>
-            <div className="grid grid-cols-12 gap-3">
-              <div className="col-span-5">
-                <Input
-                  placeholder="Nom du produit"
-                  value={newItem.product_name}
-                  onChange={(e) => setNewItem(prev => ({ ...prev, product_name: e.target.value }))}
-                  className="h-10"
-                />
+        {/* Formulaire d'ajout amélioré */}
+        <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardContent className="p-5 space-y-5">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Plus className="h-4 w-4 text-primary" />
               </div>
-              <div className="col-span-2">
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="Qté"
-                  value={newItem.quantity}
-                  onChange={(e) => setNewItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 1 }))}
-                  className="h-10 text-center"
-                />
+              <div>
+                <p className="font-medium">Ajouter un article</p>
+                <p className="text-xs text-muted-foreground">Renseignez les détails du produit à retourner</p>
               </div>
-              <div className="col-span-3">
+            </div>
+            
+            <div className="space-y-4">
+              {/* Nom du produit */}
+              <div className="space-y-2">
+                <Label htmlFor="product_name" className="text-sm">
+                  Nom du produit <span className="text-destructive">*</span>
+                </Label>
                 <div className="relative">
-                  <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Prix"
-                    value={newItem.price || ''}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                    className="h-10 pl-9"
+                    id="product_name"
+                    placeholder="Ex: T-shirt bleu taille M"
+                    value={newItem.product_name}
+                    onChange={(e) => {
+                      setNewItem(prev => ({ ...prev, product_name: e.target.value }))
+                      if (errors.newItem) setErrors(prev => ({ ...prev, newItem: '' }))
+                    }}
+                    className={cn("pl-10", errors.newItem?.includes('Nom') && "border-destructive")}
                   />
                 </div>
               </div>
-              <div className="col-span-2">
+
+              {/* Quantité et Prix */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="quantity" className="text-sm">Quantité</Label>
+                  <div className="flex items-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-r-none"
+                      onClick={() => setNewItem(prev => ({ ...prev, quantity: Math.max(1, prev.quantity - 1) }))}
+                    >
+                      <span className="text-lg">−</span>
+                    </Button>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min="1"
+                      value={newItem.quantity}
+                      onChange={(e) => setNewItem(prev => ({ ...prev, quantity: Math.max(1, parseInt(e.target.value) || 1) }))}
+                      className="h-10 rounded-none text-center border-x-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-l-none"
+                      onClick={() => setNewItem(prev => ({ ...prev, quantity: prev.quantity + 1 }))}
+                    >
+                      <span className="text-lg">+</span>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="price" className="text-sm">
+                    Prix unitaire <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={newItem.price || ''}
+                      onChange={(e) => {
+                        setNewItem(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))
+                        if (errors.newItem) setErrors(prev => ({ ...prev, newItem: '' }))
+                      }}
+                      className={cn("pl-10", errors.newItem?.includes('Prix') && "border-destructive")}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sous-total et bouton */}
+              <div className="flex items-center justify-between pt-2">
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Sous-total: </span>
+                  <span className="font-semibold">
+                    {(newItem.price * newItem.quantity).toFixed(2)} €
+                  </span>
+                </div>
                 <Button 
                   type="button" 
-                  variant="secondary"
-                  className="w-full h-10"
                   onClick={handleAddItem}
+                  disabled={!newItem.product_name.trim() || newItem.price <= 0}
+                  className="gap-2"
                 >
                   <Plus className="h-4 w-4" />
+                  Ajouter l'article
                 </Button>
               </div>
+
+              {errors.newItem && (
+                <motion.p 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-destructive flex items-center gap-2"
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                  {errors.newItem}
+                </motion.p>
+              )}
             </div>
-            {errors.newItem && (
-              <p className="text-sm text-destructive">{errors.newItem}</p>
-            )}
           </CardContent>
         </Card>
 
