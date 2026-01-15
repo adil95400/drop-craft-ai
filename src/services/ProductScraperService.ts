@@ -159,35 +159,34 @@ class ProductScraperService {
         sku: finalProduct.sku || `URL-${Date.now()}`,
         category: finalProduct.category || 'Import URL',
         brand: finalProduct.brand || '',
-        images: finalProduct.images || [],
-        image_url: finalProduct.images?.[0] || '',
-        stock_quantity: 0, // Will be synced with supplier
-        status: 'draft' as const,
-        review_status: 'pending' as const,
+        image_urls: finalProduct.images || [],
+        stock_quantity: 0,
+        status: 'draft',
         source_url: finalProduct.supplier_url,
         supplier_name: finalProduct.supplier_name,
-        supplier_info: {
-          supplier_name: finalProduct.supplier_name,
-          supplier_url: finalProduct.supplier_url,
-          stock_status: finalProduct.stock_status,
-          rating: finalProduct.rating,
-          reviews_count: finalProduct.reviews_count,
-          shipping_info: finalProduct.shipping_info,
-          specifications: finalProduct.specifications,
-          scraped_at: new Date().toISOString()
-        },
-        variants: finalProduct.variants || [],
+        sync_status: 'synced',
         metadata: {
           import_method: 'url',
           import_date: new Date().toISOString(),
+          supplier_info: {
+            supplier_name: finalProduct.supplier_name,
+            supplier_url: finalProduct.supplier_url,
+            stock_status: finalProduct.stock_status,
+            rating: finalProduct.rating,
+            reviews_count: finalProduct.reviews_count,
+            shipping_info: finalProduct.shipping_info,
+            specifications: finalProduct.specifications,
+            scraped_at: new Date().toISOString()
+          },
+          variants: finalProduct.variants || [],
           original_data: product
         }
       };
 
-      // Insert into database
+      // Insert into database (cast needed until types are regenerated)
       const { data, error } = await supabase
         .from('imported_products')
-        .insert(productData)
+        .insert(productData as any)
         .select()
         .single();
 

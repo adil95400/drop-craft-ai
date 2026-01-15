@@ -4851,39 +4851,78 @@ export type Database = {
       }
       imported_products: {
         Row: {
+          brand: string | null
           category: string | null
+          cost_price: number | null
           created_at: string | null
+          currency: string | null
+          description: string | null
           id: string
+          image_urls: string[] | null
           import_job_id: string | null
+          metadata: Json | null
+          name: string | null
           price: number | null
           product_id: string | null
+          sku: string | null
           source_platform: string | null
           source_url: string | null
           status: string | null
+          stock_quantity: number | null
+          supplier_name: string | null
+          supplier_product_id: string | null
+          sync_status: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
+          brand?: string | null
           category?: string | null
+          cost_price?: number | null
           created_at?: string | null
+          currency?: string | null
+          description?: string | null
           id?: string
+          image_urls?: string[] | null
           import_job_id?: string | null
+          metadata?: Json | null
+          name?: string | null
           price?: number | null
           product_id?: string | null
+          sku?: string | null
           source_platform?: string | null
           source_url?: string | null
           status?: string | null
+          stock_quantity?: number | null
+          supplier_name?: string | null
+          supplier_product_id?: string | null
+          sync_status?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
+          brand?: string | null
           category?: string | null
+          cost_price?: number | null
           created_at?: string | null
+          currency?: string | null
+          description?: string | null
           id?: string
+          image_urls?: string[] | null
           import_job_id?: string | null
+          metadata?: Json | null
+          name?: string | null
           price?: number | null
           product_id?: string | null
+          sku?: string | null
           source_platform?: string | null
           source_url?: string | null
           status?: string | null
+          stock_quantity?: number | null
+          supplier_name?: string | null
+          supplier_product_id?: string | null
+          sync_status?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
