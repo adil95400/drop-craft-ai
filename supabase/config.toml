@@ -684,3 +684,6 @@ verify_jwt = true
 
 [functions.feed-optimization-ai]
 verify_jwt = true
+
+[functions.ai-variant-mapper]
+verify_jwt = false
