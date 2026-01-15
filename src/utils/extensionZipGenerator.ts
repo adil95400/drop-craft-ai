@@ -8,6 +8,7 @@ const EXTENSION_FILES = [
   'popup.css',
   'background.js',
   'content.js',
+  'content.css',
   'injected.js',
   'options.html',
   'options.js',
@@ -16,7 +17,10 @@ const EXTENSION_FILES = [
   'icons/icon16.png',
   'icons/icon32.png',
   'icons/icon48.png',
-  'icons/icon128.png'
+  'icons/icon128.png',
+  'README.md',
+  'PRIVACY_POLICY.md',
+  'STORE_LISTING.md'
 ];
 
 export async function generateExtensionZip(): Promise<void> {

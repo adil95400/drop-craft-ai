@@ -59,7 +59,7 @@ class ShopOptiPopup {
     }
 
     try {
-      const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
+      const response = await fetch(`${this.API_URL}/extension-sync`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -438,7 +438,7 @@ class ShopOptiPopup {
     this.showLoading('Envoi en cours...');
 
     try {
-      const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
+      const response = await fetch(`${this.API_URL}/extension-sync`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -486,15 +486,264 @@ class ShopOptiPopup {
   }
 
   showFeature(name) {
-    this.showToast(`${name} - Bientôt disponible`, 'info');
+    switch(name) {
+      case 'Auto-Order':
+        this.openAutoOrder();
+        break;
+      case 'Spy Competitor':
+        this.openSpyCompetitor();
+        break;
+      case 'Bulk Import':
+        this.openBulkImport();
+        break;
+      default:
+        this.showToast(`${name} - Fonctionnalité disponible!`, 'info');
+    }
+  }
+
+  async openAutoOrder() {
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      return;
+    }
+
+    this.showLoading('Chargement Auto-Order...');
+
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      // Get product data from current page
+      const response = await chrome.tabs.sendMessage(tab.id, { type: 'SCRAPE_PAGE' });
+      
+      if (response?.success && response.count > 0) {
+        // Open Auto-Order page with product data
+        chrome.tabs.create({ 
+          url: `https://drop-craft-ai.lovable.app/orders/auto?source=extension&url=${encodeURIComponent(tab.url)}`
+        });
+        this.addActivity('Auto-Order lancé', '🛒', this.currentPlatform?.name);
+        this.showToast('Page Auto-Order ouverte!', 'success');
+      } else {
+        this.showToast('Aucun produit détecté pour Auto-Order', 'warning');
+      }
+    } catch (error) {
+      this.showToast('Erreur Auto-Order: ' + error.message, 'error');
+    } finally {
+      this.hideLoading();
+    }
+  }
+
+  async openSpyCompetitor() {
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      return;
+    }
+
+    this.showLoading('Analyse concurrentielle...');
+
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      // Call competitor analysis API
+      const response = await fetch(`${this.API_URL}/analyze-competitor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': this.extensionToken
+        },
+        body: JSON.stringify({ 
+          url: tab.url,
+          platform: this.currentPlatform?.name || 'unknown'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Open competitor analysis page
+        chrome.tabs.create({ 
+          url: `https://drop-craft-ai.lovable.app/competitors/analyze?url=${encodeURIComponent(tab.url)}`
+        });
+        
+        this.addActivity('Analyse concurrentielle', '🔍', this.currentPlatform?.name);
+        this.showToast('Analyse lancée!', 'success');
+      } else {
+        throw new Error('Analyse échouée');
+      }
+    } catch (error) {
+      // Fallback: open competitor page anyway
+      chrome.tabs.create({ 
+        url: `https://drop-craft-ai.lovable.app/competitors`
+      });
+      this.showToast('Page concurrents ouverte', 'info');
+    } finally {
+      this.hideLoading();
+    }
+  }
+
+  async openBulkImport() {
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      return;
+    }
+
+    // Open file picker for CSV
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
+    
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      this.showLoading('Import en cours...');
+
+      try {
+        // Read file content
+        const content = await this.readFileContent(file);
+        
+        // Parse CSV
+        const products = this.parseCSV(content);
+        
+        if (products.length === 0) {
+          throw new Error('Aucun produit trouvé dans le fichier');
+        }
+
+        // Send to API
+        const response = await fetch(`${this.API_URL}/extension-sync`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': this.extensionToken
+          },
+          body: JSON.stringify({
+            action: 'import_products',
+            products: products.map(p => ({
+              title: p.title || p.name || p.product_name,
+              name: p.title || p.name || p.product_name,
+              price: parseFloat(String(p.price || '0').replace(/[^0-9.]/g, '')),
+              description: p.description || '',
+              image: p.image || p.image_url || '',
+              url: p.url || p.link || '',
+              source: 'csv_import',
+              platform: 'CSV'
+            }))
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          this.stats.products += products.length;
+          this.addActivity(`${products.length} produit(s) importés (CSV)`, '📊');
+          this.showToast(`${products.length} produit(s) importés!`, 'success');
+          await this.saveData();
+          this.updateUI();
+        } else {
+          throw new Error('Erreur lors de l\'import');
+        }
+      } catch (error) {
+        this.showToast('Erreur: ' + error.message, 'error');
+      } finally {
+        this.hideLoading();
+      }
+    };
+
+    input.click();
+  }
+
+  readFileContent(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (e) => reject(new Error('Erreur lecture fichier'));
+      reader.readAsText(file);
+    });
+  }
+
+  parseCSV(content) {
+    const lines = content.trim().split('\n');
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    const products = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+      const product = {};
+      
+      headers.forEach((header, index) => {
+        product[header] = values[index] || '';
+      });
+
+      if (product.title || product.name || product.product_name) {
+        products.push(product);
+      }
+    }
+
+    return products;
+  }
+
+  async openAIOptimize() {
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      return;
+    }
+
+    if (this.userPlan !== 'pro' && this.userPlan !== 'ultra_pro') {
+      this.showToast('Fonctionnalité PRO requise', 'warning');
+      chrome.tabs.create({ url: 'https://drop-craft-ai.lovable.app/pricing' });
+      return;
+    }
+
+    this.showLoading('Optimisation IA...');
+
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      // Scrape current product
+      const scrapeResponse = await chrome.tabs.sendMessage(tab.id, { type: 'SCRAPE_PAGE' });
+      
+      if (!scrapeResponse?.success) {
+        throw new Error('Aucun produit détecté');
+      }
+
+      // Call AI optimization API
+      const response = await fetch(`${this.API_URL}/ai-optimize-product`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': this.extensionToken
+        },
+        body: JSON.stringify({
+          url: tab.url,
+          platform: this.currentPlatform?.name
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        chrome.tabs.create({ 
+          url: `https://drop-craft-ai.lovable.app/products/optimize?url=${encodeURIComponent(tab.url)}`
+        });
+        
+        this.addActivity('Optimisation IA lancée', '🤖', this.currentPlatform?.name);
+        this.showToast('Optimisation en cours!', 'success');
+      } else {
+        throw new Error('Erreur optimisation');
+      }
+    } catch (error) {
+      this.showToast('Erreur: ' + error.message, 'error');
+    } finally {
+      this.hideLoading();
+    }
   }
 
   showPremiumFeature() {
-    if (this.userPlan !== 'pro') {
+    if (this.userPlan !== 'pro' && this.userPlan !== 'ultra_pro') {
       this.showToast('Fonctionnalité PRO - Mettez à niveau', 'warning');
       chrome.tabs.create({ url: 'https://drop-craft-ai.lovable.app/pricing' });
     } else {
-      this.showFeature('AI Optimize');
+      this.openAIOptimize();
     }
   }
 
@@ -507,7 +756,7 @@ class ShopOptiPopup {
     
     if (urls[action]) {
       chrome.tabs.create({ 
-        url: `https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com${urls[action]}` 
+        url: `https://drop-craft-ai.lovable.app${urls[action]}` 
       });
     }
   }
