@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChannableLayout } from '@/components/channable/navigation/ChannableLayout';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -338,14 +339,13 @@ export default function CreateOrder() {
   const itemsCount = items.filter(i => i.product).length;
 
   return (
-    <>
+    <ChannableLayout>
       <Helmet>
         <title>Créer une Commande - DropCraft</title>
         <meta name="description" content="Créez une nouvelle commande manuelle avec calculs automatiques" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto py-6 px-4 max-w-7xl">
+      <div className="max-w-7xl mx-auto">
           {/* Header */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
@@ -1141,7 +1141,6 @@ export default function CreateOrder() {
             </div>
           </form>
         </div>
-      </div>
-    </>
+    </ChannableLayout>
   );
 }
