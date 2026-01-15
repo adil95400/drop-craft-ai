@@ -7,6 +7,7 @@ import { ReactNode } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { BackButton } from '@/components/navigation/BackButton'
 
 interface ChannablePageLayoutProps {
   children: ReactNode
@@ -17,6 +18,9 @@ interface ChannablePageLayoutProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
   padding?: 'none' | 'sm' | 'md' | 'lg'
   animate?: boolean
+  showBackButton?: boolean
+  backTo?: string
+  backLabel?: string
 }
 
 const maxWidthClasses = {
@@ -43,7 +47,10 @@ export function ChannablePageLayout({
   className,
   maxWidth = '2xl',
   padding = 'md',
-  animate = true
+  animate = true,
+  showBackButton = true,
+  backTo,
+  backLabel = "Retour"
 }: ChannablePageLayoutProps) {
   const Container = animate ? motion.div : 'div'
   const animationProps = animate ? {
@@ -70,6 +77,11 @@ export function ChannablePageLayout({
         )}
         {...animationProps}
       >
+        {showBackButton && (
+          <div className="mb-2">
+            <BackButton to={backTo} label={backLabel} />
+          </div>
+        )}
         {children}
       </Container>
     </>

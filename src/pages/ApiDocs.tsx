@@ -17,6 +17,7 @@ import {
   Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { BackButton } from '@/components/navigation/BackButton';
 
 const ApiDocs = () => {
   const copyToClipboard = (text: string) => {
@@ -98,6 +99,9 @@ curl -X POST "https://api.shopopti.com/v1/products" \\
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
+      {/* Back Button */}
+      <BackButton />
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

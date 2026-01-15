@@ -59,6 +59,7 @@ import { cn } from '@/lib/utils'
 import { useIntegrationsUnified, UnifiedIntegration, IntegrationTemplate } from '@/hooks/unified'
 import { useToast } from '@/hooks/use-toast'
 import { PlatformLogo } from '@/components/ui/platform-logo'
+import { BackButton } from '@/components/navigation/BackButton'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1149,6 +1150,11 @@ export default function ChannableStyleIntegrationsPage() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        {/* Back Button */}
+        <div className="container mx-auto px-4 pt-4">
+          <BackButton />
+        </div>
+        
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 py-12 lg:py-16">
           <div className="container mx-auto px-4 relative z-10">
