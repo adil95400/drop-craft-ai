@@ -107,17 +107,47 @@ function detectPlatform(url: string): { platform: string; productId: string | nu
 function extractHQImages(html: string, platform: string, markdown: string = ''): string[] {
   const images: string[] = []
   const seenUrls = new Set<string>()
-  
+
+  const normalizeAmazonImageUrl = (url: string) => {
+    // Convert various Amazon image hosts/sizes to the cleanest possible URL.
+    // Examples:
+    // - https://m.media-amazon.com/images/I/XXX._AC_SL1500_.jpg -> https://m.media-amazon.com/images/I/XXX.jpg
+    // - https://images-eu.ssl-images-amazon.com/images/I/XXX._AC_SR900,1125,0,C_BR3_.jpg -> https://m.media-amazon.com/images/I/XXX.jpg
+    let u = url
+
+    // Prefer m.media-amazon.com when we can
+    u = u.replace(/^https?:\/\/images-[a-z0-9-]+\.ssl-images-amazon\.com\//i, 'https://m.media-amazon.com/')
+
+    // Remove size/transform segments: ._AC_..._. or ._S[XYZ]..._.
+    u = u
+      .replace(/\._AC_[^._]+_\./g, '.')
+      .replace(/\._S[LXSMY]\d+_\./g, '.')
+      .replace(/\._S[LXSMY]\d+_\./g, '.')
+      .replace(/\._UX\d+_\./g, '.')
+      .replace(/\._UY\d+_\./g, '.')
+      .replace(/\._UL\d+_\./g, '.')
+      .replace(/\._SR\d+,\d+,\d+,[^_]+_\./g, '.')
+
+    return u
+  }
+
   // Helper to add unique image
   const addImage = (url: string) => {
-    if (url && !seenUrls.has(url) && url.startsWith('http') && images.length < 30) {
-      // Clean up URL
-      const cleanUrl = url.replace(/\\u002F/g, '/').replace(/\\/g, '')
-      if (!seenUrls.has(cleanUrl) && !cleanUrl.includes('icon') && !cleanUrl.includes('sprite')) {
-        images.push(cleanUrl)
-        seenUrls.add(cleanUrl)
-      }
+    if (!url || images.length >= 30) return
+
+    // Clean up URL
+    let cleanUrl = url.replace(/\\u002F/g, '/').replace(/\\/g, '')
+
+    if (platform === 'amazon') {
+      cleanUrl = normalizeAmazonImageUrl(cleanUrl)
     }
+
+    if (!cleanUrl.startsWith('http')) return
+    if (seenUrls.has(cleanUrl)) return
+    if (cleanUrl.includes('icon') || cleanUrl.includes('sprite')) return
+
+    images.push(cleanUrl)
+    seenUrls.add(cleanUrl)
   }
   
   // Platform-specific high-quality image extraction
@@ -314,157 +344,172 @@ function extractVideos(html: string, platform: string): string[] {
 // Extract product variants for Amazon
 function extractAmazonVariants(html: string, markdown: string = ''): any[] {
   const variants: any[] = []
-  const seenVariants = new Set<string>()
-  
+  const seen = new Set<string>()
+
   console.log('🎨 Extracting Amazon variants...')
-  
-  // Try to find twister/variation data
-  const twisterMatch = html.match(/variationValues['"]\s*:\s*({[^}]+})/s) ||
-                       html.match(/"twister-plus-js-data"[^>]*>([^<]+)</s)
-  if (twisterMatch) {
-    console.log('📋 Found twister/variation data')
+
+  const safeJsonParse = (str: string) => {
     try {
-      const data = JSON.parse(twisterMatch[1])
-      for (const [key, values] of Object.entries(data)) {
-        if (Array.isArray(values)) {
-          for (const val of values) {
-            const varId = `${key}:${val}`
-            if (!seenVariants.has(varId)) {
-              variants.push({
-                sku: '',
-                name: `${key}: ${val}`,
-                price: 0,
-                stock: 0,
-                image: null,
-                attributes: { [key]: val }
-              })
-              seenVariants.add(varId)
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.log('Error parsing twister data:', e)
+      return JSON.parse(str)
+    } catch {
+      return null
     }
   }
-  
-  // Try asinVariationValues
-  const asinMatch = html.match(/asinVariationValues['"]\s*:\s*({[^}]+})/s)
-  if (asinMatch) {
+
+  const extractJsonValueByKey = (key: string): any => {
+    // Finds the first occurrence of "<key>": and attempts to extract the following JSON object/array/string
+    const idx = html.indexOf(`"${key}"`)
+    if (idx === -1) return null
+
+    const colonIdx = html.indexOf(':', idx)
+    if (colonIdx === -1) return null
+
+    // Skip whitespace
+    let i = colonIdx + 1
+    while (i < html.length && /\s/.test(html[i])) i++
+
+    const first = html[i]
+    if (first !== '{' && first !== '[' && first !== '"') return null
+
+    if (first === '"') {
+      const end = html.indexOf('"', i + 1)
+      if (end === -1) return null
+      return html.slice(i + 1, end)
+    }
+
+    const open = first
+    const close = open === '{' ? '}' : ']'
+    let depth = 0
+    let inStr = false
+    let escaped = false
+
+    for (let j = i; j < html.length; j++) {
+      const ch = html[j]
+      if (inStr) {
+        if (escaped) {
+          escaped = false
+        } else if (ch === '\\') {
+          escaped = true
+        } else if (ch === '"') {
+          inStr = false
+        }
+        continue
+      }
+
+      if (ch === '"') {
+        inStr = true
+        continue
+      }
+
+      if (ch === open) depth++
+      if (ch === close) {
+        depth--
+        if (depth === 0) {
+          const raw = html.slice(i, j + 1)
+          return safeJsonParse(raw)
+        }
+      }
+    }
+
+    return null
+  }
+
+  const pushVariant = (attrs: Record<string, any>, asin?: string) => {
+    const key = JSON.stringify({ asin: asin || '', attrs })
+    if (seen.has(key)) return
+    seen.add(key)
+    variants.push({
+      sku: asin || '',
+      name: Object.values(attrs).filter(Boolean).join(' / ') || 'Variante',
+      price: 0,
+      stock: 0,
+      image: null,
+      attributes: attrs,
+    })
+  }
+
+  // 1) Best case: dimensionToAsinMap + dimensionValuesDisplayData
+  // This can give real combinations (color+size, etc.).
+  const dimensionToAsinMap = extractJsonValueByKey('dimensionToAsinMap')
+  const dimensionValuesDisplayData = extractJsonValueByKey('dimensionValuesDisplayData')
+  const asinToDimensionValuesMap = extractJsonValueByKey('asinToDimensionValuesMap')
+
+  if (asinToDimensionValuesMap && typeof asinToDimensionValuesMap === 'object') {
+    console.log('📋 Found asinToDimensionValuesMap')
+    for (const [asin, dim] of Object.entries(asinToDimensionValuesMap as Record<string, any>)) {
+      if (dim && typeof dim === 'object') {
+        // Replace internal ids with display names when available
+        const attrs: Record<string, any> = {}
+        for (const [k, v] of Object.entries(dim)) {
+          const display = dimensionValuesDisplayData?.[k]?.[v as any]
+          attrs[k] = display || v
+        }
+        pushVariant(attrs, asin)
+      }
+    }
+  } else if (dimensionToAsinMap && typeof dimensionToAsinMap === 'object') {
+    console.log('📋 Found dimensionToAsinMap')
+    // Example keys can be like "color_name:Black,size_name:M" or dimension ids.
+    for (const [k, asin] of Object.entries(dimensionToAsinMap as Record<string, any>)) {
+      const attrs: Record<string, any> = {}
+      const parts = String(k).split(',')
+      for (const p of parts) {
+        const [rawKey, rawVal] = p.split(':')
+        if (!rawKey || rawVal == null) continue
+        const key = rawKey.trim()
+        const val = rawVal.trim()
+        attrs[key] = dimensionValuesDisplayData?.[key]?.[val] || val
+      }
+      pushVariant(attrs, typeof asin === 'string' ? asin : undefined)
+    }
+  }
+
+  // 2) Fallbacks (single-dimension lists)
+  // variationValues / asinVariationValues
+  const variationValues = extractJsonValueByKey('variationValues')
+  if (variationValues && typeof variationValues === 'object') {
+    console.log('📋 Found variationValues')
+    for (const [key, values] of Object.entries(variationValues as Record<string, any>)) {
+      if (Array.isArray(values)) {
+        for (const v of values) pushVariant({ [key]: v })
+      }
+    }
+  }
+
+  const asinVariationValues = extractJsonValueByKey('asinVariationValues')
+  if (asinVariationValues && typeof asinVariationValues === 'object') {
     console.log('📋 Found asinVariationValues')
-    try {
-      const data = JSON.parse(asinMatch[1])
-      for (const [asin, values] of Object.entries(data)) {
-        if (typeof values === 'object' && values !== null) {
-          const attrs = values as Record<string, string>
-          const name = Object.values(attrs).join(' / ')
-          if (!seenVariants.has(name)) {
-            variants.push({
-              sku: asin,
-              name,
-              price: 0,
-              stock: 0,
-              image: null,
-              attributes: attrs
-            })
-            seenVariants.add(name)
-          }
-        }
-      }
-    } catch (e) {
-      console.log('Error parsing asin data:', e)
+    for (const [asin, attrs] of Object.entries(asinVariationValues as Record<string, any>)) {
+      if (attrs && typeof attrs === 'object') pushVariant(attrs as Record<string, any>, asin)
     }
   }
-  
-  // Extract color/size options from HTML
-  const colorMatches = html.matchAll(/id="color_name_(\d+)"[^>]*>.*?alt="([^"]+)"/gis)
+
+  // 3) HTML extraction (color swatches + size dropdown)
+  const colorMatches = html.matchAll(/id="color_name_(\d+)"[^>]*>[\s\S]{0,800}?alt="([^"]+)"/gis)
   for (const m of colorMatches) {
     const colorName = m[2].trim()
-    if (!seenVariants.has(`color:${colorName}`)) {
-      variants.push({
-        sku: m[1],
-        name: `Couleur: ${colorName}`,
-        price: 0,
-        stock: 0,
-        image: null,
-        attributes: { color: colorName }
-      })
-      seenVariants.add(`color:${colorName}`)
-    }
+    if (colorName) pushVariant({ color_name: colorName })
   }
-  
-  // Extract sizes from dropdown or buttons
-  const sizeMatches = html.matchAll(/data-csa-c-item-id="([^"]*size[^"]*)"[^>]*>([^<]+)</gi) ||
-                      html.matchAll(/id="size_name_(\d+)"[^>]*>.*?class="[^"]*swatch[^"]*"[^>]*>([^<]+)</gis)
-  for (const m of sizeMatches) {
-    const sizeName = m[2].trim()
-    if (sizeName && !seenVariants.has(`size:${sizeName}`)) {
-      variants.push({
-        sku: m[1],
-        name: `Taille: ${sizeName}`,
-        price: 0,
-        stock: 0,
-        image: null,
-        attributes: { size: sizeName }
-      })
-      seenVariants.add(`size:${sizeName}`)
-    }
+
+  // Sizes are often in <select> or buttons; try a broad pattern
+  const sizeOptionMatches = html.matchAll(/id="native_dropdown_selected_size_name"[\s\S]{0,6000}?<option[^>]*>([^<]{1,40})<\/option>/gis)
+  for (const m of sizeOptionMatches) {
+    const v = m[1].trim()
+    if (!v || /^taille$/i.test(v)) continue
+    pushVariant({ size_name: v })
   }
-  
-  // Try select dropdowns
-  const selectMatches = html.matchAll(/dropdown_selected_size_name[^>]*>([^<]+)</gi)
-  for (const m of selectMatches) {
-    const sizeName = m[1].trim()
-    if (sizeName && sizeName !== 'Taille' && !seenVariants.has(`size:${sizeName}`)) {
-      variants.push({
-        sku: '',
-        name: `Taille: ${sizeName}`,
-        price: 0,
-        stock: 0,
-        image: null,
-        attributes: { size: sizeName }
-      })
-      seenVariants.add(`size:${sizeName}`)
-    }
-  }
-  
-  // Extract from markdown if available
+
+  // 4) Markdown fallback
   if (markdown && variants.length === 0) {
-    // Look for color/size mentions in markdown
-    const mdColorMatches = markdown.matchAll(/(?:couleur|color)[:\s]+([^\n,]+)/gi)
-    for (const m of mdColorMatches) {
-      const colorName = m[1].trim()
-      if (!seenVariants.has(`color:${colorName}`)) {
-        variants.push({
-          sku: '',
-          name: `Couleur: ${colorName}`,
-          price: 0,
-          stock: 0,
-          image: null,
-          attributes: { color: colorName }
-        })
-        seenVariants.add(`color:${colorName}`)
-      }
-    }
-    
-    const mdSizeMatches = markdown.matchAll(/(?:taille|size)[:\s]+([^\n,]+)/gi)
-    for (const m of mdSizeMatches) {
-      const sizeName = m[1].trim()
-      if (!seenVariants.has(`size:${sizeName}`)) {
-        variants.push({
-          sku: '',
-          name: `Taille: ${sizeName}`,
-          price: 0,
-          stock: 0,
-          image: null,
-          attributes: { size: sizeName }
-        })
-        seenVariants.add(`size:${sizeName}`)
-      }
-    }
+    const mdColor = markdown.matchAll(/(?:couleur|color)[:\s]+([^\n,]+)/gi)
+    for (const m of mdColor) pushVariant({ color_name: m[1].trim() })
+
+    const mdSize = markdown.matchAll(/(?:taille|size)[:\s]+([^\n,]+)/gi)
+    for (const m of mdSize) pushVariant({ size_name: m[1].trim() })
   }
-  
-  return variants.slice(0, 100)
+
+  console.log(`🎨 Variants extracted: ${variants.length}`)
+  return variants.slice(0, 200)
 }
 
 // Extract product variants
@@ -770,53 +815,106 @@ function extractAmazonPrice(html: string): { price: number; currency: string; or
   let price = 0
   let originalPrice: number | null = null
   let currency = 'EUR'
-  
-  // Try corePrice container
-  const corePriceMatch = html.match(/id="corePrice[^"]*"[\s\S]*?class="[^"]*a-price[^"]*"[\s\S]*?aria-hidden="true"[^>]*>\s*<span[^>]*>([^<]+)<\/span>\s*<span[^>]*>([^<]+)<\/span>/i)
-  if (corePriceMatch) {
-    const priceStr = (corePriceMatch[1] + corePriceMatch[2]).replace(/[^\d,]/g, '').replace(',', '.')
-    price = parseFloat(priceStr) || 0
-  }
-  
-  // Try priceblock
-  if (price === 0) {
-    const priceBlockMatch = html.match(/id="priceblock_[^"]*price"[^>]*>([^<]*[\d,]+[^<]*)</i)
-    if (priceBlockMatch) {
-      const priceStr = priceBlockMatch[1].replace(/[^\d,]/g, '').replace(',', '.')
-      price = parseFloat(priceStr) || 0
+
+  // Helpers
+  const parseMoney = (raw: string) => {
+    // 59,90 € | 59.90 € | EUR 59,90
+    const cleaned = raw
+      .replace(/\s/g, '')
+      .replace(/[^0-9,\.]/g, '')
+
+    // Prefer the last separator as decimal (Amazon FR typically uses comma)
+    if (cleaned.includes(',') && cleaned.includes('.')) {
+      // remove thousands separators: keep last separator as decimal
+      const lastComma = cleaned.lastIndexOf(',')
+      const lastDot = cleaned.lastIndexOf('.')
+      const decIdx = Math.max(lastComma, lastDot)
+      const intPart = cleaned.slice(0, decIdx).replace(/[\.,]/g, '')
+      const decPart = cleaned.slice(decIdx + 1)
+      return parseFloat(`${intPart}.${decPart}`) || 0
     }
-  }
-  
-  // Try a-price-whole and a-price-fraction
-  if (price === 0) {
-    const wholeMatch = html.match(/class="[^"]*a-price-whole[^"]*"[^>]*>(\d+)/i)
-    const fractionMatch = html.match(/class="[^"]*a-price-fraction[^"]*"[^>]*>(\d+)/i)
-    if (wholeMatch) {
-      price = parseFloat(`${wholeMatch[1]}.${fractionMatch?.[1] || '00'}`) || 0
+
+    if (cleaned.includes(',')) {
+      const [i, d] = cleaned.split(',')
+      return parseFloat(`${i.replace(/\./g, '')}.${(d || '00').slice(0, 2)}`) || 0
     }
-  }
-  
-  // Try generic price patterns
-  if (price === 0) {
-    const genericMatch = html.match(/(\d+)[,.](\d{2})\s*[€$£]/i) ||
-                         html.match(/[€$£]\s*(\d+)[,.](\d{2})/i)
-    if (genericMatch) {
-      price = parseFloat(`${genericMatch[1]}.${genericMatch[2]}`) || 0
+
+    // Only dots
+    const parts = cleaned.split('.')
+    if (parts.length > 2) {
+      const dec = parts.pop()!
+      return parseFloat(`${parts.join('')}.${dec.slice(0, 2)}`) || 0
     }
+
+    return parseFloat(cleaned) || 0
   }
-  
-  // Extract original price (before discount)
-  const oldPriceMatch = html.match(/class="[^"]*a-text-price[^"]*"[^>]*>[\s\S]*?<span[^>]*>([^<]+)</i) ||
-                        html.match(/Ancien\s*prix[^<]*:\s*([\d,]+)/i)
-  if (oldPriceMatch) {
-    const oldPriceStr = oldPriceMatch[1].replace(/[^\d,]/g, '').replace(',', '.')
-    originalPrice = parseFloat(oldPriceStr) || null
+
+  const pickFirstNonInstallment = (candidates: { value: number; context: string }[]) => {
+    for (const c of candidates) {
+      const ctx = c.context.toLowerCase()
+      if (ctx.includes('mois') || ctx.includes('/mois') || ctx.includes('mensual') || ctx.includes('month')) continue
+      if (ctx.includes('abonnement') || ctx.includes('subscription')) continue
+      if (c.value > 0) return c.value
+    }
+    return 0
   }
-  
-  // Detect currency
+
+  // Detect currency (basic)
   if (/[£]/.test(html)) currency = 'GBP'
   else if (/[$]/.test(html) && !/€/.test(html)) currency = 'USD'
-  
+
+  const candidates: { value: number; context: string }[] = []
+
+  // 1) JSON-LD / meta price
+  const metaPriceMatches = html.matchAll(/itemprop="price"[^>]*content="([^"]+)"/gi)
+  for (const m of metaPriceMatches) {
+    candidates.push({ value: parseMoney(m[1]), context: m[0] })
+  }
+  const ogPriceMatch = html.match(/product:price:amount"[^>]*content="([^"]+)"/i)
+  if (ogPriceMatch) candidates.push({ value: parseMoney(ogPriceMatch[1]), context: ogPriceMatch[0] })
+
+  // 2) Offscreen prices (often the most reliable visible number)
+  // Capture some context around it to avoid installment prices.
+  const offscreen = html.matchAll(/(.{0,120})class="[^"]*a-offscreen[^"]*"[^>]*>([^<]*\d[^<]*)<\/(.{0,120})/gis)
+  for (const m of offscreen) {
+    const ctx = `${m[1]} ${m[2]} ${m[3]}`
+    const value = parseMoney(m[2])
+    if (value > 0) candidates.push({ value, context: ctx })
+  }
+
+  // 3) Specific containers
+  const corePriceMatch = html.match(/id="corePrice[^\"]*"[\s\S]{0,2000}?class="[^"]*a-price[^"]*"[\s\S]{0,500}?aria-hidden="true"[^>]*>\s*<span[^>]*>([^<]+)<\/span>\s*<span[^>]*>([^<]+)<\/span>/i)
+  if (corePriceMatch) {
+    candidates.push({ value: parseMoney(corePriceMatch[1] + corePriceMatch[2]), context: corePriceMatch[0] })
+  }
+
+  const priceBlockMatch = html.match(/id="priceblock_[^\"]*price"[^>]*>([^<]*\d[^<]*)</i)
+  if (priceBlockMatch) {
+    candidates.push({ value: parseMoney(priceBlockMatch[1]), context: priceBlockMatch[0] })
+  }
+
+  const priceToPayMatch = html.match(/id="priceToPay"[\s\S]{0,2000}?class="[^"]*a-offscreen[^"]*"[^>]*>([^<]*\d[^<]*)</i)
+  if (priceToPayMatch) {
+    candidates.unshift({ value: parseMoney(priceToPayMatch[1]), context: priceToPayMatch[0] })
+  }
+
+  // 4) Generic money pattern fallback (still avoid installments)
+  const generic = html.matchAll(/(.{0,40})(\d+[,.]\d{2})\s*[€$£](.{0,40})/gis)
+  for (const m of generic) {
+    const ctx = `${m[1]} ${m[2]} ${m[3]}`
+    candidates.push({ value: parseMoney(m[2]), context: ctx })
+  }
+
+  price = pickFirstNonInstallment(candidates)
+
+  // Original (strike-through)
+  const oldPriceMatch = html.match(/class="[^"]*a-text-price[^"]*"[^>]*>[\s\S]{0,200}?<span[^>]*>([^<]*\d[^<]*)</i) ||
+    html.match(/Ancien\s*prix[^<]*:\s*([^<\n]+)/i)
+  if (oldPriceMatch) {
+    const old = parseMoney(oldPriceMatch[1])
+    if (old > 0) originalPrice = old
+  }
+
   console.log(`💰 Amazon price: ${price} ${currency} (original: ${originalPrice})`)
   return { price, currency, originalPrice }
 }
