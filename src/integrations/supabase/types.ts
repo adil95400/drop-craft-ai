@@ -4862,11 +4862,16 @@ export type Database = {
           import_job_id: string | null
           metadata: Json | null
           name: string | null
+          original_images: string[] | null
           price: number | null
           product_id: string | null
+          reviews_summary: Json | null
+          seller_info: Json | null
+          shipping_info: Json | null
           sku: string | null
           source_platform: string | null
           source_url: string | null
+          specifications: Json | null
           status: string | null
           stock_quantity: number | null
           supplier_name: string | null
@@ -4874,6 +4879,8 @@ export type Database = {
           sync_status: string | null
           updated_at: string | null
           user_id: string
+          variants: Json | null
+          video_urls: string[] | null
         }
         Insert: {
           brand?: string | null
@@ -4887,11 +4894,16 @@ export type Database = {
           import_job_id?: string | null
           metadata?: Json | null
           name?: string | null
+          original_images?: string[] | null
           price?: number | null
           product_id?: string | null
+          reviews_summary?: Json | null
+          seller_info?: Json | null
+          shipping_info?: Json | null
           sku?: string | null
           source_platform?: string | null
           source_url?: string | null
+          specifications?: Json | null
           status?: string | null
           stock_quantity?: number | null
           supplier_name?: string | null
@@ -4899,6 +4911,8 @@ export type Database = {
           sync_status?: string | null
           updated_at?: string | null
           user_id: string
+          variants?: Json | null
+          video_urls?: string[] | null
         }
         Update: {
           brand?: string | null
@@ -4912,11 +4926,16 @@ export type Database = {
           import_job_id?: string | null
           metadata?: Json | null
           name?: string | null
+          original_images?: string[] | null
           price?: number | null
           product_id?: string | null
+          reviews_summary?: Json | null
+          seller_info?: Json | null
+          shipping_info?: Json | null
           sku?: string | null
           source_platform?: string | null
           source_url?: string | null
+          specifications?: Json | null
           status?: string | null
           stock_quantity?: number | null
           supplier_name?: string | null
@@ -4924,6 +4943,8 @@ export type Database = {
           sync_status?: string | null
           updated_at?: string | null
           user_id?: string
+          variants?: Json | null
+          video_urls?: string[] | null
         }
         Relationships: [
           {
