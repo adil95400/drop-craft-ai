@@ -32,16 +32,18 @@ const DEFINED_ROUTES: Set<string> = new Set([
   '/stores-channels/integrations',
   '/stores-channels/integrations/:id',
   
-  // Orders - uniformisées
+  // Orders - uniformisées (incluant fulfillment)
   '/orders',
   '/orders/:id',
   '/orders/center',
   '/orders/returns',
   '/orders/tracking',
   '/orders/notifications',
-  '/fulfillment',
   '/orders/bulk',
   '/orders/create',
+  '/orders/fulfillment',
+  '/orders/fulfillment/carriers',
+  '/orders/fulfillment/rules',
   
   // Customers - uniformisées
   '/customers',
@@ -142,11 +144,8 @@ const DEFINED_ROUTES: Set<string> = new Set([
   '/automation/recommendations',
   '/automation/dynamic-pricing',
   
-  // Fulfillment
-  '/fulfillment',
-  '/fulfillment/dashboard',
-  '/fulfillment/rules',
-  '/fulfillment/carriers',
+  // Fulfillment - Maintenant sous /orders/fulfillment (legacy redirects)
+  // Les routes /fulfillment/* redirigent vers /orders/fulfillment/*
   
   // Stock
   '/stock',

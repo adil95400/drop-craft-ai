@@ -134,7 +134,8 @@ const mobileNavGroups = [
     items: [
       { id: 'orders', name: 'Commandes', route: '/orders', icon: 'ShoppingCart', minPlan: 'standard' },
       { id: 'orders-center', name: 'Centre Commandes', route: '/orders-center', icon: 'BarChart3', minPlan: 'standard' },
-      { id: 'fulfillment', name: 'Fulfillment', route: '/fulfillment', icon: 'Truck', minPlan: 'pro' },
+      { id: 'fulfillment', name: 'Fulfillment', route: '/orders/fulfillment', icon: 'Truck', minPlan: 'pro' },
+      { id: 'fulfillment-carriers', name: 'Transporteurs', route: '/orders/fulfillment/carriers', icon: 'Truck', minPlan: 'pro' },
     ]
   },
   {

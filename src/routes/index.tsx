@@ -30,7 +30,7 @@ import { FeedRoutes } from './FeedRoutes';
 import { AdminRoutes } from './AdminRoutes';
 import SupplierRoutes from './SupplierRoutes';
 import { ChannelRoutes } from './ChannelRoutes';
-import { FulfillmentRoutes } from './FulfillmentRoutes';
+// FulfillmentRoutes supprimé - intégré dans OrderRoutes
 import { PricingRoutes } from './PricingRoutes';
 import { AIRoutes } from './AIRoutes';
 import { ResearchRoutes } from './ResearchRoutes';
@@ -149,7 +149,12 @@ export function AppRoutes() {
         <Route path="/suppliers/*" element={<ProtectedRoute><ChannableLayout><SupplierRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/stores-channels/*" element={<ProtectedRoute><ChannableLayout><ChannelRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/channels/*" element={<ProtectedRoute><ChannableLayout><ChannelRoutes /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/fulfillment/*" element={<ProtectedRoute><ChannableLayout><FulfillmentRoutes /></ChannableLayout></ProtectedRoute>} />
+        {/* Fulfillment - Redirection vers /orders/fulfillment */}
+        <Route path="/fulfillment" element={<Navigate to="/orders/fulfillment" replace />} />
+        <Route path="/fulfillment/carriers" element={<Navigate to="/orders/fulfillment/carriers" replace />} />
+        <Route path="/fulfillment/rules" element={<Navigate to="/orders/fulfillment/rules" replace />} />
+        <Route path="/fulfillment/dashboard" element={<Navigate to="/orders/fulfillment" replace />} />
+        <Route path="/fulfillment/*" element={<Navigate to="/orders/fulfillment" replace />} />
         <Route path="/pricing/*" element={<ProtectedRoute><ChannableLayout><PricingRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/ai/*" element={<ProtectedRoute><ChannableLayout><AIRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/research/*" element={<ProtectedRoute><ChannableLayout><ResearchRoutes /></ChannableLayout></ProtectedRoute>} />
