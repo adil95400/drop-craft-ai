@@ -18,7 +18,7 @@ import {
   Loader2, Plus, Trash2, Package, CreditCard, FileText, 
   CheckCircle2, AlertTriangle, ChevronRight, ChevronLeft,
   RotateCcw, Wallet, RefreshCw, Euro, ShoppingBag, Search,
-  Barcode, Hash, Image as ImageIcon, Keyboard
+  Barcode, Hash, Image as ImageIcon, Keyboard, User, Mail, AtSign
 } from 'lucide-react'
 import { useReturns, ReturnItem } from '@/hooks/useReturns'
 import { cn } from '@/lib/utils'
@@ -35,12 +35,24 @@ type ReasonCategory = 'defective' | 'wrong_item' | 'not_as_described' | 'changed
 type RefundMethod = 'original_payment' | 'store_credit' | 'exchange'
 
 interface FormData {
+  customer_id?: string
+  customer_name?: string
+  customer_email?: string
   reason: string
   reason_category: ReasonCategory | ''
   description: string
   refund_method: RefundMethod | ''
   refund_amount: string
   items: ReturnItem[]
+}
+
+interface CustomerSearchResult {
+  id: string
+  email: string
+  first_name: string | null
+  last_name: string | null
+  total_orders: number | null
+  total_spent: number | null
 }
 
 interface ProductSearchResult {
@@ -68,6 +80,13 @@ interface OrderSearchResult {
   order_number: string
   status: string | null
   total_amount: number | null
+  customer_id: string | null
+  customers: {
+    id: string
+    email: string
+    first_name: string | null
+    last_name: string | null
+  } | null
   order_items: OrderItemResult[]
 }
 
@@ -98,7 +117,7 @@ const REFUND_METHODS = [
 ] as const
 
 const STEPS = [
-  { id: 1, label: 'Motif', icon: FileText },
+  { id: 1, label: 'Client & Motif', icon: User },
   { id: 2, label: 'Articles', icon: Package },
   { id: 3, label: 'Remboursement', icon: CreditCard }
 ]
@@ -108,6 +127,9 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
   const [currentStep, setCurrentStep] = useState(1)
   
   const [formData, setFormData] = useState<FormData>({
+    customer_id: undefined,
+    customer_name: undefined,
+    customer_email: undefined,
     reason: '',
     reason_category: '',
     description: '',
@@ -115,6 +137,13 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     refund_amount: '',
     items: []
   })
+
+  // États pour la recherche client
+  const [customerSearchQuery, setCustomerSearchQuery] = useState('')
+  const [customerResults, setCustomerResults] = useState<CustomerSearchResult[]>([])
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerSearchResult | null>(null)
+  const [isSearchingCustomer, setIsSearchingCustomer] = useState(false)
+  const debouncedCustomerQuery = useDebounce(customerSearchQuery, 300)
 
   // États pour la recherche intelligente
   const [searchMode, setSearchMode] = useState<'sku' | 'order' | 'manual'>('sku')
@@ -213,11 +242,36 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     }))
   }, [])
 
+  // Sélectionner un client
+  const handleSelectCustomer = useCallback((customer: CustomerSearchResult) => {
+    setSelectedCustomer(customer)
+    setFormData(prev => ({
+      ...prev,
+      customer_id: customer.id,
+      customer_name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email.split('@')[0],
+      customer_email: customer.email
+    }))
+    setCustomerSearchQuery('')
+    setCustomerResults([])
+  }, [])
+
+  // Effacer le client sélectionné
+  const handleClearCustomer = useCallback(() => {
+    setSelectedCustomer(null)
+    setFormData(prev => ({
+      ...prev,
+      customer_id: undefined,
+      customer_name: undefined,
+      customer_email: undefined
+    }))
+  }, [])
+
   // Soumission
   const handleSubmit = useCallback(() => {
     if (!validateStep(3)) return
 
     createReturn({
+      customer_id: selectedCustomer?.id || formData.customer_id,
       order_id: orderId,
       reason: formData.reason,
       reason_category: formData.reason_category || undefined,
@@ -232,10 +286,13 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
         resetForm()
       }
     })
-  }, [formData, orderId, totalRefund, validateStep, createReturn, onOpenChange])
+  }, [formData, orderId, totalRefund, validateStep, createReturn, onOpenChange, selectedCustomer])
 
   const resetForm = useCallback(() => {
     setFormData({
+      customer_id: undefined,
+      customer_name: undefined,
+      customer_email: undefined,
       reason: '',
       reason_category: '',
       description: '',
@@ -250,6 +307,9 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     setOrderResults([])
     setSelectedProduct(null)
     setSearchMode('sku')
+    setCustomerSearchQuery('')
+    setCustomerResults([])
+    setSelectedCustomer(null)
   }, [])
 
   const handleOpenChange = useCallback((open: boolean) => {
@@ -286,7 +346,7 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     }
   }, [])
 
-  // Recherche par numéro de commande
+  // Recherche par numéro de commande (avec info client)
   const searchOrderByNumber = useCallback(async (query: string) => {
     if (!query.trim() || query.length < 2) {
       setOrderResults([])
@@ -301,7 +361,8 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
       const { data, error } = await supabase
         .from('orders')
         .select(`
-          id, order_number, status, total_amount,
+          id, order_number, status, total_amount, customer_id,
+          customers (id, email, first_name, last_name),
           order_items (
             id, product_id, product_name, product_sku, 
             qty, unit_price, variant_title
@@ -320,6 +381,44 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
       setIsSearching(false)
     }
   }, [])
+
+  // Recherche client par email ou nom
+  const searchCustomerByQuery = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setCustomerResults([])
+      return
+    }
+    
+    setIsSearchingCustomer(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, email, first_name, last_name, total_orders, total_spent')
+        .eq('user_id', user.id)
+        .or(`email.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
+        .limit(5)
+      
+      if (error) throw error
+      setCustomerResults(data || [])
+    } catch (error) {
+      console.error('Erreur recherche client:', error)
+      setCustomerResults([])
+    } finally {
+      setIsSearchingCustomer(false)
+    }
+  }, [])
+
+  // Effet pour recherche client
+  useEffect(() => {
+    if (debouncedCustomerQuery) {
+      searchCustomerByQuery(debouncedCustomerQuery)
+    } else {
+      setCustomerResults([])
+    }
+  }, [debouncedCustomerQuery, searchCustomerByQuery])
 
   // Effet pour déclencher la recherche
   useEffect(() => {
@@ -349,7 +448,7 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     setSearchResults([])
   }, [])
 
-  // Sélectionner un article depuis une commande
+  // Sélectionner un article depuis une commande (avec auto-remplissage client)
   const handleSelectOrderItem = useCallback((order: OrderSearchResult, item: OrderItemResult) => {
     setSelectedProduct({
       product_id: item.product_id || `order_item_${item.id}`,
@@ -362,9 +461,26 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
     })
     setSearchQuery('')
     setOrderResults([])
-    // Auto-remplir l'order_id du formulaire
-    setFormData(prev => ({ ...prev }))
-  }, [])
+    
+    // Auto-remplir le client depuis la commande si disponible
+    if (order.customers && !selectedCustomer) {
+      const customer = order.customers
+      setSelectedCustomer({
+        id: customer.id,
+        email: customer.email,
+        first_name: customer.first_name,
+        last_name: customer.last_name,
+        total_orders: null,
+        total_spent: null
+      })
+      setFormData(prev => ({
+        ...prev,
+        customer_id: customer.id,
+        customer_name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email.split('@')[0],
+        customer_email: customer.email
+      }))
+    }
+  }, [selectedCustomer])
 
   // Ajouter le produit sélectionné aux articles
   const handleAddSelectedProduct = useCallback(() => {
@@ -394,6 +510,138 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
       exit={{ opacity: 0, x: -20 }}
       className="space-y-6"
     >
+      {/* Identification client */}
+      <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+        <CardContent className="p-5 space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <User className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium">Client concerné</p>
+              <p className="text-xs text-muted-foreground">Recherchez par email ou nom (recommandé)</p>
+            </div>
+          </div>
+
+          {/* Client sélectionné */}
+          {selectedCustomer ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="bg-primary/5 border-primary/30">
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="p-3 rounded-full bg-primary/10">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium">
+                      {selectedCustomer.first_name || selectedCustomer.last_name 
+                        ? `${selectedCustomer.first_name || ''} ${selectedCustomer.last_name || ''}`.trim()
+                        : selectedCustomer.email.split('@')[0]}
+                    </p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Mail className="h-3 w-3" />
+                      <span className="truncate">{selectedCustomer.email}</span>
+                    </div>
+                    {(selectedCustomer.total_orders !== null || selectedCustomer.total_spent !== null) && (
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                        {selectedCustomer.total_orders !== null && (
+                          <span>{selectedCustomer.total_orders} commande(s)</span>
+                        )}
+                        {selectedCustomer.total_spent !== null && (
+                          <span>{selectedCustomer.total_spent.toFixed(2)} € dépensés</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <Badge variant="secondary" className="gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Identifié
+                  </Badge>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={handleClearCustomer}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ) : (
+            <div className="space-y-3">
+              {/* Recherche client */}
+              <div className="relative">
+                <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                {isSearchingCustomer && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+                <Input
+                  placeholder="Rechercher par email ou nom..."
+                  value={customerSearchQuery}
+                  onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+              </div>
+
+              {/* Résultats de recherche client */}
+              {customerResults.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">{customerResults.length} client(s) trouvé(s)</p>
+                  {customerResults.map((customer) => (
+                    <Card 
+                      key={customer.id}
+                      className="cursor-pointer hover:border-primary/50 transition-all"
+                      onClick={() => handleSelectCustomer(customer)}
+                    >
+                      <CardContent className="flex items-center gap-3 p-3">
+                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">
+                            {customer.first_name || customer.last_name 
+                              ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+                              : customer.email.split('@')[0]}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
+                        </div>
+                        <div className="text-right text-xs text-muted-foreground">
+                          {customer.total_orders !== null && (
+                            <p>{customer.total_orders} cmd</p>
+                          )}
+                          {customer.total_spent !== null && (
+                            <p>{customer.total_spent.toFixed(2)} €</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {debouncedCustomerQuery && !isSearchingCustomer && customerResults.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  Aucun client trouvé pour "{debouncedCustomerQuery}"
+                </p>
+              )}
+
+              {!debouncedCustomerQuery && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-500 flex-shrink-0" />
+                  <span>Sans client identifié, le retour sera créé sans lien avec un compte client.</span>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Separator />
+
       {/* Catégorie de retour */}
       <div className="space-y-3">
         <Label className="text-base font-medium">Pourquoi ce retour ? *</Label>
@@ -1002,6 +1250,20 @@ export function CreateReturnDialog({ open, onOpenChange, orderId }: CreateReturn
           <p className="font-medium">Récapitulatif de la demande</p>
           <Separator />
           <div className="space-y-2 text-sm">
+            {/* Client */}
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Client</span>
+              <span className="font-medium">
+                {selectedCustomer ? (
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3 text-primary" />
+                    {formData.customer_name || formData.customer_email}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Non identifié</span>
+                )}
+              </span>
+            </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Motif</span>
               <span className="font-medium">
