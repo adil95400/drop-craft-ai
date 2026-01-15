@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'))
 const QuickImportPage = lazy(() => import('@/pages/import/quick/QuickImportPage'))
-const QuickImportByUrl = lazy(() => import('@/pages/import/QuickImportByUrl'))
+
 const AutoDSImportPage = lazy(() => import('@/pages/import/AutoDSImportPage'))
 const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'))
 const ImportHistoryPage = lazy(() => import('@/pages/import/manage/ImportHistoryPage'))
@@ -19,7 +19,7 @@ export function ImportRoutes() {
     <Routes>
       <Route index element={<ImportHub />} />
       <Route path="quick" element={<QuickImportPage />} />
-      <Route path="url" element={<QuickImportByUrl />} />
+      
       <Route path="autods" element={<AutoDSImportPage />} />
       <Route path="advanced" element={<AdvancedImportPage />} />
       <Route path="history" element={<ImportHistoryPage />} />
