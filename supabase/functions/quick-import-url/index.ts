@@ -103,6 +103,34 @@ function detectPlatform(url: string): { platform: string; productId: string | nu
   return { platform: 'unknown', productId: null }
 }
 
+function canonicalizeAmazonUrl(url: string, asin: string | null): string {
+  if (!asin) return url
+  // Prefer canonical dp URL; keep basic params to show correct variant
+  const u = new URL(url)
+  const base = `${u.protocol}//${u.host}/dp/${asin}`
+  const params = new URLSearchParams()
+  if (u.searchParams.get('th')) params.set('th', u.searchParams.get('th')!)
+  if (u.searchParams.get('psc')) params.set('psc', u.searchParams.get('psc')!)
+  // Some mobile links use "?th=1&psc=1" to surface variations
+  if (!params.has('th')) params.set('th', '1')
+  if (!params.has('psc')) params.set('psc', '1')
+  return `${base}?${params.toString()}`
+}
+
+function isBlockedOrErrorHtml(html: string): boolean {
+  const h = html.toLowerCase()
+  return (
+    h.includes('robot check') ||
+    h.includes('enter the characters you see below') ||
+    h.includes('automated access') ||
+    h.includes('captcha') ||
+    h.includes('main-frame-error') || // Chrome offline / DNS
+    h.includes('this site can\’t be reached') ||
+    h.includes('this site can\'t be reached') ||
+    h.includes('dino') && h.includes('offline')
+  )
+}
+
 // Extract high quality images from various sources
 function extractHQImages(html: string, platform: string, markdown: string = ''): string[] {
   const images: string[] = []
@@ -110,23 +138,23 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
 
   const normalizeAmazonImageUrl = (url: string) => {
     // Convert various Amazon image hosts/sizes to the cleanest possible URL.
-    // Examples:
-    // - https://m.media-amazon.com/images/I/XXX._AC_SL1500_.jpg -> https://m.media-amazon.com/images/I/XXX.jpg
-    // - https://images-eu.ssl-images-amazon.com/images/I/XXX._AC_SR900,1125,0,C_BR3_.jpg -> https://m.media-amazon.com/images/I/XXX.jpg
     let u = url
 
     // Prefer m.media-amazon.com when we can
     u = u.replace(/^https?:\/\/images-[a-z0-9-]+\.ssl-images-amazon\.com\//i, 'https://m.media-amazon.com/')
 
-    // Remove size/transform segments: ._AC_..._. or ._S[XYZ]..._.
+    // Remove size/transform segments
     u = u
       .replace(/\._AC_[^._]+_\./g, '.')
-      .replace(/\._S[LXSMY]\d+_\./g, '.')
+      .replace(/\._AC_\./g, '.')
       .replace(/\._S[LXSMY]\d+_\./g, '.')
       .replace(/\._UX\d+_\./g, '.')
       .replace(/\._UY\d+_\./g, '.')
       .replace(/\._UL\d+_\./g, '.')
       .replace(/\._SR\d+,\d+,\d+,[^_]+_\./g, '.')
+
+    return u
+  }
 
     return u
   }
@@ -921,8 +949,12 @@ function extractAmazonPrice(html: string): { price: number; currency: string; or
 
 // Scrape product data using Firecrawl if available, otherwise fallback
 async function scrapeProductData(url: string, platform: string): Promise<any> {
-  console.log(`📦 Scraping product from ${platform}: ${url}`)
-  
+  // Amazon links with many params often lead to bot/error/offline pages; canonicalize early.
+  const { productId } = detectPlatform(url)
+  const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId) : url
+
+  console.log(`📦 Scraping product from ${platform}: ${effectiveUrl}`)
+
   const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
   let html = ''
   let markdown = ''
