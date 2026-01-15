@@ -49,6 +49,21 @@ import { useToast } from '@/hooks/use-toast'
 // Import methods with full configuration
 const importMethodsConfig = [
   {
+    id: 'autods-style',
+    title: 'Import AutoDS-Style',
+    description: 'Import en masse style AutoDS avec URL et images. Le plus puissant.',
+    icon: Bolt,
+    color: 'from-orange-500 to-red-600',
+    bgColor: 'bg-orange-500/10',
+    iconColor: 'text-orange-500',
+    borderColor: 'border-orange-500/20 hover:border-orange-500/50',
+    link: '/import/autods',
+    badge: '⭐ Nouveau',
+    badgeColor: 'bg-gradient-to-r from-orange-500 to-red-500',
+    features: ['Import masse URL', 'Import par image', 'File d\'attente'],
+    avgTime: '~30 sec'
+  },
+  {
     id: 'single-url',
     title: 'Import par URL',
     description: 'Importez un produit en collant son URL. Support AliExpress, Amazon, eBay, Temu et plus.',
