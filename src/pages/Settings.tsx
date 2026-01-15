@@ -1,79 +1,41 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
-import { useUserPreferences } from "@/stores/globalStore";
-import { useTheme } from "next-themes";
 import { useTranslation } from 'react-i18next';
-import i18n from '@/lib/i18n';
 import { BackButton } from '@/components/navigation/BackButton';
-import { useApiKeys } from '@/hooks/useApiKeys';
 import { 
   Settings as SettingsIcon,
   User, 
   Bell, 
   Key, 
   Palette, 
-  Globe, 
   Shield, 
   CreditCard, 
-  Zap, 
-  Save, 
-  Upload, 
-  Moon, 
-  Sun, 
-  Monitor, 
-  Mail, 
-  Smartphone, 
-  Database, 
-  Copy, 
-  Eye, 
-  EyeOff, 
-  Trash2, 
-  Plus, 
-  Check, 
-  X, 
-  Crown, 
-  Briefcase, 
-  Users,
+  Database,
   LogOut,
-  ExternalLink,
-  FileText,
-  RefreshCw
+  Save
 } from "lucide-react";
-import AvatarUpload from '@/components/common/AvatarUpload';
-import { RefreshProfileButton } from '@/components/auth/RefreshProfileButton';
+
+// Import refactored tab components
+import {
+  ProfileTab,
+  NotificationsTab,
+  SecurityTab,
+  ApiTab,
+  BillingTab,
+  AppearanceTab
+} from "@/components/settings";
 
 const Settings = () => {
   const { user, profile, updateProfile, signOut } = useAuth();
-  const { isAdmin, role } = useEnhancedAuth();
   const navigate = useNavigate();
-  const { setTheme } = useTheme();
   const { t } = useTranslation(['settings', 'common', 'navigation']);
-  
-  // Use global store for preferences
-  const {
-    theme: storeTheme,
-    language: storeLanguage,
-    sidebarCollapsed,
-    notifications: storeNotifications,
-    updateTheme,
-    updateLanguage,
-    updateNotifications,
-    toggleSidebar
-  } = useUserPreferences();
+  const [activeTab, setActiveTab] = useState("profile");
 
   const [profileData, setProfileData] = useState({
     name: profile?.full_name || user?.email?.split('@')[0] || "Utilisateur",
@@ -85,53 +47,27 @@ const Settings = () => {
   });
 
   const [notifications, setNotifications] = useState({
-    email: storeNotifications.email,
-    push: storeNotifications.push,
+    email: true,
+    push: true,
     sms: false,
     marketing: true,
     newFeatures: true,
     orderUpdates: true
   });
 
-  const [integrations, setIntegrations] = useState({
-    shopify: true,
-    woocommerce: false,
-    bigcommerce: false,
-    amazon: true,
-    aliexpress: true,
-    ebay: false,
-    facebook: true,
-    google: false
-  });
-
-  // Use real API keys from database
-  const { apiKeys: realApiKeys, generateApiKey, deleteApiKey: removeApiKey, loading: apiKeysLoading } = useApiKeys();
-  const [keyVisibility, setKeyVisibility] = useState<Record<string, boolean>>({});
-
-  // Use store values and local state for appearance
-  const [compactMode, setCompactMode] = useState(sidebarCollapsed);
-  const [animations, setAnimations] = useState(true);
-  const [sounds, setSounds] = useState(storeNotifications.desktop);
-  const [passwordData, setPasswordData] = useState({
-    current: "",
-    new: "",
-    confirm: ""
-  });
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  
-  // File upload ref
-  const fileInputRef = useState<HTMLInputElement | null>(null);
-
-  // Sync local state with store on mount
+  // Sync profile data when profile changes
   useEffect(() => {
-    setCompactMode(sidebarCollapsed);
-    setSounds(storeNotifications.desktop);
-    
-    // Sync i18n language with store
-    if (storeLanguage && i18n.language !== storeLanguage) {
-      i18n.changeLanguage(storeLanguage);
+    if (profile) {
+      setProfileData({
+        name: profile.full_name || user?.email?.split('@')[0] || "Utilisateur",
+        email: user?.email || "",
+        phone: profile.phone || "",
+        company: profile.company || "",
+        website: profile.website || "",
+        bio: profile.bio || ""
+      });
     }
-  }, [sidebarCollapsed, storeNotifications.desktop, storeLanguage]);
+  }, [profile, user]);
 
   const handleSaveProfile = async () => {
     try {
@@ -142,7 +78,6 @@ const Settings = () => {
         website: profileData.website,
         bio: profileData.bio
       });
-      
       toast.success('Profil sauvegardé avec succès');
     } catch (error) {
       toast.error('Erreur lors de la sauvegarde du profil');
@@ -150,13 +85,6 @@ const Settings = () => {
   };
 
   const handleSaveNotifications = () => {
-    // Update global store
-    updateNotifications({
-      email: notifications.email,
-      push: notifications.push,
-      desktop: notifications.sms
-    });
-    
     toast.promise(
       new Promise(resolve => setTimeout(resolve, 800)), 
       {
@@ -165,124 +93,6 @@ const Settings = () => {
         error: 'Erreur lors de la sauvegarde'
       }
     );
-  };
-
-  const handleApiKeyGenerate = async () => {
-    try {
-      await generateApiKey('Nouvelle API Key', ['read', 'write']);
-    } catch (error) {
-      // Error already handled in hook
-    }
-  };
-
-  const toggleKeyVisibility = (id: string) => {
-    setKeyVisibility(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Clé API copiée dans le presse-papier');
-  };
-
-  const handleDeleteApiKey = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette clé API ?')) {
-      await removeApiKey(id);
-    }
-  };
-
-  const handleChangePassword = async () => {
-    if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
-      toast.error('Veuillez remplir tous les champs');
-      return;
-    }
-    
-    if (passwordData.new !== passwordData.confirm) {
-      toast.error('Les mots de passe ne correspondent pas');
-      return;
-    }
-    
-    if (passwordData.new.length < 8) {
-      toast.error('Le mot de passe doit contenir au moins 8 caractères');
-      return;
-    }
-    
-    toast.promise(
-      new Promise(resolve => setTimeout(resolve, 1500)),
-      {
-        loading: 'Modification du mot de passe...',
-        success: () => {
-          setPasswordData({ current: "", new: "", confirm: "" });
-          return 'Mot de passe modifié avec succès';
-        },
-        error: 'Erreur lors de la modification'
-      }
-    );
-  };
-
-  const handleToggle2FA = () => {
-    const action = twoFactorEnabled ? 'Désactivation' : 'Activation';
-    toast.promise(
-      new Promise(resolve => {
-        setTimeout(() => {
-          setTwoFactorEnabled(!twoFactorEnabled);
-          resolve('success');
-        }, 1200);
-      }),
-      {
-        loading: `${action} du 2FA...`,
-        success: `2FA ${twoFactorEnabled ? 'désactivé' : 'activé'} avec succès`,
-        error: `Erreur lors de l'${action.toLowerCase()}`
-      }
-    );
-  };
-
-  const handleUpgradePlan = (planName: string, price: number) => {
-    if (!isAdmin) {
-      toast.info(`Simulation de mise à niveau vers ${planName} (${price}€/mois)`);
-      return;
-    }
-    
-    toast.promise(
-      new Promise(resolve => setTimeout(resolve, 2000)),
-      {
-        loading: `Mise à niveau vers ${planName}...`,
-        success: `Plan ${planName} activé avec succès`,
-        error: 'Erreur lors de la mise à niveau'
-      }
-    );
-  };
-
-  const handleSaveAppearance = () => {
-    // Update global store
-    updateNotifications({ desktop: sounds });
-    if (compactMode !== sidebarCollapsed) {
-      toggleSidebar();
-    }
-    
-    toast.success(t('settings:messages.appearanceSaved'));
-  };
-
-  // Handle theme change immediately
-  const handleThemeChange = (newTheme: string) => {
-    updateTheme(newTheme as any);
-    setTheme(newTheme);
-  };
-
-  // Handle language change immediately
-  const handleLanguageChange = (newLanguage: string) => {
-    updateLanguage(newLanguage as any);
-    i18n.changeLanguage(newLanguage);
-    
-    const languageNames = {
-      fr: 'Français',
-      en: 'English',
-      es: 'Español',
-      de: 'Deutsch'
-    };
-    
-    toast.success(t('settings:messages.languageChanged', { 
-      language: languageNames[newLanguage as keyof typeof languageNames] || newLanguage 
-    }));
   };
 
   const handleLogout = async () => {
@@ -295,38 +105,26 @@ const Settings = () => {
     }
   };
 
-  // Remove this function as we'll use AvatarUpload component
-
-  const goToApiDocumentation = () => {
-    navigate('/api-docs');
-  };
-
-  const plans = [{
-    name: "Starter",
-    price: 29,
-    current: false,
-    features: ["1000 produits", "Suivi basique", "Support email"]
-  }, {
-    name: "Professional", 
-    price: 79,
-    current: true,
-    features: ["Produits illimités", "IA avancée", "Support prioritaire", "API"]
-  }, {
-    name: "Enterprise",
-    price: 199,
-    current: false,
-    features: ["Tout inclus", "White-label", "Support dédié", "Multi-utilisateurs"]
-  }];
+  const tabs = [
+    { id: 'profile', label: 'Profil', icon: User, mobileLabel: 'Profil' },
+    { id: 'notifications', label: t('settings:tabs.notifications'), icon: Bell, mobileLabel: 'Notifs' },
+    { id: 'security', label: t('settings:tabs.security'), icon: Shield, mobileLabel: 'Sécurité' },
+    { id: 'integrations', label: t('settings:tabs.integrations'), icon: Database, mobileLabel: 'Intégr.' },
+    { id: 'billing', label: 'Facturation', icon: CreditCard, mobileLabel: 'Billing' },
+    { id: 'api', label: 'API', icon: Key, mobileLabel: 'API' },
+    { id: 'appearance', label: t('settings:tabs.appearance'), icon: Palette, mobileLabel: 'Thème' },
+  ];
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-full overflow-x-hidden">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       <div className="mb-2 sm:mb-4">
         <BackButton to="/dashboard" />
       </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             {t('settings:title')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -334,12 +132,21 @@ const Settings = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleLogout} size="sm" className="border-destructive/20 text-destructive hover:bg-destructive/10 text-xs sm:text-sm">
+          <Button 
+            variant="outline" 
+            onClick={handleLogout} 
+            size="sm" 
+            className="border-destructive/30 text-destructive hover:bg-destructive/10"
+          >
             <LogOut className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">{t('navigation:logout')}</span>
             <span className="xs:hidden">Quit</span>
           </Button>
-          <Button variant="default" onClick={handleSaveProfile} size="sm" className="bg-primary hover:bg-primary/90 text-xs sm:text-sm">
+          <Button 
+            variant="default" 
+            onClick={handleSaveProfile} 
+            size="sm"
+          >
             <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">Sauvegarder</span>
             <span className="xs:hidden">Save</span>
@@ -347,750 +154,85 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Section de synchronisation du profil - déplacée en bas pour être moins intrusive */}
-      {profile && (
-        <div className="mt-8">
-          <Card className="border-primary/20 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                <RefreshCw className="h-5 w-5" />
-                Synchronisation du Profil
-              </CardTitle>
-              <CardDescription>
-                Actualisez vos informations de profil et permissions depuis la base de données
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Statut admin:</span>
-                    <p className="font-medium">{profile?.is_admin ? 'Oui' : 'Non'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Mode admin:</span>
-                    <p className="font-medium">{profile?.admin_mode || 'Aucun'}</p>
-                  </div>
-                </div>
-                <RefreshProfileButton />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <Tabs defaultValue="profile" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-          {/* Left Sidebar - Navigation (hidden on mobile, shown as horizontal scroll) */}
-          <Card className="border-border bg-card shadow-card lg:block">
-            <CardHeader className="p-3 sm:p-6 hidden lg:block">
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <SettingsIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+          {/* Sidebar Navigation */}
+          <Card className="border-border bg-card shadow-sm">
+            <CardHeader className="p-4 hidden lg:block">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <SettingsIcon className="h-4 w-4 text-primary" />
                 Configuration
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {/* Mobile horizontal scroll tabs */}
-              <div className="lg:hidden overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
-                <TabsList className="inline-flex w-auto min-w-full h-auto bg-transparent p-1 gap-1">
-                  <TabsTrigger value="profile" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <User className="h-3.5 w-3.5" />
-                    Profil
-                  </TabsTrigger>
-                  <TabsTrigger value="notifications" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <Bell className="h-3.5 w-3.5" />
-                    Notifs
-                  </TabsTrigger>
-                  <TabsTrigger value="security" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <Shield className="h-3.5 w-3.5" />
-                    Sécurité
-                  </TabsTrigger>
-                  <TabsTrigger value="integrations" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <Database className="h-3.5 w-3.5" />
-                    Intégrations
-                  </TabsTrigger>
-                  <TabsTrigger value="billing" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <CreditCard className="h-3.5 w-3.5" />
-                    Billing
-                  </TabsTrigger>
-                  <TabsTrigger value="api" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <Key className="h-3.5 w-3.5" />
-                    API
-                  </TabsTrigger>
-                  <TabsTrigger value="appearance" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <Palette className="h-3.5 w-3.5" />
-                    Thème
-                  </TabsTrigger>
+              <div className="lg:hidden overflow-x-auto scrollbar-hide">
+                <TabsList className="inline-flex w-auto min-w-full h-auto bg-transparent p-2 gap-1">
+                  {tabs.map(({ id, icon: Icon, mobileLabel }) => (
+                    <TabsTrigger 
+                      key={id}
+                      value={id} 
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {mobileLabel}
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
               </div>
+              
               {/* Desktop vertical tabs */}
-              <TabsList className="hidden lg:grid w-full grid-cols-1 h-auto bg-transparent p-1 space-y-1">
-                <TabsTrigger value="profile" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <User className="mr-2 h-4 w-4" />
-                  {t('settings:general.profile')}
-                </TabsTrigger>
-                <TabsTrigger value="notifications" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Bell className="mr-2 h-4 w-4" />
-                  {t('settings:tabs.notifications')}
-                </TabsTrigger>
-                <TabsTrigger value="security" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Shield className="mr-2 h-4 w-4" />
-                  {t('settings:tabs.security')}
-                </TabsTrigger>
-                <TabsTrigger value="integrations" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Database className="mr-2 h-4 w-4" />
-                  {t('settings:tabs.integrations')}
-                </TabsTrigger>
-                <TabsTrigger value="billing" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Facturation
-                </TabsTrigger>
-                <TabsTrigger value="api" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Key className="mr-2 h-4 w-4" />
-                  API
-                </TabsTrigger>
-                <TabsTrigger value="appearance" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Palette className="mr-2 h-4 w-4" />
-                  {t('settings:tabs.appearance')}
-                </TabsTrigger>
+              <TabsList className="hidden lg:flex flex-col w-full h-auto bg-transparent p-2 gap-1">
+                {tabs.map(({ id, label, icon: Icon }) => (
+                  <TabsTrigger 
+                    key={id}
+                    value={id} 
+                    className="justify-start w-full text-sm rounded-lg px-3 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    {label}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </CardContent>
           </Card>
 
-          {/* Right Content Area */}
+          {/* Content Area */}
           <div className="lg:col-span-3">
-                
-            {/* Profile Tab */}
-            <TabsContent value="profile" className="mt-0">
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Informations Personnelles</CardTitle>
-                  <CardDescription>Gérez vos informations de profil</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <AvatarUpload 
-                    currentAvatarUrl={profile?.avatar_url}
-                    userName={profileData.name}
-                    size="lg"
-                    showUploadButton={true}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nom complet</Label>
-                      <Input 
-                        id="name" 
-                        value={profileData.name} 
-                        onChange={e => setProfileData({
-                          ...profileData,
-                          name: e.target.value
-                        })} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        value={profileData.email} 
-                        disabled
-                        className="bg-muted"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input 
-                        id="phone" 
-                        value={profileData.phone} 
-                        onChange={e => setProfileData({
-                          ...profileData,
-                          phone: e.target.value
-                        })} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="company">Entreprise</Label>
-                      <Input 
-                        id="company" 
-                        value={profileData.company} 
-                        onChange={e => setProfileData({
-                          ...profileData,
-                          company: e.target.value
-                        })} 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="website">Site web</Label>
-                    <Input 
-                      id="website" 
-                      value={profileData.website} 
-                      onChange={e => setProfileData({
-                        ...profileData,
-                        website: e.target.value
-                      })} 
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea 
-                      id="bio" 
-                      value={profileData.bio} 
-                      onChange={e => setProfileData({
-                        ...profileData,
-                        bio: e.target.value
-                      })} 
-                      placeholder="Parlez-nous de vous..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <Button onClick={handleSaveProfile} variant="hero">
-                    <Save className="mr-2 h-4 w-4" />
-                    Sauvegarder le Profil
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Section de synchronisation du profil dans l'onglet Profil */}
-              {profile && (
-                <Card className="border-primary/20 bg-primary/5 mt-6">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-primary">
-                      <RefreshCw className="h-5 w-5" />
-                      Actualiser le Profil
-                    </CardTitle>
-                    <CardDescription>
-                      Synchronisez vos droits et permissions depuis la base de données
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-muted/50 p-4 rounded-lg">
-                        <div>
-                          <span className="text-muted-foreground">Statut admin:</span>
-                          <p className="font-medium">{profile?.is_admin ? 'Oui' : 'Non'}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Mode admin:</span>
-                          <p className="font-medium">{profile?.admin_mode || 'Aucun'}</p>
-                        </div>
-                      </div>
-                      <RefreshProfileButton />
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Section Admin - uniquement visible pour les admins */}
-              {isAdmin && (
-                <Card className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 mt-6">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-200">
-                      <Shield className="h-5 w-5" />
-                      Administration Système
-                    </CardTitle>
-                    <CardDescription>
-                      Outils d'administration et gestion système
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-700 rounded-lg bg-red-100/50 dark:bg-red-900/30">
-                        <div>
-                          <div className="font-medium text-red-700 dark:text-red-300">Panneau d'administration</div>
-                          <div className="text-sm text-red-600 dark:text-red-400">Accès complet aux outils d'administration</div>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => navigate('/admin')}
-                          className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/50"
-                        >
-                          <Shield className="mr-2 h-4 w-4" />
-                          Ouvrir Admin
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Rôle système:</span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="destructive" className="text-xs">
-                              {role?.toUpperCase()}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Mode admin:</span>
-                          <p className="font-medium mt-1 text-red-700 dark:text-red-300">
-                            {profile?.admin_mode || 'Mode normal'}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Privilèges:</span>
-                          <p className="font-medium mt-1 text-red-700 dark:text-red-300">
-                            Accès complet
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+            <TabsContent value="profile" className="mt-0 space-y-0">
+              <ProfileTab 
+                profileData={profileData}
+                setProfileData={setProfileData}
+                onSave={handleSaveProfile}
+              />
             </TabsContent>
 
-            {/* Notifications Tab */}
             <TabsContent value="notifications" className="mt-0">
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Préférences de Notification</CardTitle>
-                  <CardDescription>Configurez comment vous souhaitez être notifié</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Canaux de notification</h4>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium">Email</div>
-                          <div className="text-sm text-muted-foreground">Notifications par email</div>
-                        </div>
-                      </div>
-                      <Switch 
-                        checked={notifications.email} 
-                        onCheckedChange={checked => setNotifications({
-                          ...notifications,
-                          email: checked
-                        })} 
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Bell className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium">Push</div>
-                          <div className="text-sm text-muted-foreground">Notifications navigateur</div>
-                        </div>
-                      </div>
-                      <Switch 
-                        checked={notifications.push} 
-                        onCheckedChange={checked => setNotifications({
-                          ...notifications,
-                          push: checked
-                        })} 
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Smartphone className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium">SMS</div>
-                          <div className="text-sm text-muted-foreground">Notifications par SMS</div>
-                        </div>
-                      </div>
-                      <Switch 
-                        checked={notifications.sms} 
-                        onCheckedChange={checked => setNotifications({
-                          ...notifications,
-                          sms: checked
-                        })} 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Types de notifications</h4>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">Mises à jour commandes</div>
-                        <div className="text-sm text-muted-foreground">Statut des colis et livraisons</div>
-                      </div>
-                      <Switch 
-                        checked={notifications.orderUpdates} 
-                        onCheckedChange={checked => setNotifications({
-                          ...notifications,
-                          orderUpdates: checked
-                        })} 
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">Nouvelles fonctionnalités</div>
-                        <div className="text-sm text-muted-foreground">Annonces produit et mises à jour</div>
-                      </div>
-                      <Switch 
-                        checked={notifications.newFeatures} 
-                        onCheckedChange={checked => setNotifications({
-                          ...notifications,
-                          newFeatures: checked
-                        })} 
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium">Marketing</div>
-                        <div className="text-sm text-muted-foreground">Conseils et recommandations</div>
-                      </div>
-                      <Switch 
-                        checked={notifications.marketing} 
-                        onCheckedChange={checked => setNotifications({
-                          ...notifications,
-                          marketing: checked
-                        })} 
-                      />
-                    </div>
-                  </div>
-
-                  <Button onClick={handleSaveNotifications} variant="hero">
-                    <Save className="mr-2 h-4 w-4" />
-                    Sauvegarder les Préférences
-                  </Button>
-                </CardContent>
-              </Card>
+              <NotificationsTab 
+                notifications={notifications}
+                setNotifications={setNotifications}
+                onSave={handleSaveNotifications}
+              />
             </TabsContent>
 
-            {/* Security Tab */}
             <TabsContent value="security" className="mt-0">
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Sécurité</CardTitle>
-                  <CardDescription>Protégez votre compte</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Mot de passe</h4>
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        <Label>Mot de passe actuel</Label>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••"
-                          value={passwordData.current}
-                          onChange={e => setPasswordData({...passwordData, current: e.target.value})}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Nouveau mot de passe</Label>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••"
-                          value={passwordData.new}
-                          onChange={e => setPasswordData({...passwordData, new: e.target.value})}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Confirmer nouveau mot de passe</Label>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••"
-                          value={passwordData.confirm}
-                          onChange={e => setPasswordData({...passwordData, confirm: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <Button variant="outline" onClick={handleChangePassword}>
-                      <Shield className="mr-2 h-4 w-4" />
-                      Changer le Mot de Passe
-                    </Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Authentification à deux facteurs</h4>
-                    <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                      <div>
-                        <div className="font-medium">2FA {twoFactorEnabled && <Badge variant="secondary" className="ml-2">Activé</Badge>}</div>
-                        <div className="text-sm text-muted-foreground">Sécurité supplémentaire pour votre compte</div>
-                      </div>
-                      <Button 
-                        variant={twoFactorEnabled ? "destructive" : "outline"}
-                        onClick={handleToggle2FA}
-                      >
-                        <Key className="mr-2 h-4 w-4" />
-                        {twoFactorEnabled ? 'Désactiver 2FA' : 'Activer 2FA'}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Sessions actives</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                        <div>
-                          <div className="font-medium">Session actuelle</div>
-                          <div className="text-sm text-muted-foreground">
-                            {new Date().toLocaleString('fr-FR')}
-                          </div>
-                        </div>
-                        <Badge variant="secondary">Actuelle</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <SecurityTab />
             </TabsContent>
 
-            {/* Integrations Tab */}
             <TabsContent value="integrations" className="mt-0">
               <RealIntegrationsTab />
             </TabsContent>
 
-            {/* Billing Tab */}
             <TabsContent value="billing" className="mt-0">
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Facturation & Abonnement</CardTitle>
-                  <CardDescription>Gérez votre plan et vos paiements</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Plan actuel</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {plans.map((plan) => (
-                        <div 
-                          key={plan.name} 
-                          className={`p-4 border rounded-lg ${plan.current ? 'border-primary bg-primary/5' : 'border-border'}`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <h5 className="font-semibold">{plan.name}</h5>
-                            {plan.current && <Badge variant="secondary">Actuel</Badge>}
-                          </div>
-                          <div className="text-2xl font-bold mb-2">{plan.price}€<span className="text-sm font-normal">/mois</span></div>
-                          <ul className="space-y-1 text-sm text-muted-foreground">
-                            {plan.features.map((feature, idx) => (
-                              <li key={idx} className="flex items-center">
-                                <Check className="h-3 w-3 mr-2 text-primary" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                          {!plan.current && (
-                            <Button 
-                              variant="outline" 
-                              className="w-full mt-3"
-                              onClick={() => handleUpgradePlan(plan.name, plan.price)}
-                            >
-                              Passer à ce plan
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Historique des paiements</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                        <div>
-                          <div className="font-medium">Plan Professional - Février 2024</div>
-                          <div className="text-sm text-muted-foreground">01/02/2024</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium">79€</div>
-                          <Badge variant="secondary">Payé</Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                        <div>
-                          <div className="font-medium">Plan Professional - Janvier 2024</div>
-                          <div className="text-sm text-muted-foreground">01/01/2024</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium">79€</div>
-                          <Badge variant="secondary">Payé</Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <BillingTab />
             </TabsContent>
 
-            {/* API Tab */}
             <TabsContent value="api" className="mt-0">
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Gestion des API</CardTitle>
-                      <CardDescription>Gérez vos clés API et accédez à la documentation</CardDescription>
-                    </div>
-                    <Button variant="outline" onClick={goToApiDocumentation}>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Voir Documentation API
-                      <ExternalLink className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold">Clés API</h4>
-                    <Button variant="hero" onClick={handleApiKeyGenerate}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Générer nouvelle clé
-                    </Button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {apiKeysLoading ? (
-                      <div className="text-center py-4 text-muted-foreground">Chargement...</div>
-                    ) : realApiKeys.length === 0 ? (
-                      <div className="text-center py-4 text-muted-foreground">Aucune clé API. Créez-en une pour commencer.</div>
-                    ) : (
-                      realApiKeys.map((apiKey) => (
-                        <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                          <div className="space-y-1">
-                            <div className="font-medium">{apiKey.name}</div>
-                            <div className="font-mono text-sm text-muted-foreground">
-                              {keyVisibility[apiKey.id] ? apiKey.key : (apiKey.key_prefix || apiKey.key.substring(0, 10)) + '••••••••••••••••'}
-                            </div>
-                            <div className="text-xs text-muted-foreground">Créée le {new Date(apiKey.created_at).toLocaleDateString('fr-FR')}</div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleKeyVisibility(apiKey.id)}
-                            >
-                              {keyVisibility[apiKey.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(apiKey.key)}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteApiKey(apiKey.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <h5 className="font-semibold mb-2">Informations importantes</h5>
-                    <ul className="space-y-1 text-sm text-muted-foreground">
-                      <li>• Les clés API donnent accès à toutes vos données</li>
-                      <li>• Ne partagez jamais vos clés API publiquement</li>
-                      <li>• Utilisez des environnements séparés pour dev/prod</li>
-                      <li>• Régénérez vos clés si elles sont compromises</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+              <ApiTab />
             </TabsContent>
 
-            {/* Appearance Tab */}
             <TabsContent value="appearance" className="mt-0">
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Apparence</CardTitle>
-                  <CardDescription>Personnalisez l'interface utilisateur</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">{t('settings:appearance.theme')}</h4>
-                    <Select value={storeTheme} onValueChange={handleThemeChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choisir un thème" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="light">
-                          <div className="flex items-center">
-                            <Sun className="mr-2 h-4 w-4" />
-                            {t('settings:appearance.themes.light')}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="dark">
-                          <div className="flex items-center">
-                            <Moon className="mr-2 h-4 w-4" />
-                            {t('settings:appearance.themes.dark')}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="system">
-                          <div className="flex items-center">
-                            <Monitor className="mr-2 h-4 w-4" />
-                            {t('settings:appearance.themes.system')}
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>{t('settings:general.language')}</Label>
-                    <Select value={storeLanguage} onValueChange={handleLanguageChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choisir une langue" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                        <SelectItem value="en">🇬🇧 English</SelectItem>
-                        <SelectItem value="es">🇪🇸 Español</SelectItem>
-                        <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Paramètres d'affichage</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">Mode compact</div>
-                          <div className="text-sm text-muted-foreground">Réduire l'espacement de l'interface</div>
-                        </div>
-                        <Switch 
-                          checked={compactMode}
-                          onCheckedChange={setCompactMode}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">Animations</div>
-                          <div className="text-sm text-muted-foreground">Activer les transitions animées</div>
-                        </div>
-                        <Switch 
-                          checked={animations}
-                          onCheckedChange={setAnimations}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">Sons système</div>
-                          <div className="text-sm text-muted-foreground">Sons pour les notifications</div>
-                        </div>
-                        <Switch 
-                          checked={sounds}
-                          onCheckedChange={setSounds}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button variant="default" onClick={handleSaveAppearance} className="bg-primary hover:bg-primary/90">
-                    <Save className="mr-2 h-4 w-4" />
-                    Sauvegarder l'Apparence
-                  </Button>
-                </CardContent>
-              </Card>
+              <AppearanceTab />
             </TabsContent>
           </div>
         </div>
