@@ -128,14 +128,13 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 1,
     groupId: 'sources',
     subModules: [
-      { id: 'import-autods', name: 'AutoDS Style', route: '/import/autods', icon: 'Bolt', description: 'Import masse style AutoDS', features: ['bulk-url', 'image-import'], order: 1 },
-      { id: 'import-url', name: 'Import par URL', route: '/import/url', icon: 'Link', description: 'Importer depuis une URL', features: ['url-import'], order: 2 },
-      { id: 'import-quick', name: 'Import CSV', route: '/import/quick', icon: 'FileSpreadsheet', description: 'Upload CSV rapide', features: ['csv-upload'], order: 3 },
-      { id: 'import-aliexpress', name: 'AliExpress', route: '/import/aliexpress', icon: 'Globe', description: 'Import AliExpress optimisé', features: ['aliexpress'], order: 4 },
-      { id: 'import-shopify', name: 'Shopify', route: '/import/shopify', icon: 'Store', description: 'Import depuis Shopify', features: ['shopify'], order: 5 },
-      { id: 'import-advanced', name: 'Import Avancé', route: '/import/advanced', icon: 'Settings', description: 'Mapping et transformations', features: ['field-mapping'], order: 6 },
-      { id: 'import-history', name: 'Historique', route: '/import/history', icon: 'History', description: 'Historique des imports', features: ['logs'], order: 7 },
-      { id: 'import-config', name: 'Configuration', route: '/import/config', icon: 'Settings', description: 'Configuration des imports', features: ['config'], order: 8 },
+      { id: 'import-url', name: 'Import URL', route: '/import/autods', icon: 'Link', description: 'Import par URL style AutoDS', features: ['bulk-url', 'url-import', 'image-import'], order: 1 },
+      { id: 'import-quick', name: 'Import CSV', route: '/import/quick', icon: 'FileSpreadsheet', description: 'Upload CSV rapide', features: ['csv-upload'], order: 2 },
+      { id: 'import-aliexpress', name: 'AliExpress', route: '/import/aliexpress', icon: 'Globe', description: 'Import AliExpress optimisé', features: ['aliexpress'], order: 3 },
+      { id: 'import-shopify', name: 'Shopify', route: '/import/shopify', icon: 'Store', description: 'Import depuis Shopify', features: ['shopify'], order: 4 },
+      { id: 'import-advanced', name: 'Import Avancé', route: '/import/advanced', icon: 'Settings', description: 'Mapping et transformations', features: ['field-mapping'], order: 5 },
+      { id: 'import-history', name: 'Historique', route: '/import/history', icon: 'History', description: 'Historique des imports', features: ['logs'], order: 6 },
+      { id: 'import-config', name: 'Configuration', route: '/import/config', icon: 'Settings', description: 'Configuration des imports', features: ['config'], order: 7 },
     ]
   },
   
