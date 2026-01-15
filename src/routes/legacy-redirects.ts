@@ -30,7 +30,13 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   '/dashboard/orders': '/orders',
   '/dashboard/orders/center': '/orders/center',
   '/dashboard/orders/returns': '/orders/returns',
-  '/dashboard/orders/shipping': '/fulfillment',
+  '/dashboard/orders/shipping': '/orders/fulfillment',
+  
+  // Fulfillment - Redirige vers /orders/fulfillment
+  '/fulfillment': '/orders/fulfillment',
+  '/fulfillment/carriers': '/orders/fulfillment/carriers',
+  '/fulfillment/rules': '/orders/fulfillment/rules',
+  '/fulfillment/dashboard': '/orders/fulfillment',
   
   // Customers - Routes uniformisées
   '/customers-page': '/customers',

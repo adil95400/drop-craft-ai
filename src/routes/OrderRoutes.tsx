@@ -2,6 +2,10 @@
  * Routes Orders - Gestion des commandes
  * URL uniformisées: /orders au lieu de /dashboard/orders
  */
+/**
+ * Routes Orders - Gestion des commandes et fulfillment
+ * URL uniformisées: /orders, /orders/fulfillment/*
+ */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
@@ -14,6 +18,11 @@ const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNoti
 const BulkOrdersPage = lazy(() => import('@/pages/orders/BulkOrdersPage'));
 const CreateOrder = lazy(() => import('@/pages/orders/CreateOrder'));
 
+// Fulfillment pages (sous-module de orders)
+const FulfillmentPage = lazy(() => import('@/pages/fulfillment/FulfillmentPage'));
+const CarriersManagementPage = lazy(() => import('@/pages/CarriersManagementPage'));
+const FulfillmentRulesPage = lazy(() => import('@/pages/FulfillmentRulesPage'));
+
 export function OrderRoutes() {
   return (
     <Routes>
@@ -23,9 +32,16 @@ export function OrderRoutes() {
       <Route path="returns" element={<ReturnsManagementPage />} />
       <Route path="tracking" element={<TrackingDashboardPage />} />
       <Route path="notifications" element={<CustomerNotificationsPage />} />
-      <Route path="shipping" element={<Navigate to="/fulfillment" replace />} />
       <Route path="bulk" element={<BulkOrdersPage />} />
       <Route path="create" element={<CreateOrder />} />
+      
+      {/* Fulfillment - Sous-module de Commandes */}
+      <Route path="fulfillment" element={<FulfillmentPage />} />
+      <Route path="fulfillment/carriers" element={<CarriersManagementPage />} />
+      <Route path="fulfillment/rules" element={<FulfillmentRulesPage />} />
+      
+      {/* Redirection legacy */}
+      <Route path="shipping" element={<Navigate to="/orders/fulfillment" replace />} />
     </Routes>
   );
 }
