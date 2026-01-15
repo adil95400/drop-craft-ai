@@ -289,7 +289,7 @@ export default function ExtensionsHub() {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white shadow-xl shadow-primary/25 h-14 px-8 text-lg"
-                  onClick={() => navigate('/extensions/cli')}
+                  onClick={() => navigate('/extensions/download')}
                 >
                   <Download className="h-5 w-5 mr-2" />
                   Télécharger Gratuitement
@@ -298,10 +298,41 @@ export default function ExtensionsHub() {
                   size="lg" 
                   variant="outline" 
                   className="border-white/20 text-white hover:bg-white/10 h-14 px-8 text-lg"
-                  onClick={() => window.open('https://www.youtube.com/watch?v=demo', '_blank')}
+                  onClick={() => navigate('/extensions/tutorials')}
                 >
                   <Play className="h-5 w-5 mr-2" />
-                  Voir la Démo
+                  Voir les Tutoriels
+                </Button>
+              </div>
+
+              {/* Quick Links */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => navigate('/extensions/installation')}
+                >
+                  <FileText className="h-4 w-4 mr-1" />
+                  Guide d'installation
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => navigate('/extensions/documentation')}
+                >
+                  <FileText className="h-4 w-4 mr-1" />
+                  Documentation
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => navigate('/extensions/faq')}
+                >
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  FAQ
                 </Button>
               </div>
             </div>
