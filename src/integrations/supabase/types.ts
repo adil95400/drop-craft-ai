@@ -4963,6 +4963,87 @@ export type Database = {
           },
         ]
       }
+      imported_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_name: string
+          helpful_count: number | null
+          id: string
+          images: string[] | null
+          imported_product_id: string | null
+          metadata: Json | null
+          product_id: string | null
+          product_name: string | null
+          product_sku: string | null
+          rating: number
+          review_date: string | null
+          source: string
+          source_url: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          verified_purchase: boolean | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          helpful_count?: number | null
+          id?: string
+          images?: string[] | null
+          imported_product_id?: string | null
+          metadata?: Json | null
+          product_id?: string | null
+          product_name?: string | null
+          product_sku?: string | null
+          rating: number
+          review_date?: string | null
+          source?: string
+          source_url?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          verified_purchase?: boolean | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          helpful_count?: number | null
+          id?: string
+          images?: string[] | null
+          imported_product_id?: string | null
+          metadata?: Json | null
+          product_id?: string | null
+          product_name?: string | null
+          product_sku?: string | null
+          rating?: number
+          review_date?: string | null
+          source?: string
+          source_url?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          verified_purchase?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imported_reviews_imported_product_id_fkey"
+            columns: ["imported_product_id"]
+            isOneToOne: false
+            referencedRelation: "imported_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imported_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integrations: {
         Row: {
           access_token_encrypted: string | null

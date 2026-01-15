@@ -730,6 +730,172 @@ function extractShippingInfo(html: string, platform: string): any {
   return shipping
 }
 
+// Extract individual reviews from the page
+function extractReviews(html: string, platform: string): any[] {
+  const reviews: any[] = []
+  const maxReviews = 20
+  
+  try {
+    if (platform === 'amazon') {
+      // Amazon review blocks - multiple patterns
+      // Pattern 1: review-id based blocks
+      const reviewBlockMatches = html.matchAll(/id="customer_review-([^"]+)"[\s\S]*?(?=id="customer_review-|$)/gi)
+      for (const match of reviewBlockMatches) {
+        if (reviews.length >= maxReviews) break
+        
+        const block = match[0]
+        const reviewId = match[1]
+        
+        // Extract reviewer name
+        const nameMatch = block.match(/class="[^"]*a-profile-name[^"]*"[^>]*>([^<]+)</i)
+        const customerName = nameMatch?.[1]?.trim() || 'Client Amazon'
+        
+        // Extract rating
+        const ratingMatch = block.match(/(\d+(?:[,.]?\d*)?)\s*(?:out of|sur|\/)\s*5/i) ||
+                           block.match(/class="[^"]*a-star-(\d)[^"]*"/i)
+        const rating = ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : 5
+        
+        // Extract title
+        const titleMatch = block.match(/data-hook="review-title"[^>]*>(?:<span[^>]*>)?([^<]+)/i) ||
+                          block.match(/review-title[^>]*>([^<]+)</i)
+        const title = titleMatch?.[1]?.trim() || ''
+        
+        // Extract comment/body
+        const bodyMatch = block.match(/data-hook="review-body"[^>]*>[\s\S]*?<span[^>]*>([^<]+(?:<br[^>]*>)?[^<]*)</i) ||
+                         block.match(/review-text[^>]*>([^<]+)</i)
+        let comment = bodyMatch?.[1]?.trim() || ''
+        comment = comment.replace(/<br\s*\/?>/gi, '\n').slice(0, 2000)
+        
+        // Extract date
+        const dateMatch = block.match(/data-hook="review-date"[^>]*>([^<]+)</i) ||
+                         block.match(/review-date[^>]*>([^<]+)</i)
+        let reviewDate = null
+        if (dateMatch) {
+          const dateStr = dateMatch[1]
+          // Try to parse French/English dates
+          const parsed = Date.parse(dateStr.replace(/le\s*/i, '').replace(/Reviewed\s*in\s*[^on]+on\s*/i, ''))
+          if (!isNaN(parsed)) {
+            reviewDate = new Date(parsed).toISOString()
+          }
+        }
+        
+        // Check verified purchase
+        const verifiedPurchase = /achat\s*v[ée]rifi[ée]|verified\s*purchase/i.test(block)
+        
+        // Extract helpful count
+        const helpfulMatch = block.match(/(\d+)\s*(?:personnes?|people?)\s*(?:ont\s*trouv|found\s*this\s*helpful)/i)
+        const helpfulCount = helpfulMatch ? parseInt(helpfulMatch[1]) : 0
+        
+        // Extract images in review
+        const images: string[] = []
+        const imgMatches = block.matchAll(/review-image-tile[^>]*>\s*<img[^>]*src="([^"]+)"/gi)
+        for (const im of imgMatches) {
+          if (images.length < 5) images.push(im[1])
+        }
+        
+        if (comment || title) {
+          reviews.push({
+            customer_name: customerName,
+            rating: Math.min(5, Math.max(0, rating)),
+            title,
+            comment,
+            verified_purchase: verifiedPurchase,
+            helpful_count: helpfulCount,
+            review_date: reviewDate,
+            images,
+            source_review_id: reviewId
+          })
+        }
+      }
+      
+      // Pattern 2: cr-review-list based (alternative Amazon layout)
+      if (reviews.length === 0) {
+        const altReviewMatches = html.matchAll(/class="[^"]*review[^"]*"[^>]*data-hook="review"[\s\S]*?(?=class="[^"]*review[^"]*"[^>]*data-hook="review"|<\/div>\s*<\/div>\s*<\/div>\s*$)/gi)
+        for (const match of altReviewMatches) {
+          if (reviews.length >= maxReviews) break
+          const block = match[0]
+          
+          const nameMatch = block.match(/class="[^"]*a-profile-name[^"]*"[^>]*>([^<]+)</i)
+          const ratingMatch = block.match(/(\d+(?:[,.]?\d*)?)\s*(?:out of|sur|\/)\s*5/i)
+          const bodyMatch = block.match(/review-text[^>]*>([^<]+)</i)
+          
+          if (bodyMatch || nameMatch) {
+            reviews.push({
+              customer_name: nameMatch?.[1]?.trim() || 'Client Amazon',
+              rating: ratingMatch ? Math.min(5, parseFloat(ratingMatch[1].replace(',', '.'))) : 5,
+              title: '',
+              comment: bodyMatch?.[1]?.trim().slice(0, 2000) || '',
+              verified_purchase: /achat\s*v[ée]rifi[ée]|verified/i.test(block),
+              helpful_count: 0,
+              review_date: null,
+              images: []
+            })
+          }
+        }
+      }
+    }
+    
+    if (platform === 'aliexpress') {
+      // AliExpress reviews from feedback JSON
+      const feedbackMatch = html.match(/feedbackList['"]\s*:\s*(\[[^\]]+\])/s) ||
+                           html.match(/"reviews?"\s*:\s*(\[[^\]]+\])/si)
+      if (feedbackMatch) {
+        try {
+          const feedbacks = JSON.parse(feedbackMatch[1])
+          for (const fb of feedbacks) {
+            if (reviews.length >= maxReviews) break
+            reviews.push({
+              customer_name: fb.buyerName || fb.buyer_name || fb.anonymous ? 'Client AliExpress' : (fb.name || 'Anonyme'),
+              rating: Math.min(5, Math.max(0, fb.star || fb.rating || fb.buyerEval || 5)),
+              title: '',
+              comment: (fb.content || fb.feedback || fb.buyerFeedback || '').slice(0, 2000),
+              verified_purchase: true,
+              helpful_count: 0,
+              review_date: fb.evalDate || fb.date ? new Date(fb.evalDate || fb.date).toISOString() : null,
+              images: fb.images || []
+            })
+          }
+        } catch (e) {
+          console.error('Error parsing AliExpress reviews:', e)
+        }
+      }
+    }
+    
+    // Generic review extraction for other platforms
+    if (reviews.length === 0) {
+      // Try schema.org Review markup
+      const reviewSchemaMatches = html.matchAll(/"@type"\s*:\s*"Review"[\s\S]*?(?="@type"|$)/gi)
+      for (const match of reviewSchemaMatches) {
+        if (reviews.length >= maxReviews) break
+        const block = match[0]
+        
+        const authorMatch = block.match(/"author"[^}]*"name"\s*:\s*"([^"]+)"/i)
+        const ratingMatch = block.match(/"ratingValue"\s*:\s*"?(\d+(?:\.\d+)?)"?/i)
+        const bodyMatch = block.match(/"reviewBody"\s*:\s*"([^"]+)"/i)
+        const dateMatch = block.match(/"datePublished"\s*:\s*"([^"]+)"/i)
+        
+        if (bodyMatch || ratingMatch) {
+          reviews.push({
+            customer_name: authorMatch?.[1] || 'Client',
+            rating: ratingMatch ? Math.min(5, parseFloat(ratingMatch[1])) : 5,
+            title: '',
+            comment: (bodyMatch?.[1] || '').slice(0, 2000),
+            verified_purchase: false,
+            helpful_count: 0,
+            review_date: dateMatch ? new Date(dateMatch[1]).toISOString() : null,
+            images: []
+          })
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error extracting reviews:', error)
+  }
+  
+  return reviews
+}
+
 // Extract seller info
 function extractSellerInfo(html: string, platform: string): any {
   const seller: any = {
@@ -1095,7 +1261,7 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
     // Extract seller info
     productData.seller = extractSellerInfo(html, platform)
     
-    // Extract reviews summary
+// Extract reviews summary
     const ratingMatch = html.match(/(\d+[,.]?\d*)\s*(?:out of|sur|\/)\s*5/i) ||
                         html.match(/class="[^"]*rating[^"]*"[^>]*>(\d+[,.]?\d*)/i) ||
                         html.match(/(\d+[,.]?\d*)\s*★/i)
@@ -1104,6 +1270,10 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
       rating: ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : null,
       count: reviewCountMatch ? parseInt(reviewCountMatch[1].replace(/[,.\s]/g, '')) : null
     }
+    
+    // Extract individual reviews
+    productData.extracted_reviews = extractReviews(html, platform)
+    console.log(`⭐ Extracted ${productData.extracted_reviews.length} reviews`)
     
     console.log(`✅ Scraped: "${productData.title}" - ${productData.price} ${productData.currency}`)
     
@@ -1162,9 +1332,11 @@ serve(async (req) => {
             product_id: productId,
             has_variants: productData.variants?.length > 0,
             has_videos: productData.videos?.length > 0,
+            has_reviews: productData.extracted_reviews?.length > 0,
             images_count: productData.images?.length || 0,
             variants_count: productData.variants?.length || 0,
-            videos_count: productData.videos?.length || 0
+            videos_count: productData.videos?.length || 0,
+            reviews_count: productData.extracted_reviews?.length || 0
           }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -1174,6 +1346,7 @@ serve(async (req) => {
     // Import mode
     if (action === 'import') {
       const suggestedPrice = Math.ceil(productData.price * price_multiplier * 100) / 100
+      const importReviews = productData.extracted_reviews?.length > 0
       
       const { data: importedProduct, error: insertError } = await supabaseClient
         .from('imported_products')
@@ -1209,9 +1382,11 @@ serve(async (req) => {
             price_multiplier,
             has_variants: productData.variants?.length > 0,
             has_videos: productData.videos?.length > 0,
+            has_reviews: importReviews,
             images_count: productData.images?.length || 0,
             variants_count: productData.variants?.length || 0,
-            videos_count: productData.videos?.length || 0
+            videos_count: productData.videos?.length || 0,
+            reviews_count: productData.extracted_reviews?.length || 0
           }
         })
         .select()
@@ -1221,16 +1396,56 @@ serve(async (req) => {
       
       console.log(`✅ Product imported: ${importedProduct.id}`)
       
+      // Import reviews if available
+      let reviewsImported = 0
+      if (importReviews && productData.extracted_reviews.length > 0) {
+        console.log(`📝 Importing ${productData.extracted_reviews.length} reviews...`)
+        
+        const reviewsToInsert = productData.extracted_reviews.map((review: any) => ({
+          user_id,
+          imported_product_id: importedProduct.id,
+          product_name: productData.title,
+          product_sku: productData.sku,
+          customer_name: review.customer_name || 'Client',
+          rating: review.rating || 5,
+          title: review.title || '',
+          comment: review.comment || '',
+          verified_purchase: review.verified_purchase || false,
+          helpful_count: review.helpful_count || 0,
+          review_date: review.review_date || null,
+          source: platform,
+          source_url: url,
+          images: review.images || [],
+          metadata: {
+            source_review_id: review.source_review_id,
+            imported_at: new Date().toISOString()
+          }
+        }))
+        
+        const { data: insertedReviews, error: reviewsError } = await supabaseClient
+          .from('imported_reviews')
+          .insert(reviewsToInsert)
+          .select()
+        
+        if (reviewsError) {
+          console.error('Error importing reviews:', reviewsError)
+        } else {
+          reviewsImported = insertedReviews?.length || 0
+          console.log(`✅ Imported ${reviewsImported} reviews`)
+        }
+      }
+      
       return new Response(
         JSON.stringify({
           success: true,
           action: 'imported',
           data: importedProduct,
-          message: `Produit "${productData.title}" importé avec succès`,
+          message: `Produit "${productData.title}" importé avec succès${reviewsImported > 0 ? ` avec ${reviewsImported} avis` : ''}`,
           summary: {
             images: productData.images?.length || 0,
             videos: productData.videos?.length || 0,
-            variants: productData.variants?.length || 0
+            variants: productData.variants?.length || 0,
+            reviews: reviewsImported
           }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
