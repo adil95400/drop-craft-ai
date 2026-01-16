@@ -4,9 +4,11 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -17,7 +19,13 @@ serve(async (req) => {
 
   try {
     const token = req.headers.get('x-extension-token')
-    
+
+    console.log('[extension-sync-realtime] Incoming request', {
+      method: req.method,
+      hasToken: Boolean(token),
+      tokenPrefix: token ? token.slice(0, 12) : null,
+    })
+
     if (!token) {
       return new Response(
         JSON.stringify({ error: 'Extension token required' }),
@@ -26,12 +34,16 @@ serve(async (req) => {
     }
 
     // Validate token
-    const { data: authData } = await supabase
+    const { data: authData, error: tokenError } = await supabase
       .from('extension_auth_tokens')
       .select('user_id')
       .eq('token', token)
       .eq('is_active', true)
       .single()
+
+    if (tokenError) {
+      console.warn('[extension-sync-realtime] Token lookup error', tokenError)
+    }
 
     if (!authData) {
       return new Response(
@@ -40,7 +52,20 @@ serve(async (req) => {
       )
     }
 
-    const { action, products } = await req.json()
+    let payload: any
+    try {
+      payload = await req.json()
+    } catch (e) {
+      console.warn('[extension-sync-realtime] Invalid JSON body')
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { action, products } = payload
+
+    console.log('[extension-sync-realtime] Action', { action, userId: authData.user_id })
 
     if (action === 'import_products') {
       // Process products from extension
