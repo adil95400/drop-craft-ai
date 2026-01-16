@@ -21,6 +21,7 @@ export type NavGroupId =
   | 'catalog'     // Produits & Règles (gestion catalogue)
   | 'channels'    // Boutiques & Feeds (données sortantes)
   | 'orders'      // Commandes & Clients
+  | 'marketing'   // Marketing & CRM
   | 'insights'    // Analytics & Intelligence
   | 'tools'       // Outils & Calculateurs
   | 'settings';   // Configuration & Admin
@@ -68,9 +69,10 @@ export const NAV_GROUPS: NavGroupConfig[] = [
   { id: 'catalog', label: 'Catalogue', icon: 'Package', order: 3 },
   { id: 'channels', label: 'Canaux', icon: 'Store', order: 4 },
   { id: 'orders', label: 'Commandes', icon: 'ShoppingCart', order: 5 },
-  { id: 'insights', label: 'Insights', icon: 'BarChart3', order: 6 },
-  { id: 'tools', label: 'Outils', icon: 'Wrench', order: 7 },
-  { id: 'settings', label: 'Paramètres', icon: 'Settings', order: 8 },
+  { id: 'marketing', label: 'Marketing', icon: 'Megaphone', order: 6 },
+  { id: 'insights', label: 'Insights', icon: 'BarChart3', order: 7 },
+  { id: 'tools', label: 'Outils', icon: 'Wrench', order: 8 },
+  { id: 'settings', label: 'Paramètres', icon: 'Settings', order: 9 },
 ];
 
 // =============================================================================
@@ -518,8 +520,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['campaigns', 'email', 'promotions', 'abandoned-cart', 'loyalty'],
     description: 'Campagnes marketing',
     category: 'customer',
-    order: 2,
-    groupId: 'insights',
+    order: 1,
+    groupId: 'marketing',
     badge: 'pro',
     subModules: [
       { id: 'marketing-dashboard', name: 'Dashboard', route: '/marketing', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
@@ -543,8 +545,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['leads', 'pipeline', 'contacts'],
     description: 'Gestion relation client',
     category: 'customer',
-    order: 3,
-    groupId: 'insights',
+    order: 2,
+    groupId: 'marketing',
     badge: 'pro',
     subModules: [
       { id: 'crm-dashboard', name: 'Dashboard', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
@@ -566,8 +568,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['seo-audit', 'keywords', 'rankings'],
     description: 'Optimisation référencement',
     category: 'analytics',
-    order: 4,
-    groupId: 'insights',
+    order: 3,
+    groupId: 'marketing',
     subModules: [
       { id: 'seo-manager', name: 'Manager', route: '/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
       { id: 'seo-keywords', name: 'Mots-clés', route: '/seo/keywords', icon: 'Key', description: 'Recherche mots-clés', features: ['keywords'], order: 2 },

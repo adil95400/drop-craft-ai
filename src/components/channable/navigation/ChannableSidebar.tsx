@@ -58,6 +58,7 @@ const groupColors: Record<NavGroupId, { bg: string; text: string; accent: string
   catalog: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', accent: 'hover:bg-emerald-500/20', border: 'border-emerald-500/30' },
   channels: { bg: 'bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400', accent: 'hover:bg-orange-500/20', border: 'border-orange-500/30' },
   orders: { bg: 'bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400', accent: 'hover:bg-rose-500/20', border: 'border-rose-500/30' },
+  marketing: { bg: 'bg-pink-500/10', text: 'text-pink-600 dark:text-pink-400', accent: 'hover:bg-pink-500/20', border: 'border-pink-500/30' },
   insights: { bg: 'bg-cyan-500/10', text: 'text-cyan-600 dark:text-cyan-400', accent: 'hover:bg-cyan-500/20', border: 'border-cyan-500/30' },
   tools: { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', accent: 'hover:bg-amber-500/20', border: 'border-amber-500/30' },
   settings: { bg: 'bg-slate-500/10', text: 'text-slate-600 dark:text-slate-400', accent: 'hover:bg-slate-500/20', border: 'border-slate-500/30' },
