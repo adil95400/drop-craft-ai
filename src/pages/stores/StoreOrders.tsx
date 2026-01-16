@@ -1,10 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { ShoppingCart, CheckCircle, Package, DollarSign, Clock } from 'lucide-react'
 import { OrdersTable } from '@/components/stores/orders/OrdersTable'
-import { useRealOrders } from '@/hooks/useRealOrders'
+import { useOrdersUnified } from '@/hooks/unified'
 
 export function StoreOrders() {
-  const { stats, isLoading } = useRealOrders()
+  const { stats, isLoading } = useOrdersUnified()
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -69,7 +69,7 @@ export function StoreOrders() {
         <Card>
           <CardContent className="p-4 text-center">
             <DollarSign className="h-6 w-6 text-info mx-auto mb-2" />
-            <div className="text-2xl font-bold">{formatCurrency(stats.averageOrderValue)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.avgOrderValue)}</div>
             <div className="text-sm text-muted-foreground">Panier moyen</div>
           </CardContent>
         </Card>

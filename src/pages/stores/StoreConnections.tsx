@@ -6,14 +6,14 @@ import { ConnectStoreDialog } from './components/ConnectStoreDialog'
 import { ShopifyStoreCard } from '@/components/stores/ShopifyStoreCard'
 import { useState } from 'react'
 import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
-import { useRealProducts } from '@/hooks/useRealProducts'
-import { useRealOrders } from '@/hooks/useRealOrders'
+import { useProductsUnified } from '@/hooks/unified'
+import { useOrdersUnified } from '@/hooks/unified'
 
 export function StoreConnections() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { integrations, isLoading, stats } = useStoreIntegrations()
-  const { stats: productStats } = useRealProducts()
-  const { stats: orderStats } = useRealOrders()
+  const { stats: productStats } = useProductsUnified()
+  const { stats: orderStats } = useOrdersUnified()
 
   if (isLoading) {
     return (

@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { useRealOrders } from '@/hooks/useRealOrders'
+import { useOrdersUnified } from '@/hooks/unified'
 
 interface OrderRoutingRule {
   id: string
@@ -42,7 +42,7 @@ export const OrderRouter = () => {
   const [selectedOrder, setSelectedOrder] = useState<OrderToRoute | null>(null)
   const [routingNotes, setRoutingNotes] = useState('')
   const [routing, setRouting] = useState(false)
-  const { orders } = useRealOrders()
+  const { orders } = useOrdersUnified()
 
   useEffect(() => {
     fetchRoutingRules()
@@ -85,12 +85,12 @@ export const OrderRouter = () => {
         .map(order => ({
           id: order.id,
           order_number: order.order_number,
-          customer_name: order.customers?.name || 'Client inconnu',
+          customer_name: order.customer_name || 'Client inconnu',
           total_amount: order.total_amount,
-          items: order.order_items?.map(item => ({
-            product_name: item.product_name,
-            supplier_name: 'Fournisseur A', // This would come from product data
-            qty: item.qty
+          items: order.items?.map((item: any) => ({
+            product_name: item.product_name || item.title || 'Produit',
+            supplier_name: 'Fournisseur A',
+            qty: item.quantity || item.qty || 1
           })) || [],
           routing_status: 'pending' as const,
           routing_attempts: 0,

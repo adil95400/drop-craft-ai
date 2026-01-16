@@ -10,18 +10,18 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { useRealProducts, Product } from '@/hooks/useRealProducts'
+import { useProductsUnified, UnifiedProduct } from '@/hooks/unified'
 import { Plus, X, Upload } from 'lucide-react'
 
 interface ProductEditModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  product: Product
+  product: UnifiedProduct
 }
 
 export function ProductEditModal({ open, onOpenChange, product }: ProductEditModalProps) {
-  const { updateProduct } = useRealProducts()
-  const [formData, setFormData] = useState<Partial<Product>>({
+  const { update: updateProduct } = useProductsUnified()
+  const [formData, setFormData] = useState<Partial<UnifiedProduct>>({
     name: product.name,
     description: product.description,
     price: product.price,

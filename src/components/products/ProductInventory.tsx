@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { 
   Warehouse, AlertTriangle, Package, TrendingUp, 
   Search, RefreshCw, Edit, History, Plus, Minus
 } from 'lucide-react'
 
 export function ProductInventory() {
-  const { products, isLoading, updateProduct } = useRealProducts()
+  const { products, isLoading, update: updateProduct } = useProductsUnified()
   const [searchTerm, setSearchTerm] = useState('')
   const [stockFilter, setStockFilter] = useState<'all' | 'low' | 'out'>('all')
 

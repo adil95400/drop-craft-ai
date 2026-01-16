@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { useRealProducts } from '@/hooks/useRealProducts';
+import { useProductsUnified } from '@/hooks/unified';
 import { productSchema, ProductFormData } from '@/lib/validation/productSchema';
 import { Loader2, Package, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -20,7 +20,7 @@ interface CreateProductDialogProps {
 }
 
 export function CreateProductDialog({ open, onOpenChange, onSuccess }: CreateProductDialogProps) {
-  const { addProduct, isAdding } = useRealProducts();
+  const { add: addProduct, isAdding } = useProductsUnified();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<ProductFormData>({

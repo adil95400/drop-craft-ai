@@ -35,7 +35,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified } from '@/hooks/unified'
 
 interface BulkAction {
   id: string
@@ -105,7 +105,7 @@ export function AdvancedProductCatalog() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [showBulkActions, setShowBulkActions] = useState(false)
 
-  const { products, isLoading, stats } = useRealProducts()
+  const { products, isLoading, stats } = useProductsUnified()
 
   const handleProductSelect = (productId: string) => {
     setSelectedProducts(prev => 
