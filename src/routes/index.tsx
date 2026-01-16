@@ -167,10 +167,11 @@ export function AppRoutes() {
         <Route path="/sync-manager" element={<ProtectedRoute><ChannableLayout><SyncManagerPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/orders-center" element={<ProtectedRoute><ChannableLayout><OrdersCenterPage /></ChannableLayout></ProtectedRoute>} />
         
-        {/* QA Routes */}
-        <Route path="/qa" element={<ProtectedRoute><ChannableLayout><QADashboard /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/qa/products" element={<ProtectedRoute><ChannableLayout><ProductsQA /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/qa/orders" element={<ProtectedRoute><ChannableLayout><OrdersQA /></ChannableLayout></ProtectedRoute>} />
+        {/* QA Routes - DISABLED IN PRODUCTION */}
+        {/* These routes are for internal QA testing only and are hidden from production users */}
+        {/* <Route path="/qa" element={<ProtectedRoute><ChannableLayout><QADashboard /></ChannableLayout></ProtectedRoute>} /> */}
+        {/* <Route path="/qa/products" element={<ProtectedRoute><ChannableLayout><ProductsQA /></ChannableLayout></ProtectedRoute>} /> */}
+        {/* <Route path="/qa/orders" element={<ProtectedRoute><ChannableLayout><OrdersQA /></ChannableLayout></ProtectedRoute>} /> */}
         
         {/* Shopify Store (public) */}
         <Route path="/store" element={<ShopifyStore />} />
@@ -192,7 +193,8 @@ export function AppRoutes() {
         <Route path="/coupons" element={<ProtectedRoute><ChannableLayout><CouponsManagementPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/trial" element={<ProtectedRoute><ChannableLayout><FreeTrialActivationPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/ab-testing" element={<ProtectedRoute><ChannableLayout><ABTestingPage /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/production-readiness" element={<ProtectedRoute><ChannableLayout><ProductionReadinessPage /></ChannableLayout></ProtectedRoute>} />
+        {/* Production Readiness - DISABLED IN PRODUCTION (internal tool) */}
+        {/* <Route path="/production-readiness" element={<ProtectedRoute><ChannableLayout><ProductionReadinessPage /></ChannableLayout></ProtectedRoute>} /> */}
         <Route path="/repricing" element={<ProtectedRoute><ChannableLayout><RepricingPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Ads Spy */}
@@ -207,8 +209,8 @@ export function AppRoutes() {
         <Route path="/enrichment" element={<ProtectedRoute><ChannableLayout><EnrichmentSettingsPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/enrichment/settings" element={<Navigate to="/enrichment" replace />} />
         
-        {/* Documentation & API */}
-        <Route path="/api-docs" element={<ProtectedRoute><ChannableLayout><SwaggerPage /></ChannableLayout></ProtectedRoute>} />
+        {/* Documentation & API - DISABLED IN PRODUCTION (developer tools) */}
+        {/* <Route path="/api-docs" element={<ProtectedRoute><ChannableLayout><SwaggerPage /></ChannableLayout></ProtectedRoute>} /> */}
         <Route path="/swagger" element={<Navigate to="/api-docs" replace />} />
         <Route path="/pwa-install" element={<PWAInstallPage />} />
         
