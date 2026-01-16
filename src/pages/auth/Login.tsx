@@ -54,7 +54,7 @@ const Login = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="flex flex-col items-center space-y-4">
-          <img src="/images/logo.png" alt="ShopOpti" className="h-16 w-auto object-contain" />
+          <img src="/images/logo.png" alt="ShopOpti" className="h-24 w-auto object-contain" />
           <p className="text-muted-foreground text-center">
             Connectez-vous à votre tableau de bord
           </p>
