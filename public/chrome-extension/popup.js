@@ -59,7 +59,7 @@ class ShopOptiPopup {
     }
 
     try {
-      const response = await fetch(`${this.API_URL}/extension-sync`, {
+      const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -438,7 +438,7 @@ class ShopOptiPopup {
     this.showLoading('Envoi en cours...');
 
     try {
-      const response = await fetch(`${this.API_URL}/extension-sync`, {
+      const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -609,7 +609,7 @@ class ShopOptiPopup {
         }
 
         // Send to API
-        const response = await fetch(`${this.API_URL}/extension-sync`, {
+        const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -992,7 +992,7 @@ class VariantMapper {
     // Sync to backend
     if (this.popup.isConnected) {
       try {
-        await fetch(`${this.popup.API_URL}/extension-sync`, {
+        await fetch(`${this.popup.API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1114,7 +1114,7 @@ class StoreSync {
     }
 
     try {
-      const response = await fetch(`${this.popup.API_URL}/extension-sync`, {
+      const response = await fetch(`${this.popup.API_URL}/extension-sync-realtime`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1209,7 +1209,7 @@ class StoreSync {
         throw new Error('Aucun produit détecté');
       }
 
-      const response = await fetch(`${this.popup.API_URL}/extension-sync`, {
+      const response = await fetch(`${this.popup.API_URL}/extension-sync-realtime`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
