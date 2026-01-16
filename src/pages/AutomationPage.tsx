@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Zap, List, Activity, Plus, Play, Pause, Trash2, RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
-import { useAutomationWorkflows } from '@/hooks/useAutomationRealData';
+import { useAutomationWorkflows, useAutomationStats } from '@/hooks/useAutomationRealData';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -13,13 +13,15 @@ import { cn } from '@/lib/utils';
 export default function AutomationPage() {
   const [activeTab, setActiveTab] = useState('list');
   const { 
-    data: workflowsData, 
-    isLoading, 
+    data: workflows = [], 
+    isLoading: isLoadingWorkflows, 
     refetch 
   } = useAutomationWorkflows();
   
-  const workflows = workflowsData?.workflows || [];
-  const stats = workflowsData?.stats || { total: 0, active: 0, totalExecutions: 0, successRate: 0 };
+  const { data: stats, isLoading: isLoadingStats } = useAutomationStats();
+  
+  const isLoading = isLoadingWorkflows || isLoadingStats;
+  const statsData = stats || { totalWorkflows: 0, activeWorkflows: 0, totalExecutions: 0, successRate: 0 };
   
   const toggleWorkflow = async (id: string, isActive: boolean) => {
     console.log('Toggle workflow', id, isActive);
@@ -77,7 +79,7 @@ export default function AutomationPage() {
                     <Zap className="h-4 w-4" />
                     <span className="text-xs">Total Workflows</span>
                   </div>
-                  <p className="text-2xl font-bold">{stats.total}</p>
+                  <p className="text-2xl font-bold">{statsData.totalWorkflows}</p>
                 </CardContent>
               </Card>
               <Card>
@@ -86,7 +88,7 @@ export default function AutomationPage() {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                     <span className="text-xs">Actifs</span>
                   </div>
-                  <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+                  <p className="text-2xl font-bold text-green-600">{statsData.activeWorkflows}</p>
                 </CardContent>
               </Card>
               <Card>
@@ -95,7 +97,7 @@ export default function AutomationPage() {
                     <Activity className="h-4 w-4" />
                     <span className="text-xs">Exécutions</span>
                   </div>
-                  <p className="text-2xl font-bold">{stats.totalExecutions}</p>
+                  <p className="text-2xl font-bold">{statsData.totalExecutions}</p>
                 </CardContent>
               </Card>
               <Card>
@@ -104,7 +106,7 @@ export default function AutomationPage() {
                     <CheckCircle2 className="h-4 w-4" />
                     <span className="text-xs">Taux succès</span>
                   </div>
-                  <p className="text-2xl font-bold">{stats.successRate.toFixed(1)}%</p>
+                  <p className="text-2xl font-bold">{statsData.successRate.toFixed(1)}%</p>
                 </CardContent>
               </Card>
             </>
@@ -214,7 +216,7 @@ export default function AutomationPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Activity className="h-4 w-4" />
-                          {workflow.steps_count} étape{workflow.steps_count !== 1 ? 's' : ''}
+                          {Array.isArray(workflow.steps) ? workflow.steps.length : 0} étape{(Array.isArray(workflow.steps) ? workflow.steps.length : 0) !== 1 ? 's' : ''}
                         </div>
                         <div>
                           Exécuté {workflow.execution_count} fois

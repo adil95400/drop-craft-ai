@@ -4,22 +4,25 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Zap, Mail, Users, Target, TrendingUp, Clock, Play, Pause, Plus, DollarSign, MousePointer } from 'lucide-react';
-import { useMarketingCampaigns } from '@/hooks/useMarketingRealData';
+import { useMarketingCampaigns, useMarketingStats } from '@/hooks/useMarketingRealData';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 const MarketingAutomationPage: React.FC = () => {
   const { 
-    data: campaignsData, 
-    isLoading, 
+    data: campaigns = [], 
+    isLoading: isLoadingCampaigns, 
     refetch 
   } = useMarketingCampaigns();
   
-  const campaigns = campaignsData?.campaigns || [];
-  const stats = campaignsData?.stats || { 
-    totalCampaigns: 0, activeCampaigns: 0, totalSpend: 0, totalConversions: 0, 
-    avgCTR: 0, avgROAS: 0, totalEmailsSent: 0, avgOpenRate: 0 
+  const { data: statsData, isLoading: isLoadingStats } = useMarketingStats();
+  
+  const isLoading = isLoadingCampaigns || isLoadingStats;
+  const stats = statsData || { 
+    activeCampaigns: 0, totalSpend: 0, totalConversions: 0, 
+    avgCTR: 0, avgROAS: 0, emailsSent: 0, openRate: 0,
+    totalClicks: 0, isDemo: false
   };
   const toggleCampaign = async (id: string, isActive: boolean) => {
     console.log('Toggle campaign', id, isActive);
@@ -69,7 +72,7 @@ const MarketingAutomationPage: React.FC = () => {
                 <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
               </CardHeader>
               <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
-                <div className="text-xl sm:text-2xl font-bold">{stats.totalCampaigns}</div>
+                <div className="text-xl sm:text-2xl font-bold">{campaigns.length}</div>
                 <p className="text-[10px] sm:text-xs text-muted-foreground">
                   {stats.activeCampaigns} actives
                 </p>
@@ -128,7 +131,7 @@ const MarketingAutomationPage: React.FC = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Emails envoyés</p>
-              <p className="text-lg font-bold">{stats.totalEmailsSent.toLocaleString()}</p>
+              <p className="text-lg font-bold">{stats.emailsSent.toLocaleString()}</p>
             </div>
           </CardContent>
         </Card>
@@ -139,7 +142,7 @@ const MarketingAutomationPage: React.FC = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Taux d'ouverture</p>
-              <p className="text-lg font-bold">{stats.avgOpenRate.toFixed(1)}%</p>
+              <p className="text-lg font-bold">{stats.openRate.toFixed(1)}%</p>
             </div>
           </CardContent>
         </Card>
@@ -205,8 +208,8 @@ const MarketingAutomationPage: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-11 sm:ml-0">
                     <div className="text-left sm:text-right">
-                      {campaign.spend !== undefined && (
-                        <div className="text-sm font-semibold">{formatCurrency(campaign.spend)}</div>
+                      {campaign.spent !== undefined && (
+                        <div className="text-sm font-semibold">{formatCurrency(campaign.spent)}</div>
                       )}
                       {campaign.roas !== undefined && (
                         <div className="text-[10px] sm:text-xs text-muted-foreground">
