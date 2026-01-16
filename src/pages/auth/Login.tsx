@@ -53,8 +53,9 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
-        <div className="flex flex-col items-center space-y-4">
-          <img src="/images/logo.png" alt="ShopOpti" className="h-24 w-auto object-contain" />
+        <div className="flex flex-col items-center space-y-2">
+          <img src="/images/logo.svg" alt="Logo" className="h-12 w-12" />
+          <h1 className="text-2xl font-bold">E-Commerce Pro</h1>
           <p className="text-muted-foreground text-center">
             Connectez-vous à votre tableau de bord
           </p>

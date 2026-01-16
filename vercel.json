@@ -56,11 +56,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/$1"
-    },
-    {
-      "source": "/((?!assets|images|logos|icons|static|favicon|manifest|sw|robots|sitemap|og-image).*)",
-      "destination": "/index.html"
+      "destination": "https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/$1"
     }
   ],
   "redirects": [

@@ -18,7 +18,7 @@ export const SidebarLogo = memo<SidebarLogoProps>(({ collapsed = false, classNam
           <img 
             src={shopoptiLogo} 
             alt="ShopOpti" 
-            className="w-12 h-12 object-contain transition-transform duration-300 group-hover:scale-105"
+            className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-105"
           />
         </div>
       </div>
@@ -30,7 +30,7 @@ export const SidebarLogo = memo<SidebarLogoProps>(({ collapsed = false, classNam
       <img 
         src={shopoptiLogo} 
         alt="ShopOpti" 
-        className="h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+        className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
       />
     </div>
   )
