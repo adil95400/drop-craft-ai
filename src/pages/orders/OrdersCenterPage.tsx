@@ -1,16 +1,19 @@
 /**
  * Centre de Commandes avec design Channable premium
+ * Pagination, filtres avancés et mise à jour de statut réels
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, Filter, Package, Truck, CheckCircle2,
   Clock, AlertCircle, Download, RefreshCw, Eye, 
-  Plus, DollarSign, TrendingUp, Sparkles
+  Plus, DollarSign, TrendingUp, Sparkles, ChevronLeft, ChevronRight,
+  Calendar, MapPin, Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
@@ -19,6 +22,10 @@ import { useToast } from '@/hooks/use-toast';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Label } from '@/components/ui/label';
+
+const ITEMS_PER_PAGE = 20;
 
 interface Order {
   id: string;
@@ -31,6 +38,7 @@ interface Order {
   created_at: string;
   delivery_date?: string;
   items_count: number;
+  tracking_number?: string;
 }
 
 // Composant carte de stat amélioré
@@ -196,18 +204,73 @@ export default function OrdersCenterPage() {
   const { user } = useUnifiedAuth();
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
+  const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     loadOrders();
   }, [user]);
 
+  // Filtrage et pagination mémorisés
+  const filteredOrders = useMemo(() => {
+    let filtered = orders;
+
+    // Filtre par recherche
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(order =>
+        order.order_number.toLowerCase().includes(query) ||
+        order.customer_name.toLowerCase().includes(query) ||
+        order.tracking_number?.toLowerCase().includes(query)
+      );
+    }
+
+    // Filtre par statut
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(order => order.status === statusFilter);
+    }
+
+    // Filtre par date
+    if (dateRange.start) {
+      filtered = filtered.filter(order => 
+        new Date(order.created_at) >= new Date(dateRange.start)
+      );
+    }
+    if (dateRange.end) {
+      filtered = filtered.filter(order => 
+        new Date(order.created_at) <= new Date(dateRange.end)
+      );
+    }
+
+    // Tri
+    filtered.sort((a, b) => {
+      const factor = sortOrder === 'asc' ? 1 : -1;
+      if (sortBy === 'date') {
+        return factor * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      }
+      return factor * (a.total_amount - b.total_amount);
+    });
+
+    return filtered;
+  }, [orders, searchQuery, statusFilter, dateRange, sortBy, sortOrder]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredOrders.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredOrders, currentPage]);
+
+  // Reset page when filters change
   useEffect(() => {
-    filterOrders();
-  }, [orders, searchQuery, statusFilter]);
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, dateRange]);
 
   const loadOrders = async () => {
     if (!user) return;
@@ -233,11 +296,12 @@ export default function OrdersCenterPage() {
         customer_id: order.customer_id,
         customer_name: order.customers?.name || 'Client inconnu',
         status: order.status,
-        total_amount: order.total_amount,
-        currency: order.currency,
+        total_amount: order.total_amount || 0,
+        currency: order.currency || 'EUR',
         created_at: order.created_at,
         delivery_date: order.delivery_date,
-        items_count: 0
+        items_count: 0,
+        tracking_number: order.tracking_number
       }));
       
       setOrders(formattedOrders);
@@ -252,44 +316,46 @@ export default function OrdersCenterPage() {
     }
   };
 
-  const filterOrders = () => {
-    let filtered = orders;
-
-    if (searchQuery) {
-      filtered = filtered.filter(order =>
-        order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(order => order.status === statusFilter);
-    }
-
-    setFilteredOrders(filtered);
-  };
-
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
+    setIsUpdatingStatus(orderId);
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus })
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+          ...(newStatus === 'shipped' ? { shipped_at: new Date().toISOString() } : {}),
+          ...(newStatus === 'delivered' ? { delivery_date: new Date().toISOString() } : {})
+        })
         .eq('id', orderId);
 
       if (error) throw error;
 
+      const statusLabels: Record<string, string> = {
+        pending: 'En attente',
+        processing: 'En traitement',
+        shipped: 'Expédiée',
+        delivered: 'Livrée',
+        cancelled: 'Annulée'
+      };
+
       toast({
-        title: "Statut mis à jour",
-        description: `La commande est maintenant en ${newStatus}`
+        title: "✓ Statut mis à jour",
+        description: `La commande est maintenant "${statusLabels[newStatus] || newStatus}"`
       });
 
-      loadOrders();
+      // Mise à jour optimiste
+      setOrders(prev => prev.map(o => 
+        o.id === orderId ? { ...o, status: newStatus } : o
+      ));
     } catch (error: any) {
       toast({
         title: "Erreur de mise à jour",
         description: error.message,
         variant: "destructive"
       });
+    } finally {
+      setIsUpdatingStatus(null);
     }
   };
 
@@ -407,16 +473,67 @@ export default function OrdersCenterPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Rechercher par numéro ou client..."
+                  placeholder="Rechercher par numéro, client ou tracking..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 border-0 bg-muted/50 focus-visible:ring-1"
                 />
               </div>
-              <Button variant="outline" className="gap-2">
-                <Filter className="w-4 h-4" />
-                Filtres
-              </Button>
+              
+              {/* Filtres de date */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Période
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Date de début</Label>
+                      <Input
+                        type="date"
+                        value={dateRange.start}
+                        onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date de fin</Label>
+                      <Input
+                        type="date"
+                        value={dateRange.end}
+                        onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                      />
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => setDateRange({ start: '', end: '' })}
+                    >
+                      Réinitialiser
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* Tri */}
+              <Select value={`${sortBy}-${sortOrder}`} onValueChange={(v) => {
+                const [by, order] = v.split('-') as ['date' | 'amount', 'asc' | 'desc'];
+                setSortBy(by);
+                setSortOrder(order);
+              }}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Trier par..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-desc">Date (récent)</SelectItem>
+                  <SelectItem value="date-asc">Date (ancien)</SelectItem>
+                  <SelectItem value="amount-desc">Montant (élevé)</SelectItem>
+                  <SelectItem value="amount-asc">Montant (faible)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -450,9 +567,9 @@ export default function OrdersCenterPage() {
           <TabsContent value={statusFilter} className="space-y-3 mt-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : filteredOrders.length === 0 ? (
+            ) : paginatedOrders.length === 0 ? (
               <Card className="border-0 shadow-sm">
                 <CardContent className="text-center py-12">
                   <div className="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
@@ -469,22 +586,83 @@ export default function OrdersCenterPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
-                {filteredOrders.map((order, index) => (
-                  <motion.div
-                    key={order.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <OrderCard 
-                      order={order}
-                      onView={() => navigate(`/orders/${order.id}`)}
-                      onUpdateStatus={(status) => handleUpdateStatus(order.id, status)}
-                    />
-                  </motion.div>
-                ))}
-              </div>
+              <>
+                {/* Info pagination */}
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>
+                    Affichage {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)} sur {filteredOrders.length} commandes
+                  </span>
+                  <span>{totalPages} page(s)</span>
+                </div>
+
+                <div className="space-y-3">
+                  {paginatedOrders.map((order, index) => (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                    >
+                      <OrderCard 
+                        order={order}
+                        onView={() => navigate(`/orders/${order.id}`)}
+                        onUpdateStatus={(status) => handleUpdateStatus(order.id, status)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 pt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let page: number;
+                        if (totalPages <= 5) {
+                          page = i + 1;
+                        } else if (currentPage <= 3) {
+                          page = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          page = totalPages - 4 + i;
+                        } else {
+                          page = currentPage - 2 + i;
+                        }
+                        return (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
         </Tabs>
