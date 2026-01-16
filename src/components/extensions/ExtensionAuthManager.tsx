@@ -45,8 +45,7 @@ export const ExtensionAuthManager = () => {
           user_id: user.id,
           token: token,
           is_active: true,
-          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
-          device_info: { userAgent: navigator.userAgent }
+          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1 year
         }]);
 
       if (error) throw error;
