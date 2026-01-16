@@ -1,5 +1,5 @@
 /**
- * Dashboard Analytics avec données réelles Supabase
+ * Dashboard Analytics avec données réelles Supabase - Version améliorée
  */
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,15 +14,10 @@ import {
 } from 'recharts';
 import {
   TrendingUp, TrendingDown, DollarSign, Users, ShoppingCart, Package,
-  RefreshCw, Download, AlertCircle
+  RefreshCw, Download, AlertCircle, Eye, Target, Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useRealAnalytics } from '@/hooks/useRealAnalytics';
-import { useQueryClient } from '@tanstack/react-query';
-
-interface RealDataAnalyticsDashboardProps {
-  className?: string;
-}
+import { useAnalyticsRealData } from '@/hooks/useAnalyticsRealData';
 
 interface RealDataAnalyticsDashboardProps {
   className?: string;
@@ -30,52 +25,29 @@ interface RealDataAnalyticsDashboardProps {
 
 export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashboardProps) {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
-  const [chartType, setChartType] = useState<'bar' | 'line' | 'area'>('bar');
-  const queryClient = useQueryClient();
+  const [chartType, setChartType] = useState<'bar' | 'line' | 'area'>('area');
 
-  const { analytics, isLoading } = useRealAnalytics();
-
-  // Map existing hook data to component needs
-  const metrics = analytics ? {
-    revenue: analytics.revenue,
-    revenueChange: 0,
-    orders: analytics.orders,
-    ordersChange: 0,
-    customers: analytics.customers,
-    customersChange: 0,
-    products: analytics.products,
-    productsChange: 0,
-  } : null;
-  
-  const metricsLoading = isLoading;
-  const salesTrend = analytics?.salesByDay?.map(d => ({ name: d.date.slice(5), sales: d.revenue, orders: d.orders, customers: 0 })) || [];
-  const salesTrendLoading = isLoading;
-  const topProducts = analytics?.topProducts?.map((p, i) => ({ id: String(i), name: p.name, sales: p.sales, revenue: parseFloat(p.revenue.replace('€', '')) || 0 })) || [];
-  const topProductsLoading = isLoading;
-  const categories = [{ name: 'Produits', value: 100, color: '#8884d8' }];
-  const categoriesLoading = false;
-
-  const refetch = () => queryClient.invalidateQueries({ queryKey: ['real-analytics'] });
-
-  const formatChange = (change: number) => {
-    const isPositive = change > 0;
-    return (
-      <div className={cn(
-        "flex items-center gap-1 text-sm",
-        isPositive ? "text-green-600" : change < 0 ? "text-red-600" : "text-muted-foreground"
-      )}>
-        {isPositive ? <TrendingUp className="h-3 w-3" /> : change < 0 ? <TrendingDown className="h-3 w-3" /> : null}
-        {change > 0 ? '+' : ''}{change}%
-      </div>
-    );
-  };
+  const { data: analytics, isLoading, refetch, isRefetching } = useAnalyticsRealData(timeRange);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
   };
 
+  const formatChange = (change: number) => {
+    const isPositive = change > 0;
+    return (
+      <div className={cn(
+        "flex items-center gap-1 text-sm font-medium",
+        isPositive ? "text-emerald-600" : change < 0 ? "text-red-500" : "text-muted-foreground"
+      )}>
+        {isPositive ? <TrendingUp className="h-3 w-3" /> : change < 0 ? <TrendingDown className="h-3 w-3" /> : null}
+        {change > 0 ? '+' : ''}{change.toFixed(1)}%
+      </div>
+    );
+  };
+
   const renderSalesChart = () => {
-    if (salesTrend.length === 0) {
+    if (!analytics?.revenueByDay || analytics.revenueByDay.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
           <AlertCircle className="h-8 w-8 mb-2" />
@@ -84,51 +56,80 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
       );
     }
 
+    const chartProps = {
+      data: analytics.revenueByDay,
+      margin: { top: 5, right: 30, left: 20, bottom: 5 }
+    };
+
     switch (chartType) {
       case 'line':
         return (
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={salesTrend}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="name" className="text-xs" />
-              <YAxis className="text-xs" />
-              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+            <LineChart {...chartProps}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+              <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+              <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+              <Tooltip 
+                formatter={(value: number, name: string) => [
+                  name === 'revenue' ? formatCurrency(value) : value,
+                  name === 'revenue' ? 'Ventes' : 'Commandes'
+                ]}
+                contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
+              />
               <Legend />
-              <Line type="monotone" dataKey="sales" stroke="hsl(var(--primary))" strokeWidth={2} name="Ventes (€)" />
-              <Line type="monotone" dataKey="orders" stroke="hsl(var(--chart-2))" strokeWidth={2} name="Commandes" />
+              <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 4 }} name="Ventes (€)" />
+              <Line type="monotone" dataKey="orders" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 3 }} name="Commandes" />
             </LineChart>
           </ResponsiveContainer>
         );
-      case 'area':
+      case 'bar':
         return (
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={salesTrend}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="name" className="text-xs" />
-              <YAxis className="text-xs" />
-              <Tooltip formatter={(value: number, name: string) => 
-                name === 'sales' ? formatCurrency(value) : value
-              } />
+            <BarChart {...chartProps}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+              <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+              <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+              <Tooltip 
+                formatter={(value: number, name: string) => [
+                  name === 'revenue' ? formatCurrency(value) : value,
+                  name === 'revenue' ? 'Ventes' : 'Commandes'
+                ]}
+                contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
+              />
               <Legend />
-              <Area type="monotone" dataKey="sales" stackId="1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.6} name="Ventes (€)" />
-              <Area type="monotone" dataKey="orders" stackId="2" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" fillOpacity={0.6} name="Commandes" />
-            </AreaChart>
+              <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Ventes (€)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="orders" fill="hsl(var(--chart-2))" name="Commandes" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         );
       default:
         return (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={salesTrend}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="name" className="text-xs" />
-              <YAxis className="text-xs" />
-              <Tooltip formatter={(value: number, name: string) => 
-                name === 'sales' ? formatCurrency(value) : value
-              } />
+            <AreaChart {...chartProps}>
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+              <XAxis dataKey="date" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+              <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+              <Tooltip 
+                formatter={(value: number, name: string) => [
+                  name === 'revenue' ? formatCurrency(value) : value,
+                  name === 'revenue' ? 'Ventes' : 'Commandes'
+                ]}
+                contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
+              />
               <Legend />
-              <Bar dataKey="sales" fill="hsl(var(--primary))" name="Ventes (€)" />
-              <Bar dataKey="orders" fill="hsl(var(--chart-2))" name="Commandes" />
-            </BarChart>
+              <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" name="Ventes (€)" />
+              <Area type="monotone" dataKey="orders" stroke="hsl(var(--chart-2))" strokeWidth={2} fillOpacity={1} fill="url(#colorOrders)" name="Commandes" />
+            </AreaChart>
           </ResponsiveContainer>
         );
     }
@@ -136,6 +137,14 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
 
   return (
     <div className={cn("space-y-4 sm:space-y-6", className)}>
+      {/* Demo badge */}
+      {analytics?.isDemo && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-amber-500" />
+          <span className="text-sm text-amber-600">Données de démonstration - Ajoutez des commandes pour voir vos vraies statistiques</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -158,8 +167,8 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
             </SelectContent>
           </Select>
           
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 sm:mr-2" />
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
+            <RefreshCw className={cn("h-4 w-4 sm:mr-2", isRefetching && "animate-spin")} />
             <span className="hidden sm:inline">Actualiser</span>
           </Button>
           
@@ -172,7 +181,7 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-        {metricsLoading ? (
+        {isLoading ? (
           Array(4).fill(0).map((_, i) => (
             <Card key={i}>
               <CardContent className="p-4">
@@ -184,69 +193,69 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
           ))
         ) : (
           <>
-            <Card>
+            <Card className="group hover:shadow-lg transition-all duration-300 hover:border-primary/50">
               <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1 sm:space-y-2 min-w-0">
                     <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Chiffre d'affaires</p>
                     <p className="text-base sm:text-lg lg:text-2xl font-bold truncate">
-                      {formatCurrency(metrics?.revenue || 0)}
+                      {formatCurrency(analytics?.revenue || 0)}
                     </p>
-                    {formatChange(metrics?.revenueChange || 0)}
+                    {formatChange(analytics?.revenueChange || 0)}
                   </div>
-                  <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                  <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                     <DollarSign className="h-4 w-4 text-primary" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="group hover:shadow-lg transition-all duration-300 hover:border-chart-2/50">
               <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1 sm:space-y-2 min-w-0">
                     <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Commandes</p>
                     <p className="text-base sm:text-lg lg:text-2xl font-bold truncate">
-                      {metrics?.orders?.toLocaleString('fr-FR') || 0}
+                      {analytics?.orders?.toLocaleString('fr-FR') || 0}
                     </p>
-                    {formatChange(metrics?.ordersChange || 0)}
+                    {formatChange(analytics?.ordersChange || 0)}
                   </div>
-                  <div className="p-1.5 sm:p-2 bg-chart-2/10 rounded-lg flex-shrink-0">
+                  <div className="p-1.5 sm:p-2 bg-chart-2/10 rounded-lg flex-shrink-0 group-hover:bg-chart-2/20 transition-colors">
                     <ShoppingCart className="h-4 w-4 text-chart-2" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="group hover:shadow-lg transition-all duration-300 hover:border-chart-3/50">
               <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1 sm:space-y-2 min-w-0">
-                    <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Clients</p>
+                    <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Visiteurs</p>
                     <p className="text-base sm:text-lg lg:text-2xl font-bold truncate">
-                      {metrics?.customers?.toLocaleString('fr-FR') || 0}
+                      {analytics?.visitors?.toLocaleString('fr-FR') || 0}
                     </p>
-                    {formatChange(metrics?.customersChange || 0)}
+                    {formatChange(analytics?.visitorsChange || 0)}
                   </div>
-                  <div className="p-1.5 sm:p-2 bg-chart-3/10 rounded-lg flex-shrink-0">
-                    <Users className="h-4 w-4 text-chart-3" />
+                  <div className="p-1.5 sm:p-2 bg-chart-3/10 rounded-lg flex-shrink-0 group-hover:bg-chart-3/20 transition-colors">
+                    <Eye className="h-4 w-4 text-chart-3" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="group hover:shadow-lg transition-all duration-300 hover:border-chart-4/50">
               <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1 sm:space-y-2 min-w-0">
-                    <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Produits</p>
+                    <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Conversion</p>
                     <p className="text-base sm:text-lg lg:text-2xl font-bold truncate">
-                      {metrics?.products?.toLocaleString('fr-FR') || 0}
+                      {analytics?.conversionRate?.toFixed(1) || 0}%
                     </p>
-                    <Badge variant="secondary" className="text-xs">Total catalogue</Badge>
+                    {formatChange(analytics?.conversionChange || 0)}
                   </div>
-                  <div className="p-1.5 sm:p-2 bg-chart-4/10 rounded-lg flex-shrink-0">
-                    <Package className="h-4 w-4 text-chart-4" />
+                  <div className="p-1.5 sm:p-2 bg-chart-4/10 rounded-lg flex-shrink-0 group-hover:bg-chart-4/20 transition-colors">
+                    <Target className="h-4 w-4 text-chart-4" />
                   </div>
                 </div>
               </CardContent>
@@ -255,11 +264,37 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
         )}
       </div>
 
+      {/* Secondary Stats */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+        <Card>
+          <CardContent className="p-3 sm:p-4 flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Zap className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Panier moyen</p>
+              <p className="text-lg font-bold">{formatCurrency(analytics?.avgOrderValue || 0)}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 sm:p-4 flex items-center gap-3">
+            <div className="p-2 bg-chart-2/10 rounded-lg">
+              <Package className="h-5 w-5 text-chart-2" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Produits vendus</p>
+              <p className="text-lg font-bold">{analytics?.productsSold?.toLocaleString('fr-FR') || 0}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
         <TabsList className="w-full justify-start">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="products" className="text-xs sm:text-sm">Produits</TabsTrigger>
-          <TabsTrigger value="categories" className="text-xs sm:text-sm">Catégories</TabsTrigger>
+          <TabsTrigger value="products" className="text-xs sm:text-sm">Top Produits</TabsTrigger>
+          <TabsTrigger value="channels" className="text-xs sm:text-sm">Canaux</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -272,15 +307,15 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="area">Aires</SelectItem>
                     <SelectItem value="bar">Barres</SelectItem>
                     <SelectItem value="line">Lignes</SelectItem>
-                    <SelectItem value="area">Aires</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardHeader>
             <CardContent>
-              {salesTrendLoading ? (
+              {isLoading ? (
                 <Skeleton className="h-[300px] w-full" />
               ) : (
                 renderSalesChart()
@@ -295,28 +330,43 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
               <CardTitle>Top produits vendus</CardTitle>
             </CardHeader>
             <CardContent>
-              {topProductsLoading ? (
+              {isLoading ? (
                 <div className="space-y-3">
-                  {Array(4).fill(0).map((_, i) => (
+                  {Array(5).fill(0).map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
                   ))}
                 </div>
-              ) : topProducts.length === 0 ? (
+              ) : !analytics?.topProducts || analytics.topProducts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p>Aucune vente pour cette période</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {topProducts.map((product, index) => (
-                    <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{product.name}</h4>
-                        <p className="text-sm text-muted-foreground">{product.sales} ventes</p>
+                <div className="space-y-3">
+                  {analytics.topProducts.map((product, index) => (
+                    <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                          index === 0 ? "bg-yellow-100 text-yellow-700" :
+                          index === 1 ? "bg-gray-100 text-gray-700" :
+                          index === 2 ? "bg-orange-100 text-orange-700" :
+                          "bg-muted text-muted-foreground"
+                        )}>
+                          #{index + 1}
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{product.name}</h4>
+                          <p className="text-sm text-muted-foreground">{product.sales} ventes</p>
+                        </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex items-center gap-2">
                         <div className="font-bold">{formatCurrency(product.revenue)}</div>
-                        <Badge variant="secondary">#{index + 1}</Badge>
+                        {product.trend === 'up' ? (
+                          <TrendingUp className="h-4 w-4 text-emerald-500" />
+                        ) : product.trend === 'down' ? (
+                          <TrendingDown className="h-4 w-4 text-red-500" />
+                        ) : null}
                       </div>
                     </div>
                   ))}
@@ -326,33 +376,34 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
           </Card>
         </TabsContent>
 
-        <TabsContent value="categories">
+        <TabsContent value="channels">
           <Card>
             <CardHeader>
-              <CardTitle>Répartition par catégorie</CardTitle>
+              <CardTitle>Répartition par canal</CardTitle>
             </CardHeader>
             <CardContent>
-              {categoriesLoading ? (
+              {isLoading ? (
                 <Skeleton className="h-[300px] w-full" />
-              ) : categories.length === 0 ? (
+              ) : !analytics?.channelDistribution ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>Aucune catégorie définie</p>
+                  <p>Données non disponibles</p>
                 </div>
               ) : (
                 <div className="grid lg:grid-cols-2 gap-6">
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
-                        data={categories}
+                        data={analytics.channelDistribution}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                         outerRadius={80}
+                        innerRadius={40}
                         dataKey="value"
                       >
-                        {categories.map((entry, index) => (
+                        {analytics.channelDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -360,17 +411,17 @@ export function RealDataAnalyticsDashboard({ className }: RealDataAnalyticsDashb
                     </PieChart>
                   </ResponsiveContainer>
                   
-                  <div className="space-y-3">
-                    {categories.map((category) => (
-                      <div key={category.name} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                  <div className="space-y-3 flex flex-col justify-center">
+                    {analytics.channelDistribution.map((channel) => (
+                      <div key={channel.name} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3">
                           <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: category.color }}
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: channel.color }}
                           />
-                          <span className="text-sm">{category.name}</span>
+                          <span className="font-medium">{channel.name}</span>
                         </div>
-                        <Badge variant="outline">{category.value}%</Badge>
+                        <Badge variant="secondary">{channel.value}%</Badge>
                       </div>
                     ))}
                   </div>
