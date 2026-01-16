@@ -72,23 +72,38 @@ function HexagonIcon({ className }: { className?: string }) {
   )
 }
 
-// Logo ShopOpti
+// Logo ShopOpti - Optimisé pour sidebar
 const ChannableLogo = memo(({ collapsed }: { collapsed: boolean }) => (
   <motion.div 
-    className={cn("flex items-center gap-3", collapsed && "justify-center")}
+    className={cn(
+      "flex items-center py-2",
+      collapsed ? "justify-center px-1" : "px-2"
+    )}
     initial={false}
     animate={{ opacity: 1 }}
   >
-    <motion.img
-      src={shopoptiLogo}
-      alt="ShopOpti"
+    <motion.div
       className={cn(
-        "object-contain",
-        collapsed ? "w-10 h-10" : "h-12 w-auto"
+        "relative flex items-center justify-center overflow-hidden rounded-xl",
+        collapsed 
+          ? "w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/5 p-1.5" 
+          : "w-full max-w-[180px] bg-gradient-to-r from-primary/5 via-transparent to-primary/5 p-2"
       )}
-      whileHover={{ scale: 1.05 }}
-      transition={{ type: "spring", stiffness: 300 }}
-    />
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    >
+      <img
+        src={shopoptiLogo}
+        alt="ShopOpti"
+        className={cn(
+          "object-contain drop-shadow-sm",
+          collapsed 
+            ? "w-full h-full" 
+            : "h-10 w-auto max-w-full"
+        )}
+        loading="eager"
+      />
+    </motion.div>
   </motion.div>
 ))
 ChannableLogo.displayName = 'ChannableLogo'
