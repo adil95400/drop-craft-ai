@@ -25,7 +25,6 @@ const UnifiedAuthProvider = lazy(() =>
 const PWAInstallBanner = lazy(() => import('@/components/mobile/PWAInstallBanner').then(m => ({ default: m.PWAInstallBanner })));
 const FeedbackWidget = lazy(() => import('@/components/feedback/FeedbackWidget').then(m => ({ default: m.FeedbackWidget })));
 const MobileGlobalOptimizer = lazy(() => import('@/components/mobile/MobileGlobalOptimizer').then(m => ({ default: m.MobileGlobalOptimizer })));
-const AdaptiveBottomNav = lazy(() => import('@/components/mobile/AdaptiveBottomNav').then(m => ({ default: m.AdaptiveBottomNav })));
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour').then(m => ({ default: m.OnboardingTour })));
 const NotificationProvider = lazy(() => import('@/components/notifications/NotificationService').then(m => ({ default: m.NotificationProvider })));
 const ChatSupportWidget = lazy(() => import('@/components/support/ChatSupportWidget').then(m => ({ default: m.ChatSupportWidget })));
@@ -103,10 +102,6 @@ const AppContent = memo(() => {
           <ChatSupportWidget />
         </Suspense>
         
-        {/* Adaptive bottom navigation for mobile */}
-        <Suspense fallback={null}>
-          <AdaptiveBottomNav />
-        </Suspense>
       </MobileGlobalOptimizer>
     </Suspense>
   );

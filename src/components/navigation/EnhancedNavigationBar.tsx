@@ -2,7 +2,6 @@ import { memo } from 'react'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { QuickNavigationBar } from './QuickNavigationBar'
 import { NavigationBreadcrumbs } from './NavigationBreadcrumbs'
-import { MobileNavigationMenu } from './MobileNavigationMenu'
 import { cn } from '@/lib/utils'
 
 interface EnhancedNavigationBarProps {
@@ -25,13 +24,8 @@ function EnhancedNavigationBarComponent({
     >
       {/* Main navigation row - simplified */}
       <div className="flex h-12 items-center gap-3 px-4">
-        {/* Mobile: Hamburger menu */}
-        <div className="flex items-center md:hidden">
-          <MobileNavigationMenu />
-        </div>
-
         {/* Desktop: Sidebar trigger */}
-        <SidebarTrigger className="-ml-1 hidden md:flex shrink-0" />
+        <SidebarTrigger className="-ml-1 shrink-0" />
 
         {/* Breadcrumbs - inline on desktop */}
         {showBreadcrumbs && (
