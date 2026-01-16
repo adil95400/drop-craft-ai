@@ -9,7 +9,8 @@ import {
   Search, Bell, Settings, ChevronRight, Home, Command, 
   User, LogOut, HelpCircle, Sparkles, Menu, Plus, Star,
   Package, ShoppingCart, BarChart3, Store, Zap, Crown,
-  MessageSquare, Filter, RefreshCw, Download, Upload, Check
+  MessageSquare, Filter, RefreshCw, Download, Upload, Check,
+  ArrowLeft
 } from "lucide-react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -570,6 +571,30 @@ const UserMenuDropdown = memo(() => {
 })
 UserMenuDropdown.displayName = 'UserMenuDropdown'
 
+// Back Button Component
+const BackButton = memo(() => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Ne pas afficher sur le dashboard (page d'accueil)
+  if (location.pathname === '/dashboard' || location.pathname === '/') {
+    return null
+  }
+  
+  return (
+    <motion.button
+      onClick={() => navigate(-1)}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <ArrowLeft className="h-4 w-4" />
+      <span className="text-[13px] font-medium">Retour</span>
+    </motion.button>
+  )
+})
+BackButton.displayName = 'BackButton'
+
 // Composant principal Header Premium
 export const ChannableHeader = memo(() => {
   return (
@@ -580,8 +605,9 @@ export const ChannableHeader = memo(() => {
         
         <Separator orientation="vertical" className="h-6 hidden md:block bg-border/40" />
         
-        {/* Breadcrumbs */}
-        <div className="hidden md:flex flex-1 items-center">
+        {/* Back Button + Breadcrumbs - côte à côte */}
+        <div className="hidden md:flex items-center gap-2">
+          <BackButton />
           <ChannableBreadcrumbs />
         </div>
         
@@ -589,7 +615,7 @@ export const ChannableHeader = memo(() => {
         <HorizontalNavTabs />
         
         {/* Spacer */}
-        <div className="flex-1 md:hidden" />
+        <div className="flex-1" />
         
         {/* Actions de droite */}
         <div className="flex items-center gap-2">
