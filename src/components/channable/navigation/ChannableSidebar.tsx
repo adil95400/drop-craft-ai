@@ -29,7 +29,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle"
 import { cn } from "@/lib/utils"
 import { MODULE_REGISTRY, NAV_GROUPS, type NavGroupId } from "@/config/modules"
 import { useModules } from "@/hooks/useModules"
-import { getAccessibleSubModules } from "@/config/sub-modules"
+
 import { useFavorites } from "@/stores/favoritesStore"
 import { useUnifiedAuth } from "@/contexts/UnifiedAuthContext"
 
@@ -52,7 +52,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 // Couleurs par groupe - Style Channable
-const groupColors: Record<NavGroupId, { bg: string; text: string; accent: string; border: string }> = {
+const groupColors: Partial<Record<NavGroupId, { bg: string; text: string; accent: string; border: string }>> = {
   home: { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', accent: 'hover:bg-blue-500/20', border: 'border-blue-500/30' },
   sources: { bg: 'bg-violet-500/10', text: 'text-violet-600 dark:text-violet-400', accent: 'hover:bg-violet-500/20', border: 'border-violet-500/30' },
   catalog: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', accent: 'hover:bg-emerald-500/20', border: 'border-emerald-500/30' },
@@ -367,7 +367,7 @@ const ChannableNavGroup = memo(({
                     isFavorite={favorites.isFavorite(module.id)}
                     onNavigate={onNavigate}
                     onFavoriteToggle={() => onFavoriteToggle(module.id)}
-                    subModules={getAccessibleSubModules(module.id, currentPlan as any)}
+                    subModules={module.subModules || []}
                     isSubOpen={openSubMenus[module.id] || false}
                     onSubToggle={() => onSubMenuToggle(module.id)}
                   />
@@ -454,7 +454,7 @@ export function ChannableSidebar() {
   const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['home', 'catalog', 'channels', 'marketing'])
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({ marketing: true })
   
-  const { availableModules, canAccess, isModuleEnabled, currentPlan, isAdminBypass } = useModules()
+  const { availableModules, allModules, canAccess, isModuleEnabled, currentPlan, isAdminBypass } = useModules()
   const favorites = useFavorites()
 
   const isActive = useCallback((path: string) => {
@@ -477,30 +477,31 @@ export function ChannableSidebar() {
 
   // Modules groupés
   const modulesByGroup = useMemo(() => {
-    const grouped: Record<NavGroupId, typeof availableModules> = {} as any
-    
-    availableModules.forEach(module => {
-      if (!module.groupId || !isModuleEnabled(module.id)) return
+    const grouped: Record<NavGroupId, typeof allModules> = {} as any
+
+    // On affiche tous les modules (même verrouillés) afin que l’utilisateur voie la structure complète.
+    allModules.forEach(module => {
+      if (!module.groupId || !module.enabled) return
       if (!grouped[module.groupId]) grouped[module.groupId] = []
-      
+
       // Filtrer par recherche
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
-        if (!module.name.toLowerCase().includes(query) && 
+        if (!module.name.toLowerCase().includes(query) &&
             !module.description?.toLowerCase().includes(query)) {
           return
         }
       }
-      
+
       grouped[module.groupId].push(module)
     })
 
     Object.values(grouped).forEach(modules => {
       modules.sort((a, b) => a.order - b.order)
     })
-    
+
     return grouped
-  }, [availableModules, isModuleEnabled, searchQuery])
+  }, [allModules, searchQuery])
 
   // Favoris section
   const favoriteModules = useMemo(() => {
