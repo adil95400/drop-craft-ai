@@ -1,17 +1,24 @@
+/**
+ * Centre de Commandes avec design Channable premium
+ */
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  ArrowLeft, Search, Filter, Package, Truck, CheckCircle2,
-  Clock, AlertCircle, Download, RefreshCw, Eye, Edit
+  Search, Filter, Package, Truck, CheckCircle2,
+  Clock, AlertCircle, Download, RefreshCw, Eye, 
+  Plus, DollarSign, TrendingUp, Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface Order {
   id: string;
@@ -24,6 +31,164 @@ interface Order {
   created_at: string;
   delivery_date?: string;
   items_count: number;
+}
+
+// Composant carte de stat amélioré
+function StatCard({ 
+  icon: Icon, 
+  label, 
+  value, 
+  trend, 
+  color = 'primary' 
+}: { 
+  icon: React.ElementType; 
+  label: string; 
+  value: string | number; 
+  trend?: string;
+  color?: 'primary' | 'success' | 'warning' | 'destructive';
+}) {
+  const colorClasses = {
+    primary: 'bg-primary/10 text-primary border-primary/20',
+    success: 'bg-green-500/10 text-green-600 border-green-500/20',
+    warning: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    destructive: 'bg-red-500/10 text-red-600 border-red-500/20',
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
+    >
+      <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow">
+        <div className={cn("absolute inset-0 opacity-5", colorClasses[color].split(' ')[0])} />
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className={cn("p-2.5 rounded-xl border", colorClasses[color])}>
+              <Icon className="h-5 w-5" />
+            </div>
+            {trend && (
+              <Badge variant="secondary" className="text-xs font-medium bg-green-500/10 text-green-600 border-0">
+                {trend}
+              </Badge>
+            )}
+          </div>
+          <div className="mt-3">
+            <p className="text-2xl font-bold tracking-tight">{value}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{label}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+// Composant carte de commande amélioré
+function OrderCard({ 
+  order, 
+  onView, 
+  onUpdateStatus 
+}: { 
+  order: Order; 
+  onView: () => void; 
+  onUpdateStatus: (status: string) => void;
+}) {
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, { color: string; icon: React.ElementType; label: string }> = {
+      pending: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: Clock, label: 'En attente' },
+      processing: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Package, label: 'Traitement' },
+      shipped: { color: 'bg-purple-500/10 text-purple-600 border-purple-500/30', icon: Truck, label: 'Expédié' },
+      delivered: { color: 'bg-green-500/10 text-green-600 border-green-500/30', icon: CheckCircle2, label: 'Livré' },
+      cancelled: { color: 'bg-red-500/10 text-red-600 border-red-500/30', icon: AlertCircle, label: 'Annulé' },
+    };
+    return configs[status] || configs.pending;
+  };
+
+  const config = getStatusConfig(order.status);
+  const StatusIcon = config.icon;
+
+  const getNextStatus = () => {
+    const statusFlow: Record<string, string> = {
+      pending: 'processing',
+      processing: 'shipped',
+      shipped: 'delivered',
+    };
+    return statusFlow[order.status];
+  };
+
+  const getNextStatusLabel = () => {
+    const labels: Record<string, string> = {
+      pending: 'Traiter',
+      processing: 'Expédier',
+      shipped: 'Livrer',
+    };
+    return labels[order.status];
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      whileHover={{ scale: 1.01 }}
+      transition={{ duration: 0.2 }}
+    >
+      <Card className="group hover:shadow-md transition-all border-0 shadow-sm overflow-hidden">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className={cn("p-2.5 rounded-xl border", config.color)}>
+                <StatusIcon className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold truncate">{order.order_number}</h3>
+                  <Badge className={cn("border", config.color)}>
+                    {config.label}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground truncate">
+                  {order.customer_name} • {order.items_count || 0} article(s)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="text-right hidden sm:block">
+                <p className="font-semibold">
+                  {order.total_amount.toFixed(2)} {order.currency}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onView}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/10 hover:text-primary"
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+
+                {getNextStatus() && (
+                  <Button
+                    size="sm"
+                    onClick={() => onUpdateStatus(getNextStatus())}
+                    className="bg-primary hover:bg-primary/90 shadow-sm"
+                  >
+                    {getNextStatusLabel()}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 }
 
 export default function OrdersCenterPage() {
@@ -72,7 +237,7 @@ export default function OrdersCenterPage() {
         currency: order.currency,
         created_at: order.created_at,
         delivery_date: order.delivery_date,
-        items_count: 0 // Les items ne sont pas dans la structure actuelle
+        items_count: 0
       }));
       
       setOrders(formattedOrders);
@@ -115,7 +280,7 @@ export default function OrdersCenterPage() {
 
       toast({
         title: "Statut mis à jour",
-        description: `La commande est maintenant ${newStatus}`
+        description: `La commande est maintenant en ${newStatus}`
       });
 
       loadOrders();
@@ -171,28 +336,6 @@ export default function OrdersCenterPage() {
     window.URL.revokeObjectURL(url);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'shipped': return 'bg-blue-100 text-blue-800';
-      case 'processing': return 'bg-yellow-100 text-yellow-800';
-      case 'pending': return 'bg-gray-100 text-gray-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'delivered': return <CheckCircle2 className="h-4 w-4" />;
-      case 'shipped': return <Truck className="h-4 w-4" />;
-      case 'processing': return <Package className="h-4 w-4" />;
-      case 'pending': return <Clock className="h-4 w-4" />;
-      case 'cancelled': return <AlertCircle className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
-    }
-  };
-
   const statusCounts = {
     all: orders.length,
     pending: orders.filter(o => o.status === 'pending').length,
@@ -202,199 +345,150 @@ export default function OrdersCenterPage() {
     cancelled: orders.filter(o => o.status === 'cancelled').length,
   };
 
+  const totalRevenue = orders.reduce((acc, o) => acc + (o.total_amount || 0), 0);
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">Centre de Commandes</h1>
-          <p className="text-muted-foreground">
-            Vue unifiée de toutes vos commandes avec gestion avancée
-          </p>
-        </div>
-        <Button 
-          onClick={loadOrders} 
-          disabled={isLoading}
-          data-testid="sync-button"
-          aria-busy={isLoading}
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          {isLoading ? 'Synchronisation...' : 'Actualiser'}
-        </Button>
-        <Button onClick={handleExport} data-testid="export-button">
-          <Download className="w-4 h-4 mr-2" />
-          Exporter
-        </Button>
+    <ChannablePageWrapper
+      title="Centre de Commandes"
+      subtitle="Gestion & Suivi"
+      description="Vue unifiée de toutes vos commandes avec gestion avancée et suivi en temps réel"
+      heroImage="orders"
+      badge={{
+        label: 'Live',
+        icon: Sparkles
+      }}
+      actions={
+        <>
+          <Button 
+            onClick={() => navigate('/orders/new')} 
+            className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
+          >
+            <Plus className="h-4 w-4" />
+            Nouvelle commande
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={loadOrders} 
+            disabled={isLoading}
+            className="gap-2 backdrop-blur-sm bg-background/50"
+          >
+            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            Actualiser
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleExport}
+            className="gap-2 backdrop-blur-sm bg-background/50"
+          >
+            <Download className="h-4 w-4" />
+            Exporter
+          </Button>
+        </>
+      }
+    >
+      {/* Stats Grid */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+        <StatCard icon={Package} label="Total" value={statusCounts.all} trend="+12%" color="primary" />
+        <StatCard icon={Clock} label="En attente" value={statusCounts.pending} color="warning" />
+        <StatCard icon={Package} label="Traitement" value={statusCounts.processing} color="primary" />
+        <StatCard icon={Truck} label="Expédiées" value={statusCounts.shipped} color="primary" />
+        <StatCard icon={DollarSign} label="CA Total" value={`${totalRevenue.toFixed(0)}€`} trend="+25%" color="success" />
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statusCounts.all}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En attente</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statusCounts.pending}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En traitement</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statusCounts.processing}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expédiées</CardTitle>
-            <Truck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statusCounts.shipped}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Livrées</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{statusCounts.delivered}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtres et recherche */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Rechercher par numéro de commande ou nom client..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+      {/* Search & Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Rechercher par numéro ou client..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 border-0 bg-muted/50 focus-visible:ring-1"
+                />
+              </div>
+              <Button variant="outline" className="gap-2">
+                <Filter className="w-4 h-4" />
+                Filtres
+              </Button>
             </div>
-            <Button variant="outline">
-              <Filter className="w-4 h-4 mr-2" />
-              Filtres avancés
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      {/* Liste des commandes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Commandes ({filteredOrders.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="all" onValueChange={(value) => setStatusFilter(value)}>
-            <TabsList>
-              <TabsTrigger value="all">Toutes ({statusCounts.all})</TabsTrigger>
-              <TabsTrigger value="pending">En attente ({statusCounts.pending})</TabsTrigger>
-              <TabsTrigger value="processing">Traitement ({statusCounts.processing})</TabsTrigger>
-              <TabsTrigger value="shipped">Expédiées ({statusCounts.shipped})</TabsTrigger>
-              <TabsTrigger value="delivered">Livrées ({statusCounts.delivered})</TabsTrigger>
-            </TabsList>
+      {/* Orders List */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Tabs defaultValue="all" onValueChange={setStatusFilter} className="space-y-4">
+          <TabsList className="bg-muted/50 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
+            <TabsTrigger value="all" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              Toutes ({statusCounts.all})
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              En attente ({statusCounts.pending})
+            </TabsTrigger>
+            <TabsTrigger value="processing" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              Traitement ({statusCounts.processing})
+            </TabsTrigger>
+            <TabsTrigger value="shipped" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              Expédiées ({statusCounts.shipped})
+            </TabsTrigger>
+            <TabsTrigger value="delivered" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              Livrées ({statusCounts.delivered})
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value={statusFilter} className="space-y-4 mt-4">
-              {filteredOrders.length === 0 ? (
-                <div className="text-center py-12">
-                  <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <TabsContent value={statusFilter} className="space-y-3 mt-4">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : filteredOrders.length === 0 ? (
+              <Card className="border-0 shadow-sm">
+                <CardContent className="text-center py-12">
+                  <div className="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
+                    <Package className="h-8 w-8 text-muted-foreground" />
+                  </div>
                   <h3 className="font-semibold mb-2">Aucune commande</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground mb-4">
                     Aucune commande ne correspond à vos critères
                   </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredOrders.map((order) => (
-                    <Card key={order.id}>
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 flex-1">
-                            {getStatusIcon(order.status)}
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold">{order.order_number}</h3>
-                                <Badge className={getStatusColor(order.status)}>
-                                  {order.status}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                {order.customer_name} • {order.items_count} article(s)
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="font-semibold">
-                                {order.total_amount.toFixed(2)} {order.currency}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {new Date(order.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => navigate(`/orders/${order.id}`)}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              Voir
-                            </Button>
-
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                const nextStatus = 
-                                  order.status === 'pending' ? 'processing' :
-                                  order.status === 'processing' ? 'shipped' :
-                                  order.status === 'shipped' ? 'delivered' : order.status;
-                                handleUpdateStatus(order.id, nextStatus);
-                              }}
-                              disabled={order.status === 'delivered' || order.status === 'cancelled'}
-                            >
-                              {order.status === 'pending' && 'Traiter'}
-                              {order.status === 'processing' && 'Expédier'}
-                              {order.status === 'shipped' && 'Livrer'}
-                              {order.status === 'delivered' && 'Livrée'}
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+                  <Button onClick={() => navigate('/orders/new')} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Créer une commande
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {filteredOrders.map((order, index) => (
+                  <motion.div
+                    key={order.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <OrderCard 
+                      order={order}
+                      onView={() => navigate(`/orders/${order.id}`)}
+                      onUpdateStatus={(status) => handleUpdateStatus(order.id, status)}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+    </ChannablePageWrapper>
   );
 }
