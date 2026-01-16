@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { ChannableLayout } from '@/components/channable/navigation';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '@/lib/utils';
 
@@ -245,7 +246,7 @@ export default function CreateProduct() {
   const completionScore = calculateCompletionScore();
 
   return (
-    <>
+    <ChannableLayout>
       <Helmet>
         <title>Créer un Produit - ShopOpti</title>
         <meta name="description" content="Créez un nouveau produit dans votre catalogue avec options avancées et IA" />
@@ -1107,6 +1108,6 @@ export default function CreateProduct() {
           </Tabs>
         </form>
       </ChannablePageWrapper>
-    </>
+    </ChannableLayout>
   );
 }
