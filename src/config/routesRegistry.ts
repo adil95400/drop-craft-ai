@@ -16,8 +16,6 @@ export interface RouteConfig {
 export const ROUTES_REGISTRY: RouteConfig[] = [
   // ===== CORE PAGES =====
   { path: '/dashboard', component: 'DashboardHome', protected: true, category: 'core', description: 'Tableau de bord principal', implemented: true },
-  { path: '/dashboard-super', component: 'SuperDashboard', protected: true, category: 'core', description: 'Super Dashboard', implemented: true },
-  { path: '/unified-dashboard', component: 'UnifiedDashboardPage', protected: true, category: 'core', description: 'Dashboard unifié', implemented: true },
   { path: '/products', component: 'ModernProductsPage', protected: true, category: 'core', description: 'Gestion des produits', implemented: true },
   { path: '/orders', component: 'ModernOrdersPage', protected: true, category: 'core', description: 'Gestion des commandes', implemented: true },
   { path: '/customers', component: 'ModernCustomersPage', protected: true, category: 'core', description: 'Gestion des clients', implemented: true },
