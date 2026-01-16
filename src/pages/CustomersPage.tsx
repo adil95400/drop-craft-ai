@@ -1,10 +1,10 @@
 /**
- * Page Clients - Style Channable
- * Gérez votre base clients avec le design moderne Channable
+ * Page Clients - Style Channable Premium
+ * Gérez votre base clients avec le design moderne
  */
 
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,17 +19,67 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Users, Search, UserPlus, Eye, Mail, TrendingUp, DollarSign, ShoppingCart, RefreshCw, Download } from 'lucide-react'
+import { Users, Search, UserPlus, Eye, Mail, TrendingUp, DollarSign, ShoppingCart, RefreshCw, Download, Sparkles } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { 
-  ChannablePageLayout,
-  ChannableHeroSection,
-  ChannableStatsGrid,
-  ChannableQuickActions
-} from '@/components/channable'
-import { ChannableStat, ChannableQuickAction } from '@/components/channable/types'
-import { useQueryClient } from '@tanstack/react-query'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
+
+// Composant carte de stat
+function StatCard({ 
+  icon: Icon, 
+  label, 
+  value, 
+  trend, 
+  subtitle,
+  color = 'primary' 
+}: { 
+  icon: React.ElementType; 
+  label: string; 
+  value: string | number; 
+  trend?: string;
+  subtitle?: string;
+  color?: 'primary' | 'success' | 'warning' | 'info';
+}) {
+  const colorClasses = {
+    primary: 'bg-primary/10 text-primary border-primary/20',
+    success: 'bg-green-500/10 text-green-600 border-green-500/20',
+    warning: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    info: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
+    >
+      <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className={cn("p-2.5 rounded-xl border", colorClasses[color])}>
+              <Icon className="h-5 w-5" />
+            </div>
+            {trend && (
+              <Badge variant="secondary" className="text-xs font-medium bg-green-500/10 text-green-600 border-0">
+                {trend}
+              </Badge>
+            )}
+          </div>
+          <div className="mt-3">
+            <p className="text-2xl font-bold tracking-tight">{value}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{label}</p>
+            {subtitle && (
+              <p className="text-xs text-muted-foreground/70 mt-1">{subtitle}</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
 
 export default function CustomersPage() {
   const { toast } = useToast()
@@ -67,202 +117,245 @@ export default function CustomersPage() {
   const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
   const avgOrderValue = totalCustomers > 0 ? totalRevenue / Math.max(1, activeCustomers) : 0
 
-  // Channable Stats
-  const stats: ChannableStat[] = [
-    {
-      label: 'Total Clients',
-      value: totalCustomers.toLocaleString(),
-      icon: Users,
-      color: 'primary',
-      change: 12,
-      trend: 'up',
-      changeLabel: 'ce mois'
-    },
-    {
-      label: 'Clients Actifs',
-      value: activeCustomers.toLocaleString(),
-      icon: TrendingUp,
-      color: 'success',
-      change: 8,
-      trend: 'up',
-      changeLabel: 'avec commandes'
-    },
-    {
-      label: 'Revenus Total',
-      value: `${totalRevenue.toFixed(0)} €`,
-      icon: DollarSign,
-      color: 'info',
-      changeLabel: 'lifetime value'
-    },
-    {
-      label: 'Panier Moyen',
-      value: `${avgOrderValue.toFixed(0)} €`,
-      icon: ShoppingCart,
-      color: 'warning',
-      changeLabel: 'par client actif'
-    }
-  ]
-
-  // Quick Actions
-  const quickActions: ChannableQuickAction[] = [
-    {
-      id: 'add-customer',
-      label: 'Nouveau client',
-      icon: UserPlus,
-      onClick: () => toast({ title: 'Ajouter un client', description: 'Fonctionnalité à venir' }),
-      variant: 'primary'
-    },
-    {
-      id: 'refresh',
-      label: 'Actualiser',
-      icon: RefreshCw,
-      onClick: () => {
-        refetch()
-        queryClient.invalidateQueries({ queryKey: ['customers'] })
-        toast({ title: 'Liste actualisée' })
-      },
-      description: 'Sync data'
-    },
-    {
-      id: 'export',
-      label: 'Exporter',
-      icon: Download,
-      onClick: () => {
-        if (!customers?.length) {
-          toast({ title: 'Aucun client à exporter', variant: 'destructive' })
-          return
-        }
-        const csvContent = [
-          ['Nom', 'Email', 'Commandes', 'Dépensé'].join(','),
-          ...customers.map(c => [getCustomerName(c), c.email, c.total_orders, c.total_spent].join(','))
-        ].join('\n')
-        
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-        const link = document.createElement('a')
-        link.href = URL.createObjectURL(blob)
-        link.download = `clients_${new Date().toISOString().split('T')[0]}.csv`
-        link.click()
-        toast({ title: `${customers.length} clients exportés` })
-      },
-      description: 'CSV'
-    },
-    {
-      id: 'email',
-      label: 'Campagne Email',
-      icon: Mail,
-      onClick: () => toast({ title: 'Email Marketing', description: 'Redirection vers Email Marketing' }),
-      description: 'Newsletter'
-    }
-  ]
-
   const handleRefresh = () => {
     refetch()
     queryClient.invalidateQueries({ queryKey: ['customers'] })
     toast({ title: 'Clients actualisés' })
   }
 
+  const handleExport = () => {
+    if (!customers?.length) {
+      toast({ title: 'Aucun client à exporter', variant: 'destructive' })
+      return
+    }
+    const csvContent = [
+      ['Nom', 'Email', 'Commandes', 'Dépensé'].join(','),
+      ...customers.map(c => [getCustomerName(c), c.email, c.total_orders, c.total_spent].join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `clients_${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    toast({ title: `${customers.length} clients exportés` })
+  }
+
   return (
-    <ChannablePageLayout 
-      title="Clients" 
-      metaTitle="Gestion des Clients"
-      metaDescription="Gérez votre base clients et analysez leur comportement"
+    <ChannablePageWrapper
+      title="Gestion Clients"
+      subtitle="CRM Intégré"
+      description="Gérez votre base clients, analysez leur comportement d'achat et optimisez leur fidélisation avec des outils IA."
+      heroImage="marketing"
+      badge={{
+        label: `${totalCustomers} clients`,
+        icon: Users
+      }}
+      actions={
+        <>
+          <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25">
+            <UserPlus className="h-4 w-4" />
+            Nouveau client
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh}
+            className="gap-2 backdrop-blur-sm bg-background/50"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Actualiser
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleExport}
+            className="gap-2 backdrop-blur-sm bg-background/50"
+          >
+            <Download className="h-4 w-4" />
+            Exporter
+          </Button>
+        </>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        title="Gestion Clients"
-        subtitle="CRM Intégré"
-        description="Gérez votre base clients, analysez leur comportement d'achat et optimisez leur fidélisation avec des outils IA."
-        badge={{
-          label: `${totalCustomers} clients`,
-          icon: Users
-        }}
-        primaryAction={{
-          label: 'Nouveau client',
-          onClick: () => toast({ title: 'Ajouter un client', description: 'Fonctionnalité à venir' }),
-          icon: UserPlus
-        }}
-        secondaryAction={{
-          label: 'Actualiser',
-          onClick: handleRefresh
-        }}
-        variant="compact"
-      />
-
       {/* Stats Grid */}
-      <ChannableStatsGrid stats={stats} columns={4} compact />
-
-      {/* Quick Actions */}
-      <ChannableQuickActions actions={quickActions} variant="compact" />
-
-      {/* Search */}
-      <div className="flex gap-4">
-        <div className="flex-1 relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un client..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <StatCard 
+          icon={Users} 
+          label="Total Clients" 
+          value={totalCustomers.toLocaleString()} 
+          trend="+12%" 
+          color="primary" 
+        />
+        <StatCard 
+          icon={TrendingUp} 
+          label="Clients Actifs" 
+          value={activeCustomers.toLocaleString()} 
+          subtitle="avec commandes"
+          color="success" 
+        />
+        <StatCard 
+          icon={DollarSign} 
+          label="Revenus Total" 
+          value={`${totalRevenue.toFixed(0)} €`} 
+          subtitle="lifetime value"
+          color="info" 
+        />
+        <StatCard 
+          icon={ShoppingCart} 
+          label="Panier Moyen" 
+          value={`${avgOrderValue.toFixed(0)} €`} 
+          subtitle="par client actif"
+          color="warning" 
+        />
       </div>
 
+      {/* Search */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher un client..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 border-0 bg-muted/50 focus-visible:ring-1"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Customers Table */}
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            {filteredCustomers.length} client(s)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Chargement...
-            </div>
-          ) : filteredCustomers.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">Aucun client trouvé</p>
-              <p className="text-sm text-muted-foreground/70 mt-1">
-                Vos clients apparaîtront ici une fois ajoutés
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Commandes</TableHead>
-                      <TableHead>Dépensé</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Inscrit</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCustomers.map((customer) => (
-                      <TableRow key={customer.id} className="hover:bg-muted/50">
-                        <TableCell className="font-medium">{getCustomerName(customer)}</TableCell>
-                        <TableCell className="text-muted-foreground">{customer.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{customer.total_orders || 0}</Badge>
-                        </TableCell>
-                        <TableCell className="font-medium">{customer.total_spent?.toFixed(2) || '0.00'} €</TableCell>
-                        <TableCell>
-                          <Badge variant={customer.total_orders > 0 ? 'default' : 'secondary'}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5 text-primary" />
+              {filteredCustomers.length} client(s)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+                Chargement...
+              </div>
+            ) : filteredCustomers.length === 0 ? (
+              <div className="text-center py-12 px-4">
+                <div className="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
+                  <Users className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="font-medium mb-1">Aucun client trouvé</p>
+                <p className="text-sm text-muted-foreground">
+                  Vos clients apparaîtront ici une fois ajoutés
+                </p>
+                <Button className="mt-4 gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Ajouter un client
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/30 hover:bg-muted/30">
+                        <TableHead className="font-semibold">Client</TableHead>
+                        <TableHead className="font-semibold">Email</TableHead>
+                        <TableHead className="font-semibold">Commandes</TableHead>
+                        <TableHead className="font-semibold">Dépensé</TableHead>
+                        <TableHead className="font-semibold">Statut</TableHead>
+                        <TableHead className="font-semibold">Inscrit</TableHead>
+                        <TableHead className="text-right font-semibold">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCustomers.map((customer, index) => (
+                        <motion.tr 
+                          key={customer.id} 
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.03 }}
+                          className="group hover:bg-muted/30"
+                        >
+                          <TableCell className="font-medium">{getCustomerName(customer)}</TableCell>
+                          <TableCell className="text-muted-foreground">{customer.email}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="font-medium">{customer.total_orders || 0}</Badge>
+                          </TableCell>
+                          <TableCell className="font-semibold">{customer.total_spent?.toFixed(2) || '0.00'} €</TableCell>
+                          <TableCell>
+                            <Badge 
+                              className={cn(
+                                "border",
+                                customer.total_orders > 0 
+                                  ? 'bg-green-500/10 text-green-600 border-green-500/30' 
+                                  : 'bg-muted text-muted-foreground border-muted-foreground/20'
+                              )}
+                            >
+                              {customer.total_orders > 0 ? 'Actif' : 'Nouveau'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
+                            {formatDistanceToNow(new Date(customer.created_at), { addSuffix: true, locale: fr })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                                <Mail className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </motion.tr>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-3 p-4">
+                  {filteredCustomers.map((customer, index) => (
+                    <motion.div
+                      key={customer.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <Card className="p-4 border-0 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium truncate">{getCustomerName(customer)}</p>
+                            <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
+                          </div>
+                          <Badge 
+                            className={cn(
+                              "border shrink-0",
+                              customer.total_orders > 0 
+                                ? 'bg-green-500/10 text-green-600 border-green-500/30' 
+                                : 'bg-muted text-muted-foreground'
+                            )}
+                          >
                             {customer.total_orders > 0 ? 'Actif' : 'Nouveau'}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          {formatDistanceToNow(new Date(customer.created_at), { addSuffix: true, locale: fr })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
+                        </div>
+                        <div className="mt-3 flex items-center justify-between text-sm">
+                          <div className="flex gap-4 text-muted-foreground">
+                            <span>{customer.total_orders || 0} cmd</span>
+                            <span>{customer.total_spent?.toFixed(2) || '0.00'} €</span>
+                          </div>
+                          <div className="flex gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8">
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -270,47 +363,16 @@ export default function CustomersPage() {
                               <Mail className="w-4 h-4" />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Mobile Cards */}
-              <div className="md:hidden space-y-3">
-                {filteredCustomers.map((customer) => (
-                  <Card key={customer.id} className="p-4 border-border/50 bg-background/50">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate">{getCustomerName(customer)}</p>
-                        <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
-                      </div>
-                      <Badge variant={customer.total_orders > 0 ? 'default' : 'secondary'}>
-                        {customer.total_orders > 0 ? 'Actif' : 'Nouveau'}
-                      </Badge>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between text-sm">
-                      <div className="flex gap-4 text-muted-foreground">
-                        <span>{customer.total_orders || 0} cmd</span>
-                        <span>{customer.total_spent?.toFixed(2) || '0.00'} €</span>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Mail className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </ChannablePageLayout>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </ChannablePageWrapper>
   )
 }
