@@ -1,25 +1,34 @@
-import React from 'react';
-import { Helmet } from 'react-helmet-async';
+/**
+ * Page de génération de contenu IA - Style Channable Premium
+ */
+
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { AIContentDashboard } from '@/components/ai-content';
+import { Button } from '@/components/ui/button';
+import { Sparkles, Download, Settings } from 'lucide-react';
 
 export default function AIContentPage() {
   return (
-    <>
-      <Helmet>
-        <title>Génération de contenu IA | DropShipper</title>
-        <meta name="description" content="Générez automatiquement des descriptions, titres et contenus SEO avec l'IA" />
-      </Helmet>
-      
-      <div className="container mx-auto py-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Génération de contenu IA</h1>
-          <p className="text-muted-foreground">
-            Créez des descriptions, titres et contenus SEO automatiquement avec l'intelligence artificielle
-          </p>
+    <ChannablePageWrapper
+      title="Génération de contenu IA"
+      subtitle="Automatisation créative"
+      description="Créez des descriptions, titres et contenus SEO automatiquement avec l'intelligence artificielle"
+      heroImage="products"
+      badge={{ label: 'IA Pro', icon: Sparkles }}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2 bg-background/80 backdrop-blur-sm">
+            <Settings className="h-4 w-4" />
+            Templates
+          </Button>
+          <Button className="gap-2">
+            <Download className="h-4 w-4" />
+            Exporter
+          </Button>
         </div>
-
-        <AIContentDashboard />
-      </div>
-    </>
+      }
+    >
+      <AIContentDashboard />
+    </ChannablePageWrapper>
   );
 }
