@@ -1,8 +1,16 @@
+/**
+ * Page principale de gestion des produits - Design Channable Premium
+ * Utilise le hook unifié et le wrapper pour toutes les actions
+ */
+
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
 import { useProductFilters } from '@/hooks/useProductFilters';
 import { useAuditFilters } from '@/hooks/useAuditFilters';
 import { useProductsAudit } from '@/hooks/useProductAuditEngine';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { ProductsPageWrapper } from '@/components/products/ProductsPageWrapper';
 import { ProductAuditBadge } from '@/components/products/ProductAuditBadge';
 import { CatalogQualityDashboard } from '@/components/products/CatalogQualityDashboard';
@@ -21,21 +29,81 @@ import { ProductViewModal } from '@/components/modals/ProductViewModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles, CheckCircle, Filter, Edit3, Wand2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, 
+  Target, Sparkles, CheckCircle, Filter, Edit3, Wand2, Plus,
+  LayoutGrid, List, RefreshCw, Download, Upload, Search, Eye,
+  ArrowUpRight, Settings, Zap, BarChart3
+} from 'lucide-react';
 import { useModals } from '@/hooks/useModals';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
 import { SupplierCatalogBrowser } from '@/components/products/SupplierCatalogBrowser';
 
-/**
- * Page principale de gestion des produits
- * Utilise le hook unifié et le wrapper pour toutes les actions
- */
+// Composant de carte statistique premium
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  change?: string;
+  changeType?: 'positive' | 'negative' | 'neutral';
+  icon: React.ElementType;
+  color: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  onClick?: () => void;
+}
+
+function StatCard({ label, value, change, changeType = 'positive', icon: Icon, color, onClick }: StatCardProps) {
+  const colorClasses = {
+    primary: 'from-primary/20 to-primary/5 border-primary/30 text-primary',
+    success: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
+    warning: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
+    danger: 'from-red-500/20 to-red-500/5 border-red-500/30 text-red-500',
+    info: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
+  };
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className={cn(
+        "cursor-pointer p-4 rounded-xl border bg-gradient-to-br backdrop-blur-sm transition-all duration-300",
+        colorClasses[color]
+      )}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className={cn("p-2 rounded-lg bg-background/50")}>
+          <Icon className="h-4 w-4" />
+        </div>
+        {change && (
+          <Badge 
+            variant="outline" 
+            className={cn(
+              "text-[10px] px-1.5 py-0.5",
+              changeType === 'positive' && 'text-emerald-600 border-emerald-300 bg-emerald-50/50',
+              changeType === 'negative' && 'text-red-600 border-red-300 bg-red-50/50',
+              changeType === 'neutral' && 'text-muted-foreground border-muted bg-muted/50'
+            )}
+          >
+            {change}
+          </Badge>
+        )}
+      </div>
+      <div className="space-y-1">
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function ProductsMainPage() {
+  const navigate = useNavigate();
   const { products, stats, isLoading, error, refetch } = useUnifiedProducts();
   const { filters, filteredProducts, categories, updateFilter, resetFilters, hasActiveFilters } = useProductFilters(products);
   const { 
@@ -54,6 +122,7 @@ export default function ProductsMainPage() {
   const queryClient = useQueryClient();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'standard' | 'audit'>('standard');
+  const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showBulkEdit, setShowBulkEdit] = useState(false);
   const [showBulkEnrichment, setShowBulkEnrichment] = useState(false);
@@ -61,13 +130,13 @@ export default function ProductsMainPage() {
   const [quickFilter, setQuickFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleEdit = (product: any) => {
     openModal('createProduct', { productId: product.id });
   };
 
   const handleDelete = async (id: string) => {
-    // Confirmation de suppression
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
       return;
     }
@@ -76,7 +145,6 @@ export default function ProductsMainPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
-      // Déterminer la table source du produit
       const product = products.find(p => p.id === id);
       const tableName = product?.source === 'products' ? 'products' : 'imported_products';
 
@@ -93,7 +161,6 @@ export default function ProductsMainPage() {
         description: 'Le produit a été supprimé avec succès'
       });
       
-      // Invalider le cache pour recharger les produits
       queryClient.invalidateQueries({ queryKey: ['unified-products'] });
     } catch (error) {
       toast({
@@ -106,6 +173,12 @@ export default function ProductsMainPage() {
 
   const handleView = (product: UnifiedProduct) => {
     setViewModalProduct(product);
+  };
+
+  const handleRefresh = () => {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ['unified-products'] });
+    toast({ title: 'Catalogue actualisé' });
   };
 
   if (isLoading) {
@@ -127,63 +200,168 @@ export default function ProductsMainPage() {
     );
   }
 
-  const handleRefresh = () => {
-    refetch();
-    queryClient.invalidateQueries({ queryKey: ['unified-products'] });
-  };
-
   const finalFilteredProducts = viewMode === 'audit' ? auditFilteredProducts : filteredProducts;
 
+  // Filtrer par recherche
+  const displayProducts = searchTerm 
+    ? finalFilteredProducts.filter(p => 
+        (p as any).title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p as any).sku?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : finalFilteredProducts;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 animate-in fade-in duration-500">
-        {/* En-tête optimisé */}
-        <div className="flex flex-col gap-3 sm:gap-4">
-          <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Catalogue Produits
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">
-                Gérez tous vos produits en un seul endroit
-              </p>
-            </div>
+    <ChannablePageWrapper
+      title="Catalogue Produits"
+      subtitle="Gestion centralisée"
+      description="Gérez tous vos produits en un seul endroit. Importez, optimisez et publiez sur vos canaux."
+      heroImage="products"
+      badge={{
+        label: `${stats.total} produits`,
+        icon: Package
+      }}
+      actions={
+        <>
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 bg-background/50 border-border/50"
+            />
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={viewMode === 'standard' ? 'default' : 'outline'}
-              onClick={() => setViewMode('standard')}
-              size="sm"
-              className="gap-1 sm:gap-2 text-xs sm:text-sm"
-            >
-              <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Vue</span> Standard
-            </Button>
-            <Button
-              variant={viewMode === 'audit' ? 'default' : 'outline'}
-              onClick={() => setViewMode('audit')}
-              size="sm"
-              className="gap-1 sm:gap-2 text-xs sm:text-sm"
-            >
-              <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Vue</span> Audit
-            </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            className="bg-background/50 border-border/50"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDisplayMode(m => m === 'grid' ? 'list' : 'grid')}
+            className="bg-background/50 border-border/50"
+          >
+            {displayMode === 'grid' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => openModal('createProduct')}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nouveau produit
+          </Button>
+        </>
+      }
+    >
+      {/* Statistiques rapides */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <StatCard
+          label="Total Produits"
+          value={stats.total}
+          icon={Package}
+          color="primary"
+          onClick={() => setViewMode('standard')}
+        />
+        <StatCard
+          label="Score Moyen"
+          value={auditStats.averageScore}
+          change={auditStats.excellentCount + ' excellents'}
+          changeType="positive"
+          icon={Target}
+          color="info"
+          onClick={() => setViewMode('audit')}
+        />
+        <StatCard
+          label="À Corriger"
+          value={auditStats.poorCount}
+          change="Score < 40"
+          changeType={auditStats.poorCount > 0 ? 'negative' : 'neutral'}
+          icon={AlertCircle}
+          color="danger"
+          onClick={() => setViewMode('audit')}
+        />
+        <StatCard
+          label="Actifs"
+          value={stats.active}
+          change={`${stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(0) : 0}%`}
+          changeType="positive"
+          icon={CheckCircle}
+          color="success"
+        />
+        <StatCard
+          label="Stock Faible"
+          value={stats.lowStock}
+          change="< 10 unités"
+          changeType={stats.lowStock > 0 ? 'negative' : 'neutral'}
+          icon={Archive}
+          color="warning"
+          onClick={() => updateFilter('lowStock', true)}
+        />
+        <StatCard
+          label="Valeur Stock"
+          value={`€${(stats.totalValue / 1000).toFixed(1)}k`}
+          icon={DollarSign}
+          color="primary"
+        />
+      </div>
+
+      {/* Barre d'actions */}
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Modes de vue */}
+            <div className="flex rounded-lg border border-border/50 overflow-hidden">
+              <Button
+                variant={viewMode === 'standard' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('standard')}
+                className="rounded-none"
+              >
+                <Package className="h-4 w-4 mr-2" />
+                Standard
+              </Button>
+              <Button
+                variant={viewMode === 'audit' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('audit')}
+                className="rounded-none"
+              >
+                <Target className="h-4 w-4 mr-2" />
+                Audit
+              </Button>
+            </div>
+
+            <div className="h-6 w-px bg-border/50" />
+
+            {/* Mode Expert */}
             <Button
               variant={expertMode ? 'default' : 'outline'}
-              onClick={() => setExpertMode(!expertMode)}
               size="sm"
-              className="gap-1 sm:gap-2 text-xs sm:text-sm"
+              onClick={() => setExpertMode(!expertMode)}
             >
-              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              {expertMode ? 'Expert' : 'Simple'}
+              <Sparkles className="h-4 w-4 mr-2" />
+              {expertMode ? 'Mode Expert' : 'Mode Simple'}
             </Button>
 
             {/* Filtres avancés */}
             <Sheet open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
               <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                  <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden xs:inline">Filtres</span> Avancés
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtres
+                  {hasActiveFilters && (
+                    <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
+                      !
+                    </Badge>
+                  )}
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
@@ -233,438 +411,119 @@ export default function ProductsMainPage() {
               </SheetContent>
             </Sheet>
 
-            {/* Édition en masse */}
+            <div className="flex-1" />
+
+            {/* Actions de sélection */}
             {selectedProducts.length > 0 && (
-              <Sheet open={showBulkEdit} onOpenChange={setShowBulkEdit}>
-                <SheetTrigger asChild>
-                  <Button variant="default" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                    <Edit3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    Éditer ({selectedProducts.length})
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-                  <BulkEditPanel
-                    selectedProducts={products.filter(p => selectedProducts.includes(p.id))}
-                    onComplete={() => {
-                      setShowBulkEdit(false);
-                      setSelectedProducts([]);
-                      handleRefresh();
-                      toast({ title: 'Modifications appliquées', description: `${selectedProducts.length} produits mis à jour` });
-                    }}
-                    onCancel={() => setShowBulkEdit(false)}
-                  />
-                </SheetContent>
-              </Sheet>
+              <>
+                <Badge variant="secondary">
+                  {selectedProducts.length} sélectionné(s)
+                </Badge>
+                <Sheet open={showBulkEdit} onOpenChange={setShowBulkEdit}>
+                  <SheetTrigger asChild>
+                    <Button variant="default" size="sm">
+                      <Edit3 className="h-4 w-4 mr-2" />
+                      Éditer
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+                    <BulkEditPanel
+                      selectedProducts={products.filter(p => selectedProducts.includes(p.id))}
+                      onComplete={() => {
+                        setShowBulkEdit(false);
+                        setSelectedProducts([]);
+                        handleRefresh();
+                      }}
+                      onCancel={() => setShowBulkEdit(false)}
+                    />
+                  </SheetContent>
+                </Sheet>
+              </>
             )}
 
-            {/* Enrichissement en masse */}
+            {/* Enrichissement IA */}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowBulkEnrichment(true)}
-              className="gap-1 sm:gap-2 text-xs sm:text-sm"
             >
-              <Wand2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Enrichir</span>
+              <Wand2 className="h-4 w-4 mr-2" />
+              Enrichir IA
             </Button>
 
-            {/* Catalogue B2B Sports */}
+            {/* Catalogue B2B */}
             <SupplierCatalogBrowser />
-
-            <BulkEnrichmentDialog
-              open={showBulkEnrichment}
-              onOpenChange={setShowBulkEnrichment}
-              productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 50).map(p => p.id)}
-              onComplete={() => {
-                setShowBulkEnrichment(false);
-                handleRefresh();
-              }}
-            />
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Statistiques rapides basées sur vraies données + Audit */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
-          <Card 
-            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
-            onClick={() => setViewMode('standard')}
+      {/* Grille de produits */}
+      <AnimatePresence mode="wait">
+        {displayProducts.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
           >
-            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
-                  Total
-                </CardTitle>
-                <Package className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-2 sm:p-6 pt-0">
-              <div className="text-lg sm:text-3xl font-bold text-foreground">{stats.total}</div>
-              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
-                {Object.values(stats.bySource).reduce((a, b) => a + b, 0)} au total
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Score moyen d'audit */}
-          <Card 
-            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
-            onClick={() => setViewMode('audit')}
-          >
-            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
-                  Score
-                </CardTitle>
-                <Target className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-purple-600 flex-shrink-0" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-2 sm:p-6 pt-0">
-              <div className="text-lg sm:text-3xl font-bold text-purple-600">{auditStats.averageScore}</div>
-              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
-                {auditStats.excellentCount} excellents
-              </p>
-            </CardContent>
-          </Card>
-          
-          {/* Produits à corriger */}
-          <Card 
-            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
-            onClick={() => setViewMode('audit')}
-          >
-            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
-                  À Corriger
-                </CardTitle>
-                <AlertCircle className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-red-600 flex-shrink-0" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-2 sm:p-6 pt-0">
-              <div className={cn(
-                "text-lg sm:text-3xl font-bold",
-                auditStats.poorCount > 0 ? "text-red-600" : "text-muted-foreground"
-              )}>
-                {auditStats.poorCount}
-              </div>
-              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
-                Score &lt; 40
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card 
-            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
-            onClick={() => updateFilter('status', 'active')}
-          >
-            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
-                  Actifs
-                </CardTitle>
-                <CheckCircle className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-2 sm:p-6 pt-0">
-              <div className="text-lg sm:text-3xl font-bold text-green-600">{stats.active}</div>
-              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
-                {stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}%
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card 
-            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
-            onClick={() => updateFilter('lowStock', true)}
-          >
-            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
-                  Stock <span className="hidden sm:inline">Faible</span>
-                </CardTitle>
-                <AlertCircle className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-orange-600 flex-shrink-0" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-2 sm:p-6 pt-0">
-              <div className={cn(
-                "text-lg sm:text-3xl font-bold",
-                stats.lowStock > 0 ? "text-orange-600" : "text-muted-foreground"
-              )}>
-                {stats.lowStock}
-              </div>
-              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
-                Réassort
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card 
-            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
-            onClick={() => setViewMode('audit')}
-          >
-            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
-                  Marge
-                </CardTitle>
-                <DollarSign className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-2 sm:p-6 pt-0">
-              <div className="text-lg sm:text-3xl font-bold text-blue-600">
-                {stats.avgMargin.toFixed(1)}%
-              </div>
-              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
-                {stats.totalProfit.toFixed(0)} €
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Actions rapides */}
-        {stats.lowStock > 0 && (
-          <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20 dark:border-orange-900">
-            <CardContent className="p-3 sm:pt-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-foreground text-sm sm:text-base">
-                      {stats.lowStock} produit(s) en stock faible
-                    </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                      Pensez à réapprovisionner pour éviter les ruptures
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => updateFilter('lowStock', true)}
-                  className="bg-background w-full sm:w-auto text-xs sm:text-sm"
-                >
-                  Voir les produits
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Vue conditionnelle selon le mode */}
-        {viewMode === 'audit' ? (
-          <Tabs defaultValue="quality" className="space-y-4 sm:space-y-6">
-            <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
-              <TabsList className="w-max sm:w-auto">
-                <TabsTrigger value="quality" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
-                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden xs:inline">Qualité</span>
-                </TabsTrigger>
-                <TabsTrigger value="filters" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
-                  <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden xs:inline">Filtres</span>
-                </TabsTrigger>
-                <TabsTrigger value="duplicates" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
-                  <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden xs:inline">Doublons</span>
-                </TabsTrigger>
-                <TabsTrigger value="simulator" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
-                  <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden xs:inline">Simulateur</span>
-                </TabsTrigger>
-                <TabsTrigger value="products" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
-                  <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden xs:inline">Liste</span> ({finalFilteredProducts.length})
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="quality" className="space-y-6">
-              <CatalogQualityDashboard products={products} />
-            </TabsContent>
-
-            <TabsContent value="duplicates" className="space-y-6">
-              {expertMode ? (
-                <DuplicateDetector products={products} />
-              ) : (
-                <Card className="bg-muted/50 border-dashed">
-                  <CardContent className="pt-6 text-center">
-                    <AlertCircle className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Activez le <strong>Mode Expert</strong> pour accéder au détecteur de doublons
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="simulator" className="space-y-6">
-              {expertMode ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <PriorityManager 
-                    products={products}
-                    onSelectProducts={(ids) => setSelectedProducts(ids)}
-                  />
-                  <OptimizationSimulator 
-                    productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 10).map(p => p.id)}
-                    onExecute={handleRefresh}
-                  />
-                </div>
-              ) : (
-                <Card className="bg-muted/50 border-dashed">
-                  <CardContent className="pt-6 text-center">
-                    <TrendingUp className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Activez le <strong>Mode Expert</strong> pour accéder au simulateur d'optimisation et au gestionnaire de priorités
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="filters" className="space-y-6">
-              {!expertMode && (
-                <Card className="bg-muted/50 border-dashed">
-                  <CardContent className="pt-6 text-center">
-                    <Sparkles className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Activez le <strong>Mode Expert</strong> pour accéder aux outils avancés (simulateur, détection doublons, gestionnaire de priorités)
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1">
-                  <AdvancedAuditFilters
-                    filters={auditFilters}
-                    onFilterChange={updateAuditFilter}
-                    onReset={resetAuditFilters}
-                    activeCount={auditActiveCount}
-                  />
-                </div>
-                <div className="lg:col-span-2 space-y-4">
-                  {selectedProducts.length > 0 && (
-                    <BulkAIActions
-                      selectedProducts={selectedProducts}
-                      onComplete={() => {
-                        setSelectedProducts([]);
-                        handleRefresh();
-                      }}
-                    />
-                  )}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>
-                        Produits filtrés ({finalFilteredProducts.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ProductsPageWrapper
-              products={finalFilteredProducts}
+            <ProductsPageWrapper
+              products={displayProducts}
               allProducts={products}
+              filters={filters}
+              categories={categories}
+              onRefresh={handleRefresh}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onView={handleView}
-              onRefresh={handleRefresh}
-              filters={filters}
-              categories={categories}
-              onFilterChange={updateFilter}
-              onResetFilters={resetFilters}
-              hasActiveFilters={auditActiveCount > 0}
               onSelectionChange={setSelectedProducts}
               selectedProducts={selectedProducts}
             />
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="products" className="space-y-6">
-              {selectedProducts.length > 0 && (
-                <BulkAIActions
-                  selectedProducts={selectedProducts}
-                  onComplete={() => {
-                    setSelectedProducts([]);
-                    handleRefresh();
-                  }}
-                />
-              )}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Tous les produits</span>
-                    <span className="text-sm font-normal text-muted-foreground">
-                      {finalFilteredProducts.length} produit(s)
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProductsPageWrapper
-                    products={finalFilteredProducts}
-                    allProducts={products}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onView={handleView}
-                    onRefresh={handleRefresh}
-                    filters={filters}
-                    categories={categories}
-                    onFilterChange={updateFilter}
-                    onResetFilters={resetFilters}
-                    hasActiveFilters={auditActiveCount > 0}
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          </motion.div>
         ) : (
-          <Card className="border-border/50 bg-card/50 backdrop-blur shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Tous les produits</span>
-                <span className="text-sm font-normal text-muted-foreground">
-                  {stats.total} produit(s)
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductsPageWrapper
-                products={filteredProducts}
-                allProducts={products}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onView={handleView}
-                onRefresh={handleRefresh}
-                filters={filters}
-                categories={categories}
-                onFilterChange={updateFilter}
-                onResetFilters={resetFilters}
-                hasActiveFilters={hasActiveFilters}
-              />
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16 border-2 border-dashed rounded-2xl bg-muted/30"
+          >
+            <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Aucun produit trouvé</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              {searchTerm 
+                ? `Aucun produit ne correspond à "${searchTerm}"`
+                : 'Commencez par ajouter vos premiers produits'}
+            </p>
+            <div className="flex gap-3 justify-center">
+              {searchTerm && (
+                <Button variant="outline" onClick={() => setSearchTerm('')}>
+                  Effacer la recherche
+                </Button>
+              )}
+              <Button onClick={() => openModal('createProduct')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter un produit
+              </Button>
+            </div>
+          </motion.div>
         )}
-      </div>
-      
-      {/* Panneau de diagnostic - affiche en mode développement */}
-      <ProductsDebugPanel />
-      
-      {/* Modal de visualisation produit */}
-      <ProductViewModal
-        open={!!viewModalProduct}
-        onOpenChange={(open) => !open && setViewModalProduct(null)}
-        product={viewModalProduct}
-        onEdit={() => {
-          if (viewModalProduct) {
-            handleEdit(viewModalProduct);
-            setViewModalProduct(null);
-          }
-        }}
-        onDelete={() => {
-          if (viewModalProduct) {
-            handleDelete(viewModalProduct.id);
-            setViewModalProduct(null);
-          }
+      </AnimatePresence>
+
+      {/* Modals */}
+      <BulkEnrichmentDialog
+        open={showBulkEnrichment}
+        onOpenChange={setShowBulkEnrichment}
+        productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 50).map(p => p.id)}
+        onComplete={() => {
+          setShowBulkEnrichment(false);
+          handleRefresh();
         }}
       />
-    </div>
+
+      {viewModalProduct && (
+        <ProductViewModal
+          product={viewModalProduct}
+          open={!!viewModalProduct}
+          onOpenChange={() => setViewModalProduct(null)}
+        />
+      )}
+    </ChannablePageWrapper>
   );
 }

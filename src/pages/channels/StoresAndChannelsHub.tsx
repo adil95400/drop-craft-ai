@@ -1,7 +1,6 @@
 /**
- * Hub Boutiques & Canaux - Design Channable Avancé
+ * Hub Boutiques & Canaux - Design Channable Premium
  * Gestion centralisée des connexions boutiques et marketplaces
- * Version optimisée avec options avancées inspirées de Channable
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
@@ -14,9 +13,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 // Channable Components
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { 
   ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableSearchBar,
   ChannableCategoryFilter,
@@ -147,6 +146,191 @@ const DEMO_CONNECTIONS: ChannelConnection[] = [
   },
 ]
 
+// Composant carte statistique premium
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  change?: string;
+  icon: React.ElementType;
+  color: 'primary' | 'success' | 'warning' | 'info';
+}
+
+function StatCard({ label, value, change, icon: Icon, color }: StatCardProps) {
+  const colorClasses = {
+    primary: 'from-primary/20 to-primary/5 border-primary/30 text-primary',
+    success: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
+    warning: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
+    info: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
+  };
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -2 }}
+      className={cn(
+        "p-4 rounded-xl border bg-gradient-to-br backdrop-blur-sm transition-all duration-300",
+        colorClasses[color]
+      )}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="p-2 rounded-lg bg-background/50">
+          <Icon className="h-4 w-4" />
+        </div>
+        {change && (
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-background/50">
+            {change}
+          </Badge>
+        )}
+      </div>
+      <div className="space-y-1">
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+// Composant carte de connexion
+interface ChannelCardProps {
+  connection: ChannelConnection;
+  viewMode: 'grid' | 'list';
+  onSync: () => void;
+  onManage: () => void;
+  isSyncing: boolean;
+  index: number;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
+}
+
+function ChannelCard({ connection, viewMode, onSync, onManage, isSyncing, index, isSelected, onToggleSelect }: ChannelCardProps) {
+  const statusConfig = {
+    connected: { color: 'text-emerald-500', bg: 'bg-emerald-500/10', icon: CheckCircle2, label: 'Connecté' },
+    error: { color: 'text-red-500', bg: 'bg-red-500/10', icon: AlertCircle, label: 'Erreur' },
+    connecting: { color: 'text-amber-500', bg: 'bg-amber-500/10', icon: Loader2, label: 'Connexion...' },
+    disconnected: { color: 'text-muted-foreground', bg: 'bg-muted/50', icon: WifiOff, label: 'Déconnecté' },
+  };
+
+  const status = statusConfig[connection.connection_status] || statusConfig.disconnected;
+  const StatusIcon = status.icon;
+
+  const formatLastSync = (date?: string) => {
+    if (!date) return 'Jamais';
+    const diff = Date.now() - new Date(date).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 60) return `Il y a ${minutes}min`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `Il y a ${hours}h`;
+    return `Il y a ${Math.floor(hours / 24)}j`;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className={cn(
+        "group relative rounded-xl border bg-card/50 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/30",
+        isSelected && "ring-2 ring-primary border-primary"
+      )}
+    >
+      {/* Selection checkbox */}
+      {onToggleSelect && (
+        <div className="absolute top-3 left-3 z-10">
+          <Checkbox 
+            checked={isSelected}
+            onCheckedChange={onToggleSelect}
+            className="bg-background/80 backdrop-blur-sm"
+          />
+        </div>
+      )}
+
+      <div className={cn("p-4", viewMode === 'list' && 'flex items-center gap-4')}>
+        {/* Platform Logo & Info */}
+        <div className={cn("flex items-center gap-3", viewMode === 'list' ? 'flex-1' : 'mb-4')}>
+          <div className="relative">
+            <PlatformLogo platform={connection.platform_type} size={viewMode === 'list' ? 'sm' : 'md'} />
+            <div className={cn("absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background", status.bg)}>
+              <div className={cn("w-full h-full rounded-full", connection.connection_status === 'connected' ? 'bg-emerald-500' : connection.connection_status === 'error' ? 'bg-red-500' : 'bg-amber-500')} />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm truncate">{connection.platform_name}</h3>
+            <p className="text-xs text-muted-foreground truncate">{connection.shop_domain}</p>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className={cn("grid gap-2", viewMode === 'list' ? 'grid-cols-3 flex-1' : 'grid-cols-2 mb-4')}>
+          <div className="text-center p-2 rounded-lg bg-muted/30">
+            <p className="text-lg font-bold">{connection.products_synced?.toLocaleString() || 0}</p>
+            <p className="text-[10px] text-muted-foreground">Produits</p>
+          </div>
+          <div className="text-center p-2 rounded-lg bg-muted/30">
+            <p className="text-lg font-bold">{connection.orders_synced?.toLocaleString() || 0}</p>
+            <p className="text-[10px] text-muted-foreground">Commandes</p>
+          </div>
+          {viewMode === 'list' && (
+            <div className="text-center p-2 rounded-lg bg-muted/30">
+              <p className="text-sm font-medium">{formatLastSync(connection.last_sync_at)}</p>
+              <p className="text-[10px] text-muted-foreground">Dernière sync</p>
+            </div>
+          )}
+        </div>
+
+        {/* Status & Actions */}
+        <div className={cn("flex items-center gap-2", viewMode === 'list' ? '' : 'pt-3 border-t border-border/50')}>
+          <Badge variant="outline" className={cn("text-xs", status.color, status.bg)}>
+            <StatusIcon className={cn("h-3 w-3 mr-1", connection.connection_status === 'connecting' && 'animate-spin')} />
+            {status.label}
+          </Badge>
+          
+          {connection.auto_sync_enabled && (
+            <Badge variant="outline" className="text-xs text-primary bg-primary/10">
+              <Zap className="h-3 w-3 mr-1" />
+              Auto
+            </Badge>
+          )}
+
+          <div className="flex-1" />
+
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onSync} disabled={isSyncing}>
+            <RefreshCw className={cn("h-4 w-4", isSyncing && 'animate-spin')} />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onManage}>
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// Composant carte de plateforme disponible
+interface PlatformCardProps {
+  platform: typeof STORE_PLATFORMS[0];
+  onConnect: () => void;
+}
+
+function PlatformCard({ platform, onConnect }: PlatformCardProps) {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.03, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onConnect}
+      className="group cursor-pointer p-4 rounded-xl border border-dashed border-border/50 bg-card/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
+    >
+      <div className="flex flex-col items-center gap-3 text-center">
+        <PlatformLogo platform={platform.id} size="md" />
+        <div>
+          <p className="font-medium text-sm">{platform.name}</p>
+          <p className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors">
+            Cliquez pour connecter
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function StoresAndChannelsHub() {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -211,53 +395,7 @@ export default function StoresAndChannelsHub() {
 
   const setActiveTab = (tab: string) => setSearchParams({ tab })
 
-  // Stats Channable
-  const stats = useMemo(() => [
-    {
-      label: 'Connectés',
-      value: connections.filter(c => c.connection_status === 'connected').length,
-      icon: Link2,
-      trend: '+1',
-      color: 'primary' as const
-    },
-    {
-      label: 'Boutiques',
-      value: connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length,
-      icon: Store,
-      trend: '+0',
-      color: 'success' as const
-    },
-    {
-      label: 'Marketplaces',
-      value: connections.filter(c => MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length,
-      icon: ShoppingCart,
-      trend: '+0',
-      color: 'warning' as const
-    },
-    {
-      label: 'Produits',
-      value: connections.reduce((acc, c) => acc + (c.products_synced || 0), 0).toLocaleString(),
-      icon: Package,
-      trend: '+156',
-      color: 'primary' as const
-    },
-    {
-      label: 'Commandes',
-      value: connections.reduce((acc, c) => acc + (c.orders_synced || 0), 0).toLocaleString(),
-      icon: TrendingUp,
-      trend: '+89',
-      color: 'success' as const
-    },
-    {
-      label: 'Auto-Sync',
-      value: connections.filter(c => c.auto_sync_enabled).length,
-      icon: Zap,
-      trend: '+2',
-      color: 'info' as const
-    }
-  ], [connections])
-
-  // Categories Channable
+  // Categories
   const categories = useMemo(() => [
     { id: 'all', label: 'Tous', icon: LayoutGrid, count: connections.length },
     { id: 'stores', label: 'Boutiques', icon: Store, count: connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length },
@@ -268,18 +406,15 @@ export default function StoresAndChannelsHub() {
   // Filter connections
   const filteredConnections = useMemo(() => {
     return connections.filter(c => {
-      // Search filter
       const matchesSearch = !searchTerm || 
         c.platform_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.shop_domain?.toLowerCase().includes(searchTerm.toLowerCase())
       
-      // Tab filter
       const matchesTab = activeTab === 'all' || 
         (activeTab === 'stores' && STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())) ||
         (activeTab === 'marketplaces' && MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())) ||
         (activeTab === 'errors' && c.connection_status === 'error')
       
-      // Advanced filters
       const matchesStatus = !filters.status?.length || filters.status.includes(c.connection_status)
       const matchesErrors = !filters.hasErrors || c.connection_status === 'error'
       const matchesProducts = !filters.hasProducts || (c.products_synced || 0) > 0
@@ -334,97 +469,143 @@ export default function StoresAndChannelsHub() {
 
   if (isLoading) {
     return (
-      <ChannablePageLayout>
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </ChannablePageLayout>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     )
   }
 
   return (
     <>
       <Helmet>
-        <title>Boutiques & Canaux - ShopOpti</title>
+        <title>Boutiques & Canaux - DropCraft</title>
       </Helmet>
 
-      <ChannablePageLayout>
-        {/* Hero Channable */}
-        <ChannableHeroSection
-          title="Boutiques & Canaux"
-          description="Connectez vos boutiques et publiez sur les marketplaces"
-          primaryAction={{
-            label: 'Connecter Boutique',
-            onClick: () => navigate('/stores-channels/connect?type=store'),
-            icon: Store
-          }}
-          secondaryAction={{
-            label: 'Ajouter Marketplace',
-            onClick: () => navigate('/stores-channels/connect?type=marketplace')
-          }}
-          stats={[
-            { label: 'Canaux actifs', value: connections.filter(c => c.connection_status === 'connected').length.toString() },
-            { label: 'Produits sync', value: connections.reduce((acc, c) => acc + (c.products_synced || 0), 0).toLocaleString() },
-          ]}
+      <ChannablePageWrapper
+        title="Boutiques & Canaux"
+        subtitle="Gestion des connexions"
+        description="Connectez vos boutiques et publiez sur les marketplaces. Synchronisez vos produits en temps réel."
+        heroImage="integrations"
+        badge={{
+          label: `${connections.filter(c => c.connection_status === 'connected').length} actifs`,
+          icon: Link2
+        }}
+        actions={
+          <>
+            <ChannableSearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Rechercher..."
+            />
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setViewMode(v => v === 'grid' ? 'list' : 'grid')}
+              className="bg-background/50 border-border/50"
+            >
+              {viewMode === 'grid' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => navigate('/stores-channels/connect?type=store')}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Store className="h-4 w-4 mr-2" />
+              Boutique
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/stores-channels/connect?type=marketplace')}
+              className="bg-background/50 border-border/50"
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Marketplace
+            </Button>
+          </>
+        }
+      >
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <StatCard
+            label="Connectés"
+            value={connections.filter(c => c.connection_status === 'connected').length}
+            change="+1"
+            icon={Link2}
+            color="primary"
+          />
+          <StatCard
+            label="Boutiques"
+            value={connections.filter(c => STORE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length}
+            icon={Store}
+            color="success"
+          />
+          <StatCard
+            label="Marketplaces"
+            value={connections.filter(c => MARKETPLACE_PLATFORMS.some(p => p.id === c.platform_type?.toLowerCase())).length}
+            icon={ShoppingCart}
+            color="warning"
+          />
+          <StatCard
+            label="Produits"
+            value={connections.reduce((acc, c) => acc + (c.products_synced || 0), 0).toLocaleString()}
+            change="+156"
+            icon={Package}
+            color="info"
+          />
+          <StatCard
+            label="Commandes"
+            value={connections.reduce((acc, c) => acc + (c.orders_synced || 0), 0).toLocaleString()}
+            change="+89"
+            icon={TrendingUp}
+            color="success"
+          />
+          <StatCard
+            label="Auto-Sync"
+            value={connections.filter(c => c.auto_sync_enabled).length}
+            icon={Zap}
+            color="primary"
+          />
+        </div>
+
+        {/* Category Filter */}
+        <ChannableCategoryFilter
+          categories={categories}
+          selectedCategory={activeTab}
+          onSelectCategory={setActiveTab}
+          variant="pills"
         />
 
-        {/* Stats Channable */}
-        <ChannableStatsGrid stats={stats} columns={5} />
+        {/* Bulk Actions */}
+        {selectedIds.size > 0 && (
+          <ChannableBulkActions
+            selectedCount={selectedIds.size}
+            totalCount={filteredConnections.length}
+            onSelectAll={selectAll}
+            onDeselectAll={deselectAll}
+            isAllSelected={selectedIds.size === filteredConnections.length && filteredConnections.length > 0}
+            actions={bulkActions}
+          />
+        )}
 
         {/* Main Layout */}
         <div className="grid lg:grid-cols-[1fr_320px] gap-6">
           {/* Main Content */}
-          <div className="space-y-4">
-            {/* Filters & Search Bar */}
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center justify-between">
-                <ChannableCategoryFilter
-                  categories={categories}
-                  selectedCategory={activeTab}
-                  onSelectCategory={setActiveTab}
-                  variant="pills"
-                />
-                <div className="flex gap-2 items-center flex-wrap">
-                  <ChannableSearchBar
-                    value={searchTerm}
-                    onChange={setSearchTerm}
-                    placeholder="Rechercher..."
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setViewMode(v => v === 'grid' ? 'list' : 'grid')}
-                  >
-                    {viewMode === 'grid' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Advanced Filters */}
-              <ChannableAdvancedFilters
-                filters={filters}
-                onFiltersChange={setFilters}
-              />
-            </div>
-
-            {/* Bulk Actions */}
-            <ChannableBulkActions
-              selectedCount={selectedIds.size}
-              totalCount={filteredConnections.length}
-              onSelectAll={selectAll}
-              onDeselectAll={deselectAll}
-              isAllSelected={selectedIds.size === filteredConnections.length && filteredConnections.length > 0}
-              actions={bulkActions}
-            />
-
+          <div className="space-y-6">
             {/* Connected Channels */}
-            {filteredConnections.length > 0 && (
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  Canaux connectés
-                  <Badge variant="secondary" className="ml-2">{filteredConnections.length}</Badge>
-                </h2>
+            {filteredConnections.length > 0 ? (
+              <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                    Canaux connectés
+                    <Badge variant="secondary">{filteredConnections.length}</Badge>
+                  </h2>
+                </div>
+                
                 <div className={cn(
                   viewMode === 'grid' 
                     ? 'grid grid-cols-1 md:grid-cols-2 gap-4'
@@ -447,11 +628,21 @@ export default function StoresAndChannelsHub() {
                   </AnimatePresence>
                 </div>
               </section>
+            ) : (
+              <ChannableEmptyState
+                title="Aucun canal connecté"
+                description="Connectez votre première boutique ou marketplace pour commencer à synchroniser vos produits."
+                icon={Link2}
+                action={{
+                  label: 'Connecter une boutique',
+                  onClick: () => navigate('/stores-channels/connect')
+                }}
+              />
             )}
 
             {/* Available Stores */}
             {(activeTab === 'all' || activeTab === 'stores') && availableStores.length > 0 && (
-              <section className="space-y-3">
+              <section className="space-y-4">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
                   <Store className="h-5 w-5 text-primary" />
                   Boutiques disponibles
@@ -470,9 +661,9 @@ export default function StoresAndChannelsHub() {
 
             {/* Available Marketplaces */}
             {(activeTab === 'all' || activeTab === 'marketplaces') && availableMarketplaces.length > 0 && (
-              <section className="space-y-3">
+              <section className="space-y-4">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5 text-green-500" />
+                  <ShoppingCart className="h-5 w-5 text-primary" />
                   Marketplaces disponibles
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -486,275 +677,39 @@ export default function StoresAndChannelsHub() {
                 </div>
               </section>
             )}
-
-            {/* Empty State */}
-            {connections.length === 0 && (
-              <ChannableEmptyState
-                icon={Globe}
-                title="Aucun canal connecté"
-                description="Connectez votre boutique e-commerce ou ajoutez une marketplace pour synchroniser vos produits"
-                action={{
-                  label: 'Connecter une boutique',
-                  onClick: () => navigate('/stores-channels/connect')
-                }}
-              />
-            )}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-4">
-            {/* Panel Toggle */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowHealth(!showHealth)}
-                className={cn("gap-1", !showHealth && "text-muted-foreground")}
-              >
-                {showHealth ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                Santé
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowActivity(!showActivity)}
-                className={cn("gap-1", !showActivity && "text-muted-foreground")}
-              >
-                {showActivity ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                Activité
-              </Button>
-            </div>
-
             {/* Channel Health */}
-            {showHealth && (
-              <ChannableChannelHealth
-                metrics={DEFAULT_CHANNEL_HEALTH_METRICS}
-                channelName="Global"
-                lastChecked={new Date().toISOString()}
-              />
-            )}
-
-            {/* Activity Feed */}
-            {showActivity && (
-              <ChannableActivityFeed
-                events={DEMO_ACTIVITY_EVENTS}
-                title="Activité récente"
-                maxItems={8}
-                realtime
-              />
-            )}
-
-            {/* Quick Stats Card */}
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-primary" />
-                  Performance globale
+                  <Activity className="h-4 w-4 text-primary" />
+                  Santé des canaux
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Taux sync réussi</span>
-                  <span className="font-medium text-green-500">98.5%</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Temps moyen sync</span>
-                  <span className="font-medium">2.3s</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Dernière sync</span>
-                  <span className="font-medium">Il y a 5min</span>
-                </div>
+              <CardContent>
+                <ChannableChannelHealth metrics={DEFAULT_CHANNEL_HEALTH_METRICS} />
+              </CardContent>
+            </Card>
+
+            {/* Activity Feed */}
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Activité récente
+                  <Badge variant="secondary" className="text-xs">Live</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChannableActivityFeed events={DEMO_ACTIVITY_EVENTS} realtime />
               </CardContent>
             </Card>
           </div>
         </div>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     </>
-  )
-}
-
-// Channel Card Component
-function ChannelCard({ connection, viewMode, onSync, onManage, isSyncing, index, isSelected, onToggleSelect }: {
-  connection: ChannelConnection
-  viewMode: 'grid' | 'list'
-  onSync: () => void
-  onManage: () => void
-  isSyncing: boolean
-  index: number
-  isSelected: boolean
-  onToggleSelect: () => void
-}) {
-  const getStatusBadge = () => {
-    switch (connection.connection_status) {
-      case 'connected':
-        return <Badge className="bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30 gap-1"><CheckCircle2 className="h-3 w-3" />Connecté</Badge>
-      case 'connecting':
-        return <Badge className="bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30 gap-1"><Loader2 className="h-3 w-3 animate-spin" />Sync...</Badge>
-      case 'error':
-        return <Badge variant="destructive" className="gap-1"><AlertCircle className="h-3 w-3" />Erreur</Badge>
-      default:
-        return <Badge variant="outline" className="gap-1"><WifiOff className="h-3 w-3" />Déconnecté</Badge>
-    }
-  }
-
-  if (viewMode === 'list') {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
-      >
-        <Card className={cn(
-          "hover:shadow-md transition-all cursor-pointer group border-border/50 hover:border-primary/30",
-          isSelected && "border-primary bg-primary/5"
-        )}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <Checkbox 
-                checked={isSelected}
-                onCheckedChange={() => onToggleSelect()}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md bg-card border" onClick={onManage}>
-                <PlatformLogo platform={connection.platform_type || ''} size="lg" />
-              </div>
-              <div className="flex-1 min-w-0" onClick={onManage}>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold truncate">{connection.platform_name}</h3>
-                  {getStatusBadge()}
-                  {connection.auto_sync_enabled && (
-                    <Badge variant="outline" className="gap-1 text-xs">
-                      <Zap className="h-3 w-3" />Auto
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground truncate">{connection.shop_domain || 'Non configuré'}</p>
-              </div>
-              <div className="hidden md:flex items-center gap-6 text-sm">
-                <div className="text-center">
-                  <p className="font-semibold">{(connection.products_synced || 0).toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">Produits</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-semibold">{(connection.orders_synced || 0).toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">Commandes</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onSync() }} disabled={isSyncing}>
-                  <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
-                </Button>
-                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    )
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.05 }}
-    >
-      <Card className={cn(
-        "hover:shadow-lg transition-all h-full group border-border/50 hover:border-primary/30",
-        isSelected && "border-primary bg-primary/5"
-      )}>
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <Checkbox 
-                checked={isSelected}
-                onCheckedChange={() => onToggleSelect()}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md bg-card border">
-                <PlatformLogo platform={connection.platform_type || ''} size="lg" />
-              </div>
-              <div>
-                <CardTitle className="text-base group-hover:text-primary transition-colors flex items-center gap-2">
-                  {connection.platform_name}
-                  {connection.auto_sync_enabled && (
-                    <Zap className="h-3.5 w-3.5 text-amber-500" />
-                  )}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground truncate max-w-[150px]">
-                  {connection.shop_domain || 'Non configuré'}
-                </p>
-              </div>
-            </div>
-            {getStatusBadge()}
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0 space-y-4">
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="p-2 bg-muted/50 rounded-lg text-center">
-              <p className="font-semibold">{(connection.products_synced || 0).toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">Produits</p>
-            </div>
-            <div className="p-2 bg-muted/50 rounded-lg text-center">
-              <p className="font-semibold">{(connection.orders_synced || 0).toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">Commandes</p>
-            </div>
-          </div>
-
-          {connection.last_sync_at && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              Sync: {new Date(connection.last_sync_at).toLocaleDateString('fr-FR')}
-            </p>
-          )}
-
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="flex-1 group-hover:border-primary group-hover:text-primary"
-              onClick={(e) => { e.stopPropagation(); onSync() }}
-              disabled={isSyncing}
-            >
-              <RefreshCw className={cn("h-4 w-4 mr-1", isSyncing && "animate-spin")} />
-              Sync
-            </Button>
-            <Button size="sm" className="flex-1" onClick={onManage}>
-              <Settings className="h-4 w-4 mr-1" />
-              Gérer
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  )
-}
-
-// Platform Card Component
-function PlatformCard({ platform, onConnect }: {
-  platform: { id: string; name: string; color: string }
-  onConnect: () => void
-}) {
-  return (
-    <Card 
-      className="hover:shadow-lg hover:scale-105 transition-all cursor-pointer group border-border/50 hover:border-primary/30"
-      onClick={onConnect}
-    >
-      <CardContent className="p-4 text-center">
-        <div className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center shadow-md mb-3 bg-card border">
-          <PlatformLogo platform={platform.id} size="lg" />
-        </div>
-        <p className="font-medium text-sm truncate">{platform.name}</p>
-        <Button 
-          size="sm" 
-          variant="ghost" 
-          className="mt-2 w-full opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Connecter
-        </Button>
-      </CardContent>
-    </Card>
   )
 }
