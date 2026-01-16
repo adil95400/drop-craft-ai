@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { useToast } from '@/hooks/use-toast'
 import { Package, DollarSign, Warehouse, Tag } from 'lucide-react'
 
@@ -31,7 +31,7 @@ export function ProductQuickEditDialog({
   })
   const [loading, setLoading] = useState(false)
   
-  const { updateProduct } = useRealProducts()
+  const { update: updateProduct } = useProductsUnified()
   const { toast } = useToast()
 
   useEffect(() => {

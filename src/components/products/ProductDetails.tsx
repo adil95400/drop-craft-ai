@@ -22,7 +22,7 @@ import {
   Users,
   ShoppingCart
 } from 'lucide-react'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { ProductEditModal } from '@/components/modals/ProductEditModal'
 import { ProductVariantManager } from '@/components/products/ProductVariantManager'
 import { ProductImageManager } from '@/components/products/ProductImageManager'
@@ -34,7 +34,7 @@ interface ProductDetailsProps {
 }
 
 export function ProductDetails({ productId, onClose }: ProductDetailsProps) {
-  const { products } = useRealProducts()
+  const { products } = useProductsUnified()
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   

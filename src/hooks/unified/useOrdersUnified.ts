@@ -7,6 +7,8 @@ export interface UnifiedOrder {
   id: string
   user_id: string
   customer_id?: string
+  customer_name?: string
+  customer_email?: string
   order_number: string
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   total_amount: number
@@ -16,6 +18,7 @@ export interface UnifiedOrder {
   billing_address?: any
   tracking_number?: string
   notes?: string
+  platform?: string
   platform_order_id?: string
   items?: any[]
   created_at: string
@@ -71,6 +74,8 @@ export function useOrdersUnified(filters?: {
         id: item.id,
         user_id: item.user_id,
         customer_id: item.customer_id,
+        customer_name: item.customer_name || item.shipping_address?.name || 'Client',
+        customer_email: item.customer_email || item.shipping_address?.email,
         order_number: item.order_number,
         status: item.status || 'pending',
         total_amount: item.total_amount || 0,
@@ -80,6 +85,7 @@ export function useOrdersUnified(filters?: {
         billing_address: item.billing_address,
         tracking_number: item.tracking_number,
         notes: item.notes,
+        platform: item.platform || item.source_platform || 'Direct',
         platform_order_id: item.platform_order_id,
         items: item.order_items || [],
         created_at: item.created_at,

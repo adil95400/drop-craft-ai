@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useRealOrders } from '@/hooks/useRealOrders';
+import { useOrdersUnified } from '@/hooks/unified';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Package,
@@ -26,7 +26,7 @@ import { useQueryClient } from '@tanstack/react-query';
 const OrdersCenter = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { orders: realOrders, isLoading } = useRealOrders();
+  const { orders: realOrders, isLoading } = useOrdersUnified();
   const [searchTerm, setSearchTerm] = useState("");
   
   const orders = realOrders || [];

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useRealOrders } from '@/hooks/useRealOrders';
+import { useOrdersUnified } from '@/hooks/unified';
 import { RefreshCw, Search, Download, Filter, ShoppingCart, TrendingUp, Package, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -29,7 +29,7 @@ const statusConfig = {
 
 export default function Orders() {
   const navigate = useNavigate();
-  const { orders, isLoading } = useRealOrders();
+  const { orders, isLoading } = useOrdersUnified();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
