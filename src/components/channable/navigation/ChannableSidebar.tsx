@@ -451,8 +451,8 @@ export function ChannableSidebar() {
   const navigate = useNavigate()
   
   const [searchQuery, setSearchQuery] = useState("")
-  const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['home', 'catalog', 'channels'])
-  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({})
+  const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['home', 'catalog', 'channels', 'marketing'])
+  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({ marketing: true })
   
   const { availableModules, canAccess, isModuleEnabled, currentPlan, isAdminBypass } = useModules()
   const favorites = useFavorites()
