@@ -309,7 +309,7 @@ class ShopOptiBackground {
       
       if (!extensionToken) return;
 
-      const response = await fetch(`${API_URL}/extension-sync`, {
+      const response = await fetch(`${API_URL}/extension-sync-realtime`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -366,7 +366,7 @@ class ShopOptiBackground {
     // Send to API if connected
     if (extensionToken) {
       try {
-        await fetch(`${API_URL}/extension-sync`, {
+        await fetch(`${API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -422,7 +422,7 @@ class ShopOptiBackground {
 
         // Send to API
         if (extensionToken) {
-          await fetch(`${API_URL}/extension-sync`, {
+          await fetch(`${API_URL}/extension-sync-realtime`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
