@@ -1,17 +1,14 @@
 /**
- * Routes Orders - Gestion des commandes
- * URL uniformisées: /orders au lieu de /dashboard/orders
- */
-/**
  * Routes Orders - Gestion des commandes et fulfillment
+ * Consolidé - Suppression des pages dupliquées
  * URL uniformisées: /orders, /orders/fulfillment/*
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
+// Orders - Consolidated to OrdersCenterPage
+const OrdersCenterPage = lazy(() => import('@/pages/orders/OrdersCenterPage'));
 const OrderDetail = lazy(() => import('@/pages/orders/OrderDetail'));
-const OrdersCenterPage = lazy(() => import('@/pages/OrdersCenterPage'));
 const ReturnsManagementPage = lazy(() => import('@/pages/orders/ReturnsManagementPage'));
 const TrackingDashboardPage = lazy(() => import('@/pages/orders/TrackingDashboardPage'));
 const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNotificationsPage'));
@@ -26,7 +23,7 @@ const FulfillmentRulesPage = lazy(() => import('@/pages/FulfillmentRulesPage'));
 export function OrderRoutes() {
   return (
     <Routes>
-      <Route index element={<OrdersPage />} />
+      <Route index element={<OrdersCenterPage />} />
       <Route path=":id" element={<OrderDetail />} />
       <Route path="center" element={<OrdersCenterPage />} />
       <Route path="returns" element={<ReturnsManagementPage />} />

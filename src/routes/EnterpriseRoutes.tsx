@@ -1,7 +1,8 @@
 /**
  * Routes Enterprise - Admin, Multi-tenant, Security, Monitoring
+ * Consolidé - Suppression des pages dupliquées
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Admin
@@ -27,9 +28,11 @@ const TaxManagementPage = lazy(() => import('@/pages/TaxManagementPage'));
 const TeamManagement = lazy(() => import('@/pages/TeamManagement'));
 const InternationalizationPage = lazy(() => import('@/pages/InternationalizationPage'));
 const QuotaManagerPage = lazy(() => import('@/pages/QuotaManagerPage'));
-const SubscriptionManagementPage = lazy(() => import('@/pages/SubscriptionManagementPage'));
 const MultiChannelManagementPage = lazy(() => import('@/pages/MultiChannelManagementPage'));
 const ComplianceCenter = lazy(() => import('@/pages/ComplianceCenter'));
+
+// Subscription - Use consolidated SubscriptionDashboard
+const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
 
 export function EnterpriseRoutes() {
   return (
@@ -54,7 +57,7 @@ export function EnterpriseRoutes() {
       <Route path="team" element={<TeamManagement />} />
       <Route path="i18n" element={<InternationalizationPage />} />
       <Route path="quotas" element={<QuotaManagerPage />} />
-      <Route path="subscriptions" element={<SubscriptionManagementPage />} />
+      <Route path="subscriptions" element={<SubscriptionDashboard />} />
       <Route path="compliance" element={<ComplianceCenter />} />
     </Routes>
   );
