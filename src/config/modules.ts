@@ -532,6 +532,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'marketing-loyalty', name: 'Fidélité', route: '/marketing/loyalty', icon: 'Award', description: 'Programme fidélité', features: ['loyalty'], order: 6 },
       { id: 'marketing-flash', name: 'Ventes Flash', route: '/marketing/flash-sales', icon: 'Zap', description: 'Ventes flash', features: ['flash-sales'], order: 7 },
       { id: 'marketing-social', name: 'Social Commerce', route: '/marketing/social-commerce', icon: 'Share2', description: 'Réseaux sociaux', features: ['social'], order: 8 },
+      { id: 'marketing-affiliate', name: 'Affiliation', route: '/marketing/affiliate', icon: 'Users', description: 'Programme affiliés', features: ['affiliate'], order: 9 },
+      { id: 'marketing-calendar', name: 'Calendrier', route: '/marketing/calendar', icon: 'Calendar', description: 'Planification campagnes', features: ['calendar'], order: 10 },
+      { id: 'marketing-ab-testing', name: 'A/B Testing', route: '/marketing/ab-testing', icon: 'BarChart3', description: 'Tests A/B', features: ['ab-testing'], order: 11 },
+      { id: 'marketing-content', name: 'Contenu IA', route: '/marketing/content-generation', icon: 'Sparkles', description: 'Génération contenu', features: ['ai-content'], order: 12 },
     ]
   },
 
