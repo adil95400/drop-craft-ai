@@ -1,5 +1,5 @@
 /**
- * Dashboard style Channable avec hexagones et design moderne
+ * Dashboard style Channable avec hero image et design premium
  * Version complète avec données RÉELLES depuis la base de données
  */
 
@@ -9,16 +9,22 @@ import { SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } fro
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableQuickActions,
   ChannableActivityFeed,
   ChannableChannelHealth,
   ChannableSyncTimeline,
 } from '@/components/channable';
-import { Settings2, RefreshCw, Plus, LayoutGrid, RotateCcw, Loader2, BarChart3, Zap, TrendingUp, Activity, Clock, Sparkles } from 'lucide-react';
+import { 
+  Settings2, RefreshCw, Plus, LayoutGrid, RotateCcw, Loader2, 
+  BarChart3, Zap, TrendingUp, Activity, Clock, Sparkles,
+  ShoppingCart, Package, DollarSign, Users, ArrowUpRight,
+  CheckCircle2, AlertTriangle, Eye, Download
+} from 'lucide-react';
 import { useDashboardConfig, getTimeRangeLabel } from '@/hooks/useDashboardConfig';
 import { useRealDashboardData } from '@/hooks/useRealDashboardData';
 import { DashboardWidgetWrapper } from './DashboardWidgetWrapper';
@@ -51,9 +57,66 @@ import {
 } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+
+// Composant de carte statistique premium
+interface QuickStatCardProps {
+  label: string;
+  value: string | number;
+  change?: string;
+  changeType?: 'positive' | 'negative' | 'neutral';
+  icon: React.ElementType;
+  color: 'primary' | 'success' | 'warning' | 'info';
+  onClick?: () => void;
+}
+
+function QuickStatCard({ label, value, change, changeType = 'positive', icon: Icon, color, onClick }: QuickStatCardProps) {
+  const colorClasses = {
+    primary: 'from-primary/20 to-primary/5 border-primary/30 text-primary',
+    success: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
+    warning: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
+    info: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
+  };
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className={cn(
+        "cursor-pointer p-4 rounded-xl border bg-gradient-to-br backdrop-blur-sm transition-all duration-300",
+        colorClasses[color]
+      )}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className={cn("p-2 rounded-lg", `bg-${color}/10`)}>
+          <Icon className="h-4 w-4" />
+        </div>
+        {change && (
+          <Badge 
+            variant="outline" 
+            className={cn(
+              "text-[10px] px-1.5 py-0.5",
+              changeType === 'positive' && 'text-emerald-600 border-emerald-300 bg-emerald-50',
+              changeType === 'negative' && 'text-red-600 border-red-300 bg-red-50',
+              changeType === 'neutral' && 'text-gray-600 border-gray-300 bg-gray-50'
+            )}
+          >
+            {change}
+          </Badge>
+        )}
+      </div>
+      <div className="space-y-1">
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+      </div>
+    </motion.div>
+  );
+}
 
 export function ChannableDashboard() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const {
     widgets,
     timeRange,
@@ -115,28 +178,28 @@ export function ChannableDashboard() {
       id: 'add-product',
       label: 'Ajouter un produit',
       icon: Plus,
-      onClick: () => toast.info('Ouverture du formulaire produit'),
+      onClick: () => navigate('/products'),
       variant: 'primary'
     },
     {
       id: 'view-analytics',
       label: 'Analytiques',
       icon: BarChart3,
-      onClick: () => toast.info('Redirection vers analytiques'),
+      onClick: () => navigate('/analytics'),
       description: 'Vue détaillée'
     },
     {
       id: 'optimize',
       label: 'Optimiser',
       icon: Zap,
-      onClick: () => toast.info('Lancement de l\'optimisation'),
+      onClick: () => navigate('/automation'),
       description: 'IA automatique'
     },
     {
       id: 'reports',
       label: 'Rapports',
       icon: TrendingUp,
-      onClick: () => toast.info('Génération des rapports'),
+      onClick: () => navigate('/reports'),
       description: 'Export PDF'
     }
   ];
@@ -198,38 +261,17 @@ export function ChannableDashboard() {
   };
 
   return (
-    <ChannablePageLayout
-      title="Tableau de bord"
-      metaTitle="Dashboard"
-      metaDescription="Vue d'ensemble de votre activité e-commerce"
-    >
-      {/* Hero Section Channable avec hexagones */}
-      <ChannableHeroSection
-        title="Tableau de bord"
-        subtitle="Vue d'ensemble en temps réel"
-        description="Pilotez votre activité e-commerce avec des insights en temps réel et des outils d'optimisation intelligents."
-        showHexagons={true}
-        badge={{
-          label: autoRefresh ? `Auto-refresh ${refreshInterval}s` : 'Temps réel',
-          icon: RefreshCw
-        }}
-        stats={[
-          { label: 'Widgets actifs', value: enabledWidgets.length, icon: LayoutGrid },
-          { label: 'Période', value: getTimeRangeLabel(timeRange), icon: BarChart3 },
-          { label: 'Dernière MAJ', value: lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }), icon: Clock }
-        ]}
-        variant="default"
-        primaryAction={{
-          label: 'Personnaliser',
-          onClick: () => setIsCustomizing(!isCustomizing),
-          icon: LayoutGrid
-        }}
-        secondaryAction={{
-          label: 'Actualiser',
-          onClick: handleRefresh
-        }}
-      >
-        <div className="flex flex-wrap gap-2 mt-6">
+    <ChannablePageWrapper
+      title="Tableau de Bord"
+      subtitle="Vue d'ensemble"
+      description="Pilotez votre activité e-commerce avec des insights en temps réel et des outils d'optimisation intelligents."
+      heroImage="dashboard"
+      badge={{
+        label: autoRefresh ? `Auto-refresh ${refreshInterval}s` : 'Temps réel',
+        icon: RefreshCw
+      }}
+      actions={
+        <>
           <TimeRangeSelector />
           
           <Button
@@ -237,26 +279,76 @@ export function ChannableDashboard() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="bg-background/50 backdrop-blur-sm border-white/20 hover:bg-white/10"
+            className="bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80"
           >
             {isRefreshing ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
+            <span className="ml-2 hidden sm:inline">Actualiser</span>
           </Button>
 
           <Button
             variant={isCustomizing ? 'default' : 'outline'}
             size="sm"
             onClick={() => setIsCustomizing(!isCustomizing)}
-            className={cn(!isCustomizing && "bg-background/50 backdrop-blur-sm border-white/20 hover:bg-white/10")}
+            className={cn(!isCustomizing && "bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80")}
           >
-            <LayoutGrid className="h-4 w-4 mr-1" />
+            <LayoutGrid className="h-4 w-4 mr-2" />
             {isCustomizing ? 'Terminer' : 'Personnaliser'}
           </Button>
-        </div>
-      </ChannableHeroSection>
+
+          <Button
+            size="sm"
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => setShowWidgetLibrary(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Ajouter widget
+          </Button>
+        </>
+      }
+    >
+      {/* Quick Stats Grid Premium */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <QuickStatCard
+          label="Chiffre d'affaires"
+          value="€24,580"
+          change="+12.5%"
+          changeType="positive"
+          icon={DollarSign}
+          color="primary"
+          onClick={() => navigate('/analytics')}
+        />
+        <QuickStatCard
+          label="Commandes"
+          value="156"
+          change="+8"
+          changeType="positive"
+          icon={ShoppingCart}
+          color="success"
+          onClick={() => navigate('/orders')}
+        />
+        <QuickStatCard
+          label="Produits actifs"
+          value="1,247"
+          change="+23"
+          changeType="positive"
+          icon={Package}
+          color="info"
+          onClick={() => navigate('/products')}
+        />
+        <QuickStatCard
+          label="Clients"
+          value="892"
+          change="+15"
+          changeType="positive"
+          icon={Users}
+          color="warning"
+          onClick={() => navigate('/customers')}
+        />
+      </div>
 
       {/* Customization Bar */}
       {isCustomizing && (
@@ -420,6 +512,6 @@ export function ChannableDashboard() {
 
       {/* Widget Library Dialog */}
       <WidgetLibrary open={showWidgetLibrary} onOpenChange={setShowWidgetLibrary} />
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   );
 }
