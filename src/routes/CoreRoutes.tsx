@@ -1,5 +1,6 @@
 /**
  * Routes Core - Dashboard, Stores, Orders, Customers
+ * Consolidé - Suppression des pages dupliquées
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -8,12 +9,6 @@ import { lazy } from 'react';
 const DashboardHome = lazy(() => import('@/pages/Dashboard'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Settings = lazy(() => import('@/pages/Settings'));
-
-// Stores - Now handled by ChannelRoutes, keeping redirects for compatibility
-
-// Orders & Customers - Now handled by OrderRoutes & CustomerRoutes
-
-// Quick actions
 
 // Quick actions
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
@@ -24,8 +19,7 @@ const StockManagementDashboard = lazy(() => import('@/pages/StockManagementDashb
 const AdvancedNotificationCenter = lazy(() => import('@/pages/AdvancedNotificationCenter'));
 const MultiStoreAnalyticsDashboard = lazy(() => import('@/pages/MultiStoreAnalyticsDashboard'));
 
-// Order Management
-const ReturnManagementPage = lazy(() => import('@/pages/ReturnManagementPage'));
+// Order Management - Consolidated
 const AIStoreBuilderHub = lazy(() => import('@/pages/store/AIStoreBuilderHub'));
 const BrandingInvoicesHub = lazy(() => import('@/pages/invoices/BrandingInvoicesHub'));
 const PrintOnDemandHub = lazy(() => import('@/pages/pod/PrintOnDemandHub'));
@@ -39,8 +33,6 @@ const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const AnalyticsDashboard = lazy(() => import('@/pages/AnalyticsDashboard'));
 const ProductsMainPage = lazy(() => import('@/pages/products/ProductsMainPage'));
 
-// Suppliers - MOVED TO SupplierRoutes.tsx - Redirections only
-
 // AI & Automation
 const AIInsightsPage = lazy(() => import('@/pages/AIInsightsPage'));
 const WorkflowsPage = lazy(() => import('@/pages/WorkflowsPage'));
@@ -53,8 +45,8 @@ const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 
-// Additional Pages
-const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
+// Subscription - Consolidated to SubscriptionDashboard
+const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 
 // Onboarding
@@ -124,9 +116,12 @@ export function CoreRoutes() {
       {/* Onboarding */}
       <Route path="onboarding" element={<OnboardingHubPage />} />
       
-      {/* Subscription & Notifications */}
-      <Route path="subscription" element={<SubscriptionPage />} />
+      {/* Subscription & Notifications - Consolidated */}
+      <Route path="subscription" element={<SubscriptionDashboard />} />
       <Route path="notifications" element={<NotificationsPage />} />
+      
+      {/* Returns - redirect to /orders/returns */}
+      <Route path="returns" element={<Navigate to="/orders/returns" replace />} />
       
       {/* Settings (accessible from sidebar) */}
       <Route path="parametres" element={<Navigate to="/settings" replace />} />

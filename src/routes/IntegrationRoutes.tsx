@@ -14,8 +14,8 @@ const MarketplaceConnectorsPage = lazy(() => import('@/pages/integrations/Market
 const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
 
-// Extensions
-const ExtensionsHub = lazy(() => import('@/pages/ExtensionsHub'));
+// Extensions - Redirect to /extensions route
+const ExtensionsHub = lazy(() => import('@/pages/extensions/ExtensionsHub'));
 const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 const ChromeExtensionConfigPage = lazy(() => import('@/pages/ChromeExtensionConfigPage'));
 
