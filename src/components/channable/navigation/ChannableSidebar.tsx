@@ -1,6 +1,6 @@
 /**
- * ChannableSidebar - Sidebar navigation avec design Channable
- * Structure claire, couleurs vibrantes, animations fluides
+ * ChannableSidebar - Sidebar navigation avec design Premium Professionnel
+ * Glassmorphism, gradients subtils, animations fluides, typographie premium
  */
 import { useState, useMemo, useCallback, memo } from "react"
 import shopoptiLogo from "@/assets/shopopti-logo.png"
@@ -13,7 +13,7 @@ import {
   TrendingUp, Megaphone, Tag, CheckCircle, GitCompare, Workflow,
   Calculator, HelpCircle, GraduationCap, Video, Layers, RefreshCw,
   Clock, Activity, Database, Target, Mail, Bot, Globe, Wrench,
-  LayoutDashboard, PackageCheck, Bell, Eye, Trophy, FileEdit
+  LayoutDashboard, PackageCheck, Bell, Eye, Trophy, FileEdit, LogOut
 } from "lucide-react"
 import { 
   Sidebar, SidebarContent, SidebarHeader, SidebarFooter,
@@ -29,7 +29,6 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle"
 import { cn } from "@/lib/utils"
 import { MODULE_REGISTRY, NAV_GROUPS, type NavGroupId } from "@/config/modules"
 import { useModules } from "@/hooks/useModules"
-
 import { useFavorites } from "@/stores/favoritesStore"
 import { useUnifiedAuth } from "@/contexts/UnifiedAuthContext"
 
@@ -51,50 +50,133 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   'DollarSign': TrendingUp, 'Book': GraduationCap, 'RotateCcw': RefreshCw,
 }
 
-// Couleurs par groupe - Style Channable
-const groupColors: Partial<Record<NavGroupId, { bg: string; text: string; accent: string; border: string }>> = {
-  home: { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', accent: 'hover:bg-blue-500/20', border: 'border-blue-500/30' },
-  sources: { bg: 'bg-violet-500/10', text: 'text-violet-600 dark:text-violet-400', accent: 'hover:bg-violet-500/20', border: 'border-violet-500/30' },
-  catalog: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', accent: 'hover:bg-emerald-500/20', border: 'border-emerald-500/30' },
-  channels: { bg: 'bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400', accent: 'hover:bg-orange-500/20', border: 'border-orange-500/30' },
-  orders: { bg: 'bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400', accent: 'hover:bg-rose-500/20', border: 'border-rose-500/30' },
-  marketing: { bg: 'bg-pink-500/10', text: 'text-pink-600 dark:text-pink-400', accent: 'hover:bg-pink-500/20', border: 'border-pink-500/30' },
-  insights: { bg: 'bg-cyan-500/10', text: 'text-cyan-600 dark:text-cyan-400', accent: 'hover:bg-cyan-500/20', border: 'border-cyan-500/30' },
-  tools: { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', accent: 'hover:bg-amber-500/20', border: 'border-amber-500/30' },
-  settings: { bg: 'bg-slate-500/10', text: 'text-slate-600 dark:text-slate-400', accent: 'hover:bg-slate-500/20', border: 'border-slate-500/30' },
+// Couleurs premium par groupe - Design professionnel avancé
+const groupColors: Partial<Record<NavGroupId, { 
+  bg: string; text: string; accent: string; border: string; icon: string; gradient: string 
+}>> = {
+  home: { 
+    bg: 'bg-blue-500/8', 
+    text: 'text-blue-600 dark:text-blue-400', 
+    accent: 'hover:bg-blue-500/12', 
+    border: 'border-blue-500/20',
+    icon: 'text-blue-500',
+    gradient: 'from-blue-500 to-cyan-500'
+  },
+  sources: { 
+    bg: 'bg-violet-500/8', 
+    text: 'text-violet-600 dark:text-violet-400', 
+    accent: 'hover:bg-violet-500/12', 
+    border: 'border-violet-500/20',
+    icon: 'text-violet-500',
+    gradient: 'from-violet-500 to-purple-500'
+  },
+  catalog: { 
+    bg: 'bg-emerald-500/8', 
+    text: 'text-emerald-600 dark:text-emerald-400', 
+    accent: 'hover:bg-emerald-500/12', 
+    border: 'border-emerald-500/20',
+    icon: 'text-emerald-500',
+    gradient: 'from-emerald-500 to-teal-500'
+  },
+  channels: { 
+    bg: 'bg-orange-500/8', 
+    text: 'text-orange-600 dark:text-orange-400', 
+    accent: 'hover:bg-orange-500/12', 
+    border: 'border-orange-500/20',
+    icon: 'text-orange-500',
+    gradient: 'from-orange-500 to-amber-500'
+  },
+  orders: { 
+    bg: 'bg-rose-500/8', 
+    text: 'text-rose-600 dark:text-rose-400', 
+    accent: 'hover:bg-rose-500/12', 
+    border: 'border-rose-500/20',
+    icon: 'text-rose-500',
+    gradient: 'from-rose-500 to-pink-500'
+  },
+  marketing: { 
+    bg: 'bg-pink-500/8', 
+    text: 'text-pink-600 dark:text-pink-400', 
+    accent: 'hover:bg-pink-500/12', 
+    border: 'border-pink-500/20',
+    icon: 'text-pink-500',
+    gradient: 'from-pink-500 to-rose-500'
+  },
+  insights: { 
+    bg: 'bg-cyan-500/8', 
+    text: 'text-cyan-600 dark:text-cyan-400', 
+    accent: 'hover:bg-cyan-500/12', 
+    border: 'border-cyan-500/20',
+    icon: 'text-cyan-500',
+    gradient: 'from-cyan-500 to-blue-500'
+  },
+  tools: { 
+    bg: 'bg-amber-500/8', 
+    text: 'text-amber-600 dark:text-amber-400', 
+    accent: 'hover:bg-amber-500/12', 
+    border: 'border-amber-500/20',
+    icon: 'text-amber-500',
+    gradient: 'from-amber-500 to-yellow-500'
+  },
+  settings: { 
+    bg: 'bg-slate-500/8', 
+    text: 'text-slate-600 dark:text-slate-400', 
+    accent: 'hover:bg-slate-500/12', 
+    border: 'border-slate-500/20',
+    icon: 'text-slate-500',
+    gradient: 'from-slate-500 to-zinc-500'
+  },
 }
 
-// Hexagone SVG animé
-function HexagonIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z" />
-    </svg>
-  )
-}
-
-// Logo ShopOpti
+// Logo ShopOpti Premium avec effet glassmorphism
 const ChannableLogo = memo(({ collapsed }: { collapsed: boolean }) => (
   <motion.div 
     className={cn("flex items-center gap-3", collapsed && "justify-center")}
     initial={false}
     animate={{ opacity: 1 }}
   >
-    <motion.img
-      src={shopoptiLogo}
-      alt="ShopOpti"
+    <motion.div
       className={cn(
-        "object-contain",
-        collapsed ? "w-10 h-10" : "h-12 w-auto"
+        "relative flex items-center justify-center",
+        collapsed ? "w-10 h-10" : "w-12 h-12"
       )}
-      whileHover={{ scale: 1.05 }}
-      transition={{ type: "spring", stiffness: 300 }}
-    />
+      whileHover={{ scale: 1.05, rotate: 2 }}
+      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+    >
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-violet-500/30 rounded-2xl blur-xl opacity-60" />
+      <motion.img
+        src={shopoptiLogo}
+        alt="ShopOpti"
+        className={cn(
+          "relative object-contain rounded-xl shadow-lg",
+          collapsed ? "w-9 h-9" : "h-11 w-auto"
+        )}
+      />
+    </motion.div>
+    
+    <AnimatePresence>
+      {!collapsed && (
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          className="flex flex-col"
+        >
+          <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+            ShopOpti
+          </span>
+          <span className="text-[10px] font-medium text-muted-foreground/70 tracking-wider uppercase">
+            E-Commerce Suite
+          </span>
+        </motion.div>
+      )}
+    </AnimatePresence>
   </motion.div>
 ))
 ChannableLogo.displayName = 'ChannableLogo'
 
-// Barre de recherche Channable
+// Barre de recherche Premium avec glassmorphism
 const ChannableSearch = memo(({ 
   value, 
   onChange, 
@@ -110,24 +192,27 @@ const ChannableSearch = memo(({
     <motion.div
       initial={{ opacity: 0, y: -5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative"
+      className="relative group"
     >
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-violet-500/5 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity" />
+      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 group-focus-within:text-primary transition-colors" />
       <Input
-        placeholder="Rechercher..."
+        placeholder="Rechercher un module..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-9 h-9 bg-muted/50 border-transparent focus:border-primary/50 focus:bg-background transition-all rounded-xl text-sm"
+        className="relative pl-10 pr-16 h-10 bg-sidebar-muted/50 dark:bg-sidebar-muted/30 border-sidebar-border/50 focus:border-primary/40 focus:bg-background/80 transition-all rounded-xl text-sm placeholder:text-muted-foreground/50 shadow-sm"
       />
-      <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-        ⌘K
-      </kbd>
+      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+        <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded-md border border-sidebar-border/60 bg-sidebar-muted/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground/70 shadow-sm">
+          <span className="text-[10px]">⌘</span>K
+        </kbd>
+      </div>
     </motion.div>
   )
 })
 ChannableSearch.displayName = 'ChannableSearch'
 
-// Item de navigation Channable
+// Item de navigation Premium avec effets avancés
 const ChannableNavItem = memo(({
   module,
   isActive,
@@ -158,31 +243,43 @@ const ChannableNavItem = memo(({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
+      initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.15 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <SidebarMenuItem>
         <SidebarMenuButton
           onClick={() => hasSubModules ? onSubToggle() : hasAccess && onNavigate(module.route)}
           tooltip={collapsed ? module.name : undefined}
           className={cn(
-            "w-full rounded-xl transition-all duration-200 group/item",
-            "hover:shadow-sm",
+            "w-full rounded-xl transition-all duration-200 group/item relative overflow-hidden",
             isActive 
-              ? `${groupColor.bg} ${groupColor.text} ${groupColor.border} border shadow-sm` 
-              : "hover:bg-muted/50",
+              ? `bg-gradient-to-r ${groupColor?.gradient || 'from-primary to-primary/80'} text-white shadow-lg shadow-primary/20` 
+              : "hover:bg-sidebar-accent/50 dark:hover:bg-sidebar-accent/30",
             !hasAccess && "opacity-40 cursor-not-allowed"
           )}
         >
+          {/* Active indicator glow */}
+          {isActive && (
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            />
+          )}
+          
           <div className={cn(
-            "flex items-center justify-center w-8 h-8 rounded-lg transition-colors",
-            isActive ? groupColor.bg : "bg-muted/50",
-            !collapsed && "mr-1"
+            "flex items-center justify-center w-8 h-8 rounded-lg transition-all",
+            isActive 
+              ? "bg-white/20" 
+              : `${groupColor?.bg || 'bg-muted/50'}`,
+            !collapsed && "mr-2"
           )}>
             <Icon className={cn(
-              "h-4 w-4 transition-transform",
-              isActive ? groupColor.text : "text-foreground",
+              "h-4 w-4 transition-all",
+              isActive 
+                ? "text-white" 
+                : groupColor?.icon || "text-foreground/70",
               isActive && "scale-110"
             )} />
           </div>
@@ -190,31 +287,32 @@ const ChannableNavItem = memo(({
           {!collapsed && (
             <div className="flex items-center justify-between flex-1 min-w-0">
               <span className={cn(
-                "text-sm font-medium truncate",
-                isActive && groupColor.text
+                "text-[13px] font-medium truncate",
+                isActive ? "text-white" : "text-foreground/80"
               )}>
                 {module.name}
               </span>
               
-              <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                {!hasAccess && <Lock className="h-3 w-3 text-muted-foreground" />}
+              <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
+                {!hasAccess && <Lock className="h-3 w-3 text-muted-foreground/60" />}
                 
                 {module.badge && (
                   <Badge 
                     className={cn(
-                      "text-[9px] px-1.5 py-0 h-4 font-bold border-0",
-                      module.badge === 'pro' && "bg-primary/15 text-primary",
-                      module.badge === 'new' && "bg-emerald-500/15 text-emerald-600",
-                      module.badge === 'beta' && "bg-amber-500/15 text-amber-600"
+                      "text-[9px] px-1.5 py-0 h-4 font-bold border-0 uppercase tracking-wide",
+                      module.badge === 'pro' && "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-sm",
+                      module.badge === 'new' && "bg-gradient-to-r from-emerald-500/90 to-green-500/90 text-white shadow-sm",
+                      module.badge === 'beta' && "bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white shadow-sm"
                     )}
                   >
-                    {module.badge.toUpperCase()}
+                    {module.badge}
                   </Badge>
                 )}
                 
                 {hasSubModules && (
                   <ChevronRight className={cn(
-                    "h-3.5 w-3.5 text-muted-foreground transition-transform",
+                    "h-3.5 w-3.5 transition-transform duration-200",
+                    isActive ? "text-white/70" : "text-muted-foreground/60",
                     isSubOpen && "rotate-90"
                   )} />
                 )}
@@ -222,14 +320,16 @@ const ChannableNavItem = memo(({
                 <button
                   onClick={(e) => { e.stopPropagation(); onFavoriteToggle() }}
                   className={cn(
-                    "h-5 w-5 flex items-center justify-center rounded-md",
-                    "opacity-0 group-hover/item:opacity-100 transition-opacity",
+                    "h-5 w-5 flex items-center justify-center rounded-md transition-all",
+                    "opacity-0 group-hover/item:opacity-100",
                     isFavorite && "opacity-100"
                   )}
                 >
                   <Star className={cn(
-                    "h-3.5 w-3.5 transition-colors",
-                    isFavorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground hover:text-amber-400"
+                    "h-3 w-3 transition-all",
+                    isFavorite 
+                      ? "fill-amber-400 text-amber-400 drop-shadow-sm" 
+                      : isActive ? "text-white/60 hover:text-amber-300" : "text-muted-foreground/50 hover:text-amber-500"
                   )} />
                 </button>
               </div>
@@ -238,14 +338,15 @@ const ChannableNavItem = memo(({
         </SidebarMenuButton>
       </SidebarMenuItem>
       
-      {/* Sous-menus */}
+      {/* Sous-menus avec animation fluide */}
       <AnimatePresence>
         {hasSubModules && isSubOpen && !collapsed && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="ml-4 mt-1 space-y-0.5 border-l-2 border-muted pl-3"
+            transition={{ duration: 0.2 }}
+            className="ml-5 mt-1 space-y-0.5 border-l-2 border-sidebar-border/40 pl-3"
           >
             {subModules.map(sub => {
               const SubIcon = iconMap[sub.icon] || Package
@@ -253,11 +354,11 @@ const ChannableNavItem = memo(({
                 <motion.button
                   key={sub.id}
                   onClick={() => onNavigate(sub.route)}
-                  whileHover={{ x: 2 }}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  whileHover={{ x: 3 }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/30 transition-all"
                 >
                   <SubIcon className="h-3.5 w-3.5" />
-                  <span className="truncate">{sub.name}</span>
+                  <span className="truncate text-[12px]">{sub.name}</span>
                 </motion.button>
               )
             })}
@@ -269,7 +370,7 @@ const ChannableNavItem = memo(({
 })
 ChannableNavItem.displayName = 'ChannableNavItem'
 
-// Groupe de navigation Channable
+// Groupe de navigation Premium
 const ChannableNavGroup = memo(({
   group,
   modules,
@@ -304,42 +405,44 @@ const ChannableNavGroup = memo(({
   const hasActiveModule = modules.some(m => activeRoute(m.route))
 
   return (
-    <SidebarGroup className="py-1">
+    <SidebarGroup className="py-0.5">
       <motion.button
         onClick={onToggle}
         className={cn(
-          "w-full flex items-center gap-2 px-2 py-2 rounded-xl transition-all",
-          "hover:bg-muted/50",
-          isOpen && "bg-muted/30",
-          hasActiveModule && `${color.bg} ${color.border} border`,
+          "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl transition-all",
+          "hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20",
+          isOpen && "bg-sidebar-accent/30 dark:bg-sidebar-accent/15",
+          hasActiveModule && `${color?.bg} ${color?.border} border`,
           collapsed && "justify-center px-0"
         )}
-        whileHover={{ scale: collapsed ? 1.05 : 1 }}
+        whileHover={{ scale: collapsed ? 1.05 : 1.01 }}
         whileTap={{ scale: 0.98 }}
       >
         <div className={cn(
-          "flex items-center justify-center w-7 h-7 rounded-lg",
-          hasActiveModule ? color.bg : "bg-muted/50"
+          "flex items-center justify-center w-7 h-7 rounded-lg transition-all",
+          hasActiveModule 
+            ? `bg-gradient-to-br ${color?.gradient || 'from-primary to-primary/80'} shadow-sm` 
+            : "bg-sidebar-muted/60 dark:bg-sidebar-muted/40"
         )}>
           <Icon className={cn(
             "h-4 w-4",
-            hasActiveModule ? color.text : "text-muted-foreground"
+            hasActiveModule ? "text-white" : color?.icon || "text-muted-foreground"
           )} />
         </div>
         
         {!collapsed && (
           <>
             <span className={cn(
-              "flex-1 text-left text-xs font-semibold uppercase tracking-wider",
-              hasActiveModule ? color.text : "text-muted-foreground"
+              "flex-1 text-left text-[11px] font-semibold uppercase tracking-widest",
+              hasActiveModule ? color?.text : "text-muted-foreground/70"
             )}>
               {group.label}
             </span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-muted">
+            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 bg-sidebar-muted/60 dark:bg-sidebar-muted/30 text-muted-foreground/70 border-0">
               {modules.length}
             </Badge>
             <ChevronDown className={cn(
-              "h-3.5 w-3.5 text-muted-foreground transition-transform",
+              "h-3.5 w-3.5 text-muted-foreground/50 transition-transform duration-200",
               isOpen && "rotate-180"
             )} />
           </>
@@ -352,7 +455,8 @@ const ChannableNavGroup = memo(({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-1 space-y-0.5"
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="mt-1 space-y-0.5 px-1"
           >
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
@@ -382,19 +486,103 @@ const ChannableNavGroup = memo(({
 })
 ChannableNavGroup.displayName = 'ChannableNavGroup'
 
-// Footer Channable
+// Section Favoris Premium
+const FavoritesSection = memo(({
+  favoriteModules,
+  isActive,
+  canAccess,
+  collapsed,
+  onNavigate,
+  onFavoriteToggle,
+  favorites,
+}: {
+  favoriteModules: any[]
+  isActive: (path: string) => boolean
+  canAccess: (id: string) => boolean
+  collapsed: boolean
+  onNavigate: (route: string) => void
+  onFavoriteToggle: (id: string) => void
+  favorites: { isFavorite: (id: string) => boolean }
+}) => {
+  if (favoriteModules.length === 0) return null
+
+  return (
+    <div className="mb-2">
+      {!collapsed && (
+        <div className="flex items-center gap-2 px-3 py-2">
+          <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+            Favoris
+          </span>
+        </div>
+      )}
+      <div className="space-y-0.5 px-1">
+        {favoriteModules.slice(0, 5).map(module => {
+          const Icon = iconMap[module.icon] || Star
+          const active = isActive(module.route)
+          
+          return (
+            <motion.button
+              key={module.id}
+              onClick={() => onNavigate(module.route)}
+              whileHover={{ scale: 1.01, x: 2 }}
+              whileTap={{ scale: 0.98 }}
+              className={cn(
+                "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all group",
+                active 
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md" 
+                  : "hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20"
+              )}
+            >
+              <div className={cn(
+                "flex items-center justify-center w-7 h-7 rounded-lg",
+                active ? "bg-white/20" : "bg-amber-500/10"
+              )}>
+                <Icon className={cn(
+                  "h-3.5 w-3.5",
+                  active ? "text-white" : "text-amber-600 dark:text-amber-400"
+                )} />
+              </div>
+              {!collapsed && (
+                <span className={cn(
+                  "flex-1 text-left text-[12px] font-medium truncate",
+                  active ? "text-white" : "text-foreground/80"
+                )}>
+                  {module.name}
+                </span>
+              )}
+            </motion.button>
+          )
+        })}
+      </div>
+      {!collapsed && <Separator className="mt-3 mb-1 bg-sidebar-border/40" />}
+    </div>
+  )
+})
+FavoritesSection.displayName = 'FavoritesSection'
+
+// Footer Premium avec profil utilisateur
 const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
-  const { profile } = useUnifiedAuth()
+  const { profile, signOut } = useUnifiedAuth()
+  
+  const planStyles: Record<string, string> = {
+    'ultra_pro': 'from-amber-500 to-orange-500',
+    'pro': 'from-violet-500 to-purple-500',
+    'standard': 'from-slate-500 to-zinc-500',
+  }
   
   return (
-    <SidebarFooter className="border-t border-border/50 p-3">
+    <SidebarFooter className="border-t border-sidebar-border/50 p-3 bg-sidebar-muted/20 dark:bg-sidebar-muted/10">
       <div className={cn(
         "flex items-center gap-3",
         collapsed && "justify-center"
       )}>
         <motion.div 
-          className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md"
-          whileHover={{ scale: 1.05 }}
+          className={cn(
+            "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg",
+            planStyles[profile?.plan || 'standard'] || planStyles.standard
+          )}
+          whileHover={{ scale: 1.05, rotate: 2 }}
         >
           {profile?.full_name?.[0]?.toUpperCase() || 'U'}
         </motion.div>
@@ -407,18 +595,21 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
               exit={{ opacity: 0, x: -10 }}
               className="flex-1 min-w-0"
             >
-              <p className="text-sm font-medium truncate">
+              <p className="text-sm font-semibold truncate text-foreground">
                 {profile?.full_name || 'Utilisateur'}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {profile?.plan || 'Standard'} Plan
-              </p>
+              <div className="flex items-center gap-1.5">
+                <Crown className="h-3 w-3 text-amber-500" />
+                <p className="text-[11px] text-muted-foreground/70 capitalize">
+                  {profile?.plan || 'Standard'}
+                </p>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
         
         {!collapsed && (
-          <ThemeToggle variant="ghost" className="h-8 w-8" />
+          <ThemeToggle variant="ghost" className="h-8 w-8 rounded-lg" />
         )}
       </div>
       
@@ -426,13 +617,21 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-3 flex gap-2"
+          className="mt-3 grid grid-cols-2 gap-2"
         >
-          <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs rounded-lg">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20"
+          >
             <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
             Aide
           </Button>
-          <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs rounded-lg">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20"
+          >
             <Settings className="h-3.5 w-3.5 mr-1.5" />
             Config
           </Button>
@@ -443,7 +642,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
 })
 ChannableFooter.displayName = 'ChannableFooter'
 
-// Composant principal
+// Composant principal avec design premium
 export function ChannableSidebar() {
   const { state } = useSidebar()
   const collapsed = state === 'collapsed'
@@ -465,166 +664,122 @@ export function ChannableSidebar() {
     navigate(route)
   }, [navigate])
 
+  const handleFavoriteToggle = useCallback((moduleId: string) => {
+    if (favorites.isFavorite(moduleId)) {
+      favorites.removeFavorite(moduleId)
+    } else {
+      favorites.addFavorite(moduleId)
+    }
+  }, [favorites])
+
   const toggleGroup = useCallback((groupId: NavGroupId) => {
     setOpenGroups(prev => 
-      prev.includes(groupId) ? prev.filter(g => g !== groupId) : [...prev, groupId]
+      prev.includes(groupId) 
+        ? prev.filter(g => g !== groupId) 
+        : [...prev, groupId]
     )
   }, [])
 
   const toggleSubMenu = useCallback((moduleId: string) => {
-    setOpenSubMenus(prev => ({ ...prev, [moduleId]: !prev[moduleId] }))
+    setOpenSubMenus(prev => ({
+      ...prev,
+      [moduleId]: !prev[moduleId]
+    }))
   }, [])
 
-  // Modules groupés
-  const modulesByGroup = useMemo(() => {
-    const grouped: Record<NavGroupId, typeof allModules> = {} as any
-
-    // On affiche tous les modules (même verrouillés) afin que l’utilisateur voie la structure complète.
-    allModules.forEach(module => {
-      if (!module.groupId || !module.enabled) return
-      if (!grouped[module.groupId]) grouped[module.groupId] = []
-
-      // Filtrer par recherche
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        if (!module.name.toLowerCase().includes(query) &&
-            !module.description?.toLowerCase().includes(query)) {
-          return
-        }
+  // Calcul optimisé des modules par groupe et filtrage
+  const { modulesByGroup, filteredGroups } = useMemo(() => {
+    const searchLower = searchQuery.toLowerCase()
+    const grouped: Record<string, any[]> = {}
+    
+    availableModules.forEach(module => {
+      if (!module.groupId) return
+      
+      const matchesSearch = !searchQuery || 
+        module.name.toLowerCase().includes(searchLower) ||
+        module.groupId.toLowerCase().includes(searchLower)
+      
+      if (!grouped[module.groupId]) {
+        grouped[module.groupId] = []
       }
-
-      grouped[module.groupId].push(module)
+      
+      if (matchesSearch) {
+        grouped[module.groupId].push(module)
+      }
     })
+    
+    const filtered = NAV_GROUPS.filter(group => 
+      grouped[group.id]?.length > 0
+    )
+    
+    return { modulesByGroup: grouped, filteredGroups: filtered }
+  }, [availableModules, searchQuery])
 
-    Object.values(grouped).forEach(modules => {
-      modules.sort((a, b) => a.order - b.order)
-    })
-
-    return grouped
-  }, [allModules, searchQuery])
-
-  // Favoris section
   const favoriteModules = useMemo(() => {
-    return favorites.favorites
-      .slice(0, 5)
-      .map(f => MODULE_REGISTRY[f.moduleId])
-      .filter(Boolean)
-  }, [favorites.favorites])
+    return allModules.filter(m => favorites.isFavorite(m.id))
+  }, [allModules, favorites])
 
   return (
     <Sidebar 
       collapsible="icon" 
-      className="border-r border-border/50 bg-background/95 backdrop-blur transition-all duration-300 z-40"
+      className="border-r border-sidebar-border/50 bg-sidebar-background"
     >
-      <SidebarHeader className="p-4 border-b border-border/50">
-        <ChannableLogo collapsed={collapsed} />
-        
-        {isAdminBypass && !collapsed && (
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-3"
-          >
-            <Badge className="w-full justify-center bg-gradient-to-r from-amber-500 to-rose-500 text-white border-0 shadow-md">
-              <Crown className="w-3 h-3 mr-1.5" />
-              Mode Admin
-            </Badge>
-          </motion.div>
-        )}
-        
-        <div className="mt-4">
-          <ChannableSearch 
-            value={searchQuery} 
-            onChange={setSearchQuery} 
-            collapsed={collapsed} 
-          />
+      {/* Header Premium avec glassmorphism */}
+      <SidebarHeader className="border-b border-sidebar-border/40 bg-sidebar-muted/20 dark:bg-sidebar-muted/10 backdrop-blur-xl">
+        <div className={cn("p-3", collapsed ? "px-2" : "px-4")}>
+          <ChannableLogo collapsed={collapsed} />
         </div>
         
-        {collapsed && (
-          <div className="mt-3 flex justify-center">
-            <ThemeToggle variant="ghost" className="h-8 w-8" />
+        {!collapsed && (
+          <div className="px-3 pb-3">
+            <ChannableSearch 
+              value={searchQuery} 
+              onChange={setSearchQuery} 
+              collapsed={collapsed} 
+            />
           </div>
         )}
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-2">
-        <ScrollArea className="h-full">
+      {/* Contenu avec scroll personnalisé */}
+      <SidebarContent className="bg-sidebar-background">
+        <ScrollArea className="flex-1 px-2 py-3">
           {/* Favoris */}
-          {favoriteModules.length > 0 && (
-            <div className="mb-2">
-              {!collapsed && (
-                <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Favoris
-                  </span>
-                </div>
-              )}
-              <SidebarMenu className="gap-0.5">
-                {favoriteModules.map(module => {
-                  if (!module) return null
-                  const Icon = iconMap[module.icon] || Package
-                  const color = groupColors[module.groupId] || groupColors.home
-                  
-                  return (
-                    <SidebarMenuItem key={module.id}>
-                      <SidebarMenuButton
-                        onClick={() => handleNavigate(module.route)}
-                        tooltip={collapsed ? module.name : undefined}
-                        className={cn(
-                          "rounded-xl",
-                          isActive(module.route) && `${color.bg} ${color.text} ${color.border} border`
-                        )}
-                      >
-                        <div className={cn(
-                          "flex items-center justify-center w-7 h-7 rounded-lg",
-                          isActive(module.route) ? color.bg : "bg-amber-500/10"
-                        )}>
-                          <Icon className={cn(
-                            "h-4 w-4",
-                            isActive(module.route) ? color.text : "text-amber-600"
-                          )} />
-                        </div>
-                        {!collapsed && (
-                          <span className="text-sm font-medium truncate">{module.name}</span>
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-              <Separator className="my-3" />
-            </div>
-          )}
-
+          <FavoritesSection
+            favoriteModules={favoriteModules}
+            isActive={isActive}
+            canAccess={canAccess}
+            collapsed={collapsed}
+            onNavigate={handleNavigate}
+            onFavoriteToggle={handleFavoriteToggle}
+            favorites={favorites}
+          />
+          
           {/* Groupes de navigation */}
-          {NAV_GROUPS.map(group => {
-            const modules = modulesByGroup[group.id] || []
-            if (modules.length === 0) return null
-
-            return (
-              <ChannableNavGroup
-                key={group.id}
-                group={group}
-                modules={modules}
-                isOpen={openGroups.includes(group.id)}
-                onToggle={() => toggleGroup(group.id)}
-                collapsed={collapsed}
-                activeRoute={isActive}
-                canAccess={canAccess}
-                favorites={favorites}
-                onNavigate={handleNavigate}
-                onFavoriteToggle={favorites.toggleFavorite}
-                openSubMenus={openSubMenus}
-                onSubMenuToggle={toggleSubMenu}
-                currentPlan={currentPlan}
-              />
-            )
-          })}
+          {filteredGroups.map(group => (
+            <ChannableNavGroup
+              key={group.id}
+              group={group}
+              modules={modulesByGroup[group.id] || []}
+              isOpen={openGroups.includes(group.id)}
+              onToggle={() => toggleGroup(group.id)}
+              collapsed={collapsed}
+              activeRoute={isActive}
+              canAccess={canAccess}
+              favorites={favorites}
+              onNavigate={handleNavigate}
+              onFavoriteToggle={handleFavoriteToggle}
+              openSubMenus={openSubMenus}
+              onSubMenuToggle={toggleSubMenu}
+              currentPlan={currentPlan}
+            />
+          ))}
         </ScrollArea>
       </SidebarContent>
-
+      
+      {/* Footer Premium */}
       <ChannableFooter collapsed={collapsed} />
+      
       <SidebarRail />
     </Sidebar>
   )

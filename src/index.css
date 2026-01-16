@@ -68,17 +68,21 @@
     --info-foreground: 210 40% 98%;
     --info-light: 199 89% 96%;
     
-    /* Sidebar specific tokens - Professional design */
-    --sidebar-background: 0 0% 100%;
+    /* Sidebar specific tokens - Premium Professional design */
+    --sidebar-background: 220 30% 99%;
     --sidebar-foreground: 222.2 84% 4.9%;
     --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 221 83% 97%;
+    --sidebar-accent: 221 70% 96%;
     --sidebar-accent-foreground: 221 83% 35%;
-    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-border: 220 20% 92%;
     --sidebar-ring: 221 83% 53%;
-    --sidebar-muted: 210 40% 96.1%;
-    --sidebar-muted-foreground: 215.4 16.3% 46.9%;
+    --sidebar-muted: 220 25% 96%;
+    --sidebar-muted-foreground: 220 10% 50%;
+    --sidebar-header-bg: 220 30% 98%;
+    --sidebar-group-hover: 221 70% 97%;
+    --sidebar-item-active-bg: 221 83% 53%;
+    --sidebar-item-active-glow: 221 83% 60%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
@@ -146,17 +150,21 @@
     --info-foreground: 210 40% 98%;
     --info-light: 199 89% 15%;
     
-    /* Sidebar specific tokens - dark mode professional */
-    --sidebar-background: 224 71% 4%;
+    /* Sidebar specific tokens - dark mode premium professional */
+    --sidebar-background: 222 47% 8%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 221 83% 60%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 217.2 32.6% 12%;
+    --sidebar-accent: 222 40% 14%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 12%;
-    --sidebar-ring: 221 83% 53%;
-    --sidebar-muted: 217.2 32.6% 10%;
-    --sidebar-muted-foreground: 215 20.2% 65.1%;
+    --sidebar-border: 222 30% 15%;
+    --sidebar-ring: 221 83% 60%;
+    --sidebar-muted: 222 35% 12%;
+    --sidebar-muted-foreground: 220 15% 60%;
+    --sidebar-header-bg: 222 45% 10%;
+    --sidebar-group-hover: 222 40% 12%;
+    --sidebar-item-active-bg: 221 83% 53%;
+    --sidebar-item-active-glow: 221 83% 45%;
     
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--muted)));

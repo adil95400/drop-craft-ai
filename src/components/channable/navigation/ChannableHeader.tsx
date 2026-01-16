@@ -1,6 +1,6 @@
 /**
- * ChannableHeader - Header navigation avec design Channable Premium
- * Navigation horizontale complète avec tabs, recherche, actions globales
+ * ChannableHeader - Header navigation avec design Premium Professionnel
+ * Navigation horizontale élégante, recherche globale, actions rapides
  */
 import { memo, useState, useCallback, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -9,7 +9,7 @@ import {
   Search, Bell, Settings, ChevronRight, Home, Command, 
   User, LogOut, HelpCircle, Sparkles, Menu, Plus, Star,
   Package, ShoppingCart, BarChart3, Store, Zap, Crown,
-  MessageSquare, Filter, RefreshCw, Download, Upload
+  MessageSquare, Filter, RefreshCw, Download, Upload, Check
 } from "lucide-react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -65,16 +65,16 @@ const routeLabels: Record<string, string> = {
   'marketing': 'Marketing',
 }
 
-// Quick navigation tabs - Navigation rapide horizontale
+// Quick navigation tabs - Navigation rapide horizontale avec gradients
 const quickTabs = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home, route: '/dashboard', color: 'from-blue-500 to-cyan-500' },
-  { id: 'products', label: 'Produits', icon: Package, route: '/products', color: 'from-emerald-500 to-teal-500' },
-  { id: 'orders', label: 'Commandes', icon: ShoppingCart, route: '/orders', color: 'from-amber-500 to-orange-500' },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3, route: '/analytics', color: 'from-violet-500 to-purple-500' },
-  { id: 'stores', label: 'Boutiques', icon: Store, route: '/stores-channels', color: 'from-rose-500 to-pink-500' },
+  { id: 'dashboard', label: 'Dashboard', icon: Home, route: '/dashboard', gradient: 'from-blue-500 to-cyan-500', iconColor: 'text-blue-500' },
+  { id: 'products', label: 'Produits', icon: Package, route: '/products', gradient: 'from-emerald-500 to-teal-500', iconColor: 'text-emerald-500' },
+  { id: 'orders', label: 'Commandes', icon: ShoppingCart, route: '/orders', gradient: 'from-amber-500 to-orange-500', iconColor: 'text-amber-500' },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3, route: '/analytics', gradient: 'from-violet-500 to-purple-500', iconColor: 'text-violet-500' },
+  { id: 'stores', label: 'Boutiques', icon: Store, route: '/stores-channels', gradient: 'from-rose-500 to-pink-500', iconColor: 'text-rose-500' },
 ]
 
-// Breadcrumbs Channable améliorés
+// Breadcrumbs Premium avec animations
 const ChannableBreadcrumbs = memo(() => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -93,21 +93,21 @@ const ChannableBreadcrumbs = memo(() => {
     <nav className="flex items-center gap-1 text-sm">
       <motion.button
         onClick={() => navigate('/dashboard')}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-200"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
         <Home className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline font-medium">Accueil</span>
+        <span className="hidden sm:inline font-medium text-[13px]">Accueil</span>
       </motion.button>
       
       {breadcrumbs.map((crumb, index) => (
         <div key={crumb.path} className="flex items-center gap-1">
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
+          <ChevronRight className="h-3 w-3 text-muted-foreground/30" />
           <motion.button
             onClick={() => !crumb.isLast && navigate(crumb.path)}
             className={cn(
-              "px-2.5 py-1.5 rounded-lg transition-all duration-200",
+              "px-2.5 py-1.5 rounded-lg transition-all duration-200 text-[13px]",
               crumb.isLast 
                 ? "font-semibold text-foreground bg-primary/10 border border-primary/20" 
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -124,7 +124,7 @@ const ChannableBreadcrumbs = memo(() => {
 })
 ChannableBreadcrumbs.displayName = 'ChannableBreadcrumbs'
 
-// Navigation horizontale avec onglets
+// Navigation horizontale Premium avec onglets animés
 const HorizontalNavTabs = memo(() => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -134,46 +134,46 @@ const HorizontalNavTabs = memo(() => {
   }
   
   return (
-    <div className="hidden lg:flex items-center gap-1 px-1">
+    <div className="hidden lg:flex items-center gap-0.5 p-1 bg-muted/30 dark:bg-muted/20 rounded-xl border border-border/30">
       {quickTabs.map((tab) => {
         const Icon = tab.icon
         const active = isActive(tab.route)
         
         return (
           <TooltipProvider key={tab.id}>
-            <Tooltip>
+            <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <motion.button
                   onClick={() => navigate(tab.route)}
                   className={cn(
-                    "relative flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+                    "relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                     active 
-                      ? "text-foreground" 
+                      ? "text-white shadow-md" 
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: active ? 1 : 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Icon className={cn("h-4 w-4", active && "text-primary")} />
-                  <span className="hidden xl:inline">{tab.label}</span>
-                  
                   {active && (
                     <motion.div
-                      layoutId="activeTab"
+                      layoutId="activeNavTab"
                       className={cn(
-                        "absolute inset-0 rounded-xl bg-gradient-to-r opacity-10",
-                        tab.color
+                        "absolute inset-0 rounded-lg bg-gradient-to-r shadow-lg",
+                        tab.gradient
                       )}
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
                     />
                   )}
-                  {active && (
-                    <motion.div
-                      layoutId="activeTabBorder"
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-                    />
-                  )}
+                  <Icon className={cn(
+                    "relative h-4 w-4 z-10",
+                    active ? "text-white" : tab.iconColor
+                  )} />
+                  <span className={cn(
+                    "relative hidden xl:inline z-10",
+                    active && "text-white"
+                  )}>
+                    {tab.label}
+                  </span>
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="xl:hidden">
@@ -188,7 +188,7 @@ const HorizontalNavTabs = memo(() => {
 })
 HorizontalNavTabs.displayName = 'HorizontalNavTabs'
 
-// Recherche globale Command Palette améliorée
+// Recherche globale Premium avec Command Palette
 const GlobalSearch = memo(() => {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
@@ -221,13 +221,18 @@ const GlobalSearch = memo(() => {
           variant="outline"
           size="sm"
           onClick={() => setOpen(true)}
-          className="hidden sm:flex items-center gap-2 h-9 px-4 bg-muted/40 border-border/50 hover:bg-muted/60 hover:border-primary/30 rounded-xl shadow-sm transition-all duration-200"
+          className="hidden sm:flex items-center gap-2.5 h-9 px-4 bg-muted/30 dark:bg-muted/20 border-border/40 hover:bg-muted/50 hover:border-primary/30 rounded-xl shadow-sm transition-all duration-200 group"
         >
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Rechercher...</span>
-          <kbd className="ml-3 pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-md border border-border/50 bg-background/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground shadow-sm">
-            <Command className="h-3 w-3" />K
-          </kbd>
+          <Search className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Rechercher...</span>
+          <div className="ml-2 flex items-center gap-0.5">
+            <kbd className="inline-flex h-5 items-center gap-0.5 rounded-md border border-border/50 bg-background/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground/70 shadow-sm">
+              <Command className="h-3 w-3" />
+            </kbd>
+            <kbd className="inline-flex h-5 items-center gap-0.5 rounded-md border border-border/50 bg-background/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground/70 shadow-sm">
+              K
+            </kbd>
+          </div>
         </Button>
       </motion.div>
       
@@ -241,29 +246,45 @@ const GlobalSearch = memo(() => {
       </Button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Rechercher un module, une action..." className="h-12" />
-        <CommandList className="max-h-[400px]">
+        <CommandInput placeholder="Rechercher un module, une action..." className="h-12 text-base" />
+        <CommandList className="max-h-[450px]">
           <CommandEmpty>
-            <div className="flex flex-col items-center py-6 text-muted-foreground">
-              <Search className="h-10 w-10 mb-2 opacity-50" />
-              <p>Aucun résultat trouvé.</p>
+            <div className="flex flex-col items-center py-8 text-muted-foreground">
+              <Search className="h-12 w-12 mb-3 opacity-40" />
+              <p className="text-sm font-medium">Aucun résultat trouvé</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Essayez avec d'autres termes</p>
             </div>
           </CommandEmpty>
           
           {/* Quick Actions */}
           <CommandGroup heading="Actions rapides">
-            <CommandItem onSelect={() => handleSelect('/products/new')} className="cursor-pointer">
-              <Plus className="mr-2 h-4 w-4 text-emerald-500" />
-              <span>Nouveau produit</span>
-              <kbd className="ml-auto text-[10px] text-muted-foreground">⌘N</kbd>
+            <CommandItem onSelect={() => handleSelect('/products/new')} className="cursor-pointer py-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mr-3">
+                <Plus className="h-4 w-4 text-emerald-500" />
+              </div>
+              <div className="flex-1">
+                <span className="font-medium">Nouveau produit</span>
+                <p className="text-xs text-muted-foreground mt-0.5">Créer un nouveau produit</p>
+              </div>
+              <kbd className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">⌘N</kbd>
             </CommandItem>
-            <CommandItem onSelect={() => handleSelect('/import')} className="cursor-pointer">
-              <Upload className="mr-2 h-4 w-4 text-blue-500" />
-              <span>Importer des données</span>
+            <CommandItem onSelect={() => handleSelect('/import')} className="cursor-pointer py-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mr-3">
+                <Upload className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="flex-1">
+                <span className="font-medium">Importer des données</span>
+                <p className="text-xs text-muted-foreground mt-0.5">Import CSV, Excel ou API</p>
+              </div>
             </CommandItem>
-            <CommandItem onSelect={() => handleSelect('/analytics')} className="cursor-pointer">
-              <BarChart3 className="mr-2 h-4 w-4 text-violet-500" />
-              <span>Voir les analytics</span>
+            <CommandItem onSelect={() => handleSelect('/analytics')} className="cursor-pointer py-3">
+              <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center mr-3">
+                <BarChart3 className="h-4 w-4 text-violet-500" />
+              </div>
+              <div className="flex-1">
+                <span className="font-medium">Voir les analytics</span>
+                <p className="text-xs text-muted-foreground mt-0.5">Tableaux de bord et rapports</p>
+              </div>
             </CommandItem>
           </CommandGroup>
           
@@ -277,19 +298,21 @@ const GlobalSearch = memo(() => {
                   <CommandItem
                     key={module.id}
                     onSelect={() => handleSelect(module.route)}
-                    className="cursor-pointer"
+                    className="cursor-pointer py-2.5"
                   >
-                    <Sparkles className="mr-2 h-4 w-4 text-primary" />
-                    <span>{module.name}</span>
+                    <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center mr-3">
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <span className="font-medium">{module.name}</span>
                     {module.badge && (
                       <Badge 
                         variant="secondary" 
                         className={cn(
-                          "ml-auto text-[10px]",
-                          module.badge === 'pro' && "bg-amber-500/10 text-amber-600 border-amber-500/20",
-                          module.badge === 'new' && "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-                          module.badge === 'beta' && "bg-blue-500/10 text-blue-600 border-blue-500/20",
-                          module.badge === 'ultra' && "bg-violet-500/10 text-violet-600 border-violet-500/20"
+                          "ml-auto text-[9px] font-bold uppercase",
+                          module.badge === 'pro' && "bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-600 border-amber-500/30",
+                          module.badge === 'new' && "bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-600 border-emerald-500/30",
+                          module.badge === 'beta' && "bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-600 border-blue-500/30",
+                          module.badge === 'ultra' && "bg-gradient-to-r from-violet-500/20 to-purple-500/20 text-violet-600 border-violet-500/30"
                         )}
                       >
                         {module.badge}
@@ -307,7 +330,7 @@ const GlobalSearch = memo(() => {
 })
 GlobalSearch.displayName = 'GlobalSearch'
 
-// Quick Actions Button
+// Quick Actions Button Premium
 const QuickActionsButton = memo(() => {
   const navigate = useNavigate()
   
@@ -317,33 +340,53 @@ const QuickActionsButton = memo(() => {
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button 
             size="icon" 
-            className="h-9 w-9 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
+            className="h-9 w-9 rounded-xl bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-500 shadow-lg shadow-primary/25 border-0"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 text-white" />
           </Button>
         </motion.div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
+      <DropdownMenuContent align="end" className="w-60 p-2">
+        <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold px-2 pb-2">
           Actions rapides
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate('/products/new')} className="cursor-pointer">
-            <Package className="mr-2 h-4 w-4 text-emerald-500" />
-            <span>Nouveau produit</span>
+        <DropdownMenuSeparator className="mb-2" />
+        <DropdownMenuGroup className="space-y-1">
+          <DropdownMenuItem onClick={() => navigate('/products/new')} className="cursor-pointer rounded-lg py-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mr-3">
+              <Package className="h-4 w-4 text-emerald-500" />
+            </div>
+            <div>
+              <span className="font-medium">Nouveau produit</span>
+              <p className="text-[10px] text-muted-foreground">Ajouter au catalogue</p>
+            </div>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/orders/new')} className="cursor-pointer">
-            <ShoppingCart className="mr-2 h-4 w-4 text-amber-500" />
-            <span>Nouvelle commande</span>
+          <DropdownMenuItem onClick={() => navigate('/orders/new')} className="cursor-pointer rounded-lg py-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center mr-3">
+              <ShoppingCart className="h-4 w-4 text-amber-500" />
+            </div>
+            <div>
+              <span className="font-medium">Nouvelle commande</span>
+              <p className="text-[10px] text-muted-foreground">Créer manuellement</p>
+            </div>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/import')} className="cursor-pointer">
-            <Upload className="mr-2 h-4 w-4 text-blue-500" />
-            <span>Importer</span>
+          <DropdownMenuItem onClick={() => navigate('/import')} className="cursor-pointer rounded-lg py-2.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mr-3">
+              <Upload className="h-4 w-4 text-blue-500" />
+            </div>
+            <div>
+              <span className="font-medium">Importer</span>
+              <p className="text-[10px] text-muted-foreground">CSV, Excel, API</p>
+            </div>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/feeds/new')} className="cursor-pointer">
-            <Zap className="mr-2 h-4 w-4 text-violet-500" />
-            <span>Nouveau feed</span>
+          <DropdownMenuItem onClick={() => navigate('/feeds/new')} className="cursor-pointer rounded-lg py-2.5">
+            <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center mr-3">
+              <Zap className="h-4 w-4 text-violet-500" />
+            </div>
+            <div>
+              <span className="font-medium">Nouveau feed</span>
+              <p className="text-[10px] text-muted-foreground">Flux de données</p>
+            </div>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
@@ -352,14 +395,20 @@ const QuickActionsButton = memo(() => {
 })
 QuickActionsButton.displayName = 'QuickActionsButton'
 
-// Notifications Dropdown amélioré
+// Notifications Dropdown Premium
 const NotificationsDropdown = memo(() => {
   const [hasNew, setHasNew] = useState(true)
   const notifications = [
-    { title: "Import terminé", desc: "245 produits importés avec succès", time: "Il y a 5 min", type: "success" },
-    { title: "Alerte stock", desc: "15 produits en rupture de stock", time: "Il y a 1h", type: "warning" },
-    { title: "Nouveau message", desc: "Support client - Réponse requise", time: "Il y a 3h", type: "info" },
+    { title: "Import terminé", desc: "245 produits importés avec succès", time: "Il y a 5 min", type: "success", icon: Check },
+    { title: "Alerte stock", desc: "15 produits en rupture de stock", time: "Il y a 1h", type: "warning", icon: Package },
+    { title: "Nouveau message", desc: "Support client - Réponse requise", time: "Il y a 3h", type: "info", icon: MessageSquare },
   ]
+  
+  const typeStyles = {
+    success: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', dot: 'bg-emerald-500' },
+    warning: { bg: 'bg-amber-500/10', text: 'text-amber-500', dot: 'bg-amber-500' },
+    info: { bg: 'bg-blue-500/10', text: 'text-blue-500', dot: 'bg-blue-500' },
+  }
   
   return (
     <DropdownMenu>
@@ -369,7 +418,7 @@ const NotificationsDropdown = memo(() => {
             <Bell className="h-4 w-4" />
             {hasNew && (
               <motion.span
-                className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-background"
+                className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-background"
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
@@ -377,41 +426,44 @@ const NotificationsDropdown = memo(() => {
           </Button>
         </motion.div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
-          <span className="font-semibold">Notifications</span>
-          <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px]">
+      <DropdownMenuContent align="end" className="w-80 p-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/20">
+          <span className="font-semibold text-sm">Notifications</span>
+          <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] font-semibold">
             3 nouvelles
           </Badge>
         </div>
-        <div className="py-2 max-h-[300px] overflow-auto">
-          {notifications.map((notif, i) => (
-            <motion.div
-              key={i}
-              className="px-4 py-3 hover:bg-muted/50 cursor-pointer transition-colors"
-              whileHover={{ x: 2 }}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <div className="flex items-start gap-3">
-                <div className={cn(
-                  "w-2 h-2 rounded-full mt-2 flex-shrink-0",
-                  notif.type === 'success' && "bg-emerald-500",
-                  notif.type === 'warning' && "bg-amber-500",
-                  notif.type === 'info' && "bg-blue-500"
-                )} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{notif.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{notif.desc}</p>
-                  <p className="text-[10px] text-muted-foreground/60 mt-1">{notif.time}</p>
+        <div className="py-1 max-h-[320px] overflow-auto">
+          {notifications.map((notif, i) => {
+            const style = typeStyles[notif.type as keyof typeof typeStyles]
+            const NotifIcon = notif.icon
+            
+            return (
+              <motion.div
+                key={i}
+                className="px-3 py-3 hover:bg-muted/30 cursor-pointer transition-colors"
+                whileHover={{ x: 2 }}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", style.bg)}>
+                    <NotifIcon className={cn("h-4 w-4", style.text)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{notif.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{notif.desc}</p>
+                    <p className="text-[10px] text-muted-foreground/50 mt-1">{notif.time}</p>
+                  </div>
+                  <div className={cn("w-2 h-2 rounded-full mt-2", style.dot)} />
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            )
+          })}
         </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="justify-center py-3 text-primary cursor-pointer font-medium">
+        <DropdownMenuSeparator className="my-0" />
+        <DropdownMenuItem className="justify-center py-3 text-primary cursor-pointer font-medium text-sm">
           <MessageSquare className="mr-2 h-4 w-4" />
           Voir toutes les notifications
         </DropdownMenuItem>
@@ -421,84 +473,96 @@ const NotificationsDropdown = memo(() => {
 })
 NotificationsDropdown.displayName = 'NotificationsDropdown'
 
-// User Menu Dropdown amélioré
+// User Menu Dropdown Premium
 const UserMenuDropdown = memo(() => {
   const { profile, user, signOut } = useUnifiedAuth()
   const navigate = useNavigate()
   
-  const planColors: Record<string, string> = {
-    'ultra_pro': 'bg-gradient-to-r from-amber-500 to-orange-500 text-white',
-    'pro': 'bg-gradient-to-r from-violet-500 to-purple-500 text-white',
-    'standard': 'bg-muted text-muted-foreground',
+  const planStyles: Record<string, { gradient: string; badge: string }> = {
+    'ultra_pro': { gradient: 'from-amber-500 to-orange-500', badge: 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-600 border-amber-500/30' },
+    'pro': { gradient: 'from-violet-500 to-purple-500', badge: 'bg-gradient-to-r from-violet-500/20 to-purple-500/20 text-violet-600 border-violet-500/30' },
+    'standard': { gradient: 'from-slate-500 to-zinc-500', badge: 'bg-muted text-muted-foreground' },
   }
+  
+  const currentPlanStyle = planStyles[profile?.plan || 'standard'] || planStyles.standard
   
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button variant="ghost" size="sm" className="h-9 gap-2 px-2 rounded-xl hover:bg-muted/50">
+          <Button variant="ghost" size="sm" className="h-9 gap-2.5 px-2 rounded-xl hover:bg-muted/50">
             <div className="relative">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center text-primary-foreground font-bold text-sm shadow-lg shadow-primary/20">
+              <div className={cn(
+                "w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg",
+                currentPlanStyle.gradient
+              )}>
                 {profile?.full_name?.[0]?.toUpperCase() || 'U'}
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background" />
             </div>
-            <div className="hidden md:flex flex-col items-start">
-              <span className="text-sm font-medium max-w-[100px] truncate leading-tight">
+            <div className="hidden md:block text-left">
+              <p className="text-xs font-semibold truncate max-w-[100px]">
                 {profile?.full_name || 'Utilisateur'}
-              </span>
-              <span className="text-[10px] text-muted-foreground leading-tight">
+              </p>
+              <p className="text-[10px] text-muted-foreground capitalize">
                 {profile?.plan || 'Standard'}
-              </span>
+              </p>
             </div>
           </Button>
         </motion.div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
-        <div className="px-4 py-3 border-b bg-gradient-to-r from-muted/50 to-muted/30">
+      <DropdownMenuContent align="end" className="w-64 p-2">
+        {/* User Info Header */}
+        <div className="px-3 py-3 mb-2 rounded-lg bg-muted/30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-lg">
+            <div className={cn(
+              "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-lg",
+              currentPlanStyle.gradient
+            )}>
               {profile?.full_name?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate">{profile?.full_name || 'Utilisateur'}</p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email || ''}</p>
+              <p className="text-sm font-semibold truncate">{profile?.full_name || 'Utilisateur'}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              <Badge className={cn("mt-1 text-[9px] uppercase", currentPlanStyle.badge)}>
+                <Crown className="h-2.5 w-2.5 mr-1" />
+                {profile?.plan || 'Standard'}
+              </Badge>
             </div>
-          </div>
-          <div className="mt-3">
-            <Badge className={cn(
-              "text-[10px] font-medium",
-              planColors[profile?.plan || 'standard'] || planColors.standard
-            )}>
-              <Crown className="mr-1 h-3 w-3" />
-              {profile?.plan?.replace('_', ' ').toUpperCase() || 'STANDARD'} PLAN
-            </Badge>
           </div>
         </div>
         
-        <DropdownMenuGroup className="py-2">
-          <DropdownMenuItem onClick={() => navigate('/settings/profile')} className="cursor-pointer py-2.5">
+        <DropdownMenuGroup className="space-y-1">
+          <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer rounded-lg py-2.5">
             <User className="mr-3 h-4 w-4 text-muted-foreground" />
-            <span>Mon profil</span>
+            <span className="font-medium">Mon profil</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer py-2.5">
+          <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer rounded-lg py-2.5">
             <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
-            <span>Paramètres</span>
+            <span className="font-medium">Paramètres</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer py-2.5">
+          <DropdownMenuItem onClick={() => navigate('/support')} className="cursor-pointer rounded-lg py-2.5">
             <HelpCircle className="mr-3 h-4 w-4 text-muted-foreground" />
-            <span>Aide & Support</span>
+            <span className="font-medium">Aide & Support</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="my-2" />
+        
+        <DropdownMenuItem onClick={() => navigate('/pricing')} className="cursor-pointer rounded-lg py-2.5 bg-gradient-to-r from-primary/5 to-violet-500/5 hover:from-primary/10 hover:to-violet-500/10">
+          <Sparkles className="mr-3 h-4 w-4 text-primary" />
+          <span className="font-medium text-primary">Passer à Pro</span>
+          <Crown className="ml-auto h-4 w-4 text-amber-500" />
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator className="my-2" />
         
         <DropdownMenuItem 
-          onClick={() => signOut()} 
-          className="text-destructive cursor-pointer py-2.5 focus:text-destructive focus:bg-destructive/10"
+          onClick={() => signOut?.()}
+          className="cursor-pointer rounded-lg py-2.5 text-rose-600 hover:text-rose-700 hover:bg-rose-500/10"
         >
           <LogOut className="mr-3 h-4 w-4" />
-          <span>Déconnexion</span>
+          <span className="font-medium">Déconnexion</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -506,70 +570,37 @@ const UserMenuDropdown = memo(() => {
 })
 UserMenuDropdown.displayName = 'UserMenuDropdown'
 
-// Header principal Channable
-export const ChannableHeader = memo(({ className }: { className?: string }) => {
+// Composant principal Header Premium
+export const ChannableHeader = memo(() => {
   return (
-    <motion.header
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cn(
-        "sticky top-0 z-50 w-full",
-        "border-b border-border/40",
-        "bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80",
-        className
-      )}
-    >
-      {/* Main Navigation Row */}
-      <div className="flex h-14 items-center justify-between px-4 gap-4">
-        {/* Left: Sidebar trigger + Logo indicator */}
-        <div className="flex items-center gap-3">
-          <SidebarTrigger className="h-9 w-9 rounded-xl hover:bg-muted/50 transition-colors" />
-          
-          {/* Brand indicator (mobile) */}
-          <div className="flex md:hidden items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-              <Zap className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-sm">Commerce Hub</span>
-          </div>
+    <header className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-14 items-center gap-4 px-4">
+        {/* Sidebar Trigger */}
+        <SidebarTrigger className="h-9 w-9 rounded-xl hover:bg-muted/50 transition-colors" />
+        
+        <Separator orientation="vertical" className="h-6 hidden md:block bg-border/40" />
+        
+        {/* Breadcrumbs */}
+        <div className="hidden md:flex flex-1 items-center">
+          <ChannableBreadcrumbs />
         </div>
         
-        {/* Center: Horizontal Navigation Tabs */}
+        {/* Navigation horizontale - Desktop */}
         <HorizontalNavTabs />
         
-        {/* Right: Search + Actions */}
+        {/* Spacer */}
+        <div className="flex-1 md:hidden" />
+        
+        {/* Actions de droite */}
         <div className="flex items-center gap-2">
           <GlobalSearch />
           <QuickActionsButton />
-          
-          <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block" />
-          
           <NotificationsDropdown />
+          <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block bg-border/40" />
           <UserMenuDropdown />
         </div>
       </div>
-      
-      {/* Breadcrumbs Row (desktop only) */}
-      <div className="hidden md:flex h-10 items-center px-4 border-t border-border/20 bg-muted/20">
-        <ChannableBreadcrumbs />
-        
-        {/* Quick filters / actions */}
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground">
-            <Filter className="h-3 w-3" />
-            Filtres
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground">
-            <RefreshCw className="h-3 w-3" />
-            Actualiser
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground">
-            <Download className="h-3 w-3" />
-            Exporter
-          </Button>
-        </div>
-      </div>
-    </motion.header>
+    </header>
   )
 })
 ChannableHeader.displayName = 'ChannableHeader'
