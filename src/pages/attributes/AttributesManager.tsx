@@ -9,12 +9,59 @@ import {
   Sparkles,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Target,
+  TrendingUp
 } from 'lucide-react'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { motion } from 'framer-motion'
+
+const StatCard = ({ 
+  title, 
+  value, 
+  subtitle, 
+  icon: Icon,
+  color = 'primary'
+}: { 
+  title: string
+  value: string | number
+  subtitle: string
+  icon: any
+  color?: 'primary' | 'green' | 'blue' | 'yellow'
+}) => {
+  const colorClasses = {
+    primary: 'bg-primary/10 text-primary',
+    green: 'bg-green-500/10 text-green-600',
+    blue: 'bg-blue-500/10 text-blue-600',
+    yellow: 'bg-yellow-500/10 text-yellow-600'
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.2 }}
+    >
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+          <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
+            <Icon className="h-4 w-4" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{value}</div>
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        </CardContent>
+      </Card>
+    </motion.div>
+  )
+}
 
 export default function AttributesManager() {
   const navigate = useNavigate()
@@ -69,140 +116,147 @@ export default function AttributesManager() {
 
   const approvedCount = attributes?.filter((a: any) => a.is_approved).length || 0
   const totalAttributes = attributes?.length || 0
+  const avgConfidence = attributes && attributes.length > 0
+    ? Math.round((attributes.reduce((sum, a) => sum + (a.confidence_score || 0), 0) / attributes.length) * 100)
+    : 0
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Button variant="ghost" onClick={() => navigate('/audit')} className="mb-2">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Button>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Tag className="h-8 w-8 text-primary" />
-            Gestionnaire d'Attributs IA
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Catégorisation et optimisation pour Google AI / ChatGPT Shopping
-          </p>
-        </div>
-      </div>
-
+    <ChannablePageWrapper
+      title="Gestionnaire d'Attributs IA"
+      subtitle="Catégorisation et optimisation pour Google AI / ChatGPT Shopping"
+      heroImage="schema"
+      actions={
+        <Button variant="outline" onClick={() => navigate('/audit')} className="gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Retour
+        </Button>
+      }
+    >
+      {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Attributs Générés</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalAttributes}</div>
-            <p className="text-xs text-muted-foreground">Produits avec attributs IA</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Approuvés</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
-            <p className="text-xs text-muted-foreground">Prêts pour indexation</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">En attente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{totalAttributes - approvedCount}</div>
-            <p className="text-xs text-muted-foreground">À valider</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Confiance Moy.</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {attributes && attributes.length > 0
-                ? Math.round((attributes.reduce((sum, a) => sum + (a.confidence_score || 0), 0) / attributes.length) * 100)
-                : 0}%
-            </div>
-            <p className="text-xs text-muted-foreground">Catégorisation IA</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Attributs Générés"
+          value={totalAttributes}
+          subtitle="Produits avec attributs IA"
+          icon={Tag}
+        />
+        <StatCard
+          title="Approuvés"
+          value={approvedCount}
+          subtitle="Prêts pour indexation"
+          icon={CheckCircle2}
+          color="green"
+        />
+        <StatCard
+          title="En Attente"
+          value={totalAttributes - approvedCount}
+          subtitle="À valider"
+          icon={AlertCircle}
+          color="yellow"
+        />
+        <StatCard
+          title="Confiance Moy."
+          value={`${avgConfidence}%`}
+          subtitle="Catégorisation IA"
+          icon={Target}
+          color="blue"
+        />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Attributs par Produit</CardTitle>
-          <CardDescription>Catégories IA et statut d'indexation shopping</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-12 text-muted-foreground">Chargement...</div>
-          ) : !attributes || attributes.length === 0 ? (
-            <div className="text-center py-12">
-              <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Aucun attribut généré</h3>
-              <p className="text-muted-foreground mb-4">
-                Commencez par générer des attributs pour vos produits
-              </p>
-              <Button onClick={() => navigate('/audit/products')}>
-                <Sparkles className="mr-2 h-4 w-4" />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Tag className="h-5 w-5 text-primary" />
+                  </div>
+                  Attributs par Produit
+                </CardTitle>
+                <CardDescription>Catégories IA et statut d'indexation shopping</CardDescription>
+              </div>
+              <Button onClick={() => navigate('/audit/products')} className="gap-2">
+                <Sparkles className="h-4 w-4" />
                 Générer des Attributs
               </Button>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {attributes.map((attr) => (
-                <div
-                  key={attr.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="font-medium">
-                        Produit {attr.product_id?.slice(0, 8)}
-                      </div>
-                      {attr.confidence_score && (
-                        <Badge variant="outline">
-                          {Math.round(attr.confidence_score * 100)}% confiance
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Badge>{attr.attribute_type}</Badge>
-                      <Badge variant="secondary">{attr.attribute_key}</Badge>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <div className="text-xs text-muted-foreground mb-1">Status</div>
-                      {attr.is_approved ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-600 mx-auto" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500 mx-auto" />
-                      )}
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => analyzeReadiness.mutate(attr.product_id)}
-                      disabled={analyzeReadiness.isPending}
-                    >
-                      <AlertCircle className="mr-2 h-4 w-4" />
-                      Analyser
-                    </Button>
-                  </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center py-12 text-muted-foreground">Chargement...</div>
+            ) : !attributes || attributes.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
+                  <Tag className="h-12 w-12 text-muted-foreground" />
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                <h3 className="text-lg font-semibold mb-2">Aucun attribut généré</h3>
+                <p className="text-muted-foreground mb-4">
+                  Commencez par générer des attributs pour vos produits
+                </p>
+                <Button onClick={() => navigate('/audit/products')} className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Générer des Attributs
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {attributes.map((attr, index) => (
+                  <motion.div
+                    key={attr.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium">
+                          Produit {attr.product_id?.slice(0, 8)}
+                        </div>
+                        {attr.confidence_score && (
+                          <Badge variant="outline" className="text-xs">
+                            {Math.round(attr.confidence_score * 100)}% confiance
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Badge>{attr.attribute_type}</Badge>
+                        <Badge variant="secondary">{attr.attribute_key}</Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <div className="text-xs text-muted-foreground mb-1">Status</div>
+                        {attr.is_approved ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600 mx-auto" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-500 mx-auto" />
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => analyzeReadiness.mutate(attr.product_id)}
+                        disabled={analyzeReadiness.isPending}
+                        className="gap-2"
+                      >
+                        <TrendingUp className="h-4 w-4" />
+                        Analyser
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </ChannablePageWrapper>
   )
 }
