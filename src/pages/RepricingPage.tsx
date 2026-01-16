@@ -3,20 +3,80 @@ import { CompetitorRepricingPanel } from '@/components/repricing/CompetitorRepri
 import { RepricingSchedulePanel } from '@/components/repricing/RepricingSchedulePanel';
 import { RepricingLogsPanel } from '@/components/repricing/RepricingLogsPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, Users, Calendar, FileText } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, Users, Calendar, FileText, Target, DollarSign, Zap } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { motion } from 'framer-motion';
+
+const StatCard = ({ 
+  title, 
+  value, 
+  subtitle, 
+  icon: Icon 
+}: { 
+  title: string
+  value: string | number
+  subtitle: string
+  icon: any
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.02 }}
+    transition={{ duration: 0.2 }}
+  >
+    <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      </CardContent>
+    </Card>
+  </motion.div>
+)
 
 export default function RepricingPage() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Repricing Dynamique</h1>
-        <p className="text-muted-foreground">
-          Optimisez vos prix automatiquement en fonction de la concurrence et de vos marges
-        </p>
+    <ChannablePageWrapper
+      title="Repricing Dynamique"
+      subtitle="Optimisez vos prix automatiquement en fonction de la concurrence et de vos marges"
+      heroImage="automation"
+    >
+      {/* Stats */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <StatCard
+          title="Règles Actives"
+          value="8"
+          subtitle="Stratégies en cours"
+          icon={Target}
+        />
+        <StatCard
+          title="Produits Monitorés"
+          value="1,456"
+          subtitle="Surveillance continue"
+          icon={TrendingUp}
+        />
+        <StatCard
+          title="Repricing Aujourd'hui"
+          value="234"
+          subtitle="Modifications auto"
+          icon={Zap}
+        />
+        <StatCard
+          title="Gain Marge"
+          value="+5.2%"
+          subtitle="Ce mois"
+          icon={DollarSign}
+        />
       </div>
 
       <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-muted/50 backdrop-blur-sm">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             Dashboard
@@ -51,6 +111,6 @@ export default function RepricingPage() {
           <RepricingLogsPanel />
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }

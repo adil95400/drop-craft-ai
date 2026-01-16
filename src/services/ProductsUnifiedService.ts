@@ -223,40 +223,12 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table premium_products - Produits premium depuis fournisseurs premium
+   * Table premium_products - NON EXISTANTE - Retourner tableau vide
+   * Cette table n'existe pas dans la base de données actuelle
    */
   private static async getPremiumProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    try {
-      const { data, error } = await (supabase as any)
-        .from('premium_products')
-        .select('*')
-        .limit(options?.limit || PRODUCT_FETCH_LIMIT)
-
-      if (error) throw error
-
-      return (data || []).map((p: any) => ({
-        id: p.id,
-        name: p.name || p.title || 'Produit sans nom',
-        description: p.description || undefined,
-        price: p.price || 0,
-        cost_price: p.cost_price || p.wholesale_price || undefined,
-        status: 'active' as 'active' | 'inactive',
-        stock_quantity: p.stock_quantity || undefined,
-        sku: p.sku || undefined,
-        category: p.category || undefined,
-        image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : (p.image_url || undefined),
-        images: Array.isArray(p.images) ? p.images : (p.image_url ? [p.image_url] : []),
-        profit_margin: p.profit_margin || undefined,
-        user_id: userId,
-        source: 'premium' as const,
-        variants: [] as ProductVariant[],
-        created_at: p.created_at || new Date().toISOString(),
-        updated_at: p.updated_at || new Date().toISOString()
-      }))
-    } catch (error) {
-      console.error('Error loading premium_products:', error)
-      return []
-    }
+    // Table premium_products n'existe pas - retourner un tableau vide silencieusement
+    return []
   }
 
   /**
@@ -306,42 +278,12 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table published_products - Produits publiés sur marketplace
+   * Table published_products - NON EXISTANTE - Retourner tableau vide
+   * Cette table n'existe pas dans la base de données actuelle
    */
   private static async getPublishedProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
-    try {
-      const { data, error } = await (supabase as any)
-        .from('published_products')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit)
-
-      if (error) throw error
-
-      return (data || []).map((p: any) => ({
-        id: p.id,
-        name: p.title || p.name || 'Produit sans nom',
-        description: p.description,
-        price: p.price || p.price_override || 0,
-        cost_price: p.cost_price,
-        status: 'active' as 'active' | 'inactive',
-        stock_quantity: p.stock_quantity,
-        sku: p.sku,
-        category: p.category,
-        image_url: p.image_url,
-        images: p.image_url ? [p.image_url] : [],
-        profit_margin: p.profit_margin,
-        user_id: userId,
-        source: 'published' as const,
-        created_at: p.created_at || new Date().toISOString(),
-        updated_at: p.updated_at || new Date().toISOString()
-      }))
-    } catch (error) {
-      console.error('Error loading published_products:', error)
-      return []
-    }
+    // Table published_products n'existe pas - retourner un tableau vide silencieusement
+    return []
   }
 
   /**
