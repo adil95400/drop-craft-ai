@@ -112,8 +112,86 @@ serve(async (req) => {
       const productList = products || []
       console.log('[extension-sync-realtime] Processing', productList.length, 'products')
 
+      // Helper to parse price from various formats
+      const parsePrice = (priceInput: unknown): number => {
+        if (typeof priceInput === 'number') return priceInput;
+        if (!priceInput || typeof priceInput !== 'string') return 0;
+        
+        // Remove currency symbols, spaces, and handle European format
+        const cleanPrice = priceInput
+          .replace(/[€$£¥₹₽]/g, '')
+          .replace(/\s+/g, '')
+          .trim();
+        
+        // Handle European format (1.234,56 or 1 234,56)
+        if (cleanPrice.includes(',') && !cleanPrice.includes('.')) {
+          // Simple comma as decimal separator: 598,99 -> 598.99
+          return parseFloat(cleanPrice.replace(',', '.')) || 0;
+        } else if (cleanPrice.includes(',') && cleanPrice.includes('.')) {
+          // European thousand separator: 1.234,56 -> 1234.56
+          return parseFloat(cleanPrice.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+        
+        return parseFloat(cleanPrice) || 0;
+      }
+
+      // Helper to clean product title
+      const cleanTitle = (title: unknown): string => {
+        if (!title || typeof title !== 'string') return 'Produit importé';
+        
+        // Remove unwanted patterns like keyboard shortcuts
+        let cleaned = title
+          .replace(/Raccourci clavier[\s\S]*$/i, '')
+          .replace(/shift\s*\+[\s\S]*$/i, '')
+          .replace(/alt\s*\+[\s\S]*$/i, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        // If title is too short or empty after cleaning, use fallback
+        if (cleaned.length < 5) {
+          return 'Produit importé';
+        }
+        
+        // Limit title length
+        return cleaned.substring(0, 500);
+      }
+
+      // Helper to validate image URL
+      const validateImageUrl = (url: unknown): string => {
+        if (!url || typeof url !== 'string') return '';
+        
+        // Skip sprite images, pixels, and invalid URLs
+        if (url.includes('sprite') || 
+            url.includes('pixel') || 
+            url.includes('grey') ||
+            url.includes('transparent') ||
+            url.length < 20) {
+          return '';
+        }
+        
+        // Basic URL validation
+        try {
+          new URL(url);
+          return url;
+        } catch {
+          return '';
+        }
+      }
+
       for (const product of productList) {
         try {
+          const productTitle = cleanTitle(product.title || product.name);
+          const productPrice = parsePrice(product.price);
+          const productImage = validateImageUrl(product.image || product.imageUrl);
+          
+          console.log('[extension-sync-realtime] Processing product:', {
+            originalTitle: (product.title || product.name || '').substring(0, 50),
+            cleanedTitle: productTitle.substring(0, 50),
+            originalPrice: product.price,
+            cleanedPrice: productPrice,
+            hasValidImage: !!productImage
+          });
+
           // Create import job
           const { data: importJob, error: jobError } = await supabase
             .from('extension_data')
@@ -137,23 +215,24 @@ serve(async (req) => {
             .from('supplier_products')
             .insert({
               user_id: authData.user_id,
-              title: product.title || product.name || 'Produit importé',
-              price: parseFloat(product.price?.toString().replace(/[^\d.]/g, '') || '0'),
-              description: product.description || '',
-              image_url: product.image || product.imageUrl || '',
+              title: productTitle,
+              price: productPrice,
+              description: (product.description || '').substring(0, 5000),
+              image_url: productImage,
               source_url: product.url || '',
               stock_quantity: 100,
-              is_active: true
+              is_active: true,
+              category: product.category || null
             })
             .select()
             .single()
 
           if (productError) {
             console.error('[extension-sync-realtime] supplier_products insert error:', productError)
-            errors.push({ product: product.title || product.name, error: productError.message })
+            errors.push({ product: productTitle, error: productError.message })
           } else {
             importResults.push(newProduct)
-            console.log('[extension-sync-realtime] Product imported:', newProduct.id)
+            console.log('[extension-sync-realtime] Product imported:', newProduct.id, productTitle.substring(0, 50))
             
             // Update extension_data status
             await supabase
