@@ -137,18 +137,74 @@ export default function ChromeExtensionPage() {
     }
   });
 
-  // Save settings to localStorage
-  const saveSettings = () => {
+  // Save settings to localStorage and backend
+  const saveSettings = async () => {
     setIsSaving(true);
     try {
+      // Save to localStorage first
       localStorage.setItem('extension-settings', JSON.stringify(settings));
+      
+      // Sync with backend if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Store settings in extension_data table
+        const settingsToSave = JSON.parse(JSON.stringify(settings));
+        const { error } = await supabase
+          .from('extension_data')
+          .upsert([{
+            user_id: user.id,
+            data_type: 'extension_settings',
+            data: settingsToSave,
+            source_url: 'webapp',
+            status: 'active',
+            updated_at: new Date().toISOString()
+          }], {
+            onConflict: 'user_id,data_type'
+          });
+        
+        if (error) {
+          console.error('Backend sync error:', error);
+          // Still show success for localStorage save
+          toast.success('Paramètres sauvegardés localement');
+          return;
+        }
+      }
+      
       toast.success('Paramètres sauvegardés avec succès');
-    } catch {
+    } catch (error) {
+      console.error('Save error:', error);
       toast.error('Erreur lors de la sauvegarde');
     } finally {
       setIsSaving(false);
     }
   };
+
+  // Load settings from backend on mount
+  useEffect(() => {
+    const loadBackendSettings = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase
+            .from('extension_data')
+            .select('data')
+            .eq('user_id', user.id)
+            .eq('data_type', 'extension_settings')
+            .maybeSingle();
+          
+          if (data && !error && data.data) {
+            const backendSettings = data.data as unknown as ExtensionSettings;
+            setSettings(prev => ({ ...prev, ...backendSettings }));
+            localStorage.setItem('extension-settings', JSON.stringify({ ...defaultSettings, ...backendSettings }));
+          }
+        }
+      } catch (error) {
+        console.error('Load backend settings error:', error);
+      }
+    };
+    
+    loadBackendSettings();
+  }, []);
 
   const features = [
     {
