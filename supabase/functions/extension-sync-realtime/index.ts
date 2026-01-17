@@ -109,7 +109,10 @@ serve(async (req) => {
       const importResults = []
       const errors = []
 
-      for (const product of products) {
+      const productList = products || []
+      console.log('[extension-sync-realtime] Processing', productList.length, 'products')
+
+      for (const product of productList) {
         try {
           // Create import job
           const { data: importJob, error: jobError } = await supabase
@@ -118,35 +121,39 @@ serve(async (req) => {
               user_id: authData.user_id,
               data_type: 'product_scrape',
               data: product,
-              source_url: product.url,
+              source_url: product.url || '',
               status: 'pending'
             })
             .select()
             .single()
 
-          if (jobError) throw jobError
+          if (jobError) {
+            console.error('[extension-sync-realtime] extension_data insert error:', jobError)
+            throw jobError
+          }
 
-          // Try to create product directly
+          // Try to create product directly - use correct column names for supplier_products
           const { data: newProduct, error: productError } = await supabase
             .from('supplier_products')
             .insert({
               user_id: authData.user_id,
-              name: product.title || product.name,
+              title: product.title || product.name || 'Produit importé',
               price: parseFloat(product.price?.toString().replace(/[^\d.]/g, '') || '0'),
               description: product.description || '',
-              image_url: product.image,
-              source_url: product.url,
-              supplier_name: 'Extension Import',
-              status: 'active',
-              stock_quantity: 100
+              image_url: product.image || product.imageUrl || '',
+              source_url: product.url || '',
+              stock_quantity: 100,
+              is_active: true
             })
             .select()
             .single()
 
           if (productError) {
-            errors.push({ product: product.title, error: productError.message })
+            console.error('[extension-sync-realtime] supplier_products insert error:', productError)
+            errors.push({ product: product.title || product.name, error: productError.message })
           } else {
             importResults.push(newProduct)
+            console.log('[extension-sync-realtime] Product imported:', newProduct.id)
             
             // Update extension_data status
             await supabase
@@ -155,7 +162,8 @@ serve(async (req) => {
               .eq('id', importJob.id)
           }
         } catch (error) {
-          errors.push({ product: product.title || 'Unknown', error: error.message })
+          console.error('[extension-sync-realtime] Product import error:', error)
+          errors.push({ product: product.title || product.name || 'Unknown', error: error.message })
         }
       }
 
@@ -164,12 +172,14 @@ serve(async (req) => {
         user_id: authData.user_id,
         event_type: 'bulk_import',
         event_data: {
-          total: products.length,
+          total: productList.length,
           successful: importResults.length,
           failed: errors.length
         },
-        source_url: products[0]?.url
+        source_url: productList[0]?.url || ''
       })
+
+      console.log('[extension-sync-realtime] Import complete:', { imported: importResults.length, failed: errors.length })
 
       return new Response(
         JSON.stringify({ 
@@ -189,7 +199,10 @@ serve(async (req) => {
       const importResults = []
       const errors = []
 
-      for (const item of (items || [])) {
+      const itemList = items || []
+      console.log('[extension-sync-realtime] Bulk import:', itemList.length, 'items')
+
+      for (const item of itemList) {
         try {
           const { data: importJob, error: jobError } = await supabase
             .from('extension_data')
@@ -197,7 +210,7 @@ serve(async (req) => {
               user_id: authData.user_id,
               data_type: item.type || 'product_scrape',
               data: item,
-              source_url: item.url,
+              source_url: item.url || '',
               status: 'pending'
             })
             .select()
@@ -210,20 +223,19 @@ serve(async (req) => {
               .from('supplier_products')
               .insert({
                 user_id: authData.user_id,
-                name: item.title || item.name,
+                title: item.title || item.name || 'Produit importé',
                 price: parseFloat(item.price?.toString().replace(/[^\d.]/g, '') || '0'),
                 description: item.description || '',
-                image_url: item.image,
-                source_url: item.url,
-                supplier_name: item.platform || 'Extension Import',
-                status: 'active',
-                stock_quantity: 100
+                image_url: item.image || item.imageUrl || '',
+                source_url: item.url || '',
+                stock_quantity: 100,
+                is_active: true
               })
               .select()
               .single()
 
             if (productError) {
-              errors.push({ item: item.title, error: productError.message })
+              errors.push({ item: item.title || item.name, error: productError.message })
             } else {
               importResults.push(newProduct)
               await supabase
@@ -233,7 +245,7 @@ serve(async (req) => {
             }
           }
         } catch (error) {
-          errors.push({ item: item.title || 'Unknown', error: error.message })
+          errors.push({ item: item.title || item.name || 'Unknown', error: error.message })
         }
       }
 
@@ -241,7 +253,7 @@ serve(async (req) => {
         user_id: authData.user_id,
         event_type: 'bulk_import',
         event_data: {
-          total: items?.length || 0,
+          total: itemList.length,
           successful: importResults.length,
           failed: errors.length
         }
@@ -274,10 +286,10 @@ serve(async (req) => {
         .eq('user_id', authData.user_id)
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
-      // Get user plan
+      // Get user plan - use correct column name
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('subscription_plan')
         .eq('id', authData.user_id)
         .single()
 
@@ -285,7 +297,7 @@ serve(async (req) => {
         JSON.stringify({ 
           success: true,
           recentImports,
-          userPlan: profile?.plan || 'standard',
+          userPlan: profile?.subscription_plan || 'standard',
           todayStats: {
             imports: analytics?.length || 0,
             successful: analytics?.filter(a => a.event_type === 'bulk_import').reduce((sum, a) => sum + (a.event_data?.successful || 0), 0) || 0
