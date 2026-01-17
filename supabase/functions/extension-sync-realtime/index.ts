@@ -146,6 +146,82 @@ serve(async (req) => {
       )
     }
 
+    if (action === 'bulk_import') {
+      // Handle bulk import from pending items
+      const { items } = payload
+      const importResults = []
+      const errors = []
+
+      for (const item of (items || [])) {
+        try {
+          const { data: importJob, error: jobError } = await supabase
+            .from('extension_data')
+            .insert({
+              user_id: authData.user_id,
+              data_type: item.type || 'product_scrape',
+              data: item,
+              source_url: item.url,
+              status: 'pending'
+            })
+            .select()
+            .single()
+
+          if (jobError) throw jobError
+
+          if (item.type === 'product' || !item.type) {
+            const { data: newProduct, error: productError } = await supabase
+              .from('supplier_products')
+              .insert({
+                user_id: authData.user_id,
+                name: item.title || item.name,
+                price: parseFloat(item.price?.toString().replace(/[^\d.]/g, '') || '0'),
+                description: item.description || '',
+                image_url: item.image,
+                source_url: item.url,
+                supplier_name: item.platform || 'Extension Import',
+                status: 'active',
+                stock_quantity: 100
+              })
+              .select()
+              .single()
+
+            if (productError) {
+              errors.push({ item: item.title, error: productError.message })
+            } else {
+              importResults.push(newProduct)
+              await supabase
+                .from('extension_data')
+                .update({ status: 'imported', imported_product_id: newProduct.id })
+                .eq('id', importJob.id)
+            }
+          }
+        } catch (error) {
+          errors.push({ item: item.title || 'Unknown', error: error.message })
+        }
+      }
+
+      await supabase.from('extension_analytics').insert({
+        user_id: authData.user_id,
+        event_type: 'bulk_import',
+        event_data: {
+          total: items?.length || 0,
+          successful: importResults.length,
+          failed: errors.length
+        }
+      })
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          imported: importResults.length,
+          failed: errors.length,
+          results: importResults,
+          errors: errors
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     if (action === 'sync_status') {
       // Get user's import status
       const { data: recentImports } = await supabase
@@ -161,10 +237,18 @@ serve(async (req) => {
         .eq('user_id', authData.user_id)
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
+      // Get user plan
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', authData.user_id)
+        .single()
+
       return new Response(
         JSON.stringify({ 
           success: true,
           recentImports,
+          userPlan: profile?.plan || 'standard',
           todayStats: {
             imports: analytics?.length || 0,
             successful: analytics?.filter(a => a.event_type === 'bulk_import').reduce((sum, a) => sum + (a.event_data?.successful || 0), 0) || 0
