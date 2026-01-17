@@ -1012,57 +1012,688 @@ class AmazonDetector {
   }
 }
 
-// Shopify and other platform detectors (simplified)
+// Shopify detector - complete implementation
 class ShopifyDetector {
   async extractProducts() {
-    // Shopify-specific logic
-    return [];
+    const products = [];
+    const productElements = document.querySelectorAll(
+      '.product-card, .product-item, .grid-product, [data-product-id], .product'
+    );
+    
+    for (let i = 0; i < productElements.length; i++) {
+      const element = productElements[i];
+      const product = await this.extractProductFromElement(element, i);
+      if (product.name) {
+        products.push(product);
+      }
+    }
+    
+    return products;
   }
 
   async extractSingleProduct() {
-    return null;
+    return {
+      id: `shopify_${Date.now()}`,
+      name: this.getTextContent(document, ['h1', '.product-title', '.product__title', '[data-product-title]']),
+      price: this.getPriceContent(document, ['.price', '.product-price', '[data-product-price]', '.money']),
+      image: this.getImageSrc(document, ['.product__media img', '.product-featured-image', '.product-image img']),
+      description: this.getTextContent(document, ['.product-description', '.product__description', '[data-product-description]']),
+      url: window.location.href,
+      domain: window.location.hostname,
+      platform: 'shopify',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
+  }
+
+  async extractProductFromElement(element, index) {
+    return {
+      id: `shopify_list_${Date.now()}_${index}`,
+      name: this.getTextContent(element, ['h2', 'h3', '.product-title', '.card-title', 'a']),
+      price: this.getPriceContent(element, ['.price', '.money', '.product-price']),
+      image: this.getImageSrc(element, ['img']),
+      url: this.getLinkFromElement(element),
+      domain: window.location.hostname,
+      platform: 'shopify',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
   }
 
   injectOneClickButtons() {
-    // Shopify-specific button injection
+    // Always inject floating button on Shopify product pages
+    if (this.isProductPage()) {
+      this.injectProductImportButton();
+    }
+    this.injectListingButtons();
+  }
+
+  isProductPage() {
+    return window.location.pathname.includes('/products/') || 
+           document.querySelector('[data-product-id], .product-single, .product__info-container');
+  }
+
+  injectProductImportButton() {
+    if (document.querySelector('.dropcraft-import-btn')) return;
+    
+    const targetEl = document.querySelector('h1, .product-title, .product__title, [data-product-title]');
+    if (!targetEl) {
+      // Fallback: inject floating button
+      this.injectFloatingButton();
+      return;
+    }
+    
+    const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
+      this.importCurrentProduct();
+    });
+    
+    targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
+  }
+
+  injectFloatingButton() {
+    if (document.querySelector('.dropcraft-floating-btn')) return;
+    
+    const button = this.createImportButton('🚀 Importer', () => {
+      this.importCurrentProduct();
+    });
+    button.classList.add('dropcraft-floating-btn');
+    button.style.cssText += `
+      position: fixed !important;
+      bottom: 20px !important;
+      right: 20px !important;
+      z-index: 999999 !important;
+    `;
+    document.body.appendChild(button);
+  }
+
+  injectListingButtons() {
+    const productElements = document.querySelectorAll('.product-card, .product-item, .grid-product, [data-product-id]');
+    productElements.forEach((element, index) => {
+      if (element.querySelector('.dropcraft-import-btn')) return;
+      
+      const button = this.createImportButton('+ Import', () => {
+        this.importProductFromURL(this.getLinkFromElement(element));
+      }, true);
+      
+      element.style.position = 'relative';
+      element.appendChild(button);
+    });
+  }
+
+  createImportButton(text, onClick, isSmall = false) {
+    const button = document.createElement('button');
+    button.className = 'dropcraft-import-btn';
+    button.textContent = text;
+    button.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    };
+    
+    button.style.cssText = `
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: ${isSmall ? '6px 12px' : '12px 24px'};
+      border-radius: ${isSmall ? '6px' : '8px'};
+      font-size: ${isSmall ? '11px' : '14px'};
+      font-weight: 600;
+      cursor: pointer;
+      position: ${isSmall ? 'absolute' : 'relative'};
+      top: ${isSmall ? '8px' : 'auto'};
+      right: ${isSmall ? '8px' : 'auto'};
+      z-index: 10000;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      margin: ${isSmall ? '0' : '16px 0'};
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    `;
+    
+    button.onmouseover = () => {
+      button.style.transform = 'translateY(-2px)';
+      button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+    };
+    
+    button.onmouseout = () => {
+      button.style.transform = 'translateY(0)';
+      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+    };
+    
+    return button;
+  }
+
+  async importCurrentProduct() {
+    this.importProductFromURL(window.location.href);
+  }
+
+  async importProductFromURL(url) {
+    this.showLoadingToast('⏳ Import en cours...');
+    
+    try {
+      const response = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/product-url-scraper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        this.showSuccessToast(`✅ Produit importé!`);
+      } else {
+        this.showErrorToast('❌ ' + (result.error || 'Erreur'));
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      this.showErrorToast('❌ Erreur de connexion');
+    }
+  }
+
+  showLoadingToast(message) { this.showToast(message, '#667eea'); }
+  showSuccessToast(message) { this.showToast(message, '#10b981', 3000); }
+  showErrorToast(message) { this.showToast(message, '#ef4444', 4000); }
+
+  showToast(message, color, timeout = null) {
+    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
+    const toast = document.createElement('div');
+    toast.className = 'dropcraft-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed; top: 20px; right: 20px; background: ${color};
+      color: white; padding: 14px 20px; border-radius: 8px; font-size: 14px;
+      font-weight: 500; box-shadow: 0 8px 25px rgba(0,0,0,0.2); z-index: 100000;
+      animation: slideIn 0.3s ease-out; font-family: -apple-system, sans-serif;
+    `;
+    document.body.appendChild(toast);
+    if (timeout) setTimeout(() => toast.remove(), timeout);
+  }
+
+  getTextContent(container, selectors) {
+    for (const selector of selectors) {
+      const el = container.querySelector(selector);
+      if (el?.textContent?.trim()) return el.textContent.trim();
+    }
+    return '';
+  }
+
+  getPriceContent(container, selectors) {
+    for (const selector of selectors) {
+      const el = container.querySelector(selector);
+      if (el) {
+        const match = el.textContent.match(/[\d,.\s]+(€|\$|£|₹|¥|CHF|USD|EUR)?/i);
+        if (match) return match[0].trim();
+      }
+    }
+    return '';
+  }
+
+  getImageSrc(container, selectors) {
+    for (const selector of selectors) {
+      const el = container.querySelector(selector);
+      if (el) return el.src || el.dataset.src || '';
+    }
+    return '';
+  }
+
+  getLinkFromElement(element) {
+    const link = element.querySelector('a[href*="/products/"]') || element.querySelector('a');
+    return link ? link.href : window.location.href;
   }
 }
 
+// WooCommerce detector - complete implementation
 class WooCommerceDetector {
   async extractProducts() {
-    // WooCommerce-specific logic
-    return [];
+    const products = [];
+    const productElements = document.querySelectorAll('.product, .wc-block-grid__product, li.product');
+    
+    for (let i = 0; i < productElements.length; i++) {
+      const element = productElements[i];
+      const product = await this.extractProductFromElement(element, i);
+      if (product.name) products.push(product);
+    }
+    
+    return products;
   }
 
   async extractSingleProduct() {
-    return null;
+    return {
+      id: `woo_${Date.now()}`,
+      name: this.getTextContent(document, ['h1.product_title', '.product-title', 'h1']),
+      price: this.getPriceContent(document, ['.price', '.woocommerce-Price-amount']),
+      image: this.getImageSrc(document, ['.woocommerce-product-gallery__image img', '.wp-post-image']),
+      description: this.getTextContent(document, ['.woocommerce-product-details__short-description', '.product-description']),
+      url: window.location.href,
+      domain: window.location.hostname,
+      platform: 'woocommerce',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
+  }
+
+  async extractProductFromElement(element, index) {
+    return {
+      id: `woo_list_${Date.now()}_${index}`,
+      name: this.getTextContent(element, ['h2', '.woocommerce-loop-product__title', '.product-title']),
+      price: this.getPriceContent(element, ['.price', '.woocommerce-Price-amount']),
+      image: this.getImageSrc(element, ['img']),
+      url: this.getLinkFromElement(element),
+      domain: window.location.hostname,
+      platform: 'woocommerce',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
   }
 
   injectOneClickButtons() {
-    // WooCommerce-specific button injection
+    if (this.isProductPage()) {
+      this.injectProductImportButton();
+    }
+    this.injectListingButtons();
+  }
+
+  isProductPage() {
+    return document.body.classList.contains('single-product') || 
+           document.querySelector('.product_title, .single-product');
+  }
+
+  injectProductImportButton() {
+    if (document.querySelector('.dropcraft-import-btn')) return;
+    
+    const targetEl = document.querySelector('h1.product_title, .product-title, h1');
+    if (!targetEl) {
+      this.injectFloatingButton();
+      return;
+    }
+    
+    const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
+      this.importCurrentProduct();
+    });
+    
+    targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
+  }
+
+  injectFloatingButton() {
+    if (document.querySelector('.dropcraft-floating-btn')) return;
+    
+    const button = this.createImportButton('🚀 Importer', () => {
+      this.importCurrentProduct();
+    });
+    button.classList.add('dropcraft-floating-btn');
+    button.style.cssText += `position: fixed !important; bottom: 20px !important; right: 20px !important; z-index: 999999 !important;`;
+    document.body.appendChild(button);
+  }
+
+  injectListingButtons() {
+    const productElements = document.querySelectorAll('.product, .wc-block-grid__product, li.product');
+    productElements.forEach((element) => {
+      if (element.querySelector('.dropcraft-import-btn')) return;
+      
+      const button = this.createImportButton('+ Import', () => {
+        this.importProductFromURL(this.getLinkFromElement(element));
+      }, true);
+      
+      element.style.position = 'relative';
+      element.appendChild(button);
+    });
+  }
+
+  createImportButton(text, onClick, isSmall = false) {
+    const button = document.createElement('button');
+    button.className = 'dropcraft-import-btn';
+    button.textContent = text;
+    button.onclick = (e) => { e.preventDefault(); e.stopPropagation(); onClick(); };
+    
+    button.style.cssText = `
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; border: none;
+      padding: ${isSmall ? '6px 12px' : '12px 24px'};
+      border-radius: ${isSmall ? '6px' : '8px'};
+      font-size: ${isSmall ? '11px' : '14px'}; font-weight: 600;
+      cursor: pointer; position: ${isSmall ? 'absolute' : 'relative'};
+      top: ${isSmall ? '8px' : 'auto'}; right: ${isSmall ? '8px' : 'auto'};
+      z-index: 10000; transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      margin: ${isSmall ? '0' : '16px 0'}; display: inline-flex;
+      align-items: center; gap: 6px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    `;
+    
+    return button;
+  }
+
+  async importCurrentProduct() { this.importProductFromURL(window.location.href); }
+
+  async importProductFromURL(url) {
+    this.showToast('⏳ Import en cours...', '#667eea');
+    
+    try {
+      const response = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/product-url-scraper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        this.showToast('✅ Produit importé!', '#10b981', 3000);
+      } else {
+        this.showToast('❌ ' + (result.error || 'Erreur'), '#ef4444', 4000);
+      }
+    } catch (error) {
+      this.showToast('❌ Erreur de connexion', '#ef4444', 4000);
+    }
+  }
+
+  showToast(message, color, timeout = null) {
+    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
+    const toast = document.createElement('div');
+    toast.className = 'dropcraft-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed; top: 20px; right: 20px; background: ${color};
+      color: white; padding: 14px 20px; border-radius: 8px; font-size: 14px;
+      font-weight: 500; box-shadow: 0 8px 25px rgba(0,0,0,0.2); z-index: 100000;
+      animation: slideIn 0.3s ease-out; font-family: -apple-system, sans-serif;
+    `;
+    document.body.appendChild(toast);
+    if (timeout) setTimeout(() => toast.remove(), timeout);
+  }
+
+  getTextContent(container, selectors) {
+    for (const s of selectors) { const el = container.querySelector(s); if (el?.textContent?.trim()) return el.textContent.trim(); }
+    return '';
+  }
+
+  getPriceContent(container, selectors) {
+    for (const s of selectors) {
+      const el = container.querySelector(s);
+      if (el) { const match = el.textContent.match(/[\d,.\s]+(€|\$|£)?/i); if (match) return match[0].trim(); }
+    }
+    return '';
+  }
+
+  getImageSrc(container, selectors) {
+    for (const s of selectors) { const el = container.querySelector(s); if (el) return el.src || el.dataset.src || ''; }
+    return '';
+  }
+
+  getLinkFromElement(element) {
+    const link = element.querySelector('a');
+    return link ? link.href : window.location.href;
   }
 }
 
+// Generic detector - works on ALL e-commerce sites
 class GenericDetector {
   async extractProducts() {
-    // Generic e-commerce detection
-    return [];
+    const products = [];
+    // Try multiple common product container selectors
+    const selectors = [
+      '[data-product-id]', '[data-product]', '.product-item', '.product-card',
+      '.product', 'article.product', '[itemtype*="Product"]', '.item'
+    ];
+    
+    for (const selector of selectors) {
+      const elements = document.querySelectorAll(selector);
+      if (elements.length > 0) {
+        for (let i = 0; i < Math.min(elements.length, 50); i++) {
+          const product = await this.extractProductFromElement(elements[i], i);
+          if (product.name) products.push(product);
+        }
+        break;
+      }
+    }
+    
+    return products;
   }
 
   async extractSingleProduct() {
-    return null;
+    return {
+      id: `generic_${Date.now()}`,
+      name: this.getProductTitle(),
+      price: this.getProductPrice(),
+      image: this.getProductImage(),
+      description: this.getProductDescription(),
+      url: window.location.href,
+      domain: window.location.hostname,
+      platform: 'generic',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
+  }
+
+  async extractProductFromElement(element, index) {
+    return {
+      id: `generic_list_${Date.now()}_${index}`,
+      name: this.getTextContent(element, ['h1', 'h2', 'h3', 'h4', '.title', '.name', '[class*="title"]', '[class*="name"]', 'a']),
+      price: this.getPriceContent(element, ['.price', '[class*="price"]', '[data-price]', '.cost', '.amount']),
+      image: this.getImageSrc(element, ['img']),
+      url: this.getLinkFromElement(element),
+      domain: window.location.hostname,
+      platform: 'generic',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
+  }
+
+  getProductTitle() {
+    return this.getTextContent(document, [
+      'h1', '.product-title', '.product-name', '[data-product-title]',
+      '[itemprop="name"]', '#product-title', '.product__title'
+    ]);
+  }
+
+  getProductPrice() {
+    return this.getPriceContent(document, [
+      '.price', '[class*="price"]', '[itemprop="price"]', '[data-price]',
+      '.product-price', '.current-price', '.sale-price', '#product-price'
+    ]);
+  }
+
+  getProductImage() {
+    return this.getImageSrc(document, [
+      '[itemprop="image"]', '.product-image img', '.main-image img',
+      '#product-image img', '[data-product-image]', '.gallery img:first-child',
+      'img[src*="product"]', 'picture img', 'img'
+    ]);
+  }
+
+  getProductDescription() {
+    return this.getTextContent(document, [
+      '.product-description', '[itemprop="description"]', '#product-description',
+      '.description', '[class*="description"]', '.product-details'
+    ]);
   }
 
   injectOneClickButtons() {
-    // Generic button injection
+    // ALWAYS inject a floating button on any page that looks like a product page
+    if (this.isProductPage()) {
+      this.injectFloatingButton();
+    }
+  }
+
+  isProductPage() {
+    // Detect if current page is likely a product page
+    const hasProductIndicators = 
+      document.querySelector('h1') &&
+      (document.querySelector('[class*="price"]') ||
+       document.querySelector('[itemprop="price"]') ||
+       document.querySelector('.add-to-cart') ||
+       document.querySelector('[class*="add-to-cart"]') ||
+       document.querySelector('button[class*="cart"]') ||
+       document.querySelector('[class*="buy"]') ||
+       window.location.pathname.match(/\/(product|item|p|produit|article|shop)\//i));
+    
+    return hasProductIndicators;
+  }
+
+  injectFloatingButton() {
+    if (document.querySelector('.dropcraft-import-btn')) return;
+    if (document.querySelector('.dropcraft-floating-btn')) return;
+    
+    const button = document.createElement('button');
+    button.className = 'dropcraft-import-btn dropcraft-floating-btn';
+    button.innerHTML = '🚀 Importer dans Drop Craft AI';
+    button.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.importCurrentProduct();
+    };
+    
+    button.style.cssText = `
+      position: fixed !important;
+      bottom: 20px !important;
+      right: 20px !important;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      color: white !important;
+      border: none !important;
+      padding: 14px 24px !important;
+      border-radius: 50px !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      z-index: 999999 !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    `;
+    
+    button.onmouseover = () => {
+      button.style.transform = 'translateY(-3px) scale(1.02)';
+      button.style.boxShadow = '0 10px 35px rgba(102, 126, 234, 0.6)';
+    };
+    
+    button.onmouseout = () => {
+      button.style.transform = 'translateY(0) scale(1)';
+      button.style.boxShadow = '0 6px 25px rgba(102, 126, 234, 0.5)';
+    };
+    
+    document.body.appendChild(button);
+    console.log('Drop Craft AI: Import button injected on', window.location.hostname);
+  }
+
+  async importCurrentProduct() {
+    this.showToast('⏳ Import en cours...', '#667eea');
+    
+    try {
+      const response = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/product-url-scraper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: window.location.href })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        this.showToast('✅ Produit importé avec succès!', '#10b981', 3000);
+      } else {
+        this.showToast('❌ ' + (result.error || 'Erreur lors de l\'import'), '#ef4444', 4000);
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      this.showToast('❌ Erreur de connexion', '#ef4444', 4000);
+    }
+  }
+
+  showToast(message, color, timeout = null) {
+    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
+    const toast = document.createElement('div');
+    toast.className = 'dropcraft-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed !important;
+      top: 20px !important;
+      right: 20px !important;
+      background: ${color} !important;
+      color: white !important;
+      padding: 14px 20px !important;
+      border-radius: 10px !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25) !important;
+      z-index: 9999999 !important;
+      animation: slideIn 0.3s ease-out !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+      max-width: 350px !important;
+    `;
+    document.body.appendChild(toast);
+    if (timeout) setTimeout(() => toast.remove(), timeout);
+  }
+
+  getTextContent(container, selectors) {
+    for (const selector of selectors) {
+      try {
+        const el = container.querySelector(selector);
+        if (el?.textContent?.trim()) return el.textContent.trim().substring(0, 500);
+      } catch (e) {}
+    }
+    return '';
+  }
+
+  getPriceContent(container, selectors) {
+    for (const selector of selectors) {
+      try {
+        const el = container.querySelector(selector);
+        if (el) {
+          const text = el.textContent.trim();
+          const match = text.match(/[\d\s,.]+(€|\$|£|₹|¥|kr|zł|CHF|USD|EUR|SEK|DKK|NOK|PLN|CZK|HUF|RON|BGN|HRK|TRY|RUB|UAH|BRL|ARS|MXN|CLP|COP|PEN|VEF|AED|SAR|ILS|EGP|ZAR|KES|NGN|GHS|MAD|TND|DZD|LYD|KWD|BHD|OMR|QAR|JOD|LBP|SYP|IQD|YER|PKR|BDT|LKR|NPR|MMK|KHR|VND|THB|MYR|SGD|IDR|PHP|CNY|JPY|KRW|TWD|HKD|MOP|AUD|NZD|FJD|PGK|SBD|WST|TOP|VUV|XPF|XOF|XAF|GNF|KMF|RWF|BIF|MGA|MRU|STN|CVE|GMD|SLL|LRD|GYD|SRD|BBD|BSD|JMD|TTD|XCD|AWG|ANG|BMD|KYD|CUP|DOP|HTG|NIO|PAB|HNL|GTQ|BZD|CRC|SVC|MZN|ZMW|MWK|BWP|SZL|LSL|NAD|ZWL|AOA|SCR|MUR|MVR|BTN|AFN|IRR|KZT|UZS|TJS|KGS|TMT|AZN|GEL|AMD|BYN|MDL|ALL|MKD|BAM|RSD)?/i);
+          if (match) return match[0].trim();
+        }
+      } catch (e) {}
+    }
+    return '';
+  }
+
+  getImageSrc(container, selectors) {
+    for (const selector of selectors) {
+      try {
+        const el = container.querySelector(selector);
+        if (el) {
+          const src = el.src || el.dataset.src || el.dataset.lazySrc || el.dataset.original || el.getAttribute('data-srcset')?.split(' ')[0];
+          if (src && src.startsWith('http')) return src;
+        }
+      } catch (e) {}
+    }
+    return '';
+  }
+
+  getLinkFromElement(element) {
+    const link = element.querySelector('a[href]');
+    return link ? new URL(link.href, window.location.origin).href : window.location.href;
   }
 }
 
-// Initialize when page loads
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    new AdvancedProductDetector();
-  });
-} else {
+// Initialize when page loads - with retry for dynamic content
+function initDetector() {
   new AdvancedProductDetector();
 }
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDetector);
+} else {
+  initDetector();
+}
+
+// Also re-inject buttons when page content changes (for SPAs)
+const observer = new MutationObserver((mutations) => {
+  const hasSignificantChanges = mutations.some(m => 
+    m.addedNodes.length > 0 && 
+    Array.from(m.addedNodes).some(n => n.nodeType === 1 && !n.classList?.contains('dropcraft-import-btn'))
+  );
+  
+  if (hasSignificantChanges && !document.querySelector('.dropcraft-import-btn')) {
+    setTimeout(initDetector, 500);
+  }
+});
+
+observer.observe(document.body || document.documentElement, {
+  childList: true,
+  subtree: true
+});
