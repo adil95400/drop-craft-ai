@@ -310,7 +310,7 @@ const BenefitsSection = () => {
     <section className="py-12 sm:py-16 lg:py-20 bg-secondary/30">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center space-y-3 sm:space-y-4 mb-12 sm:mb-16">
-          <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-success/10 text-success border-success/20">
+          <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-success/15 text-green-800 dark:text-success border-success/30">
             Avantages
           </Badge>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Pourquoi ShopOpti+ ?</h2>
@@ -554,7 +554,7 @@ const TestimonialsSection = () => {
     <section className="py-20">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center space-y-4 mb-16">
-          <Badge className="px-4 py-2 bg-warning/10 text-warning border-warning/20">
+          <Badge className="px-4 py-2 bg-warning/15 text-amber-800 dark:text-warning border-warning/30">
             Témoignages
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold">Ils nous font confiance</h2>
