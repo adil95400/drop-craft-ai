@@ -5,8 +5,9 @@ import { useState, useEffect } from 'react';
 import { 
   Chrome, Download, Play, CheckCircle, Settings, Zap, Star,
   Package, RefreshCw, Globe, ArrowRight, ExternalLink, Key,
-  Activity, History, TrendingUp, Clock, AlertCircle, Save
+  Activity, History, TrendingUp, Clock, AlertCircle, Save, Loader2
 } from 'lucide-react';
+import { generateExtensionZip } from '@/utils/extensionZipGenerator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,7 +60,21 @@ export default function ChromeExtensionPage() {
     return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
+  // Download extension ZIP
+  const handleDownloadExtension = async () => {
+    setIsDownloading(true);
+    try {
+      await generateExtensionZip();
+      toast.success('Extension téléchargée ! Décompressez le ZIP et chargez-le dans Chrome.');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Erreur lors du téléchargement');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   // Fetch extension stats
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['extension-stats'],
@@ -245,10 +260,18 @@ export default function ChromeExtensionPage() {
             </p>
             
             <div className="flex flex-wrap gap-3 pt-2">
-              <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-500">
-                <Chrome className="h-5 w-5 mr-2" />
-                Installer l'extension
-                <ExternalLink className="h-4 w-4 ml-2" />
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-cyan-500 to-blue-500"
+                onClick={handleDownloadExtension}
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-5 w-5 mr-2" />
+                )}
+                {isDownloading ? 'Téléchargement...' : 'Installer l\'extension'}
               </Button>
               <Button variant="outline" size="lg">
                 <Play className="h-5 w-5 mr-2" />
