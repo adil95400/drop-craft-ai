@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ShopOpti+ | Dropshipping Pro",
-  "version": "3.0.0",
-  "description": "Extension Dropshipping Professionnelle - Import 1-Click, Avis, Monitoring Prix, Auto-Order, Multi-Plateforme",
+  "name": "Drop Craft AI | Dropshipping Pro",
+  "version": "4.0.0",
+  "description": "Extension Dropshipping Professionnelle - Import 1-Click, Calculateur de Profit, Suivi des Prix, Multi-Plateformes (AliExpress, Amazon, eBay, Temu...)",
   "permissions": [
     "activeTab",
     "storage",
@@ -24,10 +24,17 @@
       "matches": [
         "*://*.aliexpress.com/*",
         "*://*.aliexpress.fr/*",
+        "*://*.aliexpress.us/*",
         "*://*.amazon.com/*",
         "*://*.amazon.fr/*",
+        "*://*.amazon.de/*",
+        "*://*.amazon.co.uk/*",
+        "*://*.amazon.es/*",
+        "*://*.amazon.it/*",
         "*://*.ebay.com/*",
         "*://*.ebay.fr/*",
+        "*://*.ebay.de/*",
+        "*://*.ebay.co.uk/*",
         "*://*.walmart.com/*",
         "*://*.etsy.com/*",
         "*://*.temu.com/*",
@@ -37,7 +44,10 @@
         "*://*.1688.com/*",
         "*://*.taobao.com/*",
         "*://*.shein.com/*",
-        "*://*.cjdropshipping.com/*"
+        "*://*.cjdropshipping.com/*",
+        "*://*.lightinthebox.com/*",
+        "*://*.gearbest.com/*",
+        "*://*.made-in-china.com/*"
       ],
       "js": ["content.js"],
       "css": ["content.css"],
@@ -46,7 +56,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "ShopOpti+ - Dropshipping Pro",
+    "default_title": "Drop Craft AI - Dropshipping Pro",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -63,7 +73,13 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["injected.js", "content.css", "icons/*"],
+      "resources": [
+        "injected.js",
+        "sidebar.js", 
+        "sidebar.css",
+        "content.css",
+        "icons/*"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

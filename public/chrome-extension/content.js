@@ -1,4 +1,5 @@
-// Content script for Drop Craft AI Chrome Extension
+// Drop Craft AI Chrome Extension - Content Script v4.0
+// Professional Dropshipping Extension
 
 class DropCraftContentScript {
   constructor() {
@@ -11,8 +12,19 @@ class DropCraftContentScript {
     this.setupMessageListener();
     this.injectStyles();
     this.setupAutoDetection();
+    this.injectSidebar(); // NEW: Inject professional sidebar
     this.injectScript();
     this.setupInjectedScriptListener();
+  }
+
+  // NEW: Inject the professional sidebar
+  injectSidebar() {
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('sidebar.js');
+    script.onload = function() {
+      this.remove();
+    };
+    (document.head || document.documentElement).appendChild(script);
   }
 
   setupMessageListener() {
