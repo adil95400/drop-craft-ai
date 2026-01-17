@@ -101,6 +101,7 @@ export const IntegratedChatSupport = () => {
         <Button
           onClick={() => setIsOpen(true)}
           className="rounded-full h-12 w-12 shadow-lg bg-primary hover:bg-primary/90"
+          aria-label="Ouvrir l'assistant de support"
         >
           <Bot className="h-6 w-6" />
         </Button>
