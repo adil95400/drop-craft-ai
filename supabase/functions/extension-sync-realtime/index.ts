@@ -18,13 +18,31 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    const token = req.headers.get('x-extension-token')
+    // Token can come from header (preferred) or JSON body fallback
+    const rawHeaderToken = req.headers.get('x-extension-token')
 
     console.log('[extension-sync-realtime] Incoming request', {
       method: req.method,
-      hasToken: Boolean(token),
-      tokenPrefix: token ? token.slice(0, 12) : null,
+      hasToken: Boolean(rawHeaderToken),
+      tokenPrefix: rawHeaderToken ? rawHeaderToken.slice(0, 12) : null,
     })
+
+    // Parse body early so we can also read token from body if header missing
+    let payload: any = null
+    try {
+      payload = await req.json()
+    } catch {
+      payload = null
+    }
+
+    const sanitizeToken = (value: unknown): string | null => {
+      if (!value || typeof value !== 'string') return null
+      const sanitized = value.replace(/[^a-zA-Z0-9-_]/g, '')
+      if (sanitized.length < 10 || sanitized.length > 150) return null
+      return sanitized
+    }
+
+    const token = sanitizeToken(rawHeaderToken || payload?.token)
 
     if (!token) {
       return new Response(
@@ -36,7 +54,7 @@ serve(async (req) => {
     // Validate token
     const { data: authData, error: tokenError } = await supabase
       .from('extension_auth_tokens')
-      .select('user_id')
+      .select('id, user_id, expires_at, usage_count')
       .eq('token', token)
       .eq('is_active', true)
       .single()
@@ -52,11 +70,30 @@ serve(async (req) => {
       )
     }
 
-    let payload: any
-    try {
-      payload = await req.json()
-    } catch (e) {
-      console.warn('[extension-sync-realtime] Invalid JSON body')
+    // Check expiration (if present)
+    if (authData.expires_at && new Date(authData.expires_at) < new Date()) {
+      await supabase
+        .from('extension_auth_tokens')
+        .update({ is_active: false })
+        .eq('id', authData.id)
+
+      return new Response(
+        JSON.stringify({ error: 'Token expired' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Update last-used counters (best-effort)
+    await supabase
+      .from('extension_auth_tokens')
+      .update({
+        last_used_at: new Date().toISOString(),
+        usage_count: (authData.usage_count || 0) + 1,
+      })
+      .eq('id', authData.id)
+
+    // If body JSON failed earlier, now we must fail for actions needing a body
+    if (!payload) {
       return new Response(
         JSON.stringify({ error: 'Invalid JSON body' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
