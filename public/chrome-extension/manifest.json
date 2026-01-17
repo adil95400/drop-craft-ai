@@ -80,6 +80,9 @@
         "grabber.js",
         "fulfillment.js",
         "automation.js",
+        "faq.js",
+        "support.js",
+        "image-optimizer.js",
         "content.css",
         "icons/*"
       ],

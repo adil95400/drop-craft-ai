@@ -42,6 +42,24 @@ class DropCraftContentScript {
     automationScript.src = chrome.runtime.getURL('automation.js');
     automationScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(automationScript);
+    
+    // Inject FAQ system
+    const faqScript = document.createElement('script');
+    faqScript.src = chrome.runtime.getURL('faq.js');
+    faqScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(faqScript);
+    
+    // Inject support system
+    const supportScript = document.createElement('script');
+    supportScript.src = chrome.runtime.getURL('support.js');
+    supportScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(supportScript);
+    
+    // Inject image optimizer
+    const imageOptimizerScript = document.createElement('script');
+    imageOptimizerScript.src = chrome.runtime.getURL('image-optimizer.js');
+    imageOptimizerScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(imageOptimizerScript);
   }
 
   setupMessageListener() {
