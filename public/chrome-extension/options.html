@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configuration - ShopOpti+</title>
+  <title>Configuration - Drop Craft AI</title>
   <style>
     * {
       margin: 0;
@@ -12,11 +12,11 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(180deg, #0a0f1a 0%, #111827 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
       min-height: 100vh;
       padding: 40px 20px;
-      color: #f1f5f9;
+      color: #f8fafc;
     }
 
     .container {
@@ -41,10 +41,11 @@
       margin-bottom: 8px;
     }
 
-    .header h1 .plus {
-      background: linear-gradient(135deg, #00d4ff, #7c3aed);
+    .header h1 .ai {
+      background: linear-gradient(135deg, #7c3aed 0%, #00d4ff 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .header p {
@@ -58,6 +59,7 @@
       border-radius: 16px;
       padding: 28px;
       margin-bottom: 24px;
+      backdrop-filter: blur(10px);
     }
 
     .card-header {
@@ -104,7 +106,7 @@
 
     .form-input:focus {
       outline: none;
-      border-color: #00d4ff;
+      border-color: #7c3aed;
       background: rgba(255, 255, 255, 0.08);
     }
 
@@ -126,6 +128,12 @@
       border-radius: 12px;
       margin-bottom: 12px;
       border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.2s;
+    }
+
+    .toggle-row:hover {
+      border-color: rgba(124, 58, 237, 0.3);
+      background: rgba(255, 255, 255, 0.04);
     }
 
     .toggle-info {
@@ -180,7 +188,7 @@
     }
 
     input:checked + .slider {
-      background: linear-gradient(135deg, #00d4ff, #7c3aed);
+      background: linear-gradient(135deg, #7c3aed 0%, #00d4ff 100%);
     }
 
     input:checked + .slider:before {
@@ -192,6 +200,7 @@
       gap: 12px;
       justify-content: center;
       margin-top: 32px;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -208,13 +217,13 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+      background: linear-gradient(135deg, #7c3aed 0%, #00d4ff 100%);
       color: white;
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
     }
 
     .btn-secondary {
@@ -225,6 +234,16 @@
 
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
     }
 
     .notification {
@@ -241,6 +260,7 @@
       gap: 10px;
       animation: slideIn 0.3s ease;
       z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     }
 
     .notification.success {
@@ -252,7 +272,7 @@
     }
 
     .notification.info {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      background: linear-gradient(135deg, #7c3aed, #00d4ff);
     }
 
     @keyframes slideIn {
@@ -267,8 +287,8 @@
     }
 
     .tip-box {
-      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
-      border: 1px solid rgba(0, 212, 255, 0.2);
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0, 212, 255, 0.1));
+      border: 1px solid rgba(124, 58, 237, 0.2);
       border-radius: 12px;
       padding: 16px 20px;
       margin-top: 24px;
@@ -288,7 +308,7 @@
     .tip-title {
       font-size: 13px;
       font-weight: 600;
-      color: #00d4ff;
+      color: #7c3aed;
       margin-bottom: 4px;
     }
 
@@ -297,40 +317,189 @@
       color: rgba(255, 255, 255, 0.6);
       line-height: 1.5;
     }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .connection-status.disconnected {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    .connection-status.disconnected .status-dot {
+      background: #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+    }
+
+    .status-info {
+      flex: 1;
+    }
+
+    .status-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .status-sub {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #7c3aed;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+
+    .shortcuts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .shortcut-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 10px;
+    }
+
+    .shortcut-key {
+      background: rgba(124, 58, 237, 0.2);
+      color: #7c3aed;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: monospace;
+    }
+
+    .shortcut-desc {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid,
+      .shortcuts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-row {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-logo">🛍️</div>
-      <h1>ShopOpti<span class="plus">+</span> Configuration</h1>
-      <p>Personnalisez votre expérience d'extension</p>
+      <div class="header-logo">🚀</div>
+      <h1>Drop Craft <span class="ai">AI</span> Configuration</h1>
+      <p>Personnalisez votre expérience d'extension professionnelle</p>
     </div>
 
+    <!-- Connection Status Card -->
     <div class="card">
       <div class="card-header">
-        <span class="card-icon">🔐</span>
-        <h2>Connexion API</h2>
+        <span class="card-icon">🔌</span>
+        <h2>Statut de Connexion</h2>
       </div>
-      <div class="form-group">
-        <label class="form-label">Statut de connexion</label>
-        <input type="text" id="apiUrl" class="form-input" value="ShopOpti+ Cloud" readonly>
+      
+      <div id="connectionStatus" class="connection-status disconnected">
+        <div class="status-dot"></div>
+        <div class="status-info">
+          <div class="status-title" id="statusTitle">Non connecté</div>
+          <div class="status-sub" id="statusSub">Connectez-vous pour synchroniser</div>
+        </div>
+        <button class="btn btn-secondary" id="connectBtn">Connecter</button>
       </div>
+
       <div class="form-group">
         <label class="form-label">Token d'Extension</label>
-        <input type="password" id="extensionToken" class="form-input" placeholder="Votre token d'extension">
+        <input type="password" id="extensionToken" class="form-input" placeholder="Entrez votre token d'extension">
       </div>
       <button class="btn btn-secondary" id="testConnection" style="width: 100%;">
         <span>🔌</span> Tester la Connexion
       </button>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="statProducts">0</div>
+          <div class="stat-label">Produits importés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statReviews">0</div>
+          <div class="stat-label">Avis importés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statMonitored">0</div>
+          <div class="stat-label">Prix surveillés</div>
+        </div>
+      </div>
     </div>
 
+    <!-- Automation Card -->
     <div class="card">
       <div class="card-header">
         <span class="card-icon">⚡</span>
         <h2>Automatisation</h2>
       </div>
       
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Import 1-Click Automatique</div>
+          <div class="toggle-desc">Ajouter le bouton d'import sur les pages produits</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="autoInjectButtons" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
       <div class="toggle-row">
         <div class="toggle-info">
           <div class="toggle-title">Surveillance Prix Automatique</div>
@@ -355,17 +524,6 @@
 
       <div class="toggle-row">
         <div class="toggle-info">
-          <div class="toggle-title">Import 1-Click Automatique</div>
-          <div class="toggle-desc">Ajouter le bouton d'import sur les pages produits</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="autoInjectButtons" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-info">
           <div class="toggle-title">Notifications Push</div>
           <div class="toggle-desc">Recevoir des notifications pour les événements importants</div>
         </div>
@@ -374,8 +532,20 @@
           <span class="slider"></span>
         </label>
       </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Sidebar Automatique</div>
+          <div class="toggle-desc">Afficher automatiquement la sidebar sur les sites supportés</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="autoShowSidebar">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
 
+    <!-- Import Rules Card -->
     <div class="card">
       <div class="card-header">
         <span class="card-icon">🎯</span>
@@ -384,25 +554,31 @@
       
       <div class="form-group">
         <label class="form-label">Marge Bénéficiaire Minimale (%)</label>
-        <input type="number" id="minMargin" class="form-input" placeholder="30" min="0" max="100">
+        <input type="number" id="minMargin" class="form-input" placeholder="30" min="0" max="100" value="30">
       </div>
 
       <div class="form-group">
         <label class="form-label">Prix Maximum (€)</label>
-        <input type="number" id="maxPrice" class="form-input" placeholder="100" min="0">
+        <input type="number" id="maxPrice" class="form-input" placeholder="100" min="0" value="100">
       </div>
 
       <div class="form-group">
         <label class="form-label">Note Minimale (étoiles)</label>
-        <input type="number" id="minRating" class="form-input" placeholder="4" min="1" max="5" step="0.1">
+        <input type="number" id="minRating" class="form-input" placeholder="4" min="1" max="5" step="0.1" value="4">
       </div>
 
       <div class="form-group">
         <label class="form-label">Mots-clés à Exclure</label>
         <input type="text" id="excludeKeywords" class="form-input" placeholder="contrefaçon, réplique, copie">
       </div>
+
+      <div class="form-group">
+        <label class="form-label">Catégories à Importer (séparées par virgules)</label>
+        <input type="text" id="includeCategories" class="form-input" placeholder="Électronique, Mode, Maison">
+      </div>
     </div>
 
+    <!-- Performance Card -->
     <div class="card">
       <div class="card-header">
         <span class="card-icon">🚀</span>
@@ -412,6 +588,11 @@
       <div class="form-group">
         <label class="form-label">Délai entre imports (secondes)</label>
         <input type="number" id="importDelay" class="form-input" placeholder="2" min="1" value="2">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nombre max d'imports simultanés</label>
+        <input type="number" id="maxConcurrent" class="form-input" placeholder="5" min="1" max="10" value="5">
       </div>
 
       <div class="toggle-row">
@@ -424,18 +605,58 @@
           <span class="slider"></span>
         </label>
       </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Mode Économie d'énergie</div>
+          <div class="toggle-desc">Réduit les vérifications en arrière-plan</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="powerSaveMode">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
 
+    <!-- Shortcuts Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⌨️</span>
+        <h2>Raccourcis Clavier</h2>
+      </div>
+      
+      <div class="shortcuts-grid">
+        <div class="shortcut-item">
+          <span class="shortcut-key">Alt + I</span>
+          <span class="shortcut-desc">Import 1-Click</span>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-key">Alt + S</span>
+          <span class="shortcut-desc">Ouvrir Sidebar</span>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-key">Alt + P</span>
+          <span class="shortcut-desc">Calculateur Profit</span>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-key">Alt + M</span>
+          <span class="shortcut-desc">Surveiller Prix</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips -->
     <div class="tip-box">
       <span class="tip-icon">💡</span>
       <div class="tip-content">
         <div class="tip-title">Conseil Pro</div>
         <div class="tip-text">
-          Configurez vos règles d'import pour filtrer automatiquement les produits selon vos critères de marge et de qualité. Les modifications sont sauvegardées automatiquement.
+          Configurez vos règles d'import pour filtrer automatiquement les produits selon vos critères de marge et de qualité. Activez la surveillance automatique pour ne jamais manquer une baisse de prix!
         </div>
       </div>
     </div>
 
+    <!-- Action Buttons -->
     <div class="btn-row">
       <button class="btn btn-primary" id="saveSettings">
         <span>💾</span> Enregistrer
@@ -445,6 +666,9 @@
       </button>
       <button class="btn btn-secondary" id="exportSettings">
         <span>📥</span> Exporter
+      </button>
+      <button class="btn btn-danger" id="clearData">
+        <span>🗑️</span> Effacer données
       </button>
     </div>
   </div>
