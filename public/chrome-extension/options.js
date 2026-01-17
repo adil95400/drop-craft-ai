@@ -41,13 +41,97 @@ function setElementValue(id, value) {
 function getElementValue(id, defaultValue = '') {
   const el = getElement(id);
   if (!el) return defaultValue;
-  
+
   if (el.type === 'checkbox') {
     return el.checked;
   } else if (el.type === 'number') {
-    return parseFloat(el.value) || defaultValue;
+    return el.value === '' ? defaultValue : parseFloat(el.value);
   }
   return el.value || defaultValue;
+}
+
+// Promisified Chrome APIs (more reliable across MV3 environments)
+function storageGet(defaults) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.get(defaults, (items) => {
+        const err = chrome.runtime?.lastError;
+        if (err) reject(err);
+        else resolve(items || {});
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function storageSet(items) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.set(items, () => {
+        const err = chrome.runtime?.lastError;
+        if (err) reject(err);
+        else resolve();
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function storageRemove(keys) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.remove(keys, () => {
+        const err = chrome.runtime?.lastError;
+        if (err) reject(err);
+        else resolve();
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function storageClear() {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.clear(() => {
+        const err = chrome.runtime?.lastError;
+        if (err) reject(err);
+        else resolve();
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function alarmsCreate(name, info) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.alarms.create(name, info);
+      const err = chrome.runtime?.lastError;
+      if (err) reject(err);
+      else resolve();
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function alarmsClear(name) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.alarms.clear(name, () => {
+        const err = chrome.runtime?.lastError;
+        if (err) reject(err);
+        else resolve();
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 // Load settings on page load
@@ -59,11 +143,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadSettings() {
   try {
-    const settings = await chrome.storage.local.get({
+    const settings = await storageGet({
       ...DEFAULT_SETTINGS,
       extensionToken: ''
     });
-    
+
     // Populate form fields safely
     setElementValue('apiUrl', settings.apiUrl || DEFAULT_SETTINGS.apiUrl);
     setElementValue('extensionToken', settings.extensionToken || '');
@@ -81,24 +165,26 @@ async function loadSettings() {
     setElementValue('maxConcurrent', settings.maxConcurrent || 5);
     setElementValue('debugMode', settings.debugMode);
     setElementValue('powerSaveMode', settings.powerSaveMode);
-    
+
     // Update connection status
     updateConnectionStatus(!!settings.extensionToken);
-    
+
     console.log('[DropCraft] Settings loaded');
   } catch (error) {
     console.error('[DropCraft] Error loading settings:', error);
+    showNotification(`Erreur chargement: ${error?.message || String(error)}`, 'error');
   }
 }
 
 async function loadStats() {
   try {
-    const { stats } = await chrome.storage.local.get(['stats']);
-    
+    const data = await storageGet({ stats: undefined });
+    const stats = data?.stats;
+
     const statProducts = getElement('statProducts');
     const statReviews = getElement('statReviews');
     const statMonitored = getElement('statMonitored');
-    
+
     if (statProducts) statProducts.textContent = stats?.products || 0;
     if (statReviews) statReviews.textContent = stats?.reviews || 0;
     if (statMonitored) statMonitored.textContent = stats?.monitored || 0;
@@ -151,11 +237,12 @@ function setupEventListeners() {
 }
 
 async function toggleConnection() {
-  const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
-  
+  const data = await storageGet({ extensionToken: '' });
+  const extensionToken = data.extensionToken;
+
   if (extensionToken) {
     // Disconnect
-    await chrome.storage.local.remove(['extensionToken']);
+    await storageRemove(['extensionToken']);
     setElementValue('extensionToken', '');
     updateConnectionStatus(false);
     showNotification('Déconnecté', 'info');
@@ -175,52 +262,56 @@ async function saveSettings() {
       autoInjectButtons: getElementValue('autoInjectButtons', true),
       autoShowSidebar: getElementValue('autoShowSidebar', false),
       pushNotifications: getElementValue('pushNotifications', true),
-      minMargin: getElementValue('minMargin', 30),
-      maxPrice: getElementValue('maxPrice', 100),
-      minRating: getElementValue('minRating', 4),
+      minMargin: Number(getElementValue('minMargin', 30)) || 30,
+      maxPrice: Number(getElementValue('maxPrice', 100)) || 100,
+      minRating: Number(getElementValue('minRating', 4)) || 4,
       excludeKeywords: getElementValue('excludeKeywords', ''),
       includeCategories: getElementValue('includeCategories', ''),
-      importDelay: parseInt(getElementValue('importDelay', 2)) || 2,
-      maxConcurrent: parseInt(getElementValue('maxConcurrent', 5)) || 5,
+      importDelay: parseInt(String(getElementValue('importDelay', 2)), 10) || 2,
+      maxConcurrent: parseInt(String(getElementValue('maxConcurrent', 5)), 10) || 5,
       debugMode: getElementValue('debugMode', false),
       powerSaveMode: getElementValue('powerSaveMode', false)
     };
-    
-    await chrome.storage.local.set(settings);
-    
-    // Update alarms based on settings
-    if (settings.autoPriceMonitoring) {
-      chrome.alarms.create('priceMonitoring', { periodInMinutes: 30 });
-    } else {
-      chrome.alarms.clear('priceMonitoring');
+
+    await storageSet(settings);
+
+    // Update alarms based on settings (ignore errors to not block saving)
+    try {
+      if (settings.autoPriceMonitoring) {
+        await alarmsCreate('priceMonitoring', { periodInMinutes: 30 });
+      } else {
+        await alarmsClear('priceMonitoring');
+      }
+
+      if (settings.autoStockAlerts) {
+        await alarmsCreate('stockAlerts', { periodInMinutes: 15 });
+      } else {
+        await alarmsClear('stockAlerts');
+      }
+    } catch (alarmError) {
+      console.warn('[DropCraft] Alarm update warning:', alarmError);
     }
-    
-    if (settings.autoStockAlerts) {
-      chrome.alarms.create('stockAlerts', { periodInMinutes: 15 });
-    } else {
-      chrome.alarms.clear('stockAlerts');
-    }
-    
+
     // Update connection status
     updateConnectionStatus(!!settings.extensionToken);
-    
+
     showNotification('Configuration sauvegardée!', 'success');
     console.log('[DropCraft] Settings saved:', settings);
   } catch (error) {
     console.error('[DropCraft] Error saving settings:', error);
-    showNotification('Erreur lors de la sauvegarde', 'error');
+    showNotification(`Erreur sauvegarde: ${error?.message || String(error)}`, 'error');
   }
 }
 
 async function resetSettings() {
   if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les configurations?')) {
     try {
-      await chrome.storage.local.set(DEFAULT_SETTINGS);
+      await storageSet(DEFAULT_SETTINGS);
       await loadSettings();
       showNotification('Configuration réinitialisée', 'info');
     } catch (error) {
       console.error('[DropCraft] Error resetting settings:', error);
-      showNotification('Erreur lors de la réinitialisation', 'error');
+      showNotification(`Erreur réinit: ${error?.message || String(error)}`, 'error');
     }
   }
 }
@@ -228,40 +319,40 @@ async function resetSettings() {
 async function clearAllData() {
   if (confirm('Êtes-vous sûr de vouloir effacer TOUTES les données? Cette action est irréversible.')) {
     try {
-      await chrome.storage.local.clear();
-      await chrome.storage.local.set(DEFAULT_SETTINGS);
+      await storageClear();
+      await storageSet(DEFAULT_SETTINGS);
       await loadSettings();
       await loadStats();
       showNotification('Toutes les données effacées', 'info');
     } catch (error) {
       console.error('[DropCraft] Error clearing data:', error);
-      showNotification('Erreur lors de la suppression', 'error');
+      showNotification(`Erreur suppression: ${error?.message || String(error)}`, 'error');
     }
   }
 }
 
 async function exportSettings() {
   try {
-    const settings = await chrome.storage.local.get(null);
-    
+    const settings = await storageGet(null);
+
     // Remove sensitive data
     const exportData = { ...settings };
     delete exportData.extensionToken;
-    
+
     const dataStr = JSON.stringify(exportData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    
+
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
     link.download = `dropcraft-settings-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    
+
     showNotification('Configuration exportée', 'success');
   } catch (error) {
     console.error('[DropCraft] Error exporting settings:', error);
-    showNotification('Erreur lors de l\'export', 'error');
+    showNotification(`Erreur export: ${error?.message || String(error)}`, 'error');
   }
 }
 
@@ -309,23 +400,26 @@ async function testConnection() {
 function showNotification(message, type = 'info') {
   // Remove existing notifications
   document.querySelectorAll('.notification').forEach(n => n.remove());
-  
+
   const icons = {
     success: '✅',
     error: '❌',
     info: 'ℹ️'
   };
-  
+
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.textContent = `${icons[type] || ''} ${message}`;
-  
+
   document.body.appendChild(notification);
-  
+
+  // Keep errors a bit longer
+  const ttl = type === 'error' ? 6000 : 3000;
+
   setTimeout(() => {
     notification.style.animation = 'slideIn 0.3s ease reverse';
     setTimeout(() => notification.remove(), 300);
-  }, 3000);
+  }, ttl);
 }
 
 // Add spinner animation
