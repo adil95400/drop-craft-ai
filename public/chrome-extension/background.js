@@ -580,4 +580,4 @@ function extractReviewsFromPage(config) {
 }
 
 // Initialize
-new ShopOptiBackground();
+new DropCraftBackground();
