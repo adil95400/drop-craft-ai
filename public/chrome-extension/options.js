@@ -1,4 +1,4 @@
-// ShopOpti+ Chrome Extension - Options Script v3.0
+// Drop Craft AI Chrome Extension - Options Script v4.0
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://drop-craft-ai.lovable.app';
@@ -9,18 +9,51 @@ const DEFAULT_SETTINGS = {
   autoPriceMonitoring: false,
   autoStockAlerts: false,
   autoInjectButtons: true,
+  autoShowSidebar: false,
   pushNotifications: true,
   minMargin: 30,
   maxPrice: 100,
   minRating: 4,
   excludeKeywords: '',
+  includeCategories: '',
   importDelay: 2,
-  debugMode: false
+  maxConcurrent: 5,
+  debugMode: false,
+  powerSaveMode: false
 };
+
+// Safe element getter
+function getElement(id) {
+  return document.getElementById(id);
+}
+
+function setElementValue(id, value) {
+  const el = getElement(id);
+  if (el) {
+    if (el.type === 'checkbox') {
+      el.checked = Boolean(value);
+    } else {
+      el.value = value ?? '';
+    }
+  }
+}
+
+function getElementValue(id, defaultValue = '') {
+  const el = getElement(id);
+  if (!el) return defaultValue;
+  
+  if (el.type === 'checkbox') {
+    return el.checked;
+  } else if (el.type === 'number') {
+    return parseFloat(el.value) || defaultValue;
+  }
+  return el.value || defaultValue;
+}
 
 // Load settings on page load
 document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
+  await loadStats();
   setupEventListeners();
 });
 
@@ -31,31 +64,85 @@ async function loadSettings() {
       extensionToken: ''
     });
     
-    // Populate form fields
-    document.getElementById('apiUrl').value = settings.apiUrl || DEFAULT_SETTINGS.apiUrl;
-    document.getElementById('extensionToken').value = settings.extensionToken || '';
-    document.getElementById('autoPriceMonitoring').checked = settings.autoPriceMonitoring || false;
-    document.getElementById('autoStockAlerts').checked = settings.autoStockAlerts || false;
-    document.getElementById('autoInjectButtons').checked = settings.autoInjectButtons !== false;
-    document.getElementById('pushNotifications').checked = settings.pushNotifications !== false;
-    document.getElementById('minMargin').value = settings.minMargin || 30;
-    document.getElementById('maxPrice').value = settings.maxPrice || 100;
-    document.getElementById('minRating').value = settings.minRating || 4;
-    document.getElementById('excludeKeywords').value = settings.excludeKeywords || '';
-    document.getElementById('importDelay').value = settings.importDelay || 2;
-    document.getElementById('debugMode').checked = settings.debugMode || false;
+    // Populate form fields safely
+    setElementValue('apiUrl', settings.apiUrl || DEFAULT_SETTINGS.apiUrl);
+    setElementValue('extensionToken', settings.extensionToken || '');
+    setElementValue('autoPriceMonitoring', settings.autoPriceMonitoring);
+    setElementValue('autoStockAlerts', settings.autoStockAlerts);
+    setElementValue('autoInjectButtons', settings.autoInjectButtons !== false);
+    setElementValue('autoShowSidebar', settings.autoShowSidebar);
+    setElementValue('pushNotifications', settings.pushNotifications !== false);
+    setElementValue('minMargin', settings.minMargin || 30);
+    setElementValue('maxPrice', settings.maxPrice || 100);
+    setElementValue('minRating', settings.minRating || 4);
+    setElementValue('excludeKeywords', settings.excludeKeywords || '');
+    setElementValue('includeCategories', settings.includeCategories || '');
+    setElementValue('importDelay', settings.importDelay || 2);
+    setElementValue('maxConcurrent', settings.maxConcurrent || 5);
+    setElementValue('debugMode', settings.debugMode);
+    setElementValue('powerSaveMode', settings.powerSaveMode);
     
-    console.log('Settings loaded');
+    // Update connection status
+    updateConnectionStatus(!!settings.extensionToken);
+    
+    console.log('[DropCraft] Settings loaded');
   } catch (error) {
-    console.error('Error loading settings:', error);
+    console.error('[DropCraft] Error loading settings:', error);
+  }
+}
+
+async function loadStats() {
+  try {
+    const { stats } = await chrome.storage.local.get(['stats']);
+    
+    const statProducts = getElement('statProducts');
+    const statReviews = getElement('statReviews');
+    const statMonitored = getElement('statMonitored');
+    
+    if (statProducts) statProducts.textContent = stats?.products || 0;
+    if (statReviews) statReviews.textContent = stats?.reviews || 0;
+    if (statMonitored) statMonitored.textContent = stats?.monitored || 0;
+  } catch (error) {
+    console.error('[DropCraft] Error loading stats:', error);
+  }
+}
+
+function updateConnectionStatus(isConnected) {
+  const statusEl = getElement('connectionStatus');
+  const statusTitle = getElement('statusTitle');
+  const statusSub = getElement('statusSub');
+  const connectBtn = getElement('connectBtn');
+  
+  if (statusEl) {
+    if (isConnected) {
+      statusEl.classList.remove('disconnected');
+      if (statusTitle) statusTitle.textContent = 'Connecté';
+      if (statusSub) statusSub.textContent = 'Synchronisation active';
+      if (connectBtn) connectBtn.textContent = 'Déconnecter';
+    } else {
+      statusEl.classList.add('disconnected');
+      if (statusTitle) statusTitle.textContent = 'Non connecté';
+      if (statusSub) statusSub.textContent = 'Connectez-vous pour synchroniser';
+      if (connectBtn) connectBtn.textContent = 'Connecter';
+    }
   }
 }
 
 function setupEventListeners() {
-  document.getElementById('saveSettings').addEventListener('click', saveSettings);
-  document.getElementById('resetSettings').addEventListener('click', resetSettings);
-  document.getElementById('exportSettings').addEventListener('click', exportSettings);
-  document.getElementById('testConnection').addEventListener('click', testConnection);
+  // Safe event listener attachment
+  const saveBtn = getElement('saveSettings');
+  const resetBtn = getElement('resetSettings');
+  const exportBtn = getElement('exportSettings');
+  const testBtn = getElement('testConnection');
+  const clearBtn = getElement('clearData');
+  const connectBtn = getElement('connectBtn');
+  
+  if (saveBtn) saveBtn.addEventListener('click', saveSettings);
+  if (resetBtn) resetBtn.addEventListener('click', resetSettings);
+  if (exportBtn) exportBtn.addEventListener('click', exportSettings);
+  if (testBtn) testBtn.addEventListener('click', testConnection);
+  if (clearBtn) clearBtn.addEventListener('click', clearAllData);
+  if (connectBtn) connectBtn.addEventListener('click', toggleConnection);
   
   // Auto-save on toggle change
   document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -63,21 +150,40 @@ function setupEventListeners() {
   });
 }
 
+async function toggleConnection() {
+  const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+  
+  if (extensionToken) {
+    // Disconnect
+    await chrome.storage.local.remove(['extensionToken']);
+    setElementValue('extensionToken', '');
+    updateConnectionStatus(false);
+    showNotification('Déconnecté', 'info');
+  } else {
+    // Open app to connect
+    chrome.tabs.create({ url: `${APP_URL}/extensions/chrome` });
+  }
+}
+
 async function saveSettings() {
   try {
     const settings = {
-      apiUrl: document.getElementById('apiUrl').value,
-      extensionToken: document.getElementById('extensionToken').value,
-      autoPriceMonitoring: document.getElementById('autoPriceMonitoring').checked,
-      autoStockAlerts: document.getElementById('autoStockAlerts').checked,
-      autoInjectButtons: document.getElementById('autoInjectButtons').checked,
-      pushNotifications: document.getElementById('pushNotifications').checked,
-      minMargin: parseFloat(document.getElementById('minMargin').value) || 30,
-      maxPrice: parseFloat(document.getElementById('maxPrice').value) || 100,
-      minRating: parseFloat(document.getElementById('minRating').value) || 4,
-      excludeKeywords: document.getElementById('excludeKeywords').value,
-      importDelay: parseInt(document.getElementById('importDelay').value) || 2,
-      debugMode: document.getElementById('debugMode').checked
+      apiUrl: getElementValue('apiUrl', DEFAULT_SETTINGS.apiUrl),
+      extensionToken: getElementValue('extensionToken', ''),
+      autoPriceMonitoring: getElementValue('autoPriceMonitoring', false),
+      autoStockAlerts: getElementValue('autoStockAlerts', false),
+      autoInjectButtons: getElementValue('autoInjectButtons', true),
+      autoShowSidebar: getElementValue('autoShowSidebar', false),
+      pushNotifications: getElementValue('pushNotifications', true),
+      minMargin: getElementValue('minMargin', 30),
+      maxPrice: getElementValue('maxPrice', 100),
+      minRating: getElementValue('minRating', 4),
+      excludeKeywords: getElementValue('excludeKeywords', ''),
+      includeCategories: getElementValue('includeCategories', ''),
+      importDelay: parseInt(getElementValue('importDelay', 2)) || 2,
+      maxConcurrent: parseInt(getElementValue('maxConcurrent', 5)) || 5,
+      debugMode: getElementValue('debugMode', false),
+      powerSaveMode: getElementValue('powerSaveMode', false)
     };
     
     await chrome.storage.local.set(settings);
@@ -95,11 +201,14 @@ async function saveSettings() {
       chrome.alarms.clear('stockAlerts');
     }
     
-    showNotification('✅ Configuration sauvegardée!', 'success');
-    console.log('Settings saved:', settings);
+    // Update connection status
+    updateConnectionStatus(!!settings.extensionToken);
+    
+    showNotification('Configuration sauvegardée!', 'success');
+    console.log('[DropCraft] Settings saved:', settings);
   } catch (error) {
-    console.error('Error saving settings:', error);
-    showNotification('❌ Erreur lors de la sauvegarde', 'error');
+    console.error('[DropCraft] Error saving settings:', error);
+    showNotification('Erreur lors de la sauvegarde', 'error');
   }
 }
 
@@ -108,17 +217,32 @@ async function resetSettings() {
     try {
       await chrome.storage.local.set(DEFAULT_SETTINGS);
       await loadSettings();
-      showNotification('🔄 Configuration réinitialisée', 'info');
+      showNotification('Configuration réinitialisée', 'info');
     } catch (error) {
-      console.error('Error resetting settings:', error);
-      showNotification('❌ Erreur lors de la réinitialisation', 'error');
+      console.error('[DropCraft] Error resetting settings:', error);
+      showNotification('Erreur lors de la réinitialisation', 'error');
+    }
+  }
+}
+
+async function clearAllData() {
+  if (confirm('Êtes-vous sûr de vouloir effacer TOUTES les données? Cette action est irréversible.')) {
+    try {
+      await chrome.storage.local.clear();
+      await chrome.storage.local.set(DEFAULT_SETTINGS);
+      await loadSettings();
+      await loadStats();
+      showNotification('Toutes les données effacées', 'info');
+    } catch (error) {
+      console.error('[DropCraft] Error clearing data:', error);
+      showNotification('Erreur lors de la suppression', 'error');
     }
   }
 }
 
 async function exportSettings() {
   try {
-    const settings = await chrome.storage.local.get(DEFAULT_SETTINGS);
+    const settings = await chrome.storage.local.get(null);
     
     // Remove sensitive data
     const exportData = { ...settings };
@@ -130,26 +254,28 @@ async function exportSettings() {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `shopopti-settings-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `dropcraft-settings-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
     
-    showNotification('📥 Configuration exportée', 'success');
+    showNotification('Configuration exportée', 'success');
   } catch (error) {
-    console.error('Error exporting settings:', error);
-    showNotification('❌ Erreur lors de l\'export', 'error');
+    console.error('[DropCraft] Error exporting settings:', error);
+    showNotification('Erreur lors de l\'export', 'error');
   }
 }
 
 async function testConnection() {
-  const btn = document.getElementById('testConnection');
+  const btn = getElement('testConnection');
+  if (!btn) return;
+  
   const originalContent = btn.innerHTML;
   
   try {
-    btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Test...';
+    btn.innerHTML = '<span class="spinner"></span> Test...';
     btn.disabled = true;
     
-    const token = document.getElementById('extensionToken').value;
+    const token = getElementValue('extensionToken', '');
     
     if (!token) {
       throw new Error('Token d\'extension requis');
@@ -165,14 +291,15 @@ async function testConnection() {
     });
     
     if (response.ok) {
-      showNotification('✅ Connexion réussie!', 'success');
+      updateConnectionStatus(true);
+      showNotification('Connexion réussie!', 'success');
     } else {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.error || `Erreur HTTP: ${response.status}`);
     }
   } catch (error) {
-    console.error('Connection test error:', error);
-    showNotification(`❌ Échec: ${error.message}`, 'error');
+    console.error('[DropCraft] Connection test error:', error);
+    showNotification(`Échec: ${error.message}`, 'error');
   } finally {
     btn.innerHTML = originalContent;
     btn.disabled = false;
@@ -183,9 +310,15 @@ function showNotification(message, type = 'info') {
   // Remove existing notifications
   document.querySelectorAll('.notification').forEach(n => n.remove());
   
+  const icons = {
+    success: '✅',
+    error: '❌',
+    info: 'ℹ️'
+  };
+  
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
-  notification.textContent = message;
+  notification.textContent = `${icons[type] || ''} ${message}`;
   
   document.body.appendChild(notification);
   
@@ -201,7 +334,16 @@ style.textContent = `
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
 `;
 document.head.appendChild(style);
 
-console.log('ShopOpti+ Options page loaded');
+console.log('[DropCraft] Options page loaded');
