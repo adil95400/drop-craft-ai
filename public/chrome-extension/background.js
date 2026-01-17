@@ -1,9 +1,9 @@
-// ShopOpti+ Chrome Extension - Background Service Worker v3.0
+// Drop Craft AI Chrome Extension - Background Service Worker v4.0
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://drop-craft-ai.lovable.app';
 
-class ShopOptiBackground {
+class DropCraftBackground {
   constructor() {
     this.init();
   }
@@ -51,10 +51,10 @@ class ShopOptiBackground {
   }
 
   async onInstall() {
-    console.log('ShopOpti+ Extension installed');
+    console.log('Drop Craft AI Extension installed');
     
     await chrome.storage.local.set({
-      extensionVersion: '3.0.0',
+      extensionVersion: '4.0.0',
       installDate: new Date().toISOString(),
       settings: {
         autoInjectButtons: true,
@@ -68,20 +68,21 @@ class ShopOptiBackground {
         monitored: 0
       },
       activities: [],
-      pendingItems: []
+      pendingItems: [],
+      importHistory: []
     });
 
     // Open welcome page
     chrome.tabs.create({
-      url: `${APP_URL}/integrations/extensions?installed=chrome&v=3.0`
+      url: `${APP_URL}/extensions/chrome?installed=true&v=4.0`
     });
   }
 
   async onUpdate(previousVersion) {
-    console.log(`ShopOpti+ updated from ${previousVersion} to 3.0.0`);
+    console.log(`Drop Craft AI updated from ${previousVersion} to 4.0.0`);
     
     await chrome.storage.local.set({
-      extensionVersion: '3.0.0',
+      extensionVersion: '4.0.0',
       lastUpdate: new Date().toISOString()
     });
   }
@@ -89,19 +90,19 @@ class ShopOptiBackground {
   setupContextMenus() {
     chrome.contextMenus.removeAll(() => {
       chrome.contextMenus.create({
-        id: 'shopopti-import-product',
-        title: '🛍️ Importer ce produit dans ShopOpti+',
+        id: 'dropcraft-import-product',
+        title: '🚀 Importer dans Drop Craft AI',
         contexts: ['page', 'link']
       });
 
       chrome.contextMenus.create({
-        id: 'shopopti-import-reviews',
+        id: 'dropcraft-import-reviews',
         title: '⭐ Importer les avis',
         contexts: ['page']
       });
 
       chrome.contextMenus.create({
-        id: 'shopopti-monitor-price',
+        id: 'dropcraft-monitor-price',
         title: '📊 Surveiller le prix',
         contexts: ['page']
       });
@@ -113,8 +114,8 @@ class ShopOptiBackground {
       });
 
       chrome.contextMenus.create({
-        id: 'shopopti-open-dashboard',
-        title: '📊 Ouvrir ShopOpti+ Dashboard',
+        id: 'dropcraft-open-dashboard',
+        title: '📊 Ouvrir Drop Craft AI',
         contexts: ['page']
       });
     });
@@ -192,19 +193,19 @@ class ShopOptiBackground {
 
   async handleContextMenuClick(info, tab) {
     switch (info.menuItemId) {
-      case 'shopopti-import-product':
+      case 'dropcraft-import-product':
         await this.importFromContextMenu(info.linkUrl || tab.url);
         break;
 
-      case 'shopopti-import-reviews':
+      case 'dropcraft-import-reviews':
         await this.importReviews({});
         break;
 
-      case 'shopopti-monitor-price':
+      case 'dropcraft-monitor-price':
         await this.addToMonitoring(tab.url);
         break;
 
-      case 'shopopti-open-dashboard':
+      case 'dropcraft-open-dashboard':
         chrome.tabs.create({ url: `${APP_URL}/dashboard` });
         break;
     }
