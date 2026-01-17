@@ -278,6 +278,7 @@ export function HelpCenter() {
           variant="outline" 
           size="icon"
           className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg z-50"
+          aria-label="Ouvrir le centre d'aide"
         >
           <HelpCircle className="h-6 w-6" />
         </Button>
