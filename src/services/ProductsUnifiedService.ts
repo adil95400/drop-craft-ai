@@ -326,38 +326,73 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table supplier_products - Produits depuis les fournisseurs connectés
+   * Table supplier_products - Produits depuis les fournisseurs connectés (extension Chrome)
+   * Note: Les produits sont importés avec le champ 'title' et le prix en centimes
    */
   private static async getSupplierProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
     const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     try {
-      const { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('supplier_products')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit)
 
-      if (error) throw error
+      // Appliquer les filtres si présents
+      if (filters?.search) {
+        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
+      }
+      if (filters?.category) {
+        query = query.eq('category', filters.category)
+      }
 
-      return (data || []).map((p: any) => ({
-        id: p.id,
-        name: p.name || 'Produit sans nom',
-        description: p.description,
-        price: p.price || 0,
-        cost_price: p.wholesale_price || p.cost_price,
-        status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
-        stock_quantity: p.stock_quantity,
-        sku: p.global_sku || p.external_sku,
-        category: p.category,
-        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
-        images: Array.isArray(p.image_urls) ? p.image_urls : [],
-        profit_margin: p.profit_margin,
-        user_id: userId,
-        source: 'supplier' as const,
-        created_at: p.created_at || new Date().toISOString(),
-        updated_at: p.updated_at || new Date().toISOString()
-      }))
+      const { data, error } = await query
+
+      if (error) {
+        console.error('Error fetching supplier_products:', error)
+        throw error
+      }
+
+      console.log(`✓ supplier_products loaded: ${data?.length || 0} products for user ${userId}`)
+
+      return (data || []).map((p: any) => {
+        // Le prix peut être en centimes (ex: 59899 = 598.99€) ou en euros
+        // On détecte si le prix est > 1000 on divise par 100
+        let price = p.price || 0
+        if (price > 10000) {
+          price = price / 100
+        }
+        
+        // L'image peut être dans image_url (string) ou images (array)
+        const imageUrl = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : undefined)
+        const images = Array.isArray(p.images) && p.images.length > 0 
+          ? p.images 
+          : (p.image_url ? [p.image_url] : [])
+
+        return {
+          id: p.id,
+          name: p.title || p.name || 'Produit sans nom',
+          description: p.description,
+          price: price,
+          cost_price: p.cost_price ? (p.cost_price > 10000 ? p.cost_price / 100 : p.cost_price) : undefined,
+          status: (p.is_active === false ? 'inactive' : 'active') as 'active' | 'inactive',
+          stock_quantity: p.stock_quantity,
+          sku: p.sku || p.global_sku || p.external_sku,
+          category: p.category,
+          image_url: imageUrl,
+          images: images,
+          profit_margin: p.profit_margin,
+          user_id: userId,
+          source: 'supplier' as const,
+          created_at: p.created_at || new Date().toISOString(),
+          updated_at: p.updated_at || new Date().toISOString(),
+          // Champs additionnels pour supplier_products
+          ai_score: p.ai_score,
+          is_winner: p.is_winner,
+          is_trending: p.is_trending
+        }
+      })
     } catch (error) {
       console.error('Error loading supplier_products:', error)
       return []
