@@ -5,6 +5,7 @@ const APP_URL = 'https://drop-craft-ai.lovable.app';
 
 class DropCraftBackground {
   constructor() {
+    console.log('[DropCraft] Background service worker initializing...');
     this.init();
   }
 
@@ -12,6 +13,7 @@ class DropCraftBackground {
     this.setupEventListeners();
     this.setupContextMenus();
     this.setupAlarms();
+    console.log('[DropCraft] Background service worker initialized');
   }
 
   setupEventListeners() {
@@ -27,7 +29,7 @@ class DropCraftBackground {
     // Messages
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       this.handleMessage(message, sender, sendResponse);
-      return true;
+      return true; // Keep message channel open for async response
     });
 
     // Tab updates
@@ -43,15 +45,17 @@ class DropCraftBackground {
     });
 
     // Web navigation
-    chrome.webNavigation?.onCompleted.addListener((details) => {
-      if (details.frameId === 0) {
-        this.injectContentScript(details.tabId, details.url);
-      }
-    });
+    if (chrome.webNavigation) {
+      chrome.webNavigation.onCompleted.addListener((details) => {
+        if (details.frameId === 0) {
+          this.injectContentScript(details.tabId, details.url);
+        }
+      });
+    }
   }
 
   async onInstall() {
-    console.log('Drop Craft AI Extension installed');
+    console.log('[DropCraft] Extension installed');
     
     await chrome.storage.local.set({
       extensionVersion: '4.0.0',
@@ -79,7 +83,7 @@ class DropCraftBackground {
   }
 
   async onUpdate(previousVersion) {
-    console.log(`Drop Craft AI updated from ${previousVersion} to 4.0.0`);
+    console.log(`[DropCraft] Extension updated from ${previousVersion} to 4.0.0`);
     
     await chrome.storage.local.set({
       extensionVersion: '4.0.0',
@@ -91,19 +95,19 @@ class DropCraftBackground {
     chrome.contextMenus.removeAll(() => {
       chrome.contextMenus.create({
         id: 'dropcraft-import-product',
-        title: '🚀 Importer dans Drop Craft AI',
+        title: 'Importer dans Drop Craft AI',
         contexts: ['page', 'link']
       });
 
       chrome.contextMenus.create({
         id: 'dropcraft-import-reviews',
-        title: '⭐ Importer les avis',
+        title: 'Importer les avis',
         contexts: ['page']
       });
 
       chrome.contextMenus.create({
         id: 'dropcraft-monitor-price',
-        title: '📊 Surveiller le prix',
+        title: 'Surveiller le prix',
         contexts: ['page']
       });
 
@@ -115,7 +119,7 @@ class DropCraftBackground {
 
       chrome.contextMenus.create({
         id: 'dropcraft-open-dashboard',
-        title: '📊 Ouvrir Drop Craft AI',
+        title: 'Ouvrir Drop Craft AI',
         contexts: ['page']
       });
     });
@@ -144,6 +148,8 @@ class DropCraftBackground {
   }
 
   async handleMessage(message, sender, sendResponse) {
+    console.log('[DropCraft] Message received:', message.type);
+    
     try {
       switch (message.type) {
         case 'GET_SETTINGS':
@@ -180,14 +186,95 @@ class DropCraftBackground {
           const result = await this.scrapeUrl(message.url);
           sendResponse(result);
           break;
+          
+        case 'IMPORT_PRODUCT':
+          const importResult = await this.importProduct(message.product);
+          sendResponse(importResult);
+          break;
+          
+        case 'FETCH_API':
+          // Handle fetch requests from content scripts (bypasses CSP)
+          const fetchResult = await this.fetchApi(message.url, message.options);
+          sendResponse(fetchResult);
+          break;
 
         default:
-          console.warn('Unknown message type:', message.type);
+          console.warn('[DropCraft] Unknown message type:', message.type);
           sendResponse({ error: 'Unknown message type' });
       }
     } catch (error) {
-      console.error('Error handling message:', error);
+      console.error('[DropCraft] Error handling message:', error);
       sendResponse({ error: error.message });
+    }
+  }
+  
+  // Fetch API handler - allows content scripts to make requests through background
+  async fetchApi(url, options = {}) {
+    try {
+      const response = await fetch(url, options);
+      const contentType = response.headers.get('content-type');
+      
+      let data;
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
+      
+      return {
+        success: response.ok,
+        status: response.status,
+        data: data
+      };
+    } catch (error) {
+      console.error('[DropCraft] Fetch API error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+  
+  async importProduct(product) {
+    try {
+      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+      
+      if (!extensionToken) {
+        return { success: false, error: 'Non connecté' };
+      }
+      
+      const response = await fetch(`${API_URL}/extension-sync-realtime`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'import_products',
+          products: [product]
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Update local stats
+        const { stats } = await chrome.storage.local.get(['stats']);
+        await chrome.storage.local.set({
+          stats: {
+            ...stats,
+            products: (stats?.products || 0) + 1
+          }
+        });
+        
+        this.showNotification('Produit importé', product.title || 'Import réussi');
+        return { success: true, data };
+      } else {
+        return { success: false, error: data.error || 'Erreur import' };
+      }
+    } catch (error) {
+      console.error('[DropCraft] Import product error:', error);
+      return { success: false, error: error.message };
     }
   }
 
@@ -243,7 +330,7 @@ class DropCraftBackground {
         });
       } catch (error) {
         // Content script might already be injected
-        console.log('Script injection skipped:', error.message);
+        console.log('[DropCraft] Script injection skipped:', error.message);
       }
     }
   }
@@ -274,7 +361,8 @@ class DropCraftBackground {
       maxPrice: 100,
       minRating: 4,
       excludeKeywords: '',
-      importDelay: 2
+      importDelay: 2,
+      debugMode: false
     });
   }
 
@@ -333,7 +421,7 @@ class DropCraftBackground {
         }
       }
     } catch (error) {
-      console.error('Sync error:', error);
+      console.error('[DropCraft] Sync error:', error);
     }
   }
 
@@ -353,7 +441,7 @@ class DropCraftBackground {
     // Add to activities
     const newActivity = {
       title: `${products.length} produit(s) importé(s)`,
-      icon: '📦',
+      icon: 'package',
       timestamp: new Date().toISOString()
     };
 
@@ -388,14 +476,14 @@ class DropCraftBackground {
           })
         });
       } catch (error) {
-        console.error('Error sending products to API:', error);
+        console.error('[DropCraft] Error sending products to API:', error);
       }
     }
 
     // Show notification
     this.showNotification(
       `${products.length} produit(s) importé(s)`,
-      'Import réussi via ShopOpti+'
+      'Import réussi via Drop Craft AI'
     );
   }
 
@@ -405,7 +493,7 @@ class DropCraftBackground {
       
       const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        function: extractReviewsFromPage,
+        func: extractReviewsFromPage,
         args: [config]
       });
 
@@ -444,7 +532,7 @@ class DropCraftBackground {
 
       return reviews;
     } catch (error) {
-      console.error('Error importing reviews:', error);
+      console.error('[DropCraft] Error importing reviews:', error);
       return [];
     }
   }
@@ -502,13 +590,11 @@ class DropCraftBackground {
   }
 
   async checkPriceChanges() {
-    // Implementation for price monitoring
-    console.log('Checking price changes...');
+    console.log('[DropCraft] Checking price changes...');
   }
 
   async checkStockChanges() {
-    // Implementation for stock monitoring
-    console.log('Checking stock changes...');
+    console.log('[DropCraft] Checking stock changes...');
   }
 
   showNotification(title, message) {
@@ -517,7 +603,7 @@ class DropCraftBackground {
         chrome.notifications.create({
           type: 'basic',
           iconUrl: 'icons/icon48.png',
-          title: `ShopOpti+ - ${title}`,
+          title: `Drop Craft AI - ${title}`,
           message
         });
       }
@@ -530,7 +616,6 @@ function extractReviewsFromPage(config) {
   const reviews = [];
   const maxReviews = config?.maxReviews || 50;
 
-  // Generic review selectors
   const reviewSelectors = [
     '[data-hook="review"]',
     '.review-item',
@@ -579,5 +664,9 @@ function extractReviewsFromPage(config) {
   return reviews;
 }
 
-// Initialize
-new DropCraftBackground();
+// Initialize the background service worker
+try {
+  new DropCraftBackground();
+} catch (error) {
+  console.error('[DropCraft] Failed to initialize:', error);
+}
