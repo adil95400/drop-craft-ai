@@ -7438,6 +7438,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           variants: Json | null
+          view_count: number | null
           weight: number | null
           weight_unit: string | null
         }
@@ -7470,6 +7471,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           variants?: Json | null
+          view_count?: number | null
           weight?: number | null
           weight_unit?: string | null
         }
@@ -7502,6 +7504,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           variants?: Json | null
+          view_count?: number | null
           weight?: number | null
           weight_unit?: string | null
         }
@@ -9092,6 +9095,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           variants: Json | null
+          view_count: number | null
         }
         Insert: {
           attributes?: Json | null
@@ -9117,6 +9121,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           variants?: Json | null
+          view_count?: number | null
         }
         Update: {
           attributes?: Json | null
@@ -9142,6 +9147,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           variants?: Json | null
+          view_count?: number | null
         }
         Relationships: [
           {
