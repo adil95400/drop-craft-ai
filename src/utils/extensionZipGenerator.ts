@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { toast } from 'sonner';
 
 const EXTENSION_FILES = [
   'manifest.json',
@@ -25,48 +26,66 @@ const EXTENSION_FILES = [
 
 export async function generateExtensionZip(): Promise<void> {
   const zip = new JSZip();
-  const basePath = '/chrome-extension';
+  
+  // Try multiple base paths for different environments
+  const basePaths = [
+    '/chrome-extension',
+    './chrome-extension',
+    `${window.location.origin}/chrome-extension`
+  ];
+  
+  let filesLoaded = 0;
   
   // Fetch all extension files
-  const filePromises = EXTENSION_FILES.map(async (filePath) => {
-    try {
-      const response = await fetch(`${basePath}/${filePath}`);
-      if (!response.ok) {
-        console.warn(`Could not fetch ${filePath}:`, response.status);
-        return null;
+  for (const filePath of EXTENSION_FILES) {
+    let fileLoaded = false;
+    
+    for (const basePath of basePaths) {
+      try {
+        const fullPath = `${basePath}/${filePath}`;
+        const response = await fetch(fullPath, { 
+          method: 'GET',
+          cache: 'no-cache'
+        });
+        
+        if (!response.ok) {
+          continue;
+        }
+        
+        // Determine if binary or text
+        const isBinary = filePath.endsWith('.png') || filePath.endsWith('.ico');
+        
+        if (isBinary) {
+          const blob = await response.blob();
+          zip.file(filePath, blob);
+        } else {
+          const text = await response.text();
+          zip.file(filePath, text);
+        }
+        
+        filesLoaded++;
+        fileLoaded = true;
+        break; // File loaded successfully, move to next file
+      } catch (error) {
+        console.warn(`Error fetching ${filePath} from ${basePath}:`, error);
       }
-      
-      // Determine if binary or text
-      const isBinary = filePath.endsWith('.png') || filePath.endsWith('.ico');
-      
-      if (isBinary) {
-        const blob = await response.blob();
-        return { path: filePath, content: blob, binary: true };
-      } else {
-        const text = await response.text();
-        return { path: filePath, content: text, binary: false };
-      }
-    } catch (error) {
-      console.warn(`Error fetching ${filePath}:`, error);
-      return null;
     }
-  });
-
-  const files = await Promise.all(filePromises);
+    
+    if (!fileLoaded) {
+      console.warn(`Could not load file: ${filePath}`);
+    }
+  }
   
-  // Add files to ZIP
-  files.forEach((file) => {
-    if (file) {
-      if (file.binary) {
-        zip.file(file.path, file.content as Blob);
-      } else {
-        zip.file(file.path, file.content as string);
-      }
-    }
-  });
+  // Check if we got any files
+  if (filesLoaded === 0) {
+    toast.error('Erreur: Impossible de charger les fichiers de l\'extension');
+    throw new Error('No extension files could be loaded');
+  }
+  
+  console.log(`Loaded ${filesLoaded}/${EXTENSION_FILES.length} files`);
 
-  // Also add README
-  const readmeContent = `# ShopOpti Chrome Extension
+  // Add installation README
+  const readmeContent = `# ShopOpti Chrome Extension v4.0.0
 
 ## Installation
 
@@ -78,15 +97,21 @@ export async function generateExtensionZip(): Promise<void> {
 
 ## Fonctionnalités
 
-- Import 1-clic depuis AliExpress, Amazon, eBay
+- Import 1-clic depuis AliExpress, Amazon, eBay, Temu
 - Détection automatique des prix et informations produit
 - Synchronisation automatique avec ShopOpti
 - Import d'avis depuis Trustpilot, Google, Amazon
 - Surveillance des prix et alertes
 
+## Configuration
+
+1. Cliquez sur l'icône de l'extension
+2. Entrez votre clé API disponible sur shopopti.io/extensions/chrome
+3. Configurez vos préférences dans les options
+
 ## Support
 
-Pour toute question, contactez support@shopopti.com
+Pour toute question, contactez support@shopopti.io
 `;
   zip.file('README.txt', readmeContent);
 
@@ -97,5 +122,8 @@ Pour toute question, contactez support@shopopti.com
     compressionOptions: { level: 9 }
   });
   
-  saveAs(content, 'shopopti-chrome-extension.zip');
+  // Use saveAs to download
+  saveAs(content, 'shopopti-chrome-extension-v4.zip');
+  
+  toast.success(`Extension téléchargée (${filesLoaded} fichiers)`);
 }
