@@ -583,37 +583,146 @@ class AmazonDetector extends BaseDetector {
   }
 
   async extractSingleProduct() {
+    // Get product title - more specific selectors for Amazon
+    const titleElement = document.querySelector('#productTitle') || 
+                         document.querySelector('#title span') ||
+                         document.querySelector('h1#title');
+    
+    let productTitle = '';
+    if (titleElement) {
+      productTitle = titleElement.textContent.trim();
+    }
+    
+    // Fallback: try to get from page title if product title is empty or invalid
+    if (!productTitle || productTitle.length < 5 || productTitle.includes('Raccourci clavier')) {
+      const pageTitle = document.title;
+      // Remove common Amazon suffixes
+      productTitle = pageTitle
+        .replace(/\s*[-:]\s*Amazon\..*$/, '')
+        .replace(/\s*\|\s*Amazon\..*$/, '')
+        .trim();
+    }
+    
+    // Get main product image - prioritize actual product image, not sprites
+    let mainImage = '';
+    const imageElement = document.querySelector('#landingImage') || 
+                         document.querySelector('#imgBlkFront') ||
+                         document.querySelector('.a-dynamic-image') ||
+                         document.querySelector('#main-image') ||
+                         document.querySelector('#imgTagWrapperId img');
+    
+    if (imageElement) {
+      // Get the high-res version from data attributes or src
+      mainImage = imageElement.dataset.oldHires || 
+                  imageElement.dataset.aCardingLinkHref ||
+                  imageElement.src || '';
+      
+      // Filter out sprites and placeholder images
+      if (mainImage.includes('sprite') || 
+          mainImage.includes('grey-pixel') ||
+          mainImage.includes('transparent-pixel') ||
+          mainImage.length < 50) {
+        mainImage = '';
+      }
+    }
+    
+    // Fallback: Get first image from product gallery
+    if (!mainImage) {
+      const galleryImages = document.querySelectorAll('#altImages img, .imageThumbnail img');
+      for (const img of galleryImages) {
+        let src = img.src || img.dataset.src;
+        if (src && !src.includes('sprite') && !src.includes('pixel')) {
+          // Get larger version
+          mainImage = src.replace(/\._[A-Z0-9_]+_\./, '._AC_SL1500_.');
+          break;
+        }
+      }
+    }
+    
+    // Get price with multiple fallbacks for different Amazon layouts
+    let priceValue = '';
+    const priceSelectors = [
+      '.a-price .a-offscreen',
+      '#priceblock_ourprice',
+      '#priceblock_dealprice',
+      '.a-price-whole',
+      '#corePrice_feature_div .a-offscreen',
+      '.priceToPay .a-offscreen',
+      '#corePriceDisplay_desktop_feature_div .a-offscreen'
+    ];
+    
+    for (const selector of priceSelectors) {
+      const priceEl = document.querySelector(selector);
+      if (priceEl && priceEl.textContent.trim()) {
+        priceValue = priceEl.textContent.trim();
+        break;
+      }
+    }
+    
+    // Get description from feature bullets or product description
+    let description = '';
+    const featureBullets = document.querySelector('#feature-bullets');
+    if (featureBullets) {
+      const bulletPoints = featureBullets.querySelectorAll('li span');
+      description = Array.from(bulletPoints)
+        .map(el => el.textContent.trim())
+        .filter(text => text.length > 0)
+        .join('\n• ');
+      if (description) description = '• ' + description;
+    }
+    
+    if (!description) {
+      const productDescription = document.querySelector('#productDescription');
+      if (productDescription) {
+        description = productDescription.textContent.trim().substring(0, 1000);
+      }
+    }
+
     return {
       id: `amazon_${Date.now()}`,
-      asin: document.querySelector('[data-asin]')?.dataset.asin || '',
-      name: this.getTextContent(document, ['#productTitle', '#title', 'h1']),
-      title: this.getTextContent(document, ['#productTitle', '#title', 'h1']),
-      price: this.getPriceContent(document, ['.a-price .a-offscreen', '#priceblock_ourprice', '#priceblock_dealprice', '.a-price-whole']),
-      image: this.getImageSrc(document, ['#landingImage', '#imgBlkFront', '#main-image']),
+      asin: document.querySelector('[data-asin]')?.dataset.asin || this.extractASINFromURL(),
+      name: productTitle,
+      title: productTitle,
+      price: priceValue,
+      image: mainImage,
       images: this.getProductImages(),
-      description: this.getTextContent(document, ['#productDescription', '#feature-bullets']),
+      description: description,
       rating: this.getRating(),
       reviews: this.getTextContent(document, ['#acrCustomerReviewText']),
-      brand: this.getTextContent(document, ['#bylineInfo', '.po-brand .a-span9']),
+      brand: this.getTextContent(document, ['#bylineInfo a', '.po-brand .a-span9']),
       category: this.getCategory(),
       url: window.location.href,
-      domain: 'amazon.com',
+      domain: window.location.hostname,
       platform: 'amazon',
       scrapedAt: new Date().toISOString(),
       source: 'extension_injected'
     };
   }
+  
+  extractASINFromURL() {
+    const url = window.location.href;
+    const asinMatch = url.match(/\/dp\/([A-Z0-9]{10})/i) || url.match(/\/product\/([A-Z0-9]{10})/i);
+    return asinMatch ? asinMatch[1] : '';
+  }
 
   getProductImages() {
     const images = [];
-    document.querySelectorAll('#altImages img, .imageThumbnail img').forEach(img => {
-      let src = img.src || img.dataset.src;
+    const galleryImages = document.querySelectorAll('#altImages img, .imageThumbnail img, .a-dynamic-image');
+    
+    for (const img of galleryImages) {
+      let src = img.src || img.dataset.src || img.dataset.oldHires;
       if (src) {
-        // Get larger image
+        // Skip sprite images and placeholders
+        if (src.includes('sprite') || src.includes('pixel') || src.includes('grey')) {
+          continue;
+        }
+        // Get larger image version
         src = src.replace(/\._[A-Z0-9_]+_\./, '._AC_SL1500_.');
-        if (!images.includes(src)) images.push(src);
+        if (!images.includes(src)) {
+          images.push(src);
+        }
       }
-    });
+    }
     return images;
   }
 
@@ -621,8 +730,10 @@ class AmazonDetector extends BaseDetector {
     const ratingEl = document.querySelector('#acrPopover, .a-icon-star');
     if (ratingEl) {
       const title = ratingEl.getAttribute('title') || ratingEl.textContent;
-      const match = title.match(/(\d+\.?\d*)/);
-      return match ? parseFloat(match[1]) : null;
+      const match = title.match(/(\d+[,.]?\d*)/);
+      if (match) {
+        return parseFloat(match[1].replace(',', '.'));
+      }
     }
     return null;
   }
@@ -645,13 +756,16 @@ class AmazonDetector extends BaseDetector {
 
   isProductPage() {
     return window.location.pathname.includes('/dp/') || 
+           window.location.pathname.includes('/product/') ||
            document.querySelector('#productTitle');
   }
 
   injectProductImportButton() {
     if (document.querySelector('.dropcraft-import-btn-main')) return;
     
-    const targetEl = document.querySelector('#productTitle, #title');
+    const targetEl = document.querySelector('#productTitle') || 
+                     document.querySelector('#title') ||
+                     document.querySelector('h1');
     if (!targetEl) return;
     
     const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
