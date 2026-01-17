@@ -17,14 +17,31 @@ class DropCraftContentScript {
     this.setupInjectedScriptListener();
   }
 
-  // NEW: Inject the professional sidebar
+  // NEW: Inject the professional sidebar and tools
   injectSidebar() {
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('sidebar.js');
-    script.onload = function() {
-      this.remove();
-    };
-    (document.head || document.documentElement).appendChild(script);
+    // Inject sidebar
+    const sidebarScript = document.createElement('script');
+    sidebarScript.src = chrome.runtime.getURL('sidebar.js');
+    sidebarScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(sidebarScript);
+    
+    // Inject grabber for bulk import
+    const grabberScript = document.createElement('script');
+    grabberScript.src = chrome.runtime.getURL('grabber.js');
+    grabberScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(grabberScript);
+    
+    // Inject fulfillment tools
+    const fulfillmentScript = document.createElement('script');
+    fulfillmentScript.src = chrome.runtime.getURL('fulfillment.js');
+    fulfillmentScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(fulfillmentScript);
+    
+    // Inject automation engine
+    const automationScript = document.createElement('script');
+    automationScript.src = chrome.runtime.getURL('automation.js');
+    automationScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(automationScript);
   }
 
   setupMessageListener() {
