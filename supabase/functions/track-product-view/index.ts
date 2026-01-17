@@ -29,22 +29,45 @@ Deno.serve(async (req) => {
 
     console.log('Tracking product view:', { productId, userId, source })
 
-    // Check if product is in products or imported_products
+    // Check if product is in products, supplier_products, or imported_products
     const { data: product } = await supabaseClient
       .from('products')
       .select('id, view_count')
       .eq('id', productId)
-      .single()
+      .maybeSingle()
+
+    const { data: supplierProduct } = await supabaseClient
+      .from('supplier_products')
+      .select('id, view_count')
+      .eq('id', productId)
+      .maybeSingle()
 
     const { data: importedProduct } = await supabaseClient
       .from('imported_products')
       .select('id, view_count')
       .eq('id', productId)
-      .single()
+      .maybeSingle()
 
-    const isImported = !product && importedProduct
-    const tableName = isImported ? 'imported_products' : 'products'
-    const currentViews = (product?.view_count || importedProduct?.view_count || 0)
+    // Determine which table has the product
+    let tableName = 'products'
+    let currentViews = 0
+    
+    if (product) {
+      tableName = 'products'
+      currentViews = product.view_count || 0
+    } else if (supplierProduct) {
+      tableName = 'supplier_products'
+      currentViews = supplierProduct.view_count || 0
+    } else if (importedProduct) {
+      tableName = 'imported_products'
+      currentViews = importedProduct.view_count || 0
+    } else {
+      console.log('Product not found in any table, skipping view tracking')
+      return new Response(
+        JSON.stringify({ success: true, message: 'Product not found, view not tracked' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Update view count
     const { error: updateError } = await supabaseClient

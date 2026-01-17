@@ -29,22 +29,50 @@ Deno.serve(async (req) => {
 
     console.log('Comparing supplier prices for product:', productId)
 
-    // Get product and its suppliers
-    const { data: product, error: productError } = await supabaseClient
+    // Get product from products, supplier_products, or imported_products
+    const { data: product } = await supabaseClient
       .from('products')
       .select('*, supplier_ids, best_supplier_id')
       .eq('id', productId)
-      .single()
+      .maybeSingle()
 
-    if (productError && productError.code !== 'PGRST116') {
-      // Try imported_products
-      const { data: importedProduct, error: importedError } = await supabaseClient
-        .from('imported_products')
-        .select('*, supplier_info')
-        .eq('id', productId)
-        .single()
+    const { data: supplierProduct } = await supabaseClient
+      .from('supplier_products')
+      .select('*')
+      .eq('id', productId)
+      .maybeSingle()
 
-      if (importedError) throw new Error('Product not found')
+    const { data: importedProduct } = await supabaseClient
+      .from('imported_products')
+      .select('*, supplier_info')
+      .eq('id', productId)
+      .maybeSingle()
+
+    // Handle supplier_products - they are already from a supplier
+    if (supplierProduct) {
+      const comparison = [{
+        supplierId: supplierProduct.supplier_id || 'extension',
+        supplierName: 'Extension Import',
+        price: supplierProduct.price || 0,
+        stock: supplierProduct.stock_quantity || 0,
+        shippingTime: 7,
+        isBestPrice: true,
+        isFastest: true,
+      }]
+
+      return new Response(
+        JSON.stringify({ 
+          productId,
+          comparisons: comparison,
+          bestPrice: comparison[0],
+          fastest: comparison[0]
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Handle imported_products
+    if (!product && importedProduct) {
 
       // For imported products, extract supplier info
       const supplierInfo = importedProduct.supplier_info as any
@@ -64,6 +92,20 @@ Deno.serve(async (req) => {
           comparisons: comparison,
           bestPrice: comparison[0],
           fastest: comparison[0]
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // If no product found in any table
+    if (!product) {
+      return new Response(
+        JSON.stringify({ 
+          productId,
+          comparisons: [],
+          bestPrice: null,
+          fastest: null,
+          message: 'Product not found'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
