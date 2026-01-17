@@ -784,7 +784,7 @@ class ShopifyDetector extends BaseDetector {
     const products = [];
     
     const productElements = document.querySelectorAll(
-      '.product-item, .grid-product__content, .product-card, '[data-product]''
+      '.product-item, .grid-product__content, .product-card, [data-product]'
     );
     
     for (let i = 0; i < Math.min(productElements.length, 50); i++) {
