@@ -22,7 +22,7 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
       }
 
       try {
-        // Vérification serveur sécurisée
+        // Server-side verification ONLY - do not rely on client profile state
         const { data, error } = await supabase.rpc('is_admin_secure');
         
         if (error) {
@@ -40,7 +40,7 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
     };
 
     verifyAdminStatus();
-  }, [user, profile?.is_admin]);
+  }, [user]); // Only depend on user ID - trust server RPC response only
 
   if (isLoading) {
     return (
