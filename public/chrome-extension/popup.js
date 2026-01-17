@@ -1,5 +1,5 @@
-// Drop Craft AI Chrome Extension - Popup Script v4.0
-// Professional Dropshipping Extension
+// Drop Craft AI Chrome Extension - Popup Script v4.1
+// Professional Dropshipping Extension - Fixed version
 
 class DropCraftPopup {
   constructor() {
@@ -40,8 +40,13 @@ class DropCraftPopup {
       this.pendingItems = result.pendingItems || [];
       this.userPlan = result.userPlan || 'free';
       this.importHistory = result.importHistory || [];
+      
+      console.log('[Popup] Loaded data:', { 
+        hasToken: !!this.extensionToken, 
+        tokenPrefix: this.extensionToken ? this.extensionToken.slice(0, 10) : null 
+      });
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('[Popup] Error loading data:', error);
     }
   }
 
@@ -52,12 +57,15 @@ class DropCraftPopup {
         activities: this.activities,
         pendingItems: this.pendingItems
       });
+      console.log('[Popup] Data saved');
     } catch (error) {
-      console.error('Error saving data:', error);
+      console.error('[Popup] Error saving data:', error);
     }
   }
 
   async checkConnection() {
+    console.log('[Popup] Checking connection, token:', this.extensionToken ? 'present' : 'missing');
+    
     if (!this.extensionToken) {
       this.isConnected = false;
       return;
@@ -73,13 +81,16 @@ class DropCraftPopup {
         body: JSON.stringify({ action: 'sync_status' })
       });
 
+      console.log('[Popup] Connection response status:', response.status);
       this.isConnected = response.ok;
       
       if (response.ok) {
         const data = await response.json();
+        console.log('[Popup] Sync data:', data);
+        
         if (data.todayStats) {
           this.stats = {
-            products: data.todayStats.imports || 0,
+            products: data.todayStats.imports || data.todayStats.successful || 0,
             reviews: data.todayStats.reviews || 0,
             monitored: data.todayStats.monitored || 0
           };
@@ -88,9 +99,19 @@ class DropCraftPopup {
           this.userPlan = data.userPlan;
           await chrome.storage.local.set({ userPlan: data.userPlan });
         }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[Popup] Connection failed:', errorData);
+        
+        // If token is invalid, clear it
+        if (response.status === 401) {
+          this.extensionToken = null;
+          await chrome.storage.local.remove(['extensionToken']);
+          this.showToast('Token expiré, reconnectez-vous', 'warning');
+        }
       }
     } catch (error) {
-      console.error('Connection check failed:', error);
+      console.error('[Popup] Connection check failed:', error);
       this.isConnected = false;
     }
   }
@@ -126,7 +147,7 @@ class DropCraftPopup {
         }
       }
     } catch (error) {
-      console.error('Error detecting page:', error);
+      console.error('[Popup] Error detecting page:', error);
     }
   }
 
@@ -205,17 +226,14 @@ class DropCraftPopup {
   }
 
   initTabs() {
-    // Show main tab by default
     this.switchTab('main');
   }
 
   switchTab(tabName) {
-    // Update tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
 
-    // Show/hide tab panels
     const panels = {
       'main': [],
       'profit': ['profitTab'],
@@ -223,22 +241,17 @@ class DropCraftPopup {
       'sync': ['syncTab']
     };
 
-    // Hide all panels first
     document.querySelectorAll('.tab-panel').forEach(panel => {
       panel.classList.add('hidden');
     });
 
-    // Show relevant panels
     if (panels[tabName]) {
       panels[tabName].forEach(panelId => {
         const panel = document.getElementById(panelId);
-        if (panel) {
-          panel.classList.remove('hidden');
-        }
+        if (panel) panel.classList.remove('hidden');
       });
     }
 
-    // Show/hide main content sections
     const mainSections = ['.actions-section', '.features-section', '.activity-section'];
     mainSections.forEach(selector => {
       const section = document.querySelector(selector);
@@ -270,7 +283,6 @@ class DropCraftPopup {
     const roi = totalCost > 0 ? (profitPerUnit / totalCost) * 100 : 0;
     const totalProfit = profitPerUnit * estimatedQty;
 
-    // Update display
     const profitPerUnitEl = document.getElementById('profitPerUnit');
     const marginEl = document.getElementById('marginPercent');
     const roiEl = document.getElementById('roiPercent');
@@ -292,7 +304,6 @@ class DropCraftPopup {
       totalProfitEl.textContent = `${totalProfit.toFixed(2)} €`;
     }
 
-    // Update recommendations
     this.updateProfitRecommendations(margin, profitPerUnit);
   }
 
@@ -354,23 +365,31 @@ class DropCraftPopup {
     // Update plan badge
     const planBadge = document.getElementById('planBadge');
     if (planBadge) {
-      const planNames = { 'free': 'Free', 'starter': 'Starter', 'pro': 'Pro', 'ultra_pro': 'Ultra Pro' };
-      planBadge.textContent = planNames[this.userPlan] || 'Free';
+      const planNames = { 'free': 'Free', 'starter': 'Starter', 'pro': 'Pro', 'ultra_pro': 'Ultra Pro', 'standard': 'Standard' };
+      planBadge.textContent = planNames[this.userPlan] || 'Standard';
       planBadge.className = `plan-badge ${this.userPlan === 'pro' || this.userPlan === 'ultra_pro' ? 'pro' : ''}`;
     }
 
     // Update stats
-    document.getElementById('todayProducts').textContent = this.stats.products;
-    document.getElementById('todayReviews').textContent = this.stats.reviews;
-    document.getElementById('monitoredCount').textContent = this.stats.monitored;
+    const todayProducts = document.getElementById('todayProducts');
+    const todayReviews = document.getElementById('todayReviews');
+    const monitoredCount = document.getElementById('monitoredCount');
+    
+    if (todayProducts) todayProducts.textContent = this.stats.products || 0;
+    if (todayReviews) todayReviews.textContent = this.stats.reviews || 0;
+    if (monitoredCount) monitoredCount.textContent = this.stats.monitored || 0;
 
     // Update page info
     const pageInfo = document.getElementById('pageInfo');
     if (this.currentPlatform && pageInfo) {
       pageInfo.classList.remove('hidden');
-      pageInfo.querySelector('.page-icon').textContent = this.currentPlatform.icon;
-      pageInfo.querySelector('.page-platform').textContent = this.currentPlatform.name;
-      pageInfo.querySelector('.page-url').textContent = this.currentPlatform.hostname;
+      const pageIcon = pageInfo.querySelector('.page-icon');
+      const pagePlatform = pageInfo.querySelector('.page-platform');
+      const pageUrl = pageInfo.querySelector('.page-url');
+      
+      if (pageIcon) pageIcon.textContent = this.currentPlatform.icon;
+      if (pagePlatform) pagePlatform.textContent = this.currentPlatform.name;
+      if (pageUrl) pageUrl.textContent = this.currentPlatform.hostname;
     }
 
     // Update activities
@@ -413,7 +432,6 @@ class DropCraftPopup {
       </div>
     `).join('');
 
-    // Bind delete buttons
     list.querySelectorAll('.activity-action').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const index = parseInt(e.target.dataset.index);
@@ -471,11 +489,14 @@ class DropCraftPopup {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
-      // Try to send message to content script
+      // Method 1: Try content script first
       try {
         const response = await chrome.tabs.sendMessage(tab.id, { type: 'SCRAPE_PAGE' });
         
-        if (response?.success) {
+        if (response?.success && response?.count > 0) {
+          // Send scraped products to backend
+          await this.sendProductsToBackend(response.products || []);
+          
           this.stats.products += response.count || 1;
           this.addActivity(`${response.count || 1} produit(s) importé(s)`, '📦', this.currentPlatform?.name);
           this.showToast(`${response.count || 1} produit(s) importé(s)!`, 'success');
@@ -484,13 +505,17 @@ class DropCraftPopup {
           return;
         }
       } catch (e) {
-        console.log('Content script not ready, trying URL scraping');
+        console.log('[Popup] Content script not ready, trying URL scraping');
       }
       
-      // Fallback: try URL scraping
+      // Method 2: Fallback to URL scraping via edge function
+      console.log('[Popup] Attempting URL scrape for:', tab.url);
       const result = await this.scrapeByUrl(tab.url);
       
-      if (result.success) {
+      if (result.success && result.product) {
+        // Send the scraped product to backend
+        await this.sendProductsToBackend([result.product]);
+        
         this.stats.products += 1;
         this.addActivity('Produit importé via URL', '📦', this.currentPlatform?.name);
         this.showToast('Produit importé!', 'success');
@@ -500,10 +525,53 @@ class DropCraftPopup {
         throw new Error(result.error || 'Impossible d\'importer ce produit');
       }
     } catch (error) {
-      console.error('Import error:', error);
+      console.error('[Popup] Import error:', error);
       this.showToast('Erreur: ' + error.message, 'error');
     } finally {
       this.hideLoading();
+    }
+  }
+
+  async sendProductsToBackend(products) {
+    if (!products || products.length === 0 || !this.extensionToken) {
+      console.log('[Popup] No products to send or no token');
+      return;
+    }
+
+    try {
+      console.log('[Popup] Sending', products.length, 'products to backend');
+      
+      const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': this.extensionToken
+        },
+        body: JSON.stringify({
+          action: 'import_products',
+          products: products.map(p => ({
+            title: p.name || p.title || 'Produit importé',
+            name: p.name || p.title || 'Produit importé',
+            price: p.price,
+            description: p.description || '',
+            image: p.image || p.imageUrl || '',
+            url: p.url || '',
+            source: 'chrome_extension',
+            platform: p.platform || p.domain || this.currentPlatform?.name || 'unknown'
+          }))
+        })
+      });
+
+      const data = await response.json();
+      console.log('[Popup] Backend response:', data);
+      
+      if (!response.ok) {
+        console.error('[Popup] Backend error:', data);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('[Popup] Error sending to backend:', error);
     }
   }
 
@@ -518,8 +586,18 @@ class DropCraftPopup {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
-      await chrome.tabs.sendMessage(tab.id, { type: 'INJECT_ONE_CLICK_BUTTONS' });
-      await chrome.tabs.sendMessage(tab.id, { type: 'AUTO_SCRAPE' });
+      // First inject buttons, then start scraping
+      try {
+        await chrome.tabs.sendMessage(tab.id, { type: 'INJECT_ONE_CLICK_BUTTONS' });
+      } catch (e) {
+        console.log('[Popup] Could not inject buttons');
+      }
+      
+      try {
+        await chrome.tabs.sendMessage(tab.id, { type: 'AUTO_SCRAPE' });
+      } catch (e) {
+        console.log('[Popup] Could not start auto scrape');
+      }
 
       this.showToast('Scan lancé! Vérifiez la page', 'info');
       this.addActivity('Scan multiple lancé', '📥', this.currentPlatform?.name);
@@ -547,8 +625,11 @@ class DropCraftPopup {
         this.showToast(`${response.count || 0} avis importés!`, 'success');
         await this.saveData();
         this.updateUI();
+      } else {
+        this.showToast('Aucun avis trouvé', 'info');
       }
     } catch (error) {
+      console.error('[Popup] Review import error:', error);
       this.showToast('Erreur lors de l\'import des avis', 'error');
     } finally {
       this.hideLoading();
@@ -586,17 +667,22 @@ class DropCraftPopup {
 
   async scrapeByUrl(url) {
     try {
+      console.log('[Popup] Scraping URL:', url);
+      
       const response = await fetch(`${this.API_URL}/product-url-scraper`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-extension-token': this.extensionToken
+          'x-extension-token': this.extensionToken || ''
         },
         body: JSON.stringify({ url })
       });
 
-      return await response.json();
+      const result = await response.json();
+      console.log('[Popup] Scrape result:', result);
+      return result;
     } catch (error) {
+      console.error('[Popup] Scrape error:', error);
       return { success: false, error: error.message };
     }
   }
@@ -607,7 +693,6 @@ class DropCraftPopup {
       return;
     }
 
-    // Open dashboard
     chrome.tabs.create({ url: `${this.APP_URL}/products` });
     this.addActivity('Ouverture du dashboard', '📊');
   }
@@ -617,7 +702,12 @@ class DropCraftPopup {
     await this.checkConnection();
     this.updateUI();
     this.hideLoading();
-    this.showToast('Données synchronisées', 'success');
+    
+    if (this.isConnected) {
+      this.showToast('Données synchronisées', 'success');
+    } else {
+      this.showToast('Échec de synchronisation', 'error');
+    }
   }
 
   async disconnect() {
@@ -675,6 +765,8 @@ class DropCraftPopup {
   // Mapping functions
   addMappingRule() {
     const container = document.getElementById('mappingRules');
+    if (!container) return;
+    
     const rule = document.createElement('div');
     rule.className = 'mapping-rule';
     rule.innerHTML = `
@@ -693,7 +785,6 @@ class DropCraftPopup {
 
   autoMapVariants() {
     this.showToast('Mapping IA en cours...', 'info');
-    // Simulate AI mapping
     setTimeout(() => {
       this.showToast('Variantes mappées automatiquement!', 'success');
     }, 1500);
@@ -707,7 +798,8 @@ class DropCraftPopup {
   syncAll() {
     this.showToast('Synchronisation en cours...', 'info');
     setTimeout(() => {
-      document.getElementById('lastSyncTime').textContent = 'À l\'instant';
+      const lastSyncTime = document.getElementById('lastSyncTime');
+      if (lastSyncTime) lastSyncTime.textContent = 'À l\'instant';
       this.showToast('Synchronisation terminée!', 'success');
     }, 2000);
   }

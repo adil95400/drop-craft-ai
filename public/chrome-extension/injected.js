@@ -1,15 +1,16 @@
-// Injected script for advanced product detection
+// Injected script for advanced product detection v4.1
 // This script runs in the page context to access site-specific APIs
 
 class AdvancedProductDetector {
   constructor() {
+    this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
     this.platformDetectors = {
-      aliexpress: new AliExpressDetector(),
-      amazon: new AmazonDetector(),
-      temu: new TemuDetector(),
-      shopify: new ShopifyDetector(),
-      woocommerce: new WooCommerceDetector(),
-      generic: new GenericDetector()
+      aliexpress: new AliExpressDetector(this.API_URL),
+      amazon: new AmazonDetector(this.API_URL),
+      temu: new TemuDetector(this.API_URL),
+      shopify: new ShopifyDetector(this.API_URL),
+      woocommerce: new WooCommerceDetector(this.API_URL),
+      generic: new GenericDetector(this.API_URL)
     };
     
     this.init();
@@ -18,6 +19,7 @@ class AdvancedProductDetector {
   init() {
     this.setupMessageListener();
     this.injectOneClickButtons();
+    console.log('[DropCraft] Advanced detector initialized');
   }
 
   setupMessageListener() {
@@ -41,6 +43,10 @@ class AdvancedProductDetector {
               product: product
             }, '*');
           });
+          break;
+          
+        case 'INJECT_ONE_CLICK_BUTTONS':
+          this.injectOneClickButtons();
           break;
       }
     });
@@ -75,7 +81,7 @@ class AdvancedProductDetector {
     const detector = this.platformDetectors[platform] || this.platformDetectors.generic;
     detector.injectOneClickButtons();
     
-    // Inject global styles for toasts
+    // Inject global styles
     if (!document.querySelector('#dropcraft-styles')) {
       const style = document.createElement('style');
       style.id = 'dropcraft-styles';
@@ -91,8 +97,17 @@ class AdvancedProductDetector {
           }
         }
         
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        
         .dropcraft-import-btn:active {
           transform: scale(0.95) !important;
+        }
+        
+        .dropcraft-import-btn {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         }
       `;
       document.head.appendChild(style);
@@ -100,17 +115,238 @@ class AdvancedProductDetector {
   }
 }
 
+// Base Detector class
+class BaseDetector {
+  constructor(apiUrl) {
+    this.API_URL = apiUrl;
+  }
+  
+  async getExtensionToken() {
+    // Try to get token from storage via message
+    return new Promise((resolve) => {
+      // Check if we have a cached token
+      if (window.__dropcraft_token) {
+        resolve(window.__dropcraft_token);
+        return;
+      }
+      resolve(null);
+    });
+  }
+
+  createImportButton(text, onClick, isSmall = false) {
+    const button = document.createElement('button');
+    button.className = 'dropcraft-import-btn';
+    button.innerHTML = `
+      <svg width="${isSmall ? 14 : 18}" height="${isSmall ? 14 : 18}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      <span>${text}</span>
+    `;
+    
+    button.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    };
+    
+    button.style.cssText = `
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      color: white !important;
+      border: none !important;
+      padding: ${isSmall ? '8px 14px' : '14px 24px'} !important;
+      border-radius: ${isSmall ? '8px' : '10px'} !important;
+      font-size: ${isSmall ? '12px' : '15px'} !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      position: ${isSmall ? 'absolute' : 'relative'} !important;
+      top: ${isSmall ? '10px' : 'auto'} !important;
+      right: ${isSmall ? '10px' : 'auto'} !important;
+      z-index: 10000 !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+      margin: ${isSmall ? '0' : '16px 0'} !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-decoration: none !important;
+      outline: none !important;
+    `;
+    
+    button.onmouseover = () => {
+      button.style.transform = 'translateY(-2px)';
+      button.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.6)';
+    };
+    
+    button.onmouseout = () => {
+      button.style.transform = 'translateY(0)';
+      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+    };
+    
+    return button;
+  }
+
+  async importProductFromURL(url) {
+    this.showLoadingToast('⏳ Import en cours...');
+    
+    try {
+      const response = await fetch(`${this.API_URL}/product-url-scraper`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url })
+      });
+
+      const result = await response.json();
+      
+      if (result.success && result.product) {
+        // Notify the extension about the imported product
+        window.postMessage({
+          type: 'IMPORT_PRODUCTS',
+          products: [result.product]
+        }, '*');
+        
+        this.showSuccessToast(`✅ ${result.product?.title || result.product?.name || 'Produit'} importé!`);
+      } else {
+        this.showErrorToast('❌ ' + (result.error || 'Erreur inconnue'));
+      }
+    } catch (error) {
+      console.error('[DropCraft] Import error:', error);
+      this.showErrorToast('❌ Erreur de connexion');
+    }
+  }
+
+  showLoadingToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#667eea');
+    document.body.appendChild(toast);
+  }
+
+  showSuccessToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#10b981');
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  showErrorToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#ef4444');
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+  }
+
+  hideAllToasts() {
+    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
+  }
+
+  createToast(message, color) {
+    const toast = document.createElement('div');
+    toast.className = 'dropcraft-toast';
+    toast.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <span>${message}</span>
+      </div>
+    `;
+    toast.style.cssText = `
+      position: fixed !important;
+      top: 20px !important;
+      right: 20px !important;
+      background: ${color} !important;
+      color: white !important;
+      padding: 16px 24px !important;
+      border-radius: 12px !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
+      z-index: 2147483647 !important;
+      animation: slideIn 0.4s ease-out !important;
+      max-width: 400px !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    `;
+    return toast;
+  }
+
+  // Utility methods
+  getTextContent(container, selectors) {
+    const selectorList = Array.isArray(selectors) ? selectors : [selectors];
+    for (const selector of selectorList) {
+      const element = container.querySelector(selector);
+      if (element && element.textContent.trim()) {
+        return element.textContent.trim();
+      }
+    }
+    return '';
+  }
+
+  getPriceContent(container, selectors) {
+    const selectorList = Array.isArray(selectors) ? selectors : [selectors];
+    for (const selector of selectorList) {
+      const element = container.querySelector(selector);
+      if (element) {
+        const text = element.textContent.trim();
+        // Extract price with currency
+        const priceMatch = text.match(/[\d\s,.]+(€|\$|£|₹|¥|kr|zł|CHF|USD|EUR|GBP)/i) || 
+                          text.match(/(€|\$|£)[\d\s,.]+/i) ||
+                          text.match(/[\d,.]+/);
+        if (priceMatch) return priceMatch[0].trim();
+      }
+    }
+    return '';
+  }
+
+  getImageSrc(container, selectors) {
+    const selectorList = Array.isArray(selectors) ? selectors : [selectors];
+    for (const selector of selectorList) {
+      const element = container.querySelector(selector);
+      if (element) {
+        return element.src || element.dataset.src || element.dataset.original || element.getAttribute('data-lazy-src') || '';
+      }
+    }
+    return '';
+  }
+
+  getRatingFromElement(element) {
+    const ratingEl = element.querySelector('.star, .rating, [class*="star"], [class*="rating"]');
+    if (ratingEl) {
+      const ariaLabel = ratingEl.getAttribute('aria-label');
+      if (ariaLabel) {
+        const match = ariaLabel.match(/(\d+\.?\d*)/);
+        if (match) return parseFloat(match[1]);
+      }
+      const ratingMatch = ratingEl.textContent.match(/(\d+\.?\d*)/);
+      return ratingMatch ? parseFloat(ratingMatch[1]) : null;
+    }
+    return null;
+  }
+
+  getLinkFromElement(element) {
+    const link = element.querySelector('a[href]');
+    if (link) {
+      const href = link.getAttribute('href');
+      if (href.startsWith('http')) return href;
+      return window.location.origin + href;
+    }
+    return window.location.href;
+  }
+}
+
 // AliExpress specific detector
-class AliExpressDetector {
+class AliExpressDetector extends BaseDetector {
   async extractProducts() {
     const products = [];
     
-    // AliExpress product list selectors
     const productElements = document.querySelectorAll(
-      '.list-item, .product-item, [data-spm-anchor-id*="item"], .item-info'
+      '.list-item, .product-item, [data-spm-anchor-id*="item"], .search-item-card-wrapper-gallery, .multi--outWrapper--SeJ8bEF'
     );
     
-    for (let i = 0; i < productElements.length; i++) {
+    for (let i = 0; i < Math.min(productElements.length, 50); i++) {
       const element = productElements[i];
       const product = await this.extractProductFromElement(element, i);
       if (product.name && product.price) {
@@ -125,6 +361,7 @@ class AliExpressDetector {
     return {
       id: `aliexpress_${Date.now()}`,
       name: this.getProductTitle(),
+      title: this.getProductTitle(),
       price: this.getProductPrice(),
       originalPrice: this.getOriginalPrice(),
       discount: this.getDiscount(),
@@ -132,7 +369,6 @@ class AliExpressDetector {
       images: this.getProductImages(),
       description: this.getProductDescription(),
       specifications: this.getSpecifications(),
-      reviews: await this.getReviews(),
       rating: this.getRating(),
       orders: this.getOrderCount(),
       shipping: this.getShippingInfo(),
@@ -151,16 +387,16 @@ class AliExpressDetector {
     return {
       id: `aliexpress_list_${Date.now()}_${index}`,
       name: this.getTextContent(element, [
-        '.item-title', '.title', '.product-title', 'h3', 'h2'
+        '.item-title', '.title', '.product-title', 'h3', 'h2', '.multi--titleText--nXeOvyr'
       ]),
       price: this.getPriceContent(element, [
-        '.price-current', '.price', '[class*="price"]'
+        '.price-current', '.price', '[class*="price"]', '.multi--price-sale--U-S0jtj'
       ]),
       image: this.getImageSrc(element, [
-        '.item-img img', '.product-img img', 'img'
+        '.item-img img', '.product-img img', 'img', '.images--item--3XZa6xf img'
       ]),
       rating: this.getRatingFromElement(element),
-      orders: this.getOrdersFromElement(element),
+      orders: this.getTextContent(element, ['[class*="sold"]', '[class*="order"]']),
       url: this.getLinkFromElement(element),
       domain: 'aliexpress.com',
       platform: 'aliexpress',
@@ -171,96 +407,81 @@ class AliExpressDetector {
 
   getProductTitle() {
     return this.getTextContent(document, [
-      'h1', '.product-title-text', '[data-pl="product-title"]'
+      'h1', '.product-title-text', '[data-pl="product-title"]', '.title--wrap--UUHae_g h1'
     ]);
   }
 
   getProductPrice() {
     return this.getPriceContent(document, [
-      '.product-price-value', '.price-current', '[data-pl="product-price"]'
+      '.product-price-value', '.price-current', '[data-pl="product-price"]', '.price--currentPriceText--V8_y_b5'
     ]);
   }
 
   getOriginalPrice() {
     return this.getPriceContent(document, [
-      '.price-original', '.price-del', '[class*="original-price"]'
+      '.price-original', '.price-del', '[class*="original-price"]', '.price--originalText--gxVO5_d'
     ]);
   }
 
   getDiscount() {
-    const discountEl = document.querySelector('.discount, [class*="discount"]');
+    const discountEl = document.querySelector('.discount, [class*="discount"], .price--discount--Y9uG2LK');
     return discountEl ? discountEl.textContent.trim() : null;
   }
 
   getProductImage() {
     return this.getImageSrc(document, [
-      '.magnifier-image img', '.product-image img', '.main-image img'
+      '.magnifier-image img', '.product-image img', '.main-image img', '.slider--img--K6MIH9z'
     ]);
   }
 
   getProductImages() {
     const images = [];
-    document.querySelectorAll('.images-view-item img, .thumb-img img').forEach(img => {
+    document.querySelectorAll('.images-view-item img, .thumb-img img, .slider--item--RiRGiDV img').forEach(img => {
       const src = img.src || img.dataset.src;
-      if (src) images.push(src);
+      if (src && !images.includes(src)) images.push(src);
     });
     return images;
   }
 
   getProductDescription() {
     return this.getTextContent(document, [
-      '.product-description', '[data-pl="product-description"]'
+      '.product-description', '[data-pl="product-description"]', '.detail--desc--ql2Dslg'
     ]);
   }
 
   getSpecifications() {
     const specs = {};
-    document.querySelectorAll('.product-prop-list .product-prop').forEach(prop => {
-      const key = prop.querySelector('.prop-title')?.textContent.trim();
-      const value = prop.querySelector('.prop-value')?.textContent.trim();
+    document.querySelectorAll('.product-prop-list .product-prop, .specification--prop--Jh28bKu').forEach(prop => {
+      const key = prop.querySelector('.prop-title, .specification--title--SfH3sA1')?.textContent.trim();
+      const value = prop.querySelector('.prop-value, .specification--desc--Dxx6W0W')?.textContent.trim();
       if (key && value) specs[key] = value;
     });
     return specs;
   }
 
-  async getReviews() {
-    const reviews = [];
-    document.querySelectorAll('.review-item').forEach((review, index) => {
-      if (index < 5) { // Limit to first 5 reviews
-        reviews.push({
-          rating: this.getRatingFromElement(review),
-          text: this.getTextContent(review, ['.review-content', '.review-text']),
-          author: this.getTextContent(review, ['.review-author', '.reviewer-name']),
-          date: this.getTextContent(review, ['.review-date', '.review-time'])
-        });
-      }
-    });
-    return reviews;
-  }
-
   getRating() {
-    const ratingEl = document.querySelector('.product-reviewer-reviews .average-star');
+    const ratingEl = document.querySelector('.product-reviewer-reviews .average-star, .reviewer--rating--xrWWFzx');
     return ratingEl ? parseFloat(ratingEl.textContent) : null;
   }
 
   getOrderCount() {
-    const ordersEl = document.querySelector('[class*="order"], [class*="sold"]');
+    const ordersEl = document.querySelector('[class*="order"], [class*="sold"], .reviewer--sold--ytPeoEy');
     return ordersEl ? ordersEl.textContent.trim() : null;
   }
 
   getShippingInfo() {
     return this.getTextContent(document, [
-      '.shipping-info', '[class*="shipping"]', '.delivery-info'
+      '.shipping-info', '[class*="shipping"]', '.delivery-info', '.dynamic-shipping'
     ]);
   }
 
   getVariations() {
     const variations = {};
-    document.querySelectorAll('.product-variation').forEach(variation => {
-      const type = variation.querySelector('.variation-type')?.textContent.trim();
-      const options = Array.from(variation.querySelectorAll('.variation-option')).map(
-        opt => opt.textContent.trim()
-      );
+    document.querySelectorAll('.product-variation, .sku-item--container--1DKzz9L').forEach(variation => {
+      const type = variation.querySelector('.variation-type, .sku-item--title--1K8Q8AN')?.textContent.trim();
+      const options = Array.from(variation.querySelectorAll('.variation-option, .sku-item--image--jMZSVgH')).map(
+        opt => opt.textContent.trim() || opt.getAttribute('title') || ''
+      ).filter(Boolean);
       if (type) variations[type] = options;
     });
     return variations;
@@ -268,14 +489,14 @@ class AliExpressDetector {
 
   getSellerInfo() {
     return {
-      name: this.getTextContent(document, ['.seller-name', '[class*="seller"]']),
+      name: this.getTextContent(document, ['.seller-name', '[class*="seller"]', '.store-info--name--ARDz0oP']),
       rating: this.getTextContent(document, ['.seller-rating']),
       followers: this.getTextContent(document, ['.seller-followers'])
     };
   }
 
   getCategory() {
-    const breadcrumbs = document.querySelector('.breadcrumb');
+    const breadcrumbs = document.querySelector('.breadcrumb, .comet-breadcrumb');
     if (breadcrumbs) {
       const links = breadcrumbs.querySelectorAll('a');
       return links.length > 1 ? links[links.length - 2].textContent.trim() : '';
@@ -284,553 +505,78 @@ class AliExpressDetector {
   }
 
   injectOneClickButtons() {
-    // Inject import button on product pages
     if (this.isProductPage()) {
       this.injectProductImportButton();
     }
-    
-    // Inject buttons on product listings
     this.injectListingButtons();
   }
 
   isProductPage() {
     return window.location.pathname.includes('/item/') || 
-           document.querySelector('.product-title-text, .product-price-value');
+           document.querySelector('.product-title-text, .product-price-value, .title--wrap--UUHae_g');
   }
 
   injectProductImportButton() {
-    if (document.querySelector('.dropcraft-import-btn')) return;
+    if (document.querySelector('.dropcraft-import-btn-main')) return;
     
-    const targetEl = document.querySelector('.product-title-text, h1');
+    const targetEl = document.querySelector('.product-title-text, h1, .title--wrap--UUHae_g');
     if (!targetEl) return;
     
     const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
-      this.importCurrentProduct();
+      this.importProductFromURL(window.location.href);
     });
+    button.classList.add('dropcraft-import-btn-main');
     
     targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
   }
 
   injectListingButtons() {
-    const productElements = document.querySelectorAll('.list-item, .product-item');
+    const productElements = document.querySelectorAll('.list-item, .product-item, .search-item-card-wrapper-gallery, .multi--outWrapper--SeJ8bEF');
+    
     productElements.forEach((element) => {
       if (element.querySelector('.dropcraft-import-btn')) return;
       
-      const button = this.createImportButton('Importer', () => {
-        this.importProductFromURL(this.getLinkFromElement(element));
+      const link = this.getLinkFromElement(element);
+      const button = this.createImportButton('Import', () => {
+        this.importProductFromURL(link);
       }, true);
       
       element.style.position = 'relative';
       element.appendChild(button);
     });
   }
-
-  createImportButton(text, onClick, isSmall = false) {
-    const button = document.createElement('button');
-    button.className = 'dropcraft-import-btn';
-    button.textContent = text;
-    button.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onClick();
-    };
-    
-    button.style.cssText = `
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: ${isSmall ? '6px 12px' : '12px 24px'};
-      border-radius: ${isSmall ? '6px' : '8px'};
-      font-size: ${isSmall ? '12px' : '16px'};
-      font-weight: 600;
-      cursor: pointer;
-      position: ${isSmall ? 'absolute' : 'relative'};
-      top: ${isSmall ? '10px' : 'auto'};
-      right: ${isSmall ? '10px' : 'auto'};
-      z-index: 10000;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-      margin: ${isSmall ? '0' : '16px 0'};
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    `;
-    
-    button.onmouseover = () => {
-      button.style.transform = 'translateY(-2px)';
-      button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
-    };
-    
-    button.onmouseout = () => {
-      button.style.transform = 'translateY(0)';
-      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-    };
-    
-    return button;
-  }
-
-  async importCurrentProduct() {
-    this.importProductFromURL(window.location.href);
-  }
-
-  async importProductFromElement(element, index) {
-    const link = this.getLinkFromElement(element);
-    this.importProductFromURL(link);
-  }
-
-  async importProductFromURL(url) {
-    this.showLoadingToast('⏳ Import en cours...');
-    
-    try {
-      const response = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/product-url-scraper', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        this.showSuccessToast(`✅ ${result.product?.name || 'Produit'} importé!`);
-      } else {
-        this.showErrorToast('❌ ' + (result.error || 'Erreur inconnue'));
-      }
-    } catch (error) {
-      console.error('Import error:', error);
-      this.showErrorToast('❌ Erreur de connexion');
-    }
-  }
-
-  showLoadingToast(message) {
-    this.hideAllToasts();
-    const toast = this.createToast(message, '#667eea');
-    document.body.appendChild(toast);
-  }
-
-  showSuccessToast(message) {
-    this.hideAllToasts();
-    const toast = this.createToast(message, '#10b981');
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
-
-  showErrorToast(message) {
-    this.hideAllToasts();
-    const toast = this.createToast(message, '#ef4444');
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-  }
-
-  hideAllToasts() {
-    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
-  }
-
-  createToast(message, color) {
-    const toast = document.createElement('div');
-    toast.className = 'dropcraft-toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: ${color};
-      color: white;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-      z-index: 100000;
-      animation: slideIn 0.3s ease-out;
-      max-width: 350px;
-    `;
-    return toast;
-  }
-
-  // Utility methods
-  getTextContent(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element && element.textContent.trim()) {
-        return element.textContent.trim();
-      }
-    }
-    return '';
-  }
-
-  getPriceContent(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element) {
-        const text = element.textContent.trim();
-        const priceMatch = text.match(/[\d,.]+(€|$|£|₹|¥|kr|zł|CHF|USD|EUR)/i);
-        if (priceMatch) return priceMatch[0];
-      }
-    }
-    return '';
-  }
-
-  getImageSrc(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element) {
-        return element.src || element.dataset.src || element.dataset.original || '';
-      }
-    }
-    return '';
-  }
-
-  getRatingFromElement(element) {
-    const ratingEl = element.querySelector('.star, .rating, [class*="star"]');
-    if (ratingEl) {
-      const ratingMatch = ratingEl.textContent.match(/(\d+\.?\d*)/);
-      return ratingMatch ? parseFloat(ratingMatch[1]) : null;
-    }
-    return null;
-  }
-
-  getOrdersFromElement(element) {
-    const ordersEl = element.querySelector('[class*="order"], [class*="sold"]');
-    return ordersEl ? ordersEl.textContent.trim() : null;
-  }
-
-  getLinkFromElement(element) {
-    const link = element.querySelector('a');
-    return link ? link.href : window.location.href;
-  }
 }
 
-// Temu specific detector  
-class TemuDetector {
+// Amazon specific detector  
+class AmazonDetector extends BaseDetector {
   async extractProducts() {
     const products = [];
+    
     const productElements = document.querySelectorAll(
-      '[data-testid="product-card"], .goods-item, .product-item'
+      '[data-component-type="s-search-result"], .s-result-item[data-asin], .sg-col-inner'
     );
     
-    for (let i = 0; i < productElements.length; i++) {
+    for (let i = 0; i < Math.min(productElements.length, 50); i++) {
       const element = productElements[i];
-      const product = await this.extractProductFromElement(element, i);
-      if (product.name && product.price) {
-        products.push(product);
-      }
-    }
-    
-    return products;
-  }
-
-  async extractSingleProduct() {
-    return {
-      id: `temu_${Date.now()}`,
-      name: this.getProductTitle(),
-      price: this.getProductPrice(),
-      originalPrice: this.getOriginalPrice(),
-      discount: this.getDiscount(),
-      image: this.getProductImage(),
-      images: this.getProductImages(),
-      description: this.getProductDescription(),
-      rating: this.getRating(),
-      reviews: this.getReviewCount(),
-      url: window.location.href,
-      domain: 'temu.com',
-      platform: 'temu',
-      scrapedAt: new Date().toISOString(),
-      source: 'extension_injected'
-    };
-  }
-
-  async extractProductFromElement(element, index) {
-    return {
-      id: `temu_list_${Date.now()}_${index}`,
-      name: this.getTextContent(element, [
-        'h1', 'h2', 'h3', '.product-title', '[class*="title"]'
-      ]),
-      price: this.getPriceContent(element, [
-        '.price', '[class*="price"]', '[data-testid*="price"]'
-      ]),
-      image: this.getImageSrc(element, [
-        'img[src*="product"]', 'img'
-      ]),
-      url: this.getLinkFromElement(element),
-      domain: 'temu.com',
-      platform: 'temu',
-      scrapedAt: new Date().toISOString(),
-      source: 'extension_injected'
-    };
-  }
-
-  getProductTitle() {
-    return this.getTextContent(document, [
-      'h1', '[data-testid="product-title"]', '.product-title'
-    ]);
-  }
-
-  getProductPrice() {
-    return this.getPriceContent(document, [
-      '[class*="price-current"]', '.price', '[data-testid*="price"]'
-    ]);
-  }
-
-  getOriginalPrice() {
-    return this.getPriceContent(document, [
-      '[class*="original"]', '[class*="regular"]'
-    ]);
-  }
-
-  getDiscount() {
-    const discountEl = document.querySelector('[class*="discount"], [class*="save"]');
-    return discountEl ? discountEl.textContent.trim() : null;
-  }
-
-  getProductImage() {
-    return this.getImageSrc(document, [
-      '[class*="main-image"] img', 'img[alt*="product"]', 'img'
-    ]);
-  }
-
-  getProductImages() {
-    const images = [];
-    document.querySelectorAll('img[src*="product"], [class*="gallery"] img').forEach(img => {
-      const src = img.src || img.dataset.src;
-      if (src && !images.includes(src)) images.push(src);
-    });
-    return images.slice(0, 10); // Limit to 10 images
-  }
-
-  getProductDescription() {
-    return this.getTextContent(document, [
-      '[class*="description"]', '[data-testid="description"]', 'p'
-    ]);
-  }
-
-  getRating() {
-    const ratingEl = document.querySelector('[class*="rating"], [class*="star"]');
-    if (ratingEl) {
-      const ratingMatch = ratingEl.textContent.match(/(\d+\.?\d*)/);
-      return ratingMatch ? parseFloat(ratingMatch[1]) : null;
-    }
-    return null;
-  }
-
-  getReviewCount() {
-    const reviewEl = document.querySelector('[class*="review"]');
-    return reviewEl ? reviewEl.textContent.trim() : null;
-  }
-
-  injectOneClickButtons() {
-    if (this.isProductPage()) {
-      this.injectProductImportButton();
-    }
-    this.injectListingButtons();
-  }
-
-  isProductPage() {
-    return window.location.pathname.includes('/g-') || 
-           document.querySelector('h1, [data-testid="product-title"]');
-  }
-
-  injectProductImportButton() {
-    if (document.querySelector('.dropcraft-import-btn')) return;
-    
-    const targetEl = document.querySelector('h1, [data-testid="product-title"]');
-    if (!targetEl) return;
-    
-    const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
-      this.importCurrentProduct();
-    });
-    
-    targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
-  }
-
-  injectListingButtons() {
-    const productElements = document.querySelectorAll('[data-testid="product-card"], .goods-item');
-    productElements.forEach((element, index) => {
-      if (element.querySelector('.dropcraft-import-btn')) return;
+      const asin = element.dataset.asin;
+      if (!asin) continue;
       
-      const button = this.createImportButton('Importer', () => {
-        this.importProductFromURL(this.getLinkFromElement(element));
-      }, true);
+      const product = {
+        id: `amazon_${asin}_${Date.now()}`,
+        asin: asin,
+        name: this.getTextContent(element, ['h2 a span', '.a-text-normal', '.a-size-base-plus']),
+        price: this.getPriceContent(element, ['.a-price .a-offscreen', '.a-price-whole', '.a-color-price']),
+        image: this.getImageSrc(element, ['.s-image', 'img.s-image']),
+        rating: this.getRatingFromElement(element),
+        reviews: this.getTextContent(element, ['.a-size-small .a-link-normal']),
+        url: this.getLinkFromElement(element),
+        domain: 'amazon.com',
+        platform: 'amazon',
+        scrapedAt: new Date().toISOString(),
+        source: 'extension_injected'
+      };
       
-      element.style.position = 'relative';
-      element.appendChild(button);
-    });
-  }
-
-  createImportButton(text, onClick, isSmall = false) {
-    const button = document.createElement('button');
-    button.className = 'dropcraft-import-btn';
-    button.textContent = text;
-    button.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onClick();
-    };
-    
-    button.style.cssText = `
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: ${isSmall ? '6px 12px' : '12px 24px'};
-      border-radius: ${isSmall ? '6px' : '8px'};
-      font-size: ${isSmall ? '12px' : '16px'};
-      font-weight: 600;
-      cursor: pointer;
-      position: ${isSmall ? 'absolute' : 'relative'};
-      top: ${isSmall ? '10px' : 'auto'};
-      right: ${isSmall ? '10px' : 'auto'};
-      z-index: 10000;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-      margin: ${isSmall ? '0' : '16px 0'};
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    `;
-    
-    button.onmouseover = () => {
-      button.style.transform = 'translateY(-2px)';
-      button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
-    };
-    
-    button.onmouseout = () => {
-      button.style.transform = 'translateY(0)';
-      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-    };
-    
-    return button;
-  }
-
-  async importCurrentProduct() {
-    this.importProductFromURL(window.location.href);
-  }
-
-  async importProductFromURL(url) {
-    this.showLoadingToast('⏳ Import en cours...');
-    
-    try {
-      // Use the product-url-scraper edge function
-      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/product-url-scraper', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        this.showSuccessToast(`✅ ${result.product?.name || 'Produit'} importé avec succès!`);
-      } else {
-        this.showErrorToast('❌ Erreur lors de l\'import: ' + (result.error || 'Erreur inconnue'));
-      }
-    } catch (error) {
-      console.error('Import error:', error);
-      this.showErrorToast('❌ Erreur de connexion');
-    }
-  }
-
-  showLoadingToast(message) {
-    this.hideAllToasts();
-    const toast = this.createToast(message, '#667eea');
-    document.body.appendChild(toast);
-  }
-
-  showSuccessToast(message) {
-    this.hideAllToasts();
-    const toast = this.createToast(message, '#10b981');
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
-
-  showErrorToast(message) {
-    this.hideAllToasts();
-    const toast = this.createToast(message, '#ef4444');
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-  }
-
-  hideAllToasts() {
-    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
-  }
-
-  createToast(message, color) {
-    const toast = document.createElement('div');
-    toast.className = 'dropcraft-toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: ${color};
-      color: white;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-      z-index: 100000;
-      animation: slideIn 0.3s ease-out;
-      max-width: 350px;
-    `;
-    return toast;
-  }
-
-  // Utility methods
-  getTextContent(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element && element.textContent.trim()) {
-        return element.textContent.trim();
-      }
-    }
-    return '';
-  }
-
-  getPriceContent(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element) {
-        const text = element.textContent.trim();
-        const priceMatch = text.match(/[\d,.]+(€|$|£|₹|¥|kr|zł|CHF|USD|EUR)/i);
-        if (priceMatch) return priceMatch[0];
-      }
-    }
-    return '';
-  }
-
-  getImageSrc(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element) {
-        return element.src || element.dataset.src || element.dataset.original || '';
-      }
-    }
-    return '';
-  }
-
-  getLinkFromElement(element) {
-    const link = element.querySelector('a');
-    return link ? link.href : window.location.href;
-  }
-}
-
-// Amazon specific detector
-class AmazonDetector {
-  async extractProducts() {
-    const products = [];
-    const productElements = document.querySelectorAll(
-      '[data-component-type="s-search-result"], .s-result-item, .a-section'
-    );
-    
-    for (let i = 0; i < productElements.length; i++) {
-      const element = productElements[i];
-      const product = await this.extractProductFromElement(element, i);
-      if (product.name && product.price) {
-        products.push(product);
-      }
+      if (product.name) products.push(product);
     }
     
     return products;
@@ -839,12 +585,17 @@ class AmazonDetector {
   async extractSingleProduct() {
     return {
       id: `amazon_${Date.now()}`,
-      name: this.getTextContent(document, ['#productTitle', 'h1']),
-      price: this.getPriceContent(document, ['.a-price-current', '.a-price']),
-      image: this.getImageSrc(document, ['#landingImage', '.a-dynamic-image']),
-      description: this.getTextContent(document, ['#feature-bullets', '.a-unordered-list']),
+      asin: document.querySelector('[data-asin]')?.dataset.asin || '',
+      name: this.getTextContent(document, ['#productTitle', '#title', 'h1']),
+      title: this.getTextContent(document, ['#productTitle', '#title', 'h1']),
+      price: this.getPriceContent(document, ['.a-price .a-offscreen', '#priceblock_ourprice', '#priceblock_dealprice', '.a-price-whole']),
+      image: this.getImageSrc(document, ['#landingImage', '#imgBlkFront', '#main-image']),
+      images: this.getProductImages(),
+      description: this.getTextContent(document, ['#productDescription', '#feature-bullets']),
       rating: this.getRating(),
-      reviews: this.getReviewCount(),
+      reviews: this.getTextContent(document, ['#acrCustomerReviewText']),
+      brand: this.getTextContent(document, ['#bylineInfo', '.po-brand .a-span9']),
+      category: this.getCategory(),
       url: window.location.href,
       domain: 'amazon.com',
       platform: 'amazon',
@@ -853,37 +604,39 @@ class AmazonDetector {
     };
   }
 
-  async extractProductFromElement(element, index) {
-    return {
-      id: `amazon_list_${Date.now()}_${index}`,
-      name: this.getTextContent(element, ['h2 a span', '.s-size-mini span']),
-      price: this.getPriceContent(element, ['.a-price-current', '.a-price']),
-      image: this.getImageSrc(element, ['.s-image']),
-      rating: this.getRatingFromElement(element),
-      url: this.getLinkFromElement(element),
-      domain: 'amazon.com',
-      platform: 'amazon',
-      scrapedAt: new Date().toISOString(),
-      source: 'extension_injected'
-    };
+  getProductImages() {
+    const images = [];
+    document.querySelectorAll('#altImages img, .imageThumbnail img').forEach(img => {
+      let src = img.src || img.dataset.src;
+      if (src) {
+        // Get larger image
+        src = src.replace(/\._[A-Z0-9_]+_\./, '._AC_SL1500_.');
+        if (!images.includes(src)) images.push(src);
+      }
+    });
+    return images;
   }
 
   getRating() {
-    const ratingEl = document.querySelector('.a-icon-alt');
+    const ratingEl = document.querySelector('#acrPopover, .a-icon-star');
     if (ratingEl) {
-      const ratingMatch = ratingEl.textContent.match(/(\d+\.?\d*)/);
-      return ratingMatch ? parseFloat(ratingMatch[1]) : null;
+      const title = ratingEl.getAttribute('title') || ratingEl.textContent;
+      const match = title.match(/(\d+\.?\d*)/);
+      return match ? parseFloat(match[1]) : null;
     }
     return null;
   }
 
-  getReviewCount() {
-    const reviewEl = document.querySelector('#acrCustomerReviewText');
-    return reviewEl ? reviewEl.textContent.trim() : null;
+  getCategory() {
+    const breadcrumbs = document.querySelector('#wayfinding-breadcrumbs_container');
+    if (breadcrumbs) {
+      const links = breadcrumbs.querySelectorAll('a');
+      return links.length > 0 ? links[links.length - 1].textContent.trim() : '';
+    }
+    return '';
   }
 
   injectOneClickButtons() {
-    // Similar implementation as AliExpress but with Amazon-specific selectors
     if (this.isProductPage()) {
       this.injectProductImportButton();
     }
@@ -891,141 +644,66 @@ class AmazonDetector {
   }
 
   isProductPage() {
-    return document.querySelector('#productTitle') || window.location.pathname.includes('/dp/');
-  }
-
-  // ... (similar utility methods as AliExpress)
-  getTextContent(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element && element.textContent.trim()) {
-        return element.textContent.trim();
-      }
-    }
-    return '';
-  }
-
-  getPriceContent(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element) {
-        const text = element.textContent.trim();
-        const priceMatch = text.match(/[\d,.]+(€|$|£|₹|¥|kr|zł|CHF|USD|EUR)/i);
-        if (priceMatch) return priceMatch[0];
-      }
-    }
-    return '';
-  }
-
-  getImageSrc(container, selectors) {
-    for (const selector of selectors) {
-      const element = container.querySelector(selector);
-      if (element) {
-        return element.src || element.dataset.src || element.dataset.original || '';
-      }
-    }
-    return '';
-  }
-
-  getRatingFromElement(element) {
-    const ratingEl = element.querySelector('.a-icon-alt');
-    if (ratingEl) {
-      const ratingMatch = ratingEl.textContent.match(/(\d+\.?\d*)/);
-      return ratingMatch ? parseFloat(ratingMatch[1]) : null;
-    }
-    return null;
-  }
-
-  getLinkFromElement(element) {
-    const link = element.querySelector('h2 a, .s-link-style a');
-    return link ? new URL(link.href, window.location.origin).href : window.location.href;
+    return window.location.pathname.includes('/dp/') || 
+           document.querySelector('#productTitle');
   }
 
   injectProductImportButton() {
-    if (document.querySelector('.dropcraft-import-btn')) return;
+    if (document.querySelector('.dropcraft-import-btn-main')) return;
     
-    const targetEl = document.querySelector('#productTitle');
+    const targetEl = document.querySelector('#productTitle, #title');
     if (!targetEl) return;
     
-    const button = this.createImportButton('Importer dans Drop Craft AI', () => {
-      this.importCurrentProduct();
+    const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
+      this.importProductFromURL(window.location.href);
     });
+    button.classList.add('dropcraft-import-btn-main');
     
     targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
   }
 
   injectListingButtons() {
     const productElements = document.querySelectorAll('[data-component-type="s-search-result"]');
-    productElements.forEach((element, index) => {
+    
+    productElements.forEach((element) => {
       if (element.querySelector('.dropcraft-import-btn')) return;
       
-      const button = this.createImportButton('Importer', () => {
-        this.importProductFromElement(element, index);
+      const link = this.getLinkFromElement(element);
+      const button = this.createImportButton('Import', () => {
+        this.importProductFromURL(link);
       }, true);
       
       element.style.position = 'relative';
       element.appendChild(button);
     });
   }
-
-  createImportButton(text, onClick, isSmall = false) {
-    const button = document.createElement('button');
-    button.className = 'dropcraft-import-btn';
-    button.textContent = text;
-    button.onclick = onClick;
-    
-    button.style.cssText = `
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: ${isSmall ? '6px 12px' : '10px 20px'};
-      border-radius: ${isSmall ? '4px' : '6px'};
-      font-size: ${isSmall ? '11px' : '14px'};
-      font-weight: 500;
-      cursor: pointer;
-      position: ${isSmall ? 'absolute' : 'static'};
-      top: ${isSmall ? '10px' : 'auto'};
-      right: ${isSmall ? '10px' : 'auto'};
-      z-index: 1000;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-    `;
-    
-    return button;
-  }
-
-  async importCurrentProduct() {
-    const product = await this.extractSingleProduct();
-    this.sendToExtension([product]);
-  }
-
-  async importProductFromElement(element, index) {
-    const product = await this.extractProductFromElement(element, index);
-    this.sendToExtension([product]);
-  }
-
-  sendToExtension(products) {
-    window.postMessage({
-      type: 'IMPORT_PRODUCTS',
-      products: products
-    }, '*');
-  }
 }
 
-// Shopify detector - complete implementation
-class ShopifyDetector {
+// Temu specific detector
+class TemuDetector extends BaseDetector {
   async extractProducts() {
     const products = [];
+    
     const productElements = document.querySelectorAll(
-      '.product-card, .product-item, .grid-product, [data-product-id], .product'
+      '[data-testid="goods-item"], .goods-item, ._2HuFNl-g'
     );
     
-    for (let i = 0; i < productElements.length; i++) {
+    for (let i = 0; i < Math.min(productElements.length, 50); i++) {
       const element = productElements[i];
-      const product = await this.extractProductFromElement(element, i);
-      if (product.name) {
-        products.push(product);
-      }
+      const product = {
+        id: `temu_${Date.now()}_${i}`,
+        name: this.getTextContent(element, ['.goods-title', '[data-testid="goods-title"]', '._2BhJdGp7']),
+        price: this.getPriceContent(element, ['.goods-price', '[data-testid="goods-price"]', '._1YKNiRe1']),
+        image: this.getImageSrc(element, ['img', '.goods-img img']),
+        rating: this.getRatingFromElement(element),
+        url: this.getLinkFromElement(element),
+        domain: 'temu.com',
+        platform: 'temu',
+        scrapedAt: new Date().toISOString(),
+        source: 'extension_injected'
+      };
+      
+      if (product.name) products.push(product);
     }
     
     return products;
@@ -1033,11 +711,120 @@ class ShopifyDetector {
 
   async extractSingleProduct() {
     return {
+      id: `temu_${Date.now()}`,
+      name: this.getTextContent(document, ['h1', '.goods-des-title', '[data-testid="goods-title"]']),
+      title: this.getTextContent(document, ['h1', '.goods-des-title', '[data-testid="goods-title"]']),
+      price: this.getPriceContent(document, ['.goods-price', '[data-testid="goods-price"]', '._1YKNiRe1']),
+      image: this.getImageSrc(document, ['.goods-img img', '.main-image img']),
+      description: this.getTextContent(document, ['.goods-description', '.detail-desc']),
+      rating: this.getRating(),
+      url: window.location.href,
+      domain: 'temu.com',
+      platform: 'temu',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
+  }
+
+  getRating() {
+    const ratingEl = document.querySelector('[class*="rating"], [class*="star"]');
+    if (ratingEl) {
+      const match = ratingEl.textContent.match(/(\d+\.?\d*)/);
+      return match ? parseFloat(match[1]) : null;
+    }
+    return null;
+  }
+
+  injectOneClickButtons() {
+    if (this.isProductPage()) {
+      this.injectProductImportButton();
+    }
+    this.injectListingButtons();
+  }
+
+  isProductPage() {
+    return window.location.pathname.includes('/goods') || 
+           document.querySelector('.goods-des-title, [data-testid="goods-title"]');
+  }
+
+  injectProductImportButton() {
+    if (document.querySelector('.dropcraft-import-btn-main')) return;
+    
+    const targetEl = document.querySelector('h1, .goods-des-title');
+    if (!targetEl) return;
+    
+    const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
+      this.importProductFromURL(window.location.href);
+    });
+    button.classList.add('dropcraft-import-btn-main');
+    
+    targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
+  }
+
+  injectListingButtons() {
+    const productElements = document.querySelectorAll('[data-testid="goods-item"], .goods-item');
+    
+    productElements.forEach((element) => {
+      if (element.querySelector('.dropcraft-import-btn')) return;
+      
+      const link = this.getLinkFromElement(element);
+      const button = this.createImportButton('Import', () => {
+        this.importProductFromURL(link);
+      }, true);
+      
+      element.style.position = 'relative';
+      element.appendChild(button);
+    });
+  }
+}
+
+// Shopify detector
+class ShopifyDetector extends BaseDetector {
+  async extractProducts() {
+    const products = [];
+    
+    const productElements = document.querySelectorAll(
+      '.product-item, .grid-product__content, .product-card, '[data-product]''
+    );
+    
+    for (let i = 0; i < Math.min(productElements.length, 50); i++) {
+      const element = productElements[i];
+      const product = {
+        id: `shopify_${Date.now()}_${i}`,
+        name: this.getTextContent(element, ['.product-item__title', '.grid-product__title', 'h3', '.product-title']),
+        price: this.getPriceContent(element, ['.product-item__price', '.grid-product__price', '.price', '.money']),
+        image: this.getImageSrc(element, ['.product-item__image img', '.grid-product__image img', 'img']),
+        url: this.getLinkFromElement(element),
+        domain: window.location.hostname,
+        platform: 'shopify',
+        scrapedAt: new Date().toISOString(),
+        source: 'extension_injected'
+      };
+      
+      if (product.name) products.push(product);
+    }
+    
+    return products;
+  }
+
+  async extractSingleProduct() {
+    // Try to get product JSON from Shopify
+    let productData = null;
+    try {
+      const productJsonEl = document.querySelector('[data-product-json], script[type="application/json"][data-product-json]');
+      if (productJsonEl) {
+        productData = JSON.parse(productJsonEl.textContent);
+      }
+    } catch (e) {}
+
+    return {
       id: `shopify_${Date.now()}`,
-      name: this.getTextContent(document, ['h1', '.product-title', '.product__title', '[data-product-title]']),
-      price: this.getPriceContent(document, ['.price', '.product-price', '[data-product-price]', '.money']),
-      image: this.getImageSrc(document, ['.product__media img', '.product-featured-image', '.product-image img']),
-      description: this.getTextContent(document, ['.product-description', '.product__description', '[data-product-description]']),
+      name: productData?.title || this.getTextContent(document, ['h1', '.product-title', '.product__title']),
+      title: productData?.title || this.getTextContent(document, ['h1', '.product-title', '.product__title']),
+      price: productData?.price ? (productData.price / 100).toFixed(2) : this.getPriceContent(document, ['.product__price', '.price', '.money']),
+      image: productData?.featured_image || this.getImageSrc(document, ['.product__media img', '.product-image img']),
+      description: productData?.description || this.getTextContent(document, ['.product-description', '.product__description']),
+      vendor: productData?.vendor || this.getTextContent(document, ['.product__vendor', '.vendor']),
       url: window.location.href,
       domain: window.location.hostname,
       platform: 'shopify',
@@ -1046,22 +833,7 @@ class ShopifyDetector {
     };
   }
 
-  async extractProductFromElement(element, index) {
-    return {
-      id: `shopify_list_${Date.now()}_${index}`,
-      name: this.getTextContent(element, ['h2', 'h3', '.product-title', '.card-title', 'a']),
-      price: this.getPriceContent(element, ['.price', '.money', '.product-price']),
-      image: this.getImageSrc(element, ['img']),
-      url: this.getLinkFromElement(element),
-      domain: window.location.hostname,
-      platform: 'shopify',
-      scrapedAt: new Date().toISOString(),
-      source: 'extension_injected'
-    };
-  }
-
   injectOneClickButtons() {
-    // Always inject floating button on Shopify product pages
     if (this.isProductPage()) {
       this.injectProductImportButton();
     }
@@ -1070,189 +842,63 @@ class ShopifyDetector {
 
   isProductPage() {
     return window.location.pathname.includes('/products/') || 
-           document.querySelector('[data-product-id], .product-single, .product__info-container');
+           document.querySelector('.product-single, .product-template, [data-product-json]');
   }
 
   injectProductImportButton() {
-    if (document.querySelector('.dropcraft-import-btn')) return;
+    if (document.querySelector('.dropcraft-import-btn-main')) return;
     
-    const targetEl = document.querySelector('h1, .product-title, .product__title, [data-product-title]');
-    if (!targetEl) {
-      // Fallback: inject floating button
-      this.injectFloatingButton();
-      return;
-    }
+    const targetEl = document.querySelector('h1, .product-title, .product__title');
+    if (!targetEl) return;
     
     const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
-      this.importCurrentProduct();
+      this.importProductFromURL(window.location.href);
     });
+    button.classList.add('dropcraft-import-btn-main');
     
     targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
   }
 
-  injectFloatingButton() {
-    if (document.querySelector('.dropcraft-floating-btn')) return;
-    
-    const button = this.createImportButton('🚀 Importer', () => {
-      this.importCurrentProduct();
-    });
-    button.classList.add('dropcraft-floating-btn');
-    button.style.cssText += `
-      position: fixed !important;
-      bottom: 20px !important;
-      right: 20px !important;
-      z-index: 999999 !important;
-    `;
-    document.body.appendChild(button);
-  }
-
   injectListingButtons() {
-    const productElements = document.querySelectorAll('.product-card, .product-item, .grid-product, [data-product-id]');
-    productElements.forEach((element, index) => {
+    const productElements = document.querySelectorAll('.product-item, .grid-product, .product-card');
+    
+    productElements.forEach((element) => {
       if (element.querySelector('.dropcraft-import-btn')) return;
       
-      const button = this.createImportButton('+ Import', () => {
-        this.importProductFromURL(this.getLinkFromElement(element));
+      const link = this.getLinkFromElement(element);
+      const button = this.createImportButton('Import', () => {
+        this.importProductFromURL(link);
       }, true);
       
       element.style.position = 'relative';
       element.appendChild(button);
     });
   }
-
-  createImportButton(text, onClick, isSmall = false) {
-    const button = document.createElement('button');
-    button.className = 'dropcraft-import-btn';
-    button.textContent = text;
-    button.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onClick();
-    };
-    
-    button.style.cssText = `
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: ${isSmall ? '6px 12px' : '12px 24px'};
-      border-radius: ${isSmall ? '6px' : '8px'};
-      font-size: ${isSmall ? '11px' : '14px'};
-      font-weight: 600;
-      cursor: pointer;
-      position: ${isSmall ? 'absolute' : 'relative'};
-      top: ${isSmall ? '8px' : 'auto'};
-      right: ${isSmall ? '8px' : 'auto'};
-      z-index: 10000;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-      margin: ${isSmall ? '0' : '16px 0'};
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    `;
-    
-    button.onmouseover = () => {
-      button.style.transform = 'translateY(-2px)';
-      button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
-    };
-    
-    button.onmouseout = () => {
-      button.style.transform = 'translateY(0)';
-      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-    };
-    
-    return button;
-  }
-
-  async importCurrentProduct() {
-    this.importProductFromURL(window.location.href);
-  }
-
-  async importProductFromURL(url) {
-    this.showLoadingToast('⏳ Import en cours...');
-    
-    try {
-      const response = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/product-url-scraper', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        this.showSuccessToast(`✅ Produit importé!`);
-      } else {
-        this.showErrorToast('❌ ' + (result.error || 'Erreur'));
-      }
-    } catch (error) {
-      console.error('Import error:', error);
-      this.showErrorToast('❌ Erreur de connexion');
-    }
-  }
-
-  showLoadingToast(message) { this.showToast(message, '#667eea'); }
-  showSuccessToast(message) { this.showToast(message, '#10b981', 3000); }
-  showErrorToast(message) { this.showToast(message, '#ef4444', 4000); }
-
-  showToast(message, color, timeout = null) {
-    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
-    const toast = document.createElement('div');
-    toast.className = 'dropcraft-toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed; top: 20px; right: 20px; background: ${color};
-      color: white; padding: 14px 20px; border-radius: 8px; font-size: 14px;
-      font-weight: 500; box-shadow: 0 8px 25px rgba(0,0,0,0.2); z-index: 100000;
-      animation: slideIn 0.3s ease-out; font-family: -apple-system, sans-serif;
-    `;
-    document.body.appendChild(toast);
-    if (timeout) setTimeout(() => toast.remove(), timeout);
-  }
-
-  getTextContent(container, selectors) {
-    for (const selector of selectors) {
-      const el = container.querySelector(selector);
-      if (el?.textContent?.trim()) return el.textContent.trim();
-    }
-    return '';
-  }
-
-  getPriceContent(container, selectors) {
-    for (const selector of selectors) {
-      const el = container.querySelector(selector);
-      if (el) {
-        const match = el.textContent.match(/[\d,.\s]+(€|\$|£|₹|¥|CHF|USD|EUR)?/i);
-        if (match) return match[0].trim();
-      }
-    }
-    return '';
-  }
-
-  getImageSrc(container, selectors) {
-    for (const selector of selectors) {
-      const el = container.querySelector(selector);
-      if (el) return el.src || el.dataset.src || '';
-    }
-    return '';
-  }
-
-  getLinkFromElement(element) {
-    const link = element.querySelector('a[href*="/products/"]') || element.querySelector('a');
-    return link ? link.href : window.location.href;
-  }
 }
 
-// WooCommerce detector - complete implementation
-class WooCommerceDetector {
+// WooCommerce detector
+class WooCommerceDetector extends BaseDetector {
   async extractProducts() {
     const products = [];
-    const productElements = document.querySelectorAll('.product, .wc-block-grid__product, li.product');
     
-    for (let i = 0; i < productElements.length; i++) {
+    const productElements = document.querySelectorAll(
+      '.product, .woocommerce-loop-product__link, li.product'
+    );
+    
+    for (let i = 0; i < Math.min(productElements.length, 50); i++) {
       const element = productElements[i];
-      const product = await this.extractProductFromElement(element, i);
+      const product = {
+        id: `woo_${Date.now()}_${i}`,
+        name: this.getTextContent(element, ['.woocommerce-loop-product__title', 'h2', '.product-title']),
+        price: this.getPriceContent(element, ['.price', '.woocommerce-Price-amount']),
+        image: this.getImageSrc(element, ['.wp-post-image', '.attachment-woocommerce_thumbnail', 'img']),
+        url: this.getLinkFromElement(element),
+        domain: window.location.hostname,
+        platform: 'woocommerce',
+        scrapedAt: new Date().toISOString(),
+        source: 'extension_injected'
+      };
+      
       if (product.name) products.push(product);
     }
     
@@ -1262,10 +908,13 @@ class WooCommerceDetector {
   async extractSingleProduct() {
     return {
       id: `woo_${Date.now()}`,
-      name: this.getTextContent(document, ['h1.product_title', '.product-title', 'h1']),
+      name: this.getTextContent(document, ['.product_title', 'h1', '.entry-title']),
+      title: this.getTextContent(document, ['.product_title', 'h1', '.entry-title']),
       price: this.getPriceContent(document, ['.price', '.woocommerce-Price-amount']),
       image: this.getImageSrc(document, ['.woocommerce-product-gallery__image img', '.wp-post-image']),
-      description: this.getTextContent(document, ['.woocommerce-product-details__short-description', '.product-description']),
+      description: this.getTextContent(document, ['.woocommerce-product-details__short-description', '.product-short-description']),
+      sku: this.getTextContent(document, ['.sku']),
+      categories: this.getCategories(),
       url: window.location.href,
       domain: window.location.hostname,
       platform: 'woocommerce',
@@ -1274,18 +923,12 @@ class WooCommerceDetector {
     };
   }
 
-  async extractProductFromElement(element, index) {
-    return {
-      id: `woo_list_${Date.now()}_${index}`,
-      name: this.getTextContent(element, ['h2', '.woocommerce-loop-product__title', '.product-title']),
-      price: this.getPriceContent(element, ['.price', '.woocommerce-Price-amount']),
-      image: this.getImageSrc(element, ['img']),
-      url: this.getLinkFromElement(element),
-      domain: window.location.hostname,
-      platform: 'woocommerce',
-      scrapedAt: new Date().toISOString(),
-      source: 'extension_injected'
-    };
+  getCategories() {
+    const cats = [];
+    document.querySelectorAll('.posted_in a, .product_meta .posted_in a').forEach(a => {
+      cats.push(a.textContent.trim());
+    });
+    return cats;
   }
 
   injectOneClickButtons() {
@@ -1297,155 +940,76 @@ class WooCommerceDetector {
 
   isProductPage() {
     return document.body.classList.contains('single-product') || 
-           document.querySelector('.product_title, .single-product');
+           document.querySelector('.product_title');
   }
 
   injectProductImportButton() {
-    if (document.querySelector('.dropcraft-import-btn')) return;
+    if (document.querySelector('.dropcraft-import-btn-main')) return;
     
-    const targetEl = document.querySelector('h1.product_title, .product-title, h1');
-    if (!targetEl) {
-      this.injectFloatingButton();
-      return;
-    }
+    const targetEl = document.querySelector('.product_title, h1');
+    if (!targetEl) return;
     
     const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
-      this.importCurrentProduct();
+      this.importProductFromURL(window.location.href);
     });
+    button.classList.add('dropcraft-import-btn-main');
     
     targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
   }
 
-  injectFloatingButton() {
-    if (document.querySelector('.dropcraft-floating-btn')) return;
-    
-    const button = this.createImportButton('🚀 Importer', () => {
-      this.importCurrentProduct();
-    });
-    button.classList.add('dropcraft-floating-btn');
-    button.style.cssText += `position: fixed !important; bottom: 20px !important; right: 20px !important; z-index: 999999 !important;`;
-    document.body.appendChild(button);
-  }
-
   injectListingButtons() {
-    const productElements = document.querySelectorAll('.product, .wc-block-grid__product, li.product');
+    const productElements = document.querySelectorAll('li.product, .product');
+    
     productElements.forEach((element) => {
       if (element.querySelector('.dropcraft-import-btn')) return;
       
-      const button = this.createImportButton('+ Import', () => {
-        this.importProductFromURL(this.getLinkFromElement(element));
+      const link = this.getLinkFromElement(element);
+      const button = this.createImportButton('Import', () => {
+        this.importProductFromURL(link);
       }, true);
       
       element.style.position = 'relative';
       element.appendChild(button);
     });
   }
-
-  createImportButton(text, onClick, isSmall = false) {
-    const button = document.createElement('button');
-    button.className = 'dropcraft-import-btn';
-    button.textContent = text;
-    button.onclick = (e) => { e.preventDefault(); e.stopPropagation(); onClick(); };
-    
-    button.style.cssText = `
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white; border: none;
-      padding: ${isSmall ? '6px 12px' : '12px 24px'};
-      border-radius: ${isSmall ? '6px' : '8px'};
-      font-size: ${isSmall ? '11px' : '14px'}; font-weight: 600;
-      cursor: pointer; position: ${isSmall ? 'absolute' : 'relative'};
-      top: ${isSmall ? '8px' : 'auto'}; right: ${isSmall ? '8px' : 'auto'};
-      z-index: 10000; transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-      margin: ${isSmall ? '0' : '16px 0'}; display: inline-flex;
-      align-items: center; gap: 6px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    `;
-    
-    return button;
-  }
-
-  async importCurrentProduct() { this.importProductFromURL(window.location.href); }
-
-  async importProductFromURL(url) {
-    this.showToast('⏳ Import en cours...', '#667eea');
-    
-    try {
-      const response = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/product-url-scraper', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-      const result = await response.json();
-      
-      if (result.success) {
-        this.showToast('✅ Produit importé!', '#10b981', 3000);
-      } else {
-        this.showToast('❌ ' + (result.error || 'Erreur'), '#ef4444', 4000);
-      }
-    } catch (error) {
-      this.showToast('❌ Erreur de connexion', '#ef4444', 4000);
-    }
-  }
-
-  showToast(message, color, timeout = null) {
-    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
-    const toast = document.createElement('div');
-    toast.className = 'dropcraft-toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed; top: 20px; right: 20px; background: ${color};
-      color: white; padding: 14px 20px; border-radius: 8px; font-size: 14px;
-      font-weight: 500; box-shadow: 0 8px 25px rgba(0,0,0,0.2); z-index: 100000;
-      animation: slideIn 0.3s ease-out; font-family: -apple-system, sans-serif;
-    `;
-    document.body.appendChild(toast);
-    if (timeout) setTimeout(() => toast.remove(), timeout);
-  }
-
-  getTextContent(container, selectors) {
-    for (const s of selectors) { const el = container.querySelector(s); if (el?.textContent?.trim()) return el.textContent.trim(); }
-    return '';
-  }
-
-  getPriceContent(container, selectors) {
-    for (const s of selectors) {
-      const el = container.querySelector(s);
-      if (el) { const match = el.textContent.match(/[\d,.\s]+(€|\$|£)?/i); if (match) return match[0].trim(); }
-    }
-    return '';
-  }
-
-  getImageSrc(container, selectors) {
-    for (const s of selectors) { const el = container.querySelector(s); if (el) return el.src || el.dataset.src || ''; }
-    return '';
-  }
-
-  getLinkFromElement(element) {
-    const link = element.querySelector('a');
-    return link ? link.href : window.location.href;
-  }
 }
 
-// Generic detector - works on ALL e-commerce sites
-class GenericDetector {
+// Generic detector for unknown platforms
+class GenericDetector extends BaseDetector {
   async extractProducts() {
     const products = [];
-    // Try multiple common product container selectors
+    
+    // Try multiple common selectors
     const selectors = [
-      '[data-product-id]', '[data-product]', '.product-item', '.product-card',
-      '.product', 'article.product', '[itemtype*="Product"]', '.item'
+      '[data-product]',
+      '.product-item, .product-card, .product',
+      '[class*="product-"]',
+      '.item[data-product]',
+      '.listing-item',
+      '.goods-item'
     ];
     
+    let productElements = [];
     for (const selector of selectors) {
-      const elements = document.querySelectorAll(selector);
-      if (elements.length > 0) {
-        for (let i = 0; i < Math.min(elements.length, 50); i++) {
-          const product = await this.extractProductFromElement(elements[i], i);
-          if (product.name) products.push(product);
-        }
-        break;
-      }
+      productElements = document.querySelectorAll(selector);
+      if (productElements.length > 0) break;
+    }
+    
+    for (let i = 0; i < Math.min(productElements.length, 50); i++) {
+      const element = productElements[i];
+      const product = {
+        id: `generic_${Date.now()}_${i}`,
+        name: this.getTextContent(element, ['h1', 'h2', 'h3', '.title', '.name', '[class*="title"]']),
+        price: this.getPriceContent(element, ['.price', '[class*="price"]', '.cost', '.amount']),
+        image: this.getImageSrc(element, ['img']),
+        url: this.getLinkFromElement(element),
+        domain: window.location.hostname,
+        platform: 'generic',
+        scrapedAt: new Date().toISOString(),
+        source: 'extension_injected'
+      };
+      
+      if (product.name || product.price) products.push(product);
     }
     
     return products;
@@ -1454,10 +1018,11 @@ class GenericDetector {
   async extractSingleProduct() {
     return {
       id: `generic_${Date.now()}`,
-      name: this.getProductTitle(),
-      price: this.getProductPrice(),
-      image: this.getProductImage(),
-      description: this.getProductDescription(),
+      name: this.getTextContent(document, ['h1', '.product-title', '.title', '[class*="title"]']),
+      title: this.getTextContent(document, ['h1', '.product-title', '.title', '[class*="title"]']),
+      price: this.getPriceContent(document, ['.price', '[class*="price"]', '.cost']),
+      image: this.getMainProductImage(),
+      description: this.getTextContent(document, ['.description', '.product-description', '[class*="description"]']),
       url: window.location.href,
       domain: window.location.hostname,
       platform: 'generic',
@@ -1466,234 +1031,71 @@ class GenericDetector {
     };
   }
 
-  async extractProductFromElement(element, index) {
-    return {
-      id: `generic_list_${Date.now()}_${index}`,
-      name: this.getTextContent(element, ['h1', 'h2', 'h3', 'h4', '.title', '.name', '[class*="title"]', '[class*="name"]', 'a']),
-      price: this.getPriceContent(element, ['.price', '[class*="price"]', '[data-price]', '.cost', '.amount']),
-      image: this.getImageSrc(element, ['img']),
-      url: this.getLinkFromElement(element),
-      domain: window.location.hostname,
-      platform: 'generic',
-      scrapedAt: new Date().toISOString(),
-      source: 'extension_injected'
-    };
-  }
-
-  getProductTitle() {
-    return this.getTextContent(document, [
-      'h1', '.product-title', '.product-name', '[data-product-title]',
-      '[itemprop="name"]', '#product-title', '.product__title'
-    ]);
-  }
-
-  getProductPrice() {
-    return this.getPriceContent(document, [
-      '.price', '[class*="price"]', '[itemprop="price"]', '[data-price]',
-      '.product-price', '.current-price', '.sale-price', '#product-price'
-    ]);
-  }
-
-  getProductImage() {
-    return this.getImageSrc(document, [
-      '[itemprop="image"]', '.product-image img', '.main-image img',
-      '#product-image img', '[data-product-image]', '.gallery img:first-child',
-      'img[src*="product"]', 'picture img', 'img'
-    ]);
-  }
-
-  getProductDescription() {
-    return this.getTextContent(document, [
-      '.product-description', '[itemprop="description"]', '#product-description',
-      '.description', '[class*="description"]', '.product-details'
-    ]);
+  getMainProductImage() {
+    // Try to find the main product image
+    const selectors = [
+      '.product-image img',
+      '.main-image img',
+      '[class*="product"] img',
+      '.gallery img:first-child',
+      'article img:first-child'
+    ];
+    
+    for (const selector of selectors) {
+      const img = document.querySelector(selector);
+      if (img && img.src && !img.src.includes('logo') && !img.src.includes('icon')) {
+        return img.src;
+      }
+    }
+    
+    // Fallback: find largest image
+    let largestImg = null;
+    let maxSize = 0;
+    document.querySelectorAll('img').forEach(img => {
+      const size = (img.naturalWidth || img.width || 0) * (img.naturalHeight || img.height || 0);
+      if (size > maxSize && !img.src.includes('logo') && !img.src.includes('icon')) {
+        maxSize = size;
+        largestImg = img;
+      }
+    });
+    
+    return largestImg?.src || '';
   }
 
   injectOneClickButtons() {
-    // ALWAYS inject a floating button on any page that looks like a product page
+    // For generic sites, only inject on product-like pages
     if (this.isProductPage()) {
-      this.injectFloatingButton();
+      this.injectProductImportButton();
     }
   }
 
   isProductPage() {
-    // Detect if current page is likely a product page
-    const hasProductIndicators = 
-      document.querySelector('h1') &&
-      (document.querySelector('[class*="price"]') ||
-       document.querySelector('[itemprop="price"]') ||
-       document.querySelector('.add-to-cart') ||
-       document.querySelector('[class*="add-to-cart"]') ||
-       document.querySelector('button[class*="cart"]') ||
-       document.querySelector('[class*="buy"]') ||
-       window.location.pathname.match(/\/(product|item|p|produit|article|shop)\//i));
+    // Check for common product page indicators
+    const hasPrice = document.querySelector('.price, [class*="price"]');
+    const hasAddToCart = document.querySelector('[class*="add-to-cart"], [class*="buy"], button[class*="cart"]');
+    const hasProductTitle = document.querySelector('h1');
     
-    return hasProductIndicators;
+    return hasPrice && (hasAddToCart || hasProductTitle);
   }
 
-  injectFloatingButton() {
-    if (document.querySelector('.dropcraft-import-btn')) return;
-    if (document.querySelector('.dropcraft-floating-btn')) return;
+  injectProductImportButton() {
+    if (document.querySelector('.dropcraft-import-btn-main')) return;
     
-    const button = document.createElement('button');
-    button.className = 'dropcraft-import-btn dropcraft-floating-btn';
-    button.innerHTML = '🚀 Importer dans Drop Craft AI';
-    button.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.importCurrentProduct();
-    };
+    const targetEl = document.querySelector('h1');
+    if (!targetEl) return;
     
-    button.style.cssText = `
-      position: fixed !important;
-      bottom: 20px !important;
-      right: 20px !important;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-      color: white !important;
-      border: none !important;
-      padding: 14px 24px !important;
-      border-radius: 50px !important;
-      font-size: 14px !important;
-      font-weight: 600 !important;
-      cursor: pointer !important;
-      z-index: 999999 !important;
-      transition: all 0.3s ease !important;
-      box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5) !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 8px !important;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-    `;
+    const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
+      this.importProductFromURL(window.location.href);
+    });
+    button.classList.add('dropcraft-import-btn-main');
     
-    button.onmouseover = () => {
-      button.style.transform = 'translateY(-3px) scale(1.02)';
-      button.style.boxShadow = '0 10px 35px rgba(102, 126, 234, 0.6)';
-    };
-    
-    button.onmouseout = () => {
-      button.style.transform = 'translateY(0) scale(1)';
-      button.style.boxShadow = '0 6px 25px rgba(102, 126, 234, 0.5)';
-    };
-    
-    document.body.appendChild(button);
-    console.log('Drop Craft AI: Import button injected on', window.location.hostname);
-  }
-
-  async importCurrentProduct() {
-    this.showToast('⏳ Import en cours...', '#667eea');
-    
-    try {
-      const response = await fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/product-url-scraper', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: window.location.href })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        this.showToast('✅ Produit importé avec succès!', '#10b981', 3000);
-      } else {
-        this.showToast('❌ ' + (result.error || 'Erreur lors de l\'import'), '#ef4444', 4000);
-      }
-    } catch (error) {
-      console.error('Import error:', error);
-      this.showToast('❌ Erreur de connexion', '#ef4444', 4000);
-    }
-  }
-
-  showToast(message, color, timeout = null) {
-    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
-    const toast = document.createElement('div');
-    toast.className = 'dropcraft-toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed !important;
-      top: 20px !important;
-      right: 20px !important;
-      background: ${color} !important;
-      color: white !important;
-      padding: 14px 20px !important;
-      border-radius: 10px !important;
-      font-size: 14px !important;
-      font-weight: 500 !important;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.25) !important;
-      z-index: 9999999 !important;
-      animation: slideIn 0.3s ease-out !important;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-      max-width: 350px !important;
-    `;
-    document.body.appendChild(toast);
-    if (timeout) setTimeout(() => toast.remove(), timeout);
-  }
-
-  getTextContent(container, selectors) {
-    for (const selector of selectors) {
-      try {
-        const el = container.querySelector(selector);
-        if (el?.textContent?.trim()) return el.textContent.trim().substring(0, 500);
-      } catch (e) {}
-    }
-    return '';
-  }
-
-  getPriceContent(container, selectors) {
-    for (const selector of selectors) {
-      try {
-        const el = container.querySelector(selector);
-        if (el) {
-          const text = el.textContent.trim();
-          const match = text.match(/[\d\s,.]+(€|\$|£|₹|¥|kr|zł|CHF|USD|EUR|SEK|DKK|NOK|PLN|CZK|HUF|RON|BGN|HRK|TRY|RUB|UAH|BRL|ARS|MXN|CLP|COP|PEN|VEF|AED|SAR|ILS|EGP|ZAR|KES|NGN|GHS|MAD|TND|DZD|LYD|KWD|BHD|OMR|QAR|JOD|LBP|SYP|IQD|YER|PKR|BDT|LKR|NPR|MMK|KHR|VND|THB|MYR|SGD|IDR|PHP|CNY|JPY|KRW|TWD|HKD|MOP|AUD|NZD|FJD|PGK|SBD|WST|TOP|VUV|XPF|XOF|XAF|GNF|KMF|RWF|BIF|MGA|MRU|STN|CVE|GMD|SLL|LRD|GYD|SRD|BBD|BSD|JMD|TTD|XCD|AWG|ANG|BMD|KYD|CUP|DOP|HTG|NIO|PAB|HNL|GTQ|BZD|CRC|SVC|MZN|ZMW|MWK|BWP|SZL|LSL|NAD|ZWL|AOA|SCR|MUR|MVR|BTN|AFN|IRR|KZT|UZS|TJS|KGS|TMT|AZN|GEL|AMD|BYN|MDL|ALL|MKD|BAM|RSD)?/i);
-          if (match) return match[0].trim();
-        }
-      } catch (e) {}
-    }
-    return '';
-  }
-
-  getImageSrc(container, selectors) {
-    for (const selector of selectors) {
-      try {
-        const el = container.querySelector(selector);
-        if (el) {
-          const src = el.src || el.dataset.src || el.dataset.lazySrc || el.dataset.original || el.getAttribute('data-srcset')?.split(' ')[0];
-          if (src && src.startsWith('http')) return src;
-        }
-      } catch (e) {}
-    }
-    return '';
-  }
-
-  getLinkFromElement(element) {
-    const link = element.querySelector('a[href]');
-    return link ? new URL(link.href, window.location.origin).href : window.location.href;
+    targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
   }
 }
 
-// Initialize when page loads - with retry for dynamic content
-function initDetector() {
+// Initialize
+try {
   new AdvancedProductDetector();
+} catch (error) {
+  console.error('[DropCraft] Initialization error:', error);
 }
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initDetector);
-} else {
-  initDetector();
-}
-
-// Also re-inject buttons when page content changes (for SPAs)
-const observer = new MutationObserver((mutations) => {
-  const hasSignificantChanges = mutations.some(m => 
-    m.addedNodes.length > 0 && 
-    Array.from(m.addedNodes).some(n => n.nodeType === 1 && !n.classList?.contains('dropcraft-import-btn'))
-  );
-  
-  if (hasSignificantChanges && !document.querySelector('.dropcraft-import-btn')) {
-    setTimeout(initDetector, 500);
-  }
-});
-
-observer.observe(document.body || document.documentElement, {
-  childList: true,
-  subtree: true
-});
