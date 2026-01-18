@@ -1,11 +1,20 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { useEffect } from 'react'
 import { EnhancedUnifiedCatalog } from './EnhancedUnifiedCatalog'
 
 /**
  * SupplierCatalogPage - Affiche le catalogue d'un fournisseur spécifique
- * Utilise le nouveau catalogue unifié amélioré avec filtrage par fournisseur
+ * Redirige vers le catalogue unifié avec le filtre fournisseur
  */
 export default function SupplierCatalogPage() {
   const { id } = useParams()
-  return <EnhancedUnifiedCatalog supplierId={id} />
+  const [, setSearchParams] = useSearchParams()
+  
+  useEffect(() => {
+    if (id) {
+      setSearchParams({ supplier: id }, { replace: true })
+    }
+  }, [id, setSearchParams])
+  
+  return <EnhancedUnifiedCatalog />
 }
