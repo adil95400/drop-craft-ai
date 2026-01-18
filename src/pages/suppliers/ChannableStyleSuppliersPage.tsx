@@ -5,7 +5,7 @@
  * 50+ fournisseurs dropshipping internationaux
  */
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -75,6 +75,11 @@ import { useNavigate } from 'react-router-dom'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
 import { SupplierLogo } from '@/components/suppliers/SupplierLogo'
+import { AdvancedSupplierAnalytics } from '@/components/suppliers/AdvancedSupplierAnalytics'
+import { SupplierConnectionDialog } from '@/components/suppliers/SupplierConnectionDialog'
+import { SupplierSyncManager } from '@/components/suppliers/SupplierSyncManager'
+import { useSupplierRealtime } from '@/hooks/useSupplierRealtime'
+import { Bell, BarChart2, RefreshCcw, Link as LinkIcon } from 'lucide-react'
 
 // Types
 interface SupplierDefinition {
@@ -3346,6 +3351,16 @@ export default function ChannableStyleSuppliersPage() {
   const [sortBy, setSortBy] = useState<'popular' | 'name' | 'rating' | 'products'>('popular')
   const [selectedDefinition, setSelectedDefinition] = useState<SupplierDefinition | null>(null)
   const [activeView, setActiveView] = useState<'all' | 'connected'>('all')
+  
+  // Nouveaux états pour les composants avancés
+  const [activeTab, setActiveTab] = useState<'catalog' | 'analytics' | 'sync'>('catalog')
+  const [connectionDialogOpen, setConnectionDialogOpen] = useState(false)
+  const [selectedSupplierForConnection, setSelectedSupplierForConnection] = useState<{ id: string; name: string } | null>(null)
+  const [selectedSupplierForSync, setSelectedSupplierForSync] = useState<{ id: string; name: string } | null>(null)
+  
+  // Hook realtime pour notifications
+  const { activeJobs, unreadNotifications, markAllAsRead, getSyncStatus } = useSupplierRealtime()
+  const activeSyncJobs = Array.from(activeJobs.values())
 
   // Trouver le fournisseur connecté correspondant à une définition
   const findConnectedSupplier = useCallback((definitionId: string): Supplier | undefined => {
@@ -3408,12 +3423,16 @@ export default function ChannableStyleSuppliersPage() {
     setSelectedDefinition(null)
   }, [addSupplier])
 
-  const handleSync = useCallback((supplierId: string) => {
-    toast({
-      title: "Synchronisation lancée",
-      description: "Les produits sont en cours de synchronisation..."
-    })
-  }, [toast])
+  const handleSync = useCallback((supplierId: string, supplierName?: string) => {
+    // Ouvrir le gestionnaire de sync avec le fournisseur sélectionné
+    setSelectedSupplierForSync({ id: supplierId, name: supplierName || 'Fournisseur' })
+    setActiveTab('sync')
+  }, [])
+  
+  const handleOpenConnection = useCallback((supplierId: string, supplierName: string) => {
+    setSelectedSupplierForConnection({ id: supplierId, name: supplierName })
+    setConnectionDialogOpen(true)
+  }, [])
 
   const handleDelete = useCallback((supplierId: string) => {
     deleteSupplier(supplierId)
@@ -3456,6 +3475,41 @@ export default function ChannableStyleSuppliersPage() {
           onClick: () => navigate('/suppliers/my')
         }}
       />
+      
+      {/* Navigation par onglets */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-6">
+        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="catalog" className="gap-2">
+            <Package className="w-4 h-4" />
+            <span className="hidden sm:inline">Catalogue</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-2">
+            <BarChart2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Analytics</span>
+          </TabsTrigger>
+          <TabsTrigger value="sync" className="gap-2 relative">
+            <RefreshCcw className="w-4 h-4" />
+            <span className="hidden sm:inline">Synchronisation</span>
+            {activeSyncJobs.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            )}
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* Indicateur de notifications */}
+        {unreadNotifications > 0 && (
+          <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">{unreadNotifications} nouvelle{unreadNotifications > 1 ? 's' : ''} notification{unreadNotifications > 1 ? 's' : ''}</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+              Tout marquer comme lu
+            </Button>
+          </div>
+        )}
+        
+        <TabsContent value="catalog" className="mt-6">
 
       <div className="space-y-8">
           {/* Connected Suppliers Section */}
@@ -3671,18 +3725,138 @@ export default function ChannableStyleSuppliersPage() {
           )}
         </div>
 
-        {/* Config Modal */}
-        <Dialog open={!!selectedDefinition} onOpenChange={() => setSelectedDefinition(null)}>
-          {selectedDefinition && (
-            <SupplierConfigModal
-              definition={selectedDefinition}
-              existingSupplier={findConnectedSupplier(selectedDefinition.id)}
-              onClose={() => setSelectedDefinition(null)}
-              onConnect={handleConnect}
-              isConnecting={isAdding}
-            />
-          )}
-        </Dialog>
-      </ChannablePageLayout>
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="mt-6">
+          <AdvancedSupplierAnalytics />
+        </TabsContent>
+        
+        <TabsContent value="sync" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Liste des fournisseurs connectés pour sync */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PlugZap className="w-5 h-5 text-green-500" />
+                  Fournisseurs Connectés
+                </CardTitle>
+                <CardDescription>
+                  Sélectionnez un fournisseur pour gérer sa synchronisation
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {suppliers.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <LinkIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>Aucun fournisseur connecté</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => setActiveTab('catalog')}
+                    >
+                      Parcourir le catalogue
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {suppliers.map(supplier => {
+                      const isSelected = selectedSupplierForSync?.id === supplier.id
+                      const hasActiveSync = activeSyncJobs.some(
+                        job => job.supplier_id === supplier.id && job.status === 'running'
+                      )
+                      
+                      return (
+                        <div
+                          key={supplier.id}
+                          onClick={() => setSelectedSupplierForSync({ id: supplier.id, name: supplier.name || 'Fournisseur' })}
+                          className={cn(
+                            "p-3 rounded-lg border cursor-pointer transition-all",
+                            isSelected 
+                              ? "border-primary bg-primary/5" 
+                              : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                                <Package className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{supplier.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {supplier.status === 'active' ? 'Actif' : 'Inactif'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {hasActiveSync && (
+                                <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                                  <RefreshCcw className="w-3 h-3 mr-1 animate-spin" />
+                                  Sync
+                                </Badge>
+                              )}
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleOpenConnection(supplier.id, supplier.name || '')
+                                }}
+                              >
+                                <Settings className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            {/* Gestionnaire de sync pour le fournisseur sélectionné */}
+            {selectedSupplierForSync ? (
+              <SupplierSyncManager 
+                supplierId={selectedSupplierForSync.id}
+                supplierName={selectedSupplierForSync.name}
+              />
+            ) : (
+              <Card className="flex items-center justify-center min-h-[300px]">
+                <div className="text-center text-muted-foreground">
+                  <RefreshCcw className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>Sélectionnez un fournisseur pour gérer sa synchronisation</p>
+                </div>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Config Modal */}
+      <Dialog open={!!selectedDefinition} onOpenChange={() => setSelectedDefinition(null)}>
+        {selectedDefinition && (
+          <SupplierConfigModal
+            definition={selectedDefinition}
+            existingSupplier={findConnectedSupplier(selectedDefinition.id)}
+            onClose={() => setSelectedDefinition(null)}
+            onConnect={handleConnect}
+            isConnecting={isAdding}
+          />
+        )}
+      </Dialog>
+      
+      {/* Dialog de connexion API */}
+      {selectedSupplierForConnection && (
+        <SupplierConnectionDialog
+          open={connectionDialogOpen}
+          onOpenChange={setConnectionDialogOpen}
+          supplier={{
+            id: selectedSupplierForConnection.id,
+            name: selectedSupplierForConnection.name
+          }}
+        />
+      )}
+    </ChannablePageLayout>
   )
 }
