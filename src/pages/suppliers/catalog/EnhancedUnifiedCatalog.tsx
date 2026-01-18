@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ProductDetailModal } from "@/components/suppliers/ProductDetailModal";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
@@ -960,64 +961,17 @@ export function EnhancedUnifiedCatalog({ supplierId: propSupplierId, connectorId
           </div>
         )}
 
-        {/* Product Detail Modal */}
-        <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-          <DialogContent className="max-w-2xl">
-            {selectedProduct && (
-              <>
-                <DialogHeader>
-                  <DialogTitle>{selectedProduct.name}</DialogTitle>
-                  <DialogDescription>
-                    {selectedProduct.supplier_name} • {selectedProduct.sku}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <img 
-                      src={selectedProduct.image_url} 
-                      alt={selectedProduct.name}
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-muted-foreground">Prix de vente</Label>
-                      <p className="text-2xl font-bold text-primary">{selectedProduct.retail_price.toFixed(2)}€</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Prix d'achat</Label>
-                      <p className="font-medium">{selectedProduct.cost_price.toFixed(2)}€</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Marge</Label>
-                      <p className="font-medium text-green-600">{selectedProduct.profit_margin.toFixed(1)}%</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Stock</Label>
-                      <p>{selectedProduct.stock_quantity} unités</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Score IA</Label>
-                      <p>{Math.round(selectedProduct.ai_score * 100)}%</p>
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setSelectedProduct(null)}>
-                    Fermer
-                  </Button>
-                  <Button onClick={() => {
-                    importMutation.mutate(selectedProduct.id);
-                    setSelectedProduct(null);
-                  }}>
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Importer ce produit
-                  </Button>
-                </DialogFooter>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
+        {/* Product Detail Modal - Optimisé */}
+        <ProductDetailModal
+          product={selectedProduct}
+          open={!!selectedProduct}
+          onOpenChange={() => setSelectedProduct(null)}
+          onImport={(productId) => {
+            importMutation.mutate(productId);
+            setSelectedProduct(null);
+          }}
+          isImporting={importMutation.isPending}
+        />
       </ChannablePageLayout>
     </>
   );
