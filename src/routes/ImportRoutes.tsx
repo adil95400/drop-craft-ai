@@ -1,37 +1,38 @@
-/**
- * Routes Import - Module simplifié (3 pages)
- * - Import Avancé (page principale)
- * - Historique
- * - Configuration
- */
 import { lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
-// Pages principales
+const ImportHub = lazy(() => import('@/pages/import/ImportHub'))
+const QuickImportPage = lazy(() => import('@/pages/import/quick/QuickImportPage'))
+const UrlImportPage = lazy(() => import('@/pages/import/UrlImportPage'))
+
+const AutoDSImportPage = lazy(() => import('@/pages/import/AutoDSImportPage'))
 const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'))
 const ImportHistoryPage = lazy(() => import('@/pages/import/manage/ImportHistoryPage'))
+const ImportScheduledPage = lazy(() => import('@/pages/import/ImportScheduledPage'))
 const ImportConfigPage = lazy(() => import('@/pages/import/ImportConfigPage'))
+const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMarketplacePage'))
+const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPublishingPage'))
+const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'))
+const AliExpressImportPage = lazy(() => import('@/pages/import/AliExpressImportPage'))
 
 export function ImportRoutes() {
   return (
     <Routes>
-      {/* Pages principales */}
-      <Route index element={<AdvancedImportPage />} />
+      <Route index element={<ImportHub />} />
+      <Route path="quick" element={<QuickImportPage />} />
+      
+      {/* URL Import - redirects to AutoDS with URL param */}
+      <Route path="url" element={<UrlImportPage />} />
+      
+      <Route path="autods" element={<AutoDSImportPage />} />
+      <Route path="advanced" element={<AdvancedImportPage />} />
       <Route path="history" element={<ImportHistoryPage />} />
+      <Route path="scheduled" element={<ImportScheduledPage />} />
       <Route path="config" element={<ImportConfigPage />} />
-      
-      {/* Redirections pour compatibilité - anciennes URLs */}
-      <Route path="quick" element={<Navigate to="/import" replace />} />
-      <Route path="url" element={<Navigate to="/import" replace />} />
-      <Route path="autods" element={<Navigate to="/import" replace />} />
-      <Route path="advanced" element={<Navigate to="/import" replace />} />
-      <Route path="aliexpress" element={<Navigate to="/import" replace />} />
-      <Route path="scheduled" element={<Navigate to="/import" replace />} />
-      <Route path="marketplace" element={<Navigate to="/import" replace />} />
-      <Route path="publishing" element={<Navigate to="/import" replace />} />
-      
-      {/* Shopify redirigé vers Canaux */}
-      <Route path="shopify" element={<Navigate to="/stores-channels/shopify" replace />} />
+      <Route path="marketplace" element={<ImportMarketplacePage />} />
+      <Route path="publishing" element={<ImportPublishingPage />} />
+      <Route path="shopify" element={<ShopifyImportHub />} />
+      <Route path="aliexpress" element={<AliExpressImportPage />} />
     </Routes>
   )
 }

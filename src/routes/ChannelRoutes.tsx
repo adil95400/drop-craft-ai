@@ -1,6 +1,5 @@
 /**
  * Routes Boutiques et Canaux - Module unifié
- * Inclut Shopify (déplacé depuis Import)
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -15,9 +14,6 @@ const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegratio
 const ShopifyDiagnostic = lazy(() => import('@/pages/ShopifyDiagnostic'));
 const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage'));
 
-// Shopify (déplacé depuis Import)
-const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'));
-
 // Sync & Analytics
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
 const StockManagementDashboard = lazy(() => import('@/pages/StockManagementDashboard'));
@@ -30,10 +26,6 @@ export function ChannelRoutes() {
       <Route index element={<StoresAndChannelsHub />} />
       <Route path="connect" element={<ChannelConnectPage />} />
       <Route path="connect/:platform" element={<ChannelConnectPage />} />
-      
-      {/* Shopify - déplacé depuis Import */}
-      <Route path="shopify" element={<ShopifyImportHub />} />
-      
       <Route path=":channelId" element={<ChannelDetailPage />} />
       
       {/* Legacy routes - redirected to new paths */}
