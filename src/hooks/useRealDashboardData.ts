@@ -384,6 +384,7 @@ export function useRealDashboardData() {
 
   return {
     stats: dashboardStats,
+    rawStats: stats,
     activityEvents: activityEvents || [],
     syncEvents: syncEvents || [],
     healthMetrics: healthMetrics || getDefaultHealthMetrics(),

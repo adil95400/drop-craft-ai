@@ -1,6 +1,12 @@
 /**
- * Page Notifications - Style Channable
- * Centre de notifications avec design moderne
+ * Page Notifications - Style Channable avec préférences persistées
+ * Centre de notifications avec design moderne et catégories enrichies
+ * 
+ * Optimisations appliquées:
+ * - Préférences persistées via useNotificationPreferences
+ * - Catégories de notifications avec filtrage
+ * - Accessibilité WCAG 2.1 AA
+ * - Support prefers-reduced-motion
  */
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,14 +15,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Bell, CheckCircle2, AlertCircle, Info, Trash2, Mail, Package, AlertTriangle, TrendingUp, Calendar, RefreshCw } from 'lucide-react';
-import { useState, useMemo, useCallback } from 'react';
+import { 
+  Bell, CheckCircle2, AlertCircle, Info, Trash2, Mail, Package, 
+  AlertTriangle, TrendingUp, Calendar, RefreshCw, ShoppingCart,
+  Megaphone, Settings, Tag, BarChart3, Filter
+} from 'lucide-react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useNotificationPreferences, NOTIFICATION_CATEGORIES, type NotificationPreferences } from '@/hooks/useNotificationPreferences';
 import {
   ChannablePageLayout,
   ChannableHeroSection,
@@ -31,30 +45,128 @@ interface Notification {
   message: string;
   read: boolean;
   created_at: string;
+  category?: string;
   metadata?: Record<string, unknown>;
 }
 
-interface NotificationPreferences {
-  email: boolean;
-  orders: boolean;
-  stock: boolean;
-  products: boolean;
-  reports: boolean;
-}
-
-const defaultPreferences: NotificationPreferences = {
-  email: true,
-  orders: true,
-  stock: true,
-  products: false,
-  reports: false,
+// Icon map for categories
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  orders: ShoppingCart,
+  stock: Package,
+  marketing: Megaphone,
+  system: Settings,
+  products: Tag,
+  reports: BarChart3,
 };
+
+// Color map for categories
+const CATEGORY_COLORS: Record<string, string> = {
+  orders: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
+  stock: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+  marketing: 'text-pink-500 bg-pink-500/10 border-pink-500/20',
+  system: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
+  products: 'text-violet-500 bg-violet-500/10 border-violet-500/20',
+  reports: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20',
+};
+
+// Memoized notification item
+const NotificationItem = memo(({ 
+  notification, 
+  onMarkAsRead, 
+  onDelete, 
+  getIcon,
+  prefersReducedMotion 
+}: {
+  notification: Notification;
+  onMarkAsRead: (id: string) => void;
+  onDelete: (id: string) => void;
+  getIcon: (type: string) => React.ReactNode;
+  prefersReducedMotion: boolean;
+}) => {
+  const categoryColor = CATEGORY_COLORS[notification.category || 'system'] || CATEGORY_COLORS.system;
+  const CategoryIcon = CATEGORY_ICONS[notification.category || 'system'] || Info;
+
+  return (
+    <motion.div
+      initial={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
+      animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
+      exit={prefersReducedMotion ? undefined : { opacity: 0, x: 10 }}
+      className={cn(
+        "group flex items-start gap-3 p-4 rounded-lg border transition-all duration-200",
+        !notification.read 
+          ? 'bg-primary/5 border-primary/20 shadow-sm' 
+          : 'hover:bg-accent/50 border-border/50'
+      )}
+      role="listitem"
+      aria-label={`${notification.title} - ${notification.read ? 'Lu' : 'Non lu'}`}
+    >
+      <div className="mt-0.5 flex-shrink-0">{getIcon(notification.type)}</div>
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-medium truncate">{notification.title}</h4>
+              {!notification.read && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                  Nouveau
+                </Badge>
+              )}
+              {notification.category && (
+                <Badge 
+                  variant="outline" 
+                  className={cn("text-[10px] px-1.5 py-0 border", categoryColor)}
+                >
+                  <CategoryIcon className="h-2.5 w-2.5 mr-1" aria-hidden="true" />
+                  {notification.category}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {notification.message}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs text-muted-foreground">
+            {formatDistanceToNow(new Date(notification.created_at), {
+              addSuffix: true,
+              locale: fr,
+            })}
+          </span>
+          <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
+            {!notification.read && (
+              <button
+                onClick={() => onMarkAsRead(notification.id)}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                aria-label="Marquer comme lu"
+              >
+                Marquer lu
+              </button>
+            )}
+            <button
+              onClick={() => onDelete(notification.id)}
+              className="text-xs text-muted-foreground hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50 rounded"
+              aria-label="Supprimer la notification"
+            >
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+NotificationItem.displayName = 'NotificationItem';
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
   const { profile } = useUnifiedAuth();
+  const prefersReducedMotion = useReducedMotion();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const [preferences, setPreferences] = useState<NotificationPreferences>(defaultPreferences);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  
+  // Use persisted preferences
+  const { preferences, updatePreference, isSaving } = useNotificationPreferences();
 
   // Fetch notifications
   const { data: notifications = [], isLoading, refetch } = useQuery({
@@ -83,10 +195,27 @@ export default function NotificationsPage() {
         message: n.message || '',
         read: n.is_read || false,
         created_at: n.created_at,
+        category: (n.metadata as any)?.category || 'system',
         metadata: n.metadata as Record<string, unknown> | undefined
       })) as Notification[];
     },
   });
+
+  // Filter by category
+  const filteredNotifications = useMemo(() => {
+    if (!categoryFilter) return notifications;
+    return notifications.filter(n => n.category === categoryFilter);
+  }, [notifications, categoryFilter]);
+
+  // Category counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    notifications.forEach(n => {
+      const cat = n.category || 'system';
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return counts;
+  }, [notifications]);
 
   // Mutations
   const markAsReadMutation = useMutation({
@@ -152,36 +281,22 @@ export default function NotificationsPage() {
     },
   });
 
-  // Handlers
-  const handlePreferenceChange = useCallback((key: keyof NotificationPreferences, value: boolean) => {
-    setPreferences(prev => ({ ...prev, [key]: value }));
-    toast.success(`Préférence ${value ? 'activée' : 'désactivée'}`);
-  }, []);
-
   const getIcon = useCallback((type: string) => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 className="h-5 w-5 text-emerald-500" />;
+        return <CheckCircle2 className="h-5 w-5 text-emerald-500" aria-hidden="true" />;
       case 'error':
-        return <AlertCircle className="h-5 w-5 text-destructive" />;
+        return <AlertCircle className="h-5 w-5 text-destructive" aria-hidden="true" />;
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-warning" />;
+        return <AlertTriangle className="h-5 w-5 text-warning" aria-hidden="true" />;
       default:
-        return <Info className="h-5 w-5 text-primary" />;
+        return <Info className="h-5 w-5 text-primary" aria-hidden="true" />;
     }
   }, []);
 
   // Computed values
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
   const readCount = useMemo(() => notifications.filter(n => n.read).length, [notifications]);
-
-  const preferenceItems = [
-    { key: 'email' as const, icon: Mail, title: 'Notifications email', desc: 'Recevoir les notifications importantes par email' },
-    { key: 'orders' as const, icon: Package, title: 'Notifications de commande', desc: 'Être alerté des nouvelles commandes' },
-    { key: 'stock' as const, icon: AlertTriangle, title: 'Alertes de stock', desc: 'Recevoir des alertes pour les stocks faibles' },
-    { key: 'products' as const, icon: TrendingUp, title: 'Mises à jour produits', desc: 'Notifications pour les changements de produits' },
-    { key: 'reports' as const, icon: Calendar, title: 'Rapports hebdomadaires', desc: 'Résumé de votre activité chaque semaine' },
-  ];
 
   // Channable Stats
   const stats: ChannableStat[] = [
@@ -250,7 +365,7 @@ export default function NotificationsPage() {
       <Tabs defaultValue="notifications" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="notifications" className="gap-2">
-            <Bell className="h-4 w-4" />
+            <Bell className="h-4 w-4" aria-hidden="true" />
             Notifications
             {unreadCount > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5">
@@ -259,18 +374,50 @@ export default function NotificationsPage() {
             )}
           </TabsTrigger>
           <TabsTrigger value="preferences" className="gap-2">
-            <Mail className="h-4 w-4" />
+            <Mail className="h-4 w-4" aria-hidden="true" />
             Préférences
           </TabsTrigger>
         </TabsList>
 
         {/* Notifications Tab */}
         <TabsContent value="notifications" className="space-y-4">
+          {/* Category Filters */}
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm p-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              <span className="text-sm font-medium text-muted-foreground mr-2">Filtrer par :</span>
+              <Button
+                variant={categoryFilter === null ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCategoryFilter(null)}
+                className="h-7 text-xs"
+              >
+                Toutes ({notifications.length})
+              </Button>
+              {NOTIFICATION_CATEGORIES.slice(0, 4).map(cat => {
+                const Icon = CATEGORY_ICONS[cat.id];
+                const count = categoryCounts[cat.id] || 0;
+                return (
+                  <Button
+                    key={cat.id}
+                    variant={categoryFilter === cat.id ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setCategoryFilter(categoryFilter === cat.id ? null : cat.id)}
+                    className={cn("h-7 text-xs gap-1", categoryFilter !== cat.id && CATEGORY_COLORS[cat.id])}
+                  >
+                    <Icon className="h-3 w-3" aria-hidden="true" />
+                    {cat.title} ({count})
+                  </Button>
+                );
+              })}
+            </div>
+          </Card>
+
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-primary" />
+                  <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
                   Historique
                 </CardTitle>
                 <div className="flex gap-2">
@@ -287,8 +434,9 @@ export default function NotificationsPage() {
                       onClick={() => clearAllMutation.mutate()}
                       disabled={clearAllMutation.isPending}
                       className="text-muted-foreground hover:text-destructive"
+                      aria-label="Supprimer les notifications lues"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   )}
                 </div>
@@ -296,7 +444,7 @@ export default function NotificationsPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="space-y-3">
+                <div className="space-y-3" role="status" aria-label="Chargement des notifications">
                   {[1, 2, 3].map(i => (
                     <div key={i} className="flex gap-4 p-4 rounded-lg border">
                       <Skeleton className="h-5 w-5 rounded-full" />
@@ -307,73 +455,32 @@ export default function NotificationsPage() {
                     </div>
                   ))}
                 </div>
-              ) : notifications.length === 0 ? (
-                <div className="text-center py-12">
+              ) : filteredNotifications.length === 0 ? (
+                <div className="text-center py-12" role="status">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
-                    <Bell className="h-8 w-8 text-muted-foreground/50" />
+                    <Bell className="h-8 w-8 text-muted-foreground/50" aria-hidden="true" />
                   </div>
                   <p className="font-medium text-muted-foreground">
-                    {filter === 'unread' ? 'Aucune notification non lue' : 'Aucune notification'}
+                    {filter === 'unread' ? 'Aucune notification non lue' : categoryFilter ? `Aucune notification "${categoryFilter}"` : 'Aucune notification'}
                   </p>
                   <p className="text-sm text-muted-foreground/70 mt-1">
                     Vos notifications apparaîtront ici
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`group flex items-start gap-3 p-4 rounded-lg border transition-all duration-200 ${
-                        !notification.read 
-                          ? 'bg-primary/5 border-primary/20 shadow-sm' 
-                          : 'hover:bg-accent/50'
-                      }`}
-                    >
-                      <div className="mt-0.5 flex-shrink-0">{getIcon(notification.type)}</div>
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="font-medium truncate">{notification.title}</h4>
-                              {!notification.read && (
-                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                                  Nouveau
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {notification.message}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(notification.created_at), {
-                              addSuffix: true,
-                              locale: fr,
-                            })}
-                          </span>
-                          <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {!notification.read && (
-                              <button
-                                onClick={() => markAsReadMutation.mutate(notification.id)}
-                                className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                              >
-                                Marquer lu
-                              </button>
-                            )}
-                            <button
-                              onClick={() => deleteNotificationMutation.mutate(notification.id)}
-                              className="text-xs text-muted-foreground hover:text-destructive transition-colors"
-                            >
-                              Supprimer
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="space-y-2" role="list" aria-label="Liste des notifications">
+                  <AnimatePresence>
+                    {filteredNotifications.map((notification) => (
+                      <NotificationItem
+                        key={notification.id}
+                        notification={notification}
+                        onMarkAsRead={(id) => markAsReadMutation.mutate(id)}
+                        onDelete={(id) => deleteNotificationMutation.mutate(id)}
+                        getIcon={getIcon}
+                        prefersReducedMotion={prefersReducedMotion}
+                      />
+                    ))}
+                  </AnimatePresence>
                 </div>
               )}
             </CardContent>
@@ -385,34 +492,64 @@ export default function NotificationsPage() {
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Mail className="h-5 w-5 text-primary" />
+                <Mail className="h-5 w-5 text-primary" aria-hidden="true" />
                 Préférences de notifications
               </CardTitle>
               <CardDescription>
-                Personnalisez les notifications que vous souhaitez recevoir
+                Personnalisez les notifications que vous souhaitez recevoir. Vos préférences sont sauvegardées automatiquement.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-1">
-              {preferenceItems.map(({ key, icon: Icon, title, desc }) => (
-                <div
-                  key={key}
-                  className="flex items-center justify-between gap-4 p-4 rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{title}</p>
-                      <p className="text-sm text-muted-foreground">{desc}</p>
-                    </div>
+              {/* Email general toggle */}
+              <div
+                className="flex items-center justify-between gap-4 p-4 rounded-lg bg-primary/5 border border-primary/20 mb-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Mail className="h-4 w-4 text-primary" aria-hidden="true" />
                   </div>
-                  <Switch
-                    checked={preferences[key]}
-                    onCheckedChange={(checked) => handlePreferenceChange(key, checked)}
-                  />
+                  <div>
+                    <p className="font-medium">Notifications email</p>
+                    <p className="text-sm text-muted-foreground">Recevoir les notifications importantes par email</p>
+                  </div>
                 </div>
-              ))}
+                <Switch
+                  checked={preferences.email}
+                  onCheckedChange={(checked) => updatePreference('email', checked)}
+                  disabled={isSaving}
+                  aria-label="Activer les notifications email"
+                />
+              </div>
+
+              {/* Category preferences */}
+              {NOTIFICATION_CATEGORIES.map((cat) => {
+                const Icon = CATEGORY_ICONS[cat.id];
+                const colorClass = CATEGORY_COLORS[cat.id];
+                
+                return (
+                  <motion.div
+                    key={cat.id}
+                    className="flex items-center justify-between gap-4 p-4 rounded-lg hover:bg-accent/50 transition-colors"
+                    whileHover={prefersReducedMotion ? undefined : { x: 2 }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border", colorClass)}>
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{cat.title}</p>
+                        <p className="text-sm text-muted-foreground">{cat.description}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={preferences[cat.key]}
+                      onCheckedChange={(checked) => updatePreference(cat.key, checked)}
+                      disabled={isSaving}
+                      aria-label={`Activer les notifications ${cat.title}`}
+                    />
+                  </motion.div>
+                );
+              })}
             </CardContent>
           </Card>
         </TabsContent>
