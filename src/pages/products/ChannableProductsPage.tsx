@@ -39,7 +39,7 @@ import {
   Sparkles, CheckCircle, Filter, Edit3, Wand2, Plus, BarChart3, 
   RefreshCw, Eye, Grid, List, Download, Upload
 } from 'lucide-react';
-import { useModals } from '@/hooks/useModals';
+import { useModalContext } from '@/hooks/useModalHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
@@ -60,7 +60,7 @@ export default function ChannableProductsPage() {
   
   const { auditResults, stats: auditStats } = useProductsAudit(products);
   
-  const { openModal } = useModals();
+  const { openModal } = useModalContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);

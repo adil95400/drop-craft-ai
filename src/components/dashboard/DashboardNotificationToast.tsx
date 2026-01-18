@@ -2,7 +2,7 @@ import { Bell, AlertTriangle, Info, CheckCircle, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useModals } from '@/hooks/useModals';
+import { useModalContext } from '@/hooks/useModalHelpers';
 
 interface NotificationToastProps {
   message: string;
@@ -17,7 +17,7 @@ export function DashboardNotificationToast({
   severity, 
   onDismiss 
 }: NotificationToastProps) {
-  const { openModal } = useModals();
+  const { openModal } = useModalContext();
 
   const getIcon = () => {
     switch (severity) {
