@@ -2860,36 +2860,46 @@ const supplierDefinitions: SupplierDefinition[] = [
 // Fusionner les fournisseurs existants avec Wise2Sync (éviter les doublons)
 const wise2syncConverted = convertWise2SyncSuppliers()
 
-// Dédupliquer par ID et par nom (normalisé)
+// Dédupliquer uniquement les VRAIS doublons (même fournisseur), sans fusionner des marketplaces
+// qui partagent le même nom (ex: eMAG par pays / variante).
 const deduplicateSuppliers = (suppliers: SupplierDefinition[]): SupplierDefinition[] => {
+  const scoreSupplier = (s: SupplierDefinition) => {
+    const rating = typeof s.rating === 'number' ? s.rating : 0
+    const products = typeof s.productsCount === 'number' ? s.productsCount : 0
+    const descLen = s.description?.length ?? 0
+    const featuresLen = s.features?.length ?? 0
+
+    return (
+      (s.popular ? 20 : 0) +
+      (s.premium ? 10 : 0) +
+      rating * 5 +
+      Math.min(products / 100000, 10) +
+      Math.min(descLen / 80, 5) +
+      Math.min(featuresLen, 10)
+    )
+  }
+
+  // Clé = id normalisé + pays (évite de supprimer des variantes par pays)
   const seen = new Map<string, SupplierDefinition>()
-  
+
   for (const supplier of suppliers) {
     const normalizedId = supplier.id.toLowerCase().replace(/[-_\s]/g, '')
-    const normalizedName = supplier.name.toLowerCase().replace(/[-_\s]/g, '')
-    
-    // Vérifier si déjà vu par ID ou par nom
-    const existingById = seen.get(`id:${normalizedId}`)
-    const existingByName = seen.get(`name:${normalizedName}`)
-    
-    if (!existingById && !existingByName) {
-      seen.set(`id:${normalizedId}`, supplier)
-      seen.set(`name:${normalizedName}`, supplier)
+    const normalizedCountry = supplier.country?.toLowerCase().trim() || 'xx'
+    const key = `${normalizedId}|${normalizedCountry}`
+
+    const existing = seen.get(key)
+    if (!existing) {
+      seen.set(key, supplier)
+      continue
+    }
+
+    // Garder la “meilleure” fiche quand on détecte un vrai doublon
+    if (scoreSupplier(supplier) > scoreSupplier(existing)) {
+      seen.set(key, supplier)
     }
   }
-  
-  // Retourner les valeurs uniques
-  const uniqueSuppliers: SupplierDefinition[] = []
-  const addedIds = new Set<string>()
-  
-  for (const [key, supplier] of seen) {
-    if (key.startsWith('id:') && !addedIds.has(supplier.id)) {
-      uniqueSuppliers.push(supplier)
-      addedIds.add(supplier.id)
-    }
-  }
-  
-  return uniqueSuppliers
+
+  return Array.from(seen.values())
 }
 
 // Fusionner et dédupliquer
