@@ -229,14 +229,14 @@ export default function ImportScheduledPage() {
     >
       {/* Hero Section */}
       <ChannableHeroSection
-        badge="Automatisation"
+        badge={{ label: "Automatisation", icon: Calendar }}
         title="Imports planifiés"
         subtitle="automatisation complète"
         description="Planifiez vos imports pour qu'ils s'exécutent automatiquement selon vos besoins. Gagnez du temps avec l'automatisation."
         primaryAction={{
           label: "Nouveau planning",
           onClick: () => setIsCreateDialogOpen(true),
-          icon: <Plus className="w-5 h-5" />
+          icon: Plus
         }}
         stats={stats}
         showHexagons={!prefersReducedMotion}

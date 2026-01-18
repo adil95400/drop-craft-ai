@@ -319,19 +319,18 @@ export default function ImportHub() {
     >
       {/* Hero Section Channable */}
       <ChannableHeroSection
-        badge="Import Pro"
+        badge={{ label: "Import Pro", icon: Sparkles }}
         title="Importez vos produits"
         subtitle="depuis n'importe quelle source"
         description="Importez depuis AliExpress, Amazon, Shopify et plus en quelques secondes. Notre IA optimise automatiquement vos fiches produits."
         primaryAction={{
           label: "Import Rapide",
           onClick: () => navigate('/import/autods'),
-          icon: <Rocket className="w-5 h-5" />
+          icon: Rocket
         }}
         secondaryAction={{
           label: "CSV / Excel",
-          onClick: () => navigate('/import/quick'),
-          icon: <FileSpreadsheet className="w-5 h-5" />
+          onClick: () => navigate('/import/quick')
         }}
         stats={heroStats}
         showHexagons={!prefersReducedMotion}

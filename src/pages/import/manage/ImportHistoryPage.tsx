@@ -114,7 +114,7 @@ export default function ImportHistoryPage() {
     >
       {/* Hero Section */}
       <ChannableHeroSection
-        badge="Historique"
+        badge={{ label: "Historique", icon: Clock }}
         title="Historique des imports"
         subtitle="suivi en temps réel"
         description="Consultez l'historique complet de vos imports avec des statistiques détaillées et des filtres avancés."

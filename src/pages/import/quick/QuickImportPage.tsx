@@ -38,7 +38,7 @@ export default function QuickImportPage() {
     >
       {/* Hero Section */}
       <ChannableHeroSection
-        badge="Import Fichier"
+        badge={{ label: "Import Fichier", icon: FileSpreadsheet }}
         title="Import CSV / Excel"
         subtitle="avec mapping intelligent"
         description="Importez vos catalogues produits depuis des fichiers CSV ou Excel. Notre IA détecte automatiquement les colonnes et valide vos données."
