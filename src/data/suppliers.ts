@@ -2873,6 +2873,187 @@ export const SUPPLIERS: Supplier[] = [
     regions: ['Global'],
     isPopular: true,
     status: 'active'
+  },
+
+  // Midocean - Cadeaux personnalisés
+  {
+    id: 'midocean',
+    name: 'midocean',
+    displayName: 'Midocean',
+    description: '10K+ cadeaux personnalisés pour entreprises',
+    category: 'Articles Promotionnels',
+    icon: '🎁',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'CSV'],
+    features: ['Personnalisation', 'Cadeaux entreprise', 'B2B'],
+    regions: ['EU', 'Global'],
+    isNew: true,
+    status: 'active'
+  },
+
+  // FeelFree - Cyclisme/Sports
+  {
+    id: 'feelfree',
+    name: 'feelfree',
+    displayName: 'FeelFree',
+    description: '10K+ équipements cyclisme, combat, ski, tourisme',
+    category: 'Sport & Loisirs',
+    icon: '🚴',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'XML'],
+    features: ['Cyclisme', 'Sports combat', 'Ski', 'Tourisme'],
+    regions: ['LT', 'EU'],
+    isNew: true,
+    status: 'active'
+  },
+
+  // Judėkim lauke - Équipements extérieurs
+  {
+    id: 'judekim-lauke',
+    name: 'judekim-lauke',
+    displayName: 'Judėkim lauke',
+    description: '500+ équipements aires de jeux et sport extérieur',
+    category: 'Sport & Loisirs',
+    icon: '🎢',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'Email'],
+    features: ['Aires de jeux', 'Sport extérieur', 'Équipements enfants'],
+    regions: ['LT', 'EU'],
+    isNew: true,
+    status: 'active'
+  },
+
+  // Synkarb - Sport wholesale
+  {
+    id: 'synkarb',
+    name: 'synkarb',
+    displayName: 'Synkarb',
+    description: '20K+ équipements sport en gros',
+    category: 'Sport & Loisirs',
+    icon: '🏋️',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'CSV'],
+    features: ['Prix compétitifs', 'Livraison rapide', 'Wholesale'],
+    regions: ['LT', 'EU'],
+    isNew: true,
+    status: 'active'
+  },
+
+  // Marba-Sport - Sport premium
+  {
+    id: 'marba-sport',
+    name: 'marba-sport',
+    displayName: 'Marba-Sport',
+    description: '36K+ produits sport premium de marques mondiales',
+    category: 'Sport & Loisirs',
+    icon: '⚽',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'XML', 'FTP'],
+    features: ['Marques premium', 'Grande expérience', 'Qualité garantie'],
+    regions: ['PL', 'EU'],
+    isNew: true,
+    status: 'active'
+  },
+
+  // Prosport.lt - Équipements sport
+  {
+    id: 'prosport-lt',
+    name: 'prosport-lt',
+    displayName: 'Prosport.lt',
+    description: '4.5K+ produits Wilson, Atomic, Suunto, Bolle',
+    category: 'Sport & Loisirs',
+    icon: '🎿',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'XML'],
+    features: ['Wilson', 'Atomic', 'Suunto', 'Bolle'],
+    regions: ['LT', 'EU'],
+    status: 'active'
+  },
+
+  // AP Trade - Audio/Vidéo/Sport
+  {
+    id: 'ap-trade',
+    name: 'ap-trade',
+    displayName: 'AP Trade',
+    description: '3K+ composants audio/vidéo et équipements sport',
+    category: 'Électronique',
+    icon: '🔊',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'Email'],
+    features: ['Audio/Vidéo', 'Sport', 'Loisirs', 'Service client'],
+    regions: ['LT', 'EU'],
+    status: 'active'
+  },
+
+  // Lukla.lt - Vêtements outdoor
+  {
+    id: 'lukla-lt',
+    name: 'lukla-lt',
+    displayName: 'Lukla.lt',
+    description: '2.5K+ vêtements et équipements voyage/outdoor',
+    category: 'Mode & Outdoor',
+    icon: '🧥',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'XML'],
+    features: ['Vêtements outdoor', 'Équipements voyage', 'Location'],
+    regions: ['LT', 'EU'],
+    status: 'active'
+  },
+
+  // Sportsman24.com - Vêtements sport
+  {
+    id: 'sportsman24',
+    name: 'sportsman24',
+    displayName: 'Sportsman24.com',
+    description: '50K+ vêtements sport Nike, Puma, Adidas, Reebok',
+    category: 'Mode & Sport',
+    icon: '👟',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'CSV'],
+    features: ['Nike', 'Puma', 'Adidas', 'Reebok', 'Grandes marques'],
+    regions: ['LT', 'EU'],
+    status: 'active'
+  },
+
+  // Skorpiono takas - Sport/Imprimantes
+  {
+    id: 'skorpiono-takas',
+    name: 'skorpiono-takas',
+    displayName: 'Skorpiono takas',
+    description: '2.5K+ équipements sport et fournitures imprimantes',
+    category: 'Multi-catégories',
+    icon: '🦂',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'FTP'],
+    features: ['Sport', 'Fournitures imprimantes', 'Wholesale Baltic'],
+    regions: ['LT', 'LV', 'EE'],
+    status: 'active'
+  },
+
+  // PowerSport.lt - Sport/Loisirs
+  {
+    id: 'powersport-lt',
+    name: 'powersport-lt',
+    displayName: 'PowerSport.lt',
+    description: '25K+ produits sport et loisirs wholesale',
+    category: 'Sport & Loisirs',
+    icon: '💪',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'XML', 'API'],
+    features: ['Wholesale', 'Location', 'Sport', 'Loisirs'],
+    regions: ['LT', 'EU'],
+    status: 'active'
   }
 ]
 
