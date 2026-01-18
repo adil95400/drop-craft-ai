@@ -662,6 +662,48 @@ export default function ChannableProductsPage() {
             setViewModalProduct(null);
           }
         }}
+        onDuplicate={async () => {
+          if (viewModalProduct) {
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) throw new Error('Non authentifié');
+              
+              const productTitle = viewModalProduct.name || (viewModalProduct as any).title || 'Produit sans nom';
+              
+              const { error } = await supabase
+                .from('products')
+                .insert([{
+                  user_id: user.id,
+                  title: `${productTitle} (copie)`,
+                  name: `${productTitle} (copie)`,
+                  description: viewModalProduct.description || null,
+                  price: viewModalProduct.price || 0,
+                  cost_price: viewModalProduct.cost_price || 0,
+                  sku: viewModalProduct.sku ? `${viewModalProduct.sku}-COPY` : null,
+                  category: viewModalProduct.category || null,
+                  image_url: viewModalProduct.image_url || null,
+                  stock_quantity: viewModalProduct.stock_quantity || 0,
+                  status: 'draft',
+                }]);
+              
+              if (error) throw error;
+              
+              toast({
+                title: '✅ Produit dupliqué',
+                description: `"${viewModalProduct.name}" a été copié avec succès`,
+              });
+              
+              setViewModalProduct(null);
+              handleRefresh();
+            } catch (error) {
+              toast({
+                title: 'Erreur',
+                description: error instanceof Error ? error.message : 'Impossible de dupliquer le produit',
+                variant: 'destructive',
+              });
+            }
+          }
+        }}
       />
     </ChannablePageLayout>
   );
