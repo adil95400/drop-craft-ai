@@ -62,7 +62,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRealSuppliers, Supplier } from '@/hooks/useRealSuppliers'
-import { WISE2SYNC_SUPPLIERS } from '@/data/suppliers'
+import { ALL_SUPPLIERS, SUPPLIER_CATEGORIES, COUNTRIES, getSupplierStats, searchSuppliers, UnifiedSupplier } from '@/data/allSuppliers'
 import { useToast } from '@/hooks/use-toast'
 import {
   DropdownMenu,
@@ -226,21 +226,21 @@ const extractCountryCode = (regions: string[]): string => {
   return 'EU'
 }
 
-// Convertir les fournisseurs Wise2Sync au format SupplierDefinition
-const convertWise2SyncSuppliers = (): SupplierDefinition[] => {
-  return WISE2SYNC_SUPPLIERS.map(supplier => ({
+// Convertir ALL_SUPPLIERS au format SupplierDefinition
+const convertAllSuppliers = (): SupplierDefinition[] => {
+  return ALL_SUPPLIERS.map(supplier => ({
     id: supplier.id,
-    name: supplier.displayName,
+    name: supplier.name,
     logo: supplier.logo || supplier.icon || '',
-    category: mapWise2SyncCategory(supplier.category),
-    country: extractCountryCode(supplier.regions),
+    category: (supplier.category as SupplierDefinition['category']) || 'general',
+    country: supplier.country,
     popular: supplier.isPopular || false,
-    premium: false,
+    premium: supplier.isPremium || false,
     description: supplier.description,
     features: supplier.features,
-    rating: 4.0 + Math.random() * 0.8, // Rating entre 4.0 et 4.8
-    productsCount: 10000 + Math.floor(Math.random() * 90000), // Entre 10K et 100K
-    shippingTime: '3-10 jours',
+    rating: supplier.rating || 4.0,
+    productsCount: supplier.productsCount || 10000,
+    shippingTime: supplier.shippingTime || '3-10 jours',
     setupFields: supplier.requiresAuth ? [
       { name: 'api_key', label: 'API Key', type: 'password' as const, required: true }
     ] : []
@@ -2843,8 +2843,8 @@ const supplierDefinitions: SupplierDefinition[] = [
   },
 ]
 
-// Fusionner les fournisseurs existants avec Wise2Sync (éviter les doublons)
-const wise2syncConverted = convertWise2SyncSuppliers()
+// Utiliser ALL_SUPPLIERS comme source unique (plus de doublons)
+const wise2syncConverted = convertAllSuppliers()
 
 // Dédupliquer uniquement les VRAIS doublons (même fournisseur), sans fusionner des marketplaces
 // qui partagent le même nom (ex: eMAG par pays / variante).
