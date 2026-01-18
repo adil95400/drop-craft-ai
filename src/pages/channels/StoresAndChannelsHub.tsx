@@ -29,7 +29,6 @@ import {
   ChannableActivityFeed,
   ChannableChannelHealth,
   ChannableSyncTimeline,
-  DEFAULT_CHANNEL_BULK_ACTIONS,
   type FilterConfig,
   type SyncEvent
 } from '@/components/channable'
@@ -56,7 +55,7 @@ import {
   Package, TrendingUp, Globe, Link2, Loader2,
   LayoutGrid, List, ChevronRight, Zap, Activity,
   BarChart3, Eye, EyeOff, History, Download, Upload,
-  Filter, Sparkles, Target, ArrowUpRight, Database
+  Filter, Sparkles, Target, ArrowUpRight, Database, Trash2
 } from 'lucide-react'
 
 // Platform definitions
@@ -296,7 +295,7 @@ export default function StoresAndChannelsHub() {
   const [showHealth, setShowHealth] = useState(true)
 
   // Use unified hooks with real data
-  const { connections, stats, isLoading, syncMutation } = useChannelConnections()
+  const { connections, stats, isLoading, syncMutation, deleteMutation, toggleAutoSyncMutation, exportChannels } = useChannelConnections()
   const { data: healthMetrics } = useChannelHealth()
   const { events: activityEvents } = useChannelActivity()
 
@@ -352,7 +351,7 @@ export default function StoresAndChannelsHub() {
     setSelectedIds(new Set())
   }, [])
 
-  // Bulk actions
+  // Bulk actions with real functionality
   const bulkActions = useMemo(() => [
     {
       id: 'sync-all',
@@ -364,10 +363,49 @@ export default function StoresAndChannelsHub() {
       id: 'enable-autosync',
       label: 'Activer Auto-Sync',
       icon: Zap,
-      onClick: () => toast({ title: 'Auto-sync activé pour ' + selectedIds.size + ' canaux' })
+      onClick: () => toggleAutoSyncMutation.mutate({ connectionIds: Array.from(selectedIds), enabled: true })
     },
-    ...DEFAULT_CHANNEL_BULK_ACTIONS.slice(2)
-  ], [selectedIds, syncMutation, toast])
+    {
+      id: 'disable-autosync',
+      label: 'Désactiver Auto-Sync',
+      icon: EyeOff,
+      variant: 'outline' as const,
+      onClick: () => toggleAutoSyncMutation.mutate({ connectionIds: Array.from(selectedIds), enabled: false })
+    },
+    {
+      id: 'export',
+      label: 'Exporter',
+      icon: Download,
+      onClick: () => {
+        exportChannels(Array.from(selectedIds))
+        deselectAll()
+      }
+    },
+    {
+      id: 'settings',
+      label: 'Paramètres',
+      icon: Settings,
+      onClick: () => {
+        if (selectedIds.size === 1) {
+          navigate(`/stores-channels/${Array.from(selectedIds)[0]}`)
+        } else {
+          toast({ title: 'Sélectionnez un seul canal pour accéder aux paramètres' })
+        }
+      }
+    },
+    {
+      id: 'delete',
+      label: 'Supprimer',
+      icon: Trash2,
+      variant: 'destructive' as const,
+      onClick: () => {
+        if (confirm(`Êtes-vous sûr de vouloir supprimer ${selectedIds.size} canal(aux) ?`)) {
+          deleteMutation.mutate(Array.from(selectedIds))
+          deselectAll()
+        }
+      }
+    }
+  ], [selectedIds, syncMutation, toggleAutoSyncMutation, deleteMutation, exportChannels, navigate, toast, deselectAll])
 
   // Available platforms
   const connectedPlatformIds = connections.map(c => c.platform_type?.toLowerCase())

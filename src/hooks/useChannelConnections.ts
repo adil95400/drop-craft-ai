@@ -70,10 +70,12 @@ export function useChannelConnections() {
 
       // Map sales_channels
       const mappedSalesChannels: ChannelConnection[] = (salesChannels || []).map(d => {
-        // Parse sync_config safely
-        const syncConfig = typeof d.sync_config === 'object' && d.sync_config !== null 
-          ? d.sync_config as Record<string, unknown>
-          : {}
+        // Parse sync_config safely with explicit type guard
+        let autoSyncEnabled = false
+        if (d.sync_config && typeof d.sync_config === 'object' && !Array.isArray(d.sync_config)) {
+          const config = d.sync_config as { auto_sync?: boolean }
+          autoSyncEnabled = Boolean(config.auto_sync)
+        }
         
         return {
           id: d.id,
@@ -85,7 +87,7 @@ export function useChannelConnections() {
           products_synced: d.products_synced || 0,
           orders_synced: d.orders_synced || 0,
           created_at: d.created_at,
-          auto_sync_enabled: Boolean(syncConfig.auto_sync),
+          auto_sync_enabled: autoSyncEnabled,
           source: 'sales_channels' as const
         }
       })
@@ -137,32 +139,34 @@ export function useChannelConnections() {
   // Sync mutation
   const syncMutation = useMutation({
     mutationFn: async (connectionIds: string[]) => {
-      const connection = connections.find(c => connectionIds.includes(c.id))
-      if (!connection) return
+      for (const id of connectionIds) {
+        const connection = connections.find(c => c.id === id)
+        if (!connection) continue
 
-      if (connection.source === 'integrations') {
-        await supabase.from('integrations').update({ 
-          connection_status: 'connecting',
-          last_sync_at: new Date().toISOString()
-        }).eq('id', connection.id)
+        if (connection.source === 'integrations') {
+          await supabase.from('integrations').update({ 
+            connection_status: 'connecting',
+            last_sync_at: new Date().toISOString()
+          }).eq('id', connection.id)
 
-        // Simulate sync completion
-        await new Promise(resolve => setTimeout(resolve, 2000))
+          // Simulate sync completion
+          await new Promise(resolve => setTimeout(resolve, 2000))
 
-        await supabase.from('integrations').update({ 
-          connection_status: 'connected'
-        }).eq('id', connection.id)
-      } else {
-        await supabase.from('sales_channels').update({ 
-          status: 'syncing',
-          last_sync_at: new Date().toISOString()
-        }).eq('id', connection.id)
+          await supabase.from('integrations').update({ 
+            connection_status: 'connected'
+          }).eq('id', connection.id)
+        } else {
+          await supabase.from('sales_channels').update({ 
+            status: 'syncing',
+            last_sync_at: new Date().toISOString()
+          }).eq('id', connection.id)
 
-        await new Promise(resolve => setTimeout(resolve, 2000))
+          await new Promise(resolve => setTimeout(resolve, 2000))
 
-        await supabase.from('sales_channels').update({ 
-          status: 'active'
-        }).eq('id', connection.id)
+          await supabase.from('sales_channels').update({ 
+            status: 'active'
+          }).eq('id', connection.id)
+        }
       }
     },
     onSuccess: () => {
@@ -175,12 +179,100 @@ export function useChannelConnections() {
     }
   })
 
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (connectionIds: string[]) => {
+      for (const id of connectionIds) {
+        const connection = connections.find(c => c.id === id)
+        if (!connection) continue
+
+        if (connection.source === 'integrations') {
+          const { error } = await supabase.from('integrations').delete().eq('id', id)
+          if (error) throw error
+        } else {
+          const { error } = await supabase.from('sales_channels').delete().eq('id', id)
+          if (error) throw error
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['channel-connections-unified'] })
+      toast.success('Canal(aux) supprimé(s)')
+    },
+    onError: (error) => {
+      toast.error(`Erreur de suppression: ${error.message}`)
+    }
+  })
+
+  // Toggle auto-sync mutation
+  const toggleAutoSyncMutation = useMutation({
+    mutationFn: async ({ connectionIds, enabled }: { connectionIds: string[], enabled: boolean }) => {
+      for (const id of connectionIds) {
+        const connection = connections.find(c => c.id === id)
+        if (!connection) continue
+
+        if (connection.source === 'integrations') {
+          await supabase.from('integrations').update({ 
+            auto_sync_enabled: enabled
+          }).eq('id', id)
+        } else {
+          await supabase.from('sales_channels').update({ 
+            sync_config: { auto_sync: enabled, sync_interval_minutes: 60 }
+          }).eq('id', id)
+        }
+      }
+    },
+    onSuccess: (_, { enabled }) => {
+      queryClient.invalidateQueries({ queryKey: ['channel-connections-unified'] })
+      toast.success(enabled ? 'Auto-sync activé' : 'Auto-sync désactivé')
+    },
+    onError: (error) => {
+      toast.error(`Erreur: ${error.message}`)
+    }
+  })
+
+  // Export channels data
+  const exportChannels = (connectionIds: string[]) => {
+    const channelsToExport = connectionIds.length > 0 
+      ? connections.filter(c => connectionIds.includes(c.id))
+      : connections
+
+    const data = channelsToExport.map(c => ({
+      id: c.id,
+      plateforme: c.platform_name,
+      domaine: c.shop_domain || '',
+      statut: c.connection_status,
+      produits_synchronises: c.products_synced,
+      commandes_synchronisees: c.orders_synced,
+      derniere_sync: c.last_sync_at || 'Jamais',
+      auto_sync: c.auto_sync_enabled ? 'Oui' : 'Non',
+      date_creation: c.created_at
+    }))
+
+    // Convert to CSV
+    const headers = Object.keys(data[0] || {}).join(',')
+    const rows = data.map(row => Object.values(row).join(','))
+    const csv = [headers, ...rows].join('\n')
+
+    // Download file
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `canaux-export-${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    
+    toast.success(`${channelsToExport.length} canal(aux) exporté(s)`)
+  }
+
   return {
     connections,
     stats,
     isLoading,
     error,
-    syncMutation
+    syncMutation,
+    deleteMutation,
+    toggleAutoSyncMutation,
+    exportChannels
   }
 }
 
