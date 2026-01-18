@@ -13,13 +13,17 @@ import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Loader2, Mail, Lock, User, Building2, Eye, EyeOff, 
-  CheckCircle2, AlertCircle, ArrowRight, Sparkles, Shield,
-  Zap, BarChart3
+  CheckCircle2, AlertCircle, ArrowRight, Shield,
+  Zap, BarChart3, Star
 } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+
+// Import assets
+import shopOptiLogo from '@/assets/shopopti-logo.png';
+import authHeroBg from '@/assets/auth-hero-bg.jpg';
 
 // Validation helpers
 const validateEmail = (email: string) => {
@@ -50,6 +54,12 @@ const features = [
   { icon: Zap, label: 'Performance optimisée', description: 'Chargement ultra rapide' },
   { icon: Shield, label: 'Sécurité maximale', description: 'Données chiffrées' },
   { icon: BarChart3, label: 'Analytics avancés', description: 'Insights en temps réel' },
+];
+
+// Testimonials
+const testimonials = [
+  { name: 'Marie L.', role: 'E-commerçante', text: 'ShopOpti a doublé mes ventes en 3 mois !', rating: 5 },
+  { name: 'Thomas D.', role: 'Dropshipper', text: 'Interface intuitive et support réactif.', rating: 5 },
 ];
 
 export const AuthInterface = () => {
@@ -207,45 +217,42 @@ export const AuthInterface = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Panel - Branding & Features (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full blur-3xl" />
-        </div>
+      {/* Left Panel - Hero Image & Branding (Hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        {/* Background Image */}
+        <img 
+          src={authHeroBg} 
+          alt="ShopOpti Dashboard" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
         
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }} />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/70 to-transparent" />
         
-        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16 text-white">
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white h-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             {/* Logo */}
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-                <Sparkles className="h-7 w-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">ShopOpti</h1>
-                <p className="text-white/70 text-sm">E-commerce Suite</p>
-              </div>
+            <div className="flex items-center gap-3 mb-12">
+              <img 
+                src={shopOptiLogo} 
+                alt="ShopOpti Logo" 
+                className="h-14 w-auto object-contain drop-shadow-lg"
+              />
             </div>
             
             {/* Headline */}
             <h2 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
-              Optimisez votre
+              Boostez votre
               <br />
               <span className="text-white/90">e-commerce</span>
             </h2>
             
-            <p className="text-lg text-white/80 mb-10 max-w-md">
+            <p className="text-lg text-white/90 mb-10 max-w-md">
               La plateforme tout-en-un pour gérer, automatiser et faire croître votre business en ligne.
             </p>
             
@@ -259,27 +266,47 @@ export const AuthInterface = () => {
                   transition={{ delay: 0.2 + index * 0.1 }}
                   className="flex items-center gap-4"
                 >
-                  <div className="h-10 w-10 rounded-lg bg-white/10 backdrop-blur flex items-center justify-center flex-shrink-0">
+                  <div className="h-10 w-10 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
                     <feature.icon className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-medium">{feature.label}</p>
-                    <p className="text-sm text-white/60">{feature.description}</p>
+                    <p className="font-semibold">{feature.label}</p>
+                    <p className="text-sm text-white/70">{feature.description}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
           </motion.div>
           
-          {/* Trust Badge */}
+          {/* Testimonial */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mt-12 pt-8 border-t border-white/10"
+            className="mt-auto pt-8"
           >
-            <p className="text-sm text-white/60">
-              Utilisé par <span className="text-white font-semibold">+2,500</span> e-commerçants
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/20">
+              <div className="flex gap-1 mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-white/90 italic mb-3">
+                "ShopOpti a révolutionné ma gestion e-commerce. Mes ventes ont doublé en 3 mois !"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                  ML
+                </div>
+                <div>
+                  <p className="font-medium text-sm">Marie L.</p>
+                  <p className="text-white/60 text-xs">E-commerçante • +2,500 produits</p>
+                </div>
+              </div>
+            </div>
+            
+            <p className="text-sm text-white/60 mt-4 text-center">
+              Rejoint par <span className="text-white font-semibold">+2,500</span> e-commerçants
             </p>
           </motion.div>
         </div>
@@ -295,12 +322,11 @@ export const AuthInterface = () => {
         >
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex items-center gap-2 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-2xl font-bold">ShopOpti</span>
-            </div>
+            <img 
+              src={shopOptiLogo} 
+              alt="ShopOpti Logo" 
+              className="h-12 w-auto object-contain mx-auto mb-2"
+            />
             <p className="text-sm text-muted-foreground">Plateforme e-commerce</p>
           </div>
 
