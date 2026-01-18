@@ -12,7 +12,7 @@ export function FeedRoutes() {
     <Routes>
       <Route index element={<ChannableFeedManager />} />
       <Route path="optimization" element={<FeedOptimizationPage />} />
-      <Route path="rules" element={<Navigate to="/rules?tab=feeds" replace />} />
+      <Route path="rules" element={<Navigate to="/products?tab=rules&subTab=feeds" replace />} />
       <Route path="ppc-link" element={<PPCFeedLinkPage />} />
       <Route path="categories" element={<CategoryMappingPage />} />
     </Routes>

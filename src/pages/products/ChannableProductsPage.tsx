@@ -1,9 +1,10 @@
 /**
  * Page Produits style Channable avec design moderne
+ * Intègre les règles comme onglet
  */
 
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
 import { useProductFilters } from '@/hooks/useProductFilters';
@@ -38,7 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Package, Loader2, TrendingUp, AlertCircle, DollarSign, Target, 
   Sparkles, CheckCircle, Filter, Edit3, Wand2, Plus, BarChart3, 
-  RefreshCw, Eye, Grid, List, Download, Upload
+  RefreshCw, Eye, Grid, List, Download, Upload, GitBranch, History, Rss
 } from 'lucide-react';
 import { useModalContext } from '@/hooks/useModalHelpers';
 import { useToast } from '@/hooks/use-toast';
@@ -48,7 +49,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
 import { ChannableStat, ChannableQuickAction, ChannableCategory } from '@/components/channable/types';
 
+// Composants règles intégrés
+import { CatalogRulesTab } from '@/components/rules/CatalogRulesTab';
+import { RulesExecutionHistory } from '@/components/rules/RulesExecutionHistory';
+import { FeedRulesDashboard } from '@/components/feed-rules';
+import { PriceRulesDashboard } from '@/components/price-rules';
+import { RuleBuilder } from '@/components/rules/RuleBuilder';
+import { RuleTemplatesDialog } from '@/components/rules/RuleTemplatesDialog';
+import { RuleTesterDialog } from '@/components/rules/RuleTesterDialog';
+import { useProductRules } from '@/hooks/useProductRules';
+import { ProductRule } from '@/lib/rules/ruleTypes';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+type MainView = 'products' | 'rules';
+
 export default function ChannableProductsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { products, stats, isLoading, error, refetch } = useUnifiedProducts();
   const { filters, filteredProducts, categories, updateFilter, resetFilters, hasActiveFilters } = useProductFilters(products);
   const { 
@@ -61,6 +86,19 @@ export default function ChannableProductsPage() {
   
   const { auditResults, stats: auditStats } = useProductsAudit(products);
   
+  // Hook pour les règles
+  const { 
+    rules, 
+    stats: rulesStats, 
+    templates,
+    isLoading: rulesLoading, 
+    toggleRule, 
+    deleteRule,
+    createRule,
+    createFromTemplate,
+    isDeleting 
+  } = useProductRules();
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -72,6 +110,93 @@ export default function ChannableProductsPage() {
   const [expertMode, setExpertMode] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('all');
   const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null);
+
+  // États pour l'onglet Règles
+  const initialMainView = searchParams.get('tab') === 'rules' ? 'rules' : 'products';
+  const [mainView, setMainView] = useState<MainView>(initialMainView);
+  const [ruleSubTab, setRuleSubTab] = useState<'catalog' | 'pricing' | 'feeds' | 'executions'>('catalog');
+  const [builderOpen, setBuilderOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [testerOpen, setTesterOpen] = useState(false);
+  const [selectedRule, setSelectedRule] = useState<ProductRule | undefined>();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ruleToDelete, setRuleToDelete] = useState<string | null>(null);
+
+  // Sync URL with tab
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl === 'rules') {
+      setMainView('rules');
+      const subTab = searchParams.get('subTab');
+      if (subTab && ['catalog', 'pricing', 'feeds', 'executions'].includes(subTab)) {
+        setRuleSubTab(subTab as any);
+      }
+    } else {
+      setMainView('products');
+    }
+  }, [searchParams]);
+
+  const handleMainViewChange = useCallback((view: MainView) => {
+    setMainView(view);
+    if (view === 'rules') {
+      setSearchParams({ tab: 'rules', subTab: ruleSubTab });
+    } else {
+      setSearchParams({});
+    }
+  }, [setSearchParams, ruleSubTab]);
+
+  const handleRuleSubTabChange = useCallback((subTab: 'catalog' | 'pricing' | 'feeds' | 'executions') => {
+    setRuleSubTab(subTab);
+    setSearchParams({ tab: 'rules', subTab });
+  }, [setSearchParams]);
+
+  // Handlers pour les règles
+  const handleEditRule = useCallback((rule: ProductRule) => {
+    setSelectedRule(rule);
+    setBuilderOpen(true);
+  }, []);
+
+  const handleNewRule = useCallback(() => {
+    setSelectedRule(undefined);
+    setBuilderOpen(true);
+  }, []);
+
+  const handleDeleteRule = useCallback((ruleId: string) => {
+    setRuleToDelete(ruleId);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const confirmDeleteRule = useCallback(() => {
+    if (ruleToDelete) {
+      deleteRule(ruleToDelete);
+      setDeleteDialogOpen(false);
+      setRuleToDelete(null);
+    }
+  }, [ruleToDelete, deleteRule]);
+
+  const handleSelectTemplate = useCallback(async (templateId: string) => {
+    await createFromTemplate(templateId);
+    setTemplatesOpen(false);
+  }, [createFromTemplate]);
+
+  const handleTestRule = useCallback((rule: ProductRule) => {
+    setSelectedRule(rule);
+    setTesterOpen(true);
+  }, []);
+
+  const handleDuplicateRule = useCallback((rule: ProductRule) => {
+    createRule({
+      ...rule,
+      id: undefined,
+      name: `${rule.name} (copie)`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      executionCount: 0,
+      successCount: 0,
+      errorCount: 0,
+    } as any);
+    toast({ title: 'Règle dupliquée', description: 'La copie a été créée avec succès' });
+  }, [createRule, toast]);
 
   const handleEdit = (product: any) => {
     navigate(`/products/${product.id}/edit`);
@@ -243,33 +368,124 @@ export default function ChannableProductsPage() {
 
   return (
     <ChannablePageLayout
-      title="Catalogue Produits"
-      metaTitle="Produits"
-      metaDescription="Gérez et optimisez votre catalogue produits"
+      title={mainView === 'products' ? 'Catalogue Produits' : 'Moteur de Règles'}
+      metaTitle={mainView === 'products' ? 'Produits' : 'Règles'}
+      metaDescription={mainView === 'products' ? 'Gérez et optimisez votre catalogue produits' : 'Automatisez la gestion de vos produits'}
     >
       {/* Hero Section */}
       <ChannableHeroSection
-        title="Catalogue Produits"
-        subtitle="Gestion unifiée"
-        description="Gérez, analysez et optimisez tous vos produits depuis une interface centralisée avec des outils d'intelligence artificielle."
+        title={mainView === 'products' ? 'Catalogue Produits' : 'Moteur de Règles'}
+        subtitle={mainView === 'products' ? 'Gestion unifiée' : 'Automatisation'}
+        description={mainView === 'products' 
+          ? 'Gérez, analysez et optimisez tous vos produits depuis une interface centralisée.'
+          : 'Automatisez la gestion de vos produits avec des règles intelligentes.'
+        }
         badge={{
-          label: `${stats.total} produits`,
-          icon: Package
+          label: mainView === 'products' ? `${stats.total} produits` : `${rules.length} règles`,
+          icon: mainView === 'products' ? Package : GitBranch
         }}
         primaryAction={{
-          label: 'Nouveau produit',
-          onClick: () => navigate('/products/create'),
+          label: mainView === 'products' ? 'Nouveau produit' : 'Nouvelle règle',
+          onClick: mainView === 'products' ? () => navigate('/products/create') : handleNewRule,
           icon: Plus
         }}
-        secondaryAction={{
+        secondaryAction={mainView === 'products' ? {
           label: 'Actualiser',
           onClick: handleRefresh
+        } : {
+          label: 'Templates',
+          onClick: () => setTemplatesOpen(true)
         }}
         variant="compact"
       />
 
-      {/* Stats Grid */}
-      <ChannableStatsGrid stats={productStats} columns={3} compact />
+      {/* Main View Tabs: Products / Rules */}
+      <div className="flex items-center gap-2 border-b border-border/50 pb-4">
+        <Button
+          variant={mainView === 'products' ? 'default' : 'ghost'}
+          onClick={() => handleMainViewChange('products')}
+          className="gap-2"
+        >
+          <Package className="h-4 w-4" />
+          Produits
+          <Badge variant="secondary" className="ml-1">{stats.total}</Badge>
+        </Button>
+        <Button
+          variant={mainView === 'rules' ? 'default' : 'ghost'}
+          onClick={() => handleMainViewChange('rules')}
+          className="gap-2"
+        >
+          <GitBranch className="h-4 w-4" />
+          Règles
+          <Badge variant="secondary" className="ml-1">{rules.length}</Badge>
+        </Button>
+      </div>
+
+      {/* Contenu selon la vue */}
+      {mainView === 'rules' ? (
+        /* === VUE RÈGLES === */
+        <div className="space-y-6">
+          {/* Sub-tabs pour les règles */}
+          <Tabs value={ruleSubTab} onValueChange={(v) => handleRuleSubTabChange(v as any)} className="space-y-6">
+            <TabsList className="w-full justify-start bg-muted/50 p-1 h-auto flex-wrap">
+              <TabsTrigger value="catalog" className="gap-2 py-2">
+                <Package className="h-4 w-4" />
+                Catalogue
+              </TabsTrigger>
+              <TabsTrigger value="pricing" className="gap-2 py-2">
+                <DollarSign className="h-4 w-4" />
+                Prix
+              </TabsTrigger>
+              <TabsTrigger value="feeds" className="gap-2 py-2">
+                <Rss className="h-4 w-4" />
+                Feeds
+              </TabsTrigger>
+              <TabsTrigger value="executions" className="gap-2 py-2">
+                <History className="h-4 w-4" />
+                Exécutions
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="catalog" className="space-y-6">
+              <CatalogRulesTab
+                rules={rules}
+                templates={templates}
+                stats={rulesStats}
+                isLoading={rulesLoading}
+                onNewRule={handleNewRule}
+                onEditRule={handleEditRule}
+                onTestRule={handleTestRule}
+                onDuplicateRule={handleDuplicateRule}
+                onDeleteRule={handleDeleteRule}
+                onToggleRule={toggleRule}
+                onSelectTemplate={handleSelectTemplate}
+              />
+            </TabsContent>
+
+            <TabsContent value="pricing" className="space-y-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <PriceRulesDashboard />
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="feeds" className="space-y-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <FeedRulesDashboard />
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="executions" className="space-y-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <RulesExecutionHistory />
+              </motion.div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      ) : (
+        /* === VUE PRODUITS === */
+        <>
+          {/* Stats Grid */}
+          <ChannableStatsGrid stats={productStats} columns={3} compact />
 
       {/* Quick Actions & Filters Bar */}
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
@@ -633,8 +849,10 @@ export default function ChannableProductsPage() {
           </CardContent>
         </Card>
       )}
+        </>
+      )}
 
-      {/* Dialogs */}
+      {/* Dialogs produits */}
       <BulkEnrichmentDialog
         open={showBulkEnrichment}
         onOpenChange={setShowBulkEnrichment}
@@ -706,6 +924,45 @@ export default function ChannableProductsPage() {
           }
         }}
       />
+
+      {/* Dialogs règles */}
+      <RuleBuilder
+        rule={selectedRule}
+        open={builderOpen}
+        onOpenChange={setBuilderOpen}
+        onSave={() => setBuilderOpen(false)}
+      />
+
+      <RuleTemplatesDialog
+        open={templatesOpen}
+        onOpenChange={setTemplatesOpen}
+        onSelectTemplate={handleSelectTemplate}
+      />
+
+      {selectedRule && (
+        <RuleTesterDialog
+          rule={selectedRule}
+          open={testerOpen}
+          onOpenChange={setTesterOpen}
+        />
+      )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer la règle ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. La règle sera définitivement supprimée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteRule} disabled={isDeleting}>
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ChannablePageLayout>
   );
 }

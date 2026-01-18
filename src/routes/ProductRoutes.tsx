@@ -35,7 +35,7 @@ const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProductsPage'));
 
 // Product Module Routes
-const ProductRulesPage = lazy(() => import('@/pages/products/ProductRulesPage'));
+// ProductRulesPage supprimé - intégré dans /products?tab=rules
 const ProductAuditPage = lazy(() => import('@/pages/products/ProductAuditPage'));
 const ProductResearchPageNew = lazy(() => import('@/pages/products/ProductResearchPage'));
 const ProductIntelligencePage = lazy(() => import('@/pages/ProductIntelligencePage'));
@@ -57,7 +57,7 @@ export function ProductRoutes() {
       <Route path="advanced" element={<AdvancedProductsPage />} />
       
       {/* Product Module Structure */}
-      <Route path="rules" element={<ProductRulesPage />} />
+      <Route path="rules" element={<Navigate to="/products?tab=rules" replace />} />
       <Route path="audit" element={<ProductAuditPage />} />
       <Route path="research" element={<ProductResearchPageNew />} />
       <Route path="intelligence" element={<ProductIntelligencePage />} />
