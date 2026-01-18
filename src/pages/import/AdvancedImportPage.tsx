@@ -1,120 +1,67 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useEffect, useCallback } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Progress } from '@/components/ui/progress'
 import { 
-  ArrowLeft, Upload, Link as LinkIcon, FileText, Database, 
-  Settings, Zap, CheckCircle2, AlertCircle, Clock
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
-import { useUnifiedPlan } from '@/lib/unified-plan-system';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+  Upload, Link as LinkIcon, FileText, Database, Settings, Zap, 
+  CheckCircle2, AlertCircle, Clock, Code, Webhook, FileCode,
+  Play, RefreshCw, Sparkles, TrendingUp, Package, ArrowRight
+} from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
+import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
+import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
+import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
-interface ImportJob {
-  id: string;
-  import_type: string;
-  status: string;
-  total_rows: number;
-  processed_rows: number;
-  error_rows: number;
-  created_at: string;
+// Hook pour préférences réduites
+const useReducedMotion = () => {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+interface ImportJob {
+  id: string
+  import_type: string
+  status: string
+  total_rows: number
+  processed_rows: number
+  error_rows: number
+  created_at: string
+}
+
+const tabConfig = [
+  { id: 'file', label: 'Fichier CSV', icon: FileText },
+  { id: 'url', label: 'URL/API', icon: LinkIcon },
+  { id: 'database', label: 'Base de données', icon: Database },
+  { id: 'advanced', label: 'Configuration', icon: Settings },
+]
+
 export default function AdvancedImportPage() {
-  const navigate = useNavigate();
-  const { user } = useUnifiedAuth();
-  const { hasFeature } = useUnifiedPlan();
-  const { toast } = useToast();
-  const [jobs, setJobs] = useState<ImportJob[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate()
+  const { user } = useUnifiedAuth()
+  const { hasFeature } = useUnifiedPlan()
+  const { toast } = useToast()
+  const reducedMotion = useReducedMotion()
+  
+  const [jobs, setJobs] = useState<ImportJob[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('file')
 
-  const handleFileImport = async (file: File) => {
-    if (!hasFeature('advanced_import')) {
-      toast({
-        title: "Fonctionnalité Pro",
-        description: "L'import avancé nécessite un plan Pro ou supérieur",
-        variant: "destructive"
-      });
-      navigate('/pricing');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const { data, error } = await supabase.functions.invoke('csv-import', {
-        body: formData
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Import lancé",
-        description: "Votre fichier est en cours de traitement"
-      });
-      
-      loadJobs();
-    } catch (error: any) {
-      toast({
-        title: "Erreur d'import",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUrlImport = async (url: string) => {
-    if (!hasFeature('url_import')) {
-      toast({
-        title: "Fonctionnalité Ultra Pro",
-        description: "L'import par URL nécessite un plan Ultra Pro",
-        variant: "destructive"
-      });
-      navigate('/pricing');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('url-import', {
-        body: { url }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Import URL lancé",
-        description: "Le scraping de l'URL est en cours"
-      });
-      
-      loadJobs();
-    } catch (error: any) {
-      toast({
-        title: "Erreur d'import",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadJobs = async () => {
-    if (!user) return;
+  const loadJobs = useCallback(async () => {
+    if (!user) return
 
     const { data, error } = await supabase
       .from('import_jobs')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(10)
 
     if (!error && data) {
       setJobs(data.map((job: any) => ({
@@ -123,142 +70,224 @@ export default function AdvancedImportPage() {
         total_rows: job.total_products,
         processed_rows: job.processed_products,
         error_rows: job.failed_imports
-      })));
+      })))
     }
-  };
+  }, [user])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  useEffect(() => {
+    loadJobs()
+  }, [loadJobs])
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <CheckCircle2 className="h-4 w-4" />;
-      case 'processing': return <Clock className="h-4 w-4 animate-spin" />;
-      case 'failed': return <AlertCircle className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
+  const handleFileImport = async (file: File) => {
+    if (!hasFeature('advanced_import')) {
+      toast({
+        title: "Fonctionnalité Pro",
+        description: "L'import avancé nécessite un plan Pro ou supérieur",
+        variant: "destructive"
+      })
+      navigate('/pricing')
+      return
     }
-  };
+
+    setIsLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const { data, error } = await supabase.functions.invoke('csv-import', {
+        body: formData
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "Import lancé",
+        description: "Votre fichier est en cours de traitement"
+      })
+      
+      loadJobs()
+    } catch (error: any) {
+      toast({
+        title: "Erreur d'import",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUrlImport = async (url: string) => {
+    if (!hasFeature('url_import')) {
+      toast({
+        title: "Fonctionnalité Ultra Pro",
+        description: "L'import par URL nécessite un plan Ultra Pro",
+        variant: "destructive"
+      })
+      navigate('/pricing')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('url-import', {
+        body: { url }
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "Import URL lancé",
+        description: "Le scraping de l'URL est en cours"
+      })
+      
+      loadJobs()
+    } catch (error: any) {
+      toast({
+        title: "Erreur d'import",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
+      completed: { icon: CheckCircle2, color: 'text-green-500', bgColor: 'bg-green-500/10', label: 'Terminé' },
+      processing: { icon: Clock, color: 'text-blue-500', bgColor: 'bg-blue-500/10', label: 'En cours' },
+      failed: { icon: AlertCircle, color: 'text-red-500', bgColor: 'bg-red-500/10', label: 'Échoué' },
+      pending: { icon: Clock, color: 'text-amber-500', bgColor: 'bg-amber-500/10', label: 'En attente' },
+    }
+    return configs[status] || configs.pending
+  }
+
+  const stats = {
+    total: jobs.length,
+    processing: jobs.filter(j => j.status === 'processing').length,
+    completed: jobs.filter(j => j.status === 'completed').length,
+    failed: jobs.filter(j => j.status === 'failed').length,
+    totalProducts: jobs.reduce((sum, j) => sum + (j.processed_rows || 0), 0),
+  }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/products/import')}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Import Avancé</h1>
-          <p className="text-muted-foreground">
-            Importez vos produits depuis multiple sources avec mapping avancé
-          </p>
-        </div>
-        <Badge variant="secondary" className="ml-auto">PRO</Badge>
+    <ChannablePageLayout
+      title="Import Avancé"
+      metaTitle="Import Avancé - ShopOpti"
+      metaDescription="Importez vos produits depuis multiple sources avec mapping avancé et API"
+      maxWidth="2xl"
+      padding="md"
+      backTo="/import"
+      backLabel="Retour à l'Import"
+    >
+      {/* Hero Section */}
+      <ChannableHeroSection
+        badge={{ icon: Code, label: 'Pro' }}
+        title="Import Avancé"
+        subtitle="Importez depuis CSV, API REST, webhooks ou bases de données avec mapping intelligent"
+        variant="compact"
+        showHexagons={!reducedMotion}
+        stats={[
+          { label: 'Jobs totaux', value: stats.total.toString(), icon: Package },
+          { label: 'En cours', value: stats.processing.toString(), icon: RefreshCw },
+          { label: 'Produits', value: stats.totalProducts.toString(), icon: TrendingUp },
+        ]}
+        primaryAction={{
+          label: 'Import rapide',
+          onClick: () => navigate('/import/autods'),
+          icon: Zap,
+        }}
+      />
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Imports totaux', value: stats.total, icon: Upload, color: 'text-primary' },
+          { label: 'En cours', value: stats.processing, icon: Clock, color: 'text-blue-500' },
+          { label: 'Réussis', value: stats.completed, icon: CheckCircle2, color: 'text-green-500' },
+          { label: 'Échoués', value: stats.failed, icon: AlertCircle, color: 'text-red-500' },
+        ].map((stat, idx) => (
+          <Card key={idx} className="border-border/50 bg-card/50 backdrop-blur">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                </div>
+                <stat.icon className={cn("w-8 h-8 opacity-50", stat.color)} />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Stats rapides */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Imports totaux</CardTitle>
-            <Upload className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{jobs.length}</div>
-            <p className="text-xs text-muted-foreground">Ce mois</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {jobs.filter(j => j.status === 'processing').length}
-            </div>
-            <p className="text-xs text-muted-foreground">Jobs actifs</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Réussis</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {jobs.filter(j => j.status === 'completed').length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {jobs.reduce((sum, j) => sum + (j.processed_rows || 0), 0)} produits
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Échecs</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {jobs.filter(j => j.status === 'failed').length}
-            </div>
-            <p className="text-xs text-muted-foreground">À corriger</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Sources d'import */}
-      <Card>
+      {/* Import Tabs */}
+      <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader>
-          <CardTitle>Nouvelle importation</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            Nouvelle importation
+          </CardTitle>
           <CardDescription>
             Choisissez votre méthode d'import et configurez les paramètres
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="file">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="file">
-                <FileText className="w-4 h-4 mr-2" />
-                Fichier CSV
-              </TabsTrigger>
-              <TabsTrigger value="url">
-                <LinkIcon className="w-4 h-4 mr-2" />
-                URL/API
-              </TabsTrigger>
-              <TabsTrigger value="database">
-                <Database className="w-4 h-4 mr-2" />
-                Base de données
-              </TabsTrigger>
-              <TabsTrigger value="advanced">
-                <Settings className="w-4 h-4 mr-2" />
-                Configuration
-              </TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-4 mb-6">
+              {tabConfig.map((tab) => (
+                <TabsTrigger 
+                  key={tab.id} 
+                  value={tab.id}
+                  className="flex items-center gap-2"
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="file" className="space-y-4">
-              <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 font-semibold">Glissez votre fichier CSV ici</h3>
-                <p className="text-sm text-muted-foreground mt-2">
+              <div 
+                className={cn(
+                  "border-2 border-dashed rounded-xl p-8 text-center transition-colors",
+                  "hover:border-primary/50 hover:bg-primary/5 cursor-pointer",
+                  "focus-within:ring-2 focus-within:ring-primary"
+                )}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  const input = document.createElement('input')
+                  input.type = 'file'
+                  input.accept = '.csv'
+                  input.onchange = (e: any) => handleFileImport(e.target.files[0])
+                  input.click()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = '.csv'
+                    input.onchange = (ev: any) => handleFileImport(ev.target.files[0])
+                    input.click()
+                  }
+                }}
+                aria-label="Zone de dépôt pour fichier CSV"
+              >
+                <div className="p-4 bg-primary/10 rounded-full w-fit mx-auto mb-4">
+                  <Upload className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-semibold mb-2">Glissez votre fichier CSV ici</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   ou cliquez pour sélectionner un fichier
                 </p>
-                <Button className="mt-4" onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = '.csv';
-                  input.onchange = (e: any) => handleFileImport(e.target.files[0]);
-                  input.click();
-                }}>
+                <Button disabled={isLoading}>
+                  {isLoading ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4 mr-2" />
+                  )}
                   Sélectionner un fichier
                 </Button>
               </div>
@@ -267,80 +296,150 @@ export default function AdvancedImportPage() {
             <TabsContent value="url" className="space-y-4">
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">URL du produit ou catalogue</label>
-                  <input
-                    type="url"
-                    placeholder="https://example.com/products"
-                    className="w-full mt-2 px-3 py-2 border rounded-md"
-                  />
+                  <label className="text-sm font-medium mb-2 block">URL du produit ou catalogue</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://example.com/products"
+                      className="flex-1 px-4 py-2 border rounded-lg bg-background focus:ring-2 focus:ring-primary"
+                      aria-label="URL du produit"
+                    />
+                    <Button 
+                      onClick={() => handleUrlImport('https://example.com')}
+                      disabled={isLoading}
+                    >
+                      <Zap className="w-4 h-4 mr-2" />
+                      Importer
+                    </Button>
+                  </div>
                 </div>
-                <Button onClick={() => handleUrlImport('https://example.com')}>
-                  <Zap className="w-4 h-4 mr-2" />
-                  Lancer l'import par URL
-                </Button>
+                <div className="flex gap-2">
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Webhook className="w-3 h-3" />
+                    REST API
+                  </Badge>
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <FileCode className="w-3 h-3" />
+                    GraphQL
+                  </Badge>
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Code className="w-3 h-3" />
+                    XML/JSON
+                  </Badge>
+                </div>
               </div>
             </TabsContent>
 
             <TabsContent value="database" className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Connectez-vous à une base de données externe pour importer vos produits.
-              </p>
-              <Button variant="outline">
-                Configurer une connexion
-              </Button>
+              <div className="text-center py-8">
+                <div className="p-4 bg-muted/50 rounded-full w-fit mx-auto mb-4">
+                  <Database className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-semibold mb-2">Connexion base de données</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Connectez-vous à une base de données externe pour importer vos produits
+                </p>
+                <Button variant="outline">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Configurer une connexion
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="advanced" className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Configuration avancée: mapping de colonnes, transformation de données, validation.
-              </p>
-              <Button variant="outline">
-                Accéder aux paramètres avancés
-              </Button>
+              <div className="text-center py-8">
+                <div className="p-4 bg-muted/50 rounded-full w-fit mx-auto mb-4">
+                  <Settings className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-semibold mb-2">Configuration avancée</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Mapping de colonnes, transformation de données, validation personnalisée
+                </p>
+                <Button variant="outline" onClick={() => navigate('/import/config')}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Accéder aux paramètres
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
 
-      {/* Historique des imports */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Historique des imports</CardTitle>
-          <CardDescription>Vos 10 derniers imports</CardDescription>
+      {/* Jobs History */}
+      <Card className="border-border/50 bg-card/50 backdrop-blur">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Historique des imports</CardTitle>
+            <CardDescription>Vos 10 derniers imports</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={loadJobs}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Actualiser
+          </Button>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {jobs.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Upload className="mx-auto h-12 w-12 mb-4" />
-                <p>Aucun import pour le moment</p>
+          {jobs.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="p-4 bg-muted/50 rounded-full w-fit mx-auto mb-4">
+                <Upload className="h-8 w-8 text-muted-foreground" />
               </div>
-            ) : (
-              jobs.map((job) => (
-                <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(job.status)}
-                    <div>
-                      <p className="font-medium">{job.import_type}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {job.processed_rows}/{job.total_rows} produits
-                      </p>
+              <p className="text-muted-foreground mb-4">Aucun import pour le moment</p>
+              <Button onClick={() => navigate('/import/autods')}>
+                <Zap className="w-4 h-4 mr-2" />
+                Commencer un import
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {jobs.map((job) => {
+                const config = getStatusConfig(job.status)
+                const progress = job.total_rows > 0 
+                  ? Math.round((job.processed_rows / job.total_rows) * 100) 
+                  : 0
+
+                return (
+                  <motion.div 
+                    key={job.id}
+                    initial={reducedMotion ? {} : { opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={cn(
+                      "flex items-center justify-between p-4 rounded-xl border transition-colors",
+                      config.bgColor, "border-border/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className={cn("p-2 rounded-lg", config.bgColor)}>
+                        <config.icon className={cn(
+                          "w-5 h-5",
+                          config.color,
+                          job.status === 'processing' && 'animate-spin'
+                        )} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{job.import_type}</p>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>{job.processed_rows}/{job.total_rows} produits</span>
+                          {job.status === 'processing' && (
+                            <Progress value={progress} className="w-24 h-2" />
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge className={getStatusColor(job.status)}>
-                      {job.status}
-                    </Badge>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(job.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                    <div className="flex items-center gap-3">
+                      <Badge className={cn("text-xs", config.bgColor, config.color)}>
+                        {config.label}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(job.created_at).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
-    </div>
-  );
+    </ChannablePageLayout>
+  )
 }
