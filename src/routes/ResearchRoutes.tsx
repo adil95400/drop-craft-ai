@@ -1,8 +1,12 @@
 /**
  * Routes Research - Veille, Produits gagnants, Concurrence
+ * Hub centralisé avec design Channable
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
+
+// Research Hub - Page principale
+const ResearchHub = lazy(() => import('@/pages/research/ResearchHub'));
 
 // Research pages
 const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
@@ -15,8 +19,8 @@ const CompetitiveIntelligenceHub = lazy(() => import('@/pages/research/Competiti
 export function ResearchRoutes() {
   return (
     <Routes>
-      {/* Research Overview */}
-      <Route index element={<ProductResearchPage />} />
+      {/* Research Hub - Page principale Channable-style */}
+      <Route index element={<ResearchHub />} />
       
       {/* Research Modules */}
       <Route path="winning" element={<WinnersPage />} />
@@ -25,6 +29,9 @@ export function ResearchRoutes() {
       <Route path="trends" element={<ProductResearchPage />} />
       <Route path="sourcing" element={<ProductSourcingPage />} />
       <Route path="intelligence" element={<CompetitiveIntelligenceHub />} />
+      
+      {/* Backward compatibility - scanner redirect */}
+      <Route path="scanner" element={<Navigate to="/research" replace />} />
       
       {/* Legacy redirects */}
       <Route path="products" element={<Navigate to="/research/winning" replace />} />

@@ -1,8 +1,9 @@
 import { lazy } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'))
 const QuickImportPage = lazy(() => import('@/pages/import/quick/QuickImportPage'))
+const UrlImportPage = lazy(() => import('@/pages/import/UrlImportPage'))
 
 const AutoDSImportPage = lazy(() => import('@/pages/import/AutoDSImportPage'))
 const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'))
@@ -19,6 +20,9 @@ export function ImportRoutes() {
     <Routes>
       <Route index element={<ImportHub />} />
       <Route path="quick" element={<QuickImportPage />} />
+      
+      {/* URL Import - redirects to AutoDS with URL param */}
+      <Route path="url" element={<UrlImportPage />} />
       
       <Route path="autods" element={<AutoDSImportPage />} />
       <Route path="advanced" element={<AdvancedImportPage />} />
