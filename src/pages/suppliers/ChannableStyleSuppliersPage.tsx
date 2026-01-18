@@ -74,6 +74,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { SupplierLogo } from '@/components/suppliers/SupplierLogo'
 
 // Types
 interface SupplierDefinition {
@@ -2931,8 +2932,6 @@ function SupplierConfigModal({
   const [formData, setFormData] = useState<Record<string, string>>({})
   const [isActive, setIsActive] = useState(true)
   const isEditing = !!existingSupplier
-  const [imageError, setImageError] = useState(false)
-
   const handleSubmit = useCallback(() => {
     onConnect({
       name: definition.name,
@@ -2948,18 +2947,12 @@ function SupplierConfigModal({
     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-            {!imageError ? (
-              <img
-                src={definition.logo}
-                alt={definition.name}
-                className="w-7 h-7 object-contain"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <Package className="w-5 h-5 text-muted-foreground" />
-            )}
-          </div>
+          <SupplierLogo 
+            name={definition.name}
+            logo={definition.logo}
+            country={definition.country}
+            size="md"
+          />
           {isEditing ? `Configurer ${definition.name}` : `Connecter ${definition.name}`}
           {definition.premium && (
             <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
@@ -3105,7 +3098,6 @@ function ConnectedSupplierCard({
   onDelete: () => void
   isSyncing: boolean
 }) {
-  const [imageError, setImageError] = useState(false)
   const isActive = supplier.status === 'active'
   
   return (
@@ -3116,18 +3108,13 @@ function ConnectedSupplierCard({
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-background flex items-center justify-center overflow-hidden border">
-              {definition?.logo && !imageError ? (
-                <img
-                  src={definition.logo}
-                  alt={supplier.name}
-                  className="w-8 h-8 object-contain"
-                  onError={() => setImageError(true)}
-                />
-              ) : (
-                <Package className="w-6 h-6 text-muted-foreground" />
-              )}
-            </div>
+            <SupplierLogo 
+              name={supplier.name || definition?.name || 'Unknown'}
+              logo={definition?.logo}
+              country={supplier.country || definition?.country}
+              size="lg"
+              className="border"
+            />
             <div>
               <h4 className="font-medium flex items-center gap-2">
                 {supplier.name}
@@ -3201,8 +3188,6 @@ function SupplierCard({
   isConnected: boolean
   onClick: () => void
 }) {
-  const [imageError, setImageError] = useState(false)
-  
   return (
     <motion.div
       layout
@@ -3241,18 +3226,12 @@ function SupplierCard({
 
       {/* Logo et nom */}
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-          {!imageError ? (
-            <img
-              src={definition.logo}
-              alt={definition.name}
-              className="w-8 h-8 object-contain"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <Package className="w-6 h-6 text-muted-foreground" />
-          )}
-        </div>
+        <SupplierLogo 
+          name={definition.name}
+          logo={definition.logo}
+          country={definition.country}
+          size="lg"
+        />
         <div>
           <h3 className="font-medium">{definition.name}</h3>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
