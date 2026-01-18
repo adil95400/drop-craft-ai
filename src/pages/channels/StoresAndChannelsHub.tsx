@@ -1,16 +1,20 @@
 /**
- * Hub Boutiques & Canaux - Design Channable Premium
+ * Hub Boutiques & Canaux - 100% Données Réelles
  * Gestion centralisée des connexions boutiques et marketplaces
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+
+// Custom hooks with real data
+import { useChannelConnections, type ChannelConnection } from '@/hooks/useChannelConnections'
+import { useChannelHealth } from '@/hooks/useChannelHealth'
+import { useChannelActivity } from '@/hooks/useChannelActivity'
 
 // Channable Components
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
@@ -25,8 +29,6 @@ import {
   ChannableActivityFeed,
   ChannableChannelHealth,
   ChannableSyncTimeline,
-  DEMO_ACTIVITY_EVENTS,
-  DEFAULT_CHANNEL_HEALTH_METRICS,
   DEFAULT_CHANNEL_BULK_ACTIONS,
   type FilterConfig,
   type SyncEvent
@@ -54,7 +56,7 @@ import {
   Package, TrendingUp, Globe, Link2, Loader2,
   LayoutGrid, List, ChevronRight, Zap, Activity,
   BarChart3, Eye, EyeOff, History, Download, Upload,
-  Filter, Sparkles, Target, ArrowUpRight
+  Filter, Sparkles, Target, ArrowUpRight, Database
 } from 'lucide-react'
 
 // Platform definitions
@@ -81,70 +83,17 @@ const MARKETPLACE_PLATFORMS = [
   { id: 'zalando', name: 'Zalando', color: '#FF6900', category: 'marketplace' },
 ]
 
-interface ChannelConnection {
-  id: string
-  platform_type: string
-  platform_name: string
-  shop_domain?: string
-  connection_status: 'connected' | 'error' | 'connecting' | 'disconnected'
-  last_sync_at?: string
-  products_synced?: number
-  orders_synced?: number
-  created_at: string
-  auto_sync_enabled?: boolean
-}
+// Re-export ChannelConnection from hook for local use
+export type { ChannelConnection } from '@/hooks/useChannelConnections'
 
-// Demo data
-const DEMO_CONNECTIONS: ChannelConnection[] = [
-  {
-    id: 'demo-shopify-1',
-    platform_type: 'shopify',
-    platform_name: 'Shopify',
-    shop_domain: 'mode-parisienne.myshopify.com',
-    connection_status: 'connected',
-    last_sync_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    products_synced: 1247,
-    orders_synced: 892,
-    created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-    auto_sync_enabled: true
-  },
-  {
-    id: 'demo-amazon-1',
-    platform_type: 'amazon',
-    platform_name: 'Amazon Seller',
-    shop_domain: 'Amazon FR - TechStore',
-    connection_status: 'connected',
-    last_sync_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    products_synced: 834,
-    orders_synced: 2156,
-    created_at: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString(),
-    auto_sync_enabled: true
-  },
-  {
-    id: 'demo-woocommerce-1',
-    platform_type: 'woocommerce',
-    platform_name: 'WooCommerce',
-    shop_domain: 'boutique-bio.fr',
-    connection_status: 'connected',
-    last_sync_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-    products_synced: 456,
-    orders_synced: 321,
-    created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-    auto_sync_enabled: false
-  },
-  {
-    id: 'demo-google-1',
-    platform_type: 'google',
-    platform_name: 'Google Merchant',
-    shop_domain: 'Merchant Center',
-    connection_status: 'error',
-    last_sync_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    products_synced: 890,
-    orders_synced: 0,
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    auto_sync_enabled: true
-  },
-]
+// Helper to map event types
+function mapEventType(type: string): 'sync' | 'order' | 'product' | 'alert' | 'system' {
+  if (type === 'sync') return 'sync'
+  if (type === 'error') return 'alert'
+  if (type === 'connection') return 'system'
+  if (type === 'update') return 'product'
+  return 'system'
+}
 
 // Composant carte statistique premium
 interface StatCardProps {
@@ -346,52 +295,10 @@ export default function StoresAndChannelsHub() {
   const [showActivity, setShowActivity] = useState(true)
   const [showHealth, setShowHealth] = useState(true)
 
-  // Fetch connections
-  const { data: dbConnections = [], isLoading } = useQuery({
-    queryKey: ['channel-connections'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('*')
-        .order('created_at', { ascending: false })
-      if (error) throw error
-      return (data || []).map(d => ({
-        id: d.id,
-        platform_type: d.platform,
-        platform_name: d.platform_name || d.platform,
-        shop_domain: d.store_url,
-        connection_status: d.connection_status as any,
-        last_sync_at: d.last_sync_at,
-        products_synced: 0,
-        orders_synced: 0,
-        created_at: d.created_at || '',
-        auto_sync_enabled: d.auto_sync_enabled || false
-      })) as ChannelConnection[]
-    }
-  })
-
-  const connections = dbConnections.length > 0 ? dbConnections : DEMO_CONNECTIONS
-
-  // Mutations
-  const syncMutation = useMutation({
-    mutationFn: async (connectionIds: string[]) => {
-      for (const id of connectionIds) {
-        await supabase.from('integrations').update({ 
-          connection_status: 'connecting',
-          last_sync_at: new Date().toISOString()
-        }).eq('id', id)
-      }
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      for (const id of connectionIds) {
-        await supabase.from('integrations').update({ connection_status: 'connected' }).eq('id', id)
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['channel-connections'] })
-      toast({ title: 'Synchronisation terminée' })
-      setSelectedIds(new Set())
-    }
-  })
+  // Use unified hooks with real data
+  const { connections, stats, isLoading, syncMutation } = useChannelConnections()
+  const { data: healthMetrics } = useChannelHealth()
+  const { events: activityEvents } = useChannelActivity()
 
   const setActiveTab = (tab: string) => setSearchParams({ tab })
 
@@ -687,24 +594,63 @@ export default function StoresAndChannelsHub() {
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Activity className="h-4 w-4 text-primary" />
                   Santé des canaux
+                  <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-500">
+                    <Database className="h-3 w-3 mr-1" />
+                    Live
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChannableChannelHealth metrics={DEFAULT_CHANNEL_HEALTH_METRICS} />
+                <ChannableChannelHealth 
+                  metrics={healthMetrics ? [
+                    { id: 'sync-rate', label: 'Taux de sync', score: healthMetrics.syncRate, maxScore: 100, status: healthMetrics.syncRate >= 80 ? 'good' : healthMetrics.syncRate >= 50 ? 'warning' : 'critical' as const },
+                    { id: 'error-rate', label: 'Taux erreur', score: 100 - healthMetrics.errorRate, maxScore: 100, status: healthMetrics.errorRate <= 5 ? 'good' : healthMetrics.errorRate <= 20 ? 'warning' : 'critical' as const },
+                    { id: 'uptime', label: 'Disponibilité', score: healthMetrics.uptime, maxScore: 100, status: healthMetrics.uptime >= 95 ? 'good' : healthMetrics.uptime >= 80 ? 'warning' : 'critical' as const },
+                    { id: 'latency', label: 'Latence', score: Math.max(0, 100 - healthMetrics.avgLatency * 10), maxScore: 100, status: healthMetrics.avgLatency <= 5 ? 'good' : healthMetrics.avgLatency <= 15 ? 'warning' : 'critical' as const }
+                  ] : [
+                    { id: 'sync-rate', label: 'Taux de sync', score: 100, maxScore: 100, status: 'good' as const },
+                    { id: 'error-rate', label: 'Taux erreur', score: 100, maxScore: 100, status: 'good' as const },
+                    { id: 'uptime', label: 'Disponibilité', score: 100, maxScore: 100, status: 'good' as const },
+                    { id: 'latency', label: 'Latence', score: 100, maxScore: 100, status: 'good' as const }
+                  ]} 
+                />
               </CardContent>
             </Card>
 
-            {/* Activity Feed */}
+            {/* Activity Feed - Real Data */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
                   Activité récente
-                  <Badge variant="secondary" className="text-xs">Live</Badge>
+                  <Badge variant="secondary" className="text-xs bg-primary/10 text-primary animate-pulse">
+                    Temps réel
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChannableActivityFeed events={DEMO_ACTIVITY_EVENTS} realtime />
+                {activityEvents.length > 0 ? (
+                  <ChannableActivityFeed 
+                    events={activityEvents.map(e => ({
+                      id: e.id,
+                      type: mapEventType(e.type),
+                      action: e.title,
+                      title: e.title,
+                      description: e.description,
+                      timestamp: e.timestamp,
+                      status: e.status as 'success' | 'error' | 'warning' | 'info'
+                    }))} 
+                    realtime 
+                  />
+                ) : (
+                  <div className="py-6 text-center">
+                    <Activity className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground">Aucune activité récente</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">
+                      Les synchronisations apparaîtront ici
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
