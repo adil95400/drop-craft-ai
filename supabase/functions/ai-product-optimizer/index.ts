@@ -49,8 +49,9 @@ serve(async (req) => {
       }
     );
 
-    // Validate user authentication using getUser()
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    // Validate JWT token by getting user with the token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
       console.error('[AI-OPTIMIZER] Auth error:', authError);
