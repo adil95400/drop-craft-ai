@@ -2859,9 +2859,42 @@ const supplierDefinitions: SupplierDefinition[] = [
 
 // Fusionner les fournisseurs existants avec Wise2Sync (éviter les doublons)
 const wise2syncConverted = convertWise2SyncSuppliers()
-const existingIds = new Set(supplierDefinitions.map(s => s.id.toLowerCase()))
-const newWise2SyncSuppliers = wise2syncConverted.filter(s => !existingIds.has(s.id.toLowerCase()))
-const allSupplierDefinitions: SupplierDefinition[] = [...supplierDefinitions, ...newWise2SyncSuppliers]
+
+// Dédupliquer par ID et par nom (normalisé)
+const deduplicateSuppliers = (suppliers: SupplierDefinition[]): SupplierDefinition[] => {
+  const seen = new Map<string, SupplierDefinition>()
+  
+  for (const supplier of suppliers) {
+    const normalizedId = supplier.id.toLowerCase().replace(/[-_\s]/g, '')
+    const normalizedName = supplier.name.toLowerCase().replace(/[-_\s]/g, '')
+    
+    // Vérifier si déjà vu par ID ou par nom
+    const existingById = seen.get(`id:${normalizedId}`)
+    const existingByName = seen.get(`name:${normalizedName}`)
+    
+    if (!existingById && !existingByName) {
+      seen.set(`id:${normalizedId}`, supplier)
+      seen.set(`name:${normalizedName}`, supplier)
+    }
+  }
+  
+  // Retourner les valeurs uniques
+  const uniqueSuppliers: SupplierDefinition[] = []
+  const addedIds = new Set<string>()
+  
+  for (const [key, supplier] of seen) {
+    if (key.startsWith('id:') && !addedIds.has(supplier.id)) {
+      uniqueSuppliers.push(supplier)
+      addedIds.add(supplier.id)
+    }
+  }
+  
+  return uniqueSuppliers
+}
+
+// Fusionner et dédupliquer
+const mergedSuppliers = [...supplierDefinitions, ...wise2syncConverted]
+const allSupplierDefinitions: SupplierDefinition[] = deduplicateSuppliers(mergedSuppliers)
 
 // Mapping pays vers drapeaux emoji
 const countryFlags: Record<string, string> = {
