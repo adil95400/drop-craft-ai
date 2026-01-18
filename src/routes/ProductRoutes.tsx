@@ -53,7 +53,7 @@ export function ProductRoutes() {
       <Route path="enhanced-catalog" element={<EnhancedCatalog />} />
       <Route path=":id" element={<ProductDetailsPage />} />
       <Route path="publish" element={<ProductPublishing />} />
-      <Route path="catalogue" element={<EnhancedCatalog />} />
+      <Route path="catalogue" element={<Navigate to="/products" replace />} />
       <Route path="advanced" element={<AdvancedProductsPage />} />
       
       {/* Product Module Structure */}
