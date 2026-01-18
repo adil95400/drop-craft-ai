@@ -11,7 +11,7 @@ import { BackButton } from '@/components/navigation/BackButton'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { useModals } from '@/hooks/useModals'
+import { useModalContext } from '@/hooks/useModalHelpers'
 import { ProductDetailsModal } from '@/components/products/ProductDetailsModal'
 import Papa from 'papaparse'
 import {
@@ -64,7 +64,7 @@ export default function ImportedProductsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [bulkStatus, setBulkStatus] = useState<string>('')
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
-  const { modalStates, openModal, closeModal } = useModals()
+  const { modalStates, openModal, closeModal } = useModalContext()
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
   

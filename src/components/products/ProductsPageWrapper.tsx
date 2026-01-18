@@ -6,7 +6,7 @@ import { ProductsGridView } from './ProductsGridView';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
 import { FilterState } from '@/hooks/useProductFilters';
 import { useProductActions } from '@/hooks/useProductActions';
-import { useModals } from '@/hooks/useModals';
+import { useModalContext } from '@/hooks/useModalHelpers';
 
 interface ProductsPageWrapperProps {
   products: UnifiedProduct[];
@@ -47,7 +47,7 @@ export function ProductsPageWrapper({
   const [localSelectedProducts, setLocalSelectedProducts] = useState<string[]>(selectedProducts || []);
   
   const { handleImport, handleExport } = useProductActions();
-  const { openModal } = useModals();
+  const { openModal } = useModalContext();
 
   // Sync local selection with parent
   const handleSelectionChange = (newSelection: string[]) => {

@@ -36,7 +36,7 @@ import {
   LayoutGrid, List, RefreshCw, Download, Upload, Search, Eye,
   ArrowUpRight, Settings, Zap, BarChart3
 } from 'lucide-react';
-import { useModals } from '@/hooks/useModals';
+import { useModalContext } from '@/hooks/useModalHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
@@ -117,7 +117,7 @@ export default function ProductsMainPage() {
   // Calcul des audits pour tous les produits
   const { auditResults, stats: auditStats } = useProductsAudit(products);
   
-  const { openModal } = useModals();
+  const { openModal } = useModalContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
