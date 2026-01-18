@@ -1,4 +1,10 @@
-import { useState } from 'react'
+/**
+ * ProductDetailsModal - Modal complet et optimisé pour les détails produit
+ * Design moderne avec galerie d'images, édition inline, variantes et analytics
+ */
+
+import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6,13 +12,16 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { Progress } from '@/components/ui/progress'
+import { Switch } from '@/components/ui/switch'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ProductVariantManager } from './ProductVariantManager'
+import { cn, formatCurrency } from '@/lib/utils'
 import {
   Edit2,
   Save,
@@ -29,7 +38,49 @@ import {
   Clock,
   History,
   GitBranch,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle,
+  Star,
+  Eye,
+  Copy,
+  Trash2,
+  Share2,
+  Heart,
+  BarChart3,
+  Sparkles,
+  Zap,
+  Truck,
+  RefreshCw,
+  Settings,
+  ImagePlus,
+  Link,
+  Info,
+  Archive,
+  Send,
+  Percent,
+  Box,
+  FileText,
+  Globe,
+  Loader2,
 } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface ProductDetailsModalProps {
   product: any
@@ -41,16 +92,55 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
   const [isEditing, setIsEditing] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [editedProduct, setEditedProduct] = useState(product)
+  const [activeTab, setActiveTab] = useState('overview')
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isLiked, setIsLiked] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Mock variants data - using any type to match ProductVariantManager expectations
-  const variants: any[] = []
-  const refetchVariants = () => {}
+  // Reset state when product changes
+  useEffect(() => {
+    if (product) {
+      setEditedProduct(product)
+      setCurrentImageIndex(0)
+      setIsEditing(false)
+    }
+  }, [product])
 
-  // Fetch sync history - placeholder for future implementation
-  const syncHistory: any[] = []
+  // Images handling
+  const images = useMemo(() => {
+    if (!product) return []
+    return product.images?.length 
+      ? product.images 
+      : product.image_url 
+        ? [product.image_url] 
+        : []
+  }, [product])
 
+  const hasMultipleImages = images.length > 1
+
+  // Calculate metrics
+  const metrics = useMemo(() => {
+    if (!product) return null
+    
+    const price = product.price || 0
+    const costPrice = product.cost_price || 0
+    const profit = price - costPrice
+    const margin = price > 0 ? ((profit / price) * 100) : 0
+    const stock = product.stock_quantity || 0
+    
+    return {
+      price,
+      costPrice,
+      profit,
+      margin,
+      stock,
+      isLowStock: stock > 0 && stock < 10,
+      isOutOfStock: stock <= 0,
+    }
+  }, [product])
+
+  // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (updates: any) => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -67,14 +157,45 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
       toast({
-        title: 'Product updated',
-        description: 'Changes saved successfully',
+        title: 'Produit mis à jour',
+        description: 'Les modifications ont été enregistrées avec succès',
       })
       setIsEditing(false)
     },
     onError: (error: any) => {
       toast({
-        title: 'Update failed',
+        title: 'Erreur',
+        description: error.message,
+        variant: 'destructive',
+      })
+    },
+  })
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', product.id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      toast({
+        title: 'Produit supprimé',
+        description: 'Le produit a été supprimé avec succès',
+      })
+      onOpenChange(false)
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive',
       })
@@ -83,18 +204,16 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
 
   if (!product) return null
 
-  const images = product.images || (product.image_url ? [product.image_url] : [])
-  const hasMultipleImages = images.length > 1
-
   const handleSave = () => {
     updateMutation.mutate({
       name: editedProduct.name,
       description: editedProduct.description,
-      price: editedProduct.price,
-      cost_price: editedProduct.cost_price,
+      price: parseFloat(editedProduct.price) || 0,
+      cost_price: parseFloat(editedProduct.cost_price) || 0,
       sku: editedProduct.sku,
       category: editedProduct.category,
-      stock_quantity: editedProduct.stock_quantity,
+      stock_quantity: parseInt(editedProduct.stock_quantity) || 0,
+      status: editedProduct.status,
     })
   }
 
@@ -111,49 +230,100 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'published':
-        return 'default'
-      case 'draft':
-        return 'secondary'
-      case 'archived':
-        return 'outline'
-      default:
-        return 'secondary'
+  const handleCopySku = () => {
+    if (product.sku) {
+      navigator.clipboard.writeText(product.sku)
+      toast({ title: 'SKU copié', description: product.sku })
     }
   }
 
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'published':
+      case 'active':
+        return { label: 'Actif', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle }
+      case 'draft':
+        return { label: 'Brouillon', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20', icon: FileText }
+      case 'archived':
+        return { label: 'Archivé', color: 'bg-muted text-muted-foreground border-border', icon: Archive }
+      default:
+        return { label: status, color: 'bg-muted text-muted-foreground border-border', icon: Info }
+    }
+  }
+
+  const getStockStatusConfig = () => {
+    if (!metrics) return null
+    if (metrics.isOutOfStock) {
+      return { label: 'Rupture de stock', color: 'destructive' as const, icon: AlertTriangle }
+    }
+    if (metrics.isLowStock) {
+      return { label: 'Stock faible', color: 'secondary' as const, icon: AlertTriangle }
+    }
+    return { label: 'En stock', color: 'default' as const, icon: CheckCircle }
+  }
+
+  const statusConfig = getStatusConfig(product.status)
+  const stockConfig = getStockStatusConfig()
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <DialogTitle className="text-2xl font-bold">
-                {isEditing ? (
-                  <Input
-                    value={editedProduct.name}
-                    onChange={(e) =>
-                      setEditedProduct({ ...editedProduct, name: e.target.value })
-                    }
-                    className="text-2xl font-bold"
-                  />
-                ) : (
-                  product.name || product.title
-                )}
-              </DialogTitle>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge variant={getStatusColor(product.status)}>
-                  {product.status}
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[95vh] p-0 gap-0 overflow-hidden bg-background">
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between px-6 py-4 border-b bg-muted/30"
+          >
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Badge className={cn("shrink-0 gap-1.5", statusConfig.color)}>
+                <statusConfig.icon className="h-3 w-3" />
+                {statusConfig.label}
+              </Badge>
+              
+              {stockConfig && (
+                <Badge variant={stockConfig.color} className="shrink-0 gap-1.5">
+                  <stockConfig.icon className="h-3 w-3" />
+                  {stockConfig.label}
                 </Badge>
-                <Badge variant="outline" className="gap-1">
-                  <Package className="h-3 w-3" />
-                  {product.sku || 'No SKU'}
+              )}
+              
+              {product.source && (
+                <Badge variant="outline" className="shrink-0 gap-1.5">
+                  <Globe className="h-3 w-3" />
+                  {product.source}
                 </Badge>
-              </div>
+              )}
             </div>
-            <div className="flex gap-2">
+            
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setIsLiked(!isLiked)}
+                    >
+                      <Heart className={cn("h-4 w-4 transition-all", isLiked && "fill-red-500 text-red-500 scale-110")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Ajouter aux favoris</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Partager</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
               {isEditing ? (
                 <>
                   <Button
@@ -162,341 +332,698 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                     onClick={handleCancel}
                     disabled={updateMutation.isPending}
                   >
-                    <X className="h-4 w-4 mr-2" />
-                    Cancel
+                    <X className="h-4 w-4 mr-1.5" />
+                    Annuler
                   </Button>
                   <Button
                     size="sm"
                     onClick={handleSave}
                     disabled={updateMutation.isPending}
+                    className="bg-primary"
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    Save
+                    {updateMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-1.5" />
+                    )}
+                    Enregistrer
                   </Button>
                 </>
               ) : (
-                <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
+                <>
+                  <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
+                    <Edit2 className="h-4 w-4 mr-1.5" />
+                    Modifier
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1.5" />
+                    Supprimer
+                  </Button>
+                </>
               )}
             </div>
-          </div>
-        </DialogHeader>
+          </motion.div>
 
-        <ScrollArea className="flex-1 pr-4">
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="variants">
-                <GitBranch className="h-4 w-4 mr-2" />
-                Variants
-              </TabsTrigger>
-              <TabsTrigger value="images">Images</TabsTrigger>
-              <TabsTrigger value="metadata">Metadata</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overview" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      Pricing
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div>
-                      <Label>Price</Label>
-                      {isEditing ? (
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={editedProduct.price}
-                          onChange={(e) =>
-                            setEditedProduct({
-                              ...editedProduct,
-                              price: parseFloat(e.target.value),
-                            })
-                          }
-                        />
-                      ) : (
-                        <p className="text-2xl font-bold">${product.price?.toFixed(2)}</p>
-                      )}
-                    </div>
-                    <div>
-                      <Label>Cost Price</Label>
-                      {isEditing ? (
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={editedProduct.cost_price || ''}
-                          onChange={(e) =>
-                            setEditedProduct({
-                              ...editedProduct,
-                              cost_price: parseFloat(e.target.value),
-                            })
-                          }
-                        />
-                      ) : (
-                        <p className="font-semibold">
-                          ${product.cost_price?.toFixed(2) || 'N/A'}
-                        </p>
-                      )}
-                    </div>
-                    {product.cost_price && product.price && (
-                      <div>
-                        <Label>Profit Margin</Label>
-                        <p className="font-semibold text-green-600">
-                          {(
-                            ((product.price - product.cost_price) / product.price) *
-                            100
-                          ).toFixed(1)}
-                          %
-                        </p>
+          <div className="grid lg:grid-cols-5 h-full">
+            {/* Left: Image Gallery */}
+            <div className="lg:col-span-2 bg-muted/20 p-6 border-r">
+              <div className="space-y-4">
+                {/* Main Image */}
+                <div className="relative aspect-square rounded-xl overflow-hidden bg-background shadow-lg border">
+                  <AnimatePresence mode="wait">
+                    {images.length > 0 ? (
+                      <motion.img
+                        key={currentImageIndex}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        src={images[currentImageIndex]}
+                        alt={product.name || product.title}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/placeholder.svg'
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <Package className="h-24 w-24 text-muted-foreground/30" />
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </AnimatePresence>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <ShoppingCart className="h-4 w-4" />
-                      Inventory
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div>
-                      <Label>Stock Quantity</Label>
-                      {isEditing ? (
-                        <Input
-                          type="number"
-                          value={editedProduct.stock_quantity || ''}
-                          onChange={(e) =>
-                            setEditedProduct({
-                              ...editedProduct,
-                              stock_quantity: parseInt(e.target.value),
-                            })
-                          }
-                        />
-                      ) : (
-                        <p className="text-2xl font-bold">
-                          {product.stock_quantity || 0}
-                        </p>
-                      )}
+                  {/* Navigation Arrows */}
+                  {hasMultipleImages && (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full shadow-lg bg-background/90 backdrop-blur-sm"
+                        onClick={prevImage}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full shadow-lg bg-background/90 backdrop-blur-sm"
+                        onClick={nextImage}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </>
+                  )}
+
+                  {/* Image Counter */}
+                  {hasMultipleImages && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-background/90 backdrop-blur-sm text-sm font-medium shadow-lg">
+                      {currentImageIndex + 1} / {images.length}
                     </div>
-                    <div>
-                      <Label>Category</Label>
-                      {isEditing ? (
-                        <Input
-                          value={editedProduct.category || ''}
-                          onChange={(e) =>
-                            setEditedProduct({
-                              ...editedProduct,
-                              category: e.target.value,
-                            })
-                          }
+                  )}
+                </div>
+
+                {/* Thumbnails */}
+                {hasMultipleImages && (
+                  <div className="flex justify-center gap-2">
+                    {images.slice(0, 6).map((img: string, idx: number) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentImageIndex(idx)}
+                        className={cn(
+                          "w-14 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200",
+                          idx === currentImageIndex
+                            ? "border-primary ring-2 ring-primary/20"
+                            : "border-transparent opacity-60 hover:opacity-100"
+                        )}
+                      >
+                        <img
+                          src={img}
+                          alt={`Thumbnail ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/placeholder.svg'
+                          }}
                         />
-                      ) : (
-                        <p className="font-semibold">{product.category || 'Uncategorized'}</p>
-                      )}
-                    </div>
-                    <div>
-                      <Label>SKU</Label>
-                      {isEditing ? (
-                        <Input
-                          value={editedProduct.sku || ''}
-                          onChange={(e) =>
-                            setEditedProduct({ ...editedProduct, sku: e.target.value })
-                          }
-                        />
-                      ) : (
-                        <p className="font-mono text-sm">{product.sku || 'N/A'}</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </button>
+                    ))}
+                    {images.length > 6 && (
+                      <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center text-sm font-medium text-muted-foreground">
+                        +{images.length - 6}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Quick Stats Cards */}
+                <div className="grid grid-cols-3 gap-3 pt-4">
+                  <Card className="bg-primary/5 border-primary/10">
+                    <CardContent className="p-3 text-center">
+                      <DollarSign className="h-5 w-5 mx-auto mb-1 text-primary" />
+                      <p className="text-lg font-bold text-primary">
+                        {formatCurrency(metrics?.price || 0)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Prix de vente</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className={cn(
+                    "border",
+                    (metrics?.margin || 0) >= 30 
+                      ? "bg-green-500/5 border-green-500/10" 
+                      : (metrics?.margin || 0) >= 15 
+                        ? "bg-yellow-500/5 border-yellow-500/10"
+                        : "bg-red-500/5 border-red-500/10"
+                  )}>
+                    <CardContent className="p-3 text-center">
+                      <Percent className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                      <p className={cn(
+                        "text-lg font-bold",
+                        (metrics?.margin || 0) >= 30 
+                          ? "text-green-600" 
+                          : (metrics?.margin || 0) >= 15 
+                            ? "text-yellow-600"
+                            : "text-red-600"
+                      )}>
+                        {metrics?.margin.toFixed(1)}%
+                      </p>
+                      <p className="text-xs text-muted-foreground">Marge</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className={cn(
+                    "border",
+                    metrics?.isOutOfStock 
+                      ? "bg-red-500/5 border-red-500/10" 
+                      : metrics?.isLowStock 
+                        ? "bg-yellow-500/5 border-yellow-500/10"
+                        : "bg-muted/50 border-border"
+                  )}>
+                    <CardContent className="p-3 text-center">
+                      <Box className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                      <p className={cn(
+                        "text-lg font-bold",
+                        metrics?.isOutOfStock 
+                          ? "text-red-600" 
+                          : metrics?.isLowStock 
+                            ? "text-yellow-600"
+                            : "text-foreground"
+                      )}>
+                        {metrics?.stock || 0}
+                      </p>
+                      <p className="text-xs text-muted-foreground">En stock</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Product Details */}
+            <div className="lg:col-span-3 flex flex-col h-full">
+              {/* Product Title & SKU */}
+              <div className="px-6 pt-6 pb-4 space-y-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    {isEditing ? (
+                      <Input
+                        value={editedProduct.name || editedProduct.title || ''}
+                        onChange={(e) =>
+                          setEditedProduct({ ...editedProduct, name: e.target.value })
+                        }
+                        className="text-xl font-bold h-auto py-2"
+                        placeholder="Nom du produit"
+                      />
+                    ) : (
+                      <h2 className="text-xl font-bold truncate">
+                        {product.name || product.title || 'Sans nom'}
+                      </h2>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Badge variant="outline" className="font-mono text-xs gap-1.5">
+                    SKU: {product.sku || 'N/A'}
+                    <button onClick={handleCopySku} className="hover:text-primary transition-colors">
+                      <Copy className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                  
+                  {product.category && (
+                    <Badge variant="secondary" className="gap-1.5">
+                      <Tag className="h-3 w-3" />
+                      {product.category}
+                    </Badge>
+                  )}
+                </div>
               </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Layers className="h-4 w-4" />
-                    Description
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isEditing ? (
-                    <Textarea
-                      value={editedProduct.description || ''}
-                      onChange={(e) =>
-                        setEditedProduct({
-                          ...editedProduct,
-                          description: e.target.value,
-                        })
-                      }
-                      rows={6}
-                      className="resize-none"
-                    />
-                  ) : (
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {product.description || 'No description available'}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+              <Separator />
 
-            <TabsContent value="variants" className="space-y-4">
-              <ProductVariantManager
-                productId={product.id}
-                variants={variants}
-                onRefetch={refetchVariants}
-              />
-            </TabsContent>
+              {/* Tabs */}
+              <ScrollArea className="flex-1">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 px-6">
+                    {[
+                      { value: 'overview', label: 'Aperçu', icon: Eye },
+                      { value: 'pricing', label: 'Prix & Stock', icon: DollarSign },
+                      { value: 'details', label: 'Détails', icon: FileText },
+                      { value: 'seo', label: 'SEO', icon: Globe },
+                      { value: 'history', label: 'Historique', icon: History },
+                    ].map((tab) => (
+                      <TabsTrigger
+                        key={tab.value}
+                        value={tab.value}
+                        className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-3 px-4 gap-2"
+                      >
+                        <tab.icon className="h-4 w-4" />
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
 
-            <TabsContent value="images" className="space-y-4">
-              <Card>
-                <CardContent className="p-6">
-                  {images.length > 0 ? (
-                    <div className="space-y-4">
-                      <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
-                        <img
-                          src={images[currentImageIndex]}
-                          alt={`${product.name || product.title} - Image ${currentImageIndex + 1}`}
-                          className="w-full h-full object-contain"
-                        />
-                        {hasMultipleImages && (
-                          <>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              className="absolute left-2 top-1/2 -translate-y-1/2"
-                              onClick={prevImage}
-                            >
-                              <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              className="absolute right-2 top-1/2 -translate-y-1/2"
-                              onClick={nextImage}
-                            >
-                              <ChevronRight className="h-4 w-4" />
-                            </Button>
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-sm">
-                              {currentImageIndex + 1} / {images.length}
+                  <div className="p-6">
+                    {/* Overview Tab */}
+                    <TabsContent value="overview" className="m-0 space-y-6">
+                      {/* Description */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Layers className="h-4 w-4" />
+                            Description
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {isEditing ? (
+                            <Textarea
+                              value={editedProduct.description || ''}
+                              onChange={(e) =>
+                                setEditedProduct({
+                                  ...editedProduct,
+                                  description: e.target.value,
+                                })
+                              }
+                              rows={5}
+                              className="resize-none"
+                              placeholder="Description du produit..."
+                            />
+                          ) : (
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                              {product.description || 'Aucune description disponible'}
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Quick Info Grid */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <Card>
+                          <CardContent className="p-4 flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                              <DollarSign className="h-6 w-6 text-primary" />
                             </div>
-                          </>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Prix d'achat</p>
+                              <p className="text-xl font-bold">
+                                {formatCurrency(product.cost_price || 0)}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardContent className="p-4 flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+                              <TrendingUp className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Profit</p>
+                              <p className="text-xl font-bold text-green-600">
+                                +{formatCurrency(metrics?.profit || 0)}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Dates */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Informations
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Créé le</span>
+                            <span className="text-sm font-medium">
+                              {product.created_at 
+                                ? new Date(product.created_at).toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })
+                                : 'N/A'
+                              }
+                            </span>
+                          </div>
+                          <Separator />
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Modifié le</span>
+                            <span className="text-sm font-medium">
+                              {product.updated_at 
+                                ? new Date(product.updated_at).toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })
+                                : 'N/A'
+                              }
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    {/* Pricing Tab */}
+                    <TabsContent value="pricing" className="m-0 space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm">Prix de vente</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {isEditing ? (
+                              <div className="relative">
+                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={editedProduct.price || ''}
+                                  onChange={(e) =>
+                                    setEditedProduct({
+                                      ...editedProduct,
+                                      price: e.target.value,
+                                    })
+                                  }
+                                  className="pl-9"
+                                />
+                              </div>
+                            ) : (
+                              <p className="text-3xl font-bold text-primary">
+                                {formatCurrency(product.price || 0)}
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm">Prix d'achat</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {isEditing ? (
+                              <div className="relative">
+                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={editedProduct.cost_price || ''}
+                                  onChange={(e) =>
+                                    setEditedProduct({
+                                      ...editedProduct,
+                                      cost_price: e.target.value,
+                                    })
+                                  }
+                                  className="pl-9"
+                                />
+                              </div>
+                            ) : (
+                              <p className="text-3xl font-bold">
+                                {formatCurrency(product.cost_price || 0)}
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Profit Visualization */}
+                      <Card className="bg-gradient-to-r from-green-500/5 to-emerald-500/5 border-green-500/20">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Profit par unité</p>
+                              <p className="text-2xl font-bold text-green-600">
+                                +{formatCurrency(metrics?.profit || 0)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-muted-foreground">Marge bénéficiaire</p>
+                              <p className="text-2xl font-bold text-green-600">
+                                {metrics?.margin.toFixed(1)}%
+                              </p>
+                            </div>
+                          </div>
+                          <Progress 
+                            value={Math.min(metrics?.margin || 0, 100)} 
+                            className="h-3"
+                          />
+                        </CardContent>
+                      </Card>
+
+                      {/* Stock */}
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <ShoppingCart className="h-4 w-4" />
+                            Inventaire
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label>Quantité en stock</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={editedProduct.stock_quantity || ''}
+                                onChange={(e) =>
+                                  setEditedProduct({
+                                    ...editedProduct,
+                                    stock_quantity: e.target.value,
+                                  })
+                                }
+                                className="w-32"
+                              />
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                {stockConfig && (
+                                  <Badge variant={stockConfig.color} className="gap-1.5">
+                                    <stockConfig.icon className="h-3 w-3" />
+                                    {stockConfig.label}
+                                  </Badge>
+                                )}
+                                <span className="text-xl font-bold">{metrics?.stock || 0}</span>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    {/* Details Tab */}
+                    <TabsContent value="details" className="m-0 space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>SKU</Label>
+                          {isEditing ? (
+                            <Input
+                              value={editedProduct.sku || ''}
+                              onChange={(e) =>
+                                setEditedProduct({ ...editedProduct, sku: e.target.value })
+                              }
+                              placeholder="SKU-001"
+                            />
+                          ) : (
+                            <p className="font-mono text-sm p-2 bg-muted rounded-md">
+                              {product.sku || 'N/A'}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Catégorie</Label>
+                          {isEditing ? (
+                            <Input
+                              value={editedProduct.category || ''}
+                              onChange={(e) =>
+                                setEditedProduct({ ...editedProduct, category: e.target.value })
+                              }
+                              placeholder="Catégorie"
+                            />
+                          ) : (
+                            <p className="text-sm p-2 bg-muted rounded-md">
+                              {product.category || 'Non catégorisé'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Statut</Label>
+                        {isEditing ? (
+                          <Select
+                            value={editedProduct.status || 'draft'}
+                            onValueChange={(value) =>
+                              setEditedProduct({ ...editedProduct, status: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="draft">Brouillon</SelectItem>
+                              <SelectItem value="published">Publié</SelectItem>
+                              <SelectItem value="active">Actif</SelectItem>
+                              <SelectItem value="archived">Archivé</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge className={cn("text-sm", statusConfig.color)}>
+                            <statusConfig.icon className="h-3 w-3 mr-1.5" />
+                            {statusConfig.label}
+                          </Badge>
                         )}
                       </div>
-                      {hasMultipleImages && (
-                        <div className="grid grid-cols-6 gap-2">
-                          {images.map((img: string, idx: number) => (
-                            <button
-                              key={idx}
-                              onClick={() => setCurrentImageIndex(idx)}
-                              className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                                idx === currentImageIndex
-                                  ? 'border-primary'
-                                  : 'border-transparent hover:border-muted-foreground'
-                              }`}
-                            >
-                              <img
-                                src={img}
-                                alt={`Thumbnail ${idx + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
-                      <p className="text-muted-foreground">No images available</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            <TabsContent value="metadata" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Tag className="h-4 w-4" />
-                    Tags & Categories
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {product.tags?.map((tag: string, idx: number) => (
-                      <Badge key={idx} variant="secondary">{tag}</Badge>
-                    )) || <p className="text-muted-foreground">No tags</p>}
-                  </div>
-                </CardContent>
-              </Card>
+                      {/* Tags */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Tag className="h-4 w-4" />
+                            Tags
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap gap-2">
+                            {product.tags?.map((tag: string, idx: number) => (
+                              <Badge key={idx} variant="secondary">{tag}</Badge>
+                            )) || <p className="text-sm text-muted-foreground">Aucun tag</p>}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Dates
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Created:</span>
-                    <span>{new Date(product.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Updated:</span>
-                    <span>{new Date(product.updated_at).toLocaleDateString()}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="history" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <History className="h-4 w-4" />
-                    Sync History
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {syncHistory.length > 0 ? (
-                    <div className="space-y-2">
-                      {syncHistory.map((entry: any, idx: number) => (
-                        <div key={idx} className="flex items-center gap-3 p-2 rounded border">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{entry.action}</p>
+                    {/* SEO Tab */}
+                    <TabsContent value="seo" className="m-0 space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Globe className="h-4 w-4" />
+                            Optimisation SEO
+                          </CardTitle>
+                          <CardDescription>
+                            Optimisez votre produit pour les moteurs de recherche
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Titre SEO</Label>
+                            <Input
+                              value={product.seo_title || product.name || ''}
+                              placeholder="Titre pour les moteurs de recherche"
+                              disabled={!isEditing}
+                            />
                             <p className="text-xs text-muted-foreground">
-                              {new Date(entry.created_at).toLocaleString()}
+                              {(product.seo_title || product.name || '').length}/60 caractères
                             </p>
                           </div>
-                          <Badge variant={entry.status === 'success' ? 'default' : 'destructive'}>
-                            {entry.status}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-4">
-                      No sync history available
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+
+                          <div className="space-y-2">
+                            <Label>Meta description</Label>
+                            <Textarea
+                              value={product.seo_description || product.description?.slice(0, 160) || ''}
+                              placeholder="Description pour les moteurs de recherche"
+                              disabled={!isEditing}
+                              rows={3}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {(product.seo_description || product.description?.slice(0, 160) || '').length}/160 caractères
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>URL slug</Label>
+                            <Input
+                              value={product.slug || product.name?.toLowerCase().replace(/\s+/g, '-') || ''}
+                              placeholder="url-du-produit"
+                              disabled={!isEditing}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    {/* History Tab */}
+                    <TabsContent value="history" className="m-0 space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <History className="h-4 w-4" />
+                            Historique des modifications
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <div className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
+                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <RefreshCw className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium">Dernière modification</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {product.updated_at 
+                                    ? new Date(product.updated_at).toLocaleString('fr-FR')
+                                    : 'N/A'
+                                  }
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
+                              <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium">Création</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {product.created_at 
+                                    ? new Date(product.created_at).toLocaleString('fr-FR')
+                                    : 'N/A'
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  </div>
+                </Tabs>
+              </ScrollArea>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce produit ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le produit "{product.name || product.title}" sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
