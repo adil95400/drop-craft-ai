@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductActionsBar } from './ProductActionsBar';
 import { ProductBulkOperations } from './ProductBulkOperations';
@@ -7,7 +7,6 @@ import { ProductsGridView } from './ProductsGridView';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
 import { FilterState } from '@/hooks/useProductFilters';
 import { useProductActions } from '@/hooks/useProductActions';
-import { useModalContext } from '@/hooks/useModalHelpers';
 
 interface ProductsPageWrapperProps {
   products: UnifiedProduct[];
@@ -23,10 +22,12 @@ interface ProductsPageWrapperProps {
   hasActiveFilters?: boolean;
   onSelectionChange?: (selected: string[]) => void;
   selectedProducts?: string[];
+  isLoading?: boolean;
 }
 
 /**
  * Wrapper complet pour la page produits avec toutes les actions connectées
+ * Gère la recherche, le tri, les filtres, la pagination et les actions en masse
  */
 export function ProductsPageWrapper({
   products,
@@ -41,55 +42,65 @@ export function ProductsPageWrapper({
   onResetFilters,
   hasActiveFilters = false,
   onSelectionChange,
-  selectedProducts = []
+  selectedProducts = [],
+  isLoading = false
 }: ProductsPageWrapperProps) {
   const [searchTerm, setSearchTerm] = useState(filters?.search || '');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localSelectedProducts, setLocalSelectedProducts] = useState<string[]>(selectedProducts || []);
   
-  const { handleImport, handleExport } = useProductActions();
+  const { handleImport, handleExport, isExporting } = useProductActions();
   const navigate = useNavigate();
 
   // Sync local selection with parent
-  const handleSelectionChange = (newSelection: string[]) => {
+  const handleSelectionChange = useCallback((newSelection: string[]) => {
     setLocalSelectedProducts(newSelection);
     onSelectionChange?.(newSelection);
-  };
+  }, [onSelectionChange]);
 
-  // Recherche locale rapide
+  // Recherche locale rapide avec debounce implicite via useMemo
   const displayedProducts = useMemo(() => {
     if (!searchTerm) return products;
     
-    const search = searchTerm.toLowerCase();
+    const search = searchTerm.toLowerCase().trim();
     return products.filter(product =>
       product.name.toLowerCase().includes(search) ||
       product.description?.toLowerCase().includes(search) ||
-      product.sku?.toLowerCase().includes(search)
+      product.sku?.toLowerCase().includes(search) ||
+      product.category?.toLowerCase().includes(search)
     );
   }, [products, searchTerm]);
 
-  const handleSearchChange = (value: string) => {
+  const handleSearchChange = useCallback((value: string) => {
     setSearchTerm(value);
     if (onFilterChange) {
       onFilterChange('search', value);
     }
-  };
+  }, [onFilterChange]);
 
-  const handleSortChange = (value: string) => {
-    const [field, order] = value.split('_') as [keyof FilterState, 'asc' | 'desc'];
+  const handleSortChange = useCallback((value: string) => {
+    // Format: field_order (ex: created_at_desc, name_asc)
+    const parts = value.split('_');
+    const order = parts.pop() as 'asc' | 'desc';
+    const field = parts.join('_');
+    
     if (onFilterChange) {
       onFilterChange('sortBy', field as any);
       onFilterChange('sortOrder', order);
     }
-  };
+  }, [onFilterChange]);
 
-  const handleCreateNew = () => {
+  const handleCreateNew = useCallback(() => {
     navigate('/products/create');
-  };
+  }, [navigate]);
 
-  const handleExportClick = async () => {
-    await handleExport(selectedProducts.length > 0 ? selectedProducts : undefined);
-  };
+  const handleExportClick = useCallback(async () => {
+    await handleExport(localSelectedProducts.length > 0 ? localSelectedProducts : undefined);
+  }, [handleExport, localSelectedProducts]);
+
+  const handleClearSelection = useCallback(() => {
+    handleSelectionChange([]);
+  }, [handleSelectionChange]);
 
   return (
     <div className="space-y-6">
@@ -103,18 +114,20 @@ export function ProductsPageWrapper({
         onCreateNew={handleCreateNew}
         onImport={handleImport}
         onExport={handleExportClick}
+        onRefresh={onRefresh}
         categories={categories}
         onCategoryChange={(cat) => onFilterChange?.('category', cat)}
         onStatusChange={(status) => onFilterChange?.('status', status as any)}
         onSortChange={handleSortChange}
         hasActiveFilters={hasActiveFilters}
         onResetFilters={onResetFilters}
+        isLoading={isLoading}
       />
 
       {localSelectedProducts.length > 0 && (
         <ProductBulkOperations
           selectedProducts={localSelectedProducts}
-          onClearSelection={() => handleSelectionChange([])}
+          onClearSelection={handleClearSelection}
         />
       )}
 
@@ -135,11 +148,12 @@ export function ProductsPageWrapper({
           onView={onView}
           onBulkDelete={(ids) => {
             ids.forEach(id => onDelete(id));
-            handleSelectionChange([]);
+            handleClearSelection();
             onRefresh?.();
           }}
           onBulkEdit={(ids) => {
-            console.log('Bulk edit:', ids);
+            // Naviguer vers l'édition en masse
+            navigate(`/products/bulk-edit?ids=${ids.join(',')}`);
           }}
           onProductUpdate={onRefresh}
         />
