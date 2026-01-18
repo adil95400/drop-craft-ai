@@ -1,9 +1,8 @@
 /**
  * SupplierSettingsPage - Configuration complète des fournisseurs et API
- * Version 100% complète avec toutes les fonctionnalités
+ * Style Channable avec Hero Section
  */
 import { useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,10 +16,12 @@ import { Separator } from '@/components/ui/separator'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
+import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
 import { 
-  Settings, Key, RefreshCw, CheckCircle, AlertTriangle, XCircle,
-  Plus, Trash2, Eye, EyeOff, Clock, Loader2, Shield, Zap, Globe,
-  TestTube, Save, Copy, ExternalLink, Bell, Database, Webhook
+  Settings, Key, RefreshCw, CheckCircle, XCircle,
+  Plus, Trash2, Eye, EyeOff, Clock, Loader2, Shield,
+  TestTube, Copy, Bell, Webhook
 } from 'lucide-react'
 
 const SUPPLIER_TYPES = [
@@ -182,117 +183,122 @@ export default function SupplierSettingsPage() {
     )
   }
 
+  const activeCredentials = credentials.filter((c: any) => c.connection_status === 'active' || c.connection_status === 'connected').length
+
   return (
-    <>
-      <Helmet>
-        <title>Paramètres Fournisseurs - ShopOpti</title>
-        <meta name="description" content="Gérez vos clés API et configurations fournisseurs" />
-      </Helmet>
+    <ChannablePageLayout
+      title="Paramètres Fournisseurs"
+      metaTitle="Paramètres Fournisseurs"
+      metaDescription="Gérez vos clés API et configurations fournisseurs"
+      showBackButton
+      backTo="/suppliers"
+      backLabel="Retour aux fournisseurs"
+    >
+      <ChannableHeroSection
+        badge={{ label: "Configuration", variant: "default" }}
+        title="Paramètres"
+        subtitle="Clés API et configurations"
+        description="Gérez vos credentials, webhooks et paramètres de synchronisation fournisseurs."
+        primaryAction={{
+          label: "Ajouter une clé API",
+          icon: Plus,
+          onClick: () => setShowAddDialog(true)
+        }}
+        stats={[
+          { value: credentials.length.toString(), label: "Credentials", icon: Key },
+          { value: activeCredentials.toString(), label: "Actifs", icon: CheckCircle },
+          { value: "Secure", label: "Vault", icon: Shield },
+          { value: "Auto", label: "Sync", icon: RefreshCw }
+        ]}
+        variant="compact"
+      />
 
-      <div className="container mx-auto p-4 sm:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold flex items-center gap-3">
-              <Settings className="h-7 w-7 text-primary" />
-              Paramètres Fournisseurs
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Clés API, webhooks et configurations de synchronisation
-            </p>
-          </div>
-          <Button onClick={() => setShowAddDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter une clé API
-          </Button>
-        </div>
+      <Tabs defaultValue="credentials" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+          <TabsTrigger value="credentials" className="gap-2">
+            <Key className="h-4 w-4" />
+            <span className="hidden sm:inline">Credentials</span>
+          </TabsTrigger>
+          <TabsTrigger value="sync" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">Synchronisation</span>
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-2">
+            <Bell className="h-4 w-4" />
+            <span className="hidden sm:inline">Notifications</span>
+          </TabsTrigger>
+        </TabsList>
 
-        <Tabs defaultValue="credentials" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="credentials" className="gap-2">
-              <Key className="h-4 w-4" />
-              <span className="hidden sm:inline">Credentials</span>
-            </TabsTrigger>
-            <TabsTrigger value="sync" className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              <span className="hidden sm:inline">Synchronisation</span>
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2">
-              <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">Notifications</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Credentials Tab */}
-          <TabsContent value="credentials" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Key className="h-5 w-5" />
-                  Clés API Fournisseurs
-                </CardTitle>
-                <CardDescription>
-                  Gérez les credentials de connexion à vos fournisseurs
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                ) : credentials.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Key className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-medium mb-2">Aucune clé API configurée</h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Ajoutez vos clés API pour connecter vos fournisseurs
-                    </p>
-                    <Button onClick={() => setShowAddDialog(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Ajouter une clé API
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {credentials.map((cred: any) => {
-                      const supplierName = cred.metadata?.name || SUPPLIER_TYPES.find(s => s.id === cred.supplier_id)?.name || cred.supplier_id
-                      const apiKey = cred.api_key_encrypted || '••••••••'
-                      return (
-                        <div key={cred.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                          <div className="flex items-center gap-4">
-                            <div className="text-2xl w-10 h-10 flex items-center justify-center bg-muted rounded-lg">
-                              {SUPPLIER_TYPES.find(s => s.id === cred.supplier_id)?.logo || '📦'}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <p className="font-medium">{supplierName}</p>
-                                {getStatusBadge(cred.connection_status)}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <code className="text-xs bg-muted px-2 py-1 rounded">
-                                  {showKeys[cred.id] ? apiKey : '••••••••••••••••'}
-                                </code>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleShowKey(cred.id)}>
-                                  {showKeys[cred.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(apiKey)}>
-                                  <Copy className="h-3 w-3" />
-                                </Button>
-                              </div>
-                              {cred.last_validated_at && (
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  Dernière validation: {new Date(cred.last_validated_at).toLocaleString('fr-FR')}
-                                </p>
-                              )}
-                            </div>
+        {/* Credentials Tab */}
+        <TabsContent value="credentials" className="space-y-4">
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="h-5 w-5" />
+                Clés API Fournisseurs
+              </CardTitle>
+              <CardDescription>
+                Gérez les credentials de connexion à vos fournisseurs
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : credentials.length === 0 ? (
+                <div className="text-center py-12">
+                  <Key className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-medium mb-2">Aucune clé API configurée</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Ajoutez vos clés API pour connecter vos fournisseurs
+                  </p>
+                  <Button onClick={() => setShowAddDialog(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ajouter une clé API
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {credentials.map((cred: any) => {
+                    const supplierName = cred.metadata?.name || SUPPLIER_TYPES.find(s => s.id === cred.supplier_id)?.name || cred.supplier_id
+                    const apiKey = cred.api_key_encrypted || '••••••••'
+                    return (
+                      <div key={cred.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="text-2xl w-10 h-10 flex items-center justify-center bg-muted rounded-lg">
+                            {SUPPLIER_TYPES.find(s => s.id === cred.supplier_id)?.logo || '📦'}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => testConnectionMutation.mutate(cred.id)}
-                              disabled={testingId === cred.id}
-                            >
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">{supplierName}</p>
+                              {getStatusBadge(cred.connection_status)}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <code className="text-xs bg-muted px-2 py-1 rounded">
+                                {showKeys[cred.id] ? apiKey : '••••••••••••••••'}
+                              </code>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleShowKey(cred.id)}>
+                                {showKeys[cred.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(apiKey)}>
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            {cred.last_validated_at && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Dernière validation: {new Date(cred.last_validated_at).toLocaleString('fr-FR')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => testConnectionMutation.mutate(cred.id)}
+                            disabled={testingId === cred.id}
+                          >
                             {testingId === cred.id ? (
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                             ) : (
@@ -316,137 +322,157 @@ export default function SupplierSettingsPage() {
                           </Button>
                         </div>
                       </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {/* Sync Tab */}
-          <TabsContent value="sync" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <RefreshCw className="h-5 w-5" />
-                  Paramètres de synchronisation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Synchronisation automatique</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Synchroniser automatiquement les produits et stocks
-                    </p>
-                  </div>
-                  <Switch defaultChecked={syncSettings?.auto_sync} />
+        {/* Sync Tab */}
+        <TabsContent value="sync" className="space-y-4">
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RefreshCw className="h-5 w-5" />
+                Paramètres de synchronisation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Synchronisation automatique</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Synchroniser automatiquement les produits et stocks
+                  </p>
                 </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Label>Intervalle de synchronisation</Label>
-                  <Select defaultValue={syncSettings?.sync_interval || '6h'}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1h">Toutes les heures</SelectItem>
-                      <SelectItem value="3h">Toutes les 3 heures</SelectItem>
-                      <SelectItem value="6h">Toutes les 6 heures</SelectItem>
-                      <SelectItem value="12h">Toutes les 12 heures</SelectItem>
-                      <SelectItem value="24h">Toutes les 24 heures</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <Switch defaultChecked={syncSettings?.auto_sync} />
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label>Intervalle de synchronisation</Label>
+                <Select defaultValue={syncSettings?.sync_interval || '6h'}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1h">Toutes les heures</SelectItem>
+                    <SelectItem value="3h">Toutes les 3 heures</SelectItem>
+                    <SelectItem value="6h">Toutes les 6 heures</SelectItem>
+                    <SelectItem value="12h">Toutes les 12 heures</SelectItem>
+                    <SelectItem value="24h">Toutes les 24 heures</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Synchroniser les prix</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Mettre à jour les prix automatiquement
+                  </p>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Synchroniser les prix</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Mettre à jour les prix automatiquement
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
+                <Switch defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Synchroniser les stocks</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Mettre à jour les niveaux de stock
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Synchroniser les stocks</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Mettre à jour les niveaux de stock
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                <Switch defaultChecked />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {/* Notifications Tab */}
-          <TabsContent value="notifications" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Notifications fournisseurs
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Erreurs de synchronisation</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Recevoir une alerte en cas d'erreur
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
+        {/* Notifications Tab */}
+        <TabsContent value="notifications" className="space-y-4">
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notifications fournisseurs
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Erreurs de synchronisation</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Recevoir une alerte en cas d'erreur
+                  </p>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Nouveaux produits</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Notification quand de nouveaux produits sont disponibles
-                    </p>
-                  </div>
-                  <Switch />
+                <Switch defaultChecked />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Nouveaux produits</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Notification quand de nouveaux produits sont disponibles
+                  </p>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Changements de prix</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Alertes sur les variations de prix importantes
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
+                <Switch />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Changements de prix</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Alertes sur les variations de prix importantes
+                  </p>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Stock faible</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Alerte quand le stock descend sous un seuil
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
+                <Switch defaultChecked />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Ruptures de stock</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Être alerté des produits en rupture
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+                <Switch defaultChecked />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Webhook className="h-5 w-5" />
+                Webhooks
+              </CardTitle>
+              <CardDescription>
+                Configurez des webhooks pour recevoir des notifications en temps réel
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Webhook className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">
+                  Aucun webhook configuré
+                </p>
+                <Button variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un webhook
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Add Credential Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Ajouter une clé API
-            </DialogTitle>
+            <DialogTitle>Ajouter une clé API</DialogTitle>
             <DialogDescription>
-              Configurez les credentials pour connecter un fournisseur
+              Connectez un nouveau fournisseur avec ses credentials API
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -462,26 +488,23 @@ export default function SupplierSettingsPage() {
                 <SelectContent>
                   {SUPPLIER_TYPES.map(s => (
                     <SelectItem key={s.id} value={s.id}>
-                      <span className="flex items-center gap-2">
-                        <span>{s.logo}</span>
-                        <span>{s.name}</span>
-                      </span>
+                      {s.logo} {s.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Nom personnalisé (optionnel)</Label>
-              <Input
-                placeholder="Ex: Mon compte CJ"
+              <Label>Nom du credential</Label>
+              <Input 
+                placeholder="Mon compte CJ"
                 value={newCredential.supplier_name}
                 onChange={(e) => setNewCredential(prev => ({ ...prev, supplier_name: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
-              <Label>Clé API *</Label>
-              <Input
+              <Label>Clé API</Label>
+              <Input 
                 type="password"
                 placeholder="Votre clé API"
                 value={newCredential.api_key}
@@ -489,24 +512,14 @@ export default function SupplierSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Secret API (si requis)</Label>
-              <Input
+              <Label>Secret API (optionnel)</Label>
+              <Input 
                 type="password"
-                placeholder="Secret ou token"
+                placeholder="Votre secret API"
                 value={newCredential.api_secret}
                 onChange={(e) => setNewCredential(prev => ({ ...prev, api_secret: e.target.value }))}
               />
             </div>
-            {newCredential.supplier_type === 'custom' && (
-              <div className="space-y-2">
-                <Label>Endpoint API</Label>
-                <Input
-                  placeholder="https://api.example.com"
-                  value={newCredential.endpoint}
-                  onChange={(e) => setNewCredential(prev => ({ ...prev, endpoint: e.target.value }))}
-                />
-              </div>
-            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
@@ -519,13 +532,13 @@ export default function SupplierSettingsPage() {
               {addCredentialMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
-                <Save className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4 mr-2" />
               )}
-              Sauvegarder
+              Ajouter
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </ChannablePageLayout>
   )
 }

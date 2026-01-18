@@ -1,25 +1,25 @@
 /**
- * Supplier Analytics Dashboard - Style AutoDS/Spocket
+ * Supplier Analytics Dashboard - Style Channable
  * Performances complètes des fournisseurs
  */
-import { useState, useMemo } from 'react'
-import { Helmet } from 'react-helmet-async'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
+import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { motion } from 'framer-motion'
 import {
-  BarChart3, TrendingUp, TrendingDown, Package, Clock, DollarSign,
-  Star, AlertTriangle, CheckCircle, RefreshCw, Calendar, Filter,
-  Download, ArrowUpRight, ArrowDownRight, Loader2, Store,
-  ShoppingCart, Truck, Users, Activity, PieChart, Target
+  BarChart3, TrendingUp, Package, DollarSign,
+  Star, CheckCircle, Download, ArrowUpRight, ArrowDownRight, Loader2, Store,
+  ShoppingCart, Truck, Activity, PieChart
 } from 'lucide-react'
 import {
-  LineChart, Line, BarChart, Bar, PieChart as RechartsPie, Pie, Cell,
+  BarChart, Bar, PieChart as RechartsPie, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart
 } from 'recharts'
 
@@ -27,7 +27,6 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 
 export default function SupplierAnalyticsDashboard() {
   const [period, setPeriod] = useState('30d')
-  const [selectedSupplier, setSelectedSupplier] = useState('all')
 
   // Fetch analytics data
   const { data: analyticsData, isLoading } = useQuery({
@@ -154,53 +153,63 @@ export default function SupplierAnalyticsDashboard() {
   ]
 
   return (
-    <>
-      <Helmet>
-        <title>Analytics Fournisseurs - ShopOpti</title>
-        <meta name="description" content="Performances et KPIs de vos fournisseurs" />
-      </Helmet>
+    <ChannablePageLayout
+      title="Analytics Fournisseurs"
+      metaTitle="Analytics Fournisseurs"
+      metaDescription="Performances et KPIs de vos fournisseurs"
+      showBackButton
+      backTo="/suppliers"
+      backLabel="Retour aux fournisseurs"
+    >
+      <ChannableHeroSection
+        badge={{ label: "Analytics", variant: "default" }}
+        title="Performances"
+        subtitle="KPIs et métriques en temps réel"
+        description="Analysez les performances de vos fournisseurs, marges et tendances de vente."
+        secondaryAction={{
+          label: "Exporter",
+          onClick: () => {}
+        }}
+        stats={[
+          { value: `${(analyticsData?.totalRevenue || 0).toLocaleString()}€`, label: "Revenus", icon: DollarSign },
+          { value: (analyticsData?.totalOrders || 0).toString(), label: "Commandes", icon: ShoppingCart },
+          { value: `${analyticsData?.avgMargin || 0}%`, label: "Marge", icon: TrendingUp },
+          { value: (analyticsData?.activeSuppliers || 0).toString(), label: "Fournisseurs", icon: Store }
+        ]}
+        variant="compact"
+      />
 
-      <div className="container mx-auto p-4 sm:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold flex items-center gap-3">
-              <BarChart3 className="h-8 w-8 text-primary" />
-              Analytics Fournisseurs
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Performances, marges et KPIs en temps réel
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">7 jours</SelectItem>
-                <SelectItem value="30d">30 jours</SelectItem>
-                <SelectItem value="90d">90 jours</SelectItem>
-                <SelectItem value="1y">1 an</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Exporter
-            </Button>
-          </div>
+      {/* Period Selector */}
+      <div className="flex justify-end">
+        <Select value={period} onValueChange={setPeriod}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7d">7 jours</SelectItem>
+            <SelectItem value="30d">30 jours</SelectItem>
+            <SelectItem value="90d">90 jours</SelectItem>
+            <SelectItem value="1y">1 an</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          </div>
-        ) : (
-          <>
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-              {stats.map((stat, i) => (
-                <Card key={i} className="hover:shadow-lg transition-shadow">
+      ) : (
+        <>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+            {stats.map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <Card className="hover:shadow-lg transition-shadow backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className={`p-2 rounded-lg bg-muted ${stat.color}`}>
@@ -219,138 +228,144 @@ export default function SupplierAnalyticsDashboard() {
                     <p className="text-xs text-muted-foreground">{stat.label}</p>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+              </motion.div>
+            ))}
+          </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Revenue Trend */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Tendance des revenus
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={analyticsData?.trendData}>
-                      <defs>
-                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="date" className="text-xs" />
-                      <YAxis className="text-xs" />
-                      <Tooltip />
-                      <Area 
-                        type="monotone" 
-                        dataKey="revenue" 
-                        stroke="#3b82f6" 
-                        fillOpacity={1} 
-                        fill="url(#colorRevenue)" 
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Category Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChart className="h-5 w-5" />
-                    Répartition par catégorie
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <RechartsPie>
-                      <Pie
-                        data={analyticsData?.categoryData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {analyticsData?.categoryData?.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPie>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Supplier Performance Table */}
-            <Card>
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Revenue Trend */}
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Store className="h-5 w-5" />
-                  Performance par fournisseur
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {analyticsData?.supplierPerformance?.slice(0, 5).map((supplier, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Store className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{supplier.name}</p>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{supplier.orders} commandes</span>
-                          <span className="flex items-center">
-                            <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                            {supplier.rating}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">{supplier.revenue.toLocaleString()}€</p>
-                        <p className="text-sm text-green-600">+{supplier.margin}% marge</p>
-                      </div>
-                      <div className="w-24">
-                        <Progress value={Number(supplier.margin) * 3} className="h-2" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Orders Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Commandes & Marges
+                  <TrendingUp className="h-5 w-5" />
+                  Tendance des revenus
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={analyticsData?.trendData?.slice(-14)}>
+                  <AreaChart data={analyticsData?.trendData}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis dataKey="date" className="text-xs" />
                     <YAxis className="text-xs" />
                     <Tooltip />
-                    <Legend />
-                    <Bar dataKey="orders" name="Commandes" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="margin" name="Marge %" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                    <Area 
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="#3b82f6" 
+                      fillOpacity={1} 
+                      fill="url(#colorRevenue)" 
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </>
-        )}
-      </div>
-    </>
+
+            {/* Category Distribution */}
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChart className="h-5 w-5" />
+                  Répartition par catégorie
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RechartsPie>
+                    <Pie
+                      data={analyticsData?.categoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {analyticsData?.categoryData?.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </RechartsPie>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Supplier Performance Table */}
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Store className="h-5 w-5" />
+                Performance par fournisseur
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analyticsData?.supplierPerformance?.slice(0, 5).map((supplier, i) => (
+                  <motion.div 
+                    key={i} 
+                    className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Store className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{supplier.name}</p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>{supplier.orders} commandes</span>
+                        <span className="flex items-center">
+                          <Star className="h-3 w-3 text-yellow-500 mr-1" />
+                          {supplier.rating}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">{supplier.revenue.toLocaleString()}€</p>
+                      <p className="text-sm text-green-600">+{supplier.margin}% marge</p>
+                    </div>
+                    <div className="w-24">
+                      <Progress value={Number(supplier.margin) * 3} className="h-2" />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Orders Chart */}
+          <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Commandes & Marges
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={analyticsData?.trendData?.slice(-14)}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="orders" name="Commandes" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="margin" name="Marge %" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </ChannablePageLayout>
   )
 }

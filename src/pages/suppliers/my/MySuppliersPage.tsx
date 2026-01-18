@@ -1,4 +1,8 @@
-import { Helmet } from 'react-helmet-async'
+/**
+ * MySuppliersPage - Mes Fournisseurs Connectés
+ * Style Channable avec Hero Section et Stats
+ */
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,15 +18,15 @@ import { useNavigate } from 'react-router-dom'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { useSupplierConnection } from '@/hooks/useSupplierConnection'
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import {
   Store, Settings, Eye, RefreshCw, MoreVertical, Unplug, 
-  CheckCircle, AlertCircle, Clock, Package, TrendingUp, Search, Plus, ArrowLeft
+  CheckCircle, AlertCircle, Clock, Package, TrendingUp, Search, Plus,
+  Star, Zap
 } from 'lucide-react'
+import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
+import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
 
-/**
- * MySuppliersPage - Page listant les fournisseurs connectés de l'utilisateur
- * Unifie SuppliersManage.tsx et ManageSuppliers.tsx
- */
 export default function MySuppliersPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
@@ -44,7 +48,7 @@ export default function MySuppliersPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="default" className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Connecté</Badge>
+        return <Badge className="bg-green-500 text-white"><CheckCircle className="h-3 w-3 mr-1" />Connecté</Badge>
       case 'error':
         return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Erreur</Badge>
       case 'paused':
@@ -55,141 +59,92 @@ export default function MySuppliersPage() {
   }
 
   return (
-    <>
-      <Helmet>
-        <title>Mes Fournisseurs - ShopOpti</title>
-        <meta name="description" content="Gérez vos fournisseurs connectés" />
-      </Helmet>
+    <ChannablePageLayout
+      title="Mes Fournisseurs"
+      metaTitle="Mes Fournisseurs"
+      metaDescription="Gérez vos fournisseurs connectés et leur configuration"
+      showBackButton
+      backTo="/suppliers"
+      backLabel="Retour aux fournisseurs"
+    >
+      <ChannableHeroSection
+        badge={{ label: "Connectés", variant: "default" }}
+        title="Mes Fournisseurs"
+        subtitle="Gérez vos fournisseurs connectés"
+        description="Synchronisez, importez et configurez vos fournisseurs en temps réel."
+        primaryAction={{
+          label: "Ajouter un fournisseur",
+          icon: Plus,
+          onClick: () => navigate('/suppliers/connectors')
+        }}
+        secondaryAction={{
+          label: "Paramètres",
+          onClick: () => navigate('/suppliers/settings')
+        }}
+        stats={[
+          { value: stats.active.toString(), label: "Actifs", icon: CheckCircle },
+          { value: stats.total.toString(), label: "Total", icon: Store },
+          { value: stats.averageRating.toFixed(1), label: "Note moy.", icon: Star },
+          { value: "Auto", label: "Sync", icon: Zap }
+        ]}
+        variant="compact"
+      />
 
-      <div className="container mx-auto p-6 space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" onClick={() => navigate('/suppliers')}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-4xl font-bold flex items-center gap-3">
-                <Store className="h-10 w-10 text-primary" />
-                Mes Fournisseurs
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Gérez vos fournisseurs connectés et leur configuration
-              </p>
-            </div>
+      {/* Search */}
+      <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20">
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un fournisseur..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/suppliers/settings')}>
-              <Settings className="h-4 w-4 mr-2" />
-              Paramètres
-            </Button>
-            <Button onClick={() => navigate('/suppliers/marketplace')}>
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter un fournisseur
-            </Button>
-          </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Fournisseurs Actifs</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.active}</p>
-                </div>
-                <CheckCircle className="h-12 w-12 text-green-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Fournisseurs</p>
-                  <p className="text-3xl font-bold">{stats.total}</p>
-                </div>
-                <Store className="h-12 w-12 text-primary opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Note Moyenne</p>
-                  <p className="text-3xl font-bold text-orange-600">{stats.averageRating.toFixed(1)}</p>
-                </div>
-                <TrendingUp className="h-12 w-12 text-orange-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Produits Total</p>
-                  <p className="text-3xl font-bold">~</p>
-                </div>
-                <Package className="h-12 w-12 text-blue-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Search */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un fournisseur..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
+      {/* Suppliers List */}
+      {isLoading ? (
+        <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+          <CardContent className="py-12 text-center">
+            <RefreshCw className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+            <p className="text-muted-foreground">Chargement des fournisseurs...</p>
           </CardContent>
         </Card>
-
-        {/* Suppliers List */}
-        {isLoading ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <RefreshCw className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-spin" />
-              <p className="text-muted-foreground">Chargement des fournisseurs...</p>
-            </CardContent>
-          </Card>
-        ) : filteredSuppliers.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">
-                {searchTerm 
-                  ? 'Aucun fournisseur trouvé avec ce nom'
-                  : 'Aucun fournisseur connecté. Explorez la marketplace pour en ajouter.'
-                }
-              </p>
-              {!searchTerm && (
-                <Button onClick={() => navigate('/suppliers/marketplace')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Explorer la Marketplace
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {filteredSuppliers.map((supplier) => (
-              <Card key={supplier.id} className="hover:shadow-lg transition-shadow">
+      ) : filteredSuppliers.length === 0 ? (
+        <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+          <CardContent className="py-12 text-center">
+            <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">
+              {searchTerm 
+                ? 'Aucun fournisseur trouvé avec ce nom'
+                : 'Aucun fournisseur connecté. Explorez le hub pour en ajouter.'
+              }
+            </p>
+            {!searchTerm && (
+              <Button onClick={() => navigate('/suppliers/connectors')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Explorer les Connecteurs
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredSuppliers.map((supplier, index) => (
+            <motion.div
+              key={supplier.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <Card className="hover:shadow-lg transition-all backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-primary/10">
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5">
                         <Store className="h-8 w-8 text-primary" />
                       </div>
                       <div>
@@ -201,7 +156,7 @@ export default function MySuppliersPage() {
                           )}
                           {supplier.rating && (
                             <Badge variant="secondary" className="flex items-center gap-1">
-                              <TrendingUp className="h-3 w-3" />
+                              <Star className="h-3 w-3 text-yellow-500" />
                               {supplier.rating}/5
                             </Badge>
                           )}
@@ -250,7 +205,7 @@ export default function MySuppliersPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Button 
                       variant="outline" 
-                      className="w-full"
+                      className="w-full hover:bg-primary/5"
                       onClick={() => navigate(`/suppliers/${supplier.id}/catalog`)}
                     >
                       <Package className="h-4 w-4 mr-2" />
@@ -258,7 +213,7 @@ export default function MySuppliersPage() {
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full"
+                      className="w-full hover:bg-primary/5"
                       onClick={() => navigate(`/suppliers/${supplier.id}/import`)}
                     >
                       <RefreshCw className="h-4 w-4 mr-2" />
@@ -266,7 +221,7 @@ export default function MySuppliersPage() {
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full"
+                      className="w-full hover:bg-primary/5"
                       onClick={() => navigate(`/suppliers/${supplier.id}/feeds`)}
                     >
                       <TrendingUp className="h-4 w-4 mr-2" />
@@ -275,10 +230,10 @@ export default function MySuppliersPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </ChannablePageLayout>
   )
 }
