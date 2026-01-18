@@ -21,25 +21,53 @@ export function ProductOptimizeDialog({ open, onOpenChange, product }: ProductOp
       const { data, error } = await supabase.functions.invoke('ai-product-optimizer', {
         body: {
           productId: product.id,
-          name: product.name,
-          description: product.description,
-          category: product.category
+          productSource: 'products',
+          optimizationType: 'seo_meta',
+          currentData: {
+            name: product.name || product.title,
+            description: product.description,
+            category: product.category,
+            price: product.price
+          }
         }
       })
 
-      if (error) throw error
+      if (error) {
+        // Handle specific error codes
+        const errorMessage = error.message || ''
+        if (errorMessage.includes('429') || errorMessage.includes('Limite')) {
+          toast({
+            title: "Limite atteinte",
+            description: "Trop de requêtes. Réessayez dans quelques instants.",
+            variant: "destructive"
+          })
+        } else if (errorMessage.includes('401') || errorMessage.includes('session')) {
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter.",
+            variant: "destructive"
+          })
+        } else {
+          toast({
+            title: "Erreur d'optimisation",
+            description: "L'optimisation IA a échoué. Réessayez.",
+            variant: "destructive"
+          })
+        }
+        return
+      }
 
       toast({
         title: "Produit optimisé !",
-        description: "Les métadonnées SEO et la description ont été améliorées par l'IA"
+        description: "Les métadonnées SEO ont été générées par l'IA"
       })
       
       onOpenChange(false)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Optimization error:', error)
       toast({
-        title: "Erreur d'optimisation",
-        description: "L'optimisation IA a échoué",
+        title: "Erreur",
+        description: error?.message || "Une erreur inattendue est survenue",
         variant: "destructive"
       })
     } finally {
