@@ -22,7 +22,7 @@ import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 import { BulkEnrichmentDialog } from '@/components/enrichment';
 import { ProductsDebugPanel } from '@/components/debug/ProductsDebugPanel';
 import { ProductViewModal } from '@/components/modals/ProductViewModal';
-import { SupplierCatalogBrowser } from '@/components/products/SupplierCatalogBrowser';
+
 import {
   ChannablePageLayout,
   ChannableHeroSection,
@@ -617,7 +617,7 @@ export default function ChannableProductsPage() {
             </Sheet>
           )}
 
-          <SupplierCatalogBrowser />
+          
         </div>
       </div>
 
