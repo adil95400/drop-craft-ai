@@ -128,7 +128,7 @@ const importMethodsConfig = [
     bgColor: 'bg-pink-500/10',
     iconColor: 'text-pink-500',
     borderColor: 'border-pink-500/20 hover:border-pink-500/50',
-    link: '/suppliers/advanced-engine',
+    link: '/suppliers/engine',
     badge: 'IA',
     badgeColor: 'bg-gradient-to-r from-pink-500 to-rose-500',
     features: ['Analyse IA', 'Produits gagnants', 'Veille prix'],
