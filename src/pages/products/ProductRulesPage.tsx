@@ -1,8 +1,10 @@
 /**
- * Page de gestion des règles catalogue - Style Channable Premium
+ * Page de gestion des règles unifiée - Style Channable Premium
+ * Fusionne: Règles Catalogue, Règles Prix, Règles Feeds
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Plus, Play, Pause, ListFilter, Sparkles, 
   Trash2, Edit, MoreVertical, Zap, Clock, CheckCircle2, XCircle,
-  Settings, ArrowRight
+  Settings, ArrowRight, DollarSign, Rss, Package, History, Copy
 } from 'lucide-react';
 import { useProductRules } from '@/hooks/useProductRules';
 import { RuleBuilder } from '@/components/rules/RuleBuilder';
@@ -37,6 +39,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ProductRule, RULE_TEMPLATES } from '@/lib/rules/ruleTypes';
+import { FeedRulesDashboard } from '@/components/feed-rules';
+import { PriceRulesDashboard } from '@/components/price-rules';
+
+type RuleType = 'catalog' | 'pricing' | 'feeds' | 'executions';
 
 const StatCard = ({ 
   icon: Icon, 
@@ -82,6 +88,10 @@ const StatCard = ({
 };
 
 export default function ProductRulesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = (searchParams.get('tab') as RuleType) || 'catalog';
+  
+  const [ruleType, setRuleType] = useState<RuleType>(initialTab);
   const [activeTab, setActiveTab] = useState('active');
   const [builderOpen, setBuilderOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
@@ -100,6 +110,19 @@ export default function ProductRulesPage() {
     createFromTemplate,
     isDeleting 
   } = useProductRules();
+
+  // Sync URL with tab
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab') as RuleType;
+    if (tabFromUrl && ['catalog', 'pricing', 'feeds', 'executions'].includes(tabFromUrl)) {
+      setRuleType(tabFromUrl);
+    }
+  }, [searchParams]);
+
+  const handleRuleTypeChange = (type: RuleType) => {
+    setRuleType(type);
+    setSearchParams({ tab: type });
+  };
 
   const activeRules = rules.filter(r => r.enabled);
   const pausedRules = rules.filter(r => !r.enabled);
@@ -192,6 +215,9 @@ export default function ProductRulesPage() {
                   <DropdownMenuItem onClick={() => handleTestRule(rule)}>
                     <Zap className="h-4 w-4 mr-2" /> Tester
                   </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Copy className="h-4 w-4 mr-2" /> Dupliquer
+                  </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => handleDeleteRule(rule.id)}
                     className="text-destructive"
@@ -228,26 +254,8 @@ export default function ProductRulesPage() {
     </motion.div>
   );
 
-  return (
-    <ChannablePageWrapper
-      title="Règles Catalogue"
-      subtitle="Automatisation"
-      description="Automatisez la gestion de vos produits avec des règles intelligentes type Channable"
-      heroImage="integrations"
-      badge={{ label: 'Auto', icon: Settings }}
-      actions={
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setTemplatesOpen(true)} className="gap-2 bg-background/80 backdrop-blur-sm">
-            <ListFilter className="h-4 w-4" />
-            Templates
-          </Button>
-          <Button onClick={handleNewRule} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Nouvelle règle
-          </Button>
-        </div>
-      }
-    >
+  const renderCatalogContent = () => (
+    <>
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={Play} label="Règles actives" value={isLoading ? '...' : stats.activeRules} color="green" />
@@ -353,6 +361,77 @@ export default function ProductRulesPage() {
               </motion.div>
             ))}
           </div>
+        </TabsContent>
+      </Tabs>
+    </>
+  );
+
+  return (
+    <ChannablePageWrapper
+      title="Moteur de Règles"
+      subtitle="Automatisation"
+      description="Automatisez la gestion de vos produits avec des règles intelligentes type Channable"
+      heroImage="integrations"
+      badge={{ label: 'Auto', icon: Settings }}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setTemplatesOpen(true)} className="gap-2 bg-background/80 backdrop-blur-sm">
+            <ListFilter className="h-4 w-4" />
+            Templates
+          </Button>
+          <Button onClick={handleNewRule} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nouvelle règle
+          </Button>
+        </div>
+      }
+    >
+      {/* Rule Type Tabs */}
+      <Tabs value={ruleType} onValueChange={(v) => handleRuleTypeChange(v as RuleType)} className="space-y-6">
+        <TabsList className="w-full justify-start bg-muted/50 p-1 h-auto flex-wrap">
+          <TabsTrigger value="catalog" className="gap-2 py-2">
+            <Package className="h-4 w-4" />
+            Catalogue
+          </TabsTrigger>
+          <TabsTrigger value="pricing" className="gap-2 py-2">
+            <DollarSign className="h-4 w-4" />
+            Prix
+          </TabsTrigger>
+          <TabsTrigger value="feeds" className="gap-2 py-2">
+            <Rss className="h-4 w-4" />
+            Feeds
+          </TabsTrigger>
+          <TabsTrigger value="executions" className="gap-2 py-2">
+            <History className="h-4 w-4" />
+            Exécutions
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="catalog" className="space-y-6">
+          {renderCatalogContent()}
+        </TabsContent>
+
+        <TabsContent value="pricing" className="space-y-6">
+          <PriceRulesDashboard />
+        </TabsContent>
+
+        <TabsContent value="feeds" className="space-y-6">
+          <FeedRulesDashboard />
+        </TabsContent>
+
+        <TabsContent value="executions" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Historique des exécutions</CardTitle>
+              <CardDescription>Consultez l'historique des règles exécutées</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12 text-muted-foreground">
+                <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>L'historique des exécutions apparaîtra ici</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
