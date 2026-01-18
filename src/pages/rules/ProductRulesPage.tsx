@@ -306,10 +306,10 @@ export default function ProductRulesPage() {
                         )}
                         <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                           <span>
-                            {rule.conditionGroup.conditions.length} condition(s)
+                            {rule?.conditionGroup?.conditions?.length || 0} condition(s)
                           </span>
                           <span>
-                            {rule.actions.length} action(s)
+                            {rule?.actions?.length || 0} action(s)
                           </span>
                           {(rule.executionCount || 0) > 0 && (
                             <span>
