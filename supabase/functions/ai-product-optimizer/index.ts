@@ -1,4 +1,3 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
@@ -9,16 +8,20 @@ const corsHeaders = {
 
 interface OptimizeRequest {
   productId: string;
-  productSource: 'products' | 'imported_products' | 'supplier_products';
-  optimizationType: 'title' | 'description' | 'attributes' | 'seo_meta' | 'full';
+  productSource?: 'products' | 'imported_products' | 'supplier_products';
+  optimizationType?: 'title' | 'description' | 'attributes' | 'seo_meta' | 'full';
   tone?: 'professional' | 'casual' | 'luxury' | 'technical';
-  currentData: {
+  currentData?: {
     name?: string;
     description?: string;
     category?: string;
     price?: number;
     [key: string]: any;
   };
+  // Legacy support
+  name?: string;
+  description?: string;
+  category?: string;
 }
 
 serve(async (req) => {
@@ -27,16 +30,23 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      console.error('[AI-OPTIMIZER] LOVABLE_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'AI service not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Validate auth header
-    const authHeader = req.headers.get('Authorization');
+    const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       console.error('[AI-OPTIMIZER] No valid authorization header');
-      throw new Error('User not authenticated');
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const supabaseClient = createClient(
@@ -49,31 +59,38 @@ serve(async (req) => {
       }
     );
 
-    // Validate JWT token by getting user with the token
+    // Validate JWT token
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
       console.error('[AI-OPTIMIZER] Auth error:', authError);
-      throw new Error('User not authenticated');
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired session' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const userId = user.id;
     console.log('[AI-OPTIMIZER] Authenticated user:', userId);
 
-    const {
-      productId,
-      productSource,
-      optimizationType,
-      tone = 'professional',
-      currentData
-    }: OptimizeRequest = await req.json();
+    const requestBody: OptimizeRequest = await req.json();
+    
+    // Support both old and new request formats
+    const productId = requestBody.productId;
+    const productSource = requestBody.productSource || 'products';
+    const optimizationType = requestBody.optimizationType || 'seo_meta';
+    const tone = requestBody.tone || 'professional';
+    const currentData = requestBody.currentData || {
+      name: requestBody.name,
+      description: requestBody.description,
+      category: requestBody.category,
+    };
 
     console.log(`[AI-OPTIMIZER] Optimizing ${optimizationType} for product ${productId}`);
 
     let systemPrompt = '';
     let userPrompt = '';
-    let optimizedResult: any = {};
 
     // Build prompts based on optimization type
     if (optimizationType === 'title' || optimizationType === 'full') {
@@ -94,9 +111,7 @@ Règles:
 - Tone ${tone}
 
 Retourne UNIQUEMENT le nouveau titre optimisé, sans guillemets ni explications.`;
-    }
-
-    if (optimizationType === 'description' || optimizationType === 'full') {
+    } else if (optimizationType === 'description') {
       systemPrompt = `Tu es un expert en copywriting e-commerce. Ton rôle est d'optimiser les descriptions de produits pour maximiser le SEO et les conversions.`;
       
       userPrompt = `Optimise cette description de produit e-commerce:
@@ -116,9 +131,7 @@ Règles:
 - Optimisée pour la conversion et le SEO
 
 Retourne UNIQUEMENT la nouvelle description optimisée en markdown.`;
-    }
-
-    if (optimizationType === 'attributes') {
+    } else if (optimizationType === 'attributes') {
       systemPrompt = `Tu es un expert en catégorisation et attributs produits e-commerce. Tu génères des attributs structurés précis.`;
       
       userPrompt = `Génère des attributs structurés pour ce produit:
@@ -137,9 +150,8 @@ Génère et retourne UNIQUEMENT un JSON avec cette structure:
   "season": "...",
   "features": ["...", "..."]
 }`;
-    }
-
-    if (optimizationType === 'seo_meta') {
+    } else {
+      // Default: seo_meta
       systemPrompt = `Tu es un expert SEO e-commerce. Tu optimises les meta tags pour le référencement.`;
       
       userPrompt = `Génère des meta tags SEO optimisés pour ce produit:
@@ -156,15 +168,16 @@ Génère et retourne UNIQUEMENT un JSON avec:
 }`;
     }
 
-    // Call OpenAI API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call Lovable AI Gateway (free, no API key needed from user)
+    console.log('[AI-OPTIMIZER] Calling Lovable AI Gateway...');
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -176,35 +189,53 @@ Génère et retourne UNIQUEMENT un JSON avec:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('[AI-OPTIMIZER] AI Gateway error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Limite de requêtes IA atteinte. Réessayez dans quelques instants.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Crédits IA insuffisants. Contactez le support.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({ error: 'Service IA temporairement indisponible' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const aiResponse = await response.json();
-    const generatedContent = aiResponse.choices[0].message.content.trim();
+    const generatedContent = aiResponse.choices?.[0]?.message?.content?.trim() || '';
 
-    console.log('[AI-OPTIMIZER] Generated content:', generatedContent);
+    console.log('[AI-OPTIMIZER] Generated content length:', generatedContent.length);
 
     // Parse response based on type
+    let optimizedResult: any = {};
+    
     if (optimizationType === 'title') {
       optimizedResult = { optimized_title: generatedContent };
     } else if (optimizationType === 'description') {
       optimizedResult = { optimized_description: generatedContent };
     } else if (optimizationType === 'attributes' || optimizationType === 'seo_meta') {
       try {
-        // Extract JSON from response
         const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           optimizedResult = JSON.parse(jsonMatch[0]);
         } else {
-          throw new Error('Invalid JSON response from AI');
+          optimizedResult = { raw_response: generatedContent };
         }
       } catch (e) {
-        console.error('JSON parsing error:', e);
+        console.error('[AI-OPTIMIZER] JSON parsing error:', e);
         optimizedResult = { raw_response: generatedContent };
       }
     } else if (optimizationType === 'full') {
-      // For full optimization, make multiple calls (simplified for now)
       optimizedResult = {
         optimized_title: generatedContent,
         note: 'Full optimization requires multiple API calls - use specific types for best results'
@@ -223,10 +254,10 @@ Génère et retourne UNIQUEMENT un JSON avec:
     );
 
   } catch (error) {
-    console.error('Error in ai-product-optimizer:', error);
+    console.error('[AI-OPTIMIZER] Unexpected error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: error.message || 'Une erreur inattendue est survenue' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
