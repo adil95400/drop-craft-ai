@@ -42,8 +42,8 @@ const CHANNEL_COLORS: Record<string, string> = {
 };
 
 export function CatalogRulesTab({
-  rules,
-  templates,
+  rules = [],
+  templates = [],
   stats,
   isLoading,
   onNewRule,
@@ -56,8 +56,12 @@ export function CatalogRulesTab({
 }: CatalogRulesTabProps) {
   const [activeTab, setActiveTab] = useState('active');
   
-  const activeRules = rules.filter(r => r.enabled);
-  const pausedRules = rules.filter(r => !r.enabled);
+  // Safe filtering with fallback to empty array
+  const safeRules = Array.isArray(rules) ? rules : [];
+  const safeTemplates = Array.isArray(templates) ? templates : [];
+  
+  const activeRules = safeRules.filter(r => r?.enabled);
+  const pausedRules = safeRules.filter(r => !r?.enabled);
 
   const getChannelBadge = (channel: string) => (
     <Badge 
@@ -86,7 +90,7 @@ export function CatalogRulesTab({
           </TabsTrigger>
           <TabsTrigger value="templates" className="gap-2">
             <ListFilter className="h-4 w-4" />
-            Modèles ({templates.length})
+            Modèles ({safeTemplates.length})
           </TabsTrigger>
         </TabsList>
 
@@ -162,7 +166,7 @@ export function CatalogRulesTab({
 
         <TabsContent value="templates" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((template, index) => (
+            {safeTemplates.map((template, index) => (
               <motion.div
                 key={template.id}
                 initial={{ opacity: 0, y: 20 }}
