@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { 
   Clock, Plus, Calendar, TrendingUp, Settings, Play, Pause,
   MoreVertical, Edit, Trash2, CheckCircle, AlertCircle, Search,
-  RefreshCw, Timer, Zap
+  RefreshCw, Timer, Zap, Copy, ExternalLink
 } from 'lucide-react'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
@@ -24,23 +24,17 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { ScheduleFormDialog, ScheduleFormData } from '@/components/import/ScheduleFormDialog'
 
 interface Schedule {
   id: string
@@ -53,6 +47,9 @@ interface Schedule {
   active: boolean
   last_run_status: 'completed' | 'failed' | 'pending' | 'never'
   products_imported?: number
+  description?: string
+  auto_optimize?: boolean
+  auto_publish?: boolean
 }
 
 export default function ImportScheduledPage() {
@@ -60,14 +57,9 @@ export default function ImportScheduledPage() {
   const { toast } = useToast()
   const [searchQuery, setSearchQuery] = useState('')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  
-  // Form state for new schedule
-  const [newSchedule, setNewSchedule] = useState({
-    name: '',
-    source_type: 'url',
-    source_url: '',
-    frequency: 'daily'
-  })
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null)
 
   const [schedules, setSchedules] = useState<Schedule[]>([
     {
@@ -134,14 +126,6 @@ export default function ImportScheduledPage() {
     })
   }
 
-  const deleteSchedule = (id: string) => {
-    const schedule = schedules.find(s => s.id === id)
-    setSchedules(prev => prev.filter(s => s.id !== id))
-    toast({
-      title: 'Planning supprimé',
-      description: `Le planning "${schedule?.name}" a été supprimé`
-    })
-  }
 
   const runNow = (id: string) => {
     const schedule = schedules.find(s => s.id === id)
@@ -151,35 +135,92 @@ export default function ImportScheduledPage() {
     })
   }
 
-  const createSchedule = () => {
-    if (!newSchedule.name.trim()) {
-      toast({
-        title: 'Erreur',
-        description: 'Veuillez entrer un nom pour le planning',
-        variant: 'destructive'
-      })
-      return
-    }
-
+  const handleCreateSchedule = (data: ScheduleFormData) => {
     const schedule: Schedule = {
       id: Date.now().toString(),
-      name: newSchedule.name,
-      source_type: newSchedule.source_type,
-      source_url: newSchedule.source_url || undefined,
-      frequency: newSchedule.frequency,
+      name: data.name,
+      source_type: data.source_type,
+      source_url: data.source_url || undefined,
+      frequency: data.frequency,
       next_run: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      active: true,
+      active: data.active,
       last_run_status: 'never',
-      products_imported: 0
+      products_imported: 0,
+      description: data.description,
+      auto_optimize: data.auto_optimize,
+      auto_publish: data.auto_publish
     }
 
     setSchedules(prev => [schedule, ...prev])
-    setNewSchedule({ name: '', source_type: 'url', source_url: '', frequency: 'daily' })
     setIsCreateDialogOpen(false)
     
     toast({
       title: 'Planning créé',
       description: `Le planning "${schedule.name}" a été créé avec succès`
+    })
+  }
+
+  const handleEditSchedule = (data: ScheduleFormData) => {
+    if (!selectedSchedule) return
+    
+    setSchedules(prev => prev.map(s => 
+      s.id === selectedSchedule.id 
+        ? { 
+            ...s, 
+            name: data.name,
+            source_type: data.source_type,
+            source_url: data.source_url,
+            frequency: data.frequency,
+            active: data.active,
+            description: data.description,
+            auto_optimize: data.auto_optimize,
+            auto_publish: data.auto_publish
+          }
+        : s
+    ))
+    setIsEditDialogOpen(false)
+    setSelectedSchedule(null)
+    
+    toast({
+      title: 'Planning modifié',
+      description: `Le planning "${data.name}" a été mis à jour`
+    })
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!selectedSchedule) return
+    setSchedules(prev => prev.filter(s => s.id !== selectedSchedule.id))
+    setIsDeleteDialogOpen(false)
+    toast({
+      title: 'Planning supprimé',
+      description: `Le planning "${selectedSchedule.name}" a été supprimé`
+    })
+    setSelectedSchedule(null)
+  }
+
+  const openEditDialog = (schedule: Schedule) => {
+    setSelectedSchedule(schedule)
+    setIsEditDialogOpen(true)
+  }
+
+  const openDeleteDialog = (schedule: Schedule) => {
+    setSelectedSchedule(schedule)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const duplicateSchedule = (schedule: Schedule) => {
+    const newSched: Schedule = {
+      ...schedule,
+      id: Date.now().toString(),
+      name: `${schedule.name} (copie)`,
+      last_run: undefined,
+      last_run_status: 'never',
+      products_imported: 0
+    }
+    setSchedules(prev => [newSched, ...prev])
+    toast({
+      title: 'Planning dupliqué',
+      description: `Le planning "${schedule.name}" a été dupliqué`
     })
   }
 
@@ -263,91 +304,13 @@ export default function ImportScheduledPage() {
                 />
               </div>
               
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-primary to-purple-600">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nouveau Planning
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Créer un nouveau planning</DialogTitle>
-                    <DialogDescription>
-                      Configurez un import automatique récurrent
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nom du planning</Label>
-                      <Input
-                        id="name"
-                        placeholder="Ex: Import AliExpress quotidien"
-                        value={newSchedule.name}
-                        onChange={(e) => setNewSchedule(prev => ({ ...prev, name: e.target.value }))}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="source_type">Type de source</Label>
-                      <Select 
-                        value={newSchedule.source_type} 
-                        onValueChange={(value) => setNewSchedule(prev => ({ ...prev, source_type: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="url">URL</SelectItem>
-                          <SelectItem value="csv">CSV</SelectItem>
-                          <SelectItem value="xml">XML Feed</SelectItem>
-                          <SelectItem value="api">API</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {newSchedule.source_type !== 'csv' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="source_url">URL source</Label>
-                        <Input
-                          id="source_url"
-                          placeholder="https://..."
-                          value={newSchedule.source_url}
-                          onChange={(e) => setNewSchedule(prev => ({ ...prev, source_url: e.target.value }))}
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="frequency">Fréquence</Label>
-                      <Select 
-                        value={newSchedule.frequency} 
-                        onValueChange={(value) => setNewSchedule(prev => ({ ...prev, frequency: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="hourly">Toutes les heures</SelectItem>
-                          <SelectItem value="daily">Quotidien</SelectItem>
-                          <SelectItem value="weekly">Hebdomadaire</SelectItem>
-                          <SelectItem value="monthly">Mensuel</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                      Annuler
-                    </Button>
-                    <Button onClick={createSchedule}>
-                      Créer le planning
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                className="bg-gradient-to-r from-primary to-purple-600"
+                onClick={() => setIsCreateDialogOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Nouveau Planning
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -490,18 +453,24 @@ export default function ImportScheduledPage() {
                           <Play className="w-4 h-4 mr-2" />
                           Exécuter maintenant
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEditDialog(schedule)}>
                           <Edit className="w-4 h-4 mr-2" />
                           Modifier
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Settings className="w-4 h-4 mr-2" />
-                          Paramètres
+                        <DropdownMenuItem onClick={() => duplicateSchedule(schedule)}>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Dupliquer
                         </DropdownMenuItem>
+                        {schedule.source_url && (
+                          <DropdownMenuItem onClick={() => window.open(schedule.source_url, '_blank')}>
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Ouvrir la source
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           className="text-destructive"
-                          onClick={() => deleteSchedule(schedule.id)}
+                          onClick={() => openDeleteDialog(schedule)}
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Supprimer
@@ -515,6 +484,59 @@ export default function ImportScheduledPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Create Schedule Dialog */}
+      <ScheduleFormDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSubmit={handleCreateSchedule}
+        mode="create"
+      />
+
+      {/* Edit Schedule Dialog */}
+      <ScheduleFormDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        schedule={selectedSchedule ? {
+          id: selectedSchedule.id,
+          name: selectedSchedule.name,
+          source_type: selectedSchedule.source_type as any,
+          source_url: selectedSchedule.source_url || '',
+          frequency: selectedSchedule.frequency as any,
+          active: selectedSchedule.active,
+          auto_optimize: selectedSchedule.auto_optimize ?? true,
+          auto_publish: selectedSchedule.auto_publish ?? false,
+          description: selectedSchedule.description,
+          notify_on_complete: true,
+          notify_on_error: true,
+          retry_on_failure: true,
+          max_retries: 3
+        } : null}
+        onSubmit={handleEditSchedule}
+        mode="edit"
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le planning ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer le planning "{selectedSchedule?.name}" ? 
+              Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ChannablePageLayout>
   )
 }
