@@ -178,11 +178,11 @@ export function AppRoutes() {
         <Route path="/store/product/:handle" element={<ShopifyProductDetail />} />
         
         {/* Creation Pages */}
-        <Route path="/products/create" element={<ProtectedRoute><CreateProduct /></ProtectedRoute>} />
-        <Route path="/orders/create" element={<ProtectedRoute><CreateOrder /></ProtectedRoute>} />
+        <Route path="/products/create" element={<ProtectedRoute><ChannableLayout><CreateProduct /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/orders/create" element={<ProtectedRoute><ChannableLayout><CreateOrder /></ChannableLayout></ProtectedRoute>} />
         <Route path="/orders/bulk" element={<ProtectedRoute><ChannableLayout><BulkOrdersPage /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/customers/create" element={<ProtectedRoute><CreateCustomer /></ProtectedRoute>} />
-        <Route path="/notifications/create" element={<ProtectedRoute><CreateNotification /></ProtectedRoute>} />
+        <Route path="/customers/create" element={<ProtectedRoute><ChannableLayout><CreateCustomer /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/notifications/create" element={<ProtectedRoute><ChannableLayout><CreateNotification /></ChannableLayout></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><ChannableLayout><NotificationsPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Feature Pages */}
