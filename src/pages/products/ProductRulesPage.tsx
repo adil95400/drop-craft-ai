@@ -3,31 +3,21 @@
  * Fusionne: Règles Catalogue, Règles Prix, Règles Feeds
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  Plus, Play, Pause, ListFilter, Sparkles, 
-  Trash2, Edit, MoreVertical, Zap, Clock, CheckCircle2, XCircle,
-  Settings, ArrowRight, DollarSign, Rss, Package, History, Copy
+  Plus, ListFilter, Settings, DollarSign, Rss, Package, History
 } from 'lucide-react';
 import { useProductRules } from '@/hooks/useProductRules';
 import { RuleBuilder } from '@/components/rules/RuleBuilder';
 import { RuleTemplatesDialog } from '@/components/rules/RuleTemplatesDialog';
 import { RuleTesterDialog } from '@/components/rules/RuleTesterDialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { CatalogRulesTab } from '@/components/rules/CatalogRulesTab';
+import { RulesExecutionHistory } from '@/components/rules/RulesExecutionHistory';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,61 +28,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ProductRule, RULE_TEMPLATES } from '@/lib/rules/ruleTypes';
+import { ProductRule } from '@/lib/rules/ruleTypes';
 import { FeedRulesDashboard } from '@/components/feed-rules';
 import { PriceRulesDashboard } from '@/components/price-rules';
+import { useToast } from '@/hooks/use-toast';
 
 type RuleType = 'catalog' | 'pricing' | 'feeds' | 'executions';
 
-const StatCard = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  color = 'primary'
-}: { 
-  icon: any; 
-  label: string; 
-  value: string | number; 
-  color?: string;
-}) => {
-  const colorClasses = {
-    primary: 'from-primary/20 to-primary/5 text-primary',
-    green: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600',
-    orange: 'from-amber-500/20 to-amber-500/5 text-amber-600',
-    blue: 'from-blue-500/20 to-blue-500/5 text-blue-600',
-    purple: 'from-purple-500/20 to-purple-500/5 text-purple-600'
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
-    >
-      <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all">
-        <div className={`absolute inset-0 bg-gradient-to-br ${colorClasses[color as keyof typeof colorClasses] || colorClasses.primary} opacity-50`} />
-        <CardContent className="relative p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">{label}</p>
-              <p className="text-3xl font-bold mt-1">{value}</p>
-            </div>
-            <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${colorClasses[color as keyof typeof colorClasses] || colorClasses.primary} flex items-center justify-center`}>
-              <Icon className="h-6 w-6" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
+const TAB_CONFIG = [
+  { value: 'catalog', label: 'Catalogue', icon: Package },
+  { value: 'pricing', label: 'Prix', icon: DollarSign },
+  { value: 'feeds', label: 'Feeds', icon: Rss },
+  { value: 'executions', label: 'Exécutions', icon: History },
+] as const;
 
 export default function ProductRulesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = (searchParams.get('tab') as RuleType) || 'catalog';
+  const { toast } = useToast();
   
   const [ruleType, setRuleType] = useState<RuleType>(initialTab);
-  const [activeTab, setActiveTab] = useState('active');
   const [builderOpen, setBuilderOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [testerOpen, setTesterOpen] = useState(false);
@@ -107,6 +62,7 @@ export default function ProductRulesPage() {
     isLoading, 
     toggleRule, 
     deleteRule,
+    createRule,
     createFromTemplate,
     isDeleting 
   } = useProductRules();
@@ -114,257 +70,62 @@ export default function ProductRulesPage() {
   // Sync URL with tab
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab') as RuleType;
-    if (tabFromUrl && ['catalog', 'pricing', 'feeds', 'executions'].includes(tabFromUrl)) {
+    if (tabFromUrl && TAB_CONFIG.some(t => t.value === tabFromUrl)) {
       setRuleType(tabFromUrl);
     }
   }, [searchParams]);
 
-  const handleRuleTypeChange = (type: RuleType) => {
+  const handleRuleTypeChange = useCallback((type: RuleType) => {
     setRuleType(type);
     setSearchParams({ tab: type });
-  };
+  }, [setSearchParams]);
 
-  const activeRules = rules.filter(r => r.enabled);
-  const pausedRules = rules.filter(r => !r.enabled);
-
-  const handleEditRule = (rule: ProductRule) => {
+  const handleEditRule = useCallback((rule: ProductRule) => {
     setSelectedRule(rule);
     setBuilderOpen(true);
-  };
+  }, []);
 
-  const handleNewRule = () => {
+  const handleNewRule = useCallback(() => {
     setSelectedRule(undefined);
     setBuilderOpen(true);
-  };
+  }, []);
 
-  const handleDeleteRule = (ruleId: string) => {
+  const handleDeleteRule = useCallback((ruleId: string) => {
     setRuleToDelete(ruleId);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const confirmDelete = () => {
+  const confirmDelete = useCallback(() => {
     if (ruleToDelete) {
       deleteRule(ruleToDelete);
       setDeleteDialogOpen(false);
       setRuleToDelete(null);
     }
-  };
+  }, [ruleToDelete, deleteRule]);
 
-  const handleSelectTemplate = async (templateId: string) => {
+  const handleSelectTemplate = useCallback(async (templateId: string) => {
     await createFromTemplate(templateId);
     setTemplatesOpen(false);
-  };
+  }, [createFromTemplate]);
 
-  const handleTestRule = (rule: ProductRule) => {
+  const handleTestRule = useCallback((rule: ProductRule) => {
     setSelectedRule(rule);
     setTesterOpen(true);
-  };
+  }, []);
 
-  const getChannelBadge = (channel: string) => {
-    const colors: Record<string, string> = {
-      global: 'bg-gray-500',
-      google: 'bg-blue-500',
-      meta: 'bg-indigo-500',
-      tiktok: 'bg-pink-500',
-      amazon: 'bg-orange-500',
-      shopify: 'bg-green-500'
-    };
-    return (
-      <Badge variant="secondary" className={`${colors[channel] || 'bg-gray-500'} text-white text-xs`}>
-        {channel}
-      </Badge>
-    );
-  };
-
-  const RuleCard = ({ rule }: { rule: ProductRule }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.01 }}
-    >
-      <Card className="hover:shadow-lg transition-all border-border/50">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <CardTitle className="text-lg">{rule.name}</CardTitle>
-                {getChannelBadge(rule.channel)}
-                {rule.actions?.some(a => a.type === 'generate_ai') && (
-                  <Badge variant="outline" className="gap-1 text-xs">
-                    <Sparkles className="h-3 w-3" /> IA
-                  </Badge>
-                )}
-              </div>
-              <CardDescription>{rule.description || 'Aucune description'}</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={rule.enabled}
-                onCheckedChange={(checked) => toggleRule({ id: rule.id, enabled: checked })}
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleEditRule(rule)}>
-                    <Edit className="h-4 w-4 mr-2" /> Modifier
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleTestRule(rule)}>
-                    <Zap className="h-4 w-4 mr-2" /> Tester
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Copy className="h-4 w-4 mr-2" /> Dupliquer
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleDeleteRule(rule.id)}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" /> Supprimer
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {rule.executionCount || 0} exécutions
-            </div>
-            <div className="flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-green-500" />
-              {rule.successCount || 0}
-            </div>
-            <div className="flex items-center gap-1">
-              <XCircle className="h-3 w-3 text-red-500" />
-              {rule.errorCount || 0}
-            </div>
-            {rule.lastExecutedAt && (
-              <span>
-                Dernière: {new Date(rule.lastExecutedAt).toLocaleDateString('fr-FR')}
-              </span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-
-  const renderCatalogContent = () => (
-    <>
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Play} label="Règles actives" value={isLoading ? '...' : stats.activeRules} color="green" />
-        <StatCard icon={Pause} label="Règles pausées" value={isLoading ? '...' : stats.pausedRules} color="orange" />
-        <StatCard icon={Zap} label="Exécutions" value={isLoading ? '...' : stats.totalExecutions.toLocaleString()} color="blue" />
-        <StatCard icon={Sparkles} label="Règles IA" value={isLoading ? '...' : stats.aiRules} color="purple" />
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="w-full sm:w-auto bg-muted/50 p-1">
-          <TabsTrigger value="active" className="gap-2">
-            <Play className="h-4 w-4" />
-            Actives ({activeRules.length})
-          </TabsTrigger>
-          <TabsTrigger value="paused" className="gap-2">
-            <Pause className="h-4 w-4" />
-            Pausées ({pausedRules.length})
-          </TabsTrigger>
-          <TabsTrigger value="templates" className="gap-2">
-            <ListFilter className="h-4 w-4" />
-            Modèles ({templates.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="active" className="space-y-4">
-          {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map(i => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <Skeleton className="h-6 w-1/3 mb-2" />
-                    <Skeleton className="h-4 w-2/3" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : activeRules.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="py-12 text-center">
-                <Play className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">Aucune règle active</p>
-                <p className="text-muted-foreground mb-4">Créez votre première règle d'automatisation</p>
-                <Button onClick={handleNewRule} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Créer une règle
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {activeRules.map(rule => (
-                <RuleCard key={rule.id} rule={rule} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="paused" className="space-y-4">
-          {pausedRules.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="py-12 text-center">
-                <Pause className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Aucune règle pausée</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {pausedRules.map(rule => (
-                <RuleCard key={rule.id} rule={rule} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="templates" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {RULE_TEMPLATES.map(template => (
-              <motion.div
-                key={template.id}
-                whileHover={{ y: -2 }}
-              >
-                <Card className="hover:shadow-lg transition-all h-full border-border/50">
-                  <CardHeader>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <CardTitle className="text-lg">{template.name}</CardTitle>
-                      {getChannelBadge(template.channel)}
-                    </div>
-                    <CardDescription>{template.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge variant="outline" className="mb-3">{template.category}</Badge>
-                    <Button 
-                      variant="outline" 
-                      className="w-full gap-2"
-                      onClick={() => handleSelectTemplate(template.id)}
-                    >
-                      Utiliser ce modèle
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </>
-  );
+  const handleDuplicateRule = useCallback((rule: ProductRule) => {
+    createRule({
+      ...rule,
+      id: undefined,
+      name: `${rule.name} (copie)`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      executionCount: 0,
+      successCount: 0,
+      errorCount: 0,
+    } as any);
+    toast({ title: 'Règle dupliquée', description: 'La copie a été créée avec succès' });
+  }, [createRule, toast]);
 
   return (
     <ChannablePageWrapper
@@ -375,7 +136,11 @@ export default function ProductRulesPage() {
       badge={{ label: 'Auto', icon: Settings }}
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setTemplatesOpen(true)} className="gap-2 bg-background/80 backdrop-blur-sm">
+          <Button 
+            variant="outline" 
+            onClick={() => setTemplatesOpen(true)} 
+            className="gap-2 bg-background/80 backdrop-blur-sm"
+          >
             <ListFilter className="h-4 w-4" />
             Templates
           </Button>
@@ -387,51 +152,61 @@ export default function ProductRulesPage() {
       }
     >
       {/* Rule Type Tabs */}
-      <Tabs value={ruleType} onValueChange={(v) => handleRuleTypeChange(v as RuleType)} className="space-y-6">
+      <Tabs 
+        value={ruleType} 
+        onValueChange={(v) => handleRuleTypeChange(v as RuleType)} 
+        className="space-y-6"
+      >
         <TabsList className="w-full justify-start bg-muted/50 p-1 h-auto flex-wrap">
-          <TabsTrigger value="catalog" className="gap-2 py-2">
-            <Package className="h-4 w-4" />
-            Catalogue
-          </TabsTrigger>
-          <TabsTrigger value="pricing" className="gap-2 py-2">
-            <DollarSign className="h-4 w-4" />
-            Prix
-          </TabsTrigger>
-          <TabsTrigger value="feeds" className="gap-2 py-2">
-            <Rss className="h-4 w-4" />
-            Feeds
-          </TabsTrigger>
-          <TabsTrigger value="executions" className="gap-2 py-2">
-            <History className="h-4 w-4" />
-            Exécutions
-          </TabsTrigger>
+          {TAB_CONFIG.map(({ value, label, icon: Icon }) => (
+            <TabsTrigger key={value} value={value} className="gap-2 py-2">
+              <Icon className="h-4 w-4" />
+              {label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value="catalog" className="space-y-6">
-          {renderCatalogContent()}
+          <CatalogRulesTab
+            rules={rules}
+            templates={templates}
+            stats={stats}
+            isLoading={isLoading}
+            onNewRule={handleNewRule}
+            onEditRule={handleEditRule}
+            onTestRule={handleTestRule}
+            onDuplicateRule={handleDuplicateRule}
+            onDeleteRule={handleDeleteRule}
+            onToggleRule={toggleRule}
+            onSelectTemplate={handleSelectTemplate}
+          />
         </TabsContent>
 
         <TabsContent value="pricing" className="space-y-6">
-          <PriceRulesDashboard />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <PriceRulesDashboard />
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="feeds" className="space-y-6">
-          <FeedRulesDashboard />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <FeedRulesDashboard />
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="executions" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Historique des exécutions</CardTitle>
-              <CardDescription>Consultez l'historique des règles exécutées</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>L'historique des exécutions apparaîtra ici</p>
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <RulesExecutionHistory />
+          </motion.div>
         </TabsContent>
       </Tabs>
 
