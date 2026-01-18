@@ -75,7 +75,7 @@ export default function MySuppliersPage() {
         primaryAction={{
           label: "Ajouter un fournisseur",
           icon: Plus,
-          onClick: () => navigate('/suppliers/connectors')
+          onClick: () => navigate('/suppliers/catalog')
         }}
         secondaryAction={{
           label: "Paramètres",
@@ -124,9 +124,9 @@ export default function MySuppliersPage() {
               }
             </p>
             {!searchTerm && (
-              <Button onClick={() => navigate('/suppliers/connectors')}>
+              <Button onClick={() => navigate('/suppliers/catalog')}>
                 <Plus className="h-4 w-4 mr-2" />
-                Explorer les Connecteurs
+                Explorer le Catalogue
               </Button>
             )}
           </CardContent>

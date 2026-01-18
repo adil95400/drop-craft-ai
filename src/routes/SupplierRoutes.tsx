@@ -15,7 +15,6 @@ const ChannableFeedManager = lazy(() => import('@/pages/feeds/ChannableFeedManag
 const BTSImportPage = lazy(() => import('@/pages/suppliers/BTSImportPage'))
 const VariantMappingPage = lazy(() => import('@/pages/suppliers/VariantMappingPage'))
 const AdvancedSupplierEnginePage = lazy(() => import('@/pages/suppliers/AdvancedSupplierEnginePage'))
-const SupplierConnectorsHub = lazy(() => import('@/pages/suppliers/SupplierConnectorsHubPage'))
 
 /**
  * ROUTES DU MODULE FOURNISSEURS
@@ -24,7 +23,6 @@ const SupplierConnectorsHub = lazy(() => import('@/pages/suppliers/SupplierConne
  * Structure:
  * /suppliers - Vue d'ensemble (Channable-style)
  * /suppliers/catalog - Catalogue Unifié (tous produits, par fournisseur, catégorie, connecteur)
- * /suppliers/connectors - Hub des connecteurs API
  * /suppliers/engine - Moteur fournisseur avancé
  * /suppliers/my - Mes fournisseurs
  * /suppliers/analytics - Analytics fournisseurs
@@ -38,8 +36,6 @@ export default function SupplierRoutes() {
       {/* Catalogue Unifié - NOUVEAU: une seule page pour tout */}
       <Route path="catalog" element={<EnhancedUnifiedCatalog />} />
       
-      {/* Hub Connecteurs API */}
-      <Route path="connectors" element={<SupplierConnectorsHub />} />
       
       {/* Moteur Fournisseur Avancé */}
       <Route path="engine" element={<AdvancedSupplierEnginePage />} />
@@ -66,8 +62,11 @@ export default function SupplierRoutes() {
       {/* Import BTS CSV */}
       <Route path="bts/import" element={<BTSImportPage />} />
 
-      {/* Marketplace - Redirige vers connecteurs */}
-      <Route path="marketplace" element={<Navigate to="/suppliers/connectors" replace />} />
+      {/* Marketplace - Redirige vers catalogue */}
+      <Route path="marketplace" element={<Navigate to="/suppliers/catalog" replace />} />
+
+      {/* Ancienne route connectors - Redirige vers catalogue */}
+      <Route path="connectors" element={<Navigate to="/suppliers/catalog" replace />} />
 
       {/* Redirections des anciennes routes de connecteurs vers le catalogue avec filtre */}
       <Route path="bigbuy" element={<Navigate to="/suppliers/catalog?connector=bigbuy" replace />} />
