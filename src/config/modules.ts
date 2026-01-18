@@ -215,7 +215,6 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'catalog',
     subModules: [
       { id: 'products-all', name: 'Tous les produits', route: '/products', icon: 'Package', description: 'Liste complète', features: ['list'], order: 1 },
-      { id: 'products-catalogue', name: 'Catalogue', route: '/products/catalogue', icon: 'Layers', description: 'Catalogue produits', features: ['catalog'], order: 2 },
     ]
   },
   
