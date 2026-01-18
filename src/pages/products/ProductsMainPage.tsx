@@ -133,7 +133,7 @@ export default function ProductsMainPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleEdit = (product: any) => {
-    openModal('createProduct', { productId: product.id });
+    navigate(`/products/${product.id}/edit`);
   };
 
   const handleDelete = async (id: string) => {
@@ -252,7 +252,7 @@ export default function ProductsMainPage() {
 
           <Button
             size="sm"
-            onClick={() => openModal('createProduct')}
+            onClick={() => navigate('/products/create')}
             className="bg-primary hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -497,7 +497,7 @@ export default function ProductsMainPage() {
                   Effacer la recherche
                 </Button>
               )}
-              <Button onClick={() => openModal('createProduct')}>
+              <Button onClick={() => navigate('/products/create')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Ajouter un produit
               </Button>

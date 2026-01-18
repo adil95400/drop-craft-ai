@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProductActionsBar } from './ProductActionsBar';
 import { ProductBulkOperations } from './ProductBulkOperations';
 import { ProductsTableView } from './ProductsTableView';
@@ -47,7 +48,7 @@ export function ProductsPageWrapper({
   const [localSelectedProducts, setLocalSelectedProducts] = useState<string[]>(selectedProducts || []);
   
   const { handleImport, handleExport } = useProductActions();
-  const { openModal } = useModalContext();
+  const navigate = useNavigate();
 
   // Sync local selection with parent
   const handleSelectionChange = (newSelection: string[]) => {
@@ -83,7 +84,7 @@ export function ProductsPageWrapper({
   };
 
   const handleCreateNew = () => {
-    openModal('createProduct');
+    navigate('/products/create');
   };
 
   const handleExportClick = async () => {
@@ -138,7 +139,7 @@ export function ProductsPageWrapper({
             onRefresh?.();
           }}
           onBulkEdit={(ids) => {
-            openModal('bulkActions', { selectedItems: ids });
+            console.log('Bulk edit:', ids);
           }}
           onProductUpdate={onRefresh}
         />
