@@ -2088,20 +2088,6 @@ const supplierDefinitions: SupplierDefinition[] = [
 
   // Européens supplémentaires
   { 
-    id: 'emag', 
-    name: 'eMAG', 
-    logo: 'https://www.emag.ro/favicon.ico', 
-    category: 'general', 
-    country: 'RO',
-    shippingZones: ['europe'],
-    description: 'Plus grande marketplace d\'Europe de l\'Est',
-    features: ['Europe de l\'Est', 'Électronique', 'Multi-catégories', 'Fulfillment'],
-    rating: 4.2,
-    productsCount: 5000000,
-    shippingTime: '3-10 jours',
-    setupFields: []
-  },
-  { 
     id: 'allegro', 
     name: 'Allegro', 
     logo: 'https://allegro.pl/favicon.ico', 
