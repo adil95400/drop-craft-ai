@@ -1,11 +1,11 @@
 /**
  * ProductDetailsModal - Modal complet et optimisé pour les détails produit
- * Design moderne avec galerie d'images, édition inline, variantes et analytics
+ * Design moderne avec galerie d'images, édition inline, optimisation AI, SEO et publication
  */
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,12 +16,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
-import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn, formatCurrency } from '@/lib/utils'
+import { useProductAIOptimizer } from '@/hooks/useProductAIOptimizer'
+import { usePublishProducts } from '@/hooks/usePublishProducts'
 import {
   Edit2,
   Save,
@@ -34,36 +35,30 @@ import {
   Tag,
   Layers,
   ShoppingCart,
-  ExternalLink,
   Clock,
   History,
-  GitBranch,
   TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
-  Star,
   Eye,
   Copy,
   Trash2,
   Share2,
   Heart,
-  BarChart3,
   Sparkles,
-  Zap,
-  Truck,
   RefreshCw,
-  Settings,
-  ImagePlus,
-  Link,
-  Info,
   Archive,
-  Send,
   Percent,
   Box,
   FileText,
   Globe,
   Loader2,
+  Send,
+  Wand2,
+  Search,
+  Zap,
+  ExternalLink,
+  BarChart3,
 } from 'lucide-react'
 import {
   AlertDialog,
@@ -97,11 +92,20 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
   const [isLiked, setIsLiked] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  
+  // Hooks pour l'optimisation AI et la publication
+  const { optimizeProduct, isOptimizing } = useProductAIOptimizer()
+  const { publishProduct, unpublishProduct, isPublishing, isUnpublishing } = usePublishProducts()
 
   // Reset state when product changes
   useEffect(() => {
     if (product) {
-      setEditedProduct(product)
+      setEditedProduct({
+        ...product,
+        seo_title: product.seo_title || '',
+        seo_description: product.seo_description || '',
+        meta_keywords: product.meta_keywords || [],
+      })
       setCurrentImageIndex(0)
       setIsEditing(false)
     }
@@ -214,6 +218,8 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
       category: editedProduct.category,
       stock_quantity: parseInt(editedProduct.stock_quantity) || 0,
       status: editedProduct.status,
+      seo_title: editedProduct.seo_title,
+      seo_description: editedProduct.seo_description,
     })
   }
 
@@ -237,17 +243,130 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
     }
   }
 
+  // Optimisation AI
+  const handleOptimizeTitle = async () => {
+    try {
+      const result = await optimizeProduct({
+        productId: product.id,
+        productSource: 'products',
+        optimizationType: 'title',
+        tone: 'professional',
+        currentData: {
+          name: product.name,
+          description: product.description,
+          category: product.category,
+          price: product.price,
+        }
+      })
+      if (result?.result?.optimized_title) {
+        setEditedProduct((prev: any) => ({ ...prev, name: result.result.optimized_title }))
+      }
+    } catch (error) {
+      console.error('Optimization error:', error)
+    }
+  }
+
+  const handleOptimizeDescription = async () => {
+    try {
+      const result = await optimizeProduct({
+        productId: product.id,
+        productSource: 'products',
+        optimizationType: 'description',
+        tone: 'professional',
+        currentData: {
+          name: product.name,
+          description: product.description,
+          category: product.category,
+          price: product.price,
+        }
+      })
+      if (result?.result?.optimized_description) {
+        setEditedProduct((prev: any) => ({ ...prev, description: result.result.optimized_description }))
+      }
+    } catch (error) {
+      console.error('Optimization error:', error)
+    }
+  }
+
+  const handleOptimizeSEO = async () => {
+    try {
+      const result = await optimizeProduct({
+        productId: product.id,
+        productSource: 'products',
+        optimizationType: 'seo_meta',
+        tone: 'professional',
+        currentData: {
+          name: product.name,
+          description: product.description,
+          category: product.category,
+          price: product.price,
+        }
+      })
+      if (result?.result) {
+        setEditedProduct((prev: any) => ({
+          ...prev,
+          seo_title: result.result.meta_title || prev.seo_title,
+          seo_description: result.result.meta_description || prev.seo_description,
+        }))
+      }
+    } catch (error) {
+      console.error('SEO Optimization error:', error)
+    }
+  }
+
+  const handleFullOptimization = async () => {
+    try {
+      const result = await optimizeProduct({
+        productId: product.id,
+        productSource: 'products',
+        optimizationType: 'full',
+        tone: 'professional',
+        currentData: {
+          name: product.name,
+          description: product.description,
+          category: product.category,
+          price: product.price,
+        }
+      })
+      if (result?.result) {
+        setEditedProduct((prev: any) => ({
+          ...prev,
+          name: result.result.optimized_title || prev.name,
+          description: result.result.optimized_description || prev.description,
+          seo_title: result.result.meta_title || prev.seo_title,
+          seo_description: result.result.meta_description || prev.seo_description,
+        }))
+        setIsEditing(true)
+        toast({
+          title: '✨ Optimisation complète',
+          description: 'Titre, description et SEO optimisés ! Vérifiez et enregistrez.',
+        })
+      }
+    } catch (error) {
+      console.error('Full Optimization error:', error)
+    }
+  }
+
+  // Publication
+  const handlePublish = () => {
+    publishProduct(product.id)
+  }
+
+  const handleUnpublish = () => {
+    unpublishProduct(product.id)
+  }
+
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'published':
       case 'active':
-        return { label: 'Actif', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle }
+        return { label: 'Publié', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle }
       case 'draft':
         return { label: 'Brouillon', color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20', icon: FileText }
       case 'archived':
         return { label: 'Archivé', color: 'bg-muted text-muted-foreground border-border', icon: Archive }
       default:
-        return { label: status, color: 'bg-muted text-muted-foreground border-border', icon: Info }
+        return { label: status || 'Brouillon', color: 'bg-muted text-muted-foreground border-border', icon: FileText }
     }
   }
 
@@ -264,6 +383,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
 
   const statusConfig = getStatusConfig(product.status)
   const stockConfig = getStockStatusConfig()
+  const isPublished = product.status === 'published' || product.status === 'active'
 
   return (
     <>
@@ -458,8 +578,65 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                   </div>
                 )}
 
+                {/* Quick Actions */}
+                <Card className="bg-gradient-to-br from-primary/5 to-purple-500/5 border-primary/20">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary" />
+                      Actions rapides
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {/* AI Optimization Button */}
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start gap-2 h-10"
+                      onClick={handleFullOptimization}
+                      disabled={isOptimizing}
+                    >
+                      {isOptimizing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 text-purple-500" />
+                      )}
+                      <span>Optimisation complète IA</span>
+                    </Button>
+                    
+                    {/* Publish/Unpublish Button */}
+                    {isPublished ? (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 h-10"
+                        onClick={handleUnpublish}
+                        disabled={isUnpublishing}
+                      >
+                        {isUnpublishing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Archive className="h-4 w-4 text-orange-500" />
+                        )}
+                        <span>Dépublier</span>
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2 h-10 border-green-500/30 hover:bg-green-500/10"
+                        onClick={handlePublish}
+                        disabled={isPublishing}
+                      >
+                        {isPublishing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4 text-green-500" />
+                        )}
+                        <span>Publier dans le catalogue</span>
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+
                 {/* Quick Stats Cards */}
-                <div className="grid grid-cols-3 gap-3 pt-4">
+                <div className="grid grid-cols-3 gap-3">
                   <Card className="bg-primary/5 border-primary/10">
                     <CardContent className="p-3 text-center">
                       <DollarSign className="h-5 w-5 mx-auto mb-1 text-primary" />
@@ -528,14 +705,35 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     {isEditing ? (
-                      <Input
-                        value={editedProduct.name || editedProduct.title || ''}
-                        onChange={(e) =>
-                          setEditedProduct({ ...editedProduct, name: e.target.value })
-                        }
-                        className="text-xl font-bold h-auto py-2"
-                        placeholder="Nom du produit"
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          value={editedProduct.name || editedProduct.title || ''}
+                          onChange={(e) =>
+                            setEditedProduct({ ...editedProduct, name: e.target.value })
+                          }
+                          className="text-xl font-bold h-auto py-2 flex-1"
+                          placeholder="Nom du produit"
+                        />
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleOptimizeTitle}
+                                disabled={isOptimizing}
+                              >
+                                {isOptimizing ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Wand2 className="h-4 w-4 text-purple-500" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Optimiser le titre avec l'IA</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     ) : (
                       <h2 className="text-xl font-bold truncate">
                         {product.name || product.title || 'Sans nom'}
@@ -571,7 +769,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                       { value: 'overview', label: 'Aperçu', icon: Eye },
                       { value: 'pricing', label: 'Prix & Stock', icon: DollarSign },
                       { value: 'details', label: 'Détails', icon: FileText },
-                      { value: 'seo', label: 'SEO', icon: Globe },
+                      { value: 'seo', label: 'SEO', icon: Search },
                       { value: 'history', label: 'Historique', icon: History },
                     ].map((tab) => (
                       <TabsTrigger
@@ -591,10 +789,28 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                       {/* Description */}
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <Layers className="h-4 w-4" />
-                            Description
-                          </CardTitle>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm flex items-center gap-2">
+                              <Layers className="h-4 w-4" />
+                              Description
+                            </CardTitle>
+                            {isEditing && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleOptimizeDescription}
+                                disabled={isOptimizing}
+                                className="h-7 text-xs"
+                              >
+                                {isOptimizing ? (
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <Sparkles className="h-3 w-3 mr-1 text-purple-500" />
+                                )}
+                                Optimiser
+                              </Button>
+                            )}
+                          </div>
                         </CardHeader>
                         <CardContent>
                           {isEditing ? (
@@ -901,37 +1117,60 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                     <TabsContent value="seo" className="m-0 space-y-6">
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <Globe className="h-4 w-4" />
-                            Optimisation SEO
-                          </CardTitle>
-                          <CardDescription>
-                            Optimisez votre produit pour les moteurs de recherche
-                          </CardDescription>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <CardTitle className="text-sm flex items-center gap-2">
+                                <Globe className="h-4 w-4" />
+                                Optimisation SEO
+                              </CardTitle>
+                              <CardDescription>
+                                Optimisez votre produit pour les moteurs de recherche
+                              </CardDescription>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleOptimizeSEO}
+                              disabled={isOptimizing}
+                            >
+                              {isOptimizing ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
+                              )}
+                              Optimiser SEO
+                            </Button>
+                          </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
                             <Label>Titre SEO</Label>
                             <Input
-                              value={product.seo_title || product.name || ''}
+                              value={isEditing ? editedProduct.seo_title : (product.seo_title || product.name || '')}
+                              onChange={(e) =>
+                                setEditedProduct({ ...editedProduct, seo_title: e.target.value })
+                              }
                               placeholder="Titre pour les moteurs de recherche"
                               disabled={!isEditing}
                             />
                             <p className="text-xs text-muted-foreground">
-                              {(product.seo_title || product.name || '').length}/60 caractères
+                              {(isEditing ? editedProduct.seo_title : (product.seo_title || product.name || '')).length}/60 caractères
                             </p>
                           </div>
 
                           <div className="space-y-2">
                             <Label>Meta description</Label>
                             <Textarea
-                              value={product.seo_description || product.description?.slice(0, 160) || ''}
+                              value={isEditing ? editedProduct.seo_description : (product.seo_description || product.description?.slice(0, 160) || '')}
+                              onChange={(e) =>
+                                setEditedProduct({ ...editedProduct, seo_description: e.target.value })
+                              }
                               placeholder="Description pour les moteurs de recherche"
                               disabled={!isEditing}
                               rows={3}
                             />
                             <p className="text-xs text-muted-foreground">
-                              {(product.seo_description || product.description?.slice(0, 160) || '').length}/160 caractères
+                              {(isEditing ? editedProduct.seo_description : (product.seo_description || product.description?.slice(0, 160) || '')).length}/160 caractères
                             </p>
                           </div>
 
@@ -942,6 +1181,29 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                               placeholder="url-du-produit"
                               disabled={!isEditing}
                             />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* SEO Preview */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Eye className="h-4 w-4" />
+                            Aperçu Google
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="p-4 bg-white rounded-lg border space-y-1">
+                            <p className="text-blue-600 text-lg hover:underline cursor-pointer truncate">
+                              {isEditing ? editedProduct.seo_title : (product.seo_title || product.name || 'Titre du produit')}
+                            </p>
+                            <p className="text-green-700 text-sm truncate">
+                              www.votre-boutique.com › produits › {product.slug || product.name?.toLowerCase().replace(/\s+/g, '-') || 'produit'}
+                            </p>
+                            <p className="text-gray-600 text-sm line-clamp-2">
+                              {isEditing ? editedProduct.seo_description : (product.seo_description || product.description?.slice(0, 160) || 'Description du produit pour les moteurs de recherche...')}
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
