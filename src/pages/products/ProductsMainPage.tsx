@@ -44,7 +44,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
-import { SupplierCatalogBrowser } from '@/components/products/SupplierCatalogBrowser';
+
 
 // Composant de carte statistique premium
 interface StatCardProps {
@@ -146,13 +146,39 @@ export default function ProductsMainPage() {
       if (!user) throw new Error('Non authentifié');
 
       const product = products.find(p => p.id === id);
-      const tableName = product?.source === 'products' ? 'products' : 'imported_products';
+      
+      // Déterminer la table source en fonction du type de produit
+      let tableName: 'products' | 'imported_products' | 'catalog_products' = 'products';
+      const source = product?.source as string;
+      if (source === 'imported' || source === 'imported_products') {
+        tableName = 'imported_products';
+      } else if (source === 'catalog' || source === 'catalog_products') {
+        tableName = 'catalog_products';
+      }
 
-      const { error } = await supabase
+      // Essayer de supprimer de la table déterminée
+      let { error } = await supabase
         .from(tableName)
         .delete()
         .eq('id', id)
         .eq('user_id', user.id);
+
+      // Si échec, essayer toutes les tables
+      if (error) {
+        const tables = ['products', 'imported_products', 'catalog_products'] as const;
+        for (const table of tables) {
+          if (table === tableName) continue;
+          const result = await supabase
+            .from(table)
+            .delete()
+            .eq('id', id)
+            .eq('user_id', user.id);
+          if (!result.error) {
+            error = null;
+            break;
+          }
+        }
+      }
 
       if (error) throw error;
       
@@ -451,8 +477,6 @@ export default function ProductsMainPage() {
               Enrichir IA
             </Button>
 
-            {/* Catalogue B2B */}
-            <SupplierCatalogBrowser />
           </div>
         </CardContent>
       </Card>
