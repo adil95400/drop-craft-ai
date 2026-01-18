@@ -19,7 +19,7 @@ export function PricingRoutes() {
       <Route index element={<PricingAutomationPage />} />
       
       {/* Pricing Modules */}
-      <Route path="rules" element={<Navigate to="/rules?tab=pricing" replace />} />
+      <Route path="rules" element={<Navigate to="/products?tab=rules&subTab=pricing" replace />} />
       <Route path="dynamic" element={<DynamicRepricingPage />} />
       <Route path="repricing" element={<RepricingPage />} />
       <Route path="monitoring" element={<PriceMonitoringPage />} />

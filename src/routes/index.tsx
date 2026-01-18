@@ -64,7 +64,7 @@ const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
 const SupportCenterPage = lazy(() => import('@/pages/support/SupportCenterPage'));
-const ProductRulesPage = lazy(() => import('@/pages/rules/ProductRulesPage'));
+// ProductRulesPage supprimé - intégré dans /products?tab=rules
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
@@ -188,7 +188,7 @@ export function AppRoutes() {
         {/* Feature Pages */}
         <Route path="/advanced" element={<ProtectedRoute><ChannableLayout><AdvancedModulesPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/monitoring" element={<ProtectedRoute><ChannableLayout><MonitoringPage /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/rules" element={<ProtectedRoute><ChannableLayout><ProductRulesPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/rules" element={<Navigate to="/products?tab=rules" replace />} />
         <Route path="/catalog-intelligence" element={<ProtectedRoute><ChannableLayout><CatalogIntelligencePage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/coupons" element={<ProtectedRoute><ChannableLayout><CouponsManagementPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/trial" element={<ProtectedRoute><ChannableLayout><FreeTrialActivationPage /></ChannableLayout></ProtectedRoute>} />

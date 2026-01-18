@@ -218,19 +218,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     ]
   },
   
-  rules: {
-    id: 'rules',
-    name: 'Règles',
-    icon: 'GitBranch',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/rules',
-    features: ['rule-engine', 'transformations'],
-    description: 'Règles de transformation',
-    category: 'automation',
-    order: 2,
-    groupId: 'catalog'
-  },
+  // rules: SUPPRIMÉ - Intégré comme onglet dans /products?tab=rules
   
   // Module FUSIONNÉ: Qualité & Audit (remplace audit, qa, productScoring)
   quality: {
