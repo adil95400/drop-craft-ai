@@ -487,10 +487,10 @@ export function AdvancedSupplierEngine() {
           {/* Quick Actions */}
           <div className="grid gap-4 md:grid-cols-5">
             <Button asChild className="h-auto py-4 flex-col gap-2" variant="outline">
-              <Link to="/suppliers/connectors">
+              <Link to="/suppliers/catalog">
                 <Plug className="h-6 w-6 text-primary" />
-                <span>Connecteurs API</span>
-                <span className="text-xs text-muted-foreground">15 plateformes</span>
+                <span>Catalogue</span>
+                <span className="text-xs text-muted-foreground">Tous produits</span>
               </Link>
             </Button>
             <Button className="h-auto py-4 flex-col gap-2" variant="outline">
