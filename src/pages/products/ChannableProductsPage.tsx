@@ -209,24 +209,27 @@ export default function ChannableProductsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
-      const product = products.find(p => p.id === id);
-      const tableName = product?.source === 'products' ? 'products' : 'imported_products';
+      // Supprimer des deux tables pour être sûr (le produit n'existe que dans une)
+      const [productsResult, importedResult] = await Promise.all([
+        supabase.from('products').delete().eq('id', id).eq('user_id', user.id),
+        supabase.from('imported_products').delete().eq('id', id).eq('user_id', user.id)
+      ]);
 
-      const { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
+      // Vérifier si au moins une suppression a réussi
+      const hasError = productsResult.error && importedResult.error;
+      if (hasError) throw productsResult.error || importedResult.error;
       
       toast({
         title: 'Produit supprimé',
         description: 'Le produit a été supprimé avec succès'
       });
       
+      // Rafraîchir immédiatement
+      await refetch();
       queryClient.invalidateQueries({ queryKey: ['unified-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     } catch (error) {
+      console.error('Delete error:', error);
       toast({
         title: 'Erreur',
         description: error instanceof Error ? error.message : 'Impossible de supprimer le produit',
