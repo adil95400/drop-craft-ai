@@ -6,8 +6,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react'
-import { Helmet } from 'react-helmet-async'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -72,6 +71,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useNavigate } from 'react-router-dom'
+import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
+import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
 
 // Types
 interface SupplierDefinition {
@@ -3215,6 +3216,7 @@ function SupplierCard({
 export default function ChannableStyleSuppliersPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const prefersReducedMotion = useReducedMotion()
   const { 
     suppliers, 
     stats, 
@@ -3305,68 +3307,45 @@ export default function ChannableStyleSuppliersPage() {
     deleteSupplier(supplierId)
   }, [deleteSupplier])
 
+  // Unique countries count for stats
+  const countriesCount = uniqueCountries.length
+
+  // Total products estimation
+  const totalProducts = useMemo(() => {
+    return supplierDefinitions.reduce((acc, def) => acc + (def.productsCount || 0), 0)
+  }, [])
+
   return (
-    <>
-      <Helmet>
-        <title>Fournisseurs Dropshipping | DropShipper</title>
-        <meta name="description" content="Découvrez 150+ fournisseurs dropshipping vérifiés. AliExpress, CJ Dropshipping, Spocket, BigBuy et bien plus." />
-      </Helmet>
+    <ChannablePageLayout
+      title="Fournisseurs Dropshipping"
+      metaTitle="Fournisseurs Dropshipping"
+      metaDescription="Découvrez 150+ fournisseurs dropshipping vérifiés. AliExpress, CJ Dropshipping, Spocket, BigBuy et bien plus."
+      showBackButton={false}
+      maxWidth="2xl"
+      padding="md"
+    >
+      <ChannableHeroSection
+        badge={{ label: `${supplierDefinitions.length}+ Fournisseurs Vérifiés`, icon: Sparkles }}
+        title="Fournisseurs Dropshipping"
+        subtitle="Connectez-vous aux meilleurs fournisseurs dropshipping du monde. Import automatique, sync en temps réel, livraison rapide."
+        stats={[
+          { label: 'Fournisseurs', value: supplierDefinitions.length.toString(), icon: Package },
+          { label: 'Pays', value: `${countriesCount}+`, icon: Globe },
+          { label: 'Connectés', value: stats.active.toString(), icon: CheckCircle2 },
+          { label: 'Produits', value: totalProducts >= 1000000000 ? `${(totalProducts / 1000000000).toFixed(0)}B+` : `${(totalProducts / 1000000).toFixed(0)}M+`, icon: Star }
+        ]}
+        primaryAction={{
+          label: "Ajouter un fournisseur",
+          onClick: () => setActiveCategory('all'),
+          icon: Plus
+        }}
+        secondaryAction={{
+          label: "Gérer mes fournisseurs",
+          onClick: () => navigate('/suppliers/my')
+        }}
+      />
 
-      <div className="min-h-screen bg-background">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 py-12 lg:py-16">
-          <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-          <div className="container mx-auto px-4 relative">
-            <div className="max-w-3xl mx-auto text-center">
-              <Badge className="mb-4" variant="secondary">
-                <Sparkles className="w-3 h-3 mr-1" />
-                {supplierDefinitions.length}+ Fournisseurs Vérifiés
-              </Badge>
-              <h1 className="text-3xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                Fournisseurs Dropshipping
-              </h1>
-              <p className="text-lg text-muted-foreground mb-8">
-                Connectez-vous aux meilleurs fournisseurs dropshipping du monde. 
-                Import automatique, sync en temps réel, livraison rapide.
-              </p>
-
-              {/* Stats rapides */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
-                <Card className="bg-background/50 backdrop-blur">
-                  <CardContent className="p-4 text-center">
-                    <Package className="w-6 h-6 mx-auto mb-2 text-primary" />
-                    <p className="text-2xl font-bold">{supplierDefinitions.length}</p>
-                    <p className="text-xs text-muted-foreground">Fournisseurs</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-background/50 backdrop-blur">
-                  <CardContent className="p-4 text-center">
-                    <Globe className="w-6 h-6 mx-auto mb-2 text-blue-500" />
-                    <p className="text-2xl font-bold">{uniqueCountries.length}+</p>
-                    <p className="text-xs text-muted-foreground">Pays</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-background/50 backdrop-blur">
-                  <CardContent className="p-4 text-center">
-                    <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-green-500" />
-                    <p className="text-2xl font-bold">{stats.active}</p>
-                    <p className="text-xs text-muted-foreground">Connectés</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-background/50 backdrop-blur">
-                  <CardContent className="p-4 text-center">
-                    <Star className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
-                    <p className="text-2xl font-bold">100M+</p>
-                    <p className="text-xs text-muted-foreground">Produits</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Main Content */}
-        <section className="container mx-auto px-4 py-8">
+      <div className="space-y-8">
           {/* Connected Suppliers Section */}
           {suppliers.length > 0 && (
             <div className="mb-10">
@@ -3578,7 +3557,7 @@ export default function ChannableStyleSuppliersPage() {
               </Button>
             </div>
           )}
-        </section>
+        </div>
 
         {/* Config Modal */}
         <Dialog open={!!selectedDefinition} onOpenChange={() => setSelectedDefinition(null)}>
@@ -3592,7 +3571,6 @@ export default function ChannableStyleSuppliersPage() {
             />
           )}
         </Dialog>
-      </div>
-    </>
+      </ChannablePageLayout>
   )
 }
