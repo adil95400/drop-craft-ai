@@ -1,9 +1,18 @@
 /**
  * Dashboard style Channable avec hero image et design premium
  * Version complète avec données RÉELLES depuis la base de données
+ * 
+ * Optimisations appliquées:
+ * - Quick Stats dynamiques avec données réelles
+ * - Support prefers-reduced-motion
+ * - Accessibilité WCAG 2.1 AA
+ * - Widget de bienvenue pour nouveaux utilisateurs
+ * - Raccourcis clavier (R = refresh, E = edit)
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
 import { motion } from 'framer-motion';
@@ -59,7 +68,10 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
-// Composant de carte statistique premium
+// Import du WelcomeWidget
+import { WelcomeWidget } from './WelcomeWidget';
+
+// Composant de carte statistique premium avec support reduced-motion
 interface QuickStatCardProps {
   label: string;
   value: string | number;
@@ -68,9 +80,23 @@ interface QuickStatCardProps {
   icon: React.ElementType;
   color: 'primary' | 'success' | 'warning' | 'info';
   onClick?: () => void;
+  isLoading?: boolean;
+  ariaLabel?: string;
 }
 
-function QuickStatCard({ label, value, change, changeType = 'positive', icon: Icon, color, onClick }: QuickStatCardProps) {
+function QuickStatCard({ 
+  label, 
+  value, 
+  change, 
+  changeType = 'positive', 
+  icon: Icon, 
+  color, 
+  onClick,
+  isLoading = false,
+  ariaLabel,
+}: QuickStatCardProps) {
+  const prefersReducedMotion = useReducedMotion();
+  
   const colorClasses = {
     primary: 'from-primary/20 to-primary/5 border-primary/30 text-primary',
     success: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
@@ -78,18 +104,25 @@ function QuickStatCard({ label, value, change, changeType = 'positive', icon: Ic
     info: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
   };
 
+  const motionProps = prefersReducedMotion 
+    ? {} 
+    : { whileHover: { scale: 1.02, y: -2 }, whileTap: { scale: 0.98 } };
+
   return (
     <motion.div
-      whileHover={{ scale: 1.02, y: -2 }}
-      whileTap={{ scale: 0.98 }}
+      {...motionProps}
       onClick={onClick}
       className={cn(
-        "cursor-pointer p-4 rounded-xl border bg-gradient-to-br backdrop-blur-sm transition-all duration-300",
+        "cursor-pointer p-4 rounded-xl border bg-gradient-to-br backdrop-blur-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
         colorClasses[color]
       )}
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel || `${label}: ${value}`}
+      onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
     >
       <div className="flex items-center justify-between mb-3">
-        <div className={cn("p-2 rounded-lg", `bg-${color}/10`)}>
+        <div className={cn("p-2 rounded-lg", `bg-${color}/10`)} aria-hidden="true">
           <Icon className="h-4 w-4" />
         </div>
         {change && (
@@ -97,17 +130,22 @@ function QuickStatCard({ label, value, change, changeType = 'positive', icon: Ic
             variant="outline" 
             className={cn(
               "text-[10px] px-1.5 py-0.5",
-              changeType === 'positive' && 'text-emerald-600 border-emerald-300 bg-emerald-50',
-              changeType === 'negative' && 'text-red-600 border-red-300 bg-red-50',
-              changeType === 'neutral' && 'text-gray-600 border-gray-300 bg-gray-50'
+              changeType === 'positive' && 'text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 dark:border-emerald-700',
+              changeType === 'negative' && 'text-red-600 border-red-300 bg-red-50 dark:bg-red-950/50 dark:border-red-700',
+              changeType === 'neutral' && 'text-gray-600 border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600'
             )}
+            aria-label={`Variation: ${change}`}
           >
             {change}
           </Badge>
         )}
       </div>
       <div className="space-y-1">
-        <p className="text-2xl font-bold text-foreground">{value}</p>
+        {isLoading ? (
+          <div className="h-8 w-24 bg-muted/50 rounded animate-pulse" />
+        ) : (
+          <p className="text-2xl font-bold text-foreground">{value}</p>
+        )}
         <p className="text-xs text-muted-foreground">{label}</p>
       </div>
     </motion.div>
@@ -129,7 +167,8 @@ export function ChannableDashboard() {
   } = useDashboardConfig();
 
   // Utiliser les données RÉELLES
-  const { stats: dashboardStats, activityEvents, syncEvents, healthMetrics, isLoading: dataLoading } = useRealDashboardData();
+  const { stats: dashboardStats, rawStats, activityEvents, syncEvents, healthMetrics, isLoading: dataLoading } = useRealDashboardData();
+  const prefersReducedMotion = useReducedMotion();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
@@ -163,6 +202,10 @@ export function ChannableDashboard() {
     toast.success('Dashboard actualisé avec les données réelles');
   }, [queryClient]);
 
+  // Keyboard shortcuts
+  useKeyboardShortcut({ key: 'r', onTrigger: handleRefresh });
+  useKeyboardShortcut({ key: 'e', onTrigger: () => setIsCustomizing(!isCustomizing) });
+
   // Auto-refresh
   useEffect(() => {
     if (!autoRefresh) return;
@@ -171,6 +214,41 @@ export function ChannableDashboard() {
     }, refreshInterval * 1000);
     return () => clearInterval(interval);
   }, [autoRefresh, refreshInterval, handleRefresh]);
+
+  // Calculate Quick Stats from real data
+  const quickStatsData = useMemo(() => {
+    if (!rawStats) {
+      return {
+        revenue: { value: '€0', change: '0%', changeType: 'neutral' as const },
+        orders: { value: '0', change: '0', changeType: 'neutral' as const },
+        products: { value: '0', change: '+0', changeType: 'neutral' as const },
+        customers: { value: '0', change: '+0', changeType: 'neutral' as const },
+      };
+    }
+
+    return {
+      revenue: {
+        value: `€${rawStats.revenue.today.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+        change: `${rawStats.revenue.change >= 0 ? '+' : ''}${rawStats.revenue.change.toFixed(1)}%`,
+        changeType: rawStats.revenue.change >= 0 ? 'positive' as const : 'negative' as const,
+      },
+      orders: {
+        value: rawStats.orders.today.toString(),
+        change: `${rawStats.orders.change >= 0 ? '+' : ''}${Math.round(rawStats.orders.change)}`,
+        changeType: rawStats.orders.change >= 0 ? 'positive' as const : 'negative' as const,
+      },
+      products: {
+        value: rawStats.products.active.toLocaleString('fr-FR'),
+        change: `+${rawStats.products.change}`,
+        changeType: 'positive' as const,
+      },
+      customers: {
+        value: rawStats.customers.active.toLocaleString('fr-FR'),
+        change: `${rawStats.customers.change >= 0 ? '+' : ''}${Math.round(rawStats.customers.change)}`,
+        changeType: rawStats.customers.change >= 0 ? 'positive' as const : 'negative' as const,
+      },
+    };
+  }, [rawStats]);
 
   // Quick Actions Channable
   const quickActions: ChannableQuickAction[] = [
@@ -310,43 +388,54 @@ export function ChannableDashboard() {
         </>
       }
     >
-      {/* Quick Stats Grid Premium */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Welcome Widget for new users */}
+      <WelcomeWidget />
+
+      {/* Quick Stats Grid Premium - DONNÉES DYNAMIQUES */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label="Statistiques rapides">
         <QuickStatCard
           label="Chiffre d'affaires"
-          value="€24,580"
-          change="+12.5%"
-          changeType="positive"
+          value={quickStatsData.revenue.value}
+          change={quickStatsData.revenue.change}
+          changeType={quickStatsData.revenue.changeType}
           icon={DollarSign}
           color="primary"
           onClick={() => navigate('/analytics')}
+          isLoading={dataLoading}
+          ariaLabel={`Chiffre d'affaires: ${quickStatsData.revenue.value}, variation: ${quickStatsData.revenue.change}`}
         />
         <QuickStatCard
           label="Commandes"
-          value="156"
-          change="+8"
-          changeType="positive"
+          value={quickStatsData.orders.value}
+          change={quickStatsData.orders.change}
+          changeType={quickStatsData.orders.changeType}
           icon={ShoppingCart}
           color="success"
           onClick={() => navigate('/orders')}
+          isLoading={dataLoading}
+          ariaLabel={`Commandes: ${quickStatsData.orders.value}, variation: ${quickStatsData.orders.change}`}
         />
         <QuickStatCard
           label="Produits actifs"
-          value="1,247"
-          change="+23"
-          changeType="positive"
+          value={quickStatsData.products.value}
+          change={quickStatsData.products.change}
+          changeType={quickStatsData.products.changeType}
           icon={Package}
           color="info"
           onClick={() => navigate('/products')}
+          isLoading={dataLoading}
+          ariaLabel={`Produits actifs: ${quickStatsData.products.value}, variation: ${quickStatsData.products.change}`}
         />
         <QuickStatCard
           label="Clients"
-          value="892"
-          change="+15"
-          changeType="positive"
+          value={quickStatsData.customers.value}
+          change={quickStatsData.customers.change}
+          changeType={quickStatsData.customers.changeType}
           icon={Users}
           color="warning"
           onClick={() => navigate('/customers')}
+          isLoading={dataLoading}
+          ariaLabel={`Clients: ${quickStatsData.customers.value}, variation: ${quickStatsData.customers.change}`}
         />
       </div>
 
