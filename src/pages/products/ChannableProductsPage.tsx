@@ -310,15 +310,25 @@ export default function ChannableProductsPage() {
       id: 'import',
       label: 'Importer',
       icon: Upload,
-      onClick: () => toast({ title: 'Import', description: 'Ouverture import' }),
+      onClick: () => navigate('/products/import/quick'),
       description: 'CSV/Excel'
     },
     {
       id: 'export',
       label: 'Exporter',
       icon: Download,
-      onClick: () => toast({ title: 'Export', description: 'Export en cours' }),
-      description: 'Télécharger'
+      onClick: async () => {
+        try {
+          const { importExportService } = await import('@/services/importExportService');
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('Non authentifié');
+          await importExportService.exportAllProducts(user.id);
+          toast({ title: '✅ Export réussi', description: 'Le fichier CSV a été téléchargé' });
+        } catch (error) {
+          toast({ title: 'Erreur', description: 'Échec de l\'export', variant: 'destructive' });
+        }
+      },
+      description: 'Télécharger CSV'
     },
     {
       id: 'enrich',
@@ -326,6 +336,13 @@ export default function ChannableProductsPage() {
       icon: Wand2,
       onClick: () => setShowBulkEnrichment(true),
       description: 'Optimisation'
+    },
+    {
+      id: 'refresh',
+      label: 'Actualiser',
+      icon: RefreshCw,
+      onClick: handleRefresh,
+      description: 'Recharger'
     }
   ];
 
@@ -775,6 +792,7 @@ export default function ChannableProductsPage() {
                       hasActiveFilters={auditActiveCount > 0}
                       onSelectionChange={setSelectedProducts}
                       selectedProducts={selectedProducts}
+                      isLoading={isLoading}
                     />
                   </CardContent>
                 </Card>
@@ -812,6 +830,7 @@ export default function ChannableProductsPage() {
                   onFilterChange={updateFilter}
                   onResetFilters={resetFilters}
                   hasActiveFilters={auditActiveCount > 0}
+                  isLoading={isLoading}
                 />
               </CardContent>
             </Card>
@@ -845,6 +864,7 @@ export default function ChannableProductsPage() {
               onFilterChange={updateFilter}
               onResetFilters={resetFilters}
               hasActiveFilters={hasActiveFilters}
+              isLoading={isLoading}
             />
           </CardContent>
         </Card>

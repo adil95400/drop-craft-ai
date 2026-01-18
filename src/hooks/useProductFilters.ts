@@ -4,12 +4,14 @@ import { UnifiedProduct } from './useUnifiedProducts'
 export interface FilterState {
   search: string
   category: string
-  status: 'all' | 'active' | 'inactive'
+  status: 'all' | 'active' | 'inactive' | 'draft' | 'archived'
   priceRange: [number, number]
-  sortBy: 'name' | 'price' | 'created_at' | 'stock_quantity'
+  sortBy: 'name' | 'price' | 'created_at' | 'stock_quantity' | 'margin' | 'ai_score'
   sortOrder: 'asc' | 'desc'
   source: 'all' | 'products' | 'imported' | 'premium' | 'catalog' | 'shopify' | 'published' | 'feed' | 'supplier'
   lowStock: boolean
+  hasImages: boolean | null
+  needsOptimization: boolean | null
 }
 
 export const DEFAULT_FILTERS: FilterState = {
@@ -20,7 +22,9 @@ export const DEFAULT_FILTERS: FilterState = {
   sortBy: 'created_at',
   sortOrder: 'desc',
   source: 'all',
-  lowStock: false
+  lowStock: false,
+  hasImages: null,
+  needsOptimization: null
 }
 
 export function useProductFilters(products: UnifiedProduct[]) {
@@ -70,6 +74,21 @@ export function useProductFilters(products: UnifiedProduct[]) {
     // Stock faible
     if (filters.lowStock) {
       filtered = filtered.filter(p => (p.stock_quantity || 0) < 10)
+    }
+
+    // Filtre par images
+    if (filters.hasImages === true) {
+      filtered = filtered.filter(p => p.image_url && p.image_url.length > 0)
+    } else if (filters.hasImages === false) {
+      filtered = filtered.filter(p => !p.image_url || p.image_url.length === 0)
+    }
+
+    // Filtre par optimisation nécessaire (score IA < 60)
+    if (filters.needsOptimization === true) {
+      filtered = filtered.filter(p => {
+        const aiScore = (p as any).ai_score || 50
+        return aiScore < 60
+      })
     }
 
     // Tri
