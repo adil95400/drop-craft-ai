@@ -118,6 +118,21 @@ const importMethodsConfig = [
     external: true,
     features: ['1-clic browser', 'Tous les sites', 'Sync temps réel'],
     avgTime: '~5 sec'
+  },
+  {
+    id: 'advanced-engine',
+    title: 'Moteur Avancé',
+    description: 'Découvrez des produits gagnants avec notre moteur d\'analyse IA et veille concurrentielle.',
+    icon: Target,
+    color: 'from-pink-500 to-rose-600',
+    bgColor: 'bg-pink-500/10',
+    iconColor: 'text-pink-500',
+    borderColor: 'border-pink-500/20 hover:border-pink-500/50',
+    link: '/suppliers/advanced-engine',
+    badge: 'IA',
+    badgeColor: 'bg-gradient-to-r from-pink-500 to-rose-500',
+    features: ['Analyse IA', 'Produits gagnants', 'Veille prix'],
+    avgTime: 'Temps réel'
   }
 ]
 
