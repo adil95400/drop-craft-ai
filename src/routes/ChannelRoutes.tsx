@@ -14,9 +14,6 @@ const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegratio
 const ShopifyDiagnostic = lazy(() => import('@/pages/ShopifyDiagnostic'));
 const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage'));
 
-// Shopify Import (moved from Import module)
-const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'));
-
 // Sync & Analytics
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
 const StockManagementDashboard = lazy(() => import('@/pages/StockManagementDashboard'));
@@ -31,15 +28,12 @@ export function ChannelRoutes() {
       <Route path="connect/:platform" element={<ChannelConnectPage />} />
       <Route path=":channelId" element={<ChannelDetailPage />} />
       
-      {/* Shopify dedicated routes */}
-      <Route path="shopify" element={<ShopifyImportHub />} />
-      <Route path="shopify-diagnostic" element={<ShopifyDiagnostic />} />
-      <Route path="shopify-management" element={<ShopifyManagementPage />} />
-      
       {/* Legacy routes - redirected to new paths */}
       <Route path="integrations" element={<Navigate to="/stores-channels" replace />} />
       <Route path="integrations/:id" element={<ManageIntegrationPage />} />
       <Route path="imported-products" element={<Navigate to="/products/import/manage" replace />} />
+      <Route path="shopify-diagnostic" element={<ShopifyDiagnostic />} />
+      <Route path="shopify-management" element={<ShopifyManagementPage />} />
       
       {/* Sync & Analytics */}
       <Route path="sync" element={<StoreSyncDashboard />} />
