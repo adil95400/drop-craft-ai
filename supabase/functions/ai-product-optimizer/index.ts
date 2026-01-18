@@ -49,16 +49,15 @@ serve(async (req) => {
       }
     );
 
-    // Validate JWT using getClaims
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    // Validate user authentication using getUser()
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     
-    if (claimsError || !claimsData?.claims) {
-      console.error('[AI-OPTIMIZER] Auth error:', claimsError);
+    if (authError || !user) {
+      console.error('[AI-OPTIMIZER] Auth error:', authError);
       throw new Error('User not authenticated');
     }
 
-    const userId = claimsData.claims.sub;
+    const userId = user.id;
     console.log('[AI-OPTIMIZER] Authenticated user:', userId);
 
     const {
