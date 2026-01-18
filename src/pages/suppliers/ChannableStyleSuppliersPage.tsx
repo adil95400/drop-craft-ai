@@ -62,6 +62,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRealSuppliers, Supplier } from '@/hooks/useRealSuppliers'
+import { WISE2SYNC_SUPPLIERS } from '@/data/suppliers'
 import { useToast } from '@/hooks/use-toast'
 import {
   DropdownMenu,
@@ -131,6 +132,22 @@ const countryOptions = [
   { id: 'TR', label: '🇹🇷 Turquie' },
   { id: 'BR', label: '🇧🇷 Brésil' },
   { id: 'MX', label: '🇲🇽 Mexique' },
+  { id: 'LT', label: '🇱🇹 Lituanie' },
+  { id: 'LV', label: '🇱🇻 Lettonie' },
+  { id: 'EE', label: '🇪🇪 Estonie' },
+  { id: 'RO', label: '🇷🇴 Roumanie' },
+  { id: 'CZ', label: '🇨🇿 République Tchèque' },
+  { id: 'FI', label: '🇫🇮 Finlande' },
+  { id: 'SE', label: '🇸🇪 Suède' },
+  { id: 'HU', label: '🇭🇺 Hongrie' },
+  { id: 'BE', label: '🇧🇪 Belgique' },
+  { id: 'AT', label: '🇦🇹 Autriche' },
+  { id: 'PT', label: '🇵🇹 Portugal' },
+  { id: 'GR', label: '🇬🇷 Grèce' },
+  { id: 'DK', label: '🇩🇰 Danemark' },
+  { id: 'NO', label: '🇳🇴 Norvège' },
+  { id: 'CH', label: '🇨🇭 Suisse' },
+  { id: 'IE', label: '🇮🇪 Irlande' },
 ]
 
 // Catégories de fournisseurs
@@ -147,7 +164,88 @@ const categories = [
   { id: 'wholesale', label: 'Grossiste', icon: Warehouse },
   { id: 'pets', label: 'Animaux', icon: Heart },
   { id: 'food', label: 'Alimentaire', icon: Package },
+  { id: 'automotive', label: 'Automobile', icon: Truck },
+  { id: 'lighting', label: 'Éclairage', icon: Zap },
+  { id: 'garden', label: 'Jardin', icon: Heart },
+  { id: 'gaming', label: 'Gaming', icon: Box },
+  { id: 'fragrances', label: 'Parfums', icon: Sparkles },
+  { id: 'workwear', label: 'Vêtements Pro', icon: Factory },
+  { id: 'plumbing', label: 'Plomberie', icon: Building2 },
+  { id: 'it', label: 'IT & Mobile', icon: Zap },
 ]
+
+// Mapper les catégories Wise2Sync vers les catégories internes
+const mapWise2SyncCategory = (category: string): SupplierDefinition['category'] => {
+  const mapping: Record<string, SupplierDefinition['category']> = {
+    'Dropshipping Premium': 'general',
+    'Marketplace Française': 'general',
+    'Mobilier & Jardin': 'home',
+    'Mode & Chaussures': 'fashion',
+    'Chaussures & Mode': 'fashion',
+    'Mode Homme/Femme': 'fashion',
+    'Sport & Outdoor': 'sports',
+    'Jouets & Enfants': 'toys',
+    'Électronique & Gadgets': 'electronics',
+    'IT & Mobile': 'electronics',
+    'IT & Électronique': 'electronics',
+    'Automobile & Pièces': 'automotive',
+    'Éclairage & LED': 'electronics',
+    'Plomberie & Sanitaire': 'home',
+    'Jardin & Piscines': 'home',
+    'Parfums & Cosmétiques': 'beauty',
+    'Gaming & Accessoires': 'electronics',
+    'Électroménager': 'home',
+    'Vêtements de Travail': 'fashion',
+    'Généraliste': 'general',
+    'IT & Composants': 'electronics',
+    'Électronique & Tech': 'electronics',
+    'Sport & Fitness': 'sports',
+    'Meubles & Décoration': 'home',
+    'Outdoor & Camping': 'sports',
+    'Bricolage & Outils': 'home',
+    'Éclairage': 'home',
+  }
+  return mapping[category] || 'general'
+}
+
+// Extraire le code pays des régions Wise2Sync
+const extractCountryCode = (regions: string[]): string => {
+  const countryMapping: Record<string, string> = {
+    'PL': 'PL', 'LT': 'LT', 'LV': 'LV', 'EE': 'EE', 'DE': 'DE',
+    'CZ': 'CZ', 'RO': 'RO', 'ES': 'ES', 'FI': 'FI', 'SE': 'SE',
+    'EU': 'EU', 'US': 'US', 'Global': 'CN', 'FR': 'FR', 'NL': 'NL',
+    'IT': 'IT', 'UK': 'UK', 'HU': 'HU', 'BE': 'BE', 'AT': 'AT',
+    'PT': 'PT', 'GR': 'GR', 'DK': 'DK', 'NO': 'NO', 'CH': 'CH', 'IE': 'IE'
+  }
+  for (const region of regions) {
+    if (countryMapping[region]) {
+      return countryMapping[region]
+    }
+  }
+  return 'EU'
+}
+
+// Convertir les fournisseurs Wise2Sync au format SupplierDefinition
+const convertWise2SyncSuppliers = (): SupplierDefinition[] => {
+  return WISE2SYNC_SUPPLIERS.map(supplier => ({
+    id: supplier.id,
+    name: supplier.displayName,
+    logo: supplier.logo || supplier.icon || '',
+    category: mapWise2SyncCategory(supplier.category),
+    country: extractCountryCode(supplier.regions),
+    popular: supplier.isPopular || false,
+    premium: false,
+    description: supplier.description,
+    features: supplier.features,
+    rating: 4.0 + Math.random() * 0.8, // Rating entre 4.0 et 4.8
+    productsCount: 10000 + Math.floor(Math.random() * 90000), // Entre 10K et 100K
+    shippingTime: '3-10 jours',
+    setupFields: supplier.requiresAuth ? [
+      { name: 'api_key', label: 'API Key', type: 'password' as const, required: true }
+    ] : []
+  }))
+}
+
 
 // Liste complète des fournisseurs dropshipping
 const supplierDefinitions: SupplierDefinition[] = [
@@ -2758,6 +2856,12 @@ const supplierDefinitions: SupplierDefinition[] = [
   },
 ]
 
+// Fusionner les fournisseurs existants avec Wise2Sync (éviter les doublons)
+const wise2syncConverted = convertWise2SyncSuppliers()
+const existingIds = new Set(supplierDefinitions.map(s => s.id.toLowerCase()))
+const newWise2SyncSuppliers = wise2syncConverted.filter(s => !existingIds.has(s.id.toLowerCase()))
+const allSupplierDefinitions: SupplierDefinition[] = [...supplierDefinitions, ...newWise2SyncSuppliers]
+
 // Mapping pays vers drapeaux emoji
 const countryFlags: Record<string, string> = {
   'CN': '🇨🇳',
@@ -3246,7 +3350,7 @@ export default function ChannableStyleSuppliersPage() {
 
   // Trouver la définition pour un fournisseur connecté
   const findDefinitionForSupplier = useCallback((supplier: Supplier): SupplierDefinition | undefined => {
-    return supplierDefinitions.find(def => 
+    return allSupplierDefinitions.find(def => 
       def.id.toLowerCase() === supplier.name?.toLowerCase() ||
       def.name.toLowerCase() === supplier.name?.toLowerCase() ||
       supplier.website?.toLowerCase().includes(def.id.toLowerCase())
@@ -3255,7 +3359,7 @@ export default function ChannableStyleSuppliersPage() {
 
   // Filtrage et tri
   const filteredSuppliers = useMemo(() => {
-    let result = supplierDefinitions.filter(def => {
+    let result = allSupplierDefinitions.filter(def => {
       const matchesSearch = def.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (def.description?.toLowerCase().includes(searchTerm.toLowerCase())) ||
                            def.country.toLowerCase().includes(searchTerm.toLowerCase())
@@ -3287,7 +3391,7 @@ export default function ChannableStyleSuppliersPage() {
 
   // Compteurs pour les filtres
   const uniqueCountries = useMemo(() => {
-    const countries = new Set(supplierDefinitions.map(d => d.country))
+    const countries = new Set(allSupplierDefinitions.map(d => d.country))
     return Array.from(countries).sort()
   }, [])
 
@@ -3312,7 +3416,7 @@ export default function ChannableStyleSuppliersPage() {
 
   // Total products estimation
   const totalProducts = useMemo(() => {
-    return supplierDefinitions.reduce((acc, def) => acc + (def.productsCount || 0), 0)
+    return allSupplierDefinitions.reduce((acc, def) => acc + (def.productsCount || 0), 0)
   }, [])
 
   return (
@@ -3325,11 +3429,11 @@ export default function ChannableStyleSuppliersPage() {
       padding="md"
     >
       <ChannableHeroSection
-        badge={{ label: `${supplierDefinitions.length}+ Fournisseurs Vérifiés`, icon: Sparkles }}
+        badge={{ label: `${allSupplierDefinitions.length}+ Fournisseurs Vérifiés`, icon: Sparkles }}
         title="Fournisseurs Dropshipping"
         subtitle="Connectez-vous aux meilleurs fournisseurs dropshipping du monde. Import automatique, sync en temps réel, livraison rapide."
         stats={[
-          { label: 'Fournisseurs', value: supplierDefinitions.length.toString(), icon: Package },
+          { label: 'Fournisseurs', value: allSupplierDefinitions.length.toString(), icon: Package },
           { label: 'Pays', value: `${countriesCount}+`, icon: Globe },
           { label: 'Connectés', value: stats.active.toString(), icon: CheckCircle2 },
           { label: 'Produits', value: totalProducts >= 1000000000 ? `${(totalProducts / 1000000000).toFixed(0)}B+` : `${(totalProducts / 1000000).toFixed(0)}M+`, icon: Star }
@@ -3496,8 +3600,8 @@ export default function ChannableStyleSuppliersPage() {
                 const Icon = category.icon
                 const isActive = activeCategory === category.id
                 const count = category.id === 'all' 
-                  ? supplierDefinitions.length 
-                  : supplierDefinitions.filter(d => d.category === category.id).length
+                  ? allSupplierDefinitions.length 
+                  : allSupplierDefinitions.filter(d => d.category === category.id).length
                 
                 return (
                   <Button
