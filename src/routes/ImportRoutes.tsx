@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'))
 const QuickImportPage = lazy(() => import('@/pages/import/quick/QuickImportPage'))
@@ -14,6 +14,7 @@ const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMar
 const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPublishingPage'))
 const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'))
 const AliExpressImportPage = lazy(() => import('@/pages/import/AliExpressImportPage'))
+const BulkImportPage = lazy(() => import('@/pages/import/BulkImportPage'))
 
 export function ImportRoutes() {
   return (
@@ -26,6 +27,7 @@ export function ImportRoutes() {
       
       <Route path="autods" element={<AutoDSImportPage />} />
       <Route path="advanced" element={<AdvancedImportPage />} />
+      <Route path="bulk" element={<BulkImportPage />} />
       <Route path="history" element={<ImportHistoryPage />} />
       <Route path="scheduled" element={<ImportScheduledPage />} />
       <Route path="config" element={<ImportConfigPage />} />

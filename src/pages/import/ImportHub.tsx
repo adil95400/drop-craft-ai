@@ -71,7 +71,7 @@ const importMethodsConfig = [
     bgColor: 'bg-purple-500/10',
     iconColor: 'text-purple-500',
     borderColor: 'border-purple-500/20 hover:border-purple-500/50',
-    link: '/import/advanced',
+    link: '/import/bulk',
     badge: 'Pro',
     badgeColor: 'bg-purple-500',
     features: ['Jusqu\'à 500 URLs', 'Queue intelligente', 'Rapport détaillé'],

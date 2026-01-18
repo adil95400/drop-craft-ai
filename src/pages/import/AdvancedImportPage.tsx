@@ -7,13 +7,15 @@ import { Progress } from '@/components/ui/progress'
 import { 
   Upload, Link as LinkIcon, FileText, Database, Settings, Zap, 
   CheckCircle2, AlertCircle, Clock, Code, Webhook, FileCode,
-  Play, RefreshCw, Sparkles, TrendingUp, Package, ArrowRight
+  Play, RefreshCw, Sparkles, TrendingUp, Package, ArrowRight,
+  Rss
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { XMLFeedImporter } from '@/components/import/XMLFeedImporter'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { supabase } from '@/integrations/supabase/client'
@@ -38,6 +40,7 @@ interface ImportJob {
 const tabConfig = [
   { id: 'file', label: 'Fichier CSV', icon: FileText },
   { id: 'url', label: 'URL/API', icon: LinkIcon },
+  { id: 'xml', label: 'Flux XML/JSON', icon: Rss },
   { id: 'database', label: 'Base de données', icon: Database },
   { id: 'advanced', label: 'Configuration', icon: Settings },
 ]
@@ -235,7 +238,7 @@ export default function AdvancedImportPage() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
               {tabConfig.map((tab) => (
                 <TabsTrigger 
                   key={tab.id} 
@@ -328,6 +331,10 @@ export default function AdvancedImportPage() {
                   </Badge>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="xml" className="space-y-4">
+              <XMLFeedImporter />
             </TabsContent>
 
             <TabsContent value="database" className="space-y-4">
