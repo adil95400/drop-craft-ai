@@ -3,6 +3,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
 import { useProductFilters } from '@/hooks/useProductFilters';
@@ -60,7 +61,7 @@ export default function ChannableProductsPage() {
   
   const { auditResults, stats: auditStats } = useProductsAudit(products);
   
-  const { openModal } = useModalContext();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -73,7 +74,7 @@ export default function ChannableProductsPage() {
   const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null);
 
   const handleEdit = (product: any) => {
-    openModal('createProduct', { productId: product.id });
+    navigate(`/products/${product.id}/edit`);
   };
 
   const handleDelete = async (id: string) => {
@@ -177,7 +178,7 @@ export default function ChannableProductsPage() {
       id: 'add-product',
       label: 'Nouveau produit',
       icon: Plus,
-      onClick: () => openModal('createProduct', {}),
+      onClick: () => navigate('/products/create'),
       variant: 'primary'
     },
     {
@@ -257,7 +258,7 @@ export default function ChannableProductsPage() {
         }}
         primaryAction={{
           label: 'Nouveau produit',
-          onClick: () => openModal('createProduct', {}),
+          onClick: () => navigate('/products/create'),
           icon: Plus
         }}
         secondaryAction={{
