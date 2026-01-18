@@ -231,7 +231,6 @@ export function AppRoutes() {
         <Route path="/unified-dashboard" element={<Navigate to="/dashboard" replace />} />
         <Route path="/home-optimized" element={<Navigate to="/dashboard" replace />} />
         <Route path="/import/simplified" element={<Navigate to="/import" replace />} />
-        <Route path="/import/advanced" element={<Navigate to="/import" replace />} />
         
         {/* Admin Routes */}
         <Route path="/admin/*" element={
