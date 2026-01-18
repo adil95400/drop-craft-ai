@@ -7951,6 +7951,36 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_catalog_filters: {
+        Row: {
+          created_at: string
+          filters: Json
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters: Json
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       scheduled_tasks: {
         Row: {
           config: Json | null
@@ -9718,6 +9748,33 @@ export type Database = {
           priority?: string | null
           read_at?: string | null
           title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_product_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          product_data: Json | null
+          product_id: string
+          product_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_data?: Json | null
+          product_id: string
+          product_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_data?: Json | null
+          product_id?: string
+          product_type?: string
           user_id?: string
         }
         Relationships: []
