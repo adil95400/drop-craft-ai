@@ -128,10 +128,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Importer des produits',
     category: 'product',
     order: 1,
-    groupId: 'sources',
-    subModules: [
-      { id: 'import-advanced', name: 'Import Avancé', route: '/import/advanced', icon: 'Settings', description: 'Mapping et transformations', features: ['field-mapping'], order: 1 },
-    ]
+    groupId: 'sources'
   },
   
   suppliers: {
