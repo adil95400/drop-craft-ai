@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, X, Check, ExternalLink, AlertTriangle, Info, CheckCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,17 +16,20 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-interface Notification {
+interface SupplierNotification {
   id: string;
   notification_type: string;
-  priority: string;
   title: string;
   message: string;
+  severity: string;
   is_read: boolean;
   created_at: string;
-  action_url?: string;
-  action_label?: string;
-  data?: any;
+  metadata?: {
+    action_url?: string;
+    action_label?: string;
+    priority?: string;
+    [key: string]: unknown;
+  };
 }
 
 export function SupplierNotifications() {
@@ -38,18 +41,49 @@ export function SupplierNotifications() {
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['supplier-notifications'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       const { data, error } = await supabase
         .from('supplier_notifications')
         .select('*')
-        .eq('is_archived', false)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      return (data || []) as Notification[];
+      return (data || []) as SupplierNotification[];
     },
-    refetchInterval: 30000, // Rafraîchir toutes les 30s
+    refetchInterval: 30000,
   });
+
+  // Realtime subscription pour les nouvelles notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel('supplier-notifications-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'supplier_notifications'
+        },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['supplier-notifications'] });
+          const newNotif = payload.new as SupplierNotification;
+          toast({
+            title: newNotif.title,
+            description: newNotif.message,
+            variant: newNotif.severity === 'error' ? 'destructive' : 'default'
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient, toast]);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -58,7 +92,7 @@ export function SupplierNotifications() {
     mutationFn: async (notificationId: string) => {
       const { error } = await supabase
         .from('supplier_notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
+        .update({ is_read: true })
         .eq('id', notificationId);
 
       if (error) throw error;
@@ -71,9 +105,13 @@ export function SupplierNotifications() {
   // Marquer toutes comme lues
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
       const { error } = await supabase
         .from('supplier_notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
+        .update({ is_read: true })
+        .eq('user_id', user.id)
         .eq('is_read', false);
 
       if (error) throw error;
@@ -86,12 +124,12 @@ export function SupplierNotifications() {
     },
   });
 
-  // Archiver
-  const archiveMutation = useMutation({
+  // Supprimer une notification
+  const deleteMutation = useMutation({
     mutationFn: async (notificationId: string) => {
       const { error } = await supabase
         .from('supplier_notifications')
-        .update({ is_archived: true })
+        .delete()
         .eq('id', notificationId);
 
       if (error) throw error;
@@ -109,26 +147,26 @@ export function SupplierNotifications() {
         return <TrendingUp className="h-5 w-5 text-blue-600" />;
       case 'sync_error':
         return <AlertTriangle className="h-5 w-5 text-red-600" />;
-      case 'sync_completed':
+      case 'sync_complete':
       case 'import_completed':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case 'ai_recommendations':
+      case 'new_products':
         return <TrendingUp className="h-5 w-5 text-purple-600" />;
       default:
         return <Info className="h-5 w-5 text-blue-600" />;
     }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'critical':
+  const getSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case 'error':
         return <Badge variant="destructive">Critique</Badge>;
-      case 'high':
-        return <Badge variant="default" className="bg-orange-500">Élevée</Badge>;
-      case 'medium':
-        return <Badge variant="secondary">Moyenne</Badge>;
+      case 'warning':
+        return <Badge variant="default" className="bg-orange-500">Avertissement</Badge>;
+      case 'success':
+        return <Badge variant="default" className="bg-green-500">Succès</Badge>;
       default:
-        return <Badge variant="outline">Faible</Badge>;
+        return <Badge variant="outline">Info</Badge>;
     }
   };
 
@@ -147,7 +185,7 @@ export function SupplierNotifications() {
       
       <SheetContent className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Notifications</SheetTitle>
+          <SheetTitle>Notifications Fournisseurs</SheetTitle>
           <SheetDescription>
             {unreadCount > 0 ? `${unreadCount} notification(s) non lue(s)` : 'Aucune nouvelle notification'}
           </SheetDescription>
@@ -178,13 +216,16 @@ export function SupplierNotifications() {
                     <p className="text-muted-foreground text-center">
                       Aucune notification pour le moment
                     </p>
+                    <p className="text-sm text-muted-foreground text-center mt-2">
+                      Les alertes de synchronisation et mises à jour apparaîtront ici
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
                 notifications.map((notification) => (
                   <Card
                     key={notification.id}
-                    className={`${!notification.is_read ? 'border-primary' : ''} hover:shadow-md transition-shadow`}
+                    className={`${!notification.is_read ? 'border-primary bg-primary/5' : ''} hover:shadow-md transition-shadow`}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
@@ -197,7 +238,7 @@ export function SupplierNotifications() {
                             <h4 className={`font-semibold text-sm ${!notification.is_read ? 'text-foreground' : 'text-muted-foreground'}`}>
                               {notification.title}
                             </h4>
-                            {getPriorityBadge(notification.priority)}
+                            {getSeverityBadge(notification.severity)}
                           </div>
                           
                           <p className="text-sm text-muted-foreground mb-2">
@@ -210,14 +251,14 @@ export function SupplierNotifications() {
                             </span>
                             
                             <div className="flex items-center gap-2">
-                              {notification.action_url && notification.action_label && (
+                              {notification.metadata?.action_url && notification.metadata?.action_label && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => window.open(notification.action_url, '_blank')}
+                                  onClick={() => window.open(notification.metadata?.action_url, '_blank')}
                                 >
                                   <ExternalLink className="h-3 w-3 mr-1" />
-                                  {notification.action_label}
+                                  {notification.metadata.action_label}
                                 </Button>
                               )}
                               
@@ -234,7 +275,7 @@ export function SupplierNotifications() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => archiveMutation.mutate(notification.id)}
+                                onClick={() => deleteMutation.mutate(notification.id)}
                               >
                                 <X className="h-4 w-4" />
                               </Button>

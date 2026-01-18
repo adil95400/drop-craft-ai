@@ -8648,54 +8648,51 @@ export type Database = {
       }
       supplier_analytics: {
         Row: {
-          avg_delivery_time_days: number | null
-          communication_score: number | null
+          analytics_date: string
+          api_calls: number | null
+          api_errors: number | null
+          avg_margin: number | null
+          avg_response_time_ms: number | null
           created_at: string | null
-          defect_rate: number | null
           id: string
-          on_time_delivery_rate: number | null
-          period_end: string
-          period_start: string
-          quality_score: number | null
-          return_rate: number | null
+          orders_count: number | null
+          products_active: number | null
+          products_synced: number | null
+          revenue: number | null
           supplier_id: string | null
-          total_amount: number | null
-          total_orders: number | null
-          updated_at: string | null
+          sync_success_rate: number | null
           user_id: string
         }
         Insert: {
-          avg_delivery_time_days?: number | null
-          communication_score?: number | null
+          analytics_date?: string
+          api_calls?: number | null
+          api_errors?: number | null
+          avg_margin?: number | null
+          avg_response_time_ms?: number | null
           created_at?: string | null
-          defect_rate?: number | null
           id?: string
-          on_time_delivery_rate?: number | null
-          period_end: string
-          period_start: string
-          quality_score?: number | null
-          return_rate?: number | null
+          orders_count?: number | null
+          products_active?: number | null
+          products_synced?: number | null
+          revenue?: number | null
           supplier_id?: string | null
-          total_amount?: number | null
-          total_orders?: number | null
-          updated_at?: string | null
+          sync_success_rate?: number | null
           user_id: string
         }
         Update: {
-          avg_delivery_time_days?: number | null
-          communication_score?: number | null
+          analytics_date?: string
+          api_calls?: number | null
+          api_errors?: number | null
+          avg_margin?: number | null
+          avg_response_time_ms?: number | null
           created_at?: string | null
-          defect_rate?: number | null
           id?: string
-          on_time_delivery_rate?: number | null
-          period_end?: string
-          period_start?: string
-          quality_score?: number | null
-          return_rate?: number | null
+          orders_count?: number | null
+          products_active?: number | null
+          products_synced?: number | null
+          revenue?: number | null
           supplier_id?: string | null
-          total_amount?: number | null
-          total_orders?: number | null
-          updated_at?: string | null
+          sync_success_rate?: number | null
           user_id?: string
         }
         Relationships: [
@@ -8845,6 +8842,53 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_credentials: {
+        Row: {
+          created_at: string | null
+          credentials_encrypted: string
+          id: string
+          is_active: boolean | null
+          last_validated_at: string | null
+          supplier_id: string | null
+          supplier_type: string
+          updated_at: string | null
+          user_id: string
+          validation_status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credentials_encrypted: string
+          id?: string
+          is_active?: boolean | null
+          last_validated_at?: string | null
+          supplier_id?: string | null
+          supplier_type: string
+          updated_at?: string | null
+          user_id: string
+          validation_status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credentials_encrypted?: string
+          id?: string
+          is_active?: boolean | null
+          last_validated_at?: string | null
+          supplier_id?: string | null
+          supplier_type?: string
+          updated_at?: string | null
+          user_id?: string
+          validation_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_credentials_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_credentials_vault: {
         Row: {
           created_at: string | null
@@ -8896,12 +8940,11 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          is_archived: boolean | null
           is_read: boolean | null
-          message: string | null
+          message: string
           metadata: Json | null
           notification_type: string
-          priority: string | null
+          severity: string | null
           supplier_id: string | null
           title: string
           user_id: string
@@ -8909,12 +8952,11 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
-          is_archived?: boolean | null
           is_read?: boolean | null
-          message?: string | null
+          message: string
           metadata?: Json | null
           notification_type: string
-          priority?: string | null
+          severity?: string | null
           supplier_id?: string | null
           title: string
           user_id: string
@@ -8922,12 +8964,11 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
-          is_archived?: boolean | null
           is_read?: boolean | null
-          message?: string | null
+          message?: string
           metadata?: Json | null
           notification_type?: string
-          priority?: string | null
+          severity?: string | null
           supplier_id?: string | null
           title?: string
           user_id?: string
@@ -9159,6 +9200,159 @@ export type Database = {
           },
           {
             foreignKeyName: "supplier_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_sync_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          job_type: string
+          metadata: Json | null
+          products_created: number | null
+          products_failed: number | null
+          products_processed: number | null
+          products_updated: number | null
+          started_at: string | null
+          status: string
+          supplier_id: string | null
+          supplier_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          metadata?: Json | null
+          products_created?: number | null
+          products_failed?: number | null
+          products_processed?: number | null
+          products_updated?: number | null
+          started_at?: string | null
+          status?: string
+          supplier_id?: string | null
+          supplier_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          metadata?: Json | null
+          products_created?: number | null
+          products_failed?: number | null
+          products_processed?: number | null
+          products_updated?: number | null
+          started_at?: string | null
+          status?: string
+          supplier_id?: string | null
+          supplier_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_sync_jobs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_sync_logs: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          id: string
+          log_level: string
+          message: string
+          sync_job_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          log_level?: string
+          message: string
+          sync_job_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          log_level?: string
+          message?: string
+          sync_job_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_sync_logs_sync_job_id_fkey"
+            columns: ["sync_job_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_sync_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_sync_schedules: {
+        Row: {
+          created_at: string | null
+          cron_expression: string | null
+          frequency: string
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          next_run_at: string | null
+          supplier_id: string | null
+          sync_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          cron_expression?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          supplier_id?: string | null
+          sync_type?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          cron_expression?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          supplier_id?: string | null
+          sync_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_sync_schedules_supplier_id_fkey"
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
