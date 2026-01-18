@@ -46,13 +46,14 @@ export function useProductRules() {
     enabled: !!user?.id
   });
 
-  // Statistiques
+  // Statistiques - avec valeurs par défaut sécurisées
+  const safeRules = Array.isArray(rules) ? rules : [];
   const stats = {
-    totalRules: rules.length,
-    activeRules: rules.filter(r => r.enabled).length,
-    pausedRules: rules.filter(r => !r.enabled).length,
-    aiRules: rules.filter(r => r.actions?.some(a => a.type === 'generate_ai')).length,
-    totalExecutions: rules.reduce((sum, r) => sum + (r.executionCount || 0), 0)
+    totalRules: safeRules.length,
+    activeRules: safeRules.filter(r => r?.enabled).length,
+    pausedRules: safeRules.filter(r => !r?.enabled).length,
+    aiRules: safeRules.filter(r => r?.actions?.some(a => a?.type === 'generate_ai')).length,
+    totalExecutions: safeRules.reduce((sum, r) => sum + (r?.executionCount || 0), 0)
   };
 
   // Créer une règle

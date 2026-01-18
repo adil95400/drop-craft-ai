@@ -57,9 +57,11 @@ export function CatalogRuleCard({
   onDelete, 
   onToggle 
 }: CatalogRuleCardProps) {
-  const hasAI = rule.actions?.some(a => a.type === 'generate_ai');
-  const successRate = rule.executionCount 
-    ? Math.round((rule.successCount / rule.executionCount) * 100) 
+  const hasAI = rule?.actions?.some(a => a?.type === 'generate_ai') ?? false;
+  const executionCount = rule?.executionCount || 0;
+  const successCount = rule?.successCount || 0;
+  const successRate = executionCount > 0 
+    ? Math.round((successCount / executionCount) * 100) 
     : 0;
 
   return (
