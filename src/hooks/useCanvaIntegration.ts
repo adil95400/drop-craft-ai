@@ -28,7 +28,7 @@ export const useCanvaIntegration = () => {
   const queryClient = useQueryClient()
   const [isConnecting, setIsConnecting] = useState(false)
 
-  // Fetch Canva integration status from integrations table
+  // Fetch Canva integration status from canva_integrations table
   const { data: integration, isLoading: isLoadingIntegration } = useQuery({
     queryKey: ['canva-integration'],
     queryFn: async () => {
@@ -36,11 +36,10 @@ export const useCanvaIntegration = () => {
       if (!user) return null
 
       const { data, error } = await supabase
-        .from('integrations')
+        .from('canva_integrations')
         .select('*')
         .eq('user_id', user.id)
-        .eq('platform', 'canva')
-        .eq('connection_status', 'connected')
+        .eq('status', 'active')
         .maybeSingle()
 
       if (error) {
@@ -129,11 +128,10 @@ export const useCanvaIntegration = () => {
       if (!user) return false
 
       const { data, error } = await supabase
-        .from('integrations')
-        .select('id, connection_status')
+        .from('canva_integrations')
+        .select('id, status')
         .eq('user_id', user.id)
-        .eq('platform', 'canva')
-        .eq('connection_status', 'connected')
+        .eq('status', 'active')
         .maybeSingle()
 
       if (error) {
@@ -151,15 +149,23 @@ export const useCanvaIntegration = () => {
   const connectCanva = async () => {
     setIsConnecting(true)
     try {
+      const redirectUri = `${window.location.origin}/tools/canva-callback`
+      
       const { data, error } = await supabase.functions.invoke('canva-oauth', {
-        body: { action: 'initiate' }
+        body: { 
+          action: 'initiate',
+          redirect_uri: redirectUri
+        }
       })
 
       if (error) throw error
 
-      if (data?.authUrl) {
+      // Edge function returns auth_url (snake_case)
+      const authUrl = data?.auth_url || data?.authUrl
+      
+      if (authUrl) {
         const popup = window.open(
-          data.authUrl,
+          authUrl,
           'canva-auth',
           'width=600,height=700,scrollbars=yes,resizable=yes'
         )
@@ -169,26 +175,21 @@ export const useCanvaIntegration = () => {
             window.removeEventListener('message', handleMessage)
             if (popup) popup.close()
             
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user && event.data.tokens) {
-              await supabase.from('integrations').upsert({
-                user_id: user.id,
-                platform: 'canva',
-                platform_name: 'Canva',
-                connection_status: 'connected',
-                is_active: true,
-                access_token_encrypted: event.data.tokens.access_token,
-                refresh_token_encrypted: event.data.tokens.refresh_token,
-              })
-              
+            if (event.data.success) {
               queryClient.invalidateQueries({ queryKey: ['canva-integration'] })
+              setIsConnecting(false)
+              toast({
+                title: "Connexion réussie",
+                description: "Canva connecté avec succès",
+              })
+            } else {
+              setIsConnecting(false)
+              toast({
+                title: "Erreur",
+                description: event.data.error || "Échec de la connexion",
+                variant: "destructive"
+              })
             }
-
-            setIsConnecting(false)
-            toast({
-              title: "Connexion réussie",
-              description: "Canva connecté avec succès",
-            })
           }
         }
 
@@ -206,14 +207,14 @@ export const useCanvaIntegration = () => {
           }
         }, 120000)
       } else {
-        throw new Error('No auth URL received')
+        throw new Error('No auth URL received from server')
       }
     } catch (error) {
       console.error('Canva connection error:', error)
       setIsConnecting(false)
       toast({
         title: "Erreur de connexion",
-        description: "Impossible de se connecter à Canva. Veuillez réessayer.",
+        description: error instanceof Error ? error.message : "Impossible de se connecter à Canva",
         variant: "destructive"
       })
     }
@@ -225,10 +226,9 @@ export const useCanvaIntegration = () => {
       if (!user) return
 
       await supabase
-        .from('integrations')
-        .update({ connection_status: 'disconnected', is_active: false })
+        .from('canva_integrations')
+        .update({ status: 'disconnected' })
         .eq('user_id', user.id)
-        .eq('platform', 'canva')
 
       queryClient.invalidateQueries({ queryKey: ['canva-integration'] })
       queryClient.invalidateQueries({ queryKey: ['canva-designs'] })

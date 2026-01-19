@@ -38,11 +38,14 @@ export default function CanvaOAuthCallback() {
 
       try {
         // Appeler l'edge function pour échanger le code
+        const redirectUri = `${window.location.origin}/tools/canva-callback`
+        
         const { data, error: apiError } = await supabase.functions.invoke('canva-oauth', {
           body: { 
             action: 'callback',
             code,
-            state
+            state,
+            redirect_uri: redirectUri
           }
         });
 
