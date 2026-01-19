@@ -248,6 +248,7 @@ export default function SupportMainPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab] = useState('faq');
+  const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
 
   // Hooks
   const { tickets: supportTickets, isLoadingTickets, createTicket, isCreatingTicket } = useSupportTickets();
@@ -509,7 +510,10 @@ export default function SupportMainPage() {
                   <h2 className="text-xl font-semibold">Mes Tickets de Support</h2>
                   <p className="text-sm text-muted-foreground">Suivez l'état de vos demandes</p>
                 </div>
-                <Button className="bg-gradient-to-r from-primary to-primary/80">
+                <Button 
+                  className="bg-gradient-to-r from-primary to-primary/80"
+                  onClick={() => setIsCreateTicketOpen(true)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Nouveau Ticket
                 </Button>
@@ -651,6 +655,12 @@ export default function SupportMainPage() {
             </TabsContent>
           </Tabs>
       </ChannablePageWrapper>
+
+      {/* Create Ticket Dialog */}
+      <CreateTicketDialog
+        open={isCreateTicketOpen}
+        onOpenChange={setIsCreateTicketOpen}
+      />
     </ChannableLayout>
   );
 }
