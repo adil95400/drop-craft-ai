@@ -112,6 +112,10 @@ export function AppRoutes() {
         <Route path="/dashboard/profile" element={<Navigate to="/profile" replace />} />
         <Route path="/dashboard/subscription" element={<Navigate to="/subscription" replace />} />
         
+        {/* Profile & Subscription direct routes */}
+        <Route path="/profile" element={<ProtectedRoute><ChannableLayout><Navigate to="/dashboard/profile" replace /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/subscription" element={<ProtectedRoute><ChannableLayout><Navigate to="/subscription-dashboard" replace /></ChannableLayout></ProtectedRoute>} />
+        
         {/* Autres redirections standardisées */}
         <Route path="/tracking" element={<Navigate to="/orders" replace />} />
         <Route path="/crm" element={<Navigate to="/customers" replace />} />
@@ -225,7 +229,7 @@ export function AppRoutes() {
         <Route path="/guides/getting-started" element={<GettingStartedPage />} />
         <Route path="/academy" element={<AcademyHomePage />} />
         <Route path="/academy/course/:id" element={<AcademyHomePage />} />
-        <Route path="/support" element={<ProtectedRoute><SupportMainPage /></ProtectedRoute>} />
+        <Route path="/support" element={<ProtectedRoute><ChannableLayout><SupportMainPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Legacy redirects consolidés */}
         <Route path="/modern/*" element={<Navigate to="/dashboard" replace />} />
