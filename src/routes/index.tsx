@@ -123,6 +123,10 @@ export function AppRoutes() {
         <Route path="/modern" element={<Navigate to="/dashboard" replace />} />
         <Route path="/catalog" element={<Navigate to="/products/catalogue" replace />} />
         
+        {/* API Documentation redirect */}
+        <Route path="/api/documentation" element={<Navigate to="/integrations/api/documentation" replace />} />
+        <Route path="/api/*" element={<Navigate to="/integrations/api/documentation" replace />} />
+        
         {/* SEO Routes Direct - Redirect to marketing/seo */}
         <Route path="/seo" element={<Navigate to="/marketing/seo" replace />} />
         <Route path="/seo/rank-tracker" element={<Navigate to="/marketing/seo/rank-tracker" replace />} />
