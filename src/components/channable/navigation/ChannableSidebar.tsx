@@ -495,6 +495,7 @@ FavoritesSection.displayName = 'FavoritesSection'
 const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
   const { profile, signOut } = useUnifiedAuth()
   const prefersReducedMotion = useReducedMotion()
+  const navigate = useNavigate()
   
   const planStyle = PLAN_STYLES[profile?.plan || 'standard'] || PLAN_STYLES.standard
   
@@ -552,6 +553,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
             size="sm" 
             className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             aria-label="Aide et support"
+            onClick={() => navigate('/support')}
           >
             <HelpCircle className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             Aide
@@ -561,6 +563,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
             size="sm" 
             className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             aria-label="Configuration"
+            onClick={() => navigate('/settings')}
           >
             <Settings className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             Config
