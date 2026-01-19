@@ -22,8 +22,18 @@ import {
   FileText, ExternalLink, Clock, CheckCircle, AlertCircle, Zap,
   LifeBuoy, Headphones, GraduationCap, ArrowRight, Sparkles,
   ThumbsUp, ThumbsDown, Plus, RefreshCw, Send, Star, TrendingUp,
-  Users, Shield, Rocket, X
+  Users, Shield, Rocket, X, Bot
 } from 'lucide-react';
+
+// Hooks & Components
+import { useSupportTickets, SupportTicket as DBSupportTicket } from '@/hooks/useSupportTickets';
+import { useFaqFeedback } from '@/hooks/useFaqFeedback';
+import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
+import { TicketDetailModal } from '@/components/support/TicketDetailModal';
+import { TicketsList } from '@/components/support/TicketsList';
+import { SystemStatusCard } from '@/components/support/SystemStatusCard';
+import { AIAssistantWidget } from '@/components/support/AIAssistantWidget';
+import { SupportQuickActions } from '@/components/support/SupportQuickActions';
 
 // Types
 interface FAQItem {
@@ -32,15 +42,6 @@ interface FAQItem {
   answer: string;
   category: string;
   helpful: number;
-}
-
-interface SupportTicket {
-  id: string;
-  subject: string;
-  status: 'open' | 'pending' | 'resolved';
-  priority: 'low' | 'medium' | 'high';
-  created: Date;
-  lastUpdate: Date;
 }
 
 // Data
@@ -89,32 +90,7 @@ const faqData: FAQItem[] = [
   }
 ];
 
-const supportTickets: SupportTicket[] = [
-  {
-    id: 'TICK-001',
-    subject: 'Problème de synchronisation des stocks',
-    status: 'open',
-    priority: 'high',
-    created: new Date('2024-01-15'),
-    lastUpdate: new Date('2024-01-16')
-  },
-  {
-    id: 'TICK-002',
-    subject: 'Question sur l\'API automation',
-    status: 'pending',
-    priority: 'medium',
-    created: new Date('2024-01-14'),
-    lastUpdate: new Date('2024-01-15')
-  },
-  {
-    id: 'TICK-003',
-    subject: 'Demande de fonctionnalité',
-    status: 'resolved',
-    priority: 'low',
-    created: new Date('2024-01-10'),
-    lastUpdate: new Date('2024-01-12')
-  }
-];
+// Static tickets removed - now using database via useSupportTickets hook
 
 // Stat Card Component
 interface StatCardProps {
