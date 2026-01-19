@@ -687,6 +687,48 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_configurations: {
+        Row: {
+          alert_type: string
+          channels: string[] | null
+          conditions: Json | null
+          created_at: string | null
+          id: string
+          is_enabled: boolean | null
+          priority: number | null
+          threshold_percent: number | null
+          threshold_value: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          channels?: string[] | null
+          conditions?: Json | null
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          priority?: number | null
+          threshold_percent?: number | null
+          threshold_value?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          channels?: string[] | null
+          conditions?: Json | null
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          priority?: number | null
+          threshold_percent?: number | null
+          threshold_value?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       analytics_dashboards: {
         Row: {
           created_at: string
@@ -7758,6 +7800,95 @@ export type Database = {
           max_uses?: number | null
           min_purchase_amount?: number | null
           starts_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_notification_logs: {
+        Row: {
+          body: string | null
+          clicked_at: string | null
+          created_at: string | null
+          data: Json | null
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          sent_at: string | null
+          status: string | null
+          subscription_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          clicked_at?: string | null
+          created_at?: string | null
+          data?: Json | null
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          clicked_at?: string | null
+          created_at?: string | null
+          data?: Json | null
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_notification_logs_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "push_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          created_at: string | null
+          device_info: Json | null
+          endpoint: string
+          id: string
+          is_active: boolean | null
+          keys: Json | null
+          platform: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: Json | null
+          endpoint: string
+          id?: string
+          is_active?: boolean | null
+          keys?: Json | null
+          platform?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: Json | null
+          endpoint?: string
+          id?: string
+          is_active?: boolean | null
+          keys?: Json | null
+          platform?: string | null
           updated_at?: string | null
           user_id?: string
         }
