@@ -9,6 +9,7 @@ const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPage'));
 const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
 const IntelligencePage = lazy(() => import('@/pages/Intelligence'));
+const CanvaOAuthCallback = lazy(() => import('@/pages/CanvaOAuthCallback'));
 
 export function ToolsRoutes() {
   return (
@@ -21,6 +22,9 @@ export function ToolsRoutes() {
       <Route path="bulk-content" element={<BulkContentCreationPage />} />
       <Route path="schema-generator" element={<SchemaGenerator />} />
       <Route path="intelligence" element={<IntelligencePage />} />
+      
+      {/* Canva OAuth Callback */}
+      <Route path="canva-callback" element={<CanvaOAuthCallback />} />
       
       {/* Legacy redirects */}
       <Route path="calculator" element={<Navigate to="/tools/profit-calculator" replace />} />
