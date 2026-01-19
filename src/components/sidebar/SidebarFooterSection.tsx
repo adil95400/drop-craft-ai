@@ -76,7 +76,7 @@ export const SidebarFooterSection = memo<SidebarFooterSectionProps>(({ collapsed
             "flex items-center gap-2 p-1.5 rounded-md bg-sidebar-accent/30 hover:bg-sidebar-accent/50 transition-colors cursor-pointer",
             collapsed && "justify-center p-1"
           )} 
-          onClick={() => handleNavigate('/profile')}
+          onClick={() => handleNavigate('/dashboard/profile')}
         >
           <div className="relative flex-shrink-0">
             <div className={cn(
