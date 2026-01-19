@@ -1,5 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Workflow } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { WorkflowBuilderDashboard } from '@/components/workflows';
 
 export default function WorkflowBuilderPage() {
@@ -10,16 +12,15 @@ export default function WorkflowBuilderPage() {
         <meta name="description" content="Créez et gérez vos workflows d'automatisation" />
       </Helmet>
       
-      <div className="container mx-auto py-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Workflow Builder</h1>
-          <p className="text-muted-foreground">
-            Automatisez vos processus avec des workflows personnalisés
-          </p>
-        </div>
-
+      <ChannablePageWrapper
+        title="Workflow Builder"
+        subtitle="Automation"
+        description="Automatisez vos processus avec des workflows personnalisés"
+        heroImage="ai"
+        badge={{ label: "Visual Builder", icon: Workflow }}
+      >
         <WorkflowBuilderDashboard />
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }

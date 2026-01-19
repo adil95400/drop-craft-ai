@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PromotionsAutomationPage() {
   const { user } = useAuthOptimized()
@@ -22,15 +23,13 @@ export default function PromotionsAutomationPage() {
         <meta name="description" content="Créez et gérez vos promotions multi-marketplace automatiquement" />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">
-            🎯 Promotions Automatisées
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Créez et déployez vos campagnes promotionnelles sur tous vos canaux de vente
-          </p>
-        </div>
+      <ChannablePageWrapper
+        title="🎯 Promotions Automatisées"
+        subtitle="Marketing"
+        description="Créez et déployez vos campagnes promotionnelles sur tous vos canaux de vente"
+        heroImage="marketing"
+        badge={{ label: "Multi-Channel", icon: Tag }}
+      >
 
         {/* Quick Stats */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -311,7 +310,7 @@ export default function PromotionsAutomationPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }

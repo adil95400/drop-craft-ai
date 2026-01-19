@@ -4,6 +4,7 @@ import { Play, Instagram, Facebook, MapPin } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TikTokShopConnector } from '@/components/marketplace/TikTokShopConnector'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function SocialCommercePage() {
   return (
@@ -11,17 +12,13 @@ export default function SocialCommercePage() {
       <Helmet>
         <title>Social Commerce - ShopOpti</title>
       </Helmet>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-lg bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30">
-            <Play className="h-6 w-6 text-pink-500" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Social Commerce</h1>
-            <p className="text-muted-foreground">Vendez directement sur TikTok Shop</p>
-          </div>
-        </div>
-
+      <ChannablePageWrapper
+        title="Social Commerce"
+        subtitle="Marketing"
+        description="Vendez directement sur TikTok Shop, Instagram et autres réseaux sociaux"
+        heroImage="marketing"
+        badge={{ label: "Social", icon: Play }}
+      >
         <Tabs defaultValue="tiktok" className="mt-8">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="tiktok"><Play className="h-4 w-4 mr-2" />TikTok Shop</TabsTrigger>
@@ -55,7 +52,7 @@ export default function SocialCommercePage() {
             </CardContent></Card>
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   )
 }

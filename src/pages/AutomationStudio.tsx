@@ -16,6 +16,7 @@ import {
   CheckCircle,
   TrendingUp
 } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function AutomationStudio() {
   const [activeTab, setActiveTab] = useState('builder');
@@ -75,23 +76,13 @@ export default function AutomationStudio() {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Bot className="h-8 w-8 text-primary" />
-            Automation Studio
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Suite complète d'outils d'automatisation pour optimiser votre business
-          </p>
-        </div>
-        <Badge variant="default" className="flex items-center gap-1">
-          <Sparkles className="h-4 w-4" />
-          Powered by AI
-        </Badge>
-      </div>
+    <ChannablePageWrapper
+      title="Automation Studio"
+      subtitle="Automation"
+      description="Suite complète d'outils d'automatisation pour optimiser votre business"
+      heroImage="ai"
+      badge={{ label: "AI Powered", icon: Bot }}
+    >
 
       {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -341,6 +332,6 @@ export default function AutomationStudio() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }

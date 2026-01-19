@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Award, Star, Gift, Users, TrendingUp, Crown, Plus, Trash2, Loader2 } from 'lucide-react';
 import { useLoyaltyProgram } from '@/hooks/useLoyaltyProgram';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const iconMap: Record<string, React.ElementType> = {
   award: Award,
@@ -57,14 +58,13 @@ const LoyaltyProgramPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Programme de fidélité</h1>
-          <p className="text-muted-foreground">
-            Récompensez vos clients fidèles
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Programme de fidélité"
+      subtitle="Marketing"
+      description="Récompensez vos clients fidèles avec un système de points et de récompenses"
+      heroImage="marketing"
+      badge={{ label: "Loyalty", icon: Award }}
+      actions={
         <Dialog open={rewardDialogOpen} onOpenChange={setRewardDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -110,7 +110,8 @@ const LoyaltyProgramPage: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -392,7 +393,7 @@ const LoyaltyProgramPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 

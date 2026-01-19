@@ -11,6 +11,7 @@ import {
   DollarSign, Eye, MousePointer, Target, RefreshCw 
 } from 'lucide-react';
 import { useRealAdsManager } from '@/hooks/useRealAdsManager';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { cn } from '@/lib/utils';
 
 export default function AdsManagerPage() {
@@ -50,26 +51,25 @@ export default function AdsManagerPage() {
         <title>AI Ads Manager - Automatisation & Optimisation</title>
         <meta name="description" content="Gérez vos campagnes publicitaires avec l'IA : création automatique, A/B testing et optimisation en temps réel" />
       </Helmet>
-      <div className="container mx-auto p-6">
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold">AI Ads Manager</h1>
-              <p className="text-muted-foreground mt-2">
-                Gérez et optimisez vos campagnes publicitaires avec l'IA
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Actualiser
-              </Button>
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nouvelle Campagne
-              </Button>
-            </div>
+      <ChannablePageWrapper
+        title="AI Ads Manager"
+        subtitle="Marketing"
+        description="Gérez et optimisez vos campagnes publicitaires avec l'IA"
+        heroImage="marketing"
+        badge={{ label: "AI Powered", icon: Sparkles }}
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualiser
+            </Button>
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nouvelle Campagne
+            </Button>
           </div>
+        }
+      >
 
           {/* Stats Overview */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -339,8 +339,7 @@ export default function AdsManagerPage() {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
+        </ChannablePageWrapper>
     </>
   );
 }
