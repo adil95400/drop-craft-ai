@@ -9,39 +9,44 @@ import {
 import { useSupportedCurrencies, getCurrencySymbol } from '@/hooks/useCurrency';
 import { DollarSign, Loader2 } from 'lucide-react';
 
-// Liste de devises par défaut en fallback
+// Liste de devises par défaut en fallback avec drapeaux
 const DEFAULT_CURRENCIES = [
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'USD', symbol: '$', name: 'Dollar américain' },
-  { code: 'GBP', symbol: '£', name: 'Livre sterling' },
-  { code: 'CNY', symbol: '¥', name: 'Yuan chinois' },
-  { code: 'JPY', symbol: '¥', name: 'Yen japonais' },
-  { code: 'CAD', symbol: 'C$', name: 'Dollar canadien' },
-  { code: 'AUD', symbol: 'A$', name: 'Dollar australien' },
-  { code: 'CHF', symbol: 'CHF', name: 'Franc suisse' },
-  { code: 'HKD', symbol: 'HK$', name: 'Dollar de Hong Kong' },
-  { code: 'SGD', symbol: 'S$', name: 'Dollar de Singapour' },
-  { code: 'SEK', symbol: 'kr', name: 'Couronne suédoise' },
-  { code: 'NOK', symbol: 'kr', name: 'Couronne norvégienne' },
-  { code: 'DKK', symbol: 'kr', name: 'Couronne danoise' },
-  { code: 'PLN', symbol: 'zł', name: 'Zloty polonais' },
-  { code: 'CZK', symbol: 'Kč', name: 'Couronne tchèque' },
-  { code: 'TRY', symbol: '₺', name: 'Livre turque' },
-  { code: 'INR', symbol: '₹', name: 'Roupie indienne' },
-  { code: 'BRL', symbol: 'R$', name: 'Réal brésilien' },
-  { code: 'MXN', symbol: '$', name: 'Peso mexicain' },
-  { code: 'ZAR', symbol: 'R', name: 'Rand sud-africain' },
-  { code: 'KRW', symbol: '₩', name: 'Won sud-coréen' },
-  { code: 'THB', symbol: '฿', name: 'Baht thaïlandais' },
-  { code: 'MYR', symbol: 'RM', name: 'Ringgit malaisien' },
-  { code: 'PHP', symbol: '₱', name: 'Peso philippin' },
-  { code: 'IDR', symbol: 'Rp', name: 'Roupie indonésienne' },
-  { code: 'VND', symbol: '₫', name: 'Dong vietnamien' },
-  { code: 'RUB', symbol: '₽', name: 'Rouble russe' },
-  { code: 'HUF', symbol: 'Ft', name: 'Forint hongrois' },
-  { code: 'RON', symbol: 'lei', name: 'Leu roumain' },
-  { code: 'BGN', symbol: 'лв', name: 'Lev bulgare' },
+  { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺' },
+  { code: 'USD', symbol: '$', name: 'Dollar américain', flag: '🇺🇸' },
+  { code: 'GBP', symbol: '£', name: 'Livre sterling', flag: '🇬🇧' },
+  { code: 'CNY', symbol: '¥', name: 'Yuan chinois', flag: '🇨🇳' },
+  { code: 'JPY', symbol: '¥', name: 'Yen japonais', flag: '🇯🇵' },
+  { code: 'CAD', symbol: 'C$', name: 'Dollar canadien', flag: '🇨🇦' },
+  { code: 'AUD', symbol: 'A$', name: 'Dollar australien', flag: '🇦🇺' },
+  { code: 'CHF', symbol: 'CHF', name: 'Franc suisse', flag: '🇨🇭' },
+  { code: 'HKD', symbol: 'HK$', name: 'Dollar de Hong Kong', flag: '🇭🇰' },
+  { code: 'SGD', symbol: 'S$', name: 'Dollar de Singapour', flag: '🇸🇬' },
+  { code: 'SEK', symbol: 'kr', name: 'Couronne suédoise', flag: '🇸🇪' },
+  { code: 'NOK', symbol: 'kr', name: 'Couronne norvégienne', flag: '🇳🇴' },
+  { code: 'DKK', symbol: 'kr', name: 'Couronne danoise', flag: '🇩🇰' },
+  { code: 'PLN', symbol: 'zł', name: 'Zloty polonais', flag: '🇵🇱' },
+  { code: 'CZK', symbol: 'Kč', name: 'Couronne tchèque', flag: '🇨🇿' },
+  { code: 'TRY', symbol: '₺', name: 'Livre turque', flag: '🇹🇷' },
+  { code: 'INR', symbol: '₹', name: 'Roupie indienne', flag: '🇮🇳' },
+  { code: 'BRL', symbol: 'R$', name: 'Réal brésilien', flag: '🇧🇷' },
+  { code: 'MXN', symbol: '$', name: 'Peso mexicain', flag: '🇲🇽' },
+  { code: 'ZAR', symbol: 'R', name: 'Rand sud-africain', flag: '🇿🇦' },
+  { code: 'KRW', symbol: '₩', name: 'Won sud-coréen', flag: '🇰🇷' },
+  { code: 'THB', symbol: '฿', name: 'Baht thaïlandais', flag: '🇹🇭' },
+  { code: 'MYR', symbol: 'RM', name: 'Ringgit malaisien', flag: '🇲🇾' },
+  { code: 'PHP', symbol: '₱', name: 'Peso philippin', flag: '🇵🇭' },
+  { code: 'IDR', symbol: 'Rp', name: 'Roupie indonésienne', flag: '🇮🇩' },
+  { code: 'VND', symbol: '₫', name: 'Dong vietnamien', flag: '🇻🇳' },
+  { code: 'RUB', symbol: '₽', name: 'Rouble russe', flag: '🇷🇺' },
+  { code: 'HUF', symbol: 'Ft', name: 'Forint hongrois', flag: '🇭🇺' },
+  { code: 'RON', symbol: 'lei', name: 'Leu roumain', flag: '🇷🇴' },
+  { code: 'BGN', symbol: 'лв', name: 'Lev bulgare', flag: '🇧🇬' },
 ];
+
+// Map code devise -> drapeau pour lookup rapide
+const FLAG_MAP: Record<string, string> = Object.fromEntries(
+  DEFAULT_CURRENCIES.map(c => [c.code, c.flag])
+);
 
 interface CurrencySelectorProps {
   value: string;
@@ -77,6 +82,7 @@ export function CurrencySelector({
           <SelectValue placeholder="Sélectionner une devise">
             {value && (
               <span className="flex items-center gap-2">
+                <span className="text-base">{FLAG_MAP[value] || '🏳️'}</span>
                 <span className="font-medium">{getCurrencySymbol(value)}</span>
                 <span>{value}</span>
               </span>
@@ -96,6 +102,7 @@ export function CurrencySelector({
               className="cursor-pointer"
             >
               <span className="flex items-center gap-2">
+                <span className="text-base">{FLAG_MAP[currency.code] || '🏳️'}</span>
                 {showSymbol && (
                   <span className="w-6 text-center font-medium">
                     {currency.symbol}
@@ -135,6 +142,7 @@ export function CurrencySelectorCompact({
         {currencyList.slice(0, 10).map((currency) => (
           <SelectItem key={currency.code} value={currency.code} className="text-xs">
             <span className="flex items-center gap-1">
+              <span>{FLAG_MAP[currency.code] || '🏳️'}</span>
               <span className="w-4">{currency.symbol}</span>
               <span>{currency.code}</span>
             </span>
