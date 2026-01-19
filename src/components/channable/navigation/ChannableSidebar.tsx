@@ -518,7 +518,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
             planStyle.gradient
           )}
           whileHover={prefersReducedMotion ? undefined : { scale: 1.05, rotate: 2 }}
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/dashboard/profile')}
           role="button"
           aria-label="Voir mon profil"
         >
@@ -532,7 +532,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
               animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
               exit={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
               className="flex-1 min-w-0 cursor-pointer group"
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate('/dashboard/profile')}
               role="button"
               aria-label="Voir mon profil"
             >
@@ -540,7 +540,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
                 {profile?.full_name || 'Utilisateur'}
               </p>
               <button 
-                onClick={(e) => { e.stopPropagation(); navigate('/subscription') }}
+                onClick={(e) => { e.stopPropagation(); navigate('/subscription-dashboard') }}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                 aria-label="Voir mon abonnement"
               >
@@ -569,7 +569,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
             size="sm" 
             className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             aria-label="Mon profil"
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/dashboard/profile')}
           >
             <User className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
