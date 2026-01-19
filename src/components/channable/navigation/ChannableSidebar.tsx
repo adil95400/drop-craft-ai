@@ -15,7 +15,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   ChevronDown, ChevronRight, Search, Star, Lock, Crown,
-  Package, Settings, HelpCircle
+  Package, Settings, HelpCircle, User
 } from "lucide-react"
 import { 
   Sidebar, SidebarContent, SidebarHeader, SidebarFooter,
@@ -491,13 +491,20 @@ const FavoritesSection = memo(({
 })
 FavoritesSection.displayName = 'FavoritesSection'
 
-// Footer Premium avec profil utilisateur
+// Footer Premium avec profil utilisateur cliquable
 const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
   const { profile, signOut } = useUnifiedAuth()
   const prefersReducedMotion = useReducedMotion()
   const navigate = useNavigate()
   
   const planStyle = PLAN_STYLES[profile?.plan || 'standard'] || PLAN_STYLES.standard
+  
+  const planLabel = {
+    'ultra_pro': 'Ultra Pro',
+    'pro': 'Pro',
+    'standard': 'Standard',
+    'free': 'Free'
+  }[profile?.plan || 'standard'] || 'Standard'
   
   return (
     <SidebarFooter className="border-t border-sidebar-border/50 p-3 bg-sidebar-muted/20 dark:bg-sidebar-muted/10">
@@ -507,11 +514,13 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
       )}>
         <motion.div 
           className={cn(
-            "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg",
+            "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg cursor-pointer",
             planStyle.gradient
           )}
           whileHover={prefersReducedMotion ? undefined : { scale: 1.05, rotate: 2 }}
-          aria-hidden="true"
+          onClick={() => navigate('/profile')}
+          role="button"
+          aria-label="Voir mon profil"
         >
           {profile?.full_name?.[0]?.toUpperCase() || 'U'}
         </motion.div>
@@ -522,17 +531,24 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
               initial={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
               animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
               exit={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
-              className="flex-1 min-w-0"
+              className="flex-1 min-w-0 cursor-pointer group"
+              onClick={() => navigate('/profile')}
+              role="button"
+              aria-label="Voir mon profil"
             >
-              <p className="text-sm font-semibold truncate text-foreground">
+              <p className="text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors">
                 {profile?.full_name || 'Utilisateur'}
               </p>
-              <div className="flex items-center gap-1.5">
+              <button 
+                onClick={(e) => { e.stopPropagation(); navigate('/subscription') }}
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                aria-label="Voir mon abonnement"
+              >
                 <Crown className="h-3 w-3 text-amber-500" aria-hidden="true" />
-                <p className="text-[11px] text-muted-foreground/70 capitalize">
-                  {profile?.plan || 'Standard'}
+                <p className="text-[11px] text-muted-foreground/70">
+                  {planLabel}
                 </p>
-              </div>
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -546,8 +562,17 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
         <motion.div
           initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={prefersReducedMotion ? false : { opacity: 1 }}
-          className="mt-3 grid grid-cols-2 gap-2"
+          className="mt-3 grid grid-cols-3 gap-1.5"
         >
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            aria-label="Mon profil"
+            onClick={() => navigate('/profile')}
+          >
+            <User className="h-3.5 w-3.5" aria-hidden="true" />
+          </Button>
           <Button 
             variant="ghost" 
             size="sm" 
@@ -555,8 +580,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
             aria-label="Aide et support"
             onClick={() => navigate('/support')}
           >
-            <HelpCircle className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
-            Aide
+            <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
           <Button 
             variant="ghost" 
@@ -565,8 +589,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
             aria-label="Configuration"
             onClick={() => navigate('/settings')}
           >
-            <Settings className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
-            Config
+            <Settings className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         </motion.div>
       )}
@@ -583,7 +606,7 @@ export function ChannableSidebar() {
   const navigate = useNavigate()
   
   const [searchQuery, setSearchQuery] = useState("")
-  const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['home', 'catalog', 'channels', 'marketing'])
+  const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['home', 'catalog'])
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({ marketing: true })
   
   // Debounce search for better performance

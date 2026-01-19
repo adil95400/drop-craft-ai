@@ -630,8 +630,36 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 8. SETTINGS - Configuration & Administration (8 modules)
+  // 8. SETTINGS - Configuration & Administration (10 modules)
   // ═══════════════════════════════════════════════════════════════════════════
+  
+  profile: {
+    id: 'profile',
+    name: 'Mon Profil',
+    icon: 'User',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/profile',
+    features: ['profile', 'avatar', 'preferences'],
+    description: 'Gérer votre profil',
+    category: 'system',
+    order: 0,
+    groupId: 'settings'
+  },
+
+  subscription: {
+    id: 'subscription',
+    name: 'Abonnement',
+    icon: 'CreditCard',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/subscription',
+    features: ['plan', 'billing', 'invoices'],
+    description: 'Gérer votre abonnement',
+    category: 'system',
+    order: 0.5,
+    groupId: 'settings'
+  },
   
   settings: {
     id: 'settings',
@@ -644,7 +672,13 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Configuration générale',
     category: 'system',
     order: 1,
-    groupId: 'settings'
+    groupId: 'settings',
+    subModules: [
+      { id: 'settings-general', name: 'Général', route: '/settings', icon: 'Settings', description: 'Paramètres généraux', features: ['general'], order: 1 },
+      { id: 'settings-api', name: 'API', route: '/settings/api', icon: 'Key', description: 'Gestion API', features: ['api'], order: 2 },
+      { id: 'settings-billing', name: 'Facturation', route: '/settings/billing', icon: 'Receipt', description: 'Facturation', features: ['billing'], order: 3 },
+      { id: 'settings-security', name: 'Sécurité', route: '/settings/security', icon: 'Shield', description: 'Sécurité du compte', features: ['security'], order: 4 },
+    ]
   },
   
   integrations: {
