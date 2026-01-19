@@ -23,7 +23,6 @@ interface AlertRule {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -39,7 +38,6 @@ serve(async (req) => {
       }
     )
 
-    // Get user from JWT
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       console.log('Auth error:', authError)
@@ -54,36 +52,58 @@ serve(async (req) => {
 
     console.log(`Observability API - ${method} ${pathname} - User: ${user.id}`)
 
-    // GET /observability/metrics - Get real-time metrics
+    // GET /observability/metrics - Get real metrics from database
     if (method === 'GET' && pathname === '/observability/metrics') {
       const url = new URL(req.url)
-      const timeRange = url.searchParams.get('range') || '1h'
-      
-      // Generate real-time metrics (in production, this would come from monitoring systems)
+      const timeRange = url.searchParams.get('range') || '24h'
+      const hours = parseInt(timeRange.replace('h', '')) || 24
+      const startTime = new Date()
+      startTime.setHours(startTime.getHours() - hours)
+
+      // Fetch real metrics from database
+      const [ordersResult, productsResult, apiLogsResult, activeAlertsResult] = await Promise.all([
+        supabase.from('orders').select('id, total_amount, created_at').gte('created_at', startTime.toISOString()),
+        supabase.from('products').select('id').eq('user_id', user.id),
+        supabase.from('api_logs').select('response_time_ms, status_code').gte('created_at', startTime.toISOString()).limit(500),
+        supabase.from('active_alerts').select('id').eq('user_id', user.id).eq('status', 'active')
+      ])
+
+      const orders = ordersResult.data || []
+      const products = productsResult.data || []
+      const apiLogs = apiLogsResult.data || []
+      const activeAlerts = activeAlertsResult.data || []
+
+      // Calculate real metrics
+      const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0)
+      const avgResponseTime = apiLogs.length > 0 
+        ? apiLogs.reduce((sum, l) => sum + (l.response_time_ms || 0), 0) / apiLogs.length 
+        : 0
+      const errorCount = apiLogs.filter(l => l.status_code >= 400).length
+      const errorRate = apiLogs.length > 0 ? (errorCount / apiLogs.length) * 100 : 0
+
       const metrics = {
         system: {
-          cpu_usage: Math.floor(Math.random() * 40) + 30, // 30-70%
-          memory_usage: Math.floor(Math.random() * 30) + 40, // 40-70%
-          disk_usage: Math.floor(Math.random() * 20) + 50, // 50-70%
-          network_io: Math.floor(Math.random() * 100) + 50 // MB/s
+          cpu_usage: null, // Infrastructure metrics require external monitoring integration
+          memory_usage: null,
+          disk_usage: null,
+          network_io: null
         },
         application: {
-          active_users: Math.floor(Math.random() * 50) + 100,
-          requests_per_minute: Math.floor(Math.random() * 200) + 300,
-          error_rate: (Math.random() * 2).toFixed(2), // 0-2%
-          response_time_ms: Math.floor(Math.random() * 100) + 50
+          active_alerts: activeAlerts.length,
+          requests_count: apiLogs.length,
+          error_rate: errorRate.toFixed(2),
+          avg_response_time_ms: Math.round(avgResponseTime)
         },
         business: {
-          orders_today: Math.floor(Math.random() * 20) + 15,
-          revenue_today: Math.floor(Math.random() * 5000) + 2000,
-          conversion_rate: (Math.random() * 3 + 2).toFixed(2), // 2-5%
-          cart_abandonment: (Math.random() * 10 + 60).toFixed(1) // 60-70%
+          orders_count: orders.length,
+          revenue: totalRevenue,
+          products_count: products.length,
+          conversion_rate: null // Requires analytics tracking
         },
         database: {
-          connections: Math.floor(Math.random() * 20) + 10,
-          queries_per_second: Math.floor(Math.random() * 50) + 25,
-          cache_hit_rate: (Math.random() * 10 + 85).toFixed(1), // 85-95%
-          storage_usage_gb: (Math.random() * 5 + 10).toFixed(2)
+          connections: null, // Requires pg_stat_activity access
+          total_products: products.length,
+          total_orders: orders.length
         }
       }
 
@@ -195,14 +215,14 @@ serve(async (req) => {
       const limit = parseInt(url.searchParams.get('limit') || '100')
 
       let query = supabase
-        .from('system_logs')
+        .from('activity_logs')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(limit)
 
       if (level !== 'all') {
-        query = query.eq('level', level)
+        query = query.eq('severity', level)
       }
 
       const { data: logs, error } = await query
@@ -221,19 +241,35 @@ serve(async (req) => {
       )
     }
 
-    // GET /observability/health - System health check
+    // GET /observability/health - Real system health check
     if (method === 'GET' && pathname === '/observability/health') {
+      const startTime = Date.now()
+      
+      // Test database connectivity
+      const { error: dbError } = await supabase.from('products').select('id').limit(1)
+      const dbResponseTime = Date.now() - startTime
+
+      // Get recent error count
+      const { data: recentErrors } = await supabase
+        .from('api_logs')
+        .select('id')
+        .gte('status_code', 400)
+        .gte('created_at', new Date(Date.now() - 3600000).toISOString())
+
       const healthStatus = {
-        overall_status: 'healthy',
+        overall_status: dbError ? 'degraded' : 'healthy',
         services: {
-          database: { status: 'healthy', response_time_ms: Math.floor(Math.random() * 10) + 5 },
-          api: { status: 'healthy', response_time_ms: Math.floor(Math.random() * 20) + 10 },
-          storage: { status: 'healthy', response_time_ms: Math.floor(Math.random() * 15) + 8 },
-          cache: { status: 'healthy', response_time_ms: Math.floor(Math.random() * 5) + 2 }
+          database: { 
+            status: dbError ? 'unhealthy' : 'healthy', 
+            response_time_ms: dbResponseTime,
+            error: dbError?.message || null
+          },
+          api: { 
+            status: 'healthy', 
+            recent_errors: recentErrors?.length || 0
+          }
         },
-        uptime_percentage: (99.5 + Math.random() * 0.4).toFixed(2),
-        last_incident: null,
-        performance_score: Math.floor(Math.random() * 10) + 90 // 90-100
+        checked_at: new Date().toISOString()
       }
 
       return new Response(

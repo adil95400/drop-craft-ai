@@ -31,20 +31,20 @@ serve(async (req) => {
         metrics = await collectPerformanceMetrics(supabaseClient, time_range)
         break
       case 'resources':
-        metrics = await collectResourceMetrics(supabaseClient, time_range)
+        metrics = await collectResourceMetrics(supabaseClient)
         break
       case 'api':
         metrics = await collectAPIMetrics(supabaseClient, time_range)
         break
       case 'database':
-        metrics = await collectDatabaseMetrics(supabaseClient, time_range)
+        metrics = await collectDatabaseMetrics(supabaseClient)
         break
       case 'all':
         metrics = {
           performance: await collectPerformanceMetrics(supabaseClient, time_range),
-          resources: await collectResourceMetrics(supabaseClient, time_range),
+          resources: await collectResourceMetrics(supabaseClient),
           api: await collectAPIMetrics(supabaseClient, time_range),
-          database: await collectDatabaseMetrics(supabaseClient, time_range)
+          database: await collectDatabaseMetrics(supabaseClient)
         }
         break
       default:
@@ -81,112 +81,139 @@ serve(async (req) => {
 
 async function collectPerformanceMetrics(client: any, timeRange: string) {
   try {
+    const startTime = getTimeRangeStart(timeRange)
+    
     const { data: apiLogs } = await client
       .from('api_logs')
       .select('response_time_ms, status_code, created_at')
-      .gte('created_at', getTimeRangeStart(timeRange))
+      .gte('created_at', startTime)
       .order('created_at', { ascending: false })
       .limit(1000)
 
-    const avgResponseTime = apiLogs?.length 
-      ? apiLogs.reduce((sum: number, log: any) => sum + (log.response_time_ms || 0), 0) / apiLogs.length
+    const logs = apiLogs || []
+    const avgResponseTime = logs.length 
+      ? logs.reduce((sum: number, log: any) => sum + (log.response_time_ms || 0), 0) / logs.length
       : 0
 
-    const errorRate = apiLogs?.length
-      ? (apiLogs.filter((log: any) => log.status_code >= 400).length / apiLogs.length) * 100
-      : 0
+    const errorCount = logs.filter((log: any) => log.status_code >= 400).length
+    const errorRate = logs.length > 0 ? (errorCount / logs.length) * 100 : 0
 
     return {
       avg_response_time: Math.round(avgResponseTime),
-      total_requests: apiLogs?.length || 0,
+      total_requests: logs.length,
+      error_count: errorCount,
       error_rate: errorRate.toFixed(2),
-      throughput: Math.round((apiLogs?.length || 0) / 60) // requests per minute
+      throughput: Math.round(logs.length / 60) // requests per minute
     }
   } catch (error) {
     console.error('Error collecting performance metrics:', error)
-    return {}
+    return {
+      avg_response_time: null,
+      total_requests: 0,
+      error_count: 0,
+      error_rate: '0.00',
+      throughput: 0
+    }
   }
 }
 
-async function collectResourceMetrics(client: any, timeRange: string) {
-  // Simulated resource metrics - in production, integrate with infrastructure monitoring
+async function collectResourceMetrics(client: any) {
+  // Resource metrics require external infrastructure monitoring
+  // Return null values to indicate unavailable metrics
   return {
-    cpu_usage: Math.floor(Math.random() * 30) + 40, // 40-70%
-    memory_usage: Math.floor(Math.random() * 20) + 60, // 60-80%
-    disk_usage: Math.floor(Math.random() * 10) + 50, // 50-60%
-    network_bandwidth: Math.floor(Math.random() * 500) + 500 // 500-1000 Mbps
+    cpu_usage: null,
+    memory_usage: null,
+    disk_usage: null,
+    network_bandwidth: null,
+    note: 'Infrastructure metrics require external monitoring integration (e.g., Prometheus, Datadog)'
   }
 }
 
 async function collectAPIMetrics(client: any, timeRange: string) {
   try {
+    const startTime = getTimeRangeStart(timeRange)
+    
     const { data: apiLogs } = await client
       .from('api_logs')
       .select('endpoint, response_time_ms, status_code')
-      .gte('created_at', getTimeRangeStart(timeRange))
+      .gte('created_at', startTime)
       .limit(1000)
 
+    const logs = apiLogs || []
+    
     // Group by endpoint
-    const endpointStats = apiLogs?.reduce((acc: any, log: any) => {
-      if (!acc[log.endpoint]) {
-        acc[log.endpoint] = {
+    const endpointStats = logs.reduce((acc: any, log: any) => {
+      const endpoint = log.endpoint || 'unknown'
+      if (!acc[endpoint]) {
+        acc[endpoint] = {
           count: 0,
           total_time: 0,
           errors: 0
         }
       }
-      acc[log.endpoint].count++
-      acc[log.endpoint].total_time += log.response_time_ms || 0
+      acc[endpoint].count++
+      acc[endpoint].total_time += log.response_time_ms || 0
       if (log.status_code >= 400) {
-        acc[log.endpoint].errors++
+        acc[endpoint].errors++
       }
       return acc
     }, {})
 
-    const topEndpoints = Object.entries(endpointStats || {})
+    const topEndpoints = Object.entries(endpointStats)
       .map(([endpoint, stats]: [string, any]) => ({
         endpoint,
         calls: stats.count,
-        avg_response_time: Math.round(stats.total_time / stats.count),
+        avg_response_time: stats.count > 0 ? Math.round(stats.total_time / stats.count) : 0,
         errors: stats.errors,
-        error_rate: ((stats.errors / stats.count) * 100).toFixed(2)
+        error_rate: stats.count > 0 ? ((stats.errors / stats.count) * 100).toFixed(2) : '0.00'
       }))
       .sort((a, b) => b.calls - a.calls)
       .slice(0, 10)
 
     return {
       top_endpoints: topEndpoints,
-      total_api_calls: apiLogs?.length || 0
+      total_api_calls: logs.length
     }
   } catch (error) {
     console.error('Error collecting API metrics:', error)
-    return {}
+    return {
+      top_endpoints: [],
+      total_api_calls: 0
+    }
   }
 }
 
-async function collectDatabaseMetrics(client: any, timeRange: string) {
+async function collectDatabaseMetrics(client: any) {
   try {
-    // Get database statistics
-    const { data: products } = await client.from('products').select('count')
-    const { data: orders } = await client.from('orders').select('count')
-    const { data: customers } = await client.from('customers').select('count')
+    // Get real counts from database
+    const [productsResult, ordersResult, customersResult] = await Promise.all([
+      client.from('products').select('id', { count: 'exact', head: true }),
+      client.from('orders').select('id', { count: 'exact', head: true }),
+      client.from('customers').select('id', { count: 'exact', head: true })
+    ])
 
     return {
-      total_products: products?.[0]?.count || 0,
-      total_orders: orders?.[0]?.count || 0,
-      total_customers: customers?.[0]?.count || 0,
-      avg_query_time: Math.floor(Math.random() * 20) + 10, // 10-30ms simulated
-      cache_hit_rate: Math.floor(Math.random() * 5) + 93 // 93-98% simulated
+      total_products: productsResult.count || 0,
+      total_orders: ordersResult.count || 0,
+      total_customers: customersResult.count || 0,
+      avg_query_time: null, // Requires pg_stat_statements
+      cache_hit_rate: null  // Requires pg_stat_bgwriter
     }
   } catch (error) {
     console.error('Error collecting database metrics:', error)
-    return {}
+    return {
+      total_products: 0,
+      total_orders: 0,
+      total_customers: 0,
+      avg_query_time: null,
+      cache_hit_rate: null
+    }
   }
 }
 
 function getTimeRangeStart(timeRange: string): string {
   const now = new Date()
-  const hours = parseInt(timeRange.replace('h', ''))
+  const hours = parseInt(timeRange.replace('h', '')) || 24
   now.setHours(now.getHours() - hours)
   return now.toISOString()
 }
