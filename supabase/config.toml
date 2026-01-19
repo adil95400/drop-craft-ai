@@ -702,3 +702,6 @@ verify_jwt = true
 
 [functions.currency-converter]
 verify_jwt = true
+
+[functions.dropshipping-intelligence]
+verify_jwt = true
