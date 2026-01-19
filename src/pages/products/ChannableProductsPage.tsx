@@ -24,13 +24,12 @@ import { ProductsDebugPanel } from '@/components/debug/ProductsDebugPanel';
 import { ProductViewModal } from '@/components/modals/ProductViewModal';
 
 import {
-  ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableQuickActions,
   ChannableCategoryFilter,
   ChannableEmptyState
 } from '@/components/channable';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -363,61 +362,66 @@ export default function ChannableProductsPage() {
 
   if (isLoading) {
     return (
-      <ChannablePageLayout title="Catalogue Produits">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-4"
-          >
-            <div className="relative">
-              <Loader2 className="h-16 w-16 animate-spin mx-auto text-primary" />
-              <div className="absolute inset-0 animate-ping opacity-20">
-                <Loader2 className="h-16 w-16 mx-auto text-primary" />
-              </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center space-y-4"
+        >
+          <div className="relative">
+            <Loader2 className="h-16 w-16 animate-spin mx-auto text-primary" />
+            <div className="absolute inset-0 animate-ping opacity-20">
+              <Loader2 className="h-16 w-16 mx-auto text-primary" />
             </div>
-            <div className="space-y-2">
-              <p className="text-lg font-medium">Chargement du catalogue...</p>
-              <p className="text-sm text-muted-foreground">Préparation de vos produits</p>
-            </div>
-          </motion.div>
-        </div>
-      </ChannablePageLayout>
+          </div>
+          <div className="space-y-2">
+            <p className="text-lg font-medium">Chargement du catalogue...</p>
+            <p className="text-sm text-muted-foreground">Préparation de vos produits</p>
+          </div>
+        </motion.div>
+      </div>
     );
   }
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title={mainView === 'products' ? 'Catalogue Produits' : 'Moteur de Règles'}
-      metaTitle={mainView === 'products' ? 'Produits' : 'Règles'}
-      metaDescription={mainView === 'products' ? 'Gérez et optimisez votre catalogue produits' : 'Automatisez la gestion de vos produits'}
+      subtitle={mainView === 'products' ? 'Gestion unifiée' : 'Automatisation'}
+      description={mainView === 'products' 
+        ? 'Gérez, analysez et optimisez tous vos produits depuis une interface centralisée.'
+        : 'Automatisez la gestion de vos produits avec des règles intelligentes.'
+      }
+      heroImage={mainView === 'products' ? 'products' : 'automation'}
+      badge={{
+        label: mainView === 'products' ? `${stats.total} produits` : `${rules.length} règles`,
+        icon: mainView === 'products' ? Package : GitBranch
+      }}
+      actions={
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={mainView === 'products' ? () => navigate('/products/create') : handleNewRule}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {mainView === 'products' ? 'Nouveau produit' : 'Nouvelle règle'}
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={mainView === 'products' ? handleRefresh : () => setTemplatesOpen(true)}
+            className="gap-2 bg-background/80 backdrop-blur"
+          >
+            {mainView === 'products' ? (
+              <>
+                <RefreshCw className="h-4 w-4" />
+                Actualiser
+              </>
+            ) : (
+              <>Templates</>
+            )}
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        title={mainView === 'products' ? 'Catalogue Produits' : 'Moteur de Règles'}
-        subtitle={mainView === 'products' ? 'Gestion unifiée' : 'Automatisation'}
-        description={mainView === 'products' 
-          ? 'Gérez, analysez et optimisez tous vos produits depuis une interface centralisée.'
-          : 'Automatisez la gestion de vos produits avec des règles intelligentes.'
-        }
-        badge={{
-          label: mainView === 'products' ? `${stats.total} produits` : `${rules.length} règles`,
-          icon: mainView === 'products' ? Package : GitBranch
-        }}
-        primaryAction={{
-          label: mainView === 'products' ? 'Nouveau produit' : 'Nouvelle règle',
-          onClick: mainView === 'products' ? () => navigate('/products/create') : handleNewRule,
-          icon: Plus
-        }}
-        secondaryAction={mainView === 'products' ? {
-          label: 'Actualiser',
-          onClick: handleRefresh
-        } : {
-          label: 'Templates',
-          onClick: () => setTemplatesOpen(true)
-        }}
-        variant="compact"
-      />
 
       {/* Main View Tabs: Products / Rules */}
       <div className="flex items-center gap-2 border-b border-border/50 pb-4">
@@ -986,6 +990,6 @@ export default function ChannableProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   );
 }
