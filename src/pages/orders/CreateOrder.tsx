@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChannableLayout } from '@/components/channable/navigation/ChannableLayout';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -339,7 +338,7 @@ export default function CreateOrder() {
   const itemsCount = items.filter(i => i.product).length;
 
   return (
-    <ChannableLayout>
+    <>
       <Helmet>
         <title>Créer une Commande - DropCraft</title>
         <meta name="description" content="Créez une nouvelle commande manuelle avec calculs automatiques" />
@@ -1128,6 +1127,6 @@ export default function CreateOrder() {
           </form>
         </div>
       </ChannablePageWrapper>
-    </ChannableLayout>
+    </>
   );
 }
