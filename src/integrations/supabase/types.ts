@@ -3687,6 +3687,118 @@ export type Database = {
         }
         Relationships: []
       }
+      disputes: {
+        Row: {
+          attachments: Json | null
+          created_at: string
+          customer_complaint: string | null
+          customer_id: string | null
+          description: string | null
+          dispute_number: string
+          dispute_type: string
+          disputed_amount: number | null
+          due_date: string | null
+          escalated_at: string | null
+          evidence: Json | null
+          id: string
+          internal_notes: string | null
+          metadata: Json | null
+          order_id: string | null
+          priority: string | null
+          resolution_amount: number | null
+          resolution_notes: string | null
+          resolution_type: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          return_id: string | null
+          status: string
+          timeline: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string
+          customer_complaint?: string | null
+          customer_id?: string | null
+          description?: string | null
+          dispute_number: string
+          dispute_type: string
+          disputed_amount?: number | null
+          due_date?: string | null
+          escalated_at?: string | null
+          evidence?: Json | null
+          id?: string
+          internal_notes?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          priority?: string | null
+          resolution_amount?: number | null
+          resolution_notes?: string | null
+          resolution_type?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          return_id?: string | null
+          status?: string
+          timeline?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string
+          customer_complaint?: string | null
+          customer_id?: string | null
+          description?: string | null
+          dispute_number?: string
+          dispute_type?: string
+          disputed_amount?: number | null
+          due_date?: string | null
+          escalated_at?: string | null
+          evidence?: Json | null
+          id?: string
+          internal_notes?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          priority?: string | null
+          resolution_amount?: number | null
+          resolution_notes?: string | null
+          resolution_type?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          return_id?: string | null
+          status?: string
+          timeline?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dynamic_ad_campaigns: {
         Row: {
           bid_amount: number | null
@@ -7741,17 +7853,145 @@ export type Database = {
         }
         Relationships: []
       }
+      return_automation_rules: {
+        Row: {
+          auto_actions: Json
+          created_at: string
+          description: string | null
+          execution_count: number | null
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          name: string
+          priority: number | null
+          refund_config: Json | null
+          trigger_conditions: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_actions?: Json
+          created_at?: string
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          name: string
+          priority?: number | null
+          refund_config?: Json | null
+          trigger_conditions?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_actions?: Json
+          created_at?: string
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          name?: string
+          priority?: number | null
+          refund_config?: Json | null
+          trigger_conditions?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      return_labels: {
+        Row: {
+          carrier_code: string
+          carrier_name: string | null
+          created_at: string
+          currency: string | null
+          dimensions: Json | null
+          expires_at: string | null
+          from_address: Json
+          id: string
+          label_format: string | null
+          label_url: string | null
+          metadata: Json | null
+          printed_at: string | null
+          return_id: string | null
+          shipping_cost: number | null
+          status: string | null
+          to_address: Json
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          carrier_code: string
+          carrier_name?: string | null
+          created_at?: string
+          currency?: string | null
+          dimensions?: Json | null
+          expires_at?: string | null
+          from_address: Json
+          id?: string
+          label_format?: string | null
+          label_url?: string | null
+          metadata?: Json | null
+          printed_at?: string | null
+          return_id?: string | null
+          shipping_cost?: number | null
+          status?: string | null
+          to_address: Json
+          tracking_number?: string | null
+          updated_at?: string
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          carrier_code?: string
+          carrier_name?: string | null
+          created_at?: string
+          currency?: string | null
+          dimensions?: Json | null
+          expires_at?: string | null
+          from_address?: Json
+          id?: string
+          label_format?: string | null
+          label_url?: string | null
+          metadata?: Json | null
+          printed_at?: string | null
+          return_id?: string | null
+          shipping_cost?: number | null
+          status?: string | null
+          to_address?: Json
+          tracking_number?: string | null
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_labels_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       returns: {
         Row: {
           attachments: Json | null
+          automation_rule_id: string | null
           carrier: string | null
           created_at: string
           customer_id: string | null
           description: string | null
+          dispute_id: string | null
           id: string
           images: string[] | null
           inspected_at: string | null
           items: Json
+          label_id: string | null
           notes: string | null
           order_id: string | null
           reason: string
@@ -7762,20 +8002,26 @@ export type Database = {
           refunded_at: string | null
           rma_number: string
           status: string
+          supplier_refund_amount: number | null
+          supplier_return_id: string | null
+          supplier_return_status: string | null
           tracking_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           attachments?: Json | null
+          automation_rule_id?: string | null
           carrier?: string | null
           created_at?: string
           customer_id?: string | null
           description?: string | null
+          dispute_id?: string | null
           id?: string
           images?: string[] | null
           inspected_at?: string | null
           items?: Json
+          label_id?: string | null
           notes?: string | null
           order_id?: string | null
           reason: string
@@ -7786,20 +8032,26 @@ export type Database = {
           refunded_at?: string | null
           rma_number: string
           status?: string
+          supplier_refund_amount?: number | null
+          supplier_return_id?: string | null
+          supplier_return_status?: string | null
           tracking_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           attachments?: Json | null
+          automation_rule_id?: string | null
           carrier?: string | null
           created_at?: string
           customer_id?: string | null
           description?: string | null
+          dispute_id?: string | null
           id?: string
           images?: string[] | null
           inspected_at?: string | null
           items?: Json
+          label_id?: string | null
           notes?: string | null
           order_id?: string | null
           reason?: string
@@ -7810,16 +8062,40 @@ export type Database = {
           refunded_at?: string | null
           rma_number?: string
           status?: string
+          supplier_refund_amount?: number | null
+          supplier_return_id?: string | null
+          supplier_return_status?: string | null
           tracking_number?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
+            foreignKeyName: "returns_automation_rule_id_fkey"
+            columns: ["automation_rule_id"]
+            isOneToOne: false
+            referencedRelation: "return_automation_rules"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "returns_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "return_labels"
             referencedColumns: ["id"]
           },
           {
@@ -10594,6 +10870,7 @@ export type Database = {
         Returns: string
       }
       generate_bulk_order_number: { Args: never; Returns: string }
+      generate_dispute_number: { Args: never; Returns: string }
       generate_rma_number: { Args: never; Returns: string }
       has_role: {
         Args: {
