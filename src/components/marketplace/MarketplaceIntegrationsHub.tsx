@@ -205,9 +205,17 @@ export function MarketplaceIntegrationsHub() {
   const handleSync = async (integrationId: string) => {
     setSyncing(integrationId)
     try {
-      // Simulate sync with random products/orders count
-      const productsCount = Math.floor(Math.random() * 100) + 50
-      const ordersCount = Math.floor(Math.random() * 50) + 10
+      // Count real products and orders for this user
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) throw new Error('Non authentifié')
+
+      const [productsResult, ordersResult] = await Promise.all([
+        supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', userData.user.id),
+        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', userData.user.id)
+      ])
+
+      const productsCount = productsResult.count || 0
+      const ordersCount = ordersResult.count || 0
 
       // Update integration stats using 'integrations' table
       const { error } = await supabase

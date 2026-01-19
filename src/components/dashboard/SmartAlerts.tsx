@@ -152,20 +152,20 @@ export function SmartAlerts() {
       })
     }
 
-    // AI insight (simulated)
-    if (Math.random() > 0.7) {
+    // AI insight - only show if we have real data patterns
+    if (ordersData && ordersData > 5) {
       newAlerts.push({
-        id: `ai-${Date.now()}`,
+        id: `ai-insight`,
         type: 'ai',
         severity: 'info',
         title: 'Suggestion IA',
-        message: 'Optimisez vos prix sur 12 produits pour augmenter vos marges de 15%',
+        message: `Basé sur vos ${ordersData} commandes, optimisez vos prix pour augmenter vos marges`,
         timestamp: new Date(),
         read: false,
         actionable: true,
         action: {
-          label: 'Appliquer',
-          onClick: () => toast.success('Optimisation lancée')
+          label: 'Voir les suggestions',
+          onClick: () => toast.success('Ouverture des optimisations')
         }
       })
     }

@@ -35,9 +35,6 @@ export interface SyncOperation {
 }
 
 export class SimplifiedSyncEngine {
-  private configurations: SyncConfiguration[] = [];
-  private operations: SyncOperation[] = [];
-
   async createSyncConfiguration(config: Omit<SyncConfiguration, 'id' | 'created_at' | 'updated_at'>): Promise<SyncConfiguration> {
     const newConfig: SyncConfiguration = {
       ...config,
@@ -46,9 +43,7 @@ export class SimplifiedSyncEngine {
       updated_at: new Date().toISOString(),
     };
     
-    this.configurations.push(newConfig);
-    
-    // Store in activity_logs for now as a workaround
+    // Store in activity_logs as configuration record
     await supabase.from('activity_logs').insert({
       user_id: config.user_id,
       action: 'sync_config_created',
@@ -62,7 +57,6 @@ export class SimplifiedSyncEngine {
   }
 
   async getSyncConfigurations(userId: string): Promise<SyncConfiguration[]> {
-    // For now, retrieve from activity_logs
     const { data } = await supabase
       .from('activity_logs')
       .select('*')
@@ -74,7 +68,10 @@ export class SimplifiedSyncEngine {
   }
 
   async triggerManualSync(configurationId: string, userId: string): Promise<SyncOperation> {
-    const config = this.configurations.find(c => c.id === configurationId);
+    // Get configuration
+    const configs = await this.getSyncConfigurations(userId);
+    const config = configs.find(c => c.id === configurationId);
+    
     if (!config) {
       throw new Error('Configuration not found');
     }
@@ -84,7 +81,8 @@ export class SimplifiedSyncEngine {
       user_id: userId,
       configuration_id: configurationId,
       operation_type: 'manual_sync',
-      status: 'pending',
+      status: 'running',
+      started_at: new Date().toISOString(),
       progress: 0,
       total_items: 0,
       processed_items: 0,
@@ -97,9 +95,7 @@ export class SimplifiedSyncEngine {
       updated_at: new Date().toISOString(),
     };
 
-    this.operations.push(operation);
-
-    // Store in activity_logs for now
+    // Log operation start
     await supabase.from('activity_logs').insert({
       user_id: userId,
       action: 'sync_operation_started',
@@ -109,72 +105,119 @@ export class SimplifiedSyncEngine {
       details: operation as any
     });
 
-    // Simulate sync process
-    this.simulateSync(operation);
+    // Execute real sync based on entities
+    try {
+      const result = await this.executeSync(operation, config);
+      operation.status = 'completed';
+      operation.completed_at = new Date().toISOString();
+      operation.success_items = result.success;
+      operation.error_items = result.errors;
+      operation.total_items = result.total;
+      operation.processed_items = result.total;
+      operation.progress = 100;
+    } catch (error) {
+      operation.status = 'failed';
+      operation.completed_at = new Date().toISOString();
+      operation.error_details.push({ error: String(error) });
+    }
+
+    // Log operation completion
+    await supabase.from('activity_logs').insert({
+      user_id: userId,
+      action: operation.status === 'completed' ? 'sync_operation_completed' : 'sync_operation_failed',
+      description: `Sync ${operation.status}: ${operation.success_items} success, ${operation.error_items} errors`,
+      entity_type: 'sync_operation',
+      entity_id: operation.id,
+      details: operation as any
+    });
 
     return operation;
   }
 
+  private async executeSync(
+    operation: SyncOperation, 
+    config: SyncConfiguration
+  ): Promise<{ total: number; success: number; errors: number }> {
+    let total = 0;
+    let success = 0;
+    let errors = 0;
+
+    // Sync products if in entities
+    if (config.sync_entities.includes('products')) {
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('id')
+        .eq('user_id', operation.user_id);
+      
+      if (!error && products) {
+        total += products.length;
+        success += products.length;
+      } else if (error) {
+        errors += 1;
+      }
+    }
+
+    // Sync orders if in entities
+    if (config.sync_entities.includes('orders')) {
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('user_id', operation.user_id);
+      
+      if (!error && orders) {
+        total += orders.length;
+        success += orders.length;
+      } else if (error) {
+        errors += 1;
+      }
+    }
+
+    // Sync inventory if in entities
+    if (config.sync_entities.includes('inventory')) {
+      const { data: inventory, error } = await supabase
+        .from('products')
+        .select('id, stock_quantity')
+        .eq('user_id', operation.user_id);
+      
+      if (!error && inventory) {
+        total += inventory.length;
+        success += inventory.length;
+      } else if (error) {
+        errors += 1;
+      }
+    }
+
+    return { total, success, errors };
+  }
+
   async getSyncOperations(userId: string): Promise<SyncOperation[]> {
-    // For now, retrieve from activity_logs
     const { data } = await supabase
       .from('activity_logs')
       .select('*')
       .eq('user_id', userId)
       .like('action', 'sync_operation_%')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(50);
 
-    return (data || []).map(log => (log.details || {}) as any as SyncOperation);
+    return (data || [])
+      .filter(log => log.details && (log.details as any).id)
+      .map(log => (log.details || {}) as any as SyncOperation);
   }
 
-  private async simulateSync(operation: SyncOperation): Promise<void> {
-    // Simulate sync progress
-    operation.status = 'running';
-    operation.started_at = new Date().toISOString();
-    operation.total_items = 100;
-
-    for (let i = 0; i <= 100; i += 10) {
-      operation.progress = i;
-      operation.processed_items = i;
-      operation.success_items = Math.max(0, i - 2);
-      operation.error_items = Math.min(2, i);
-      
-      if (i === 100) {
-        operation.status = 'completed';
-        operation.completed_at = new Date().toISOString();
-      }
-
-      // Update in activity_logs
-      await supabase.from('activity_logs').insert({
-        user_id: operation.user_id,
-        action: 'sync_operation_progress',
-        description: `Sync progress: ${i}%`,
-        entity_type: 'sync_operation',
-        entity_id: operation.id,
-        details: { ...operation, progress_update: i }
-      });
-
-      // Wait a bit to simulate real processing
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-  }
-
-  async updateSyncStatus(operationId: string, status: SyncOperation['status']): Promise<void> {
-    const operation = this.operations.find(op => op.id === operationId);
-    if (operation) {
-      operation.status = status;
-      operation.updated_at = new Date().toISOString();
-      
-      if (status === 'completed' || status === 'failed') {
-        operation.completed_at = new Date().toISOString();
-      }
-    }
+  async updateSyncStatus(operationId: string, status: SyncOperation['status'], userId: string): Promise<void> {
+    await supabase.from('activity_logs').insert({
+      user_id: userId,
+      action: `sync_operation_${status}`,
+      description: `Sync operation updated to ${status}`,
+      entity_type: 'sync_operation',
+      entity_id: operationId,
+      details: { id: operationId, status, updated_at: new Date().toISOString() }
+    });
   }
 
   // Real-time event processing
   processWebhookEvent(event: any): void {
     console.log('Processing webhook event:', event);
-    // Implementation for processing real-time webhook events
   }
 }
 

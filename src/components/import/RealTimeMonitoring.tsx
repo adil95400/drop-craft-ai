@@ -35,13 +35,14 @@ export const RealTimeMonitoring = () => {
   const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(new Date())
 
-  // Simulate real-time updates
+  // Real-time update tracking using actual data refetch
   useEffect(() => {
     if (!isRealTimeEnabled) return
 
     const interval = setInterval(() => {
       setLastUpdate(new Date())
-    }, 5000)
+      // The parent hook useImportUltraPro handles data fetching
+    }, 10000) // Refresh every 10 seconds
 
     return () => clearInterval(interval)
   }, [isRealTimeEnabled])
