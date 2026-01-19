@@ -212,10 +212,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Gérer votre catalogue',
     category: 'product',
     order: 1,
-    groupId: 'catalog',
-    subModules: [
-      { id: 'products-all', name: 'Tous les produits', route: '/products', icon: 'Package', description: 'Liste complète', features: ['list'], order: 1 },
-    ]
+    groupId: 'catalog'
   },
   
   // rules: SUPPRIMÉ - Intégré comme onglet dans /products?tab=rules
