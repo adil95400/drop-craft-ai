@@ -587,11 +587,6 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 2,
     groupId: 'tools',
     badge: 'pro',
-    subModules: [
-      { id: 'bulk-videos', name: 'Vidéos en Masse', route: '/tools/bulk-content', icon: 'Video', description: 'Générer des vidéos TikTok', features: ['videos'], order: 1 },
-      { id: 'bulk-images', name: 'Images en Masse', route: '/tools/bulk-content#images', icon: 'Images', description: 'Générer des images produits', features: ['images'], order: 2 },
-      { id: 'bulk-jobs', name: 'Jobs en Cours', route: '/tools/bulk-content#jobs', icon: 'Activity', description: 'Suivi des générations', features: ['jobs'], order: 3 },
-    ]
   },
 
   schemaGenerator: {
