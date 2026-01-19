@@ -11,6 +11,7 @@ import { DollarSign, Loader2 } from 'lucide-react';
 
 // Liste de devises par défaut en fallback avec drapeaux
 const DEFAULT_CURRENCIES = [
+  { code: 'MAD', symbol: 'د.م.', name: 'Dirham marocain', flag: '🇲🇦' },
   { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺' },
   { code: 'USD', symbol: '$', name: 'Dollar américain', flag: '🇺🇸' },
   { code: 'GBP', symbol: '£', name: 'Livre sterling', flag: '🇬🇧' },
@@ -41,7 +42,6 @@ const DEFAULT_CURRENCIES = [
   { code: 'HUF', symbol: 'Ft', name: 'Forint hongrois', flag: '🇭🇺' },
   { code: 'RON', symbol: 'lei', name: 'Leu roumain', flag: '🇷🇴' },
   { code: 'BGN', symbol: 'лв', name: 'Lev bulgare', flag: '🇧🇬' },
-  { code: 'MAD', symbol: 'د.م.', name: 'Dirham marocain', flag: '🇲🇦' },
 ];
 
 // Map code devise -> drapeau pour lookup rapide
