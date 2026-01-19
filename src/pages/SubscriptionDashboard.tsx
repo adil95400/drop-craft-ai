@@ -1,21 +1,23 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  ArrowLeft, 
   Crown, 
   Zap, 
   TrendingUp, 
   Users, 
   Target,
   Calendar,
-  CreditCard
+  CreditCard,
+  Sparkles
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { StripeSetupGuide } from '@/components/subscription/StripeSetupGuide';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function SubscriptionDashboard() {
   const navigate = useNavigate();
@@ -47,30 +49,19 @@ export default function SubscriptionDashboard() {
   const currentFeatures = planFeatures[currentPlan] || planFeatures.standard;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/dashboard">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Retour au tableau de bord
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold">Mon abonnement</h1>
-                <p className="text-muted-foreground">
-                  Gérez votre plan et votre facturation
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <>
+      <Helmet>
+        <title>Mon Abonnement - Gestion du Plan</title>
+        <meta name="description" content="Gérez votre abonnement, plan et facturation ShopOpti" />
+      </Helmet>
 
-      <div className="container mx-auto px-4 py-8">
+      <ChannablePageWrapper
+        title="Mon Abonnement"
+        subtitle="Gestion du Plan"
+        description="Gérez votre plan, facturation et accédez aux fonctionnalités premium"
+        heroImage="analytics"
+        badge={{ label: 'Premium', icon: Sparkles }}
+      >
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Subscription Management */}
           <div className="lg:col-span-2 space-y-8">
@@ -198,7 +189,7 @@ export default function SubscriptionDashboard() {
             </Card>
           </div>
         </div>
-      </div>
-    </div>
+      </ChannablePageWrapper>
+    </>
   );
 }
