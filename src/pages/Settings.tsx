@@ -18,7 +18,8 @@ import {
   Database,
   LogOut,
   Save,
-  ExternalLink
+  ExternalLink,
+  Coins
 } from "lucide-react";
 
 // Import refactored tab components
@@ -30,6 +31,8 @@ import {
   BillingTab,
   AppearanceTab
 } from "@/components/settings";
+import { CurrencySettingsPanel } from "@/components/currency/CurrencySettingsPanel";
+import { CurrencyConverter } from "@/components/currency/CurrencyConverter";
 
 const Settings = () => {
   const { user, profile, updateProfile, signOut } = useAuth();
@@ -110,6 +113,7 @@ const Settings = () => {
     { id: 'notifications', label: t('settings:tabs.notifications'), icon: Bell, mobileLabel: 'Notifs' },
     { id: 'security', label: t('settings:tabs.security'), icon: Shield, mobileLabel: 'Sécurité' },
     { id: 'billing', label: 'Facturation', icon: CreditCard, mobileLabel: 'Billing' },
+    { id: 'currencies', label: 'Devises', icon: Coins, mobileLabel: 'Devises' },
     { id: 'api', label: 'API', icon: Key, mobileLabel: 'API' },
     { id: 'appearance', label: t('settings:tabs.appearance'), icon: Palette, mobileLabel: 'Thème' },
   ];
@@ -233,6 +237,13 @@ const Settings = () => {
 
             <TabsContent value="billing" className="mt-0">
               <BillingTab />
+            </TabsContent>
+
+            <TabsContent value="currencies" className="mt-0">
+              <div className="space-y-6">
+                <CurrencySettingsPanel />
+                <CurrencyConverter />
+              </div>
             </TabsContent>
 
             <TabsContent value="api" className="mt-0">
