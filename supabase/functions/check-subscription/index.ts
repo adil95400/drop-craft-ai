@@ -19,6 +19,10 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Simple in-memory cache (per worker instance)
+const cache: { [email: string]: { data: any; timestamp: number } } = {};
+const CACHE_TTL = 60 * 1000; // 1 minute cache
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -35,7 +39,6 @@ serve(async (req) => {
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
@@ -47,17 +50,55 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Check cache first
+    const cached = cache[user.email];
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      logStep("Returning cached response");
+      return new Response(JSON.stringify(cached.data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    
+    let customers;
+    try {
+      customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    } catch (stripeError: any) {
+      if (stripeError.code === 'rate_limit') {
+        logStep("Stripe rate limited, returning cached or default");
+        // Return cached data if available, even if stale
+        if (cached) {
+          return new Response(JSON.stringify(cached.data), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+        // Return default free plan if no cache
+        return new Response(JSON.stringify({ 
+          subscribed: false, 
+          product_id: null, 
+          plan: 'free', 
+          subscription_end: null 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      throw stripeError;
+    }
     
     if (customers.data.length === 0) {
       logStep("No customer found, returning free plan");
-      return new Response(JSON.stringify({ 
+      const result = { 
         subscribed: false,
         product_id: null,
         plan: 'free',
         subscription_end: null
-      }), {
+      };
+      cache[user.email] = { data: result, timestamp: Date.now() };
+      return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -147,12 +188,17 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({
+    const result = {
       subscribed: hasActiveSub,
       product_id: productId,
       plan: plan,
       subscription_end: subscriptionEnd
-    }), {
+    };
+    
+    // Cache the result
+    cache[user.email] = { data: result, timestamp: Date.now() };
+
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

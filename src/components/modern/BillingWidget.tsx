@@ -1,7 +1,8 @@
 /**
  * Widget de facturation pour le tableau de bord
+ * Utilise useStripeIntegration pour éviter les appels multiples
  */
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,50 +14,16 @@ import {
   RefreshCw,
   ArrowUpRight
 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
-import { logError } from '@/utils/consoleCleanup';
+import { useStripeIntegration } from '@/hooks/useStripeIntegration'
 import { Link } from 'react-router-dom'
 
-interface Subscription {
-  subscribed: boolean
-  subscription_tier?: string
-  subscription_end?: string
-}
-
 export function BillingWidget() {
-  const { user } = useAuth()
-  const { toast } = useToast()
-  
-  const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [checking, setChecking] = useState(false)
-
-  const checkSubscription = async () => {
-    if (!user) return
-    
-    setChecking(true)
-    try {
-      const { data, error } = await supabase.functions.invoke('check-subscription')
-      
-      if (error) throw error
-      
-      setSubscription(data)
-    } catch (error) {
-      logError(error as Error, 'Error checking subscription')
-    } finally {
-      setChecking(false)
-    }
-  }
-
-  useEffect(() => {
-    if (user) {
-      checkSubscription().finally(() => setLoading(false))
-    } else {
-      setLoading(false)
-    }
-  }, [user])
+  const { 
+    subscription, 
+    isLoadingSubscription: loading, 
+    refreshSubscription, 
+    isLoading: checking 
+  } = useStripeIntegration()
 
   const getPlanConfig = () => {
     if (!subscription?.subscribed) {
@@ -95,25 +62,7 @@ export function BillingWidget() {
     )
   }
 
-  if (!user) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Abonnement</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Connectez-vous pour voir votre abonnement
-            </p>
-            <Button size="sm" variant="outline" asChild>
-              <Link to="/auth">Se connecter</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  // No user check needed - subscription will be null if not logged in
 
   const planConfig = getPlanConfig()
   const PlanIcon = planConfig.icon
@@ -128,7 +77,7 @@ export function BillingWidget() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={checkSubscription}
+          onClick={refreshSubscription}
           disabled={checking}
         >
           <RefreshCw className={`h-4 w-4 ${checking ? 'animate-spin' : ''}`} />
