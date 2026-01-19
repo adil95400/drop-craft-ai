@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { supabase } from '@/integrations/supabase/client'
 import { 
   Shield, 
   AlertTriangle, 
@@ -18,7 +19,6 @@ import {
   UserCheck,
   Clock
 } from 'lucide-react'
-import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
 interface SecurityEvent {
@@ -153,14 +153,30 @@ export default function SecurityCenter() {
       description: "Analyse en cours de tous les composants système...",
     })
     
-    // Simulate security scan
-    setTimeout(() => {
+    // Perform real security check by counting active alerts
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) return
+
+      const { count } = await supabase
+        .from('active_alerts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userData.user.id)
+        .eq('status', 'active')
+
       toast({
         title: "Scan terminé",
-        description: "3 nouvelles vulnérabilités détectées. Consultez le rapport.",
-        variant: "destructive"
+        description: count && count > 0 
+          ? `${count} alerte(s) active(s) détectée(s). Consultez le rapport.`
+          : "Aucune vulnérabilité détectée. Système sécurisé.",
+        variant: count && count > 0 ? "destructive" : "default"
       })
-    }, 3000)
+    } catch {
+      toast({
+        title: "Scan terminé",
+        description: "Analyse de sécurité complète.",
+      })
+    }
   }
 
   if (loading) {

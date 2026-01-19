@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { useState } from 'react'
+import { supabase } from '@/integrations/supabase/client'
 
 interface OptimizationHistoryProps {
   productId: string
@@ -28,47 +28,53 @@ interface HistoryEntry {
 export function OptimizationHistory({ productId, sourceTable }: OptimizationHistoryProps) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const [history, setHistory] = useState<HistoryEntry[]>([])
 
-  // Use mock data since product_optimization_history table doesn't exist
-  const { isLoading } = useQuery({
+  // Fetch real history from ai_generated_content table
+  const { data: history = [], isLoading } = useQuery({
     queryKey: ['optimization-history', productId],
-    queryFn: async () => {
-      // Mock history data
-      const mockHistory: HistoryEntry[] = [
-        {
-          id: '1',
-          product_id: productId,
-          optimization_type: 'title',
-          before_data: { title: 'Old Product Title' },
-          after_data: { title: 'Optimized Product Title with Keywords' },
-          applied: true,
-          reverted: false,
-          created_at: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-          id: '2',
-          product_id: productId,
-          optimization_type: 'description',
-          before_data: { description: 'Basic description' },
-          after_data: { description: 'Enhanced SEO-optimized description with benefits and features' },
-          applied: false,
-          reverted: false,
-          created_at: new Date(Date.now() - 172800000).toISOString()
-        }
-      ]
-      setHistory(mockHistory)
-      return mockHistory
+    queryFn: async (): Promise<HistoryEntry[]> => {
+      const { data, error } = await supabase
+        .from('ai_generated_content')
+        .select('*')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (error || !data) return []
+
+      return data.map(item => ({
+        id: item.id,
+        product_id: item.product_id || productId,
+        optimization_type: item.content_type,
+        before_data: { content: item.original_content || '' },
+        after_data: { content: item.generated_content },
+        applied: item.status === 'applied',
+        reverted: item.status === 'reverted',
+        created_at: item.created_at
+      }))
     }
   })
 
   const revertOptimization = useMutation({
     mutationFn: async (historyId: string) => {
-      // Simulate revert
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setHistory(prev => prev.map(h => 
-        h.id === historyId ? { ...h, reverted: true } : h
-      ))
+      const entry = history.find(h => h.id === historyId)
+      if (!entry) throw new Error('Entry not found')
+
+      // Update status in ai_generated_content
+      const { error } = await supabase
+        .from('ai_generated_content')
+        .update({ status: 'reverted' })
+        .eq('id', historyId)
+
+      if (error) throw error
+
+      // Restore original content to product if we have it
+      if (entry.before_data?.content && entry.optimization_type === 'description') {
+        await supabase
+          .from(sourceTable)
+          .update({ description: entry.before_data.content })
+          .eq('id', productId)
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['optimization-history', productId] })
@@ -88,14 +94,41 @@ export function OptimizationHistory({ productId, sourceTable }: OptimizationHist
 
   const applyOptimization = useMutation({
     mutationFn: async (historyId: string) => {
-      // Simulate apply
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setHistory(prev => prev.map(h => 
-        h.id === historyId ? { ...h, applied: true } : h
-      ))
+      const entry = history.find(h => h.id === historyId)
+      if (!entry) throw new Error('Entry not found')
+
+      // Update status in ai_generated_content
+      const { error: updateError } = await supabase
+        .from('ai_generated_content')
+        .update({ 
+          status: 'applied',
+          applied_at: new Date().toISOString()
+        })
+        .eq('id', historyId)
+
+      if (updateError) throw updateError
+
+      // Apply generated content to product
+      if (entry.after_data?.content) {
+        const updateData: Record<string, string> = {}
+        
+        if (entry.optimization_type === 'description') {
+          updateData.description = entry.after_data.content
+        } else if (entry.optimization_type === 'title') {
+          updateData.title = entry.after_data.content
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          await supabase
+            .from(sourceTable)
+            .update(updateData)
+            .eq('id', productId)
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['optimization-history', productId] })
+      queryClient.invalidateQueries({ queryKey: ['products'] })
       toast({
         title: "Optimisation appliquée",
         description: "Les modifications ont été appliquées avec succès"

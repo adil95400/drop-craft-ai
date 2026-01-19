@@ -161,8 +161,7 @@ export const TemplateMarketplace = () => {
 
   const useTemplate = async (template: any) => {
     try {
-      // Simulate template installation
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Create workflow from template directly (no artificial delay)
       
       // Create workflow from template
       const { data: { user } } = await supabase.auth.getUser()

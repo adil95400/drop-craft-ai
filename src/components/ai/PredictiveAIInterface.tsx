@@ -158,9 +158,7 @@ export const PredictiveAIInterface = () => {
         description: 'Génération de nouvelles prédictions IA...'
       });
       
-      // Simulate AI processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Load real predictive data from database
       await loadPredictiveData();
       
       toast({
