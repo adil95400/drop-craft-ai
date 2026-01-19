@@ -1,29 +1,21 @@
 /**
- * Interface d'authentification moderne et optimisée
- * Design épuré avec animations fluides et UX améliorée
+ * Interface d'authentification épurée
+ * Design inspiré de Channable avec formulaire à gauche et carrousel à droite
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { SecureInput } from '@/components/common/SecureInput';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Loader2, Mail, Lock, User, Building2, Eye, EyeOff, 
-  CheckCircle2, AlertCircle, ArrowRight, Shield,
-  Zap, BarChart3, Star
-} from 'lucide-react';
-import { GoogleAuthButton } from './GoogleAuthButton';
+import { Eye, EyeOff, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
 
 // Import assets
 import shopOptiLogo from '@/assets/shopopti-logo.png';
-import authHeroBg from '@/assets/auth-hero-bg.jpg';
 
 // Validation helpers
 const validateEmail = (email: string) => {
@@ -31,134 +23,118 @@ const validateEmail = (email: string) => {
   return regex.test(email);
 };
 
-const validatePassword = (password: string) => {
-  return password.length >= 6;
-};
-
-// Password strength indicator
-const getPasswordStrength = (password: string): { score: number; label: string; color: string } => {
-  let score = 0;
-  if (password.length >= 6) score++;
-  if (password.length >= 8) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
-
-  if (score <= 1) return { score, label: 'Faible', color: 'bg-destructive' };
-  if (score <= 3) return { score, label: 'Moyen', color: 'bg-yellow-500' };
-  return { score, label: 'Fort', color: 'bg-green-500' };
-};
-
-// Feature highlights
-const features = [
-  { icon: Zap, label: 'Performance optimisée', description: 'Chargement ultra rapide' },
-  { icon: Shield, label: 'Sécurité maximale', description: 'Données chiffrées' },
-  { icon: BarChart3, label: 'Analytics avancés', description: 'Insights en temps réel' },
-];
-
-// Testimonials
-const testimonials = [
-  { name: 'Marie L.', role: 'E-commerçante', text: 'ShopOpti a doublé mes ventes en 3 mois !', rating: 5 },
-  { name: 'Thomas D.', role: 'Dropshipper', text: 'Interface intuitive et support réactif.', rating: 5 },
+// Carousel slides
+const slides = [
+  {
+    title: "Optimisez vos performances publicitaires",
+    description: "Analysez vos campagnes en temps réel et identifiez les opportunités d'amélioration pour maximiser votre ROI. Segmentez automatiquement vos produits et affinez vos dépenses.",
+  },
+  {
+    title: "Automatisez votre dropshipping",
+    description: "Synchronisez automatiquement vos produits avec vos fournisseurs et gérez vos stocks en temps réel. Gagnez du temps et réduisez les erreurs.",
+  },
+  {
+    title: "Intelligence artificielle intégrée",
+    description: "Laissez notre IA optimiser vos fiches produits, générer du contenu SEO et prédire les tendances du marché pour rester en avance.",
+  }
 ];
 
 export const AuthInterface = () => {
-  const { signIn, signUp, resetPassword, loading } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('signin');
+  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [showForgotModal, setShowForgotModal] = useState(false);
 
-  const [signInForm, setSignInForm] = useState({
-    email: '',
-    password: ''
-  });
-
-  const [signUpForm, setSignUpForm] = useState({
+  const [form, setForm] = useState({
     email: '',
     password: '',
     confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    company: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showForgotModal, setShowForgotModal] = useState(false);
 
-  const validateSignInForm = useCallback(() => {
+  // Auto-rotate slides
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+
+  const validateForm = useCallback(() => {
     const newErrors: Record<string, string> = {};
     
-    if (!signInForm.email) {
-      newErrors.signinEmail = 'Email requis';
-    } else if (!validateEmail(signInForm.email)) {
-      newErrors.signinEmail = 'Email invalide';
+    if (!form.email) {
+      newErrors.email = 'Email requis';
+    } else if (!validateEmail(form.email)) {
+      newErrors.email = 'Email invalide';
     }
     
-    if (!signInForm.password) {
-      newErrors.signinPassword = 'Mot de passe requis';
+    if (!form.password) {
+      newErrors.password = 'Mot de passe requis';
+    } else if (form.password.length < 6) {
+      newErrors.password = 'Minimum 6 caractères';
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [signInForm]);
 
-  const validateSignUpForm = useCallback(() => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!signUpForm.firstName.trim()) {
-      newErrors.firstName = 'Prénom requis';
-    }
-    
-    if (!signUpForm.lastName.trim()) {
-      newErrors.lastName = 'Nom requis';
-    }
-    
-    if (!signUpForm.email) {
-      newErrors.signupEmail = 'Email requis';
-    } else if (!validateEmail(signUpForm.email)) {
-      newErrors.signupEmail = 'Email invalide';
-    }
-    
-    if (!signUpForm.password) {
-      newErrors.signupPassword = 'Mot de passe requis';
-    } else if (!validatePassword(signUpForm.password)) {
-      newErrors.signupPassword = 'Minimum 6 caractères';
-    }
-    
-    if (signUpForm.password !== signUpForm.confirmPassword) {
+    if (!isLogin && form.password !== form.confirmPassword) {
       newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [signUpForm]);
+  }, [form, isLogin]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateSignInForm()) return;
+    if (!validateForm()) return;
     
     setIsLoading(true);
     
     try {
-      const { error } = await signIn(signInForm.email, signInForm.password);
-      if (error) {
-        let errorMessage = error.message;
-        if (error.message.includes('Invalid login credentials')) {
-          errorMessage = 'Email ou mot de passe incorrect';
+      if (isLogin) {
+        const { error } = await signIn(form.email, form.password);
+        if (error) {
+          let errorMessage = error.message;
+          if (error.message.includes('Invalid login credentials')) {
+            errorMessage = 'Email ou mot de passe incorrect';
+          }
+          toast({
+            title: "Erreur de connexion",
+            description: errorMessage,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Connexion réussie ! 🎉",
+            description: "Bienvenue dans votre espace ShopOpti"
+          });
         }
-        toast({
-          title: "Erreur de connexion",
-          description: errorMessage,
-          variant: "destructive"
-        });
       } else {
-        toast({
-          title: "Connexion réussie ! 🎉",
-          description: "Bienvenue dans votre espace ShopOpti"
-        });
+        const { error } = await signUp(form.email, form.password, {});
+        if (error) {
+          let errorMessage = error.message;
+          if (error.message.includes('already registered')) {
+            errorMessage = 'Cet email est déjà utilisé';
+          }
+          toast({
+            title: "Erreur d'inscription",
+            description: errorMessage,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Inscription réussie ! 🎉",
+            description: "Bienvenue sur ShopOpti !"
+          });
+        }
       }
     } catch (error) {
       toast({
@@ -171,585 +147,359 @@ export const AuthInterface = () => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateSignUpForm()) return;
-
-    setIsLoading(true);
-    
+  const handleGoogleSignIn = async () => {
     try {
-      const { error } = await signUp(signUpForm.email, signUpForm.password, {
-        full_name: `${signUpForm.firstName} ${signUpForm.lastName}`.trim(),
-        company: signUpForm.company,
-        first_name: signUpForm.firstName,
-        last_name: signUpForm.lastName
-      });
-      
-      if (error) {
-        let errorMessage = error.message;
-        if (error.message.includes('already registered')) {
-          errorMessage = 'Cet email est déjà utilisé';
-        }
-        toast({
-          title: "Erreur d'inscription",
-          description: errorMessage,
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Inscription réussie ! 🎉",
-          description: "Bienvenue sur ShopOpti ! Vous allez être redirigé..."
-        });
-      }
-    } catch (error) {
+      await signInWithGoogle();
+    } catch (error: any) {
       toast({
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
+        description: error.message || "Erreur lors de la connexion avec Google",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
     }
   };
-
-  const passwordStrength = getPasswordStrength(signUpForm.password);
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Panel - Hero Image & Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Background Image */}
-        <img 
-          src={authHeroBg} 
-          alt="ShopOpti Dashboard" 
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/70 to-transparent" />
-        
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white h-full">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-12">
-              <img 
-                src={shopOptiLogo} 
-                alt="ShopOpti Logo" 
-                className="h-14 w-auto object-contain drop-shadow-lg"
-              />
-            </div>
-            
-            {/* Headline */}
-            <h2 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
-              Boostez votre
-              <br />
-              <span className="text-white/90">e-commerce</span>
-            </h2>
-            
-            <p className="text-lg text-white/90 mb-10 max-w-md">
-              La plateforme tout-en-un pour gérer, automatiser et faire croître votre business en ligne.
-            </p>
-            
-            {/* Features */}
-            <div className="space-y-4">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={feature.label}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
-                  className="flex items-center gap-4"
-                >
-                  <div className="h-10 w-10 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">{feature.label}</p>
-                    <p className="text-sm text-white/70">{feature.description}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-          
-          {/* Testimonial */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="mt-auto pt-8"
-          >
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/20">
-              <div className="flex gap-1 mb-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-white/90 italic mb-3">
-                "ShopOpti a révolutionné ma gestion e-commerce. Mes ventes ont doublé en 3 mois !"
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
-                  ML
+    <div className="min-h-screen flex bg-white">
+      {/* Left Side - Form */}
+      <div className="w-full lg:w-1/2 flex flex-col">
+        {/* Logo Header */}
+        <div className="p-6 lg:p-8">
+          <img 
+            src={shopOptiLogo} 
+            alt="ShopOpti+" 
+            className="h-10 w-auto object-contain"
+          />
+        </div>
+
+        {/* Form Container */}
+        <div className="flex-1 flex items-center justify-center px-6 lg:px-16 pb-8">
+          <div className="w-full max-w-[420px]">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              {/* Title */}
+              <h1 className="text-2xl font-semibold text-gray-900 text-center mb-8">
+                {isLogin ? 'Se connecter' : 'Créer un compte'}
+              </h1>
+
+              {/* Google Button */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12 text-gray-700 border-gray-300 hover:bg-gray-50 font-normal"
+                onClick={handleGoogleSignIn}
+              >
+                <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Se connecter avec Google
+              </Button>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
                 </div>
+                <div className="relative flex justify-center">
+                  <span className="px-4 bg-white text-sm text-gray-500">OU</span>
+                </div>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Email */}
                 <div>
-                  <p className="font-medium text-sm">Marie L.</p>
-                  <p className="text-white/60 text-xs">E-commerçante • +2,500 produits</p>
+                  <Label htmlFor="email" className="text-gray-700 font-normal text-sm">
+                    E-mail
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="ex : email@exemple.com"
+                    value={form.email}
+                    onChange={(e) => {
+                      setForm({ ...form, email: e.target.value });
+                      if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                    }}
+                    className={cn(
+                      "mt-1.5 h-12 border-gray-300 focus:border-[#00B8D4] focus:ring-[#00B8D4] placeholder:text-gray-400",
+                      errors.email && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    )}
+                    disabled={isLoading}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
-              </div>
-            </div>
-            
-            <p className="text-sm text-white/60 mt-4 text-center">
-              Rejoint par <span className="text-white font-semibold">+2,500</span> e-commerçants
-            </p>
-          </motion.div>
+
+                {/* Password */}
+                <div>
+                  <Label htmlFor="password" className="text-gray-700 font-normal text-sm">
+                    Mot de passe
+                  </Label>
+                  <div className="relative mt-1.5">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="ex : **********"
+                      value={form.password}
+                      onChange={(e) => {
+                        setForm({ ...form, password: e.target.value });
+                        if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
+                      }}
+                      className={cn(
+                        "h-12 border-gray-300 focus:border-[#00B8D4] focus:ring-[#00B8D4] pr-10 placeholder:text-gray-400",
+                        errors.password && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      )}
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password (Signup only) */}
+                <AnimatePresence>
+                  {!isLogin && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Label htmlFor="confirmPassword" className="text-gray-700 font-normal text-sm">
+                        Confirmer le mot de passe
+                      </Label>
+                      <Input
+                        id="confirmPassword"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="ex : **********"
+                        value={form.confirmPassword}
+                        onChange={(e) => {
+                          setForm({ ...form, confirmPassword: e.target.value });
+                          if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                        }}
+                        className={cn(
+                          "mt-1.5 h-12 border-gray-300 focus:border-[#00B8D4] focus:ring-[#00B8D4] placeholder:text-gray-400",
+                          errors.confirmPassword && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        )}
+                        disabled={isLoading}
+                      />
+                      {errors.confirmPassword && (
+                        <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.confirmPassword}
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Remember me & Forgot password (Login only) */}
+                {isLogin && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="remember"
+                        checked={rememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                        className="border-gray-300"
+                      />
+                      <label
+                        htmlFor="remember"
+                        className="text-sm text-gray-600 cursor-pointer select-none"
+                      >
+                        Maintenir ma connexion
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotModal(true)}
+                      className="text-sm text-[#00B8D4] hover:underline"
+                    >
+                      Mot de passe oublié ?
+                    </button>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-[#00B8D4] hover:bg-[#00A0BC] text-white font-medium text-base"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {isLogin ? 'Connexion...' : 'Inscription...'}
+                    </div>
+                  ) : (
+                    isLogin ? 'Connexion' : "S'inscrire"
+                  )}
+                </Button>
+              </form>
+
+              {/* Toggle Auth Mode */}
+              <p className="mt-6 text-center text-gray-600 text-sm">
+                {isLogin ? 'Nouveau sur ShopOpti+ ?' : 'Déjà un compte ?'}{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setErrors({});
+                  }}
+                  className="text-[#00B8D4] hover:underline font-medium"
+                >
+                  {isLogin ? 'Créer un compte' : 'Se connecter'}
+                </button>
+              </p>
+            </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* Right Panel - Auth Form */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 bg-background">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="w-full max-w-md"
-        >
-          {/* Mobile Logo */}
-          <div className="lg:hidden text-center mb-8">
-            <img 
-              src={shopOptiLogo} 
-              alt="ShopOpti Logo" 
-              className="h-12 w-auto object-contain mx-auto mb-2"
-            />
-            <p className="text-sm text-muted-foreground">Plateforme e-commerce</p>
-          </div>
+      {/* Right Side - Carousel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#00B8D4] flex-col items-center justify-center p-8 xl:p-12 relative overflow-hidden">
+        {/* Background Decorations */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-10 w-32 h-32 rounded-full bg-white/5" />
+          <div className="absolute bottom-32 right-10 w-48 h-48 rounded-full bg-white/5" />
+          <div className="absolute top-1/3 right-1/4 w-24 h-24 rounded-full bg-white/10" />
+        </div>
 
-          <Card className="border-0 shadow-xl bg-card/50 backdrop-blur-sm">
-            <CardHeader className="space-y-1 pb-4">
-              <CardTitle className="text-2xl font-bold">
-                {activeTab === 'signin' ? 'Connexion' : 'Créer un compte'}
-              </CardTitle>
-              <CardDescription>
-                {activeTab === 'signin' 
-                  ? 'Accédez à votre tableau de bord'
-                  : 'Commencez gratuitement, sans carte bancaire'
-                }
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="signin" className="text-sm">Connexion</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-sm">Inscription</TabsTrigger>
-                </TabsList>
+        <div className="relative z-10 w-full max-w-lg">
+          {/* Navigation Arrows */}
+          <button
+            onClick={prevSlide}
+            className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-white/30 hover:bg-white/10 flex items-center justify-center text-white transition-colors z-20"
+            aria-label="Slide précédent"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute -right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-white/30 hover:bg-white/10 flex items-center justify-center text-white transition-colors z-20"
+            aria-label="Slide suivant"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
 
-                <AnimatePresence mode="wait">
-                  {/* Sign In Tab */}
-                  <TabsContent value="signin" className="space-y-4 mt-0">
-                    <motion.div
-                      key="signin"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {/* Google Auth */}
-                      <GoogleAuthButton mode="signin" className="w-full h-11" />
-                      
-                      <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-card px-2 text-muted-foreground">
-                            ou par email
-                          </span>
-                        </div>
-                      </div>
+          {/* Slide Content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.3 }}
+              className="text-center px-8"
+            >
+              {/* Dashboard Mockup */}
+              <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8 mx-auto max-w-md">
+                {/* Stats Bar */}
+                <div className="flex gap-2 mb-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex-1 bg-gray-100 rounded-lg p-2">
+                      <div className="h-2 bg-gray-200 rounded w-full mb-1" />
+                      <div className="h-3 bg-gray-300 rounded w-2/3" />
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Charts Grid */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="bg-gradient-to-br from-[#00B8D4]/10 to-[#00B8D4]/20 rounded-xl p-4">
+                    <div className="h-2 bg-[#00B8D4]/30 rounded w-1/2 mb-3" />
+                    <div className="flex items-end gap-1 h-16">
+                      {[40, 60, 45, 80, 55, 70, 90].map((h, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 bg-[#00B8D4] rounded-t"
+                          style={{ height: `${h}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl p-4 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full border-8 border-purple-400 border-t-pink-400 border-r-[#00B8D4]" />
+                  </div>
+                </div>
 
-                      <form onSubmit={handleSignIn} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="signin-email">Email</Label>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <SecureInput
-                              id="signin-email"
-                              type="email"
-                              placeholder="vous@exemple.com"
-                              className={cn(
-                                "pl-10 h-11",
-                                errors.signinEmail && "border-destructive focus-visible:ring-destructive"
-                              )}
-                              value={signInForm.email}
-                              onChange={(e) => {
-                                setSignInForm({...signInForm, email: e.target.value});
-                                if (errors.signinEmail) setErrors(prev => ({ ...prev, signinEmail: '' }));
-                              }}
-                              required
-                              maxLength={254}
-                            />
-                          </div>
-                          {errors.signinEmail && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.signinEmail}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="signin-password">Mot de passe</Label>
-                            <Button 
-                              type="button"
-                              variant="link" 
-                              size="sm"
-                              className="h-auto p-0 text-xs"
-                              onClick={() => setShowForgotModal(true)}
-                            >
-                              Oublié ?
-                            </Button>
-                          </div>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <SecureInput
-                              id="signin-password"
-                              type={showPassword ? 'text' : 'password'}
-                              placeholder="••••••••"
-                              className={cn(
-                                "pl-10 pr-10 h-11",
-                                errors.signinPassword && "border-destructive focus-visible:ring-destructive"
-                              )}
-                              value={signInForm.password}
-                              onChange={(e) => {
-                                setSignInForm({...signInForm, password: e.target.value});
-                                if (errors.signinPassword) setErrors(prev => ({ ...prev, signinPassword: '' }));
-                              }}
-                              required
-                              maxLength={128}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                          {errors.signinPassword && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.signinPassword}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <Button 
-                          type="submit" 
-                          className="w-full h-11 group" 
-                          disabled={isLoading || loading}
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Connexion...
-                            </>
-                          ) : (
-                            <>
-                              Se connecter
-                              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                            </>
-                          )}
-                        </Button>
-                      </form>
-                    </motion.div>
-                  </TabsContent>
+                {/* Table Preview */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="w-12 h-12 bg-[#00B8D4]/20 rounded-lg" />
+                    <div className="flex-1">
+                      <div className="h-2 bg-gray-200 rounded w-3/4 mb-2" />
+                      <div className="h-2 bg-gray-200 rounded w-1/2" />
+                    </div>
+                    <div className="text-xs text-gray-400">970.81%</div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-purple-200 rounded-lg" />
+                    <div className="flex-1">
+                      <div className="h-2 bg-gray-200 rounded w-2/3 mb-2" />
+                      <div className="h-2 bg-gray-200 rounded w-1/3" />
+                    </div>
+                    <div className="text-xs text-gray-400">1084.62%</div>
+                  </div>
+                </div>
+              </div>
 
-                  {/* Sign Up Tab */}
-                  <TabsContent value="signup" className="space-y-4 mt-0">
-                    <motion.div
-                      key="signup"
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {/* Google Auth */}
-                      <GoogleAuthButton mode="signup" className="w-full h-11" />
-                      
-                      <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-card px-2 text-muted-foreground">
-                            ou par email
-                          </span>
-                        </div>
-                      </div>
+              {/* Dots */}
+              <div className="flex justify-center gap-2 mb-6">
+                {slides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={cn(
+                      "w-2.5 h-2.5 rounded-full transition-colors",
+                      index === currentSlide ? 'bg-white' : 'bg-white/40'
+                    )}
+                    aria-label={`Aller au slide ${index + 1}`}
+                  />
+                ))}
+              </div>
 
-                      <form onSubmit={handleSignUp} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-2">
-                            <Label htmlFor="firstName">Prénom</Label>
-                            <div className="relative">
-                              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                              <SecureInput
-                                id="firstName"
-                                placeholder="Jean"
-                                className={cn(
-                                  "pl-10 h-10",
-                                  errors.firstName && "border-destructive"
-                                )}
-                                value={signUpForm.firstName}
-                                onChange={(e) => {
-                                  setSignUpForm({...signUpForm, firstName: e.target.value});
-                                  if (errors.firstName) setErrors(prev => ({ ...prev, firstName: '' }));
-                                }}
-                                required
-                                maxLength={50}
-                              />
-                            </div>
-                            {errors.firstName && (
-                              <p className="text-xs text-destructive">{errors.firstName}</p>
-                            )}
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="lastName">Nom</Label>
-                            <SecureInput
-                              id="lastName"
-                              placeholder="Dupont"
-                              className={cn(
-                                "h-10",
-                                errors.lastName && "border-destructive"
-                              )}
-                              value={signUpForm.lastName}
-                              onChange={(e) => {
-                                setSignUpForm({...signUpForm, lastName: e.target.value});
-                                if (errors.lastName) setErrors(prev => ({ ...prev, lastName: '' }));
-                              }}
-                              required
-                              maxLength={50}
-                            />
-                            {errors.lastName && (
-                              <p className="text-xs text-destructive">{errors.lastName}</p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="company" className="flex items-center gap-1">
-                            Entreprise
-                            <span className="text-xs text-muted-foreground">(optionnel)</span>
-                          </Label>
-                          <div className="relative">
-                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <SecureInput
-                              id="company"
-                              placeholder="Nom de votre entreprise"
-                              className="pl-10 h-10"
-                              value={signUpForm.company}
-                              onChange={(e) => setSignUpForm({...signUpForm, company: e.target.value})}
-                              maxLength={100}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-email">Email professionnel</Label>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <SecureInput
-                              id="signup-email"
-                              type="email"
-                              placeholder="vous@entreprise.com"
-                              className={cn(
-                                "pl-10 h-10",
-                                errors.signupEmail && "border-destructive"
-                              )}
-                              value={signUpForm.email}
-                              onChange={(e) => {
-                                setSignUpForm({...signUpForm, email: e.target.value});
-                                if (errors.signupEmail) setErrors(prev => ({ ...prev, signupEmail: '' }));
-                              }}
-                              required
-                              maxLength={254}
-                            />
-                            {signUpForm.email && validateEmail(signUpForm.email) && (
-                              <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                            )}
-                          </div>
-                          {errors.signupEmail && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.signupEmail}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-password">Mot de passe</Label>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <SecureInput
-                              id="signup-password"
-                              type={showPassword ? 'text' : 'password'}
-                              placeholder="Min. 6 caractères"
-                              className={cn(
-                                "pl-10 pr-10 h-10",
-                                errors.signupPassword && "border-destructive"
-                              )}
-                              value={signUpForm.password}
-                              onChange={(e) => {
-                                setSignUpForm({...signUpForm, password: e.target.value});
-                                if (errors.signupPassword) setErrors(prev => ({ ...prev, signupPassword: '' }));
-                              }}
-                              required
-                              maxLength={128}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                          
-                          {/* Password Strength Indicator */}
-                          {signUpForm.password && (
-                            <div className="space-y-1.5">
-                              <div className="flex gap-1">
-                                {[1, 2, 3, 4, 5].map((level) => (
-                                  <div
-                                    key={level}
-                                    className={cn(
-                                      "h-1 flex-1 rounded-full transition-colors",
-                                      level <= passwordStrength.score ? passwordStrength.color : 'bg-muted'
-                                    )}
-                                  />
-                                ))}
-                              </div>
-                              <p className="text-xs text-muted-foreground">
-                                Force: <span className={cn(
-                                  passwordStrength.score <= 1 && "text-destructive",
-                                  passwordStrength.score > 1 && passwordStrength.score <= 3 && "text-yellow-500",
-                                  passwordStrength.score > 3 && "text-green-500"
-                                )}>{passwordStrength.label}</span>
-                              </p>
-                            </div>
-                          )}
-                          
-                          {errors.signupPassword && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.signupPassword}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <SecureInput
-                              id="confirm-password"
-                              type={showConfirmPassword ? 'text' : 'password'}
-                              placeholder="••••••••"
-                              className={cn(
-                                "pl-10 pr-10 h-10",
-                                errors.confirmPassword && "border-destructive"
-                              )}
-                              value={signUpForm.confirmPassword}
-                              onChange={(e) => {
-                                setSignUpForm({...signUpForm, confirmPassword: e.target.value});
-                                if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
-                              }}
-                              required
-                              maxLength={128}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            >
-                              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                            {signUpForm.confirmPassword && signUpForm.password === signUpForm.confirmPassword && (
-                              <CheckCircle2 className="absolute right-9 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                            )}
-                          </div>
-                          {errors.confirmPassword && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.confirmPassword}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <Button 
-                          type="submit" 
-                          className="w-full h-11 group" 
-                          disabled={isLoading || loading}
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Création du compte...
-                            </>
-                          ) : (
-                            <>
-                              Créer mon compte gratuit
-                              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                            </>
-                          )}
-                        </Button>
-                        
-                        <p className="text-xs text-center text-muted-foreground">
-                          En créant un compte, vous acceptez nos{' '}
-                          <Link to="/terms" className="text-primary hover:underline">
-                            conditions d'utilisation
-                          </Link>
-                          {' '}et notre{' '}
-                          <Link to="/privacy" className="text-primary hover:underline">
-                            politique de confidentialité
-                          </Link>
-                        </p>
-                      </form>
-                    </motion.div>
-                  </TabsContent>
-                </AnimatePresence>
-              </Tabs>
-            </CardContent>
-          </Card>
-          
-          {/* Back to Home */}
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            <Link to="/" className="hover:text-primary transition-colors">
-              ← Retour à l'accueil
-            </Link>
-          </p>
-        </motion.div>
+              {/* Text Content */}
+              <h2 className="text-2xl xl:text-3xl font-bold text-white mb-4 leading-tight">
+                {slides[currentSlide].title}
+              </h2>
+              <p className="text-white/90 text-base leading-relaxed max-w-md mx-auto">
+                {slides[currentSlide].description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
 
-      <ForgotPasswordModal
-        open={showForgotModal}
-        onOpenChange={setShowForgotModal}
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal 
+        open={showForgotModal} 
+        onOpenChange={setShowForgotModal} 
       />
     </div>
   );
 };
+
+export default AuthInterface;
