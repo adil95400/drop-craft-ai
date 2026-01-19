@@ -41,6 +41,7 @@ const DEFAULT_CURRENCIES = [
   { code: 'HUF', symbol: 'Ft', name: 'Forint hongrois', flag: '🇭🇺' },
   { code: 'RON', symbol: 'lei', name: 'Leu roumain', flag: '🇷🇴' },
   { code: 'BGN', symbol: 'лв', name: 'Lev bulgare', flag: '🇧🇬' },
+  { code: 'MAD', symbol: 'د.م.', name: 'Dirham marocain', flag: '🇲🇦' },
 ];
 
 // Map code devise -> drapeau pour lookup rapide
