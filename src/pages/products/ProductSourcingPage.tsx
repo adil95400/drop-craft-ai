@@ -6,34 +6,25 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Helmet } from 'react-helmet-async';
 import { Package, Search, TrendingUp, Zap, Globe, ShoppingCart } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ProductSourcingPage() {
   return (
-    <>
-      <Helmet>
-        <title>Sourcing Produits - Trouver des fournisseurs</title>
-        <meta name="description" content="Sourcez les meilleurs produits depuis nos fournisseurs partenaires" />
-      </Helmet>
-
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold">📦 Sourcing Produits</h1>
-            <p className="text-muted-foreground mt-2">
-              Trouvez et importez les meilleurs produits depuis nos fournisseurs
-            </p>
-          </div>
-          <Button className="gap-2">
-            <Search className="h-4 w-4" />
-            Rechercher un fournisseur
-          </Button>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <ChannablePageWrapper
+      title="Sourcing Produits"
+      description="Trouvez et importez les meilleurs produits depuis nos fournisseurs"
+      heroImage="suppliers"
+      badge={{ label: "Sourcing", icon: Package }}
+      actions={
+        <Button className="gap-2">
+          <Search className="h-4 w-4" />
+          Rechercher un fournisseur
+        </Button>
+      }
+    >
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -147,7 +138,6 @@ export default function ProductSourcingPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </>
+    </ChannablePageWrapper>
   );
 }
