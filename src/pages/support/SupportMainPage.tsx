@@ -6,7 +6,6 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
-import { ChannableLayout } from '@/components/channable/navigation/ChannableLayout';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -283,7 +282,7 @@ export default function SupportMainPage() {
   };
 
   return (
-    <ChannableLayout>
+    <>
       <Helmet>
         <title>Centre de Support - ShopOpti</title>
         <meta name="description" content="Support 24/7, documentation complète et réponses à toutes vos questions." />
@@ -661,6 +660,6 @@ export default function SupportMainPage() {
         open={isCreateTicketOpen}
         onOpenChange={setIsCreateTicketOpen}
       />
-    </ChannableLayout>
+    </>
   );
 }
