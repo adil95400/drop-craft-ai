@@ -49,6 +49,12 @@ enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
 
+[functions.realtime-alerts-engine]
+verify_jwt = true
+
+[functions.push-notification-service]
+verify_jwt = true
+
 [functions.unified-channel-webhooks]
 verify_jwt = false
 
