@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom'
 import { useDataExport } from '@/hooks/useDataExport'
 import { 
   ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableSearchBar,
   ChannableCategoryFilter,
@@ -17,6 +16,7 @@ import {
   ChannableEmptyState,
   ChannableQuickActions
 } from '@/components/channable'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -170,13 +170,12 @@ export default function ChannableOrdersPage() {
   }
 
   return (
-    <ChannablePageLayout>
-      {/* Hero Section */}
-      <ChannableHeroSection
-        title="Centre de Commandes"
-        subtitle="Gérez, suivez et optimisez toutes vos commandes en un seul endroit"
-        icon={Package}
-      />
+    <ChannablePageWrapper
+      title="Centre de Commandes"
+      description="Gérez, suivez et optimisez toutes vos commandes en un seul endroit"
+      heroImage="orders"
+      badge={{ label: "Commandes", icon: Package }}
+    >
 
       {/* Stats Grid */}
       <ChannableStatsGrid stats={stats} />
@@ -323,6 +322,6 @@ export default function ChannableOrdersPage() {
           orderId={selectedOrderId}
         />
       )}
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }
