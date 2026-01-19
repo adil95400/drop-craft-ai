@@ -1,104 +1,176 @@
 /**
- * Page principale de gestion des produits - Design Channable Premium
+ * Page principale de gestion des produits - Design moderne premium
  * Utilise le hook unifié et le wrapper pour toutes les actions
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
 import { useProductFilters } from '@/hooks/useProductFilters';
 import { useAuditFilters } from '@/hooks/useAuditFilters';
 import { useProductsAudit } from '@/hooks/useProductAuditEngine';
-import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { ProductsPageWrapper } from '@/components/products/ProductsPageWrapper';
-import { ProductAuditBadge } from '@/components/products/ProductAuditBadge';
-import { CatalogQualityDashboard } from '@/components/products/CatalogQualityDashboard';
-import { AdvancedAuditFilters } from '@/components/products/AdvancedAuditFilters';
-import { BulkAIActions } from '@/components/products/BulkAIActions';
-import { DuplicateDetector } from '@/components/products/DuplicateDetector';
-import { OptimizationSimulator } from '@/components/products/OptimizationSimulator';
-import { PriorityManager } from '@/components/products/PriorityManager';
-import { AdvancedFiltersPanel } from '@/components/products/AdvancedFiltersPanel';
 import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 import { BulkEnrichmentDialog } from '@/components/enrichment';
-import { ProductsDebugPanel } from '@/components/debug/ProductsDebugPanel';
-import { ProductsStatsHeader } from '@/components/products/ProductsStatsHeader';
-import { ProductsQuickFilters } from '@/components/products/ProductsQuickFilters';
+import { AdvancedFiltersPanel } from '@/components/products/AdvancedFiltersPanel';
 import { ProductViewModal } from '@/components/modals/ProductViewModal';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Card, CardContent } from '@/components/ui/card';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { 
   Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, 
   Target, Sparkles, CheckCircle, Filter, Edit3, Wand2, Plus,
-  LayoutGrid, List, RefreshCw, Download, Upload, Search, Eye,
-  ArrowUpRight, Settings, Zap, BarChart3
+  LayoutGrid, List, RefreshCw, Search, Zap, BarChart3, 
+  ShoppingBag, Layers, Star, Eye, Activity
 } from 'lucide-react';
-import { useModalContext } from '@/hooks/useModalHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
+import { Helmet } from 'react-helmet-async';
 
-
-// Composant de carte statistique premium
+// Composant de carte statistique moderne
 interface StatCardProps {
   label: string;
   value: string | number;
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   icon: React.ElementType;
-  color: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  color: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'purple';
   onClick?: () => void;
+  delay?: number;
 }
 
-function StatCard({ label, value, change, changeType = 'positive', icon: Icon, color, onClick }: StatCardProps) {
-  const colorClasses = {
-    primary: 'from-primary/20 to-primary/5 border-primary/30 text-primary',
-    success: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-500',
-    warning: 'from-amber-500/20 to-amber-500/5 border-amber-500/30 text-amber-500',
-    danger: 'from-red-500/20 to-red-500/5 border-red-500/30 text-red-500',
-    info: 'from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-500',
+function StatCard({ label, value, change, changeType = 'positive', icon: Icon, color, onClick, delay = 0 }: StatCardProps) {
+  const colorMap = {
+    primary: {
+      bg: 'bg-gradient-to-br from-primary/10 via-primary/5 to-transparent',
+      border: 'border-primary/20 hover:border-primary/40',
+      icon: 'bg-primary/10 text-primary',
+      glow: 'group-hover:shadow-primary/20'
+    },
+    success: {
+      bg: 'bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent',
+      border: 'border-emerald-500/20 hover:border-emerald-500/40',
+      icon: 'bg-emerald-500/10 text-emerald-500',
+      glow: 'group-hover:shadow-emerald-500/20'
+    },
+    warning: {
+      bg: 'bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent',
+      border: 'border-amber-500/20 hover:border-amber-500/40',
+      icon: 'bg-amber-500/10 text-amber-500',
+      glow: 'group-hover:shadow-amber-500/20'
+    },
+    danger: {
+      bg: 'bg-gradient-to-br from-red-500/10 via-red-500/5 to-transparent',
+      border: 'border-red-500/20 hover:border-red-500/40',
+      icon: 'bg-red-500/10 text-red-500',
+      glow: 'group-hover:shadow-red-500/20'
+    },
+    info: {
+      bg: 'bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent',
+      border: 'border-blue-500/20 hover:border-blue-500/40',
+      icon: 'bg-blue-500/10 text-blue-500',
+      glow: 'group-hover:shadow-blue-500/20'
+    },
+    purple: {
+      bg: 'bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent',
+      border: 'border-purple-500/20 hover:border-purple-500/40',
+      icon: 'bg-purple-500/10 text-purple-500',
+      glow: 'group-hover:shadow-purple-500/20'
+    }
   };
+
+  const colors = colorMap[color];
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02, y: -2 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      whileHover={{ scale: 1.02, y: -4 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "cursor-pointer p-4 rounded-xl border bg-gradient-to-br backdrop-blur-sm transition-all duration-300",
-        colorClasses[color]
+        "group relative cursor-pointer p-5 rounded-2xl border backdrop-blur-sm transition-all duration-300",
+        "shadow-sm hover:shadow-xl",
+        colors.bg,
+        colors.border,
+        colors.glow
       )}
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className={cn("p-2 rounded-lg bg-background/50")}>
-          <Icon className="h-4 w-4" />
+      {/* Glow effect */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/5 to-transparent" />
+      
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className={cn("p-2.5 rounded-xl", colors.icon)}>
+            <Icon className="h-5 w-5" />
+          </div>
+          {change && (
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "text-[10px] px-2 py-0.5 font-medium border-none",
+                changeType === 'positive' && 'bg-emerald-500/10 text-emerald-600',
+                changeType === 'negative' && 'bg-red-500/10 text-red-600',
+                changeType === 'neutral' && 'bg-muted text-muted-foreground'
+              )}
+            >
+              {change}
+            </Badge>
+          )}
         </div>
-        {change && (
-          <Badge 
-            variant="outline" 
-            className={cn(
-              "text-[10px] px-1.5 py-0.5",
-              changeType === 'positive' && 'text-emerald-600 border-emerald-300 bg-emerald-50/50',
-              changeType === 'negative' && 'text-red-600 border-red-300 bg-red-50/50',
-              changeType === 'neutral' && 'text-muted-foreground border-muted bg-muted/50'
-            )}
-          >
-            {change}
-          </Badge>
-        )}
-      </div>
-      <div className="space-y-1">
-        <p className="text-2xl font-bold text-foreground">{value}</p>
-        <p className="text-xs text-muted-foreground">{label}</p>
+        <div className="space-y-1">
+          <p className="text-3xl font-bold tracking-tight text-foreground">{value}</p>
+          <p className="text-sm text-muted-foreground font-medium">{label}</p>
+        </div>
       </div>
     </motion.div>
+  );
+}
+
+// Quick Filter Button Component
+function QuickFilterButton({ 
+  active, 
+  onClick, 
+  icon: Icon, 
+  label, 
+  count 
+}: { 
+  active: boolean; 
+  onClick: () => void; 
+  icon: React.ElementType; 
+  label: string; 
+  count?: number;
+}) {
+  return (
+    <Button
+      variant={active ? 'default' : 'outline'}
+      size="sm"
+      onClick={onClick}
+      className={cn(
+        "gap-2 transition-all duration-200",
+        active 
+          ? "bg-primary shadow-lg shadow-primary/25" 
+          : "bg-background/50 hover:bg-accent border-border/50"
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+      {count !== undefined && count > 0 && (
+        <Badge variant="secondary" className={cn("ml-1 h-5 min-w-5 p-0 flex items-center justify-center text-[10px]", active && "bg-primary-foreground/20 text-primary-foreground")}>
+          {count}
+        </Badge>
+      )}
+    </Button>
   );
 }
 
@@ -114,40 +186,32 @@ export default function ProductsMainPage() {
     activeCount: auditActiveCount 
   } = useAuditFilters(filteredProducts);
   
-  // Calcul des audits pour tous les produits
   const { auditResults, stats: auditStats } = useProductsAudit(products);
   
-  const { openModal } = useModalContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<'standard' | 'audit'>('standard');
+  const [viewMode, setViewMode] = useState<'all' | 'active' | 'lowStock' | 'toOptimize'>('all');
   const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showBulkEdit, setShowBulkEdit] = useState(false);
   const [showBulkEnrichment, setShowBulkEnrichment] = useState(false);
-  const [expertMode, setExpertMode] = useState<boolean>(false);
-  const [quickFilter, setQuickFilter] = useState<string>('all');
-  const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleEdit = (product: any) => {
+  const handleEdit = useCallback((product: UnifiedProduct) => {
     navigate(`/products/${product.id}/edit`);
-  };
+  }, [navigate]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
-      return;
-    }
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
       const product = products.find(p => p.id === id);
-      
-      // Déterminer la table source en fonction du type de produit
       let tableName: 'products' | 'imported_products' | 'catalog_products' = 'products';
       const source = product?.source as string;
       if (source === 'imported' || source === 'imported_products') {
@@ -156,23 +220,13 @@ export default function ProductsMainPage() {
         tableName = 'catalog_products';
       }
 
-      // Essayer de supprimer de la table déterminée
-      let { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+      let { error } = await supabase.from(tableName).delete().eq('id', id).eq('user_id', user.id);
 
-      // Si échec, essayer toutes les tables
       if (error) {
         const tables = ['products', 'imported_products', 'catalog_products'] as const;
         for (const table of tables) {
           if (table === tableName) continue;
-          const result = await supabase
-            .from(table)
-            .delete()
-            .eq('id', id)
-            .eq('user_id', user.id);
+          const result = await supabase.from(table).delete().eq('id', id).eq('user_id', user.id);
           if (!result.error) {
             error = null;
             break;
@@ -182,11 +236,7 @@ export default function ProductsMainPage() {
 
       if (error) throw error;
       
-      toast({
-        title: 'Produit supprimé',
-        description: 'Le produit a été supprimé avec succès'
-      });
-      
+      toast({ title: 'Produit supprimé', description: 'Le produit a été supprimé avec succès' });
       queryClient.invalidateQueries({ queryKey: ['unified-products'] });
     } catch (error) {
       toast({
@@ -195,359 +245,474 @@ export default function ProductsMainPage() {
         variant: 'destructive'
       });
     }
-  };
+  }, [products, toast, queryClient]);
 
-  const handleView = (product: UnifiedProduct) => {
+  const handleView = useCallback((product: UnifiedProduct) => {
     setViewModalProduct(product);
-  };
+  }, []);
 
-  const handleRefresh = () => {
-    refetch();
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await refetch();
     queryClient.invalidateQueries({ queryKey: ['unified-products'] });
-    toast({ title: 'Catalogue actualisé' });
-  };
+    toast({ title: 'Catalogue actualisé', description: `${stats.total} produits chargés` });
+    setTimeout(() => setIsRefreshing(false), 500);
+  }, [refetch, queryClient, toast, stats.total]);
 
+  // Filtrage selon le mode de vue
+  const modeFilteredProducts = useMemo(() => {
+    switch (viewMode) {
+      case 'active':
+        return filteredProducts.filter(p => p.status === 'active');
+      case 'lowStock':
+        return filteredProducts.filter(p => (p.stock_quantity || 0) < 10);
+      case 'toOptimize':
+        return filteredProducts.filter(p => ((p as any).ai_score || 50) < 60);
+      default:
+        return filteredProducts;
+    }
+  }, [filteredProducts, viewMode]);
+
+  // Filtrer par recherche
+  const displayProducts = useMemo(() => {
+    if (!searchTerm) return modeFilteredProducts;
+    const search = searchTerm.toLowerCase();
+    return modeFilteredProducts.filter(p => 
+      p.name?.toLowerCase().includes(search) ||
+      p.sku?.toLowerCase().includes(search) ||
+      p.category?.toLowerCase().includes(search)
+    );
+  }, [modeFilteredProducts, searchTerm]);
+
+  // Loading state moderne
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] animate-in fade-in duration-300">
-        <div className="text-center space-y-4">
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center space-y-6"
+        >
           <div className="relative">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-            <div className="absolute inset-0 animate-ping">
-              <Loader2 className="h-12 w-12 mx-auto text-primary/20" />
+            <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-primary/20 to-primary/5 flex items-center justify-center mx-auto">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            </div>
+            <div className="absolute inset-0 animate-ping opacity-20">
+              <div className="h-20 w-20 rounded-full bg-primary/20 mx-auto" />
             </div>
           </div>
           <div className="space-y-2">
-            <p className="text-sm font-medium text-foreground">Chargement des produits...</p>
-            <p className="text-xs text-muted-foreground">Préparation de votre catalogue</p>
+            <h3 className="text-lg font-semibold text-foreground">Chargement du catalogue</h3>
+            <p className="text-sm text-muted-foreground">Préparation de vos produits...</p>
           </div>
-        </div>
+          <Progress value={45} className="w-48 mx-auto h-1.5" />
+        </motion.div>
       </div>
     );
   }
 
-  const finalFilteredProducts = viewMode === 'audit' ? auditFilteredProducts : filteredProducts;
-
-  // Filtrer par recherche
-  const displayProducts = searchTerm 
-    ? finalFilteredProducts.filter(p => 
-        (p as any).title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p as any).sku?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : finalFilteredProducts;
+  const qualityScore = auditStats.averageScore;
+  const lowStockCount = stats.lowStock || 0;
+  const toOptimizeCount = auditStats.poorCount || 0;
 
   return (
-    <ChannablePageWrapper
-      title="Catalogue Produits"
-      subtitle="Gestion centralisée"
-      description="Gérez tous vos produits en un seul endroit. Importez, optimisez et publiez sur vos canaux."
-      heroImage="products"
-      badge={{
-        label: `${stats.total} produits`,
-        icon: Package
-      }}
-      actions={
-        <>
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-background/50 border-border/50"
-            />
-          </div>
+    <>
+      <Helmet>
+        <title>Produits - ShopOpti</title>
+        <meta name="description" content="Gérez votre catalogue de produits" />
+      </Helmet>
+      
+      <div className="space-y-6 pb-8">
+        {/* Header moderne */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-border/50 p-6 md:p-8"
+        >
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            className="bg-background/50 border-border/50"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-primary/10">
+                    <Package className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Catalogue Produits</h1>
+                    <p className="text-muted-foreground">Gérez et optimisez vos {stats.total} produits</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative flex-1 min-w-[200px] max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher un produit..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-background/80 backdrop-blur border-border/50 h-10"
+                  />
+                </div>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className="bg-background/80 backdrop-blur border-border/50 h-10 w-10"
+                      >
+                        <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Actualiser</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setDisplayMode(m => m === 'grid' ? 'list' : 'grid')}
-            className="bg-background/50 border-border/50"
-          >
-            {displayMode === 'grid' ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-          </Button>
+                <div className="flex rounded-lg border border-border/50 overflow-hidden bg-background/80 backdrop-blur">
+                  <Button
+                    variant={displayMode === 'grid' ? 'default' : 'ghost'}
+                    size="icon"
+                    onClick={() => setDisplayMode('grid')}
+                    className="rounded-none h-10 w-10"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={displayMode === 'list' ? 'default' : 'ghost'}
+                    size="icon"
+                    onClick={() => setDisplayMode('list')}
+                    className="rounded-none h-10 w-10"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
 
-          <Button
-            size="sm"
-            onClick={() => navigate('/products/create')}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau produit
-          </Button>
-        </>
-      }
-    >
-      {/* Statistiques rapides */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <StatCard
-          label="Total Produits"
-          value={stats.total}
-          icon={Package}
-          color="primary"
-          onClick={() => setViewMode('standard')}
-        />
-        <StatCard
-          label="Score Moyen"
-          value={auditStats.averageScore}
-          change={auditStats.excellentCount + ' excellents'}
-          changeType="positive"
-          icon={Target}
-          color="info"
-          onClick={() => setViewMode('audit')}
-        />
-        <StatCard
-          label="À Corriger"
-          value={auditStats.poorCount}
-          change="Score < 40"
-          changeType={auditStats.poorCount > 0 ? 'negative' : 'neutral'}
-          icon={AlertCircle}
-          color="danger"
-          onClick={() => setViewMode('audit')}
-        />
-        <StatCard
-          label="Actifs"
-          value={stats.active}
-          change={`${stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(0) : 0}%`}
-          changeType="positive"
-          icon={CheckCircle}
-          color="success"
-        />
-        <StatCard
-          label="Stock Faible"
-          value={stats.lowStock}
-          change="< 10 unités"
-          changeType={stats.lowStock > 0 ? 'negative' : 'neutral'}
-          icon={Archive}
-          color="warning"
-          onClick={() => updateFilter('lowStock', true)}
-        />
-        <StatCard
-          label="Valeur Stock"
-          value={`€${(stats.totalValue / 1000).toFixed(1)}k`}
-          icon={DollarSign}
-          color="primary"
-        />
-      </div>
-
-      {/* Barre d'actions */}
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Modes de vue */}
-            <div className="flex rounded-lg border border-border/50 overflow-hidden">
-              <Button
-                variant={viewMode === 'standard' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('standard')}
-                className="rounded-none"
-              >
-                <Package className="h-4 w-4 mr-2" />
-                Standard
-              </Button>
-              <Button
-                variant={viewMode === 'audit' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('audit')}
-                className="rounded-none"
-              >
-                <Target className="h-4 w-4 mr-2" />
-                Audit
-              </Button>
-            </div>
-
-            <div className="h-6 w-px bg-border/50" />
-
-            {/* Mode Expert */}
-            <Button
-              variant={expertMode ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setExpertMode(!expertMode)}
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              {expertMode ? 'Mode Expert' : 'Mode Simple'}
-            </Button>
-
-            {/* Filtres avancés */}
-            <Sheet open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtres
-                  {hasActiveFilters && (
-                    <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
-                      !
-                    </Badge>
-                  )}
+                <Button
+                  onClick={() => navigate('/products/create')}
+                  className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 h-10"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouveau produit
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
-                <AdvancedFiltersPanel
-                  filters={{
-                    search: filters.search,
-                    categories: filters.category !== 'all' ? [filters.category] : [],
-                    suppliers: [],
-                    sources: filters.source !== 'all' ? [filters.source] : [],
-                    status: filters.status !== 'all' ? [filters.status] : [],
-                    priceMin: filters.priceRange[0],
-                    priceMax: filters.priceRange[1],
-                    marginMin: 0,
-                    marginMax: 100,
-                    stockMin: 0,
-                    stockMax: 10000,
-                    ratingMin: 0,
-                    scoreMin: 0,
-                    scoreMax: auditFilters.seoScoreMax ?? 100,
-                    hasImages: null,
-                    hasSEO: null,
-                    isBestseller: null,
-                    isTrending: null,
-                    isWinner: null,
-                    hasLowStock: filters.lowStock ? true : null,
-                    needsOptimization: null,
-                    sortBy: filters.sortBy,
-                    sortOrder: filters.sortOrder
-                  }}
-                  onFiltersChange={(newFilters) => {
-                    updateFilter('search', newFilters.search);
-                    updateFilter('category', newFilters.categories.length > 0 ? newFilters.categories[0] : 'all');
-                    updateFilter('source', newFilters.sources.length > 0 ? newFilters.sources[0] as any : 'all');
-                    updateFilter('status', newFilters.status.length > 0 ? newFilters.status[0] as any : 'all');
-                    updateFilter('priceRange', [newFilters.priceMin, newFilters.priceMax]);
-                    updateFilter('lowStock', newFilters.hasLowStock === true);
-                    updateFilter('sortBy', newFilters.sortBy as any);
-                    updateFilter('sortOrder', newFilters.sortOrder);
-                    toast({ title: 'Filtres appliqués' });
-                  }}
-                  categories={categories}
-                  suppliers={[]}
-                  sources={['products', 'imported', 'premium', 'catalog', 'shopify', 'published', 'feed', 'supplier']}
-                  productCount={products.length}
-                  filteredCount={finalFilteredProducts.length}
-                />
-              </SheetContent>
-            </Sheet>
-
-            <div className="flex-1" />
-
-            {/* Actions de sélection */}
-            {selectedProducts.length > 0 && (
-              <>
-                <Badge variant="secondary">
-                  {selectedProducts.length} sélectionné(s)
-                </Badge>
-                <Sheet open={showBulkEdit} onOpenChange={setShowBulkEdit}>
-                  <SheetTrigger asChild>
-                    <Button variant="default" size="sm">
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      Éditer
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-                    <BulkEditPanel
-                      selectedProducts={products.filter(p => selectedProducts.includes(p.id))}
-                      onComplete={() => {
-                        setShowBulkEdit(false);
-                        setSelectedProducts([]);
-                        handleRefresh();
-                      }}
-                      onCancel={() => setShowBulkEdit(false)}
-                    />
-                  </SheetContent>
-                </Sheet>
-              </>
-            )}
-
-            {/* Enrichissement IA */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowBulkEnrichment(true)}
-            >
-              <Wand2 className="h-4 w-4 mr-2" />
-              Enrichir IA
-            </Button>
-
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </motion.div>
 
-      {/* Grille de produits */}
-      <AnimatePresence mode="wait">
-        {displayProducts.length > 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <ProductsPageWrapper
-              products={displayProducts}
-              allProducts={products}
-              filters={filters}
-              categories={categories}
-              onRefresh={handleRefresh}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onView={handleView}
-              onSelectionChange={setSelectedProducts}
-              selectedProducts={selectedProducts}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16 border-2 border-dashed rounded-2xl bg-muted/30"
-          >
-            <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Aucun produit trouvé</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              {searchTerm 
-                ? `Aucun produit ne correspond à "${searchTerm}"`
-                : 'Commencez par ajouter vos premiers produits'}
-            </p>
-            <div className="flex gap-3 justify-center">
-              {searchTerm && (
-                <Button variant="outline" onClick={() => setSearchTerm('')}>
-                  Effacer la recherche
-                </Button>
-              )}
-              <Button onClick={() => navigate('/products/create')}>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter un produit
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Statistiques */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard
+            label="Total Produits"
+            value={stats.total}
+            icon={Package}
+            color="primary"
+            onClick={() => setViewMode('all')}
+            delay={0}
+          />
+          <StatCard
+            label="Produits Actifs"
+            value={stats.active}
+            change={`${stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}%`}
+            changeType="positive"
+            icon={CheckCircle}
+            color="success"
+            onClick={() => setViewMode('active')}
+            delay={0.05}
+          />
+          <StatCard
+            label="Score Qualité"
+            value={`${qualityScore}%`}
+            change={auditStats.excellentCount > 0 ? `${auditStats.excellentCount} excellent` : undefined}
+            changeType={qualityScore >= 70 ? 'positive' : 'neutral'}
+            icon={Star}
+            color="purple"
+            delay={0.1}
+          />
+          <StatCard
+            label="À Optimiser"
+            value={toOptimizeCount}
+            change="Score < 60"
+            changeType={toOptimizeCount > 0 ? 'negative' : 'neutral'}
+            icon={Sparkles}
+            color="warning"
+            onClick={() => setViewMode('toOptimize')}
+            delay={0.15}
+          />
+          <StatCard
+            label="Stock Faible"
+            value={lowStockCount}
+            change="< 10 unités"
+            changeType={lowStockCount > 0 ? 'negative' : 'neutral'}
+            icon={AlertCircle}
+            color="danger"
+            onClick={() => setViewMode('lowStock')}
+            delay={0.2}
+          />
+          <StatCard
+            label="Valeur Stock"
+            value={`${(stats.totalValue / 1000).toFixed(1)}k€`}
+            icon={DollarSign}
+            color="info"
+            delay={0.25}
+          />
+        </div>
 
-      {/* Modals */}
-      <BulkEnrichmentDialog
-        open={showBulkEnrichment}
-        onOpenChange={setShowBulkEnrichment}
-        productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 50).map(p => p.id)}
-        onComplete={() => {
-          setShowBulkEnrichment(false);
-          handleRefresh();
-        }}
-      />
+        {/* Actions et Filtres rapides */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                {/* Filtres rapides */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <QuickFilterButton
+                    active={viewMode === 'all'}
+                    onClick={() => setViewMode('all')}
+                    icon={Layers}
+                    label="Tous"
+                    count={stats.total}
+                  />
+                  <QuickFilterButton
+                    active={viewMode === 'active'}
+                    onClick={() => setViewMode('active')}
+                    icon={CheckCircle}
+                    label="Actifs"
+                    count={stats.active}
+                  />
+                  <QuickFilterButton
+                    active={viewMode === 'lowStock'}
+                    onClick={() => setViewMode('lowStock')}
+                    icon={AlertCircle}
+                    label="Stock faible"
+                    count={lowStockCount}
+                  />
+                  <QuickFilterButton
+                    active={viewMode === 'toOptimize'}
+                    onClick={() => setViewMode('toOptimize')}
+                    icon={Sparkles}
+                    label="À optimiser"
+                    count={toOptimizeCount}
+                  />
+                </div>
 
-      {viewModalProduct && (
-        <ProductViewModal
-          product={viewModalProduct}
-          open={!!viewModalProduct}
-          onOpenChange={() => setViewModalProduct(null)}
+                {/* Actions */}
+                <div className="flex items-center gap-2">
+                  {selectedProducts.length > 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Badge variant="secondary" className="bg-primary/10 text-primary font-medium">
+                        {selectedProducts.length} sélectionné(s)
+                      </Badge>
+                      <Sheet open={showBulkEdit} onOpenChange={setShowBulkEdit}>
+                        <SheetTrigger asChild>
+                          <Button variant="default" size="sm" className="gap-2">
+                            <Edit3 className="h-4 w-4" />
+                            Éditer
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+                          <SheetHeader>
+                            <SheetTitle>Édition en masse</SheetTitle>
+                          </SheetHeader>
+                          <BulkEditPanel
+                            selectedProducts={products.filter(p => selectedProducts.includes(p.id))}
+                            onComplete={() => {
+                              setShowBulkEdit(false);
+                              setSelectedProducts([]);
+                              handleRefresh();
+                            }}
+                            onCancel={() => setShowBulkEdit(false)}
+                          />
+                        </SheetContent>
+                      </Sheet>
+                    </motion.div>
+                  )}
+
+                  <Sheet open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2 bg-background/50">
+                        <Filter className="h-4 w-4" />
+                        Filtres avancés
+                        {hasActiveFilters && (
+                          <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                        )}
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+                      <SheetHeader>
+                        <SheetTitle>Filtres avancés</SheetTitle>
+                      </SheetHeader>
+                      <AdvancedFiltersPanel
+                        filters={{
+                          search: filters.search,
+                          categories: filters.category !== 'all' ? [filters.category] : [],
+                          suppliers: [],
+                          sources: filters.source !== 'all' ? [filters.source] : [],
+                          status: filters.status !== 'all' ? [filters.status] : [],
+                          priceMin: filters.priceRange[0],
+                          priceMax: filters.priceRange[1],
+                          marginMin: 0,
+                          marginMax: 100,
+                          stockMin: 0,
+                          stockMax: 10000,
+                          ratingMin: 0,
+                          scoreMin: 0,
+                          scoreMax: auditFilters.seoScoreMax ?? 100,
+                          hasImages: null,
+                          hasSEO: null,
+                          isBestseller: null,
+                          isTrending: null,
+                          isWinner: null,
+                          hasLowStock: filters.lowStock ? true : null,
+                          needsOptimization: null,
+                          sortBy: filters.sortBy,
+                          sortOrder: filters.sortOrder
+                        }}
+                        onFiltersChange={(newFilters) => {
+                          updateFilter('search', newFilters.search);
+                          updateFilter('category', newFilters.categories.length > 0 ? newFilters.categories[0] : 'all');
+                          updateFilter('source', newFilters.sources.length > 0 ? newFilters.sources[0] as any : 'all');
+                          updateFilter('status', newFilters.status.length > 0 ? newFilters.status[0] as any : 'all');
+                          updateFilter('priceRange', [newFilters.priceMin, newFilters.priceMax]);
+                          updateFilter('lowStock', newFilters.hasLowStock === true);
+                          updateFilter('sortBy', newFilters.sortBy as any);
+                          updateFilter('sortOrder', newFilters.sortOrder);
+                          toast({ title: 'Filtres appliqués' });
+                          setShowAdvancedFilters(false);
+                        }}
+                        categories={categories}
+                        suppliers={[]}
+                        sources={['products', 'imported', 'premium', 'catalog', 'shopify', 'published', 'feed', 'supplier']}
+                        productCount={products.length}
+                        filteredCount={displayProducts.length}
+                      />
+                    </SheetContent>
+                  </Sheet>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowBulkEnrichment(true)}
+                    className="gap-2 bg-background/50"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    Enrichir IA
+                  </Button>
+
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetFilters}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Réinitialiser
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Grille de produits */}
+        <AnimatePresence mode="wait">
+          {displayProducts.length > 0 ? (
+            <motion.div
+              key="products"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ProductsPageWrapper
+                products={displayProducts}
+                allProducts={products}
+                filters={filters}
+                categories={categories}
+                onRefresh={handleRefresh}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onView={handleView}
+                onSelectionChange={setSelectedProducts}
+                selectedProducts={selectedProducts}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative overflow-hidden rounded-3xl border-2 border-dashed border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 p-16"
+            >
+              <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+              <div className="relative z-10 text-center">
+                <div className="inline-flex p-4 rounded-full bg-muted/50 mb-6">
+                  <Package className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Aucun produit trouvé</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  {searchTerm 
+                    ? `Aucun produit ne correspond à "${searchTerm}"`
+                    : viewMode !== 'all'
+                      ? 'Aucun produit dans cette catégorie'
+                      : 'Commencez par ajouter vos premiers produits'}
+                </p>
+                <div className="flex gap-3 justify-center">
+                  {(searchTerm || viewMode !== 'all') && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setSearchTerm('');
+                        setViewMode('all');
+                      }}
+                    >
+                      Voir tous les produits
+                    </Button>
+                  )}
+                  <Button onClick={() => navigate('/products/create')} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Ajouter un produit
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Modals */}
+        <BulkEnrichmentDialog
+          open={showBulkEnrichment}
+          onOpenChange={setShowBulkEnrichment}
+          productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 50).map(p => p.id)}
+          onComplete={() => {
+            setShowBulkEnrichment(false);
+            handleRefresh();
+          }}
         />
-      )}
-    </ChannablePageWrapper>
+
+        {viewModalProduct && (
+          <ProductViewModal
+            product={viewModalProduct}
+            open={!!viewModalProduct}
+            onOpenChange={() => setViewModalProduct(null)}
+          />
+        )}
+      </div>
+    </>
   );
 }
