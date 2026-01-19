@@ -64,6 +64,7 @@ const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
 const SupportCenterPage = lazy(() => import('@/pages/support/SupportCenterPage'));
+const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
 // ProductRulesPage supprimé - intégré dans /products?tab=rules
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
@@ -224,7 +225,7 @@ export function AppRoutes() {
         <Route path="/guides/getting-started" element={<GettingStartedPage />} />
         <Route path="/academy" element={<AcademyHomePage />} />
         <Route path="/academy/course/:id" element={<AcademyHomePage />} />
-        <Route path="/support" element={<SupportCenterPage />} />
+        <Route path="/support" element={<ProtectedRoute><SupportMainPage /></ProtectedRoute>} />
         
         {/* Legacy redirects consolidés */}
         <Route path="/modern/*" element={<Navigate to="/dashboard" replace />} />
