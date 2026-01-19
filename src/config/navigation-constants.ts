@@ -9,7 +9,7 @@ import {
   Calculator, HelpCircle, GraduationCap, Video, Layers, RefreshCw,
   Clock, Activity, Database, Target, Mail, Bot, Globe, Wrench,
   LayoutDashboard, PackageCheck, Bell, Eye, Trophy, FileEdit, Search,
-  Star, Lock, Crown, User, CreditCard, Receipt, Key
+  Star, Lock, Crown, User, CreditCard, Receipt, Key, FlaskConical
 } from "lucide-react"
 import type { NavGroupId } from "@/config/modules"
 
@@ -75,6 +75,7 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   'CreditCard': CreditCard,
   'Receipt': Receipt,
   'Key': Key,
+  'FlaskConical': FlaskConical,
 } as const
 
 // Static group colors - externalized to prevent recreation on every render
