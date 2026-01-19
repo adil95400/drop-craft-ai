@@ -23,10 +23,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableBulkActions,
 } from "@/components/channable";
+import { ChannablePageWrapper } from "@/components/channable/ChannablePageWrapper";
 import type { ChannableStat } from "@/components/channable/types";
 import { ProductDetailModal } from "@/components/suppliers/ProductDetailModal";
 import { 
@@ -468,26 +468,21 @@ export function EnhancedUnifiedCatalog() {
         <meta name="description" content="Catalogue unifié de tous vos fournisseurs avec filtres avancés" />
       </Helmet>
 
-      <ChannablePageLayout 
-        title="Catalogue Unifié" 
-        metaDescription="Tous vos produits fournisseurs"
-        maxWidth="full"
-        padding="md"
+      <ChannablePageWrapper 
+        title="Catalogue Fournisseurs" 
+        description="Explorez et importez des produits de tous vos fournisseurs connectés"
+        heroImage="suppliers"
+        badge={{ label: `${stats.total} produits` }}
+        actions={
+          <Button
+            onClick={() => syncMutation.mutate()}
+            disabled={syncMutation.isPending}
+          >
+            <RefreshCw className={cn("h-4 w-4 mr-2", syncMutation.isPending && "animate-spin")} />
+            {syncMutation.isPending ? "Synchronisation..." : "Synchroniser"}
+          </Button>
+        }
       >
-        {/* Hero */}
-        <ChannableHeroSection
-          title="Catalogue Fournisseurs"
-          subtitle="Explorez et importez des produits de tous vos fournisseurs connectés"
-          badge={{ label: `${stats.total} produits`, variant: "default" }}
-          variant="compact"
-          showHexagons={false}
-          primaryAction={{
-            label: syncMutation.isPending ? "Synchronisation..." : "Synchroniser",
-            onClick: () => syncMutation.mutate(),
-            icon: RefreshCw,
-          }}
-        />
-
         {/* Stats */}
         <ChannableStatsGrid stats={heroStats} columns={4} compact />
 
@@ -654,7 +649,7 @@ export function EnhancedUnifiedCatalog() {
           }}
           isImporting={importMutation.isPending}
         />
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     </>
   );
 }

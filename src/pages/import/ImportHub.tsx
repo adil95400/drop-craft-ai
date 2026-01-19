@@ -41,8 +41,7 @@ import {
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/use-toast'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useReducedMotion, getMotionProps } from '@/hooks/useReducedMotion'
 
 // Import methods with full configuration - Cleaned up obsolete links
@@ -324,33 +323,31 @@ export default function ImportHub() {
   ], [stats])
 
   return (
-    <ChannablePageLayout
-      title="Import de Produits"
-      metaTitle="Import de Produits"
-      metaDescription="Importez vos produits depuis AliExpress, Amazon, Shopify et plus en quelques secondes"
-      maxWidth="2xl"
-      padding="md"
-      showBackButton={false}
+    <ChannablePageWrapper
+      title="Importez vos produits"
+      subtitle="Import Pro"
+      description="Importez depuis AliExpress, Amazon, Shopify et plus en quelques secondes. Notre IA optimise automatiquement vos fiches produits."
+      heroImage="import"
+      badge={{ label: "Import Pro", icon: Sparkles }}
+      actions={
+        <div className="flex flex-wrap gap-3">
+          <Button 
+            onClick={() => navigate('/import/autods')}
+            className="bg-gradient-to-r from-primary to-purple-600"
+          >
+            <Rocket className="h-4 w-4 mr-2" />
+            Import Rapide
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/import/quick')}
+          >
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            CSV / Excel
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section Channable */}
-      <ChannableHeroSection
-        badge={{ label: "Import Pro", icon: Sparkles }}
-        title="Importez vos produits"
-        subtitle="depuis n'importe quelle source"
-        description="Importez depuis AliExpress, Amazon, Shopify et plus en quelques secondes. Notre IA optimise automatiquement vos fiches produits."
-        primaryAction={{
-          label: "Import Rapide",
-          onClick: () => navigate('/import/autods'),
-          icon: Rocket
-        }}
-        secondaryAction={{
-          label: "CSV / Excel",
-          onClick: () => navigate('/import/quick')
-        }}
-        stats={heroStats}
-        showHexagons={!prefersReducedMotion}
-      />
-
       {/* Quick URL Import */}
       <motion.div {...fadeInUp}>
         <Card className="border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
@@ -1061,6 +1058,6 @@ export default function ImportHub() {
           )}
         </TabsContent>
       </Tabs>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

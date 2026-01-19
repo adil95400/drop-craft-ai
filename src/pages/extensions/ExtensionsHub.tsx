@@ -9,8 +9,7 @@ import {
   RefreshCw, ShoppingCart, Eye, Bell, FileText, Settings, Rocket, Award, ThumbsUp, MessageSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 // Hook pour préférences réduites
 const useReducedMotion = () => {
@@ -158,37 +157,31 @@ export default function ExtensionsHub() {
   }
 
   return (
-    <ChannablePageLayout
-      title="Extensions"
-      metaTitle="Extensions & Chrome - ShopOpti"
-      metaDescription="Téléchargez l'extension Chrome ShopOpti+ et découvrez nos plugins et intégrations"
-      maxWidth="2xl"
-      padding="md"
-      showBackButton={false}
+    <ChannablePageWrapper
+      title="ShopOpti+ Chrome Extension"
+      subtitle="#1 Extension Dropshipping"
+      description="L'extension Chrome la plus puissante pour le dropshipping. Importez, surveillez, automatisez - tout depuis votre navigateur."
+      heroImage="extensions"
+      badge={{ label: '#1 Extension Dropshipping', icon: Chrome }}
+      actions={
+        <div className="flex flex-wrap gap-3">
+          <Button 
+            onClick={() => navigate('/extensions/download')}
+            className="bg-gradient-to-r from-primary to-purple-600"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Télécharger Gratuitement
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/extensions/tutorials')}
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Voir les Tutoriels
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        badge={{ icon: Chrome, label: '#1 Extension Dropshipping' }}
-        title="ShopOpti+ Chrome Extension"
-        subtitle="L'extension Chrome la plus puissante pour le dropshipping. Importez, surveillez, automatisez - tout depuis votre navigateur."
-        variant="default"
-        showHexagons={!reducedMotion}
-        stats={[
-          { label: 'Utilisateurs', value: '50K+', icon: Users },
-          { label: 'Note', value: '4.9★', icon: Star },
-          { label: 'Plateformes', value: '15+', icon: Globe },
-          { label: 'Produits importés', value: '2M+', icon: Package },
-        ]}
-        primaryAction={{
-          label: 'Télécharger Gratuitement',
-          onClick: () => navigate('/extensions/download'),
-        }}
-        secondaryAction={{
-          label: 'Voir les Tutoriels',
-          onClick: () => navigate('/extensions/tutorials'),
-        }}
-      />
-
       {/* Features Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {chromeFeatures.map((feature, idx) => (
@@ -353,6 +346,6 @@ export default function ExtensionsHub() {
           </div>
         </CardContent>
       </Card>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

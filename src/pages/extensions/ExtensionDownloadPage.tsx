@@ -6,8 +6,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
   Download, 
@@ -33,6 +32,7 @@ import {
 import { generateExtensionZip } from '@/utils/extensionZipGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionDownloadPage() {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -166,60 +166,33 @@ export default function ExtensionDownloadPage() {
   ];
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <div className="p-3 bg-gradient-to-br from-primary to-blue-600 rounded-2xl">
-            <Chrome className="h-10 w-10 text-white" />
-          </div>
-          <div className="text-left">
-            <h1 className="text-3xl font-bold">Extension Chrome ShopOpti+</h1>
-            <p className="text-muted-foreground">Version 3.0 - Dernière mise à jour</p>
-          </div>
-        </div>
-        <div className="flex items-center justify-center gap-2">
-          <Badge variant="secondary">v3.0.0</Badge>
-          <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Stable
-          </Badge>
-        </div>
-      </div>
-
-      {/* Quick Download Card */}
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-blue-500/5">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <FileArchive className="h-12 w-12 text-primary" />
-              <div>
-                <h3 className="font-semibold text-lg">Téléchargement Direct</h3>
-                <p className="text-muted-foreground">Extension Chrome complète prête à installer</p>
-              </div>
-            </div>
-            <Button 
-              size="lg" 
-              onClick={handleDownload}
-              disabled={isDownloading}
-              className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
-            >
-              {isDownloading ? (
-                <>
-                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                  Téléchargement...
-                </>
-              ) : (
-                <>
-                  <Download className="h-5 w-5 mr-2" />
-                  Télécharger l'Extension
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
+    <ChannablePageWrapper
+      title="Extension Chrome ShopOpti+"
+      subtitle="Téléchargement"
+      description="Téléchargez et installez l'extension Chrome pour importer des produits en un clic."
+      heroImage="extensions"
+      badge={{ label: 'v3.0.0', icon: Chrome }}
+      actions={
+        <Button 
+          size="lg" 
+          onClick={handleDownload}
+          disabled={isDownloading}
+          className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
+        >
+          {isDownloading ? (
+            <>
+              <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+              Téléchargement...
+            </>
+          ) : (
+            <>
+              <Download className="h-5 w-5 mr-2" />
+              Télécharger l'Extension
+            </>
+          )}
+        </Button>
+      }
+    >
       {/* Features Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {features.map((feature, index) => (
@@ -339,6 +312,6 @@ export default function ExtensionDownloadPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </ChannablePageWrapper>
   );
 }
