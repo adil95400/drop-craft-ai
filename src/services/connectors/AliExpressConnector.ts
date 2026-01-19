@@ -1,4 +1,5 @@
 import { BaseConnector, FetchOptions, SupplierProduct, SyncResult } from './BaseConnector';
+import { supabase } from '@/integrations/supabase/client';
 
 export class AliExpressConnector extends BaseConnector {
   constructor(credentials: any) {
@@ -17,74 +18,79 @@ export class AliExpressConnector extends BaseConnector {
   }
 
   async validateCredentials(): Promise<boolean> {
-    try {
-      // Simulate API call - AliExpress API is complex
-      return true;
-    } catch (error) {
-      this.handleError(error, 'credential validation');
-      return false;
-    }
+    return !!this.credentials.access_token;
   }
 
   async fetchProducts(options: FetchOptions = {}): Promise<SupplierProduct[]> {
     try {
-      // Simulate API call - would use AliExpress API
-      const mockProducts = this.generateMockAliExpressProducts();
-      return mockProducts;
-    } catch (error) {
-      this.handleError(error, 'product fetching');
+      const client = supabase as any;
+      const { data, error } = await client
+        .from('supplier_products')
+        .select('*')
+        .eq('source', 'aliexpress')
+        .limit(options.limit || 50);
+
+      if (error || !data) return [];
+      return data.map((p: any) => this.mapToSupplierProduct(p));
+    } catch {
       return [];
     }
   }
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      // Simulate single product fetch
-      const mockProduct = this.generateMockAliExpressProducts(1)[0];
-      return { ...mockProduct, sku };
-    } catch (error) {
-      this.handleError(error, 'single product fetching');
+      const client = supabase as any;
+      const { data, error } = await client
+        .from('supplier_products')
+        .select('*')
+        .eq('source', 'aliexpress')
+        .eq('external_product_id', sku)
+        .single();
+
+      return error || !data ? null : this.mapToSupplierProduct(data);
+    } catch {
       return null;
     }
   }
 
-  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
-    const result: SyncResult = {
-      total: products.length,
-      imported: 0,
-      duplicates: 0,
-      errors: ['AliExpress dropshipping - products are managed by suppliers']
-    };
+  private mapToSupplierProduct(p: any): SupplierProduct {
+    const images: string[] = p.image_url ? [p.image_url] : [];
+    if (Array.isArray(p.images)) images.push(...p.images.filter((i: any) => typeof i === 'string'));
+    const attrs = typeof p.attributes === 'object' && p.attributes ? p.attributes : {};
 
-    return result;
+    return {
+      id: p.id,
+      sku: p.external_product_id || p.id,
+      title: p.title || '',
+      description: p.description || '',
+      price: p.price || 0,
+      costPrice: p.cost_price || 0,
+      currency: p.currency || 'USD',
+      stock: p.stock_quantity || 0,
+      images,
+      category: attrs.category || '',
+      brand: attrs.brand || '',
+      supplier: { id: 'aliexpress', name: 'AliExpress Dropshipping', sku: p.external_product_id || p.id },
+      attributes: attrs
+    };
   }
 
-  private generateMockAliExpressProducts(count: number = 10): SupplierProduct[] {
-    const categories = ['Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Beauty'];
-    const brands = ['Generic', 'NoName', 'Various'];
-    
-    return Array.from({ length: count }, (_, i) => ({
-      id: `ali_${Date.now()}_${i}`,
-      sku: `ALI-${String(i + 1).padStart(6, '0')}`,
-      title: `Produit AliExpress ${i + 1}`,
-      description: `Description détaillée du produit AliExpress ${i + 1}`,
-      price: Math.round((Math.random() * 100 + 10) * 100) / 100,
-      costPrice: Math.round((Math.random() * 50 + 5) * 100) / 100,
-      currency: 'USD',
-      stock: Math.floor(Math.random() * 1000),
-      images: [`https://via.placeholder.com/400x400?text=AliExpress+${i + 1}`],
-      category: categories[Math.floor(Math.random() * categories.length)],
-      brand: brands[Math.floor(Math.random() * brands.length)],
-      supplier: {
-        id: 'aliexpress',
-        name: 'AliExpress Dropshipping',
-        sku: `ALI-${String(i + 1).padStart(6, '0')}`
-      },
-      attributes: {
-        aliExpressId: `ali_${Date.now()}_${i}`,
-        shippingTime: '15-45 days',
-        supplierRating: (Math.random() * 2 + 3).toFixed(1)
-      }
-    }));
+  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
+    const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { result.errors.push('Not authenticated'); return result; }
+
+    const client = supabase as any;
+    for (const product of products) {
+      const { error } = await client.from('supplier_products').upsert({
+        user_id: user.id, source: 'aliexpress', external_product_id: product.sku,
+        title: product.title, description: product.description, price: product.price,
+        cost_price: product.costPrice, currency: product.currency, stock_quantity: product.stock,
+        image_url: product.images[0] || null, images: product.images,
+        attributes: { category: product.category, brand: product.brand, ...product.attributes }
+      });
+      error ? result.errors.push(product.sku) : result.imported++;
+    }
+    return result;
   }
 }

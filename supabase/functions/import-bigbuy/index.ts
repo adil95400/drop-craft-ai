@@ -28,49 +28,55 @@ serve(async (req) => {
       throw new Error('User not authenticated');
     }
 
-    // Get BigBuy API key from environment or user settings
+    // Get BigBuy API key from environment
     const bigbuyApiKey = Deno.env.get('BIGBUY_API_KEY');
     
     if (!bigbuyApiKey) {
-      throw new Error('BigBuy API key not configured');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'BigBuy API key not configured. Please add BIGBUY_API_KEY in your secrets.',
+        products: [],
+        pagination: { page, limit, total: 0, hasMore: false }
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Mock BigBuy API response for demo (replace with real API call)
-    const mockProducts = Array.from({ length: limit }, (_, i) => ({
-      id: `BB${1000 + (page - 1) * limit + i}`,
-      title: `BigBuy Product ${keywords || category} ${i + 1}`,
-      description: `High-quality ${keywords || category} product from BigBuy marketplace. Excellent for dropshipping business.`,
-      price: Math.round((Math.random() * 150 + 25) * 100) / 100,
-      currency: 'EUR',
-      sku: `BB-${category?.toUpperCase()}-${1000 + i}`,
-      images: [
-        `https://picsum.photos/400/400?random=${1000 + i}`,
-        `https://picsum.photos/400/400?random=${2000 + i}`
-      ],
-      stock: Math.floor(Math.random() * 100) + 10,
-      weight: Math.round((Math.random() * 2 + 0.1) * 100) / 100,
-      category: category || 'electronics',
-      brand: ['BigBuy', 'Generic', 'Premium'][i % 3],
-      wholesale_price: Math.round((Math.random() * 100 + 15) * 100) / 100
-    }));
+    // Real BigBuy API call
+    const queryParams = new URLSearchParams();
+    if (category) queryParams.append('category', category);
+    if (keywords) queryParams.append('search', keywords);
+    queryParams.append('page', String(page));
+    queryParams.append('limit', String(limit));
 
-    // In production, you would make a real API call like this:
-    /*
-    const bigbuyResponse = await fetch(`https://api.bigbuy.eu/rest/catalog/products.json`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${bigbuyApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      // Add query parameters for category, keywords, pagination
-    });
-    
+    const bigbuyResponse = await fetch(
+      `https://api.bigbuy.eu/rest/catalog/products.json?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${bigbuyApiKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
     if (!bigbuyResponse.ok) {
-      throw new Error('Failed to fetch products from BigBuy API');
+      const errorText = await bigbuyResponse.text();
+      console.error('BigBuy API error:', bigbuyResponse.status, errorText);
+      return new Response(JSON.stringify({
+        success: false,
+        error: `BigBuy API error: ${bigbuyResponse.status} - ${errorText}`,
+        products: [],
+        pagination: { page, limit, total: 0, hasMore: false }
+      }), {
+        status: bigbuyResponse.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-    
+
     const bigbuyData = await bigbuyResponse.json();
-    */
+    const products = bigbuyData.products || bigbuyData || [];
 
     // Get or create BigBuy supplier
     let { data: supplier } = await supabase
@@ -85,7 +91,8 @@ serve(async (req) => {
         .insert({
           name: 'BigBuy',
           slug: 'bigbuy',
-          api_key: bigbuyApiKey
+          api_key: bigbuyApiKey,
+          user_id: userData.user.id
         })
         .select()
         .single();
@@ -95,19 +102,23 @@ serve(async (req) => {
     // Import products to database
     const importedProducts = [];
     
-    for (const product of mockProducts) {
+    for (const product of products) {
       const { data: newProduct, error } = await supabase
         .from('products')
         .insert({
           supplier_id: supplier?.id,
-          sku: product.sku,
-          title: product.title,
+          user_id: userData.user.id,
+          sku: product.sku || `BB-${product.id}`,
+          title: product.name || product.title,
           description: product.description,
-          price: product.price,
-          currency: product.currency,
-          images: JSON.stringify(product.images),
-          vendor: product.brand,
-          tags: [product.category, 'bigbuy', 'dropshipping']
+          price: product.retailPrice || product.price,
+          cost_price: product.wholesalePrice || product.cost_price,
+          currency: 'EUR',
+          images: JSON.stringify(product.images || []),
+          vendor: product.brand || 'BigBuy',
+          tags: [product.category, 'bigbuy', 'dropshipping'].filter(Boolean),
+          stock_quantity: product.stock || 0,
+          status: 'active'
         })
         .select()
         .single();
@@ -116,30 +127,30 @@ serve(async (req) => {
         // Add inventory record
         await supabase.from('inventory').insert({
           product_id: newProduct.id,
-          stock: product.stock,
+          stock: product.stock || 0,
           warehouse: 'BigBuy EU Warehouse'
         });
 
         importedProducts.push({
           id: newProduct.id,
-          title: product.title,
-          price: product.price,
-          sku: product.sku
+          title: newProduct.title,
+          price: newProduct.price,
+          sku: newProduct.sku
         });
       }
     }
 
     // Log the import
-    await supabase.from('events_logs').insert({
-      topic: 'bigbuy_import_completed',
-      payload: {
-        user_id: userData.user.id,
-        category: category,
-        keywords: keywords,
-        page: page,
-        products_imported: importedProducts.length,
-        products: importedProducts,
-        timestamp: new Date().toISOString()
+    await supabase.from('activity_logs').insert({
+      user_id: userData.user.id,
+      action: 'bigbuy_import_completed',
+      entity_type: 'import',
+      description: `Imported ${importedProducts.length} products from BigBuy`,
+      details: {
+        category,
+        keywords,
+        page,
+        products_imported: importedProducts.length
       }
     });
 
@@ -150,8 +161,8 @@ serve(async (req) => {
       pagination: {
         page: page,
         limit: limit,
-        total: mockProducts.length,
-        hasMore: page < 5 // Mock pagination
+        total: products.length,
+        hasMore: products.length === limit
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -160,7 +171,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('BigBuy import error:', error);
     return new Response(JSON.stringify({ 
-      error: error.message 
+      success: false,
+      error: error.message,
+      products: [],
+      pagination: { page: 1, limit: 20, total: 0, hasMore: false }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
