@@ -59,6 +59,7 @@ import { cn } from '@/lib/utils'
 import { useIntegrationsUnified, UnifiedIntegration, IntegrationTemplate } from '@/hooks/unified'
 import { useToast } from '@/hooks/use-toast'
 import { PlatformLogo } from '@/components/ui/platform-logo'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { BackButton } from '@/components/navigation/BackButton'
 import {
   DropdownMenu,
@@ -1142,104 +1143,66 @@ export default function ChannableStyleIntegrationsPage() {
     return result
   }, [searchTerm, activeCategory, sortBy, findConnectedIntegration])
 
+  // Stats component for hero
+  const HeroStats = () => (
+    <div className="flex flex-wrap gap-6 mt-4">
+      <div className="flex items-center gap-2">
+        <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+          <PlugZap className="w-5 h-5 text-success" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold">{stats.connected}</p>
+          <p className="text-xs text-muted-foreground">Connectées</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Activity className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold">{stats.active}</p>
+          <p className="text-xs text-muted-foreground">Actives</p>
+        </div>
+      </div>
+      {stats.error > 0 && (
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+            <AlertCircle className="w-5 h-5 text-destructive" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{stats.error}</p>
+            <p className="text-xs text-muted-foreground">Erreurs</p>
+          </div>
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+          <Globe className="w-5 h-5 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold">{integrationDefinitions.length}</p>
+          <p className="text-xs text-muted-foreground">Disponibles</p>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <Helmet>
-        <title>Intégrations eCommerce | DropShipper</title>
+        <title>Intégrations eCommerce - Hub de Connexion</title>
         <meta name="description" content="Connectez tous vos canaux de vente en une seule plateforme. Plus de 50 intégrations disponibles." />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        {/* Back Button */}
-        <div className="container mx-auto px-4 pt-4">
-          <BackButton />
-        </div>
-        
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 py-12 lg:py-16">
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-2xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span className="text-sm font-medium">Hub d'Intégrations</span>
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight"
-              >
-                Connectez tous vos{' '}
-                <span className="text-primary">canaux de vente</span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-lg text-muted-foreground mb-8"
-              >
-                Configurez vos intégrations depuis une seule plateforme.
-                Plus de {integrationDefinitions.length} connecteurs disponibles.
-              </motion.p>
-
-              {/* Stats rapides */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex flex-wrap gap-6"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-                    <PlugZap className="w-5 h-5 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.connected}</p>
-                    <p className="text-xs text-muted-foreground">Connectées</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.active}</p>
-                    <p className="text-xs text-muted-foreground">Actives</p>
-                  </div>
-                </div>
-                {stats.error > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-                      <AlertCircle className="w-5 h-5 text-destructive" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{stats.error}</p>
-                      <p className="text-xs text-muted-foreground">Erreurs</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                    <Globe className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{integrationDefinitions.length}</p>
-                    <p className="text-xs text-muted-foreground">Disponibles</p>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
-          <HeroHexagons />
-        </section>
-
+      <ChannablePageWrapper
+        title="Hub d'Intégrations"
+        subtitle="Connecteurs eCommerce"
+        description={`Connectez tous vos canaux de vente depuis une seule plateforme. Plus de ${integrationDefinitions.length} connecteurs disponibles.`}
+        heroImage="marketing"
+        badge={{ label: 'Hub Central', icon: PlugZap }}
+      >
+        {/* Stats rapides */}
+        <HeroStats />
         {/* Section Intégrations Connectées */}
         {connectedIntegrations.length > 0 && (
           <section className="container mx-auto px-4 py-6">
@@ -1431,7 +1394,7 @@ export default function ChannableStyleIntegrationsPage() {
             </div>
           </motion.section>
         </section>
-      </div>
+      </ChannablePageWrapper>
 
       {/* Modal de configuration */}
       <Dialog open={!!selectedDefinition} onOpenChange={(open) => !open && setSelectedDefinition(null)}>
