@@ -32,8 +32,18 @@ export default function ProductDetailsPage() {
   if (!product) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Produit introuvable</p>
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+          <Package className="h-16 w-16 text-muted-foreground/50" />
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2">Produit introuvable</h2>
+            <p className="text-muted-foreground mb-4">
+              Ce produit n'existe pas ou a été supprimé.
+            </p>
+            <Button onClick={() => navigate('/products')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour aux produits
+            </Button>
+          </div>
         </div>
       </MainLayout>
     )
