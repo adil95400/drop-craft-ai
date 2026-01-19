@@ -1,7 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useToast } from '@/hooks/use-toast'
+/**
+ * @deprecated Use useSuppliersUnified from '@/hooks/unified' instead
+ * This file is kept for backward compatibility and will be removed in a future version
+ */
+import { useSuppliersUnified, UnifiedSupplier } from '@/hooks/unified'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
+// Re-export Supplier type for backward compatibility
 export interface Supplier {
   id: string
   name: string
@@ -22,92 +28,59 @@ export interface Supplier {
   contact_phone_masked?: string
 }
 
-// Mock suppliers for demo
-const mockSuppliers: Supplier[] = [
-  {
-    id: '1',
-    name: 'BigBuy',
-    website: 'https://bigbuy.eu',
-    country: 'ES',
-    status: 'active',
-    rating: 4.5,
-    user_id: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    name: 'CJ Dropshipping',
-    website: 'https://cjdropshipping.com',
-    country: 'CN',
-    status: 'active',
-    rating: 4.2,
-    user_id: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-]
-
 export const useRealSuppliers = (filters?: any) => {
+  console.warn('[DEPRECATED] useRealSuppliers - utilisez useSuppliersUnified de @/hooks/unified')
+  
   const { toast } = useToast()
   const queryClient = useQueryClient()
-
-  const { data: suppliers = [], isLoading, error } = useQuery({
-    queryKey: ['real-suppliers', filters],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return mockSuppliers
-      
-      // Query premium_suppliers table
-      const { data, error } = await (supabase
-        .from('premium_suppliers')
-        .select('*')
-        .order('created_at', { ascending: false }) as any)
-      
-      if (error) {
-        console.error('Error fetching suppliers:', error)
-        return mockSuppliers
-      }
-      
-      if (!data || data.length === 0) return mockSuppliers
-      
-      let filteredData = data.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        website: s.website_url,
-        country: s.country,
-        status: (s.is_verified ? 'active' : 'inactive') as 'active' | 'inactive',
-        rating: s.rating,
-        user_id: user.id,
-        created_at: s.created_at,
-        updated_at: s.updated_at
-      })) as Supplier[]
-      
-      // Apply client-side filtering
-      if (filters?.status) {
-        filteredData = filteredData.filter(s => s.status === filters.status)
-      }
-      if (filters?.country) {
-        filteredData = filteredData.filter(s => s.country === filters.country)
-      }
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase()
-        filteredData = filteredData.filter(s => 
-          s.name?.toLowerCase().includes(searchLower) ||
-          s.website?.toLowerCase().includes(searchLower)
-        )
-      }
-      
-      return filteredData
-    },
+  
+  const result = useSuppliersUnified({
+    category: filters?.category,
+    status: filters?.status,
+    search: filters?.search
   })
 
-  const addSupplier = useMutation({
-    mutationFn: async (newSupplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'has_api_key' | 'has_encrypted_credentials' | 'contact_email_masked' | 'contact_phone_masked'>) => {
+  // Map UnifiedSupplier to legacy Supplier format
+  const suppliers: Supplier[] = result.suppliers.map((s: UnifiedSupplier) => ({
+    id: s.id,
+    name: s.name,
+    website: s.website,
+    country: s.country,
+    status: s.status === 'verified' ? 'active' as const : 'inactive' as const,
+    rating: s.rating,
+    api_endpoint: s.api_endpoint,
+    user_id: s.user_id,
+    created_at: s.created_at,
+    updated_at: s.updated_at,
+    credentials_updated_at: s.credentials_updated_at,
+    last_access_at: s.last_access_at,
+    access_count: s.access_count,
+    has_api_key: false,
+    has_encrypted_credentials: false
+  }))
+
+  const stats = {
+    total: suppliers.length,
+    active: suppliers.filter(s => s.status === 'active').length,
+    inactive: suppliers.filter(s => s.status === 'inactive').length,
+    averageRating: suppliers.length > 0 
+      ? suppliers.reduce((sum, s) => sum + (s.rating || 0), 0) / suppliers.length 
+      : 0,
+    topCountries: suppliers.reduce((acc: Record<string, number>, supplier) => {
+      if (supplier.country) {
+        acc[supplier.country] = (acc[supplier.country] || 0) + 1
+      }
+      return acc
+    }, {})
+  }
+
+  // Add mutation support for backward compatibility
+  const addMutation = useMutation({
+    mutationFn: async (newSupplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      const { data, error } = await (supabase
+      const { data, error } = await supabase
         .from('premium_suppliers')
         .insert([{
           name: newSupplier.name,
@@ -117,13 +90,13 @@ export const useRealSuppliers = (filters?: any) => {
           rating: newSupplier.rating
         }])
         .select()
-        .single() as any)
+        .single()
       
       if (error) throw error
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['real-suppliers'] })
+      queryClient.invalidateQueries({ queryKey: ['unified-suppliers'] })
       toast({
         title: "Fournisseur ajouté",
         description: "Le fournisseur a été créé avec succès",
@@ -131,7 +104,7 @@ export const useRealSuppliers = (filters?: any) => {
     }
   })
 
-  const updateSupplier = useMutation({
+  const updateMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Supplier> }) => {
       const allowedUpdates: any = {}
       if (updates.name) allowedUpdates.name = updates.name
@@ -140,18 +113,18 @@ export const useRealSuppliers = (filters?: any) => {
       if (updates.status) allowedUpdates.is_verified = updates.status === 'active'
       if (updates.rating) allowedUpdates.rating = updates.rating
       
-      const { data, error } = await (supabase
+      const { data, error } = await supabase
         .from('premium_suppliers')
         .update(allowedUpdates)
         .eq('id', id)
         .select()
-        .single() as any)
+        .single()
       
       if (error) throw error
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['real-suppliers'] })
+      queryClient.invalidateQueries({ queryKey: ['unified-suppliers'] })
       toast({
         title: "Fournisseur mis à jour",
         description: "Le fournisseur a été modifié avec succès",
@@ -159,17 +132,17 @@ export const useRealSuppliers = (filters?: any) => {
     }
   })
 
-  const deleteSupplier = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase
+      const { error } = await supabase
         .from('premium_suppliers')
         .delete()
-        .eq('id', id) as any)
+        .eq('id', id)
       
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['real-suppliers'] })
+      queryClient.invalidateQueries({ queryKey: ['unified-suppliers'] })
       toast({
         title: "Fournisseur supprimé",
         description: "Le fournisseur a été supprimé avec succès",
@@ -177,7 +150,7 @@ export const useRealSuppliers = (filters?: any) => {
     }
   })
 
-  const analyzeSupplier = useMutation({
+  const analyzeMutation = useMutation({
     mutationFn: async (url: string) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
@@ -192,7 +165,7 @@ export const useRealSuppliers = (filters?: any) => {
       return data
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['real-suppliers'] })
+      queryClient.invalidateQueries({ queryKey: ['unified-suppliers'] })
       toast({
         title: "Fournisseur analysé",
         description: `${data.analysis?.name || 'Fournisseur'} a été ajouté avec succès`,
@@ -207,33 +180,18 @@ export const useRealSuppliers = (filters?: any) => {
     }
   })
 
-  const stats = {
-    total: suppliers.length,
-    active: suppliers.filter(s => s.status === 'active').length,
-    inactive: suppliers.filter(s => s.status === 'inactive').length,
-    averageRating: suppliers.length > 0 
-      ? suppliers.reduce((sum, s) => sum + (s.rating || 0), 0) / suppliers.length 
-      : 0,
-    topCountries: suppliers.reduce((acc: any, supplier) => {
-      if (supplier.country) {
-        acc[supplier.country] = (acc[supplier.country] || 0) + 1
-      }
-      return acc
-    }, {})
-  }
-
   return {
     suppliers,
     stats,
-    isLoading,
-    error,
-    addSupplier: addSupplier.mutate,
-    updateSupplier: updateSupplier.mutate,
-    deleteSupplier: deleteSupplier.mutate,
-    analyzeSupplier: analyzeSupplier.mutate,
-    isAdding: addSupplier.isPending,
-    isUpdating: updateSupplier.isPending,
-    isDeleting: deleteSupplier.isPending,
-    isAnalyzing: analyzeSupplier.isPending
+    isLoading: result.isLoading,
+    error: result.error,
+    addSupplier: addMutation.mutateAsync,
+    updateSupplier: updateMutation.mutate,
+    deleteSupplier: deleteMutation.mutateAsync,
+    analyzeSupplier: analyzeMutation.mutate,
+    isAdding: addMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+    isAnalyzing: analyzeMutation.isPending
   }
 }
