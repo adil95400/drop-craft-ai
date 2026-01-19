@@ -687,3 +687,9 @@ verify_jwt = true
 
 [functions.ai-variant-mapper]
 verify_jwt = false
+
+[functions.returns-workflow-automation]
+verify_jwt = true
+
+[functions.disputes-manager]
+verify_jwt = true
