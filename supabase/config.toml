@@ -705,3 +705,6 @@ verify_jwt = true
 
 [functions.dropshipping-intelligence]
 verify_jwt = true
+
+[functions.canva-create-design]
+verify_jwt = true
