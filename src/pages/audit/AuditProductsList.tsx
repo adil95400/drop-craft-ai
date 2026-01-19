@@ -5,6 +5,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +17,6 @@ import { Progress } from '@/components/ui/progress';
 import { 
   Search, 
   Package,
-  ArrowLeft,
   Sparkles,
   Download,
   RefreshCw,
@@ -332,24 +332,14 @@ export default function AuditProductsList() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 max-w-7xl">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/audit')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-              <Package className="h-7 w-7 text-primary" />
-              Audit Qualité Produits
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Analyse en temps réel • {rawProducts?.length || 0} produits chargés
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+    <ChannablePageWrapper
+      title="Audit Qualité Produits"
+      subtitle="Analyse en temps réel"
+      description={`${rawProducts?.length || 0} produits chargés • Détection automatique des problèmes`}
+      heroImage="analytics"
+      badge={{ label: 'Audit IA', icon: Sparkles }}
+      actions={
+        <>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualiser
@@ -358,8 +348,10 @@ export default function AuditProductsList() {
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
-        </div>
-      </div>
+        </>
+      }
+    >
+      <div className="space-y-6">
 
       {/* Stats Cards */}
       <AuditStatsCards stats={stats} isLoading={isLoading} />
@@ -672,6 +664,7 @@ export default function AuditProductsList() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </ChannablePageWrapper>
   );
 }

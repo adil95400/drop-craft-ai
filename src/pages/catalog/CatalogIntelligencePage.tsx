@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react'
-import { MainLayout } from '@/components/layout/MainLayout'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   Download,
   RefreshCw,
-  Activity
+  Activity,
+  Brain
 } from 'lucide-react'
 import { useRealProducts } from '@/hooks/useRealProducts'
 import { auditProduct } from '@/lib/audit/auditProduct'
@@ -115,14 +116,14 @@ export default function CatalogIntelligencePage() {
   }
 
   return (
-    <MainLayout>
-      <div className="container mx-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Catalog Intelligence</h1>
-          <p className="text-muted-foreground">
-            Vue d'ensemble de la qualité catalogue et performance multi-canaux
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Catalog Intelligence"
+      subtitle="Vue d'ensemble qualité"
+      description="Vue d'ensemble de la qualité catalogue et performance multi-canaux"
+      heroImage="analytics"
+      badge={{ label: 'Intelligence IA', icon: Brain }}
+    >
+      <div className="space-y-6">
 
         {/* KPIs Globaux */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -344,6 +345,6 @@ export default function CatalogIntelligencePage() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ChannablePageWrapper>
   )
 }
