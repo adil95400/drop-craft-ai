@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { 
   Shield, 
   AlertTriangle, 
@@ -12,7 +13,6 @@ import {
   Lock, 
   Eye,
   Database,
-  Globe,
   Key,
   Scan,
   UserCheck,
@@ -172,20 +172,23 @@ export default function SecurityCenter() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Centre de Sécurité</h1>
-          <p className="text-muted-foreground">
-            Surveillance et gestion de la sécurité système
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Centre de Sécurité"
+      subtitle="Protection"
+      description="Surveillance et gestion de la sécurité système en temps réel."
+      heroImage="settings"
+      badge={{ 
+        label: `Score: ${securityScore}/100`, 
+        icon: Shield,
+        variant: securityScore >= 80 ? 'default' : 'destructive'
+      }}
+      actions={
         <Button onClick={runSecurityScan} className="gap-2">
           <Scan className="w-4 h-4" />
           Lancer un Scan
         </Button>
-      </div>
-
+      }
+    >
       {/* Security Score Overview */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -433,6 +436,6 @@ export default function SecurityCenter() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   )
 }

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from 'react-i18next';
-import { BackButton } from '@/components/navigation/BackButton';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   Settings as SettingsIcon,
   User, 
@@ -118,22 +118,14 @@ const Settings = () => {
   ];
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
-      <div className="mb-2 sm:mb-4">
-        <BackButton to="/dashboard" />
-      </div>
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            {t('settings:title')}
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            {t('settings:description')}
-          </p>
-        </div>
-        <div className="flex gap-2">
+    <ChannablePageWrapper
+      title={t('settings:title')}
+      subtitle="Configuration"
+      description={t('settings:description')}
+      heroImage="settings"
+      badge={{ label: 'Paramètres', icon: SettingsIcon }}
+      actions={
+        <>
           <Button 
             variant="outline" 
             onClick={handleLogout} 
@@ -153,9 +145,9 @@ const Settings = () => {
             <span className="hidden xs:inline">Sauvegarder</span>
             <span className="xs:hidden">Save</span>
           </Button>
-        </div>
-      </div>
-
+        </>
+      }
+    >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Sidebar Navigation */}
@@ -252,7 +244,7 @@ const Settings = () => {
           </div>
         </div>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 

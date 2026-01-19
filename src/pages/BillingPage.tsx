@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import {
   CreditCard,
   Download,
@@ -49,16 +50,13 @@ export default function BillingPage() {
   ]
 
   return (
-    <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Billing & Payments</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Manage your subscription and payment methods
-          </p>
-        </div>
-      </div>
-
+    <ChannablePageWrapper
+      title="Facturation & Paiements"
+      subtitle="Abonnement"
+      description="Gérez votre abonnement, vos méthodes de paiement et consultez vos factures."
+      heroImage="settings"
+      badge={{ label: `Plan ${currentPlan.name}`, icon: CreditCard }}
+    >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card className="p-4 sm:p-6">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -66,7 +64,7 @@ export default function BillingPage() {
               <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Current Plan</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Plan actuel</p>
               <p className="text-lg sm:text-2xl font-bold">{currentPlan.name}</p>
             </div>
           </div>
@@ -78,7 +76,7 @@ export default function BillingPage() {
               <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Monthly Cost</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Coût mensuel</p>
               <p className="text-lg sm:text-2xl font-bold">€{currentPlan.price}</p>
             </div>
           </div>
@@ -90,9 +88,9 @@ export default function BillingPage() {
               <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Next Billing</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Prochain prélèvement</p>
               <p className="text-base sm:text-lg font-bold">
-                {new Date(currentPlan.nextBillingDate).toLocaleDateString()}
+                {new Date(currentPlan.nextBillingDate).toLocaleDateString('fr-FR')}
               </p>
             </div>
           </div>
@@ -103,14 +101,14 @@ export default function BillingPage() {
         <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
           <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
             <TabsTrigger value="plan" className="text-xs sm:text-sm px-3 py-2">
-              <span className="hidden sm:inline">Current Plan</span>
+              <span className="hidden sm:inline">Plan actuel</span>
               <span className="sm:hidden">Plan</span>
             </TabsTrigger>
             <TabsTrigger value="payment" className="text-xs sm:text-sm px-3 py-2">
-              <span className="hidden sm:inline">Payment Methods</span>
-              <span className="sm:hidden">Payment</span>
+              <span className="hidden sm:inline">Méthodes de paiement</span>
+              <span className="sm:hidden">Paiement</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices" className="text-xs sm:text-sm px-3 py-2">Invoices</TabsTrigger>
+            <TabsTrigger value="invoices" className="text-xs sm:text-sm px-3 py-2">Factures</TabsTrigger>
           </TabsList>
         </div>
 
@@ -118,42 +116,42 @@ export default function BillingPage() {
           <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4 sm:mb-6">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">{currentPlan.name} Plan</h2>
+                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Plan {currentPlan.name}</h2>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  Full access to all features and integrations
+                  Accès complet à toutes les fonctionnalités et intégrations
                 </p>
               </div>
               <div className="text-left sm:text-right">
                 <p className="text-2xl sm:text-3xl font-bold">€{currentPlan.price}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">per month</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">par mois</p>
               </div>
             </div>
 
             <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base">Unlimited products</span>
+                <span className="text-sm sm:text-base">Produits illimités</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base">Advanced analytics</span>
+                <span className="text-sm sm:text-base">Analytics avancés</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base">Priority support</span>
+                <span className="text-sm sm:text-base">Support prioritaire</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base">API access</span>
+                <span className="text-sm sm:text-base">Accès API</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button variant="outline" className="flex-1 text-sm">
-                Change Plan
+                Changer de plan
               </Button>
               <Button variant="destructive" className="flex-1 text-sm">
-                Cancel Subscription
+                Annuler l'abonnement
               </Button>
             </div>
           </Card>
@@ -162,10 +160,10 @@ export default function BillingPage() {
         <TabsContent value="payment" className="space-y-4">
           <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold">Payment Methods</h2>
+              <h2 className="text-lg sm:text-xl font-semibold">Méthodes de paiement</h2>
               <Button size="sm" className="w-full sm:w-auto">
                 <CreditCard className="w-4 h-4 mr-2" />
-                Add Payment Method
+                Ajouter une carte
               </Button>
             </div>
 
@@ -183,20 +181,20 @@ export default function BillingPage() {
                             {method.brand} •••• {method.last4}
                           </p>
                           {method.isDefault && (
-                            <Badge variant="secondary" className="text-xs">Default</Badge>
+                            <Badge variant="secondary" className="text-xs">Par défaut</Badge>
                           )}
                         </div>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          Expires {method.expiryMonth}/{method.expiryYear}
+                          Expire {method.expiryMonth}/{method.expiryYear}
                         </p>
                       </div>
                     </div>
                     <div className="flex gap-2 ml-auto sm:ml-0">
                       <Button variant="outline" size="sm" className="text-xs">
-                        Edit
+                        Modifier
                       </Button>
                       <Button variant="ghost" size="sm" className="text-xs">
-                        Remove
+                        Supprimer
                       </Button>
                     </div>
                   </div>
@@ -208,7 +206,7 @@ export default function BillingPage() {
 
         <TabsContent value="invoices" className="space-y-4">
           <Card className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Invoice History</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Historique des factures</h2>
             <div className="space-y-3 sm:space-y-4">
               {invoices.map((invoice) => (
                 <div
@@ -222,7 +220,7 @@ export default function BillingPage() {
                     <div>
                       <p className="text-sm sm:text-base font-semibold">{invoice.number}</p>
                       <p className="text-xs sm:text-sm text-muted-foreground">
-                        {new Date(invoice.date).toLocaleDateString()}
+                        {new Date(invoice.date).toLocaleDateString('fr-FR')}
                       </p>
                     </div>
                   </div>
@@ -235,12 +233,12 @@ export default function BillingPage() {
                         }
                         className="text-xs"
                       >
-                        {invoice.status}
+                        {invoice.status === 'paid' ? 'Payée' : invoice.status}
                       </Badge>
                     </div>
                     <Button variant="outline" size="sm" className="text-xs">
                       <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                      <span className="hidden xs:inline">Download</span>
+                      <span className="hidden xs:inline">Télécharger</span>
                     </Button>
                   </div>
                 </div>
@@ -249,6 +247,6 @@ export default function BillingPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   )
 }
