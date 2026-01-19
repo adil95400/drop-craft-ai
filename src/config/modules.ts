@@ -629,6 +629,27 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'tools'
   },
 
+  dropshippingIntelligence: {
+    id: 'dropshippingIntelligence',
+    name: 'Intelligence Dropshipping',
+    icon: 'Brain',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/tools/intelligence',
+    features: ['stock-predictions', 'price-optimization', 'ab-testing', 'margin-analysis'],
+    description: 'Prédictions de stock et optimisation automatique des marges',
+    category: 'automation',
+    order: 5,
+    groupId: 'tools',
+    badge: 'pro',
+    subModules: [
+      { id: 'intelligence-stock', name: 'Prédictions Stock', route: '/tools/intelligence', icon: 'Package', description: 'Analyse et prédictions de ruptures', features: ['stock-predictions'], order: 1 },
+      { id: 'intelligence-alerts', name: 'Alertes', route: '/tools/intelligence#alerts', icon: 'Bell', description: 'Alertes prédictives', features: ['alerts'], order: 2 },
+      { id: 'intelligence-pricing', name: 'Optimisation Prix', route: '/tools/intelligence#pricing', icon: 'Sparkles', description: 'Ajustement dynamique des prix', features: ['pricing'], order: 3 },
+      { id: 'intelligence-abtests', name: 'A/B Tests', route: '/tools/intelligence#ab-tests', icon: 'FlaskConical', description: 'Tests de prix automatiques', features: ['ab-tests'], order: 4 },
+    ]
+  },
+
   // ═══════════════════════════════════════════════════════════════════════════
   // 8. SETTINGS - Configuration & Administration (10 modules)
   // ═══════════════════════════════════════════════════════════════════════════
