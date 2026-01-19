@@ -1005,103 +1005,163 @@ function extractAmazonPrice(html: string): { price: number; currency: string; or
   let originalPrice: number | null = null
   let currency = 'EUR'
 
-  // Helpers
-  const parseMoney = (raw: string) => {
-    // 59,90 € | 59.90 € | EUR 59,90
-    const cleaned = raw
-      .replace(/\s/g, '')
-      .replace(/[^0-9,\.]/g, '')
-
-    // Prefer the last separator as decimal (Amazon FR typically uses comma)
-    if (cleaned.includes(',') && cleaned.includes('.')) {
-      // remove thousands separators: keep last separator as decimal
-      const lastComma = cleaned.lastIndexOf(',')
-      const lastDot = cleaned.lastIndexOf('.')
-      const decIdx = Math.max(lastComma, lastDot)
-      const intPart = cleaned.slice(0, decIdx).replace(/[\.,]/g, '')
-      const decPart = cleaned.slice(decIdx + 1)
-      return parseFloat(`${intPart}.${decPart}`) || 0
+  // Helpers: parse European-format prices (149,00 € or 149.00€)
+  const parseMoney = (raw: string): number => {
+    if (!raw) return 0
+    // Remove everything except digits, commas, dots
+    let cleaned = raw.replace(/[^\d,\.]/g, '').trim()
+    if (!cleaned) return 0
+    
+    // Handle European format: 149,00 or 1.499,00
+    // Count separators
+    const commaCount = (cleaned.match(/,/g) || []).length
+    const dotCount = (cleaned.match(/\./g) || []).length
+    
+    if (commaCount === 1 && dotCount === 0) {
+      // 149,00 -> 149.00
+      cleaned = cleaned.replace(',', '.')
+    } else if (dotCount === 1 && commaCount === 0) {
+      // Already 149.00
+    } else if (commaCount === 1 && dotCount >= 1) {
+      // 1.499,00 -> 1499.00 (European thousands separator)
+      cleaned = cleaned.replace(/\./g, '').replace(',', '.')
+    } else if (dotCount === 1 && commaCount >= 1) {
+      // 1,499.00 -> 1499.00 (US thousands separator)
+      cleaned = cleaned.replace(/,/g, '')
     }
-
-    if (cleaned.includes(',')) {
-      const [i, d] = cleaned.split(',')
-      return parseFloat(`${i.replace(/\./g, '')}.${(d || '00').slice(0, 2)}`) || 0
-    }
-
-    // Only dots
-    const parts = cleaned.split('.')
-    if (parts.length > 2) {
-      const dec = parts.pop()!
-      return parseFloat(`${parts.join('')}.${dec.slice(0, 2)}`) || 0
-    }
-
-    return parseFloat(cleaned) || 0
+    
+    const result = parseFloat(cleaned)
+    // Sanity check: reasonable product prices are typically < 10000
+    return (!isNaN(result) && result > 0 && result < 50000) ? result : 0
   }
 
-  const pickFirstNonInstallment = (candidates: { value: number; context: string }[]) => {
-    for (const c of candidates) {
-      const ctx = c.context.toLowerCase()
-      if (ctx.includes('mois') || ctx.includes('/mois') || ctx.includes('mensual') || ctx.includes('month')) continue
-      if (ctx.includes('abonnement') || ctx.includes('subscription')) continue
-      if (c.value > 0) return c.value
-    }
-    return 0
-  }
+  // Detect currency
+  if (html.includes('£')) currency = 'GBP'
+  else if (html.includes('$') && !html.includes('€')) currency = 'USD'
 
-  // Detect currency (basic)
-  if (/[£]/.test(html)) currency = 'GBP'
-  else if (/[$]/.test(html) && !/€/.test(html)) currency = 'USD'
+  console.log('🔍 Searching for Amazon price...')
 
-  const candidates: { value: number; context: string }[] = []
-
-  // 1) JSON-LD / meta price
-  const metaPriceMatches = html.matchAll(/itemprop="price"[^>]*content="([^"]+)"/gi)
-  for (const m of metaPriceMatches) {
-    candidates.push({ value: parseMoney(m[1]), context: m[0] })
-  }
-  const ogPriceMatch = html.match(/product:price:amount"[^>]*content="([^"]+)"/i)
-  if (ogPriceMatch) candidates.push({ value: parseMoney(ogPriceMatch[1]), context: ogPriceMatch[0] })
-
-  // 2) Offscreen prices (often the most reliable visible number)
-  // Capture some context around it to avoid installment prices.
-  const offscreen = html.matchAll(/(.{0,120})class="[^"]*a-offscreen[^"]*"[^>]*>([^<]*\d[^<]*)<\/(.{0,120})/gis)
-  for (const m of offscreen) {
-    const ctx = `${m[1]} ${m[2]} ${m[3]}`
-    const value = parseMoney(m[2])
-    if (value > 0) candidates.push({ value, context: ctx })
-  }
-
-  // 3) Specific containers
-  const corePriceMatch = html.match(/id="corePrice[^\"]*"[\s\S]{0,2000}?class="[^"]*a-price[^"]*"[\s\S]{0,500}?aria-hidden="true"[^>]*>\s*<span[^>]*>([^<]+)<\/span>\s*<span[^>]*>([^<]+)<\/span>/i)
-  if (corePriceMatch) {
-    candidates.push({ value: parseMoney(corePriceMatch[1] + corePriceMatch[2]), context: corePriceMatch[0] })
-  }
-
-  const priceBlockMatch = html.match(/id="priceblock_[^\"]*price"[^>]*>([^<]*\d[^<]*)</i)
-  if (priceBlockMatch) {
-    candidates.push({ value: parseMoney(priceBlockMatch[1]), context: priceBlockMatch[0] })
-  }
-
-  const priceToPayMatch = html.match(/id="priceToPay"[\s\S]{0,2000}?class="[^"]*a-offscreen[^"]*"[^>]*>([^<]*\d[^<]*)</i)
+  // Strategy 1: Most reliable - look for specific Amazon price containers
+  // priceToPay is the main displayed price
+  const priceToPayMatch = html.match(/id="priceToPay"[^>]*>[\s\S]*?<span[^>]*class="[^"]*a-offscreen[^"]*"[^>]*>([^<]{1,20})</i)
   if (priceToPayMatch) {
-    candidates.unshift({ value: parseMoney(priceToPayMatch[1]), context: priceToPayMatch[0] })
+    const extracted = parseMoney(priceToPayMatch[1])
+    if (extracted > 0) {
+      price = extracted
+      console.log(`✓ Found priceToPay: ${price}`)
+    }
   }
 
-  // 4) Generic money pattern fallback (still avoid installments)
-  const generic = html.matchAll(/(.{0,40})(\d+[,.]\d{2})\s*[€$£](.{0,40})/gis)
-  for (const m of generic) {
-    const ctx = `${m[1]} ${m[2]} ${m[3]}`
-    candidates.push({ value: parseMoney(m[2]), context: ctx })
+  // Strategy 2: corePrice section (common on Amazon FR)
+  if (price === 0) {
+    const corePriceMatch = html.match(/id="corePriceDisplay[^"]*"[^>]*>[\s\S]*?<span[^>]*class="[^"]*a-offscreen[^"]*"[^>]*>([^<]{1,20})</i)
+    if (corePriceMatch) {
+      const extracted = parseMoney(corePriceMatch[1])
+      if (extracted > 0) {
+        price = extracted
+        console.log(`✓ Found corePrice: ${price}`)
+      }
+    }
   }
 
-  price = pickFirstNonInstallment(candidates)
+  // Strategy 3: apex price with whole + fraction parts
+  if (price === 0) {
+    const wholeMatch = html.match(/class="[^"]*a-price-whole[^"]*"[^>]*>(\d+)/i)
+    const fractionMatch = html.match(/class="[^"]*a-price-fraction[^"]*"[^>]*>(\d+)/i)
+    if (wholeMatch) {
+      const whole = parseInt(wholeMatch[1]) || 0
+      const fraction = fractionMatch ? parseInt(fractionMatch[1]) || 0 : 0
+      if (whole > 0 && whole < 10000) {
+        price = whole + fraction / 100
+        console.log(`✓ Found whole+fraction: ${price}`)
+      }
+    }
+  }
 
-  // Original (strike-through)
-  const oldPriceMatch = html.match(/class="[^"]*a-text-price[^"]*"[^>]*>[\s\S]{0,200}?<span[^>]*>([^<]*\d[^<]*)</i) ||
-    html.match(/Ancien\s*prix[^<]*:\s*([^<\n]+)/i)
-  if (oldPriceMatch) {
-    const old = parseMoney(oldPriceMatch[1])
-    if (old > 0) originalPrice = old
+  // Strategy 4: Look for price in specific containers (avoid installment prices)
+  if (price === 0) {
+    // Skip patterns that are clearly installments
+    const pricePatterns = [
+      /id="priceblock_ourprice"[^>]*>([^<]{1,20})</i,
+      /id="priceblock_dealprice"[^>]*>([^<]{1,20})</i,
+      /id="priceblock_saleprice"[^>]*>([^<]{1,20})</i,
+    ]
+    for (const pattern of pricePatterns) {
+      const match = html.match(pattern)
+      if (match) {
+        const extracted = parseMoney(match[1])
+        if (extracted > 0) {
+          price = extracted
+          console.log(`✓ Found priceblock: ${price}`)
+          break
+        }
+      }
+    }
+  }
+
+  // Strategy 5: Meta tags (usually reliable)
+  if (price === 0) {
+    const metaMatch = html.match(/product:price:amount"[^>]*content="([\d,\.]+)"/i) ||
+                      html.match(/itemprop="price"[^>]*content="([\d,\.]+)"/i)
+    if (metaMatch) {
+      const extracted = parseMoney(metaMatch[1])
+      if (extracted > 0) {
+        price = extracted
+        console.log(`✓ Found meta price: ${price}`)
+      }
+    }
+  }
+
+  // Strategy 6: Schema.org JSON-LD
+  if (price === 0) {
+    const jsonLdMatch = html.match(/"@type"\s*:\s*"Product"[\s\S]*?"price"\s*:\s*"?([\d,\.]+)"?/i)
+    if (jsonLdMatch) {
+      const extracted = parseMoney(jsonLdMatch[1])
+      if (extracted > 0) {
+        price = extracted
+        console.log(`✓ Found JSON-LD price: ${price}`)
+      }
+    }
+  }
+
+  // Strategy 7: Find a-offscreen prices but filter out installments
+  if (price === 0) {
+    // Get all a-offscreen prices
+    const offscreenMatches = [...html.matchAll(/<span[^>]*class="[^"]*a-offscreen[^"]*"[^>]*>([^<]{1,30})</gi)]
+    for (const match of offscreenMatches) {
+      // Check context - skip if it's near installment keywords
+      const context = html.slice(Math.max(0, html.indexOf(match[0]) - 200), html.indexOf(match[0]) + match[0].length + 50)
+      const isInstallment = /mois|month|mensuel|paiement|4x|3x|abonnement|subscription|\/mois/i.test(context)
+      
+      if (!isInstallment) {
+        const extracted = parseMoney(match[1])
+        if (extracted > 0 && extracted < 5000) {
+          price = extracted
+          console.log(`✓ Found a-offscreen price: ${price}`)
+          break
+        }
+      }
+    }
+  }
+
+  // Extract original/strike-through price
+  const oldPricePatterns = [
+    /class="[^"]*a-text-price[^"]*"[^>]*>[\s\S]{0,100}?<span[^>]*>([^<]{1,20})</i,
+    /class="[^"]*a-text-strike[^"]*"[^>]*>([^<]{1,20})</i,
+    /Ancien\s*prix[^:]*:\s*([^<\n]{1,20})/i,
+    /list-price[^>]*>([^<]{1,20})</i
+  ]
+  
+  for (const pattern of oldPricePatterns) {
+    const match = html.match(pattern)
+    if (match) {
+      const extracted = parseMoney(match[1])
+      if (extracted > 0 && extracted > price) {
+        originalPrice = extracted
+        console.log(`✓ Found original price: ${originalPrice}`)
+        break
+      }
+    }
   }
 
   console.log(`💰 Amazon price: ${price} ${currency} (original: ${originalPrice})`)
