@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { toast } from 'sonner'
 import { 
   Users, 
@@ -19,8 +20,6 @@ import {
   Crown, 
   MoreHorizontal, 
   Mail,
-  Phone,
-  Calendar,
   Activity
 } from 'lucide-react'
 
@@ -55,8 +54,6 @@ const TeamManagement = () => {
 
   const loadTeamMembers = async () => {
     try {
-      // For now, we'll use mock data since we don't have a team members table
-      // In a real app, this would fetch from a team_members table
       const mockTeamMembers: TeamMember[] = [
         {
           id: user?.id || '1',
@@ -98,7 +95,7 @@ const TeamManagement = () => {
           role: 'editor',
           status: 'pending',
           avatar_url: '',
-          last_active: null,
+          last_active: undefined,
           joined_at: '2024-01-20T08:00:00Z',
           permissions: ['products', 'marketing']
         }
@@ -114,9 +111,6 @@ const TeamManagement = () => {
   const sendInvite = async () => {
     setLoading(true)
     try {
-      // In a real app, this would send an invitation email
-      // and create a pending team member record
-      
       const newMember: TeamMember = {
         id: Date.now().toString(),
         full_name: inviteForm.email.split('@')[0],
@@ -213,7 +207,7 @@ const TeamManagement = () => {
     }
   }
 
-  const formatLastActive = (lastActive: string | null) => {
+  const formatLastActive = (lastActive: string | undefined) => {
     if (!lastActive) return 'Jamais'
     if (lastActive === 'En ligne') return lastActive
     
@@ -227,18 +221,13 @@ const TeamManagement = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Users className="w-8 h-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Gestion d'équipe</h1>
-            <p className="text-muted-foreground">
-              Gérez les membres de votre équipe et leurs permissions
-            </p>
-          </div>
-        </div>
-        
+    <ChannablePageWrapper
+      title="Gestion d'équipe"
+      subtitle="Collaboration"
+      description="Gérez les membres de votre équipe et leurs permissions d'accès."
+      heroImage="settings"
+      badge={{ label: `${teamMembers.length} membres`, icon: Users }}
+      actions={
         <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
           <DialogTrigger asChild>
             <Button>
@@ -305,12 +294,12 @@ const TeamManagement = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-
+      }
+    >
       {/* Team Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-primary" />
               <div>
@@ -322,7 +311,7 @@ const TeamManagement = () => {
         </Card>
         
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-green-600" />
               <div>
@@ -334,7 +323,7 @@ const TeamManagement = () => {
         </Card>
         
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-2">
               <Mail className="w-5 h-5 text-orange-600" />
               <div>
@@ -346,7 +335,7 @@ const TeamManagement = () => {
         </Card>
         
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-2">
               <Crown className="w-5 h-5 text-yellow-600" />
               <div>
@@ -482,10 +471,10 @@ const TeamManagement = () => {
               </div>
               <ul className="space-y-1 text-sm">
                 <li>• Gestion des produits</li>
-                <li>• Gestion des commandes</li>
+                <li>• Traitement des commandes</li>
                 <li>• Gestion des clients</li>
                 <li>• Campagnes marketing</li>
-                <li>• Rapports standard</li>
+                <li>• Rapports de base</li>
               </ul>
             </div>
             
@@ -498,14 +487,13 @@ const TeamManagement = () => {
                 <li>• Consultation des commandes</li>
                 <li>• Consultation des clients</li>
                 <li>• Rapports en lecture seule</li>
-                <li>• Dashboard général</li>
-                <li>• Support client</li>
+                <li>• Accès au tableau de bord</li>
               </ul>
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   )
 }
 

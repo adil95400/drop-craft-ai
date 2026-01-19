@@ -4,9 +4,9 @@ import { supabase } from '@/lib/supabase'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import {
   Play,
-  Pause,
   Plus,
   Zap,
   CheckCircle2,
@@ -75,23 +75,19 @@ export default function WorkflowsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 sm:p-6 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
-            <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-            Workflows
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Automate tasks and optimize operations
-          </p>
-        </div>
-        <Button size="sm" className="self-start sm:self-auto sm:size-default">
-          <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-          Create
+    <ChannablePageWrapper
+      title="Workflows"
+      subtitle="Automatisation"
+      description="Automatisez vos tâches et optimisez vos opérations avec des workflows intelligents."
+      heroImage="automation"
+      badge={{ label: `${workflows?.length || 0} workflows`, icon: Zap }}
+      actions={
+        <Button size="sm" className="gap-2">
+          <Plus className="w-4 h-4" />
+          Créer
         </Button>
-      </div>
-
+      }
+    >
       <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <Card className="p-3 sm:p-6">
           <div className="flex items-center gap-2 sm:gap-4">
@@ -111,7 +107,7 @@ export default function WorkflowsPage() {
               <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Active</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Actifs</p>
               <p className="text-lg sm:text-2xl font-bold">{activeWorkflows.length}</p>
             </div>
           </div>
@@ -123,7 +119,7 @@ export default function WorkflowsPage() {
               <Play className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Runs</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Exécutions</p>
               <p className="text-lg sm:text-2xl font-bold">{totalExecutions || 0}</p>
             </div>
           </div>
@@ -135,7 +131,7 @@ export default function WorkflowsPage() {
               <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6 text-purple-500" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Success</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Réussites</p>
               <p className="text-lg sm:text-2xl font-bold">{totalSuccess || 0}</p>
             </div>
           </div>
@@ -148,10 +144,10 @@ export default function WorkflowsPage() {
           {workflows?.length === 0 ? (
             <Card className="p-6 sm:p-8 text-center">
               <Zap className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
-              <p className="text-sm sm:text-base text-muted-foreground">No workflows yet</p>
+              <p className="text-sm sm:text-base text-muted-foreground">Aucun workflow</p>
               <Button className="mt-3 sm:mt-4" size="sm">
                 <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Create First
+                Créer le premier
               </Button>
             </Card>
           ) : (
@@ -162,7 +158,7 @@ export default function WorkflowsPage() {
                     <div className="min-w-0">
                       <h3 className="font-semibold text-sm sm:text-base truncate">{workflow.name}</h3>
                       <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                        {workflow.description || 'No description'}
+                        {workflow.description || 'Aucune description'}
                       </p>
                     </div>
                     <Badge className={`shrink-0 ${getStatusColor(workflow.status || '')}`}>
@@ -172,21 +168,21 @@ export default function WorkflowsPage() {
 
                   <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3 sm:pt-4 border-t">
                     <div>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Runs</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Exécutions</p>
                       <p className="text-sm sm:text-lg font-semibold">
                         {workflow.execution_count || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Success</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Réussites</p>
                       <p className="text-sm sm:text-lg font-semibold text-green-500">
                         {workflow.run_count || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Status</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Statut</p>
                       <p className="text-sm sm:text-lg font-semibold">
-                        {workflow.is_active ? 'Active' : 'Inactive'}
+                        {workflow.is_active ? 'Actif' : 'Inactif'}
                       </p>
                     </div>
                   </div>
@@ -198,11 +194,11 @@ export default function WorkflowsPage() {
                             new Date(workflow.last_run_at),
                             { addSuffix: true }
                           )}`
-                        : 'Never executed'}
+                        : 'Jamais exécuté'}
                     </span>
                     <Button variant="outline" size="sm" className="shrink-0">
                       <Settings className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Configure</span>
+                      <span className="hidden sm:inline">Configurer</span>
                     </Button>
                   </div>
                 </div>
@@ -212,11 +208,11 @@ export default function WorkflowsPage() {
         </div>
 
         <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-lg sm:text-xl font-semibold">Recent Executions</h2>
+          <h2 className="text-lg sm:text-xl font-semibold">Exécutions récentes</h2>
           {executions?.length === 0 ? (
             <Card className="p-6 sm:p-8 text-center">
               <Clock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
-              <p className="text-sm sm:text-base text-muted-foreground">No executions yet</p>
+              <p className="text-sm sm:text-base text-muted-foreground">Aucune exécution</p>
             </Card>
           ) : (
             executions?.map((execution) => (
@@ -257,6 +253,6 @@ export default function WorkflowsPage() {
           )}
         </div>
       </div>
-    </div>
+    </ChannablePageWrapper>
   )
 }

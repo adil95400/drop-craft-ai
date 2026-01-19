@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { useProfileRefresh } from '@/hooks/useProfileRefresh';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   User, 
   Mail, 
@@ -25,7 +25,6 @@ import {
   Edit3
 } from "lucide-react";
 import AvatarUpload from '@/components/common/AvatarUpload';
-import { BackButton } from '@/components/navigation/BackButton';
 
 const Profile = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -89,41 +88,31 @@ const Profile = () => {
   };
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-4xl mx-auto">
-      <div className="mb-2 sm:mb-4">
-        <BackButton to="/dashboard" />
-      </div>
-      
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Mon Profil
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Gérez vos informations personnelles
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {!isEditing ? (
-            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="text-xs sm:text-sm">
-              <Edit3 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Modifier
+    <ChannablePageWrapper
+      title="Mon Profil"
+      subtitle="Compte"
+      description="Gérez vos informations personnelles et paramètres de compte."
+      heroImage="settings"
+      badge={{ label: role === 'admin' ? 'Admin' : 'Utilisateur', icon: User }}
+      actions={
+        !isEditing ? (
+          <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="text-xs sm:text-sm">
+            <Edit3 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            Modifier
+          </Button>
+        ) : (
+          <>
+            <Button onClick={() => setIsEditing(false)} variant="outline" size="sm" className="text-xs sm:text-sm">
+              Annuler
             </Button>
-          ) : (
-            <>
-              <Button onClick={() => setIsEditing(false)} variant="outline" size="sm" className="text-xs sm:text-sm">
-                Annuler
-              </Button>
-              <Button onClick={handleSaveProfile} variant="default" size="sm" className="text-xs sm:text-sm">
-                <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                Sauvegarder
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-
+            <Button onClick={handleSaveProfile} variant="default" size="sm" className="text-xs sm:text-sm">
+              <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Sauvegarder
+            </Button>
+          </>
+        )
+      }
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Profile Card */}
         <Card className="lg:col-span-1">
@@ -358,7 +347,7 @@ const Profile = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 
