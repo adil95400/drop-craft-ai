@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Eye, Activity, AlertTriangle, CheckCircle, XCircle, Clock, Plus, Loader2, Bell } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useToast } from '@/hooks/use-toast';
 
 interface AlertRule {
@@ -83,17 +83,18 @@ export default function ObservabilityPage() {
   };
 
   return (
-    <>
+    <ChannablePageWrapper
+      title="Observabilité"
+      description="Surveillance et monitoring de l'infrastructure en temps réel"
+      heroImage="notifications"
+      badge={{ label: "Monitoring" }}
+    >
       <Helmet>
         <title>Observabilité - Monitoring et Surveillance Système</title>
         <meta name="description" content="Surveillance complète de l'infrastructure avec métriques temps réel, alertes et diagnostics avancés." />
       </Helmet>
 
       <div className="space-y-6">
-        <PageHeader 
-          title="Observabilité"
-          description="Surveillance et monitoring de l'infrastructure en temps réel"
-        />
 
         <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList>
@@ -421,6 +422,6 @@ export default function ObservabilityPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </ChannablePageWrapper>
   );
 }

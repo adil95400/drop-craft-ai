@@ -4,21 +4,22 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Network, Code, Key, Shield, Globe, Zap } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function EnterpriseAPIPage() {
   return (
-    <>
+    <ChannablePageWrapper
+      title="Enterprise API"
+      description="API robuste et sécurisée pour les intégrations d'entreprise"
+      heroImage="import"
+      badge={{ label: "Enterprise" }}
+    >
       <Helmet>
         <title>Enterprise API - API Avancée pour Entreprises</title>
         <meta name="description" content="API Enterprise avec authentification avancée, rate limiting, monitoring et intégrations personnalisées pour les grandes entreprises." />
       </Helmet>
 
       <div className="space-y-6">
-        <PageHeader 
-          title="Enterprise API"
-          description="API robuste et sécurisée pour les intégrations d'entreprise"
-        />
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
@@ -199,6 +200,6 @@ export default function EnterpriseAPIPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </>
+    </ChannablePageWrapper>
   );
 }
