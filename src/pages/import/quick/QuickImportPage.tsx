@@ -1,23 +1,17 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Zap, FileSpreadsheet, Upload, BarChart3, CheckCircle } from 'lucide-react'
+import { Zap, FileSpreadsheet, Upload, BarChart3, CheckCircle, RefreshCw } from 'lucide-react'
 import { UnifiedImportInterface } from '@/components/import/UnifiedImportInterface'
 import { CSVImportWizard } from '@/components/import/CSVImportWizard'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { Card, CardContent } from '@/components/ui/card'
 import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router-dom'
 
 export default function QuickImportPage() {
   const prefersReducedMotion = useReducedMotion()
-
-  const stats = [
-    { label: 'Formats supportés', value: '5+' },
-    { label: 'Mapping auto', value: '95%' },
-    { label: 'Colonnes max', value: '100+' },
-    { label: 'Taille max', value: '50MB' }
-  ]
+  const navigate = useNavigate()
 
   const features = [
     { icon: FileSpreadsheet, title: 'CSV & Excel', description: 'Importez vos fichiers CSV, XLS, XLSX' },
@@ -27,26 +21,21 @@ export default function QuickImportPage() {
   ]
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Import CSV / Excel"
-      metaTitle="Import CSV / Excel"
-      metaDescription="Importez vos catalogues produits depuis des fichiers CSV ou Excel avec mapping intelligent"
-      maxWidth="2xl"
-      padding="md"
-      backTo="/import"
-      backLabel="Retour à l'import"
+      subtitle="Mapping intelligent"
+      description="Importez vos catalogues produits depuis des fichiers CSV ou Excel. Notre IA détecte automatiquement les colonnes et valide vos données."
+      heroImage="suppliers"
+      badge={{ label: "Import Fichier", icon: FileSpreadsheet }}
+      actions={
+        <div className="flex items-center gap-3">
+          <Button onClick={() => navigate('/import/history')} variant="outline" className="gap-2 bg-background/80 backdrop-blur">
+            <RefreshCw className="h-4 w-4" />
+            Historique
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        badge={{ label: "Import Fichier", icon: FileSpreadsheet }}
-        title="Import CSV / Excel"
-        subtitle="avec mapping intelligent"
-        description="Importez vos catalogues produits depuis des fichiers CSV ou Excel. Notre IA détecte automatiquement les colonnes et valide vos données."
-        stats={stats}
-        showHexagons={!prefersReducedMotion}
-        variant="compact"
-      />
-
       {/* Features Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {features.map((feature, index) => (
@@ -94,6 +83,6 @@ export default function QuickImportPage() {
           </Tabs>
         </CardContent>
       </Card>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

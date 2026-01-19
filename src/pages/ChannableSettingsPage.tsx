@@ -6,17 +6,12 @@ import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdminRole } from '@/hooks/useAdminRole'
 import { useSettingsActions } from '@/hooks/useSettingsActions'
-import { 
-  ChannablePageLayout,
-  ChannableHeroSection,
-  ChannableCard
-} from '@/components/channable'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -142,13 +137,13 @@ export default function ChannableSettingsPage() {
         <meta name="description" content="Configurez vos préférences et paramètres de compte" />
       </Helmet>
 
-      <ChannablePageLayout>
-        <ChannableHeroSection
-          title="Paramètres"
-          subtitle="Configurez vos préférences et personnalisez votre expérience"
-          icon={Settings}
-        />
-
+      <ChannablePageWrapper
+        title="Paramètres"
+        subtitle="Préférences"
+        description="Configurez vos préférences et personnalisez votre expérience"
+        heroImage="analytics"
+        badge={{ label: 'Configuration', icon: Settings }}
+      >
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Sidebar Categories */}
           <motion.div 
@@ -432,7 +427,7 @@ export default function ChannableSettingsPage() {
             )}
           </div>
         </div>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
 
       <ConfirmDialog
         open={showDeleteDialog}

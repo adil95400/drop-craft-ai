@@ -72,8 +72,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useNavigate } from 'react-router-dom'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { SupplierLogo } from '@/components/suppliers/SupplierLogo'
 import { AdvancedSupplierAnalytics } from '@/components/suppliers/AdvancedSupplierAnalytics'
 import { SupplierConnectionDialog } from '@/components/suppliers/SupplierConnectionDialog'
@@ -3447,34 +3446,24 @@ export default function ChannableStyleSuppliersPage() {
   }, [])
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Fournisseurs Dropshipping"
-      metaTitle="Fournisseurs Dropshipping"
-      metaDescription="Découvrez 150+ fournisseurs dropshipping vérifiés. AliExpress, CJ Dropshipping, Spocket, BigBuy et bien plus."
-      showBackButton={false}
-      maxWidth="2xl"
-      padding="md"
+      subtitle="Hub Fournisseurs"
+      description="Connectez-vous aux meilleurs fournisseurs dropshipping du monde. Import automatique, sync en temps réel, livraison rapide."
+      heroImage="suppliers"
+      badge={{ label: `${allSupplierDefinitions.length}+ Fournisseurs Vérifiés`, icon: Sparkles }}
+      actions={
+        <div className="flex items-center gap-3">
+          <Button onClick={() => setActiveCategory('all')} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Ajouter un fournisseur
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/suppliers/my')} className="gap-2 bg-background/80 backdrop-blur">
+            Gérer mes fournisseurs
+          </Button>
+        </div>
+      }
     >
-      <ChannableHeroSection
-        badge={{ label: `${allSupplierDefinitions.length}+ Fournisseurs Vérifiés`, icon: Sparkles }}
-        title="Fournisseurs Dropshipping"
-        subtitle="Connectez-vous aux meilleurs fournisseurs dropshipping du monde. Import automatique, sync en temps réel, livraison rapide."
-        stats={[
-          { label: 'Fournisseurs', value: allSupplierDefinitions.length.toString(), icon: Package },
-          { label: 'Pays', value: `${countriesCount}+`, icon: Globe },
-          { label: 'Connectés', value: stats.active.toString(), icon: CheckCircle2 },
-          { label: 'Produits', value: totalProducts >= 1000000000 ? `${(totalProducts / 1000000000).toFixed(0)}B+` : `${(totalProducts / 1000000).toFixed(0)}M+`, icon: Star }
-        ]}
-        primaryAction={{
-          label: "Ajouter un fournisseur",
-          onClick: () => setActiveCategory('all'),
-          icon: Plus
-        }}
-        secondaryAction={{
-          label: "Gérer mes fournisseurs",
-          onClick: () => navigate('/suppliers/my')
-        }}
-      />
       
       {/* Navigation par onglets */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-6">

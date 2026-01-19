@@ -27,9 +27,8 @@ import { StockLevelsTable } from '@/components/stock/StockLevelsTable';
 import { StockMovementsLog } from '@/components/stock/StockMovementsLog';
 import { StockAlertsPanel } from '@/components/stock/StockAlertsPanel';
 import { VariantManager } from '@/components/stock/VariantManager';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import {
-  ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableQuickActions
 } from '@/components/channable';
@@ -47,7 +46,6 @@ export default function StockManagementPage() {
   
   const unresolvedAlerts = alerts?.length || 0;
   
-  // Channable Stats
   const channableStats: ChannableStat[] = [
     {
       label: 'Produits en stock',
@@ -83,7 +81,6 @@ export default function StockManagementPage() {
     }
   ];
 
-  // Quick Actions
   const quickActions: ChannableQuickAction[] = [
     {
       id: 'add-movement',
@@ -126,32 +123,28 @@ export default function StockManagementPage() {
   };
   
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Gestion des Stocks"
-      metaTitle="Inventaire & Stock"
-      metaDescription="Gérez votre inventaire en temps réel"
+      subtitle="Inventaire temps réel"
+      description="Gérez votre inventaire, suivez les niveaux de stock par entrepôt et recevez des alertes automatiques pour les réapprovisionnements."
+      heroImage="suppliers"
+      badge={{
+        label: `${stats?.total_products || 0} produits`,
+        icon: Package
+      }}
+      actions={
+        <div className="flex gap-2">
+          <Button onClick={() => toast({ title: 'Mouvement de stock' })} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nouveau mouvement
+          </Button>
+          <Button variant="outline" onClick={handleRefresh} className="gap-2 bg-background/80 backdrop-blur">
+            <RefreshCw className="h-4 w-4" />
+            Actualiser
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        title="Gestion des Stocks"
-        subtitle="Inventaire temps réel"
-        description="Gérez votre inventaire, suivez les niveaux de stock par entrepôt et recevez des alertes automatiques pour les réapprovisionnements."
-        badge={{
-          label: `${stats?.total_products || 0} produits`,
-          icon: Package
-        }}
-        primaryAction={{
-          label: 'Nouveau mouvement',
-          onClick: () => toast({ title: 'Mouvement de stock', description: 'Ouverture du formulaire' }),
-          icon: Plus
-        }}
-        secondaryAction={{
-          label: 'Actualiser',
-          onClick: handleRefresh
-        }}
-        variant="compact"
-      />
-
       {/* Stats Grid */}
       <ChannableStatsGrid stats={channableStats} columns={4} compact />
 
@@ -307,6 +300,6 @@ export default function StockManagementPage() {
           <StockAlertsPanel />
         </TabsContent>
       </Tabs>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   );
 }
