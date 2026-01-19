@@ -488,9 +488,16 @@ export default function AutoDSImportPage() {
                                   </span>
                                 )}
                                 {item.preview.videos && item.preview.videos.length > 0 && (
-                                  <Badge variant="secondary" className="text-xs">
+                                  <Badge variant="secondary" className="bg-purple-500/10 text-purple-700 border-purple-500/30">
                                     🎬 {item.preview.videos.length} vidéo{item.preview.videos.length > 1 ? 's' : ''}
                                   </Badge>
+                                )}
+                                {item.preview.sku && item.preview.sku !== `IMPORT-${Date.now()}` && (
+                                  <span className="flex items-center gap-1 text-blue-600">
+                                    <span className="font-mono text-xs bg-blue-500/10 px-1.5 py-0.5 rounded">
+                                      SKU: {item.preview.sku}
+                                    </span>
+                                  </span>
                                 )}
                                 {item.preview.brand && (
                                   <span className="text-primary">

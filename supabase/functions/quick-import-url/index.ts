@@ -297,22 +297,44 @@ function extractVideos(html: string, platform: string): string[] {
   const videos: string[] = []
   const seenUrls = new Set<string>()
   
+  // Helper to add video
+  const addVideo = (url: string) => {
+    if (url && !seenUrls.has(url) && videos.length < 10 && !url.includes('blank') && !url.includes('placeholder')) {
+      videos.push(url)
+      seenUrls.add(url)
+    }
+  }
+  
   // Platform-specific video extraction
   if (platform === 'amazon') {
-    // Amazon video URLs
-    const videoMatches = html.matchAll(/["'](https?:\/\/[^"']*\.(?:mp4|webm|m3u8)[^"']*)["']/gi)
-    for (const m of videoMatches) {
-      if (!seenUrls.has(m[1]) && !m[1].includes('blank')) {
-        videos.push(m[1])
-        seenUrls.add(m[1])
+    // Strategy 1: Look for Amazon video JSON data (BEST for Amazon)
+    // Pattern: "url":"https://...mp4" or "videoUrl":"https://..."
+    const jsonVideoMatches = html.matchAll(/"(?:url|videoUrl|video_url|videoSrc|src|streamingUrl)"[^:]*:\s*"(https?:\/\/[^"]+(?:\.mp4|\.webm|\.m3u8|m3u8)[^"]*)"/gi)
+    for (const m of jsonVideoMatches) {
+      addVideo(m[1])
+    }
+    
+    // Strategy 2: Look for Amazon video data structure
+    const videoDataMatch = html.match(/"videos?":\s*\[([\s\S]*?)\]/i)
+    if (videoDataMatch) {
+      const urlMatches = videoDataMatch[1].matchAll(/"(?:url|src|videoUrl)":\s*"([^"]+)"/gi)
+      for (const m of urlMatches) {
+        if (m[1].includes('mp4') || m[1].includes('webm') || m[1].includes('m3u8')) {
+          addVideo(m[1])
+        }
       }
     }
     
-    // Amazon video data
-    const videoDataMatch = html.match(/videoUrl['"]\s*:\s*['"](https?:\/\/[^'"]+)['"]/i)
-    if (videoDataMatch && !seenUrls.has(videoDataMatch[1])) {
-      videos.push(videoDataMatch[1])
-      seenUrls.add(videoDataMatch[1])
+    // Strategy 3: Direct mp4/webm URLs
+    const directVideoMatches = html.matchAll(/["'](https?:\/\/[^"']*(?:cloudfront\.net|amazonvideo|images-amazon|m\.media-amazon)[^"']*\.(?:mp4|webm)[^"']*)["']/gi)
+    for (const m of directVideoMatches) {
+      addVideo(m[1])
+    }
+    
+    // Strategy 4: HLS streaming URLs
+    const hlsMatches = html.matchAll(/["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/gi)
+    for (const m of hlsMatches) {
+      addVideo(m[1])
     }
   }
   
@@ -320,48 +342,36 @@ function extractVideos(html: string, platform: string): string[] {
     // AliExpress video URLs
     const videoMatches = html.matchAll(/["'](https?:\/\/[^"']+\.(?:mp4|webm|m3u8)[^"']*)["']/gi)
     for (const m of videoMatches) {
-      if (!seenUrls.has(m[1])) {
-        videos.push(m[1])
-        seenUrls.add(m[1])
-      }
+      addVideo(m[1])
     }
     
     // Video poster or data
     const videoJsonMatch = html.match(/videoUrl['"]\s*:\s*['"](https?:\/\/[^'"]+)['"]/i)
-    if (videoJsonMatch && !seenUrls.has(videoJsonMatch[1])) {
-      videos.push(videoJsonMatch[1])
-      seenUrls.add(videoJsonMatch[1])
+    if (videoJsonMatch) {
+      addVideo(videoJsonMatch[1])
     }
   }
   
   // Generic video extraction
   const genericVideoMatches = html.matchAll(/(?:src|data-src|data-video-url|videoUrl|video_url)=["'](https?:\/\/[^"']+\.(?:mp4|webm|m3u8)[^"']*)["']/gi)
   for (const m of genericVideoMatches) {
-    if (!seenUrls.has(m[1]) && videos.length < 5) {
-      videos.push(m[1])
-      seenUrls.add(m[1])
-    }
+    addVideo(m[1])
   }
   
   // Video tags
   const videoTagMatches = html.matchAll(/<video[^>]*src=["']([^"']+)["']/gi)
   for (const m of videoTagMatches) {
-    if (!seenUrls.has(m[1]) && videos.length < 5) {
-      videos.push(m[1])
-      seenUrls.add(m[1])
-    }
+    addVideo(m[1])
   }
   
   // Source tags within video
   const sourceMatches = html.matchAll(/<source[^>]*src=["']([^"']+\.(?:mp4|webm))["']/gi)
   for (const m of sourceMatches) {
-    if (!seenUrls.has(m[1]) && videos.length < 5) {
-      videos.push(m[1])
-      seenUrls.add(m[1])
-    }
+    addVideo(m[1])
   }
   
-  return videos.slice(0, 5)
+  console.log(`🎬 Found ${videos.length} videos`)
+  return videos.slice(0, 10)
 }
 
 // Extract product variants for Amazon
@@ -999,8 +1009,8 @@ function extractAmazonTitle(html: string, markdown: string = ''): string {
   return 'Produit importé'
 }
 
-// Extract price specifically for Amazon
-function extractAmazonPrice(html: string): { price: number; currency: string; originalPrice: number | null } {
+// Extract price specifically for Amazon (with markdown fallback)
+function extractAmazonPrice(html: string, markdown?: string): { price: number; currency: string; originalPrice: number | null } {
   let price = 0
   let originalPrice: number | null = null
   let currency = 'EUR'
@@ -1013,25 +1023,20 @@ function extractAmazonPrice(html: string): { price: number; currency: string; or
     if (!cleaned) return 0
     
     // Handle European format: 149,00 or 1.499,00
-    // Count separators
     const commaCount = (cleaned.match(/,/g) || []).length
     const dotCount = (cleaned.match(/\./g) || []).length
     
     if (commaCount === 1 && dotCount === 0) {
-      // 149,00 -> 149.00
       cleaned = cleaned.replace(',', '.')
     } else if (dotCount === 1 && commaCount === 0) {
       // Already 149.00
     } else if (commaCount === 1 && dotCount >= 1) {
-      // 1.499,00 -> 1499.00 (European thousands separator)
       cleaned = cleaned.replace(/\./g, '').replace(',', '.')
     } else if (dotCount === 1 && commaCount >= 1) {
-      // 1,499.00 -> 1499.00 (US thousands separator)
       cleaned = cleaned.replace(/,/g, '')
     }
     
     const result = parseFloat(cleaned)
-    // Sanity check: reasonable product prices are typically < 10000
     return (!isNaN(result) && result > 0 && result < 50000) ? result : 0
   }
 
@@ -1041,30 +1046,33 @@ function extractAmazonPrice(html: string): { price: number; currency: string; or
 
   console.log('🔍 Searching for Amazon price...')
 
-  // Strategy 1: Most reliable - look for specific Amazon price containers
-  // priceToPay is the main displayed price
-  const priceToPayMatch = html.match(/id="priceToPay"[^>]*>[\s\S]*?<span[^>]*class="[^"]*a-offscreen[^"]*"[^>]*>([^<]{1,20})</i)
-  if (priceToPayMatch) {
-    const extracted = parseMoney(priceToPayMatch[1])
+  // Strategy 1: Look for display price text pattern (most reliable for Amazon FR)
+  // Pattern: "149,00€" or "149,00 €" or "€149.00"
+  const displayPriceMatch = html.match(/>(\d{1,4}[,\.]\d{2})\s*€</i) ||
+                            html.match(/>\s*€\s*(\d{1,4}[,\.]\d{2})</i) ||
+                            html.match(/class="[^"]*priceToPay[^"]*"[^>]*>[\s\S]*?(\d{1,4}[,\.]\d{2})\s*€/i)
+  if (displayPriceMatch) {
+    const extracted = parseMoney(displayPriceMatch[1])
     if (extracted > 0) {
       price = extracted
-      console.log(`✓ Found priceToPay: ${price}`)
+      console.log(`✓ Found display price: ${price}`)
     }
   }
 
-  // Strategy 2: corePrice section (common on Amazon FR)
+  // Strategy 2: apex_desktop price (common container)
   if (price === 0) {
-    const corePriceMatch = html.match(/id="corePriceDisplay[^"]*"[^>]*>[\s\S]*?<span[^>]*class="[^"]*a-offscreen[^"]*"[^>]*>([^<]{1,20})</i)
-    if (corePriceMatch) {
-      const extracted = parseMoney(corePriceMatch[1])
-      if (extracted > 0) {
-        price = extracted
-        console.log(`✓ Found corePrice: ${price}`)
+    const apexMatch = html.match(/id="apex_desktop[^"]*"[\s\S]*?(\d{1,4})[,\.](\d{2})\s*€/i)
+    if (apexMatch) {
+      const whole = parseInt(apexMatch[1]) || 0
+      const fraction = parseInt(apexMatch[2]) || 0
+      if (whole > 0 && whole < 10000) {
+        price = whole + fraction / 100
+        console.log(`✓ Found apex price: ${price}`)
       }
     }
   }
 
-  // Strategy 3: apex price with whole + fraction parts
+  // Strategy 3: Look for a-price-whole + a-price-fraction
   if (price === 0) {
     const wholeMatch = html.match(/class="[^"]*a-price-whole[^"]*"[^>]*>(\d+)/i)
     const fractionMatch = html.match(/class="[^"]*a-price-fraction[^"]*"[^>]*>(\d+)/i)
@@ -1078,58 +1086,26 @@ function extractAmazonPrice(html: string): { price: number; currency: string; or
     }
   }
 
-  // Strategy 4: Look for price in specific containers (avoid installment prices)
-  if (price === 0) {
-    // Skip patterns that are clearly installments
-    const pricePatterns = [
-      /id="priceblock_ourprice"[^>]*>([^<]{1,20})</i,
-      /id="priceblock_dealprice"[^>]*>([^<]{1,20})</i,
-      /id="priceblock_saleprice"[^>]*>([^<]{1,20})</i,
-    ]
-    for (const pattern of pricePatterns) {
-      const match = html.match(pattern)
-      if (match) {
-        const extracted = parseMoney(match[1])
-        if (extracted > 0) {
-          price = extracted
-          console.log(`✓ Found priceblock: ${price}`)
-          break
-        }
+  // Strategy 4: Search in markdown for price pattern (very reliable fallback)
+  if (price === 0 && markdown) {
+    // Match patterns like "149,00€" or "149.00 €" or "**149,00€**"
+    const mdPriceMatch = markdown.match(/\*?\*?(\d{1,4})[,\.](\d{2})\s*€\*?\*?/i) ||
+                         markdown.match(/€\s*(\d{1,4})[,\.](\d{2})/i) ||
+                         markdown.match(/Prix\s*:?\s*(\d{1,4})[,\.](\d{2})/i)
+    if (mdPriceMatch) {
+      const whole = parseInt(mdPriceMatch[1]) || 0
+      const fraction = parseInt(mdPriceMatch[2]) || 0
+      if (whole > 0 && whole < 10000) {
+        price = whole + fraction / 100
+        console.log(`✓ Found markdown price: ${price}`)
       }
     }
   }
 
-  // Strategy 5: Meta tags (usually reliable)
+  // Strategy 5: a-offscreen prices (filter out installments)
   if (price === 0) {
-    const metaMatch = html.match(/product:price:amount"[^>]*content="([\d,\.]+)"/i) ||
-                      html.match(/itemprop="price"[^>]*content="([\d,\.]+)"/i)
-    if (metaMatch) {
-      const extracted = parseMoney(metaMatch[1])
-      if (extracted > 0) {
-        price = extracted
-        console.log(`✓ Found meta price: ${price}`)
-      }
-    }
-  }
-
-  // Strategy 6: Schema.org JSON-LD
-  if (price === 0) {
-    const jsonLdMatch = html.match(/"@type"\s*:\s*"Product"[\s\S]*?"price"\s*:\s*"?([\d,\.]+)"?/i)
-    if (jsonLdMatch) {
-      const extracted = parseMoney(jsonLdMatch[1])
-      if (extracted > 0) {
-        price = extracted
-        console.log(`✓ Found JSON-LD price: ${price}`)
-      }
-    }
-  }
-
-  // Strategy 7: Find a-offscreen prices but filter out installments
-  if (price === 0) {
-    // Get all a-offscreen prices
     const offscreenMatches = [...html.matchAll(/<span[^>]*class="[^"]*a-offscreen[^"]*"[^>]*>([^<]{1,30})</gi)]
     for (const match of offscreenMatches) {
-      // Check context - skip if it's near installment keywords
       const context = html.slice(Math.max(0, html.indexOf(match[0]) - 200), html.indexOf(match[0]) + match[0].length + 50)
       const isInstallment = /mois|month|mensuel|paiement|4x|3x|abonnement|subscription|\/mois/i.test(context)
       
@@ -1144,12 +1120,36 @@ function extractAmazonPrice(html: string): { price: number; currency: string; or
     }
   }
 
+  // Strategy 6: Meta tags
+  if (price === 0) {
+    const metaMatch = html.match(/product:price:amount"[^>]*content="([\d,\.]+)"/i) ||
+                      html.match(/itemprop="price"[^>]*content="([\d,\.]+)"/i)
+    if (metaMatch) {
+      const extracted = parseMoney(metaMatch[1])
+      if (extracted > 0) {
+        price = extracted
+        console.log(`✓ Found meta price: ${price}`)
+      }
+    }
+  }
+
+  // Strategy 7: JSON-LD
+  if (price === 0) {
+    const jsonLdMatch = html.match(/"price"\s*:\s*"?(\d+(?:[,\.]\d+)?)"?/i)
+    if (jsonLdMatch) {
+      const extracted = parseMoney(jsonLdMatch[1])
+      if (extracted > 0 && extracted < 10000) {
+        price = extracted
+        console.log(`✓ Found JSON-LD price: ${price}`)
+      }
+    }
+  }
+
   // Extract original/strike-through price
   const oldPricePatterns = [
     /class="[^"]*a-text-price[^"]*"[^>]*>[\s\S]{0,100}?<span[^>]*>([^<]{1,20})</i,
     /class="[^"]*a-text-strike[^"]*"[^>]*>([^<]{1,20})</i,
     /Ancien\s*prix[^:]*:\s*([^<\n]{1,20})/i,
-    /list-price[^>]*>([^<]{1,20})</i
   ]
   
   for (const pattern of oldPricePatterns) {
@@ -1168,10 +1168,54 @@ function extractAmazonPrice(html: string): { price: number; currency: string; or
   return { price, currency, originalPrice }
 }
 
+// Extract SKU from product page (model number, not ASIN)
+function extractAmazonSKU(html: string, markdown: string, asin: string): string {
+  // Strategy 1: Look for model number in details table
+  const modelPatterns = [
+    /Numéro\s*de\s*modèle[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
+    /Numéro\s*du\s*modèle[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
+    /Model\s*Number[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
+    /Modèle[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
+    />Numéro\s*de\s*modèle[^<]*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
+    /data-hook="dp-product-meta"[\s\S]*?([A-Z]{2,}-\d+[\w-]*)/i,
+  ]
+  
+  for (const pattern of modelPatterns) {
+    const match = html.match(pattern)
+    if (match && match[1] && match[1] !== asin) {
+      console.log(`✓ Found model SKU: ${match[1]}`)
+      return match[1].trim()
+    }
+  }
+  
+  // Strategy 2: Look in markdown for model pattern
+  if (markdown) {
+    const mdModelMatch = markdown.match(/Numéro\s*d[eu]\s*modèle[^:|\n]*[:|]\s*([A-Z0-9][\w-]{2,20})/i) ||
+                         markdown.match(/Model[^:|\n]*[:|]\s*([A-Z0-9][\w-]{2,20})/i) ||
+                         markdown.match(/Modèle[^:|\n]*[:|]\s*([A-Z0-9][\w-]{2,20})/i)
+    if (mdModelMatch && mdModelMatch[1] && mdModelMatch[1] !== asin) {
+      console.log(`✓ Found model from markdown: ${mdModelMatch[1]}`)
+      return mdModelMatch[1].trim()
+    }
+  }
+  
+  // Strategy 3: Try to find part number
+  const partMatch = html.match(/Part\s*Number[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i) ||
+                    html.match(/Référence[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i)
+  if (partMatch && partMatch[1] && partMatch[1] !== asin) {
+    console.log(`✓ Found part number: ${partMatch[1]}`)
+    return partMatch[1].trim()
+  }
+  
+  // Fallback to ASIN with prefix
+  return `AMZ-${asin}`
+}
+
 // Scrape product data using Firecrawl if available, otherwise fallback
-async function scrapeProductData(url: string, platform: string): Promise<any> {
+async function scrapeProductData(url: string, platform: string, externalProductId?: string | null): Promise<any> {
   // Amazon links with many params often lead to bot/error/offline pages; canonicalize early.
-  const { productId } = detectPlatform(url)
+  const { productId: detectedProductId } = detectPlatform(url)
+  const productId = externalProductId || detectedProductId
   const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId) : url
 
   console.log(`📦 Scraping product from ${platform}: ${effectiveUrl}`)
@@ -1244,10 +1288,12 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
     // Platform-specific extraction
     if (platform === 'amazon') {
       productData.title = extractAmazonTitle(html, markdown)
-      const priceData = extractAmazonPrice(html)
+      const priceData = extractAmazonPrice(html, markdown)
       productData.price = priceData.price
       productData.currency = priceData.currency
       productData.original_price = priceData.originalPrice
+      // Amazon SKU extraction with model number
+      productData.sku = extractAmazonSKU(html, markdown, productId || '')
     } else {
       // Generic title extraction
       const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i) ||
@@ -1272,6 +1318,13 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
       const currencyMatch = html.match(/product:price:currency"[^>]*content="([^"]+)"/i) ||
                             html.match(/og:price:currency"[^>]*content="([^"]+)"/i)
       productData.currency = currencyMatch?.[1]?.toUpperCase() || (platform === 'aliexpress' ? 'USD' : 'EUR')
+      
+      // Generic SKU
+      const skuMatch = html.match(/sku[^>]*>([^<]+)</i) ||
+                       html.match(/product-id[^>]*>([^<]+)</i) ||
+                       html.match(/"sku"\s*:\s*"([^"]+)"/i) ||
+                       html.match(/data-sku="([^"]+)"/i)
+      productData.sku = skuMatch?.[1]?.trim() || `IMPORT-${Date.now()}`
     }
     
     // Description
@@ -1283,13 +1336,6 @@ async function scrapeProductData(url: string, platform: string): Promise<any> {
       .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'")
       .slice(0, 5000) || ''
-    
-    // SKU
-    const skuMatch = html.match(/sku[^>]*>([^<]+)</i) ||
-                     html.match(/product-id[^>]*>([^<]+)</i) ||
-                     html.match(/"sku"\s*:\s*"([^"]+)"/i) ||
-                     html.match(/data-sku="([^"]+)"/i)
-    productData.sku = skuMatch?.[1]?.trim() || `IMPORT-${Date.now()}`
     
     // Brand
     const brandMatch = html.match(/id="bylineInfo"[^>]*>([^<]+)</i) ||
@@ -1374,7 +1420,7 @@ serve(async (req) => {
     }
 
     // Scrape product data
-    const productData = await scrapeProductData(url, platform)
+    const productData = await scrapeProductData(url, platform, productId)
     
     // Preview mode
     if (action === 'preview') {
