@@ -4,12 +4,13 @@ import { UnifiedImportSource } from '@/components/import/UnifiedImportSource';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Upload, Link2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, Link2, Loader2, FileUp } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useOptimizedImport } from '@/hooks/useOptimizedImport';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 type ImportStep = 'source' | 'upload' | 'url' | 'preview' | 'importing';
 
@@ -200,28 +201,13 @@ export default function SimplifiedImportPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      {/* Header */}
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => {
-            if (step === 'source') {
-              navigate('/products/import/manage');
-            } else {
-              resetImport();
-            }
-          }}
-          className="mb-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <h1 className="text-3xl font-bold">Import Products</h1>
-        <p className="text-muted-foreground mt-2">
-          Import products from multiple sources
-        </p>
-      </div>
+    <ChannablePageWrapper
+      title="Import de Produits"
+      subtitle="Importez vos produits"
+      description="Importez des produits depuis plusieurs sources : fichiers CSV, URLs ou fournisseurs"
+      heroImage="import"
+      badge={{ label: "Import", icon: FileUp }}
+    >
 
       {/* Progress Indicator */}
       <div className="flex items-center justify-center mb-8">
@@ -392,6 +378,6 @@ export default function SimplifiedImportPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </ChannablePageWrapper>
   );
 }

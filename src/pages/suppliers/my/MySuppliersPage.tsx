@@ -24,8 +24,7 @@ import {
   CheckCircle, AlertCircle, Clock, Package, TrendingUp, Search, Plus,
   Star, Zap
 } from 'lucide-react'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function MySuppliersPage() {
   const navigate = useNavigate()
@@ -59,37 +58,25 @@ export default function MySuppliersPage() {
   }
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Mes Fournisseurs"
-      metaTitle="Mes Fournisseurs"
-      metaDescription="Gérez vos fournisseurs connectés et leur configuration"
-      showBackButton
-      backTo="/suppliers"
-      backLabel="Retour aux fournisseurs"
+      subtitle="Gérez vos fournisseurs connectés"
+      description="Synchronisez, importez et configurez vos fournisseurs en temps réel."
+      heroImage="suppliers"
+      badge={{ label: "Connectés", icon: Store }}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/suppliers/settings')}>
+            <Settings className="h-4 w-4 mr-2" />
+            Paramètres
+          </Button>
+          <Button onClick={() => navigate('/suppliers/catalog')}>
+            <Plus className="h-4 w-4 mr-2" />
+            Ajouter un fournisseur
+          </Button>
+        </div>
+      }
     >
-      <ChannableHeroSection
-        badge={{ label: "Connectés", variant: "default" }}
-        title="Mes Fournisseurs"
-        subtitle="Gérez vos fournisseurs connectés"
-        description="Synchronisez, importez et configurez vos fournisseurs en temps réel."
-        primaryAction={{
-          label: "Ajouter un fournisseur",
-          icon: Plus,
-          onClick: () => navigate('/suppliers/catalog')
-        }}
-        secondaryAction={{
-          label: "Paramètres",
-          onClick: () => navigate('/suppliers/settings')
-        }}
-        stats={[
-          { value: stats.active.toString(), label: "Actifs", icon: CheckCircle },
-          { value: stats.total.toString(), label: "Total", icon: Store },
-          { value: stats.averageRating.toFixed(1), label: "Note moy.", icon: Star },
-          { value: "Auto", label: "Sync", icon: Zap }
-        ]}
-        variant="compact"
-      />
-
       {/* Search */}
       <Card className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20">
         <CardContent className="pt-6">
@@ -234,6 +221,6 @@ export default function MySuppliersPage() {
           ))}
         </div>
       )}
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }
