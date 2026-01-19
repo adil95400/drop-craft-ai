@@ -17,21 +17,22 @@ import {
   Star,
   Wand2
 } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function CreativeStudioPage() {
   return (
-    <>
+    <ChannablePageWrapper
+      title="Creative Studio"
+      description="Créez du contenu visuel professionnel avec l'intelligence artificielle"
+      heroImage="marketing"
+      badge={{ label: "Studio IA" }}
+    >
       <Helmet>
         <title>Creative Studio - Création de Contenu IA</title>
         <meta name="description" content="Studio créatif avec IA pour générer des visuels, vidéos, textes et designs pour vos campagnes marketing." />
       </Helmet>
 
       <div className="space-y-6">
-        <PageHeader 
-          title="Creative Studio"
-          description="Créez du contenu visuel professionnel avec l'intelligence artificielle"
-        />
 
         <Tabs defaultValue="templates" className="space-y-6">
           <TabsList>
@@ -317,6 +318,6 @@ export default function CreativeStudioPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </>
+    </ChannablePageWrapper>
   );
 }

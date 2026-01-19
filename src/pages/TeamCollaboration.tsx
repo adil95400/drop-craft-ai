@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, MessageSquare, Calendar, FileText, Clock, CheckCircle2 } from 'lucide-react';
-import { PageHeader } from '@/components/ui/page-header';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function TeamCollaboration() {
   const teamMembers = [
@@ -28,14 +28,13 @@ export default function TeamCollaboration() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <PageHeader
-        title="Collaboration d'Équipe"
-        description="Coordonnez vos projets et communiquez efficacement avec votre équipe"
-        badge="Team Hub"
-      />
-
-      <div className="container mx-auto px-6 py-8">
+    <ChannablePageWrapper
+      title="Collaboration d'Équipe"
+      description="Coordonnez vos projets et communiquez efficacement avec votre équipe"
+      heroImage="suppliers"
+      badge={{ label: "Team Hub" }}
+    >
+      <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -191,6 +190,6 @@ export default function TeamCollaboration() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </ChannablePageWrapper>
   );
 }
