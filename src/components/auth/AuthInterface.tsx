@@ -16,6 +16,9 @@ import { cn } from '@/lib/utils';
 
 // Import assets
 import shopOptiLogo from '@/assets/shopopti-logo.png';
+import dashboardPreview1 from '@/assets/dashboard-preview-1.jpg';
+import dashboardPreview2 from '@/assets/dashboard-preview-2.jpg';
+import dashboardPreview3 from '@/assets/dashboard-preview-3.jpg';
 
 // Validation helpers
 const validateEmail = (email: string) => {
@@ -23,19 +26,22 @@ const validateEmail = (email: string) => {
   return regex.test(email);
 };
 
-// Carousel slides
+// Carousel slides with real dashboard images
 const slides = [
   {
     title: "Optimisez vos performances publicitaires",
-    description: "Analysez vos campagnes en temps réel et identifiez les opportunités d'amélioration pour maximiser votre ROI. Segmentez automatiquement vos produits et affinez vos dépenses.",
+    description: "Analysez vos campagnes en temps réel et identifiez les opportunités d'amélioration pour maximiser votre ROI.",
+    image: dashboardPreview1,
   },
   {
-    title: "Automatisez votre dropshipping",
-    description: "Synchronisez automatiquement vos produits avec vos fournisseurs et gérez vos stocks en temps réel. Gagnez du temps et réduisez les erreurs.",
+    title: "Gérez vos produits facilement",
+    description: "Synchronisez automatiquement vos produits avec vos fournisseurs et gérez vos stocks en temps réel.",
+    image: dashboardPreview2,
   },
   {
     title: "Intelligence artificielle intégrée",
-    description: "Laissez notre IA optimiser vos fiches produits, générer du contenu SEO et prédire les tendances du marché pour rester en avance.",
+    description: "Laissez notre IA optimiser vos fiches produits et générer du contenu SEO performant.",
+    image: dashboardPreview3,
   }
 ];
 
@@ -164,11 +170,11 @@ export const AuthInterface = () => {
       {/* Left Side - Form */}
       <div className="w-full lg:w-1/2 flex flex-col">
         {/* Logo Header */}
-        <div className="p-6 lg:p-8">
+        <div className="p-6 lg:p-10">
           <img 
             src={shopOptiLogo} 
             alt="ShopOpti+" 
-            className="h-10 w-auto object-contain"
+            className="h-14 w-auto object-contain"
           />
         </div>
 
@@ -412,58 +418,15 @@ export const AuthInterface = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -30 }}
               transition={{ duration: 0.3 }}
-              className="text-center px-8"
+              className="text-center px-4"
             >
-              {/* Dashboard Mockup */}
-              <div className="bg-white rounded-2xl shadow-2xl p-6 mb-8 mx-auto max-w-md">
-                {/* Stats Bar */}
-                <div className="flex gap-2 mb-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="flex-1 bg-gray-100 rounded-lg p-2">
-                      <div className="h-2 bg-gray-200 rounded w-full mb-1" />
-                      <div className="h-3 bg-gray-300 rounded w-2/3" />
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Charts Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-gradient-to-br from-[#00B8D4]/10 to-[#00B8D4]/20 rounded-xl p-4">
-                    <div className="h-2 bg-[#00B8D4]/30 rounded w-1/2 mb-3" />
-                    <div className="flex items-end gap-1 h-16">
-                      {[40, 60, 45, 80, 55, 70, 90].map((h, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 bg-[#00B8D4] rounded-t"
-                          style={{ height: `${h}%` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl p-4 flex items-center justify-center">
-                    <div className="w-20 h-20 rounded-full border-8 border-purple-400 border-t-pink-400 border-r-[#00B8D4]" />
-                  </div>
-                </div>
-
-                {/* Table Preview */}
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-center gap-4 mb-3">
-                    <div className="w-12 h-12 bg-[#00B8D4]/20 rounded-lg" />
-                    <div className="flex-1">
-                      <div className="h-2 bg-gray-200 rounded w-3/4 mb-2" />
-                      <div className="h-2 bg-gray-200 rounded w-1/2" />
-                    </div>
-                    <div className="text-xs text-gray-400">970.81%</div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-purple-200 rounded-lg" />
-                    <div className="flex-1">
-                      <div className="h-2 bg-gray-200 rounded w-2/3 mb-2" />
-                      <div className="h-2 bg-gray-200 rounded w-1/3" />
-                    </div>
-                    <div className="text-xs text-gray-400">1084.62%</div>
-                  </div>
-                </div>
+              {/* Real Dashboard Image */}
+              <div className="mb-8 mx-auto max-w-lg">
+                <img 
+                  src={slides[currentSlide].image}
+                  alt={slides[currentSlide].title}
+                  className="w-full rounded-2xl shadow-2xl"
+                />
               </div>
 
               {/* Dots */}
