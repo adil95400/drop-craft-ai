@@ -322,7 +322,7 @@ export default function ResearchHub() {
       <ChannablePageWrapper
         title="Veille & Recherche"
         description="Découvrez les produits gagnants, analysez vos concurrents et identifiez les opportunités du marché"
-        heroImage="analytics"
+        heroImage="research"
         badge={{ label: "Intelligence IA", icon: Sparkles }}
         actions={
           <div className="flex items-center gap-3">
