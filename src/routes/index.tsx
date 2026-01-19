@@ -109,11 +109,13 @@ export function AppRoutes() {
         <Route path="/dashboard/settings" element={<Navigate to="/settings" replace />} />
         <Route path="/dashboard/stores/*" element={<Navigate to="/stores-channels" replace />} />
         <Route path="/dashboard/stores" element={<Navigate to="/stores-channels" replace />} />
-        <Route path="/dashboard/subscription" element={<Navigate to="/subscription" replace />} />
         
         {/* Profile & Subscription direct routes */}
         <Route path="/profile" element={<ProtectedRoute><ChannableLayout><Navigate to="/dashboard/profile" replace /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/subscription" element={<ProtectedRoute><ChannableLayout><Navigate to="/subscription-dashboard" replace /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/subscription" element={<ProtectedRoute><ChannableLayout><Navigate to="/dashboard/subscription" replace /></ChannableLayout></ProtectedRoute>} />
+        
+        {/* Compat: old subscription url */}
+        <Route path="/subscription-dashboard" element={<Navigate to="/dashboard/subscription" replace />} />
         
         {/* Autres redirections standardisées */}
         <Route path="/tracking" element={<Navigate to="/orders" replace />} />
