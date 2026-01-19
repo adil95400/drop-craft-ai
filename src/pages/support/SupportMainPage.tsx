@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { ChannableLayout } from '@/components/channable/navigation/ChannableLayout';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -308,73 +309,44 @@ export default function SupportMainPage() {
         <meta name="description" content="Support 24/7, documentation complète et réponses à toutes vos questions." />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        {/* Header Premium */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden border-b bg-gradient-to-r from-primary/5 via-background to-primary/5"
-        >
-          <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-          <div className="relative px-6 py-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25">
-                    <LifeBuoy className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                        Centre de Support
-                      </h1>
-                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse" />
-                        En ligne 24/7
-                      </Badge>
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      Aide instantanée, guides et support personnalisé
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Search Bar */}
-              <div className="relative max-w-md w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher dans l'aide..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-11 h-11 bg-background/80 backdrop-blur-sm border-2 focus:border-primary/50 rounded-xl"
-                />
-                {searchTerm && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setSearchTerm('')}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-              <StatCard label="Temps de réponse" value="< 2 min" icon={Clock} color="primary" delay={0.1} />
-              <StatCard label="Satisfaction" value="98%" icon={Star} color="success" delay={0.2} />
-              <StatCard label="Articles d'aide" value="250+" icon={FileText} color="info" delay={0.3} />
-              <StatCard label="Tickets résolus" value="1.2K" icon={CheckCircle} color="warning" delay={0.4} />
-            </div>
+      <ChannablePageWrapper
+        title="Centre de Support"
+        subtitle="Aide & Assistance"
+        description="Support 24/7, documentation complète et réponses à toutes vos questions. Notre équipe est là pour vous aider."
+        heroImage="support"
+        badge={{ label: 'En ligne 24/7', icon: LifeBuoy }}
+        actions={
+          <div className="relative max-w-md w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher dans l'aide..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-11 h-11 bg-background/80 backdrop-blur-sm border-2 focus:border-primary/50 rounded-xl"
+            />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={() => setSearchTerm('')}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
-        </motion.div>
+        }
+      >
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <StatCard label="Temps de réponse" value="< 2 min" icon={Clock} color="primary" delay={0.1} />
+          <StatCard label="Satisfaction" value="98%" icon={Star} color="success" delay={0.2} />
+          <StatCard label="Articles d'aide" value="250+" icon={FileText} color="info" delay={0.3} />
+          <StatCard label="Tickets résolus" value="1.2K" icon={CheckCircle} color="warning" delay={0.4} />
+        </div>
 
         {/* Content */}
-        <div className="px-6 py-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-muted/50 p-1 rounded-xl">
               <TabsTrigger value="faq" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <HelpCircle className="h-4 w-4 mr-2" />
@@ -699,8 +671,7 @@ export default function SupportMainPage() {
               </motion.div>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
+      </ChannablePageWrapper>
     </ChannableLayout>
   );
 }
