@@ -13,9 +13,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useReports } from '@/hooks/useReports';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import {
-  ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
   ChannableQuickActions
 } from '@/components/channable';
@@ -57,7 +56,6 @@ export default function ReportsPage() {
     }));
   };
 
-  // Channable Stats
   const channableStats: ChannableStat[] = [
     {
       label: 'Revenus',
@@ -91,7 +89,6 @@ export default function ReportsPage() {
     }
   ];
 
-  // Quick Actions
   const quickActions: ChannableQuickAction[] = [
     {
       id: 'generate',
@@ -120,35 +117,28 @@ export default function ReportsPage() {
   ];
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Rapports"
-      metaTitle="Rapports & Analytics"
-      metaDescription="Consultez vos rapports de performance"
+      subtitle="Business Intelligence"
+      description="Consultez vos rapports de performance, générez des analyses personnalisées et suivez vos KPIs."
+      heroImage="analytics"
+      badge={{
+        label: `${recentReports.length + scheduledReports.length + customReports.length} rapports`,
+        icon: BarChart3
+      }}
+      actions={
+        <div className="flex gap-2">
+          <Button onClick={handleGenerateReport} className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Générer rapport
+          </Button>
+          <Button variant="outline" onClick={() => { refetch(); toast({ title: 'Actualisé' }); }} className="gap-2 bg-background/80 backdrop-blur">
+            <RefreshCw className="h-4 w-4" />
+            Actualiser
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        title="Rapports"
-        subtitle="Business Intelligence"
-        description="Consultez vos rapports de performance, générez des analyses personnalisées et suivez vos KPIs."
-        badge={{
-          label: `${recentReports.length + scheduledReports.length + customReports.length} rapports`,
-          icon: BarChart3
-        }}
-        primaryAction={{
-          label: 'Générer rapport',
-          onClick: handleGenerateReport,
-          icon: BarChart3
-        }}
-        secondaryAction={{
-          label: 'Actualiser',
-          onClick: () => {
-            refetch();
-            toast({ title: 'Statistiques actualisées' });
-          }
-        }}
-        variant="compact"
-      />
-
       {/* Stats Grid */}
       <ChannableStatsGrid stats={channableStats} columns={4} compact />
 
@@ -300,7 +290,7 @@ export default function ReportsPage() {
           </Tabs>
         </CardContent>
       </Card>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   );
 }
 

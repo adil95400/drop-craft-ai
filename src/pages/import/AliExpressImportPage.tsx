@@ -9,11 +9,9 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { AliExpressImporter } from '@/components/aliexpress'
 
-// Hook pour préférences réduites
 const useReducedMotion = () => {
   if (typeof window === 'undefined') return false
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -78,34 +76,19 @@ export default function AliExpressImportPage() {
   })
 
   return (
-    <ChannablePageLayout
-      title="Import AliExpress"
-      metaTitle="Import AliExpress - ShopOpti"
-      metaDescription="Importez des produits depuis AliExpress avec calcul automatique des marges"
-      maxWidth="2xl"
-      padding="md"
-      backTo="/import"
-      backLabel="Retour à l'Import"
+    <ChannablePageWrapper
+      title="Import AliExpress Direct"
+      subtitle="Fournisseur Dropshipping"
+      description="Importez des produits depuis AliExpress avec calcul automatique des marges et filtres intelligents"
+      heroImage="suppliers"
+      badge={{ label: 'AliExpress', icon: Globe }}
+      actions={
+        <Button onClick={() => navigate('/import/autods')} className="gap-2">
+          <Zap className="h-4 w-4" />
+          Import Rapide
+        </Button>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        badge={{ icon: Globe, label: 'AliExpress' }}
-        title="Import AliExpress Direct"
-        subtitle="Importez des produits depuis AliExpress avec calcul automatique des marges et filtres intelligents"
-        variant="compact"
-        showHexagons={!reducedMotion}
-        stats={[
-          { label: 'Importés', value: importStats.imported.toString(), icon: Package },
-          { label: 'Temps moyen', value: importStats.avgTime, icon: Clock },
-          { label: 'Taux succès', value: importStats.successRate, icon: CheckCircle },
-        ]}
-        primaryAction={{
-          label: 'Import rapide',
-          onClick: () => navigate('/import/autods'),
-          icon: Zap,
-        }}
-      />
-
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Importer */}
         <div className="lg:col-span-2">
@@ -209,6 +192,6 @@ export default function AliExpressImportPage() {
           </Card>
         </div>
       </div>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

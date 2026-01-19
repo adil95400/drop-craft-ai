@@ -3,15 +3,11 @@
  */
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
 import { Helmet } from 'react-helmet-async'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { 
-  ChannablePageLayout,
-  ChannableHeroSection,
   ChannableStatsGrid,
-  ChannableCategoryFilter,
-  ChannableCard
+  ChannableCategoryFilter
 } from '@/components/channable'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -30,7 +26,6 @@ import {
   RefreshCw,
   ArrowUpRight,
   ArrowDownRight,
-  Activity,
   Target,
   Zap,
   PieChart
@@ -43,8 +38,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart as RechartsPieChart,
   Pie,
   Cell
@@ -57,7 +50,6 @@ const timeCategories = [
   { id: '1y', label: '1 an', icon: Calendar },
 ]
 
-// Mock data pour les graphiques
 const revenueData = [
   { name: 'Lun', value: 4000, orders: 24 },
   { name: 'Mar', value: 3000, orders: 18 },
@@ -86,7 +78,6 @@ const topProducts = [
 export default function ChannableAnalyticsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d')
 
-  // Stats principales
   const stats = [
     {
       label: 'Chiffre d\'affaires',
@@ -132,14 +123,25 @@ export default function ChannableAnalyticsPage() {
         <meta name="description" content="Tableau de bord analytique complet" />
       </Helmet>
 
-      <ChannablePageLayout>
-        {/* Hero */}
-        <ChannableHeroSection
-          title="Analytics & Performance"
-          subtitle="Analysez vos données en temps réel et prenez des décisions éclairées"
-          icon={BarChart3}
-        />
-
+      <ChannablePageWrapper
+        title="Analytics & Performance"
+        subtitle="Business Intelligence"
+        description="Analysez vos données en temps réel et prenez des décisions éclairées"
+        heroImage="analytics"
+        badge={{ label: 'Temps réel', icon: BarChart3 }}
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="bg-background/80 backdrop-blur">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Actualiser
+            </Button>
+            <Button variant="outline" size="sm" className="bg-background/80 backdrop-blur">
+              <Download className="w-4 h-4 mr-2" />
+              Exporter
+            </Button>
+          </div>
+        }
+      >
         {/* Period Filter */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <ChannableCategoryFilter
@@ -148,16 +150,6 @@ export default function ChannableAnalyticsPage() {
             onSelectCategory={setSelectedPeriod}
             variant="compact"
           />
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Actualiser
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
-              Exporter
-            </Button>
-          </div>
         </div>
 
         {/* Main Stats */}
@@ -361,7 +353,7 @@ export default function ChannableAnalyticsPage() {
             </CardContent>
           </Card>
         </motion.div>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     </>
   )
 }
