@@ -109,7 +109,6 @@ export function AppRoutes() {
         <Route path="/dashboard/settings" element={<Navigate to="/settings" replace />} />
         <Route path="/dashboard/stores/*" element={<Navigate to="/stores-channels" replace />} />
         <Route path="/dashboard/stores" element={<Navigate to="/stores-channels" replace />} />
-        <Route path="/dashboard/profile" element={<Navigate to="/profile" replace />} />
         <Route path="/dashboard/subscription" element={<Navigate to="/subscription" replace />} />
         
         {/* Profile & Subscription direct routes */}
