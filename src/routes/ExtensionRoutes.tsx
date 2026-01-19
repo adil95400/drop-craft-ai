@@ -17,6 +17,7 @@ const ExtensionTutorialsPage = lazy(() => import('@/pages/extensions/ExtensionTu
 const ExtensionFAQPage = lazy(() => import('@/pages/extensions/ExtensionFAQPage'));
 const ReviewsImportPage = lazy(() => import('@/pages/extensions/ReviewsImportPage'));
 const ChromeExtensionPage = lazy(() => import('@/pages/extensions/ChromeExtensionPage'));
+const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 
 export function ExtensionRoutes() {
   return (
@@ -32,6 +33,7 @@ export function ExtensionRoutes() {
       <Route path="faq" element={<ExtensionFAQPage />} />
       <Route path="reviews" element={<ReviewsImportPage />} />
       <Route path="chrome" element={<ChromeExtensionPage />} />
+      <Route path="api" element={<ExtensionAPIPage />} />
       
       {/* Legacy redirects - pages supprimées */}
       <Route path="white-label" element={<Navigate to="/extensions/developer" replace />} />
