@@ -9,6 +9,7 @@ const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
 const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPage'));
 const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
+const IntelligencePage = lazy(() => import('@/pages/Intelligence'));
 
 export function ToolsRoutes() {
   return (
@@ -21,6 +22,7 @@ export function ToolsRoutes() {
       <Route path="inventory-predictor" element={<InventoryPredictorPage />} />
       <Route path="bulk-content" element={<BulkContentCreationPage />} />
       <Route path="schema-generator" element={<SchemaGenerator />} />
+      <Route path="intelligence" element={<IntelligencePage />} />
       
       {/* Legacy redirects */}
       <Route path="calculator" element={<Navigate to="/tools/profit-calculator" replace />} />
