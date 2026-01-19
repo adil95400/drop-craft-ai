@@ -29,10 +29,9 @@ import {
   SecurityTab,
   ApiTab,
   BillingTab,
-  AppearanceTab
+  AppearanceTab,
+  CurrenciesTab
 } from "@/components/settings";
-import { CurrencySettingsPanel } from "@/components/currency/CurrencySettingsPanel";
-import { CurrencyConverter } from "@/components/currency/CurrencyConverter";
 
 const Settings = () => {
   const { user, profile, updateProfile, signOut } = useAuth();
@@ -240,10 +239,7 @@ const Settings = () => {
             </TabsContent>
 
             <TabsContent value="currencies" className="mt-0">
-              <div className="space-y-6">
-                <CurrencySettingsPanel />
-                <CurrencyConverter />
-              </div>
+              <CurrenciesTab />
             </TabsContent>
 
             <TabsContent value="api" className="mt-0">

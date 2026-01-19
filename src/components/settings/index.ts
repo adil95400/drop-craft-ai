@@ -4,3 +4,4 @@ export { SecurityTab } from './SecurityTab';
 export { ApiTab } from './ApiTab';
 export { BillingTab } from './BillingTab';
 export { AppearanceTab } from './AppearanceTab';
+export { CurrenciesTab } from './CurrenciesTab';
