@@ -12,12 +12,13 @@ import {
   Calendar,
   CreditCard
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { StripeSetupGuide } from '@/components/subscription/StripeSetupGuide';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 
 export default function SubscriptionDashboard() {
+  const navigate = useNavigate();
   const { currentPlan } = useUnifiedPlan();
 
   const planFeatures = {
@@ -175,11 +176,21 @@ export default function SubscriptionDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => navigate('/support?intent=schedule-call')}
+                >
                   <Calendar className="w-4 h-4 mr-2" />
                   Planifier un appel
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => navigate('/support?intent=billing')}
+                >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Aide à la facturation
                 </Button>
