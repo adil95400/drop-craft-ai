@@ -37,7 +37,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
 
   // Version desktop avec sidebar Channable
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full">
         <ChannableSidebar />
         

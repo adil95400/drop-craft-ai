@@ -365,9 +365,6 @@ const ChannableNavGroup = memo(({
             )}>
               {group.label}
             </span>
-            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 bg-sidebar-muted/60 dark:bg-sidebar-muted/30 text-muted-foreground/70 border-0">
-              {modules.length}
-            </Badge>
             <ChevronDown className={cn(
               "h-3.5 w-3.5 text-muted-foreground/50 transition-transform duration-200",
               isOpen && "rotate-180"
