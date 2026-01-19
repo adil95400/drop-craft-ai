@@ -17,7 +17,7 @@ export const useStripeIntegration = () => {
   const { setPlan } = useUnifiedPlan();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Check subscription status
+  // Check subscription status with aggressive caching to avoid Stripe rate limits
   const { data: subscription, isLoading: isLoadingSubscription } = useQuery({
     queryKey: ['stripe-subscription'],
     queryFn: async () => {
@@ -25,7 +25,12 @@ export const useStripeIntegration = () => {
       if (error) throw error;
       return data as StripeSubscription;
     },
-    refetchInterval: 30000 // Refetch every 30 seconds
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes (not 30 seconds!)
+    refetchOnWindowFocus: false, // Don't refetch on window focus to avoid rate limits
+    retry: 1, // Only retry once on error
+    retryDelay: 5000, // Wait 5 seconds before retry
   });
 
   // Create checkout session

@@ -47,9 +47,10 @@ export function useStripeSubscription() {
       return;
     }
 
-    // Rate limiting: prevent multiple calls within 5 seconds unless forced
+    // Rate limiting: prevent multiple calls within 30 seconds unless forced
     const now = Date.now();
-    if (!force && now - lastCheckRef.current < 5000) {
+    if (!force && now - lastCheckRef.current < 30000) {
+      console.log('[Stripe] Skipping check - rate limited');
       return;
     }
     lastCheckRef.current = now;
@@ -171,15 +172,18 @@ export function useStripeSubscription() {
     }
   }, [user, toast]);
 
-  // Initial check and periodic refresh
+  // Initial check and periodic refresh (every 5 minutes to avoid rate limits)
   useEffect(() => {
-    checkSubscription(true);
+    // Only check once on mount
+    if (user && lastCheckRef.current === 0) {
+      checkSubscription(true);
+    }
     
-    // Refresh every 60 seconds
-    const interval = setInterval(() => checkSubscription(), 60000);
+    // Refresh every 5 minutes instead of 60 seconds
+    const interval = setInterval(() => checkSubscription(), 5 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [checkSubscription]);
+  }, [checkSubscription, user]);
 
   // Check on URL params (success redirect from Stripe)
   useEffect(() => {
