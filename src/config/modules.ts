@@ -346,20 +346,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   
   // Fulfillment supprimé ici - maintenant sous-module de orders (voir orders.subModules)
 
-  tiktokShop: {
-    id: 'tiktokShop',
-    name: 'TikTok Shop',
-    icon: 'Video',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/integrations/tiktok-shop',
-    features: ['tiktok-integration', 'live-shopping'],
-    description: 'Vendre sur TikTok Shop',
-    category: 'integrations',
-    order: 4,
-    groupId: 'channels',
-    badge: 'new'
-  },
+  // tiktokShop module supprimé
 
   multiChannel: {
     id: 'multiChannel',
