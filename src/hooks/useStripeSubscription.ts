@@ -39,6 +39,7 @@ export function useStripeSubscription() {
   const { toast } = useToast();
   const { user } = useAuth();
   const lastCheckRef = useRef<number>(0);
+  const isMountedRef = useRef(true);
 
   const checkSubscription = useCallback(async (force = false) => {
     if (!user) {
@@ -47,9 +48,9 @@ export function useStripeSubscription() {
       return;
     }
 
-    // Rate limiting: prevent multiple calls within 30 seconds unless forced
+    // Rate limiting: prevent multiple calls within 60 seconds unless forced
     const now = Date.now();
-    if (!force && now - lastCheckRef.current < 30000) {
+    if (!force && now - lastCheckRef.current < 60000) {
       console.log('[Stripe] Skipping check - rate limited');
       return;
     }
@@ -59,19 +60,13 @@ export function useStripeSubscription() {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');
 
+      if (!isMountedRef.current) return;
+
       if (error) {
         if (error.message?.includes('Rate limit')) {
-          toast({
-            title: "Limite atteinte",
-            description: "Trop de requêtes. Veuillez réessayer dans quelques instants.",
-            variant: "destructive"
-          });
+          console.warn('[Stripe] Rate limit hit');
         } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
-          toast({
-            title: "Erreur de connexion",
-            description: "Vérifiez votre connexion internet",
-            variant: "destructive"
-          });
+          console.warn('[Stripe] Network error');
         } else {
           console.error('Subscription check error:', error);
         }
@@ -91,9 +86,11 @@ export function useStripeSubscription() {
     } catch (error) {
       console.error('Error checking subscription:', error);
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
-  }, [user, toast]);
+  }, [user]); // Removed toast from dependencies to prevent re-renders
 
   const createCheckout = useCallback(async (plan: Exclude<PlanType, 'free'>) => {
     if (!user) {
@@ -172,18 +169,19 @@ export function useStripeSubscription() {
     }
   }, [user, toast]);
 
-  // Initial check and periodic refresh (every 5 minutes to avoid rate limits)
+  // Initial check on mount only - no periodic refresh to avoid rate limits
   useEffect(() => {
-    // Only check once on mount
+    isMountedRef.current = true;
+    
+    // Only check once on initial mount
     if (user && lastCheckRef.current === 0) {
       checkSubscription(true);
     }
     
-    // Refresh every 5 minutes instead of 60 seconds
-    const interval = setInterval(() => checkSubscription(), 5 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, [checkSubscription, user]);
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [user]); // Removed checkSubscription to avoid loops
 
   // Check on URL params (success redirect from Stripe)
   useEffect(() => {
@@ -205,7 +203,8 @@ export function useStripeSubscription() {
       });
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [checkSubscription, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   return {
     subscription,
