@@ -149,28 +149,53 @@ class ImportManagerService {
   }
 
   getTemplates(): ImportTemplate[] { return [] }
-  async createTemplate(t: Omit<ImportTemplate, 'id'>): Promise<ImportTemplate> { return { ...t, id: crypto.randomUUID() } }
-  async updateTemplate(): Promise<ImportTemplate | null> { return null }
-  async deleteTemplate(): Promise<boolean> { return true }
-
-  async importFromUrl(url: string, templateId?: string, options?: any): Promise<ImportJob> {
-    return this.createImportJob('url', { url, ...options })
+  
+  async createTemplate(t: Omit<ImportTemplate, 'id' | 'created_at' | 'updated_at'>): Promise<ImportTemplate> { 
+    return { ...t, id: crypto.randomUUID() } 
+  }
+  
+  async updateTemplate(id: string, updates: Partial<ImportTemplate>): Promise<ImportTemplate | null> { 
+    return null 
+  }
+  
+  async deleteTemplate(id: string): Promise<boolean> { 
+    return true 
   }
 
-  async importFromXml(xmlContent: string): Promise<ImportJob> {
-    return this.createImportJob('xml', { source: 'xml' })
+  async importFromUrl(url: string, templateId?: string, config?: any): Promise<ImportJob> {
+    return this.createImportJob('url', { url, templateId, ...config })
   }
 
-  async importFromCsv(csvContent: string): Promise<ImportJob> {
+  async importFromXml(xmlUrl: string, templateId?: string, config?: any): Promise<ImportJob> {
+    return this.createImportJob('xml', { url: xmlUrl, templateId, ...config })
+  }
+
+  async importFromCsv(csvContent: string, templateId?: string, config?: any): Promise<ImportJob> {
     const lines = csvContent.split('\n').filter(l => l.trim())
-    return this.createImportJob('csv', { products: lines.slice(1), source: 'csv' })
+    return this.createImportJob('csv', { products: lines.slice(1), templateId, ...config })
   }
 
-  async importFromFtp(): Promise<ImportJob> {
-    return this.createImportJob('api', { source: 'ftp' })
+  async importFromFtp(
+    ftpUrl: string, 
+    username: string, 
+    password: string, 
+    filePath: string, 
+    templateId?: string, 
+    config?: any
+  ): Promise<ImportJob> {
+    return this.createImportJob('api', { 
+      source: 'ftp', 
+      ftpUrl, 
+      username, 
+      filePath, 
+      templateId, 
+      ...config 
+    })
   }
 
-  autoDetectFields(data: any): any { return {} }
+  autoDetectFields(sampleData: any[], fileType: string): any { 
+    return {} 
+  }
 }
 
 export const importManager = new ImportManagerService()
