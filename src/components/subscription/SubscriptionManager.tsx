@@ -17,9 +17,7 @@ export const SubscriptionManager = () => {
   const { toast } = useToast()
   const [refreshing, setRefreshing] = useState(false)
 
-  useEffect(() => {
-    checkSubscription()
-  }, [checkSubscription])
+  // Remove duplicate checkSubscription call - the hook already does this on mount
 
   const handleUpgrade = async (plan: 'pro' | 'ultra_pro') => {
     try {
