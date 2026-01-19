@@ -574,27 +574,6 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'tools'
   },
 
-  inventoryPredictor: {
-    id: 'inventoryPredictor',
-    name: 'Prédicteur Stock IA',
-    icon: 'Brain',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/tools/inventory-predictor',
-    features: ['stock-predictions', 'restock-alerts', 'demand-forecast'],
-    description: 'Prédictions IA pour anticiper vos besoins en stock',
-    category: 'automation',
-    order: 2,
-    groupId: 'tools',
-    badge: 'pro',
-    subModules: [
-      { id: 'inventory-overview', name: 'Vue Stock', route: '/tools/inventory-predictor', icon: 'Package', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'inventory-predictions', name: 'Prédictions', route: '/tools/inventory-predictor#predictions', icon: 'TrendingUp', description: 'Prédictions IA', features: ['predictions'], order: 2 },
-      { id: 'inventory-alerts', name: 'Alertes', route: '/tools/inventory-predictor#alerts', icon: 'AlertTriangle', description: 'Alertes stock', features: ['alerts'], order: 3 },
-      { id: 'inventory-restock', name: 'Réapprovisionnement', route: '/tools/inventory-predictor#restock', icon: 'RefreshCw', description: 'Suggestions réappro', features: ['restock'], order: 4 },
-    ]
-  },
-
   bulkContent: {
     id: 'bulkContent',
     name: 'Création en Masse',
@@ -605,7 +584,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['bulk-videos', 'bulk-images', 'ai-generation'],
     description: 'Génération en masse de vidéos et images IA',
     category: 'automation',
-    order: 3,
+    order: 2,
     groupId: 'tools',
     badge: 'pro',
     subModules: [
@@ -625,21 +604,21 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['schema-org', 'seo-markup', 'structured-data'],
     description: 'Créez des données structurées Schema.org',
     category: 'customer',
-    order: 4,
+    order: 3,
     groupId: 'tools'
   },
 
   dropshippingIntelligence: {
     id: 'dropshippingIntelligence',
-    name: 'Intelligence Dropshipping',
+    name: 'Intelligence IA',
     icon: 'Brain',
     enabled: true,
     minPlan: 'pro',
     route: '/tools/intelligence',
-    features: ['stock-predictions', 'price-optimization', 'ab-testing', 'margin-analysis'],
-    description: 'Prédictions de stock et optimisation automatique des marges',
+    features: ['stock-predictions', 'price-optimization', 'ab-testing', 'margin-analysis', 'restock-alerts', 'demand-forecast'],
+    description: 'Prédictions de stock, alertes et optimisation automatique des marges',
     category: 'automation',
-    order: 5,
+    order: 4,
     groupId: 'tools',
     badge: 'pro',
     subModules: [
