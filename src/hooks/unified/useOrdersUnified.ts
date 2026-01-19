@@ -17,10 +17,12 @@ export interface UnifiedOrder {
   shipping_address?: any
   billing_address?: any
   tracking_number?: string
+  carrier?: string
   notes?: string
   platform?: string
   platform_order_id?: string
   items?: any[]
+  order_items?: any[]
   created_at: string
   updated_at: string
 }
@@ -84,10 +86,12 @@ export function useOrdersUnified(filters?: {
         shipping_address: item.shipping_address,
         billing_address: item.billing_address,
         tracking_number: item.tracking_number,
+        carrier: item.carrier,
         notes: item.notes,
         platform: item.platform || item.source_platform || 'Direct',
         platform_order_id: item.platform_order_id,
         items: item.order_items || [],
+        order_items: item.order_items || [],
         created_at: item.created_at,
         updated_at: item.updated_at,
         _totalCount: count || 0

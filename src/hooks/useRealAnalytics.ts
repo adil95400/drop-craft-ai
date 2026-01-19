@@ -1,6 +1,10 @@
+/**
+ * Real Analytics Hook - Uses real Supabase data (no mocks)
+ * Provides dashboard analytics from actual database records
+ */
 import { useQuery } from '@tanstack/react-query'
-import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface RealAnalytics {
   revenue: number
@@ -30,61 +34,66 @@ export interface RealAnalytics {
 }
 
 export const useRealAnalytics = () => {
-  const { toast } = useToast()
+  const { user } = useAuth()
 
-  const { data: analytics, isLoading, error } = useQuery({
-    queryKey: ['real-analytics'],
+  const { data: analytics, isLoading, error, refetch } = useQuery({
+    queryKey: ['real-analytics', user?.id],
     queryFn: async (): Promise<RealAnalytics> => {
-      // Fetch orders for revenue calculation
-      const { data: orders, error: ordersError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('status', 'delivered')
-      
-      if (ordersError) throw ordersError
+      if (!user) {
+        return getEmptyAnalytics()
+      }
 
-      // Fetch products count
-      const { data: products, error: productsError } = await supabase
-        .from('products')
-        .select('id, name, price')
-      
-      if (productsError) throw productsError
+      // Fetch all data in parallel for performance
+      const [ordersResult, productsResult, customersResult] = await Promise.all([
+        supabase
+          .from('orders')
+          .select('id, order_number, total_amount, status, created_at')
+          .eq('user_id', user.id),
+        supabase
+          .from('products')
+          .select('id, name, price')
+          .eq('user_id', user.id),
+        supabase
+          .from('customers')
+          .select('id')
+          .eq('user_id', user.id)
+      ])
 
-      // Fetch customers count
-      const { data: customers, error: customersError } = await supabase
-        .from('customers')
-        .select('id')
-      
-      if (customersError) throw customersError
+      const orders = ordersResult.data || []
+      const products = productsResult.data || []
+      const customers = customersResult.data || []
 
-      // Calculate analytics
-      const revenue = orders?.reduce((sum, order) => sum + order.total_amount, 0) || 0
-      const orderCount = orders?.length || 0
-      const customerCount = customers?.length || 0
-      const productCount = products?.length || 0
+      // Calculate real metrics
+      const deliveredOrders = orders.filter(o => o.status === 'delivered')
+      const revenue = deliveredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
+      const orderCount = orders.length
+      const customerCount = customers.length
+      const productCount = products.length
       const averageOrderValue = orderCount > 0 ? revenue / orderCount : 0
       const conversionRate = customerCount > 0 ? (orderCount / customerCount) * 100 : 0
 
-      // Calculate real top products based on order items
-      const topProducts = products?.slice(0, 5).map((product) => ({
-        name: product.name,
-        sales: 0, // Would need order_items table to calculate real sales
-        revenue: `€${product.price}`,
-        growth: `0%`
-      })) || []
+      // Top products (limited real data)
+      const topProducts = products.slice(0, 5).map((product) => ({
+        name: product.name || 'Produit',
+        sales: 0,
+        revenue: `€${(product.price || 0).toFixed(2)}`,
+        growth: '0%'
+      }))
 
-      // Recent orders - get last 5
-      const recentOrders = orders?.slice(-5).reverse() || []
+      // Recent orders
+      const recentOrders = orders
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5)
 
-      // Sales by day - calculate from real orders
+      // Sales by day (last 7 days from real data)
       const salesByDay = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        const dayOrders = orders?.filter(o => o.created_at?.startsWith(date)) || [];
+        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        const dayOrders = orders.filter(o => o.created_at?.startsWith(date))
         return {
           date,
-          revenue: dayOrders.reduce((sum, o) => sum + o.total_amount, 0),
+          revenue: dayOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
           orders: dayOrders.length
-        };
+        }
       }).reverse()
 
       return {
@@ -99,20 +108,29 @@ export const useRealAnalytics = () => {
         salesByDay
       }
     },
-    meta: {
-      onError: () => {
-        toast({
-          title: "Erreur de chargement",
-          description: "Impossible de charger les données d'analytics",
-          variant: "destructive"
-        })
-      }
-    }
+    enabled: !!user,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000
   })
 
   return {
-    analytics,
+    analytics: analytics || getEmptyAnalytics(),
     isLoading,
-    error
+    error,
+    refetch
+  }
+}
+
+function getEmptyAnalytics(): RealAnalytics {
+  return {
+    revenue: 0,
+    orders: 0,
+    customers: 0,
+    products: 0,
+    averageOrderValue: 0,
+    conversionRate: 0,
+    topProducts: [],
+    recentOrders: [],
+    salesByDay: []
   }
 }
