@@ -146,48 +146,60 @@ export const useCanvaIntegration = () => {
     }
   }
 
+  const getAppOrigin = (): string => {
+    // In Lovable preview, the iframe origin can be *.lovableproject.com while the user-facing
+    // URL is *.lovable.app. Canva redirect URIs must match exactly what is configured.
+    try {
+      const ref = document.referrer
+      if (ref) {
+        const refOrigin = new URL(ref).origin
+        if (refOrigin && refOrigin !== window.location.origin) return refOrigin
+      }
+    } catch {
+      // ignore
+    }
+    return window.location.origin
+  }
+
   const connectCanva = async () => {
     setIsConnecting(true)
     try {
-      const redirectUri = `${window.location.origin}/tools/canva-callback`
-      
+      const appOrigin = getAppOrigin()
+      const redirectUri = `${appOrigin}/tools/canva-callback`
+
       const { data, error } = await supabase.functions.invoke('canva-oauth', {
-        body: { 
+        body: {
           action: 'initiate',
-          redirect_uri: redirectUri
-        }
+          redirect_uri: redirectUri,
+        },
       })
 
       if (error) throw error
 
       // Edge function returns auth_url (snake_case)
       const authUrl = data?.auth_url || data?.authUrl
-      
+
       if (authUrl) {
-        const popup = window.open(
-          authUrl,
-          'canva-auth',
-          'width=600,height=700,scrollbars=yes,resizable=yes'
-        )
+        const popup = window.open(authUrl, 'canva-auth', 'width=600,height=700,scrollbars=yes,resizable=yes')
 
         const handleMessage = async (event: MessageEvent) => {
           if (event.data?.type === 'canva-oauth-callback') {
             window.removeEventListener('message', handleMessage)
             if (popup) popup.close()
-            
+
             if (event.data.success) {
               queryClient.invalidateQueries({ queryKey: ['canva-integration'] })
               setIsConnecting(false)
               toast({
-                title: "Connexion réussie",
-                description: "Canva connecté avec succès",
+                title: 'Connexion réussie',
+                description: 'Canva connecté avec succès',
               })
             } else {
               setIsConnecting(false)
               toast({
-                title: "Erreur",
-                description: event.data.error || "Échec de la connexion",
-                variant: "destructive"
+                title: 'Erreur',
+                description: event.data.error || 'Échec de la connexion',
+                variant: 'destructive',
               })
             }
           }
@@ -200,9 +212,9 @@ export const useCanvaIntegration = () => {
           if (isConnecting) {
             setIsConnecting(false)
             toast({
-              title: "Timeout",
-              description: "La connexion a expiré. Veuillez réessayer.",
-              variant: "destructive"
+              title: 'Timeout',
+              description: 'La connexion a expiré. Veuillez réessayer.',
+              variant: 'destructive',
             })
           }
         }, 120000)
@@ -213,9 +225,9 @@ export const useCanvaIntegration = () => {
       console.error('Canva connection error:', error)
       setIsConnecting(false)
       toast({
-        title: "Erreur de connexion",
-        description: error instanceof Error ? error.message : "Impossible de se connecter à Canva",
-        variant: "destructive"
+        title: 'Erreur de connexion',
+        description: error instanceof Error ? error.message : 'Impossible de se connecter à Canva',
+        variant: 'destructive',
       })
     }
   }

@@ -79,11 +79,14 @@ export default function CanvaOAuthCallback() {
   // Notifier la fenêtre parent
   const notifyParent = (success: boolean, error?: string) => {
     if (window.opener) {
-      window.opener.postMessage({
-        type: 'canva-oauth-callback',
-        success,
-        error
-      }, window.location.origin);
+      window.opener.postMessage(
+        {
+          type: 'canva-oauth-callback',
+          success,
+          error,
+        },
+        '*'
+      );
     }
   };
 
