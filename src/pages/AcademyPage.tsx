@@ -7,6 +7,7 @@ import { academyService } from '@/services/academy.service';
 import { CourseCard } from '@/components/academy/CourseCard';
 import { ProgressDashboard } from '@/components/academy/ProgressDashboard';
 import { useAcademyProgress } from '@/hooks/useAcademyProgress';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function AcademyPage() {
   const [activeTab, setActiveTab] = useState('courses');
@@ -24,36 +25,13 @@ export default function AcademyPage() {
         <meta name="description" content="Formations complètes en dropshipping, e-commerce et automatisation. Cours vidéo, guides pratiques et webinars exclusifs." />
       </Helmet>
 
-      <div className="container mx-auto py-8 px-4 space-y-8">
-        <div className="text-center space-y-4 py-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <GraduationCap className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">ShopOpti Academy</span>
-          </div>
-          
-          <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary via-purple-500 to-blue-500 bg-clip-text text-transparent">
-            Devenez Expert du Dropshipping
-          </h1>
-          
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Formations complètes, quiz interactifs et certifications pour réussir votre business
-          </p>
-
-          <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto pt-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">{courses.length}</div>
-              <div className="text-sm text-muted-foreground">Cours disponibles</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">{stats?.completedCourses || 0}</div>
-              <div className="text-sm text-muted-foreground">Cours complétés</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">{stats?.totalPoints || 0}</div>
-              <div className="text-sm text-muted-foreground">Points XP</div>
-            </div>
-          </div>
-        </div>
+      <ChannablePageWrapper
+        title="Devenez Expert du Dropshipping"
+        subtitle="ShopOpti Academy"
+        description="Formations complètes, quiz interactifs et certifications pour réussir votre business"
+        heroImage="ai"
+        badge={{ label: "Formation", icon: GraduationCap }}
+      >
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
@@ -105,7 +83,7 @@ export default function AcademyPage() {
             <ProgressDashboard />
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }

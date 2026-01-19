@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Zap, Clock, TrendingUp, DollarSign, Users, Plus } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const FlashSalesPage: React.FC = () => {
   const flashSales = [
@@ -43,19 +44,19 @@ const FlashSalesPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Ventes Flash</h1>
-          <p className="text-muted-foreground">
-            Créez l'urgence et boostez vos ventes
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Ventes Flash"
+      subtitle="Marketing"
+      description="Créez l'urgence et boostez vos ventes avec des offres limitées"
+      heroImage="marketing"
+      badge={{ label: "Flash", icon: Zap }}
+      actions={
         <Button>
           <Plus className="mr-2 h-4 w-4" />
           Nouvelle vente flash
         </Button>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -314,7 +315,7 @@ const FlashSalesPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 

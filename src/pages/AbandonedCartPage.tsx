@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShoppingCart, Mail, DollarSign, TrendingUp, Clock, Target } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const AbandonedCartPage: React.FC = () => {
   const abandonedCarts = [
@@ -37,19 +38,19 @@ const AbandonedCartPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Paniers abandonnés</h1>
-          <p className="text-muted-foreground">
-            Récupérez les ventes perdues avec des campagnes automatiques
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Paniers abandonnés"
+      subtitle="Marketing"
+      description="Récupérez les ventes perdues avec des campagnes automatiques"
+      heroImage="marketing"
+      badge={{ label: "Recovery", icon: ShoppingCart }}
+      actions={
         <Button>
           <Mail className="mr-2 h-4 w-4" />
           Nouvelle campagne
         </Button>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -355,7 +356,7 @@ const AbandonedCartPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 

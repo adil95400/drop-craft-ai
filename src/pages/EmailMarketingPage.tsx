@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const EmailMarketingPage: React.FC = () => {
   const { campaigns, isLoading, createCampaign, updateCampaign, deleteCampaign, isCreating } = useMarketingCampaigns();
@@ -77,15 +78,13 @@ const EmailMarketingPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Email Marketing</h1>
-          <p className="text-muted-foreground">
-            Créez et gérez vos campagnes email
-          </p>
-        </div>
-        
+    <ChannablePageWrapper
+      title="Email Marketing"
+      subtitle="Marketing"
+      description="Créez et gérez vos campagnes email avec suivi des performances"
+      heroImage="marketing"
+      badge={{ label: "Automation", icon: Mail }}
+      actions={
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -129,7 +128,8 @@ const EmailMarketingPage: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      }
+    >
 
       {/* Stats Cards - Real Data */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -348,7 +348,7 @@ const EmailMarketingPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Link2, DollarSign, TrendingUp, Award, BarChart3 } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const AffiliateMarketingPage: React.FC = () => {
   const affiliates = [
@@ -40,19 +41,19 @@ const AffiliateMarketingPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Marketing d'affiliation</h1>
-          <p className="text-muted-foreground">
-            Gérez votre programme d'affiliés
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Marketing d'affiliation"
+      subtitle="Marketing"
+      description="Gérez votre programme d'affiliés et suivez les performances"
+      heroImage="marketing"
+      badge={{ label: "Affiliates", icon: Users }}
+      actions={
         <Button>
           <Users className="mr-2 h-4 w-4" />
           Inviter un affilié
         </Button>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -280,7 +281,7 @@ const AffiliateMarketingPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 

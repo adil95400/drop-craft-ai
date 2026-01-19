@@ -1,5 +1,7 @@
 import { Helmet } from 'react-helmet-async'
+import { Calendar } from 'lucide-react'
 import { MarketingCalendar } from '@/components/marketing/MarketingCalendar'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function MarketingCalendarPage() {
   return (
@@ -9,9 +11,15 @@ export default function MarketingCalendarPage() {
         <meta name="description" content="Planifiez et organisez vos campagnes marketing avec notre calendrier interactif avancé." />
       </Helmet>
 
-      <div className="container mx-auto p-6">
+      <ChannablePageWrapper
+        title="Calendrier Marketing"
+        subtitle="Marketing"
+        description="Planifiez et organisez vos campagnes marketing avec notre calendrier interactif"
+        heroImage="marketing"
+        badge={{ label: "Planning", icon: Calendar }}
+      >
         <MarketingCalendar />
-      </div>
+      </ChannablePageWrapper>
     </>
   )
 }

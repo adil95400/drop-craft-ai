@@ -9,6 +9,7 @@ import { useAutomationWorkflows, useAutomationStats } from '@/hooks/useAutomatio
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function AutomationPage() {
   const [activeTab, setActiveTab] = useState('list');
@@ -43,22 +44,19 @@ export default function AutomationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-4 sm:p-6 space-y-4 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="space-y-1 sm:space-y-2">
-            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Automation
-            </h1>
-            <p className="text-sm sm:text-lg text-muted-foreground">
-              Automatisez vos tâches et workflows
-            </p>
-          </div>
-          <Button onClick={() => refetch()} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
-          </Button>
-        </div>
+    <ChannablePageWrapper
+      title="Automation"
+      subtitle="Workflows"
+      description="Automatisez vos tâches et workflows pour gagner du temps"
+      heroImage="ai"
+      badge={{ label: "AI Powered", icon: Zap }}
+      actions={
+        <Button onClick={() => refetch()} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Actualiser
+        </Button>
+      }
+    >
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -316,7 +314,6 @@ export default function AutomationPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+      </ChannablePageWrapper>
   );
 }

@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   downloadPDFReport, 
   generateSalesReport, 
@@ -296,12 +297,13 @@ export default function Reports() {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Centre de Rapports</h1>
-          <p className="text-muted-foreground">Générez et gérez vos rapports d'activité</p>
-        </div>
+    <ChannablePageWrapper
+      title="Centre de Rapports"
+      subtitle="Analytics"
+      description="Générez et gérez vos rapports d'activité avec exports PDF et tableaux détaillés"
+      heroImage="analytics"
+      badge={{ label: "Export PDF", icon: FileText }}
+      actions={
         <Button className="gap-2" onClick={handleGenerateReport} disabled={isGenerating}>
           {isGenerating ? (
             <>
@@ -315,7 +317,8 @@ export default function Reports() {
             </>
           )}
         </Button>
-      </div>
+      }
+    >
 
       <Tabs defaultValue="generate" className="w-full">
         <TabsList>
@@ -597,6 +600,6 @@ export default function Reports() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }
