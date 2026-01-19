@@ -3846,6 +3846,6 @@ export default function ChannableStyleSuppliersPage() {
           }}
         />
       )}
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }
