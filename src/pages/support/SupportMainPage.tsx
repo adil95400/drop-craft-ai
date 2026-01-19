@@ -249,6 +249,9 @@ export default function SupportMainPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab] = useState('faq');
 
+  // Hooks
+  const { tickets: supportTickets, isLoadingTickets, createTicket, isCreatingTicket } = useSupportTickets();
+
   const categories = ['all', 'Produits', 'Automation', 'Inventory', 'Analytics', 'Intégrations'];
 
   const filteredFAQ = useMemo(() => {
@@ -540,9 +543,9 @@ export default function SupportMainPage() {
                                   </Badge>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                                  <span className="font-mono">#{ticket.id}</span>
-                                  <span>Créé le {ticket.created.toLocaleDateString('fr-FR')}</span>
-                                  <span>MAJ: {ticket.lastUpdate.toLocaleDateString('fr-FR')}</span>
+                                  <span className="font-mono">#{ticket.id.slice(0, 8)}</span>
+                                  <span>Créé le {new Date(ticket.created_at).toLocaleDateString('fr-FR')}</span>
+                                  <span>MAJ: {new Date(ticket.updated_at).toLocaleDateString('fr-FR')}</span>
                                 </div>
                               </div>
                             </div>
