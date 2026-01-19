@@ -449,31 +449,59 @@ export default function AutoDSImportPage() {
                         </div>
                         
                         {/* Details */}
-                        <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex-1 min-w-0 space-y-2">
                           {item.preview ? (
                             <>
-                              <h4 className="font-medium truncate">{item.preview.title}</h4>
-                              <div className="flex items-center gap-3 text-sm">
+                              <h4 className="font-medium line-clamp-2 text-sm leading-snug">{item.preview.title}</h4>
+                              <div className="flex flex-wrap items-center gap-2 text-sm">
                                 <Badge className={getPlatformColor(item.preview.platform_detected)}>
                                   {getPlatformName(item.preview.platform_detected)}
                                 </Badge>
-                                <span className="text-muted-foreground">
-                                  Prix: {(item.preview.price ?? 0).toFixed(2)} {item.preview.currency}
-                                </span>
-                                <span className="text-green-600 font-medium">
-                                  → {(item.preview.suggested_price ?? 0).toFixed(2)} €
-                                </span>
+                                <div className="flex items-center gap-2 bg-muted/50 px-2 py-1 rounded-md">
+                                  <span className="text-muted-foreground text-xs">Coût:</span>
+                                  <span className="font-medium text-orange-600">
+                                    {(item.preview.price ?? 0).toFixed(2)} {item.preview.currency}
+                                  </span>
+                                </div>
+                                <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                                <div className="flex items-center gap-2 bg-green-500/10 px-2 py-1 rounded-md">
+                                  <span className="text-green-700 text-xs">Vente:</span>
+                                  <span className="font-bold text-green-600">
+                                    {(item.preview.suggested_price ?? 0).toFixed(2)} €
+                                  </span>
+                                </div>
+                                {item.preview.profit_margin > 0 && (
+                                  <Badge variant="outline" className="text-green-600 border-green-500/30">
+                                    +{item.preview.profit_margin}% marge
+                                  </Badge>
+                                )}
                               </div>
-                              <div className="flex gap-2 text-xs text-muted-foreground">
-                                <span>{item.preview.images?.length || 0} images</span>
-                                {item.preview.variants && (
-                                  <span>• {item.preview.variants.length} variantes</span>
+                              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <ImageIcon className="h-3 w-3" />
+                                  {item.preview.images?.length || 0} images
+                                </span>
+                                {item.preview.variants && item.preview.variants.length > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    <Package className="h-3 w-3" />
+                                    {item.preview.variants.length} variantes
+                                  </span>
+                                )}
+                                {item.preview.videos && item.preview.videos.length > 0 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    🎬 {item.preview.videos.length} vidéo{item.preview.videos.length > 1 ? 's' : ''}
+                                  </Badge>
+                                )}
+                                {item.preview.brand && (
+                                  <span className="text-primary">
+                                    Marque: {item.preview.brand}
+                                  </span>
                                 )}
                               </div>
                             </>
                           ) : item.error ? (
                             <div className="flex items-center gap-2 text-red-500">
-                              <AlertCircle className="h-4 w-4" />
+                              <AlertCircle className="h-4 w-4 flex-shrink-0" />
                               <span className="text-sm">{item.error}</span>
                             </div>
                           ) : (
@@ -482,12 +510,12 @@ export default function AutoDSImportPage() {
                         </div>
                         
                         {/* Actions */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {item.status === 'success' && (
                             <Button 
                               size="sm" 
                               onClick={() => importFromUrl(item)}
-                              className="bg-gradient-to-r from-green-500 to-emerald-600"
+                              className="bg-gradient-to-r from-green-500 to-emerald-600 shadow-md hover:shadow-lg transition-shadow"
                             >
                               <ShoppingCart className="h-4 w-4 mr-1" />
                               Importer
@@ -498,6 +526,7 @@ export default function AutoDSImportPage() {
                             variant="ghost" 
                             onClick={() => removeFromUrlQueue(item.id)}
                             aria-label="Supprimer de la file"
+                            className="text-muted-foreground hover:text-destructive"
                           >
                             <X className="h-4 w-4" />
                           </Button>
