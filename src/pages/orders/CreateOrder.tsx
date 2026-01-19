@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChannableLayout } from '@/components/channable/navigation/ChannableLayout';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
-import { BackButton } from '@/components/navigation/BackButton';
 import { cn } from '@/lib/utils';
 
 interface OrderItem {
@@ -345,57 +345,43 @@ export default function CreateOrder() {
         <meta name="description" content="Créez une nouvelle commande manuelle avec calculs automatiques" />
       </Helmet>
 
-      <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            <BackButton to="/orders" label="Retour aux commandes" />
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-primary" />
-                  </div>
-                  Nouvelle commande
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  Créez une commande manuelle avec calculs automatiques
-                </p>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={() => toast.info('Brouillon sauvegardé')}
-                  disabled={isSubmitting}
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Brouillon
-                </Button>
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="min-w-[140px]"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Création...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4 mr-2" />
-                      Créer
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </motion.div>
+      <ChannablePageWrapper
+        title="Nouvelle commande"
+        subtitle="Création manuelle"
+        description="Créez une commande manuelle avec calculs automatiques"
+        heroImage="orders"
+        badge={{ label: 'Nouvelle', icon: Plus }}
+        actions={
+          <>
+            <Button 
+              variant="outline" 
+              onClick={() => toast.info('Brouillon sauvegardé')}
+              disabled={isSubmitting}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Brouillon
+            </Button>
+            <Button 
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="min-w-[140px]"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Création...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Créer
+                </>
+              )}
+            </Button>
+          </>
+        }
+      >
+        <div className="max-w-7xl mx-auto">
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1141,6 +1127,7 @@ export default function CreateOrder() {
             </div>
           </form>
         </div>
+      </ChannablePageWrapper>
     </ChannableLayout>
   );
 }

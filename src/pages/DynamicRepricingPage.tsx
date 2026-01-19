@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDynamicRepricing } from '@/hooks/useMarketplacePhase2';
@@ -111,15 +112,14 @@ export default function DynamicRepricingPage() {
         <meta name="description" content="Optimisez vos prix automatiquement avec notre moteur de repricing intelligent" />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">
-            📊 Repricing Dynamique
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Optimisez vos prix automatiquement en fonction de la concurrence et des marges
-          </p>
-        </div>
+      <ChannablePageWrapper
+        title="Repricing Dynamique"
+        subtitle="Automatisation des prix"
+        description="Optimisez vos prix automatiquement en fonction de la concurrence et des marges"
+        heroImage="automation"
+        badge={{ label: 'Repricing IA', icon: TrendingUp }}
+      >
+        <div className="space-y-6">
 
         {/* KPIs Dashboard */}
         {dashboard && (
@@ -378,7 +378,8 @@ export default function DynamicRepricingPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+        </div>
+      </ChannablePageWrapper>
 
       {/* Create Rule Modal */}
       <Dialog open={showCreateRuleModal} onOpenChange={setShowCreateRuleModal}>

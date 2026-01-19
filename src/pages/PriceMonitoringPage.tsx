@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -199,18 +200,16 @@ export default function PriceMonitoringPage() {
         <meta name="description" content="Surveillance automatique des prix concurrents et ajustement dynamique pour maximiser vos marges" />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Price Monitoring & Auto-Pricing</h1>
-            <p className="text-muted-foreground mt-2">
-              Surveillez les prix concurrents et ajustez automatiquement vos tarifs
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-4">
+      <ChannablePageWrapper
+        title="Price Monitoring & Auto-Pricing"
+        subtitle="Surveillance automatique"
+        description="Surveillez les prix concurrents et ajustez automatiquement vos tarifs"
+        heroImage="analytics"
+        badge={{ label: 'Auto-Pricing', icon: TrendingUp }}
+        actions={
+          <>
             <div className="flex items-center gap-2">
-              <Label htmlFor="auto-pricing">Auto-Pricing</Label>
+              <Label htmlFor="auto-pricing" className="text-sm">Auto-Pricing</Label>
               <Switch 
                 id="auto-pricing"
                 checked={autoPricingEnabled}
@@ -229,8 +228,10 @@ export default function PriceMonitoringPage() {
               <Settings className="h-4 w-4 mr-2" />
               Configurer
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      >
+        <div className="space-y-6">
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -530,7 +531,8 @@ export default function PriceMonitoringPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+        </div>
+      </ChannablePageWrapper>
 
       {/* Config Modal */}
       <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>

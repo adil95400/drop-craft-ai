@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,20 +145,13 @@ const AIAssistantPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Assistant IA</h1>
-          <p className="text-muted-foreground">
-            Votre assistant intelligent pour optimiser votre e-commerce
-          </p>
-        </div>
-        <Badge variant="secondary" className="gap-1">
-          <Sparkles className="h-3 w-3" />
-          IA Activée
-        </Badge>
-      </div>
-
+    <ChannablePageWrapper
+      title="Assistant IA"
+      subtitle="Intelligence e-commerce"
+      description="Votre assistant intelligent pour optimiser votre e-commerce"
+      heroImage="ai"
+      badge={{ label: 'IA Activée', icon: Sparkles }}
+    >
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -295,7 +289,7 @@ const AIAssistantPage: React.FC = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 
