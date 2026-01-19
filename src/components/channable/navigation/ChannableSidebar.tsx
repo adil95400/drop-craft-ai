@@ -540,7 +540,7 @@ const ChannableFooter = memo(({ collapsed }: { collapsed: boolean }) => {
                 {profile?.full_name || 'Utilisateur'}
               </p>
               <button 
-                onClick={(e) => { e.stopPropagation(); navigate('/subscription-dashboard') }}
+                onClick={(e) => { e.stopPropagation(); navigate('/dashboard/subscription') }}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                 aria-label="Voir mon abonnement"
               >
