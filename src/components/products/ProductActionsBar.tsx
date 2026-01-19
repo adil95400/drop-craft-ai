@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { 
   Search, Filter, SortAsc, SortDesc, Grid, List, Download, Upload, Plus, X, 
-  RefreshCw, Sparkles, Image, AlertTriangle, ChevronDown
+  RefreshCw, Sparkles, AlertTriangle, ChevronDown, ArrowUpDown
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -16,6 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 
 interface ProductActionsBarProps {
   searchTerm: string
@@ -40,13 +42,13 @@ interface ProductActionsBarProps {
 const SORT_OPTIONS = [
   { value: 'created_at_desc', label: 'Plus récent', icon: SortDesc },
   { value: 'created_at_asc', label: 'Plus ancien', icon: SortAsc },
-  { value: 'name_asc', label: 'Nom A-Z', icon: SortAsc },
-  { value: 'name_desc', label: 'Nom Z-A', icon: SortDesc },
-  { value: 'price_asc', label: 'Prix croissant', icon: SortAsc },
-  { value: 'price_desc', label: 'Prix décroissant', icon: SortDesc },
+  { value: 'name_asc', label: 'Nom A → Z', icon: SortAsc },
+  { value: 'name_desc', label: 'Nom Z → A', icon: SortDesc },
+  { value: 'price_asc', label: 'Prix ↑', icon: SortAsc },
+  { value: 'price_desc', label: 'Prix ↓', icon: SortDesc },
   { value: 'stock_quantity_asc', label: 'Stock faible', icon: AlertTriangle },
   { value: 'stock_quantity_desc', label: 'Stock élevé', icon: SortDesc },
-  { value: 'ai_score_desc', label: 'Meilleur score IA', icon: Sparkles },
+  { value: 'ai_score_desc', label: 'Meilleur score', icon: Sparkles },
   { value: 'ai_score_asc', label: 'À optimiser', icon: AlertTriangle },
 ]
 
@@ -78,39 +80,43 @@ export function ProductActionsBar({
   isLoading = false
 }: ProductActionsBarProps) {
   return (
-    <div className="space-y-4 animate-in slide-in-from-top duration-300">
-      {/* Top Actions */}
+    <motion.div 
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-4"
+    >
+      {/* Main Actions Row */}
       <div className="flex flex-col lg:flex-row justify-between gap-4 items-stretch lg:items-center">
         {/* Search & Filters */}
-        <div className="flex flex-1 items-center gap-2 flex-wrap">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <div className="flex flex-1 items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[220px] max-w-md group">
+            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 transition-colors group-focus-within:text-primary" />
             <Input
-              placeholder="Rechercher produits, SKU..."
+              placeholder="Rechercher produits, SKU, catégorie..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 bg-background/50 backdrop-blur border-border/50 focus:border-primary/50 transition-colors"
+              className="pl-10 pr-10 h-10 bg-background/80 backdrop-blur border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all rounded-xl"
             />
             {searchTerm && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-foreground"
                 onClick={() => onSearchChange('')}
               >
-                <X className="h-3 w-3" />
+                <X className="h-4 w-4" />
               </Button>
             )}
           </div>
           
-          {onCategoryChange && (
+          {onCategoryChange && categories.length > 0 && (
             <Select defaultValue="all" onValueChange={onCategoryChange}>
-              <SelectTrigger className="w-[160px] bg-background/50 backdrop-blur border-border/50">
-                <Filter className="h-4 w-4 mr-2 shrink-0" />
+              <SelectTrigger className="w-[160px] h-10 bg-background/80 backdrop-blur border-border/50 rounded-xl">
+                <Filter className="h-4 w-4 mr-2 shrink-0 text-muted-foreground" />
                 <SelectValue placeholder="Catégorie" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes catégories</SelectItem>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">Toutes</SelectItem>
                 {categories.map(cat => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
@@ -120,10 +126,10 @@ export function ProductActionsBar({
           
           {onStatusChange && (
             <Select defaultValue="all" onValueChange={onStatusChange}>
-              <SelectTrigger className="w-[150px] bg-background/50 backdrop-blur border-border/50">
+              <SelectTrigger className="w-[140px] h-10 bg-background/80 backdrop-blur border-border/50 rounded-xl">
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
-              <SelectContent className="z-[100] bg-popover">
+              <SelectContent className="z-[100] rounded-xl">
                 {STATUS_OPTIONS.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -136,13 +142,13 @@ export function ProductActionsBar({
           {onSortChange && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 bg-background/50 backdrop-blur border-border/50">
-                  <SortAsc className="h-4 w-4" />
-                  Trier
+                <Button variant="outline" size="sm" className="h-10 gap-2 bg-background/80 backdrop-blur border-border/50 rounded-xl px-4">
+                  <ArrowUpDown className="h-4 w-4" />
+                  <span className="hidden sm:inline">Trier</span>
                   <ChevronDown className="h-3 w-3 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[200px]">
+              <DropdownMenuContent align="start" className="w-[200px] rounded-xl">
                 <DropdownMenuLabel>Trier par</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
@@ -152,7 +158,7 @@ export function ProductActionsBar({
                       <DropdownMenuItem 
                         key={option.value} 
                         onClick={() => onSortChange(option.value)}
-                        className="gap-2"
+                        className="gap-3 cursor-pointer"
                       >
                         <Icon className="h-4 w-4 text-muted-foreground" />
                         {option.label}
@@ -168,15 +174,18 @@ export function ProductActionsBar({
         {/* Actions */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* View Toggle */}
-          <TooltipProvider>
-            <div className="flex border border-border/50 rounded-lg overflow-hidden bg-background/50 backdrop-blur">
+          <TooltipProvider delayDuration={300}>
+            <div className="flex border border-border/50 rounded-xl overflow-hidden bg-background/80 backdrop-blur">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => onViewModeChange('grid')}
-                    className="rounded-none border-0"
+                    className={cn(
+                      "rounded-none h-10 w-10 border-0",
+                      viewMode === 'grid' && "shadow-sm"
+                    )}
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
@@ -190,7 +199,10 @@ export function ProductActionsBar({
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => onViewModeChange('list')}
-                    className="rounded-none border-0"
+                    className={cn(
+                      "rounded-none h-10 w-10 border-0",
+                      viewMode === 'list' && "shadow-sm"
+                    )}
                   >
                     <List className="h-4 w-4" />
                   </Button>
@@ -202,7 +214,7 @@ export function ProductActionsBar({
 
           {/* Refresh Button */}
           {onRefresh && (
-            <TooltipProvider>
+            <TooltipProvider delayDuration={300}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button 
@@ -210,9 +222,9 @@ export function ProductActionsBar({
                     size="icon"
                     onClick={onRefresh}
                     disabled={isLoading}
-                    className="bg-background/50 backdrop-blur border-border/50 hover:bg-accent/50"
+                    className="h-10 w-10 bg-background/80 backdrop-blur border-border/50 hover:bg-accent/50 rounded-xl"
                   >
-                    <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Actualiser</TooltipContent>
@@ -224,57 +236,67 @@ export function ProductActionsBar({
             variant="outline" 
             size="sm" 
             onClick={onImport}
-            className="bg-background/50 backdrop-blur border-border/50 hover:bg-accent/50"
+            className="h-10 bg-background/80 backdrop-blur border-border/50 hover:bg-accent/50 rounded-xl gap-2"
           >
-            <Upload className="h-4 w-4 mr-2" />
-            Importer
+            <Upload className="h-4 w-4" />
+            <span className="hidden sm:inline">Importer</span>
           </Button>
           
           <Button 
             variant="outline" 
             size="sm" 
             onClick={onExport}
-            className="bg-background/50 backdrop-blur border-border/50 hover:bg-accent/50"
+            className="h-10 bg-background/80 backdrop-blur border-border/50 hover:bg-accent/50 rounded-xl gap-2"
           >
-            <Download className="h-4 w-4 mr-2" />
-            Exporter
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Exporter</span>
           </Button>
           
           <Button 
             onClick={onCreateNew}
-            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+            className="h-10 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 rounded-xl gap-2"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nouveau</span>
           </Button>
         </div>
       </div>
       
       {/* Results Info */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-4">
-          <span className="font-medium">
+          <span className="text-sm font-medium text-foreground">
             {totalCount.toLocaleString()} produit{totalCount > 1 ? 's' : ''}
           </span>
           {selectedCount > 0 && (
-            <Badge variant="secondary" className="bg-primary/10 text-primary">
-              {selectedCount} sélectionné{selectedCount > 1 ? 's' : ''}
-            </Badge>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <Badge variant="secondary" className="bg-primary/10 text-primary font-medium">
+                {selectedCount} sélectionné{selectedCount > 1 ? 's' : ''}
+              </Badge>
+            </motion.div>
           )}
         </div>
         
         {hasActiveFilters && onResetFilters && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onResetFilters}
-            className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
           >
-            <X className="h-4 w-4" />
-            Réinitialiser les filtres
-          </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onResetFilters}
+              className="gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+            >
+              <X className="h-4 w-4" />
+              Réinitialiser les filtres
+            </Button>
+          </motion.div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

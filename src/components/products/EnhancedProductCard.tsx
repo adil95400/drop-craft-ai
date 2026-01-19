@@ -21,16 +21,15 @@ import {
   Copy, 
   Upload, 
   TrendingUp, 
-  TrendingDown,
   Star,
   Sparkles,
   AlertTriangle,
   CheckCircle,
-  ShoppingCart,
-  ExternalLink
+  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { motion } from 'framer-motion';
 
 interface EnhancedProductCardProps {
   product: UnifiedProduct;
@@ -56,6 +55,8 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
   showSelection = true
 }: EnhancedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const imageUrl = product.image_url;
   const aiScore = (product as any).ai_score || Math.floor(Math.random() * 40) + 60;
@@ -72,279 +73,339 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
 
   const getStockStatus = () => {
     const stock = product.stock_quantity || 0;
-    if (stock > 50) return { label: 'En stock', color: 'bg-green-500', icon: CheckCircle };
-    if (stock > 10) return { label: 'Limité', color: 'bg-yellow-500', icon: AlertTriangle };
-    if (stock > 0) return { label: 'Faible', color: 'bg-orange-500', icon: AlertTriangle };
-    return { label: 'Rupture', color: 'bg-red-500', icon: AlertTriangle };
+    if (stock > 50) return { label: 'En stock', color: 'bg-emerald-500', textColor: 'text-emerald-600' };
+    if (stock > 10) return { label: 'Limité', color: 'bg-amber-500', textColor: 'text-amber-600' };
+    if (stock > 0) return { label: 'Faible', color: 'bg-orange-500', textColor: 'text-orange-600' };
+    return { label: 'Rupture', color: 'bg-red-500', textColor: 'text-red-600' };
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
-  };
-
-  const getScoreLabel = (score: number) => {
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Bon';
-    return 'À optimiser';
+  const getScoreConfig = (score: number) => {
+    if (score >= 80) return { color: 'text-emerald-500', bg: 'bg-emerald-500', label: 'Excellent', gradient: 'from-emerald-500 to-emerald-400' };
+    if (score >= 60) return { color: 'text-amber-500', bg: 'bg-amber-500', label: 'Bon', gradient: 'from-amber-500 to-amber-400' };
+    return { color: 'text-red-500', bg: 'bg-red-500', label: 'À optimiser', gradient: 'from-red-500 to-red-400' };
   };
 
   const stockStatus = getStockStatus();
-  const StockIcon = stockStatus.icon;
+  const scoreConfig = getScoreConfig(aiScore);
 
   return (
-    <Card 
-      className={cn(
-        "relative group transition-all duration-300 overflow-hidden",
-        "hover:shadow-2xl hover:-translate-y-1",
-        "border-border/50 bg-card",
-        isSelected && "ring-2 ring-primary shadow-lg border-primary/50"
-      )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
     >
-      {/* Badges en haut */}
-      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-        {showSelection && (
-          <div className={cn(
-            "transition-opacity duration-200",
-            isHovered || isSelected ? "opacity-100" : "opacity-0"
-          )}>
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={onSelectChange}
-              className="bg-background/90 shadow-lg border-2 h-5 w-5"
-            />
-          </div>
+      <Card 
+        className={cn(
+          "relative group overflow-hidden transition-all duration-300",
+          "border-border/50 bg-card hover:shadow-2xl hover:shadow-primary/5",
+          isSelected && "ring-2 ring-primary shadow-lg shadow-primary/10 border-primary/50"
         )}
-        
-        {isWinner && (
-          <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white shadow-lg">
-            <Star className="h-3 w-3 mr-1" />
-            Winner
-          </Badge>
-        )}
-        
-        {isTrending && (
-          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
-            <TrendingUp className="h-3 w-3 mr-1" />
-            Trending
-          </Badge>
-        )}
-      </div>
-
-      {/* Menu actions */}
-      <div className="absolute top-2 right-2 z-10">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="secondary" 
-              size="icon" 
-              className="h-8 w-8 bg-background/90 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => onView(product)}>
-              <Eye className="h-4 w-4 mr-2" />
-              Voir détails
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(product)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Modifier
-            </DropdownMenuItem>
-            {onDuplicate && (
-              <DropdownMenuItem onClick={() => onDuplicate(product)}>
-                <Copy className="h-4 w-4 mr-2" />
-                Dupliquer
-              </DropdownMenuItem>
-            )}
-            {onPublish && (
-              <DropdownMenuItem onClick={() => onPublish(product)}>
-                <Upload className="h-4 w-4 mr-2" />
-                Publier sur Shopify
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => onDelete(product.id)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Supprimer
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Image */}
-      <div 
-        className="aspect-square w-full overflow-hidden bg-gradient-to-br from-muted/50 to-muted cursor-pointer relative"
-        onClick={() => onView(product)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package className="h-16 w-16 text-muted-foreground/30" />
-          </div>
-        )}
-        
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        
-        {/* Quick view button */}
-        <Button
-          variant="secondary"
-          size="sm"
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0"
-          onClick={(e) => {
-            e.stopPropagation();
-            onView(product);
-          }}
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          Aperçu rapide
-        </Button>
-      </div>
+        {/* Glow effect on hover */}
+        <div className={cn(
+          "absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity duration-300",
+          isHovered && "opacity-100"
+        )} />
 
-      <CardContent className="p-4 space-y-3">
-        {/* Titre et statut */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 
-            className="font-semibold line-clamp-2 cursor-pointer hover:text-primary transition-colors text-sm leading-tight"
-            onClick={() => onView(product)}
-          >
-            {product.name}
-          </h3>
-          <Badge 
-            variant={product.status === 'active' ? 'default' : 'secondary'}
-            className="shrink-0 text-xs"
-          >
-            {product.status === 'active' ? 'Actif' : 'Inactif'}
-          </Badge>
+        {/* Selection & Badges */}
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+          {showSelection && (
+            <motion.div 
+              initial={false}
+              animate={{ opacity: isHovered || isSelected ? 1 : 0, scale: isHovered || isSelected ? 1 : 0.8 }}
+              className="transition-all"
+            >
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={onSelectChange}
+                className="bg-background/95 shadow-lg border-2 h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+            </motion.div>
+          )}
+          
+          <div className="flex flex-col gap-1.5">
+            {isWinner && (
+              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white shadow-lg border-0 text-[10px] px-2">
+                <Star className="h-3 w-3 mr-1 fill-current" />
+                Winner
+              </Badge>
+            )}
+            
+            {isTrending && (
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg border-0 text-[10px] px-2">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                Tendance
+              </Badge>
+            )}
+          </div>
         </div>
 
-        {/* Prix et Marge */}
-        <div className="flex items-end justify-between">
-          <div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              {product.price.toFixed(2)} €
-            </span>
-            {product.cost_price && (
-              <p className="text-xs text-muted-foreground">
-                Coût: {product.cost_price.toFixed(2)} €
-              </p>
-            )}
-          </div>
+        {/* Actions Menu */}
+        <div className="absolute top-3 right-3 z-10">
+          <motion.div
+            initial={false}
+            animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
+          >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="secondary" 
+                  size="icon" 
+                  className="h-8 w-8 bg-background/95 shadow-lg backdrop-blur-sm border border-border/50"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => onView(product)} className="gap-2">
+                  <Eye className="h-4 w-4" />
+                  Voir détails
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEdit(product)} className="gap-2">
+                  <Edit className="h-4 w-4" />
+                  Modifier
+                </DropdownMenuItem>
+                {onDuplicate && (
+                  <DropdownMenuItem onClick={() => onDuplicate(product)} className="gap-2">
+                    <Copy className="h-4 w-4" />
+                    Dupliquer
+                  </DropdownMenuItem>
+                )}
+                {onPublish && (
+                  <DropdownMenuItem onClick={() => onPublish(product)} className="gap-2">
+                    <Upload className="h-4 w-4" />
+                    Publier
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => onDelete(product.id)}
+                  className="text-destructive focus:text-destructive gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Supprimer
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </motion.div>
+        </div>
+
+        {/* Image Container */}
+        <div 
+          className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted cursor-pointer"
+          onClick={() => onView(product)}
+        >
+          {imageUrl && !imageError ? (
+            <>
+              {!imageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                </div>
+              )}
+              <img
+                src={imageUrl}
+                alt={product.name}
+                className={cn(
+                  "w-full h-full object-cover transition-all duration-500",
+                  isHovered && "scale-110",
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                )}
+                loading="lazy"
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageError(true)}
+              />
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted/30 to-muted/50">
+              <Package className="h-16 w-16 text-muted-foreground/30" />
+            </div>
+          )}
           
-          {margin !== null && (
+          {/* Overlay on hover */}
+          <div className={cn(
+            "absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300",
+            isHovered ? "opacity-100" : "opacity-0"
+          )} />
+          
+          {/* Quick View Button */}
+          <motion.div
+            initial={false}
+            animate={{ 
+              opacity: isHovered ? 1 : 0,
+              y: isHovered ? 0 : 10
+            }}
+            className="absolute bottom-4 left-1/2 -translate-x-1/2"
+          >
+            <Button
+              variant="secondary"
+              size="sm"
+              className="shadow-lg backdrop-blur-sm bg-background/90 border border-border/50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onView(product);
+              }}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Aperçu
+            </Button>
+          </motion.div>
+
+          {/* AI Score Badge */}
+          <div className="absolute bottom-3 right-3">
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <div className={cn(
-                    "text-right px-2 py-1 rounded-md",
-                    margin >= 30 ? "bg-green-500/10" : margin >= 15 ? "bg-yellow-500/10" : "bg-red-500/10"
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/95 shadow-lg backdrop-blur-sm border border-border/50"
                   )}>
-                    <p className={cn(
-                      "text-lg font-bold",
-                      margin >= 30 ? "text-green-600" : margin >= 15 ? "text-yellow-600" : "text-red-600"
-                    )}>
-                      {margin >= 0 ? '+' : ''}{margin}%
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">Marge</p>
+                    <Sparkles className={cn("h-3.5 w-3.5", scoreConfig.color)} />
+                    <span className={cn("text-sm font-bold", scoreConfig.color)}>{aiScore}</span>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p>Profit: {profit?.toFixed(2)} € par vente</p>
+                <TooltipContent side="left">
+                  <p>Score IA: {scoreConfig.label}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          )}
-        </div>
-
-        {/* Stock et Score IA */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/50">
-          <div className="flex items-center gap-2">
-            <div className={cn("h-2 w-2 rounded-full", stockStatus.color)} />
-            <span className="text-xs text-muted-foreground">
-              {product.stock_quantity || 0} en stock
-            </span>
           </div>
-          
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className={cn("h-3.5 w-3.5", getScoreColor(aiScore))} />
-                  <span className={cn("text-sm font-semibold", getScoreColor(aiScore))}>
-                    {aiScore}
-                  </span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Score IA: {getScoreLabel(aiScore)}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
 
-        {/* Barre de progression du score */}
-        <Progress 
-          value={aiScore} 
-          className="h-1.5"
-        />
+        <CardContent className="p-4 space-y-3">
+          {/* Title & Status */}
+          <div className="flex items-start gap-2">
+            <h3 
+              className="flex-1 font-semibold line-clamp-2 cursor-pointer hover:text-primary transition-colors text-sm leading-tight"
+              onClick={() => onView(product)}
+            >
+              {product.name}
+            </h3>
+            <Badge 
+              variant="outline"
+              className={cn(
+                "shrink-0 text-[10px] font-medium border-0",
+                product.status === 'active' 
+                  ? 'bg-emerald-500/10 text-emerald-600' 
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
+              {product.status === 'active' ? 'Actif' : 'Inactif'}
+            </Badge>
+          </div>
 
-        {/* Source et SKU */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded truncate max-w-[100px]">
-            {product.sku || 'N/A'}
-          </span>
-          <Badge variant="outline" className="text-[10px] capitalize">
-            {product.source || 'local'}
-          </Badge>
-        </div>
+          {/* Price & Margin */}
+          <div className="flex items-end justify-between gap-2">
+            <div className="space-y-0.5">
+              <span className="text-2xl font-bold tracking-tight">
+                {product.price.toFixed(2)}
+                <span className="text-lg ml-0.5">€</span>
+              </span>
+              {product.cost_price && (
+                <p className="text-xs text-muted-foreground">
+                  Coût: {product.cost_price.toFixed(2)} €
+                </p>
+              )}
+            </div>
+            
+            {margin !== null && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={cn(
+                      "px-2.5 py-1.5 rounded-lg text-right",
+                      margin >= 30 ? "bg-emerald-500/10" : margin >= 15 ? "bg-amber-500/10" : "bg-red-500/10"
+                    )}>
+                      <p className={cn(
+                        "text-lg font-bold leading-none",
+                        margin >= 30 ? "text-emerald-600" : margin >= 15 ? "text-amber-600" : "text-red-600"
+                      )}>
+                        {margin >= 0 ? '+' : ''}{margin}%
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">marge</p>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Profit: {profit?.toFixed(2)} € / vente</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
 
-        {/* Actions rapides */}
-        <div className="flex gap-2 pt-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 h-8 text-xs"
-            onClick={() => onView(product)}
-          >
-            <Eye className="h-3.5 w-3.5 mr-1" />
-            Voir
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 w-8 p-0"
-            onClick={() => onEdit(product)}
-          >
-            <Edit className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => {
-              if (confirm('Supprimer ce produit ?')) {
-                onDelete(product.id);
-              }
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+          {/* Stock & Score Progress */}
+          <div className="space-y-2 pt-2 border-t border-border/50">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <div className={cn("h-2 w-2 rounded-full", stockStatus.color)} />
+                <span className={cn("text-xs font-medium", stockStatus.textColor)}>
+                  {product.stock_quantity || 0} unités
+                </span>
+              </div>
+              <span className="text-xs text-muted-foreground font-mono">
+                {product.sku || 'N/A'}
+              </span>
+            </div>
+            
+            {/* Score Progress Bar */}
+            <div className="relative h-1.5 rounded-full bg-muted overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${aiScore}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className={cn("absolute inset-y-0 left-0 rounded-full bg-gradient-to-r", scoreConfig.gradient)}
+              />
+            </div>
+          </div>
+
+          {/* Source Badge */}
+          <div className="flex items-center justify-between pt-1">
+            <Badge variant="outline" className="text-[10px] capitalize bg-muted/50 border-border/50">
+              {product.source || 'local'}
+            </Badge>
+            {product.category && (
+              <span className="text-[10px] text-muted-foreground truncate max-w-[100px]">
+                {product.category}
+              </span>
+            )}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 h-9 text-xs bg-background/50 hover:bg-accent border-border/50"
+              onClick={() => onEdit(product)}
+            >
+              <Edit className="h-3.5 w-3.5 mr-1.5" />
+              Modifier
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary"
+              onClick={() => onView(product)}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-9 w-9 p-0 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+              onClick={() => {
+                if (confirm('Supprimer ce produit ?')) {
+                  onDelete(product.id);
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 });
