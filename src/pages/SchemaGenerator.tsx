@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChannablePageLayout, ChannablePageHero, ChannableCard } from '@/components/channable';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { ChannableCard } from '@/components/channable';
 
 const SchemaGenerator = () => {
   const [schemaType, setSchemaType] = useState("");
@@ -278,21 +279,13 @@ const SchemaGenerator = () => {
         <meta name="description" content="Générez des données structurées Schema.org pour améliorer votre SEO. Produits, articles, FAQ et plus." />
       </Helmet>
 
-      <ChannablePageLayout title="Générateur Schema.org" metaTitle="Générateur Schema.org" maxWidth="2xl">
-        {/* Hero Section avec image */}
-        <ChannablePageHero
-          title="Générateur Schema.org"
-          subtitle="SEO Tools"
-          description="Créez des données structurées pour améliorer votre référencement et apparaître dans les rich snippets Google."
-          icon={FileText}
-          category="schema"
-          badge={{ label: "SEO Boost", icon: Wand2 }}
-          stats={[
-            { label: "Types disponibles", value: schemaTypes.length },
-            { label: "Rich snippets", value: "+40%" },
-            { label: "CTR amélioration", value: "+25%" }
-          ]}
-        />
+      <ChannablePageWrapper
+        title="Générateur Schema.org"
+        subtitle="SEO Tools"
+        description="Créez des données structurées pour améliorer votre référencement et apparaître dans les rich snippets Google."
+        heroImage="schema"
+        badge={{ label: "SEO Boost", icon: Wand2 }}
+      >
 
         {/* Type Selection Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -398,7 +391,7 @@ const SchemaGenerator = () => {
             </CardContent>
           </Card>
         </div>
-      </ChannablePageLayout>
+      </ChannablePageWrapper>
     </>
   );
 };
