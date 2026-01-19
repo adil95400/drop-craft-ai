@@ -3415,6 +3415,51 @@ export type Database = {
           },
         ]
       }
+      currency_settings: {
+        Row: {
+          auto_convert_prices: boolean | null
+          created_at: string
+          decimal_places: number | null
+          default_currency: string
+          display_currency: string
+          id: string
+          round_prices: boolean | null
+          rounding_method: string | null
+          show_original_prices: boolean | null
+          supplier_currency: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_convert_prices?: boolean | null
+          created_at?: string
+          decimal_places?: number | null
+          default_currency?: string
+          display_currency?: string
+          id?: string
+          round_prices?: boolean | null
+          rounding_method?: string | null
+          show_original_prices?: boolean | null
+          supplier_currency?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_convert_prices?: boolean | null
+          created_at?: string
+          decimal_places?: number | null
+          default_currency?: string
+          display_currency?: string
+          id?: string
+          round_prices?: boolean | null
+          rounding_method?: string | null
+          show_original_prices?: boolean | null
+          supplier_currency?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customer_loyalty: {
         Row: {
           available_points: number
@@ -4147,6 +4192,66 @@ export type Database = {
           sync_status?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      exchange_rate_history: {
+        Row: {
+          base_currency: string
+          id: string
+          rate: number
+          recorded_at: string
+          target_currency: string
+        }
+        Insert: {
+          base_currency: string
+          id?: string
+          rate: number
+          recorded_at?: string
+          target_currency: string
+        }
+        Update: {
+          base_currency?: string
+          id?: string
+          rate?: number
+          recorded_at?: string
+          target_currency?: string
+        }
+        Relationships: []
+      }
+      exchange_rates: {
+        Row: {
+          base_currency: string
+          created_at: string
+          expires_at: string
+          fetched_at: string
+          id: string
+          inverse_rate: number
+          rate: number
+          source: string | null
+          target_currency: string
+        }
+        Insert: {
+          base_currency?: string
+          created_at?: string
+          expires_at?: string
+          fetched_at?: string
+          id?: string
+          inverse_rate: number
+          rate: number
+          source?: string | null
+          target_currency: string
+        }
+        Update: {
+          base_currency?: string
+          created_at?: string
+          expires_at?: string
+          fetched_at?: string
+          id?: string
+          inverse_rate?: number
+          rate?: number
+          source?: string | null
+          target_currency?: string
         }
         Relationships: []
       }
@@ -7306,6 +7411,56 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_price_conversions: {
+        Row: {
+          conversion_type: string | null
+          converted_at: string
+          converted_currency: string
+          converted_price: number
+          created_at: string
+          exchange_rate_used: number
+          id: string
+          original_currency: string
+          original_price: number
+          product_id: string | null
+          user_id: string
+        }
+        Insert: {
+          conversion_type?: string | null
+          converted_at?: string
+          converted_currency: string
+          converted_price: number
+          created_at?: string
+          exchange_rate_used: number
+          id?: string
+          original_currency: string
+          original_price: number
+          product_id?: string | null
+          user_id: string
+        }
+        Update: {
+          conversion_type?: string | null
+          converted_at?: string
+          converted_currency?: string
+          converted_price?: number
+          created_at?: string
+          exchange_rate_used?: number
+          id?: string
+          original_currency?: string
+          original_price?: number
+          product_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_price_conversions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -10995,6 +11150,14 @@ export type Database = {
         Args: { customer_id_param: string }
         Returns: boolean
       }
+      convert_price: {
+        Args: {
+          p_amount: number
+          p_from_currency: string
+          p_to_currency: string
+        }
+        Returns: number
+      }
       export_user_data: { Args: never; Returns: Json }
       generate_api_key: {
         Args: { key_name: string; key_scopes?: string[] }
@@ -11003,6 +11166,10 @@ export type Database = {
       generate_bulk_order_number: { Args: never; Returns: string }
       generate_dispute_number: { Args: never; Returns: string }
       generate_rma_number: { Args: never; Returns: string }
+      get_exchange_rate: {
+        Args: { p_base: string; p_target: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

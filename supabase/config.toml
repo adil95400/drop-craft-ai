@@ -699,3 +699,6 @@ verify_jwt = true
 
 [functions.disputes-manager]
 verify_jwt = true
+
+[functions.currency-converter]
+verify_jwt = true
