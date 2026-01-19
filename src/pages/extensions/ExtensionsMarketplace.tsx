@@ -1,8 +1,9 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Star, Download } from 'lucide-react';
+import { Search, Star, Download, Store, Sparkles } from 'lucide-react';
 import { useExtensionActions } from '@/hooks/useExtensionActions';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionsMarketplace() {
   const { installExtension, isInstalling } = useExtensionActions();
@@ -39,14 +40,16 @@ export default function ExtensionsMarketplace() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Marketplace</h1>
-        <p className="text-muted-foreground mt-2">
-          Découvrez les meilleures extensions pour votre boutique
-        </p>
-      </div>
-
+    <ChannablePageWrapper
+      title="Marketplace Extensions"
+      subtitle="Découvrez & Installez"
+      description="Découvrez les meilleures extensions pour votre boutique et étendez les fonctionnalités de votre plateforme."
+      heroImage="extensions"
+      badge={{
+        label: "Nouveau",
+        icon: Store
+      }}
+    >
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -56,7 +59,7 @@ export default function ExtensionsMarketplace() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {extensions.map((extension) => (
-          <Card key={extension.id} className="p-6">
+          <Card key={extension.id} className="p-6 border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all">
             <h3 className="font-semibold text-lg mb-2">{extension.name}</h3>
             <p className="text-sm text-muted-foreground mb-4">{extension.description}</p>
             <div className="flex items-center justify-between mb-4">
@@ -82,6 +85,6 @@ export default function ExtensionsMarketplace() {
           </Card>
         ))}
       </div>
-    </div>
+    </ChannablePageWrapper>
   );
 }

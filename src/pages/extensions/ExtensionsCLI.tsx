@@ -1,7 +1,8 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Terminal, Copy, Check } from 'lucide-react';
+import { Terminal, Copy, Check, Code } from 'lucide-react';
 import { useState } from 'react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionsCLI() {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
@@ -34,15 +35,17 @@ export default function ExtensionsCLI() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Outils CLI</h1>
-        <p className="text-muted-foreground mt-2">
-          Gérez vos extensions en ligne de commande
-        </p>
-      </div>
-
-      <Card className="p-6">
+    <ChannablePageWrapper
+      title="Outils CLI"
+      subtitle="Ligne de Commande"
+      description="Gérez vos extensions en ligne de commande avec notre CLI puissant et flexible."
+      heroImage="extensions"
+      badge={{
+        label: "Pro",
+        icon: Terminal
+      }}
+    >
+      <Card className="p-6 border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="flex items-center gap-2 mb-4">
           <Terminal className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold">Guide de démarrage</h2>
@@ -74,6 +77,6 @@ export default function ExtensionsCLI() {
           ))}
         </div>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }

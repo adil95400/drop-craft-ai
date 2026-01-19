@@ -21,6 +21,11 @@ import heroProducts from '@/assets/images/hero-products.png';
 import heroMarketing from '@/assets/images/hero-marketing.png';
 import heroOrders from '@/assets/images/hero-orders.png';
 import heroAi from '@/assets/images/hero-ai.png';
+import heroSuppliers from '@/assets/images/hero-suppliers.png';
+import heroExtensions from '@/assets/images/hero-extensions.png';
+import heroResearch from '@/assets/images/hero-research.png';
+import heroImport from '@/assets/images/hero-import.png';
+import heroNotifications from '@/assets/images/hero-notifications.png';
 
 export const heroImages = {
   dashboard: heroDashboard,
@@ -35,6 +40,11 @@ export const heroImages = {
   marketing: heroMarketing,
   orders: heroOrders,
   ai: heroAi,
+  suppliers: heroSuppliers,
+  extensions: heroExtensions,
+  research: heroResearch,
+  import: heroImport,
+  notifications: heroNotifications,
 } as const;
 
 export type HeroImageKey = keyof typeof heroImages;

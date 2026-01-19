@@ -7,22 +7,22 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code, Book, Rocket, Terminal, GitBranch, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionDeveloperPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-2">
-          <Code className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Developer Portal</h1>
-        </div>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Outils, documentation et ressources pour développer vos extensions ShopOpti
-        </p>
-      </div>
-
+    <ChannablePageWrapper
+      title="Developer Portal"
+      subtitle="Extensions SDK"
+      description="Outils, documentation et ressources pour développer vos extensions ShopOpti."
+      heroImage="extensions"
+      badge={{
+        label: "Développeurs",
+        icon: Code
+      }}
+    >
       <Tabs defaultValue="quickstart" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="quickstart">Quick Start</TabsTrigger>
@@ -32,7 +32,7 @@ export default function ExtensionDeveloperPage() {
         </TabsList>
 
         <TabsContent value="quickstart" className="space-y-6">
-          <Card>
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Rocket className="h-5 w-5" />
@@ -76,7 +76,7 @@ export default function ExtensionDeveloperPage() {
 
         <TabsContent value="api" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>REST API</CardTitle>
                 <CardDescription>API RESTful complète</CardDescription>
@@ -107,7 +107,7 @@ export default function ExtensionDeveloperPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>GraphQL API</CardTitle>
                 <CardDescription>API GraphQL flexible</CardDescription>
@@ -142,7 +142,7 @@ export default function ExtensionDeveloperPage() {
 
         <TabsContent value="sdk" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-3">
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>JavaScript SDK</CardTitle>
                 <CardDescription>SDK JavaScript/TypeScript</CardDescription>
@@ -158,7 +158,7 @@ export default function ExtensionDeveloperPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>React Hooks</CardTitle>
                 <CardDescription>Hooks React prêts à l'emploi</CardDescription>
@@ -174,7 +174,7 @@ export default function ExtensionDeveloperPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>CLI Tools</CardTitle>
                 <CardDescription>Outils en ligne de commande</CardDescription>
@@ -194,7 +194,7 @@ export default function ExtensionDeveloperPage() {
 
         <TabsContent value="examples" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>Product Importer</CardTitle>
                 <CardDescription>Extension d'import de produits</CardDescription>
@@ -210,7 +210,7 @@ export default function ExtensionDeveloperPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>Price Monitor</CardTitle>
                 <CardDescription>Surveillance de prix concurrentiels</CardDescription>
@@ -226,7 +226,7 @@ export default function ExtensionDeveloperPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>Custom Analytics</CardTitle>
                 <CardDescription>Dashboard analytics personnalisé</CardDescription>
@@ -242,7 +242,7 @@ export default function ExtensionDeveloperPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>Email Automation</CardTitle>
                 <CardDescription>Automatisation email marketing</CardDescription>
@@ -260,6 +260,6 @@ export default function ExtensionDeveloperPage() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }

@@ -31,11 +31,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useNotificationPreferences, NOTIFICATION_CATEGORIES, type NotificationPreferences } from '@/hooks/useNotificationPreferences';
-import {
-  ChannablePageLayout,
-  ChannableHeroSection,
-  ChannableStatsGrid
-} from '@/components/channable';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { ChannableStatsGrid } from '@/components/channable';
 import { ChannableStat } from '@/components/channable/types';
 
 interface Notification {
@@ -332,32 +329,28 @@ export default function NotificationsPage() {
   };
 
   return (
-    <ChannablePageLayout
-      title="Notifications"
-      metaTitle="Centre de Notifications"
-      metaDescription="Gérez vos alertes et notifications"
+    <ChannablePageWrapper
+      title="Centre de Notifications"
+      subtitle="Alertes & Messages"
+      description="Consultez vos notifications, gérez vos préférences d'alertes et restez informé de l'activité de votre boutique."
+      heroImage="notifications"
+      badge={{
+        label: unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : 'À jour',
+        icon: Bell
+      }}
+      actions={
+        <div className="flex gap-2">
+          <Button onClick={() => markAllAsReadMutation.mutate()} variant="default" size="sm">
+            <CheckCircle2 className="h-4 w-4 mr-2" />
+            Tout marquer lu
+          </Button>
+          <Button onClick={handleRefresh} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualiser
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        title="Centre de Notifications"
-        subtitle="Alertes & Messages"
-        description="Consultez vos notifications, gérez vos préférences d'alertes et restez informé de l'activité de votre boutique."
-        badge={{
-          label: unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : 'À jour',
-          icon: Bell
-        }}
-        primaryAction={{
-          label: 'Tout marquer lu',
-          onClick: () => markAllAsReadMutation.mutate(),
-          icon: CheckCircle2
-        }}
-        secondaryAction={{
-          label: 'Actualiser',
-          onClick: handleRefresh
-        }}
-        variant="compact"
-      />
-
       {/* Stats Grid */}
       <ChannableStatsGrid stats={stats} columns={4} compact />
 
@@ -464,12 +457,12 @@ export default function NotificationsPage() {
                     {filter === 'unread' ? 'Aucune notification non lue' : categoryFilter ? `Aucune notification "${categoryFilter}"` : 'Aucune notification'}
                   </p>
                   <p className="text-sm text-muted-foreground/70 mt-1">
-                    Vos notifications apparaîtront ici
+                    Vous êtes à jour !
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2" role="list" aria-label="Liste des notifications">
-                  <AnimatePresence>
+                <div className="space-y-3" role="list" aria-label="Liste des notifications">
+                  <AnimatePresence mode="popLayout">
                     {filteredNotifications.map((notification) => (
                       <NotificationItem
                         key={notification.id}
@@ -488,72 +481,47 @@ export default function NotificationsPage() {
         </TabsContent>
 
         {/* Preferences Tab */}
-        <TabsContent value="preferences">
+        <TabsContent value="preferences" className="space-y-4">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Mail className="h-5 w-5 text-primary" aria-hidden="true" />
-                Préférences de notifications
+                <Settings className="h-5 w-5 text-primary" />
+                Préférences de notification
               </CardTitle>
               <CardDescription>
-                Personnalisez les notifications que vous souhaitez recevoir. Vos préférences sont sauvegardées automatiquement.
+                Choisissez les notifications que vous souhaitez recevoir
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-1">
-              {/* Email general toggle */}
-              <div
-                className="flex items-center justify-between gap-4 p-4 rounded-lg bg-primary/5 border border-primary/20 mb-4"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Mail className="h-4 w-4 text-primary" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Notifications email</p>
-                    <p className="text-sm text-muted-foreground">Recevoir les notifications importantes par email</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={preferences.email}
-                  onCheckedChange={(checked) => updatePreference('email', checked)}
-                  disabled={isSaving}
-                  aria-label="Activer les notifications email"
-                />
-              </div>
-
-              {/* Category preferences */}
-              {NOTIFICATION_CATEGORIES.map((cat) => {
-                const Icon = CATEGORY_ICONS[cat.id];
-                const colorClass = CATEGORY_COLORS[cat.id];
-                
+            <CardContent className="space-y-4">
+              {NOTIFICATION_CATEGORIES.map((category) => {
+                const Icon = CATEGORY_ICONS[category.id] || Bell;
                 return (
-                  <motion.div
-                    key={cat.id}
-                    className="flex items-center justify-between gap-4 p-4 rounded-lg hover:bg-accent/50 transition-colors"
-                    whileHover={prefersReducedMotion ? undefined : { x: 2 }}
+                  <div
+                    key={category.id}
+                    className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-accent/50 transition-colors"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border", colorClass)}>
-                        <Icon className="h-4 w-4" aria-hidden="true" />
+                    <div className="flex items-center gap-3">
+                      <div className={cn("p-2 rounded-lg", CATEGORY_COLORS[category.id])}>
+                        <Icon className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="font-medium">{cat.title}</p>
-                        <p className="text-sm text-muted-foreground">{cat.description}</p>
+                        <p className="font-medium">{category.title}</p>
+                        <p className="text-sm text-muted-foreground">{category.description}</p>
                       </div>
                     </div>
                     <Switch
-                      checked={preferences[cat.key]}
-                      onCheckedChange={(checked) => updatePreference(cat.key, checked)}
+                      checked={preferences[category.id as keyof NotificationPreferences] ?? true}
+                      onCheckedChange={(checked) => updatePreference(category.id as keyof NotificationPreferences, checked)}
                       disabled={isSaving}
-                      aria-label={`Activer les notifications ${cat.title}`}
+                      aria-label={`Activer les notifications ${category.title}`}
                     />
-                  </motion.div>
+                  </div>
                 );
               })}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   );
 }

@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, TrendingUp, DollarSign, AlertCircle, BarChart3, Target } from 'lucide-react';
+import { Search, TrendingUp, DollarSign, AlertCircle, BarChart3, Target, Sparkles } from 'lucide-react';
 import { useCompetitiveIntelligence } from '@/hooks/useCompetitiveIntelligence';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function CompetitiveIntelligenceHub() {
   const [productUrl, setProductUrl] = useState('');
@@ -18,17 +19,26 @@ export default function CompetitiveIntelligenceHub() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-3">
-          <Target className="h-8 w-8 text-primary" />
-          Intelligence Concurrentielle
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Analysez vos concurrents et estimez les volumes de ventes
-        </p>
-      </div>
-
+    <ChannablePageWrapper
+      title="Intelligence Concurrentielle"
+      subtitle="Analyse de Marché"
+      description="Analysez vos concurrents, estimez les volumes de ventes et identifiez les opportunités de marché."
+      heroImage="research"
+      badge={{
+        label: "IA Avancée",
+        icon: Target
+      }}
+      actions={
+        <Button 
+          onClick={handleAnalyze}
+          disabled={!productUrl || analyzeProduct.isPending}
+          className="bg-gradient-to-r from-primary to-purple-600"
+        >
+          <Search className="h-4 w-4 mr-2" />
+          Analyser
+        </Button>
+      }
+    >
       <Card className="p-6">
         <div className="flex gap-4">
           <Input
@@ -221,6 +231,6 @@ export default function CompetitiveIntelligenceHub() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }
