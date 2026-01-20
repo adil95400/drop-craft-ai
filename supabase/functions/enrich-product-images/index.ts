@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { productId, method, sourceUrl, existingImageUrl, productTitle } = await req.json();
+    const { productId, method, sourceUrl, existingImageUrl, productTitle, sku, marketplace } = await req.json();
 
     if (!productId) {
       throw new Error('productId is required');
@@ -23,6 +23,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let newImages: string[] = [];
+    let source = method;
 
     switch (method) {
       case 'scrape':
@@ -31,8 +32,12 @@ serve(async (req) => {
       case 'ai':
         newImages = await generateImagesWithAI(productTitle, existingImageUrl);
         break;
+      case 'multi-search':
+        const result = await multiSourceSearch(productTitle, sku, existingImageUrl);
+        newImages = result.images;
+        source = result.source;
+        break;
       case 'search':
-        // Future implementation
         throw new Error('Search method not yet implemented');
       default:
         throw new Error('Invalid method');
@@ -80,7 +85,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         imagesAdded: newImages.length,
-        totalImages: allImages.length
+        totalImages: allImages.length,
+        source
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -93,6 +99,131 @@ serve(async (req) => {
     );
   }
 });
+
+// Multi-source search with automatic fallback
+async function multiSourceSearch(
+  productTitle: string, 
+  sku?: string, 
+  existingImageUrl?: string
+): Promise<{ images: string[], source: string }> {
+  console.log('Starting multi-source search for:', productTitle);
+  
+  // 1. Try Firecrawl search first
+  try {
+    const firecrawlImages = await searchImagesWithFirecrawl(productTitle, sku);
+    if (firecrawlImages.length >= 2) {
+      console.log('Found images via Firecrawl:', firecrawlImages.length);
+      return { images: firecrawlImages, source: 'firecrawl' };
+    }
+  } catch (error) {
+    console.error('Firecrawl search failed:', error);
+  }
+
+  // 2. Fallback to AI generation
+  console.log('Falling back to AI generation');
+  const aiImages = await generateImagesWithAI(productTitle, existingImageUrl);
+  return { images: aiImages, source: 'ai' };
+}
+
+// Search images using Firecrawl
+async function searchImagesWithFirecrawl(productName: string, sku?: string): Promise<string[]> {
+  const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY') || Deno.env.get('FIRECRAWL_API_KEY_1');
+  
+  if (!FIRECRAWL_API_KEY) {
+    console.error('FIRECRAWL_API_KEY not configured');
+    return [];
+  }
+
+  const query = sku 
+    ? `${productName} ${sku} product image high resolution`
+    : `${productName} product image high resolution`;
+
+  console.log('Firecrawl search query:', query);
+
+  try {
+    const response = await fetch('https://api.firecrawl.dev/v1/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: query,
+        limit: 10,
+        scrapeOptions: { 
+          formats: ['markdown', 'links'] 
+        }
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Firecrawl API error:', response.status, await response.text());
+      return [];
+    }
+
+    const data = await response.json();
+    console.log('Firecrawl response:', JSON.stringify(data).substring(0, 500));
+    
+    return extractImageUrlsFromResults(data);
+  } catch (error) {
+    console.error('Firecrawl request failed:', error);
+    return [];
+  }
+}
+
+// Extract image URLs from Firecrawl search results
+function extractImageUrlsFromResults(data: any): string[] {
+  const images: string[] = [];
+  const results = data.data || data.results || [];
+
+  for (const result of results) {
+    // Check markdown content for image URLs
+    const markdown = result.markdown || result.content || '';
+    const imgPattern = /!\[.*?\]\((https?:\/\/[^\s)]+\.(jpg|jpeg|png|webp)[^\s)]*)\)/gi;
+    let match;
+    while ((match = imgPattern.exec(markdown)) !== null) {
+      if (isValidProductImage(match[1])) {
+        images.push(match[1]);
+      }
+    }
+
+    // Check links array
+    const links = result.links || [];
+    for (const link of links) {
+      const url = typeof link === 'string' ? link : link.url;
+      if (url && /\.(jpg|jpeg|png|webp)$/i.test(url) && isValidProductImage(url)) {
+        images.push(url);
+      }
+    }
+
+    // Check for og:image or other image metadata
+    const metadata = result.metadata || {};
+    if (metadata.ogImage && isValidProductImage(metadata.ogImage)) {
+      images.push(metadata.ogImage);
+    }
+  }
+
+  // Return unique images, max 5
+  return [...new Set(images)].slice(0, 5);
+}
+
+// Validate image URL
+function isValidProductImage(url: string): boolean {
+  // Filter out icons, logos, and small images
+  const excludePatterns = [
+    /icon/i, /logo/i, /favicon/i, /avatar/i, /badge/i,
+    /thumbnail/i, /placeholder/i, /spinner/i, /loading/i,
+    /\d+x\d+/, // Size patterns like 50x50
+  ];
+
+  for (const pattern of excludePatterns) {
+    if (pattern.test(url)) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 async function scrapeImagesFromSource(sourceUrl: string): Promise<string[]> {
   if (!sourceUrl) return [];
