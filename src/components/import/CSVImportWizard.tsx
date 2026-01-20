@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Upload, FileText, Check, AlertTriangle, X, Download, Eye } from 'lucide-react'
+import { Upload, FileText, Check, AlertTriangle, X, Download, Eye, Sparkles, Wand2, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import Papa from 'papaparse'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { cn } from '@/lib/utils'
 
 interface CSVData {
   headers: string[]
@@ -34,17 +35,93 @@ interface ProductMapping {
   [csvColumn: string]: string
 }
 
+interface MappingSuggestion {
+  field: string
+  confidence: number
+  matched_pattern: string
+}
+
 const PRODUCT_FIELDS = {
-  name: { label: 'Nom du produit', required: true },
-  description: { label: 'Description', required: false },
-  price: { label: 'Prix', required: true },
-  sku: { label: 'SKU/Référence', required: false },
-  category: { label: 'Catégorie', required: false },
-  brand: { label: 'Marque', required: false },
-  stock_quantity: { label: 'Stock', required: false },
-  image_url: { label: 'URL Image', required: false },
-  weight: { label: 'Poids', required: false },
-  dimensions: { label: 'Dimensions', required: false }
+  name: { label: 'Nom du produit', required: true, aliases: ['title', 'product_name', 'product', 'nom', 'titre', 'handle', 'product_title', 'item_name', 'designation'] },
+  description: { label: 'Description', required: false, aliases: ['body', 'body_html', 'content', 'desc', 'product_description', 'long_description', 'detail', 'details'] },
+  price: { label: 'Prix', required: true, aliases: ['variant_price', 'sale_price', 'cost', 'prix', 'price_eur', 'amount', 'unit_price', 'retail_price'] },
+  sku: { label: 'SKU/Référence', required: false, aliases: ['variant_sku', 'reference', 'ref', 'product_id', 'external_id', 'item_sku', 'code', 'article'] },
+  category: { label: 'Catégorie', required: false, aliases: ['type', 'product_type', 'categorie', 'collection', 'product_category', 'group', 'classification'] },
+  brand: { label: 'Marque', required: false, aliases: ['vendor', 'manufacturer', 'fabricant', 'fournisseur', 'supplier', 'brand_name', 'make'] },
+  stock_quantity: { label: 'Stock', required: false, aliases: ['inventory_quantity', 'qty', 'quantity', 'stock', 'inventory', 'available', 'units'] },
+  image_url: { label: 'URL Image', required: false, aliases: ['image_src', 'image', 'img', 'picture', 'photo', 'thumbnail', 'images', 'main_image', 'variant_image'] },
+  weight: { label: 'Poids', required: false, aliases: ['variant_weight', 'poids', 'mass', 'weight_kg', 'weight_g', 'shipping_weight'] },
+  dimensions: { label: 'Dimensions', required: false, aliases: ['size', 'taille', 'dimension', 'measurements'] },
+  compare_at_price: { label: 'Prix barré', required: false, aliases: ['compare_price', 'original_price', 'msrp', 'list_price', 'regular_price', 'was_price'] },
+  tags: { label: 'Tags', required: false, aliases: ['keywords', 'labels', 'mots_cles', 'product_tags'] },
+  published: { label: 'Publié', required: false, aliases: ['status', 'active', 'visible', 'enabled', 'is_active'] },
+  variant_option1: { label: 'Option 1 (ex: Taille)', required: false, aliases: ['option1_name', 'option1_value', 'size', 'taille'] },
+  variant_option2: { label: 'Option 2 (ex: Couleur)', required: false, aliases: ['option2_name', 'option2_value', 'color', 'couleur'] },
+  variant_option3: { label: 'Option 3', required: false, aliases: ['option3_name', 'option3_value'] },
+  barcode: { label: 'Code-barre', required: false, aliases: ['ean', 'upc', 'gtin', 'isbn', 'variant_barcode'] }
+}
+
+// Intelligent mapping algorithm
+function autoDetectMapping(headers: string[], sampleRow: any): { mapping: ProductMapping; suggestions: Record<string, MappingSuggestion> } {
+  const mapping: ProductMapping = {}
+  const suggestions: Record<string, MappingSuggestion> = {}
+  const usedFields = new Set<string>()
+
+  headers.forEach(header => {
+    const normalizedHeader = header.toLowerCase().trim().replace(/[\s_-]+/g, '_')
+    let bestMatch: { field: string; confidence: number; pattern: string } | null = null
+
+    Object.entries(PRODUCT_FIELDS).forEach(([field, config]) => {
+      if (usedFields.has(field)) return
+
+      // Exact match on field name
+      if (normalizedHeader === field) {
+        bestMatch = { field, confidence: 100, pattern: 'exact' }
+        return
+      }
+
+      // Check aliases
+      for (const alias of config.aliases) {
+        const normalizedAlias = alias.toLowerCase().replace(/[\s_-]+/g, '_')
+        
+        // Exact alias match
+        if (normalizedHeader === normalizedAlias) {
+          if (!bestMatch || bestMatch.confidence < 95) {
+            bestMatch = { field, confidence: 95, pattern: `alias:${alias}` }
+          }
+          return
+        }
+        
+        // Contains alias
+        if (normalizedHeader.includes(normalizedAlias) || normalizedAlias.includes(normalizedHeader)) {
+          const confidence = Math.min(85, 60 + (normalizedAlias.length / normalizedHeader.length) * 25)
+          if (!bestMatch || bestMatch.confidence < confidence) {
+            bestMatch = { field, confidence, pattern: `contains:${alias}` }
+          }
+        }
+      }
+
+      // Fuzzy match on label
+      const normalizedLabel = config.label.toLowerCase().replace(/[\s_-]+/g, '_')
+      if (normalizedHeader.includes(normalizedLabel) || normalizedLabel.includes(normalizedHeader)) {
+        if (!bestMatch || bestMatch.confidence < 70) {
+          bestMatch = { field, confidence: 70, pattern: `label:${config.label}` }
+        }
+      }
+    })
+
+    if (bestMatch && bestMatch.confidence >= 60) {
+      mapping[header] = bestMatch.field
+      usedFields.add(bestMatch.field)
+      suggestions[header] = {
+        field: bestMatch.field,
+        confidence: bestMatch.confidence,
+        matched_pattern: bestMatch.pattern
+      }
+    }
+  })
+
+  return { mapping, suggestions }
 }
 
 export function CSVImportWizard() {
@@ -53,10 +130,29 @@ export function CSVImportWizard() {
   const [step, setStep] = useState<'upload' | 'mapping' | 'validation' | 'import'>('upload')
   const [csvData, setCsvData] = useState<CSVData | null>(null)
   const [mapping, setMapping] = useState<ProductMapping>({})
+  const [mappingSuggestions, setMappingSuggestions] = useState<Record<string, MappingSuggestion>>({})
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
   const [validProducts, setValidProducts] = useState<any[]>([])
   const [importProgress, setImportProgress] = useState(0)
   const [isImporting, setIsImporting] = useState(false)
+  const [autoMappedCount, setAutoMappedCount] = useState(0)
+
+  // Auto-detect mapping when CSV data changes
+  useEffect(() => {
+    if (csvData && csvData.headers.length > 0) {
+      const { mapping: autoMapping, suggestions } = autoDetectMapping(csvData.headers, csvData.rows[0])
+      setMapping(autoMapping)
+      setMappingSuggestions(suggestions)
+      setAutoMappedCount(Object.keys(autoMapping).length)
+      
+      if (Object.keys(autoMapping).length > 0) {
+        toast({
+          title: "🪄 Mapping automatique",
+          description: `${Object.keys(autoMapping).length} colonnes détectées automatiquement`,
+        })
+      }
+    }
+  }, [csvData, toast])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -307,7 +403,15 @@ export function CSVImportWizard() {
               <>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-medium">Mapping des colonnes</h3>
+                    <h3 className="text-lg font-medium flex items-center gap-2">
+                      Mapping des colonnes
+                      {autoMappedCount > 0 && (
+                        <Badge variant="secondary" className="bg-primary/10 text-primary gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          {autoMappedCount} auto-détectées
+                        </Badge>
+                      )}
+                    </h3>
                     <p className="text-sm text-muted-foreground">
                       Fichier: {csvData.fileName} ({csvData.rows.length} lignes)
                     </p>
@@ -317,44 +421,129 @@ export function CSVImportWizard() {
                   </Button>
                 </div>
 
-                <div className="grid gap-4">
-                  {csvData.headers.map((header, index) => (
-                    <div key={index} className="flex items-center gap-4 p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <Label className="font-medium">{header}</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Exemple: {csvData.rows[0]?.[header]?.toString().substring(0, 50)}...
-                        </p>
-                      </div>
-                      <div className="w-48">
-                        <Select
-                          value={mapping[header] || ''}
-                          onValueChange={(value) => handleMappingChange(header, value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un champ" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ignore">Ignorer</SelectItem>
-                            {Object.entries(PRODUCT_FIELDS).map(([field, config]) => (
-                              <SelectItem key={field} value={field}>
-                                {config.label} {config.required && '*'}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                {/* Auto-mapping summary */}
+                {autoMappedCount > 0 && (
+                  <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                    <Wand2 className="w-5 h-5 text-primary" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Mapping intelligent activé</p>
+                      <p className="text-xs text-muted-foreground">
+                        {autoMappedCount} colonnes mappées automatiquement. Vérifiez et ajustez si nécessaire.
+                      </p>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex items-center gap-2">
+                      {Object.entries(PRODUCT_FIELDS)
+                        .filter(([key]) => Object.values(mapping).includes(key))
+                        .slice(0, 4)
+                        .map(([key, config]) => (
+                          <Badge key={key} variant="outline" className="text-xs">
+                            {config.label}
+                          </Badge>
+                        ))}
+                      {Object.values(mapping).length > 4 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{Object.values(mapping).length - 4}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
 
-                <div className="flex justify-between">
-                  <Button onClick={() => setStep('upload')} variant="outline">
-                    Retour
-                  </Button>
-                  <Button onClick={validateData} disabled={Object.keys(mapping).length === 0}>
-                    Valider les données
-                  </Button>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="grid gap-3">
+                    {csvData.headers.map((header, index) => {
+                      const suggestion = mappingSuggestions[header]
+                      const isAutoMapped = !!suggestion
+                      const confidence = suggestion?.confidence || 0
+                      
+                      return (
+                        <div 
+                          key={index} 
+                          className={cn(
+                            "flex items-center gap-4 p-3 border rounded-lg transition-colors",
+                            isAutoMapped && "border-primary/30 bg-primary/5",
+                            !isAutoMapped && mapping[header] && "border-green-500/30 bg-green-500/5"
+                          )}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <Label className="font-medium truncate">{header}</Label>
+                              {isAutoMapped && (
+                                <Badge 
+                                  variant="secondary" 
+                                  className={cn(
+                                    "text-[10px] px-1.5 py-0",
+                                    confidence >= 90 ? "bg-green-500/20 text-green-700" :
+                                    confidence >= 70 ? "bg-primary/20 text-primary" :
+                                    "bg-yellow-500/20 text-yellow-700"
+                                  )}
+                                >
+                                  {confidence >= 90 ? <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" /> : null}
+                                  {confidence}%
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate">
+                              Exemple: {csvData.rows[0]?.[header]?.toString().substring(0, 60) || '(vide)'}
+                              {csvData.rows[0]?.[header]?.toString().length > 60 ? '...' : ''}
+                            </p>
+                          </div>
+                          
+                          <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                          
+                          <div className="w-52 shrink-0">
+                            <Select
+                              value={mapping[header] || ''}
+                              onValueChange={(value) => handleMappingChange(header, value)}
+                            >
+                              <SelectTrigger className={cn(
+                                mapping[header] && "border-primary"
+                              )}>
+                                <SelectValue placeholder="Sélectionner un..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ignore">
+                                  <span className="flex items-center gap-2 text-muted-foreground">
+                                    <X className="w-3 h-3" />
+                                    Ignorer
+                                  </span>
+                                </SelectItem>
+                                {Object.entries(PRODUCT_FIELDS).map(([field, config]) => (
+                                  <SelectItem key={field} value={field}>
+                                    <span className="flex items-center gap-2">
+                                      {config.label}
+                                      {config.required && <span className="text-destructive">*</span>}
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </ScrollArea>
+
+                <Separator />
+
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium">{Object.values(mapping).filter(v => v && v !== 'ignore').length}</span> colonnes mappées sur {csvData.headers.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setStep('upload')} variant="outline">
+                      Retour
+                    </Button>
+                    <Button 
+                      onClick={validateData} 
+                      disabled={!mapping['name'] && !Object.values(mapping).some(v => PRODUCT_FIELDS[v as keyof typeof PRODUCT_FIELDS]?.required)}
+                      className="gap-2"
+                    >
+                      Valider les données
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </>
             )}
