@@ -433,17 +433,37 @@ export default function AutoDSImportPage() {
                           item.status === 'pending' && "bg-muted/30 border-border/50"
                         )}
                       >
-                        {/* Preview Image */}
-                        <div className="w-20 h-20 rounded-lg bg-muted flex-shrink-0 overflow-hidden">
-                          {item.preview?.images?.[0] ? (
-                            <img src={item.preview.images[0]} alt="" className="w-full h-full object-cover" />
-                          ) : item.status === 'loading' ? (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                            </div>
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                        {/* Preview Images */}
+                        <div className="flex-shrink-0 flex gap-1">
+                          {/* Main image */}
+                          <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden relative">
+                            {item.preview?.images?.[0] ? (
+                              <>
+                                <img src={item.preview.images[0]} alt="" className="w-full h-full object-cover" />
+                                {(item.preview.images?.length || 0) > 1 && (
+                                  <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
+                                    +{(item.preview.images?.length || 0) - 1}
+                                  </div>
+                                )}
+                              </>
+                            ) : item.status === 'loading' ? (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                              </div>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          {/* Thumbnail strip for multiple images */}
+                          {item.preview?.images && item.preview.images.length > 1 && (
+                            <div className="hidden sm:flex flex-col gap-0.5 w-6">
+                              {item.preview.images.slice(1, 4).map((img, idx) => (
+                                <div key={idx} className="w-6 h-6 rounded bg-muted overflow-hidden">
+                                  <img src={img} alt="" className="w-full h-full object-cover" />
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
@@ -476,32 +496,40 @@ export default function AutoDSImportPage() {
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
+                              {/* Enhanced info row with icons */}
+                              <div className="flex flex-wrap gap-2 text-xs">
+                                {/* Images count with visual indicator */}
+                                <Badge variant="secondary" className="bg-blue-500/10 text-blue-700 border-blue-500/30 gap-1">
                                   <ImageIcon className="h-3 w-3" />
-                                  {item.preview.images?.length || 0} images
-                                </span>
+                                  {item.preview.images?.length || 0} image{(item.preview.images?.length || 0) > 1 ? 's' : ''}
+                                </Badge>
+                                
+                                {/* Variants */}
                                 {item.preview.variants && item.preview.variants.length > 0 && (
-                                  <span className="flex items-center gap-1">
+                                  <Badge variant="secondary" className="bg-amber-500/10 text-amber-700 border-amber-500/30 gap-1">
                                     <Package className="h-3 w-3" />
-                                    {item.preview.variants.length} variantes
-                                  </span>
+                                    {item.preview.variants.length} variante{item.preview.variants.length > 1 ? 's' : ''}
+                                  </Badge>
                                 )}
+                                
+                                {/* Videos */}
                                 {item.preview.videos && item.preview.videos.length > 0 && (
-                                  <Badge variant="secondary" className="bg-purple-500/10 text-purple-700 border-purple-500/30">
+                                  <Badge variant="secondary" className="bg-purple-500/10 text-purple-700 border-purple-500/30 gap-1">
                                     🎬 {item.preview.videos.length} vidéo{item.preview.videos.length > 1 ? 's' : ''}
                                   </Badge>
                                 )}
-                                {item.preview.sku && item.preview.sku !== `IMPORT-${Date.now()}` && (
-                                  <span className="flex items-center gap-1 text-blue-600">
-                                    <span className="font-mono text-xs bg-blue-500/10 px-1.5 py-0.5 rounded">
-                                      SKU: {item.preview.sku}
-                                    </span>
+                                
+                                {/* SKU */}
+                                {item.preview.sku && !item.preview.sku.startsWith('IMPORT-') && (
+                                  <span className="font-mono text-xs bg-gray-500/10 text-gray-600 px-1.5 py-0.5 rounded">
+                                    {item.preview.sku}
                                   </span>
                                 )}
+                                
+                                {/* Brand */}
                                 {item.preview.brand && (
-                                  <span className="text-primary">
-                                    Marque: {item.preview.brand}
+                                  <span className="text-primary font-medium">
+                                    {item.preview.brand}
                                   </span>
                                 )}
                               </div>
