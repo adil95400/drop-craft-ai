@@ -49,24 +49,210 @@ type ImportOutcome = {
   errors: string[]
 }
 
+// Shopify FR CSV headers mapping - based on ILA_csv_shopify_fr.csv template
 const PRODUCT_FIELDS = {
-  name: { label: 'Nom du produit', required: true, aliases: ['title', 'product_name', 'product', 'nom', 'titre', 'handle', 'product_title', 'item_name', 'designation'] },
-  description: { label: 'Description', required: false, aliases: ['body', 'body_html', 'content', 'desc', 'product_description', 'long_description', 'detail', 'details'] },
-  price: { label: 'Prix', required: true, aliases: ['variant_price', 'sale_price', 'cost', 'prix', 'price_eur', 'amount', 'unit_price', 'retail_price'] },
-  sku: { label: 'SKU/Référence', required: false, aliases: ['variant_sku', 'reference', 'ref', 'product_id', 'external_id', 'item_sku', 'code', 'article'] },
-  category: { label: 'Catégorie', required: false, aliases: ['type', 'product_type', 'categorie', 'collection', 'product_category', 'group', 'classification'] },
-  brand: { label: 'Marque', required: false, aliases: ['vendor', 'manufacturer', 'fabricant', 'fournisseur', 'supplier', 'brand_name', 'make'] },
-  stock_quantity: { label: 'Stock', required: false, aliases: ['inventory_quantity', 'qty', 'quantity', 'stock', 'inventory', 'available', 'units'] },
-  image_url: { label: 'URL Image', required: false, aliases: ['image_src', 'image', 'img', 'picture', 'photo', 'thumbnail', 'images', 'main_image', 'variant_image'] },
-  weight: { label: 'Poids', required: false, aliases: ['variant_weight', 'poids', 'mass', 'weight_kg', 'weight_g', 'shipping_weight'] },
-  dimensions: { label: 'Dimensions', required: false, aliases: ['size', 'taille', 'dimension', 'measurements'] },
-  compare_at_price: { label: 'Prix barré', required: false, aliases: ['compare_price', 'original_price', 'msrp', 'list_price', 'regular_price', 'was_price'] },
-  tags: { label: 'Tags', required: false, aliases: ['keywords', 'labels', 'mots_cles', 'product_tags'] },
-  published: { label: 'Publié', required: false, aliases: ['status', 'active', 'visible', 'enabled', 'is_active'] },
-  variant_option1: { label: 'Option 1 (ex: Taille)', required: false, aliases: ['option1_name', 'option1_value', 'size', 'taille'] },
-  variant_option2: { label: 'Option 2 (ex: Couleur)', required: false, aliases: ['option2_name', 'option2_value', 'color', 'couleur'] },
-  variant_option3: { label: 'Option 3', required: false, aliases: ['option3_name', 'option3_value'] },
-  barcode: { label: 'Code-barre', required: false, aliases: ['ean', 'upc', 'gtin', 'isbn', 'variant_barcode'] }
+  name: { 
+    label: 'Nom du produit', 
+    required: true, 
+    aliases: [
+      'title', 'Title', 'product_name', 'product', 'nom', 'titre', 
+      'handle', 'Handle', 'product_title', 'item_name', 'designation'
+    ] 
+  },
+  description: { 
+    label: 'Description', 
+    required: false, 
+    aliases: [
+      'body', 'body_html', 'Body (HTML)', 'body (html)', 'Body HTML', 
+      'content', 'desc', 'product_description', 'long_description', 'detail', 'details'
+    ] 
+  },
+  price: { 
+    label: 'Prix', 
+    required: true, 
+    aliases: [
+      'variant_price', 'Variant Price', 'sale_price', 'cost', 'prix', 
+      'price_eur', 'amount', 'unit_price', 'retail_price', 'Price'
+    ] 
+  },
+  compare_at_price: { 
+    label: 'Prix barré', 
+    required: false, 
+    aliases: [
+      'compare_price', 'Variant Compare At Price', 'compare at price',
+      'original_price', 'msrp', 'list_price', 'regular_price', 'was_price'
+    ] 
+  },
+  sku: { 
+    label: 'SKU/Référence', 
+    required: false, 
+    aliases: [
+      'variant_sku', 'Variant SKU', 'reference', 'ref', 'product_id', 
+      'external_id', 'item_sku', 'code', 'article', 'SKU'
+    ] 
+  },
+  category: { 
+    label: 'Catégorie', 
+    required: false, 
+    aliases: [
+      'type', 'Type', 'product_type', 'categorie', 'collection', 
+      'product_category', 'group', 'classification',
+      'Google Shopping / Google Product Category'
+    ] 
+  },
+  brand: { 
+    label: 'Marque', 
+    required: false, 
+    aliases: [
+      'vendor', 'Vendor', 'manufacturer', 'fabricant', 'fournisseur', 
+      'supplier', 'brand_name', 'make', 'Brand'
+    ] 
+  },
+  stock_quantity: { 
+    label: 'Stock', 
+    required: false, 
+    aliases: [
+      'inventory_quantity', 'Variant Inventory Qty', 'qty', 'quantity', 
+      'stock', 'inventory', 'available', 'units', 'Inventory Qty'
+    ] 
+  },
+  image_url: { 
+    label: 'URL Image', 
+    required: false, 
+    aliases: [
+      'image_src', 'Image Src', 'image', 'img', 'picture', 'photo', 
+      'thumbnail', 'images', 'main_image', 'variant_image', 'Variant Image'
+    ] 
+  },
+  weight: { 
+    label: 'Poids', 
+    required: false, 
+    aliases: [
+      'variant_weight', 'Variant Grams', 'poids', 'mass', 'weight_kg', 
+      'weight_g', 'shipping_weight', 'Variant Weight Unit'
+    ] 
+  },
+  tags: { 
+    label: 'Tags', 
+    required: false, 
+    aliases: [
+      'tags', 'Tags', 'keywords', 'labels', 'mots_cles', 'product_tags'
+    ] 
+  },
+  published: { 
+    label: 'Publié', 
+    required: false, 
+    aliases: [
+      'published', 'Published', 'status', 'active', 'visible', 'enabled', 'is_active'
+    ] 
+  },
+  variant_option1_name: { 
+    label: 'Option 1 Nom', 
+    required: false, 
+    aliases: ['option1_name', 'Option1 Name', 'option1 name'] 
+  },
+  variant_option1_value: { 
+    label: 'Option 1 Valeur', 
+    required: false, 
+    aliases: ['option1_value', 'Option1 Value', 'option1 value', 'size', 'taille'] 
+  },
+  variant_option2_name: { 
+    label: 'Option 2 Nom', 
+    required: false, 
+    aliases: ['option2_name', 'Option2 Name', 'option2 name'] 
+  },
+  variant_option2_value: { 
+    label: 'Option 2 Valeur', 
+    required: false, 
+    aliases: ['option2_value', 'Option2 Value', 'option2 value', 'color', 'couleur'] 
+  },
+  variant_option3_name: { 
+    label: 'Option 3 Nom', 
+    required: false, 
+    aliases: ['option3_name', 'Option3 Name', 'option3 name'] 
+  },
+  variant_option3_value: { 
+    label: 'Option 3 Valeur', 
+    required: false, 
+    aliases: ['option3_value', 'Option3 Value', 'option3 value'] 
+  },
+  barcode: { 
+    label: 'Code-barre', 
+    required: false, 
+    aliases: [
+      'barcode', 'Variant Barcode', 'ean', 'upc', 'gtin', 'isbn'
+    ] 
+  },
+  handle: { 
+    label: 'Handle (URL)', 
+    required: false, 
+    aliases: ['handle', 'Handle', 'url_handle', 'slug'] 
+  },
+  seo_title: { 
+    label: 'Titre SEO', 
+    required: false, 
+    aliases: ['seo_title', 'SEO Title', 'meta_title'] 
+  },
+  seo_description: { 
+    label: 'Description SEO', 
+    required: false, 
+    aliases: ['seo_description', 'SEO Description', 'meta_description'] 
+  },
+  image_alt: { 
+    label: 'Alt Image', 
+    required: false, 
+    aliases: ['image_alt', 'Image Alt Text', 'alt_text', 'image alt text'] 
+  },
+  gift_card: { 
+    label: 'Carte cadeau', 
+    required: false, 
+    aliases: ['gift_card', 'Gift Card', 'is_gift_card'] 
+  },
+  taxable: { 
+    label: 'Taxable', 
+    required: false, 
+    aliases: ['taxable', 'Variant Taxable', 'variant taxable'] 
+  },
+  requires_shipping: { 
+    label: 'Expédition requise', 
+    required: false, 
+    aliases: ['requires_shipping', 'Variant Requires Shipping', 'variant requires shipping'] 
+  },
+  fulfillment_service: { 
+    label: 'Service de livraison', 
+    required: false, 
+    aliases: ['fulfillment_service', 'Variant Fulfillment Service', 'variant fulfillment service'] 
+  },
+  inventory_policy: { 
+    label: 'Politique inventaire', 
+    required: false, 
+    aliases: ['inventory_policy', 'Variant Inventory Policy', 'variant inventory policy'] 
+  },
+  inventory_tracker: { 
+    label: 'Suivi inventaire', 
+    required: false, 
+    aliases: ['inventory_tracker', 'Variant Inventory Tracker', 'variant inventory tracker'] 
+  },
+  google_gender: { 
+    label: 'Google Genre', 
+    required: false, 
+    aliases: ['google_gender', 'Google Shopping / Gender', 'google shopping gender'] 
+  },
+  google_age_group: { 
+    label: 'Google Age', 
+    required: false, 
+    aliases: ['google_age_group', 'Google Shopping / Age Group', 'google shopping age group'] 
+  },
+  google_mpn: { 
+    label: 'Google MPN', 
+    required: false, 
+    aliases: ['google_mpn', 'Google Shopping / MPN', 'google shopping mpn'] 
+  },
+  google_condition: { 
+    label: 'Google État', 
+    required: false, 
+    aliases: ['google_condition', 'Google Shopping / Condition', 'google shopping condition'] 
+  }
 }
 
 function toCleanString(value: unknown): string {
