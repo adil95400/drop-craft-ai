@@ -170,19 +170,12 @@ export function ProductsAuditView({
               <CardContent>
                 <ProductsPageWrapper
                   products={filteredProducts}
-                  allProducts={allProducts}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onView={onView}
                   onRefresh={onRefresh}
-                  filters={filters}
-                  categories={categories}
-                  onFilterChange={onFilterChange}
-                  onResetFilters={onResetFilters}
-                  hasActiveFilters={auditActiveCount > 0}
                   onSelectionChange={onSelectionChange}
                   selectedProducts={selectedProducts}
-                  isLoading={isLoading}
                 />
               </CardContent>
             </Card>
@@ -210,17 +203,10 @@ export function ProductsAuditView({
           <CardContent>
             <ProductsPageWrapper
               products={filteredProducts}
-              allProducts={allProducts}
               onEdit={onEdit}
               onDelete={onDelete}
               onView={onView}
               onRefresh={onRefresh}
-              filters={filters}
-              categories={categories}
-              onFilterChange={onFilterChange}
-              onResetFilters={onResetFilters}
-              hasActiveFilters={auditActiveCount > 0}
-              isLoading={isLoading}
             />
           </CardContent>
         </Card>

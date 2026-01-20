@@ -22,6 +22,8 @@ interface ProductsQuickActionsBarProps {
   onExpertModeChange: (enabled: boolean) => void
   hasActiveFilters: boolean
   onShowFilters: () => void
+  onResetFilters?: () => void
+  isLoading?: boolean
 }
 
 export function ProductsQuickActionsBar({
@@ -32,7 +34,9 @@ export function ProductsQuickActionsBar({
   expertMode,
   onExpertModeChange,
   hasActiveFilters,
-  onShowFilters
+  onShowFilters,
+  onResetFilters,
+  isLoading = false
 }: ProductsQuickActionsBarProps) {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -141,6 +145,17 @@ export function ProductsQuickActionsBar({
             </Badge>
           )}
         </Button>
+        
+        {hasActiveFilters && onResetFilters && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-muted-foreground hover:text-destructive"
+            onClick={onResetFilters}
+          >
+            Réinitialiser
+          </Button>
+        )}
       </div>
     </div>
   )
