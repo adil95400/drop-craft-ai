@@ -163,25 +163,39 @@ export class ProductsUnifiedService {
 
       console.log(`✓ products table loaded: ${products.length} products for user ${userId}`);
 
-      return products.map((p: any) => ({
-        id: p.id,
-        name: p.name || p.title || 'Produit sans nom',
-        description: p.description || undefined,
-        price: p.price || 0,
-        cost_price: p.cost_price || undefined,
-        status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
-        stock_quantity: p.stock_quantity || undefined,
-        sku: p.sku || undefined,
-        category: p.category || undefined,
-        image_url: p.image_url || undefined,
-        images: p.image_url ? [p.image_url] : [],
-        profit_margin: (p as any).profit_margin || undefined,
-        user_id: p.user_id,
-        source: 'products' as const,
-        variants: [] as ProductVariant[],
-        created_at: p.created_at || new Date().toISOString(),
-        updated_at: p.updated_at || new Date().toISOString()
-      }));
+      return products.map((p: any) => {
+        // Combine images from JSONB 'images' field and 'image_url' field
+        const imagesFromJsonb = Array.isArray(p.images) ? p.images : [];
+        const cleanImages = [
+          ...imagesFromJsonb,
+          ...(p.image_url && !imagesFromJsonb.includes(p.image_url) ? [p.image_url] : [])
+        ].filter((img: string) => 
+          typeof img === 'string' && 
+          img.startsWith('http') && 
+          !img.includes('":[') && 
+          !img.includes('blob:')
+        );
+
+        return {
+          id: p.id,
+          name: p.name || p.title || 'Produit sans nom',
+          description: p.description || undefined,
+          price: p.price || 0,
+          cost_price: p.cost_price || undefined,
+          status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+          stock_quantity: p.stock_quantity || undefined,
+          sku: p.sku || undefined,
+          category: p.category || undefined,
+          image_url: cleanImages.length > 0 ? cleanImages[0] : undefined,
+          images: cleanImages,
+          profit_margin: (p as any).profit_margin || undefined,
+          user_id: p.user_id,
+          source: 'products' as const,
+          variants: [] as ProductVariant[],
+          created_at: p.created_at || new Date().toISOString(),
+          updated_at: p.updated_at || new Date().toISOString()
+        };
+      });
     } catch (error) {
       console.error('getProductsTable failed:', error);
       return [];
