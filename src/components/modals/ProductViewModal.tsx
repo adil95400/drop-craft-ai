@@ -58,6 +58,10 @@ import {
   Search,
   Zap,
   Star,
+  Video,
+  Image as ImageIcon,
+  Play,
+  ExternalLink,
 } from 'lucide-react'
 import {
   AlertDialog,
@@ -130,14 +134,37 @@ export function ProductViewModal({
   // Images handling
   const images = useMemo(() => {
     if (!product) return []
-    return (product as any).images?.length 
+    const imgs = (product as any).images?.length 
       ? (product as any).images 
       : product.image_url 
         ? [product.image_url] 
         : []
+    // Filter out corrupted URLs
+    return imgs.filter((url: string) => 
+      typeof url === 'string' && 
+      url.startsWith('http') && 
+      !url.includes('":[')
+    )
   }, [product])
 
   const hasMultipleImages = images.length > 1
+
+  // Videos handling
+  const videos = useMemo(() => {
+    if (!product) return []
+    const vids = (product as any).videos || []
+    return vids.filter((url: string) => 
+      typeof url === 'string' && 
+      url.startsWith('http') && 
+      !url.includes('blob:')
+    )
+  }, [product])
+
+  // Variants handling
+  const variants = useMemo(() => {
+    if (!product) return []
+    return (product as any).variants || []
+  }, [product])
 
   // Calculate metrics
   const metrics = useMemo(() => {
@@ -836,6 +863,7 @@ export function ProductViewModal({
                   <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 px-6">
                     {[
                       { value: 'overview', label: 'Aperçu', icon: Eye },
+                      { value: 'media', label: 'Médias', icon: ImageIcon, badge: videos.length + variants.length > 0 ? videos.length + variants.length : undefined },
                       { value: 'pricing', label: 'Prix & Stock', icon: DollarSign },
                       { value: 'details', label: 'Détails', icon: FileText },
                       { value: 'seo', label: 'SEO', icon: Search },
@@ -967,6 +995,167 @@ export function ProductViewModal({
                               }
                             </span>
                           </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+
+                    {/* Media Tab - Images, Videos, Variants */}
+                    <TabsContent value="media" className="m-0 space-y-6">
+                      {/* Images Gallery */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <ImageIcon className="h-4 w-4" />
+                            Images ({images.length})
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {images.length > 0 ? (
+                            <div className="grid grid-cols-4 gap-2">
+                              {images.map((img: string, idx: number) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setCurrentImageIndex(idx)}
+                                  className={cn(
+                                    "aspect-square rounded-lg overflow-hidden border-2 transition-all",
+                                    idx === currentImageIndex
+                                      ? "border-primary ring-2 ring-primary/20"
+                                      : "border-transparent hover:border-muted-foreground/30"
+                                  )}
+                                >
+                                  <img
+                                    src={img}
+                                    alt={`Image ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = '/placeholder.svg'
+                                    }}
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                              <p>Aucune image disponible</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Videos */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Video className="h-4 w-4" />
+                            Vidéos ({videos.length})
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {videos.length > 0 ? (
+                            <div className="space-y-3">
+                              {videos.map((video: string, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                                >
+                                  <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                                    <Play className="h-5 w-5 text-purple-600" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">
+                                      Vidéo {idx + 1}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground truncate">
+                                      {video.includes('.mp4') ? 'MP4' : video.includes('.m3u8') ? 'HLS Stream' : 'Vidéo'}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => window.open(video, '_blank')}
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <Video className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                              <p>Aucune vidéo disponible</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Variants */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Layers className="h-4 w-4" />
+                            Variantes ({variants.length})
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {variants.length > 0 ? (
+                            <div className="space-y-2">
+                              {variants.map((variant: any, idx: number) => (
+                                <div
+                                  key={variant.id || idx}
+                                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    {variant.image ? (
+                                      <img
+                                        src={variant.image}
+                                        alt={variant.name}
+                                        className="h-10 w-10 rounded-lg object-cover"
+                                      />
+                                    ) : (
+                                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                        <Package className="h-5 w-5 text-primary" />
+                                      </div>
+                                    )}
+                                    <div>
+                                      <p className="text-sm font-medium">{variant.name || 'Variante'}</p>
+                                      {variant.sku && (
+                                        <p className="text-xs text-muted-foreground font-mono">
+                                          SKU: {variant.sku}
+                                        </p>
+                                      )}
+                                      {variant.attributes && Object.keys(variant.attributes).length > 0 && (
+                                        <div className="flex gap-1 mt-1">
+                                          {Object.entries(variant.attributes).map(([key, value]) => (
+                                            <Badge key={key} variant="outline" className="text-xs">
+                                              {key}: {String(value)}
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    {variant.price !== undefined && variant.price > 0 && (
+                                      <p className="text-sm font-bold">
+                                        {formatCurrency(variant.price)}
+                                      </p>
+                                    )}
+                                    {variant.stock_quantity !== undefined && (
+                                      <p className="text-xs text-muted-foreground">
+                                        Stock: {variant.stock_quantity}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <Layers className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                              <p>Aucune variante disponible</p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </TabsContent>
