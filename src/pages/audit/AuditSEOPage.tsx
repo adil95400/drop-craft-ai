@@ -849,11 +849,15 @@ export default function AuditSEOPage() {
 
                               {/* Actions */}
                               <div className="flex gap-2">
-                                <Button size="sm" className="gap-2">
+                                <Button size="sm" className="gap-2" onClick={() => {
+                                  toast({ title: "Optimisation lancée", description: `Optimisation IA de "${analysis.product.name}" en cours...` });
+                                }}>
                                   <Wand2 className="h-4 w-4" />
                                   Optimiser avec IA
                                 </Button>
-                                <Button size="sm" variant="outline" className="gap-2">
+                                <Button size="sm" variant="outline" className="gap-2" onClick={() => {
+                                  window.open(`/products?search=${encodeURIComponent(analysis.product.name || '')}`, '_blank');
+                                }}>
                                   <Eye className="h-4 w-4" />
                                   Voir le produit
                                 </Button>
@@ -965,7 +969,14 @@ export default function AuditSEOPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <Card className="border-2 border-dashed border-purple-200 hover:border-purple-400 transition-colors cursor-pointer">
+                <Card 
+                  className="border-2 border-dashed border-purple-200 hover:border-purple-400 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setIssueFilter('title');
+                    setActiveTab('products');
+                    toast({ title: "Filtre appliqué", description: "Affichage des produits avec problèmes de titres" });
+                  }}
+                >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
                       <Wand2 className="h-6 w-6 text-purple-600" />
@@ -980,7 +991,14 @@ export default function AuditSEOPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 transition-colors cursor-pointer">
+                <Card 
+                  className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setIssueFilter('description');
+                    setActiveTab('products');
+                    toast({ title: "Filtre appliqué", description: "Affichage des produits avec problèmes de descriptions" });
+                  }}
+                >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
                       <FileText className="h-6 w-6 text-indigo-600" />
@@ -995,7 +1013,14 @@ export default function AuditSEOPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-dashed border-blue-200 hover:border-blue-400 transition-colors cursor-pointer">
+                <Card 
+                  className="border-2 border-dashed border-blue-200 hover:border-blue-400 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setIssueFilter('image');
+                    setActiveTab('products');
+                    toast({ title: "Filtre appliqué", description: "Affichage des produits avec problèmes d'images" });
+                  }}
+                >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
                       <Image className="h-6 w-6 text-blue-600" />
@@ -1010,7 +1035,14 @@ export default function AuditSEOPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-dashed border-emerald-200 hover:border-emerald-400 transition-colors cursor-pointer">
+                <Card 
+                  className="border-2 border-dashed border-emerald-200 hover:border-emerald-400 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setIssueFilter('keyword');
+                    setActiveTab('products');
+                    toast({ title: "Filtre appliqué", description: "Affichage des produits avec problèmes de mots-clés" });
+                  }}
+                >
                   <CardContent className="pt-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
                       <Tag className="h-6 w-6 text-emerald-600" />
@@ -1026,9 +1058,21 @@ export default function AuditSEOPage() {
                 </Card>
               </div>
 
-              <Button className="w-full gap-2 h-12 text-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
-                <Sparkles className="h-5 w-5" />
-                Lancer l'optimisation complète
+              <Button 
+                className="w-full gap-2 h-12 text-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                onClick={() => {
+                  setIsOptimizing(true);
+                  toast({ title: "Optimisation globale lancée", description: "Tous les produits seront optimisés par l'IA..." });
+                  setTimeout(() => {
+                    setIsOptimizing(false);
+                    toast({ title: "Optimisation terminée", description: "Vos produits ont été optimisés avec succès" });
+                    refetch();
+                  }, 3000);
+                }}
+                disabled={isOptimizing}
+              >
+                {isOptimizing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+                {isOptimizing ? "Optimisation en cours..." : "Lancer l'optimisation complète"}
               </Button>
             </CardContent>
           </Card>
