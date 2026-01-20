@@ -604,137 +604,290 @@ export default function ImportHistoryPage() {
 
       {/* Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5" />
-              Détails de l'import
-            </DialogTitle>
-            <DialogDescription>
-              Informations complètes sur cet import
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedJob && (
-            <ScrollArea className="max-h-[60vh]">
-              <div className="space-y-6">
-                {/* Status */}
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {(() => {
-                      const config = getStatusConfig(selectedJob.status)
-                      return (
-                        <>
-                          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", config.bgColor)}>
-                            <config.icon className={cn("w-6 h-6", config.color)} />
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+          {selectedJob && (() => {
+            const statusConfig = getStatusConfig(selectedJob.status)
+            const successRate = selectedJob.total_rows > 0 
+              ? Math.round((selectedJob.success_rows / selectedJob.total_rows) * 100)
+              : 0
+            const duration = selectedJob.started_at && selectedJob.completed_at
+              ? Math.round((new Date(selectedJob.completed_at).getTime() - new Date(selectedJob.started_at).getTime()) / 1000)
+              : null
+            
+            return (
+              <>
+                {/* Header with gradient */}
+                <div className={cn(
+                  "relative px-6 py-8 text-white overflow-hidden",
+                  selectedJob.status === 'completed' && "bg-gradient-to-br from-green-500 to-emerald-600",
+                  selectedJob.status === 'failed' && "bg-gradient-to-br from-red-500 to-rose-600",
+                  selectedJob.status === 'processing' && "bg-gradient-to-br from-blue-500 to-indigo-600",
+                  selectedJob.status === 'pending' && "bg-gradient-to-br from-amber-500 to-orange-600"
+                )}>
+                  {/* Background pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
+                  </div>
+                  
+                  <div className="relative flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                        <statusConfig.icon className={cn("w-8 h-8 text-white", selectedJob.status === 'processing' && !prefersReducedMotion && 'animate-spin')} />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold">{selectedJob.source_type?.toUpperCase() || 'Import'}</h2>
+                        <p className="text-white/80 text-sm mt-1">
+                          {format(new Date(selectedJob.created_at), 'EEEE dd MMMM yyyy', { locale: fr })}
+                        </p>
+                        <p className="text-white/60 text-xs">
+                          à {format(new Date(selectedJob.created_at), 'HH:mm:ss')}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur">
+                      {statusConfig.label}
+                    </Badge>
+                  </div>
+
+                  {/* Stats row in header */}
+                  <div className="relative grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/20">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold">{selectedJob.success_rows || 0}</p>
+                      <p className="text-xs text-white/70 mt-1">Réussis</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold">{selectedJob.error_rows || 0}</p>
+                      <p className="text-xs text-white/70 mt-1">Échoués</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold">{selectedJob.total_rows || 0}</p>
+                      <p className="text-xs text-white/70 mt-1">Total</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold">{successRate}%</p>
+                      <p className="text-xs text-white/70 mt-1">Succès</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <ScrollArea className="max-h-[45vh]">
+                  <div className="p-6 space-y-6">
+                    {/* Progress bar for processing */}
+                    {selectedJob.status === 'processing' && selectedJob.total_rows > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Progression</span>
+                          <span className="font-medium">{selectedJob.progress}%</span>
+                        </div>
+                        <Progress value={selectedJob.progress} className="h-3" />
+                      </div>
+                    )}
+
+                    {/* Info Cards */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <Card className="border-2">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <FileSpreadsheet className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">ID Import</p>
+                              <p className="font-mono text-xs truncate max-w-[150px]" title={selectedJob.id}>
+                                {selectedJob.id.slice(0, 8)}...{selectedJob.id.slice(-4)}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium">{config.label}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(selectedJob.created_at), 'dd MMMM yyyy à HH:mm:ss', { locale: fr })}
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-2">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                              <Package className="w-5 h-5 text-blue-500" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Type source</p>
+                              <Badge variant="secondary" className="mt-1">
+                                {selectedJob.source_type?.toUpperCase() || 'N/A'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-2">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                              <Clock className="w-5 h-5 text-green-500" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Démarré</p>
+                              <p className="text-sm font-medium">
+                                {selectedJob.started_at 
+                                  ? format(new Date(selectedJob.started_at), 'HH:mm:ss') 
+                                  : 'En attente'}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-2">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                              <CheckCircle className="w-5 h-5 text-purple-500" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Durée</p>
+                              <p className="text-sm font-medium">
+                                {duration !== null ? (
+                                  duration < 60 
+                                    ? `${duration}s`
+                                    : `${Math.floor(duration / 60)}m ${duration % 60}s`
+                                ) : 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Source URL */}
+                    {selectedJob.source_url && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium flex items-center gap-2">
+                          <Search className="w-4 h-4 text-muted-foreground" />
+                          URL Source
+                        </p>
+                        <div className="p-3 bg-muted/50 rounded-lg border">
+                          <p className="text-sm font-mono break-all text-muted-foreground">
+                            {selectedJob.source_url}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Errors */}
+                    {selectedJob.errors && selectedJob.errors.length > 0 && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-red-500" />
+                          <p className="text-sm font-medium text-red-600">
+                            Erreurs détectées ({selectedJob.errors.length})
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          {selectedJob.errors.slice(0, 5).map((error, i) => (
+                            <div 
+                              key={i} 
+                              className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800"
+                            >
+                              <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                              <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+                            </div>
+                          ))}
+                          {selectedJob.errors.length > 5 && (
+                            <p className="text-xs text-muted-foreground text-center">
+                              + {selectedJob.errors.length - 5} autres erreurs
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Timeline */}
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        Chronologie
+                      </p>
+                      <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
+                        <div className="relative">
+                          <div className="absolute -left-[18px] w-3 h-3 rounded-full bg-primary border-2 border-background" />
+                          <div className="text-sm">
+                            <p className="font-medium">Créé</p>
+                            <p className="text-muted-foreground">
+                              {format(new Date(selectedJob.created_at), 'dd/MM/yyyy à HH:mm:ss')}
                             </p>
                           </div>
-                        </>
-                      )
-                    })()}
-                  </div>
-                  {getStatusBadge(selectedJob.status)}
-                </div>
-
-                <Separator />
-
-                {/* Info Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">ID Import</p>
-                    <p className="font-mono text-sm">{selectedJob.id}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Type</p>
-                    <Badge variant="outline">{selectedJob.source_type?.toUpperCase() || 'N/A'}</Badge>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Produits réussis</p>
-                    <p className="text-2xl font-bold text-green-600">{selectedJob.success_rows || 0}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Produits échoués</p>
-                    <p className="text-2xl font-bold text-red-500">{selectedJob.error_rows || 0}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Total traité</p>
-                    <p className="text-xl font-semibold">{selectedJob.total_rows || 0}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Progression</p>
-                    <p className="text-xl font-semibold">{selectedJob.progress || 0}%</p>
-                  </div>
-                </div>
-
-                {selectedJob.source_url && (
-                  <>
-                    <Separator />
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">URL Source</p>
-                      <p className="text-sm break-all bg-muted p-2 rounded">{selectedJob.source_url}</p>
-                    </div>
-                  </>
-                )}
-
-                {/* Errors */}
-                {selectedJob.errors && selectedJob.errors.length > 0 && (
-                  <>
-                    <Separator />
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-red-500">
-                        <AlertTriangle className="w-4 h-4" />
-                        <p className="font-medium">Erreurs ({selectedJob.errors.length})</p>
-                      </div>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {selectedJob.errors.map((error, i) => (
-                          <div key={i} className="text-sm bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 p-2 rounded">
-                            {error}
+                        </div>
+                        {selectedJob.started_at && (
+                          <div className="relative">
+                            <div className="absolute -left-[18px] w-3 h-3 rounded-full bg-blue-500 border-2 border-background" />
+                            <div className="text-sm">
+                              <p className="font-medium">Démarré</p>
+                              <p className="text-muted-foreground">
+                                {format(new Date(selectedJob.started_at), 'dd/MM/yyyy à HH:mm:ss')}
+                              </p>
+                            </div>
                           </div>
-                        ))}
+                        )}
+                        {selectedJob.completed_at && (
+                          <div className="relative">
+                            <div className={cn(
+                              "absolute -left-[18px] w-3 h-3 rounded-full border-2 border-background",
+                              selectedJob.status === 'completed' ? 'bg-green-500' : 'bg-red-500'
+                            )} />
+                            <div className="text-sm">
+                              <p className="font-medium">
+                                {selectedJob.status === 'completed' ? 'Terminé' : 'Échoué'}
+                              </p>
+                              <p className="text-muted-foreground">
+                                {format(new Date(selectedJob.completed_at), 'dd/MM/yyyy à HH:mm:ss')}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </>
-                )}
-
-                {/* Timestamps */}
-                <Separator />
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Démarré</p>
-                    <p>{selectedJob.started_at ? format(new Date(selectedJob.started_at), 'dd/MM/yyyy HH:mm:ss') : 'N/A'}</p>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground">Terminé</p>
-                    <p>{selectedJob.completed_at ? format(new Date(selectedJob.completed_at), 'dd/MM/yyyy HH:mm:ss') : 'N/A'}</p>
+                </ScrollArea>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between p-4 border-t bg-muted/30">
+                  <div className="text-xs text-muted-foreground">
+                    Dernière mise à jour: {format(new Date(selectedJob.updated_at), 'HH:mm:ss')}
+                  </div>
+                  <div className="flex gap-2">
+                    {selectedJob.status === 'failed' && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          handleRetry(selectedJob.id)
+                          setDetailsOpen(false)
+                        }}
+                        disabled={retryMutation.isPending}
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Relancer
+                      </Button>
+                    )}
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => {
+                        setDetailsOpen(false)
+                        handleDelete(selectedJob.id)
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Supprimer
+                    </Button>
+                    <Button size="sm" onClick={() => setDetailsOpen(false)}>
+                      Fermer
+                    </Button>
                   </div>
                 </div>
-              </div>
-            </ScrollArea>
-          )}
-
-          <DialogFooter>
-            {selectedJob?.status === 'failed' && (
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  handleRetry(selectedJob.id)
-                  setDetailsOpen(false)
-                }}
-                disabled={retryMutation.isPending}
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Relancer
-              </Button>
-            )}
-            <Button variant="secondary" onClick={() => setDetailsOpen(false)}>
-              Fermer
-            </Button>
-          </DialogFooter>
+              </>
+            )
+          })()}
         </DialogContent>
       </Dialog>
 
