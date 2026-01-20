@@ -236,7 +236,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'quality-scoring', name: 'Scoring', route: '/audit/scoring', icon: 'Star', description: 'Score qualité', features: ['scoring'], order: 3 },
       { id: 'quality-seo', name: 'Audit SEO', route: '/audit/seo', icon: 'Search', description: 'Audit référencement', features: ['seo'], order: 4 },
       { id: 'quality-feed', name: 'Audit Feed', route: '/audit/feed', icon: 'Rss', description: 'Qualité des feeds', features: ['feed'], order: 5 },
-      { id: 'quality-batch', name: 'Audit en Masse', route: '/audit/batch', icon: 'Layers', description: 'Audit par lot', features: ['batch'], order: 6 },
+      { id: 'quality-images', name: 'Audit Images', route: '/products/image-audit', icon: 'Image', description: 'Enrichir galeries produits', features: ['images'], order: 6 },
+      { id: 'quality-batch', name: 'Audit en Masse', route: '/audit/batch', icon: 'Layers', description: 'Audit par lot', features: ['batch'], order: 7 },
     ]
   },
   

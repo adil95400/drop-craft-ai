@@ -38,7 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Package, Loader2, TrendingUp, AlertCircle, DollarSign, Target, 
   Sparkles, CheckCircle, Filter, Edit3, Wand2, Plus, BarChart3, 
-  RefreshCw, Eye, Grid, List, Download, Upload, GitBranch, History, Rss
+  RefreshCw, Eye, Grid, List, Download, Upload, GitBranch, History, Rss, Image
 } from 'lucide-react';
 import { useModalContext } from '@/hooks/useModalHelpers';
 import { useToast } from '@/hooks/use-toast';
@@ -338,6 +338,13 @@ export default function ChannableProductsPage() {
       icon: Wand2,
       onClick: () => setShowBulkEnrichment(true),
       description: 'Optimisation'
+    },
+    {
+      id: 'image-audit',
+      label: 'Audit Images',
+      icon: Image,
+      onClick: () => navigate('/products/image-audit'),
+      description: 'Enrichir galeries'
     },
     {
       id: 'refresh',
