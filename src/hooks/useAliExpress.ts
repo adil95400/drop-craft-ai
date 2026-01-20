@@ -11,6 +11,7 @@ export interface AliExpressProduct {
   rating: number;
   review_count: number;
   image_urls: string[];
+  video_urls: string[];
   category: string;
   tags: string[];
   supplier_name: string;
@@ -19,6 +20,8 @@ export interface AliExpressProduct {
   description?: string;
   source_url: string;
   stock_quantity?: number;
+  sku: string;
+  specifications?: Record<string, string>;
 }
 
 export function useScrapeAliExpressProduct() {
