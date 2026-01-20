@@ -496,6 +496,9 @@ verify_jwt = true
 [functions.xml-json-import]
 verify_jwt = true
 
+[functions.enrich-product-images]
+verify_jwt = true
+
 [functions.process-import]
 verify_jwt = true
 
