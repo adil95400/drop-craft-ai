@@ -63,6 +63,7 @@ import {
   Play,
   ExternalLink,
 } from 'lucide-react'
+import { ImageGalleryModal } from './ImageGalleryModal'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,6 +104,7 @@ export function ProductViewModal({
   const [activeTab, setActiveTab] = useState('overview')
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
+  const [showImageGallery, setShowImageGallery] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
   
@@ -683,14 +685,19 @@ export function ProductViewModal({
                       <span>Optimisation complète IA</span>
                     </Button>
                     
-                    {/* Image Audit Button */}
+                    {/* Image Gallery Button */}
                     <Button
                       variant="outline"
                       className="w-full justify-start gap-2 h-10"
-                      onClick={() => window.location.href = '/products/image-audit'}
+                      onClick={() => setShowImageGallery(true)}
                     >
                       <ImageIcon className="h-4 w-4 text-emerald-500" />
-                      <span>Audit Images</span>
+                      <span>Gérer les images</span>
+                      {images.length > 0 && (
+                        <Badge variant="secondary" className="ml-auto text-xs">
+                          {images.length}
+                        </Badge>
+                      )}
                     </Button>
                     
                     {/* SEO Optimization Button */}
@@ -1660,6 +1667,16 @@ export function ProductViewModal({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Image Gallery Modal */}
+      <ImageGalleryModal
+        open={showImageGallery}
+        onOpenChange={setShowImageGallery}
+        images={images}
+        productName={product?.name}
+        productId={product?.id}
+        readOnly={!isEditing}
+      />
     </>
   )
 }

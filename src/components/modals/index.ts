@@ -23,3 +23,4 @@ export { ConfigAutomationDialog } from './ConfigAutomationDialog';
 export { AIInsightsDialog } from './AIInsightsDialog';
 export { ProductDetailsDialog } from './ProductDetailsDialog';
 export { OrderEditModal } from './OrderEditModal';
+export { ImageGalleryModal } from './ImageGalleryModal';
