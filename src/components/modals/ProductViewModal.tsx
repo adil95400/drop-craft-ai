@@ -683,6 +683,16 @@ export function ProductViewModal({
                       <span>Optimisation complète IA</span>
                     </Button>
                     
+                    {/* Image Audit Button */}
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start gap-2 h-10"
+                      onClick={() => window.location.href = '/products/image-audit'}
+                    >
+                      <ImageIcon className="h-4 w-4 text-emerald-500" />
+                      <span>Audit Images</span>
+                    </Button>
+                    
                     {/* SEO Optimization Button */}
                     <Button
                       variant="outline"
