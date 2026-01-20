@@ -658,18 +658,28 @@ function extractShopifyVariants(html: string): any[] {
   try {
     // Strategy 1: Look for product JSON data (most reliable)
     const productJsonPatterns = [
-      /var\s+product\s*=\s*({[\s\S]*?});/i,
-      /"product"\s*:\s*({[\s\S]*?variants[\s\S]*?})\s*[,}]/i,
-      /ShopifyAnalytics\.meta\.product\s*=\s*({[\s\S]*?});/i,
-      /window\.ShopifyProduct\s*=\s*({[\s\S]*?});/i,
+      /var\s+product\s*=\s*({[\s\S]*?});(?=\s*(?:var|const|let|function|<|$))/i,
+      /window\.ShopifyProduct\s*=\s*({[\s\S]*?});(?=\s*(?:var|const|let|function|<|$))/i,
+      /ShopifyAnalytics\.meta\.product\s*=\s*({[\s\S]*?});(?=\s*(?:var|const|let|function|<|$))/i,
     ]
     
     for (const pattern of productJsonPatterns) {
       const match = html.match(pattern)
       if (match) {
         try {
-          const data = JSON.parse(match[1])
+          // Clean up common JSON issues before parsing
+          let jsonStr = match[1]
+            .replace(/,\s*}/g, '}')  // Remove trailing commas
+            .replace(/,\s*]/g, ']')  // Remove trailing commas in arrays
+            .replace(/\\'/g, "'")    // Fix escaped quotes
+          
+          const data = JSON.parse(jsonStr)
           const productVariants = data.variants || data.product?.variants || []
+          
+          // Get options names safely
+          const optionNames = Array.isArray(data.options) 
+            ? data.options.map((o: any) => typeof o === 'string' ? o : o?.name || o)
+            : []
           
           for (const v of productVariants) {
             const key = v.id?.toString() || v.sku || JSON.stringify(v)
@@ -678,15 +688,24 @@ function extractShopifyVariants(html: string): any[] {
             
             // Build attributes from option values
             const attributes: Record<string, string> = {}
-            if (v.option1) attributes[data.options?.[0] || 'Option 1'] = v.option1
-            if (v.option2) attributes[data.options?.[1] || 'Option 2'] = v.option2
-            if (v.option3) attributes[data.options?.[2] || 'Option 3'] = v.option3
+            if (v.option1) attributes[optionNames[0] || 'Option 1'] = v.option1
+            if (v.option2) attributes[optionNames[1] || 'Option 2'] = v.option2
+            if (v.option3) attributes[optionNames[2] || 'Option 3'] = v.option3
+            
+            // Handle price - can be in cents or already in decimal
+            let price = 0
+            if (typeof v.price === 'number') {
+              price = v.price > 1000 ? v.price / 100 : v.price // If > 1000, likely in cents
+            } else if (typeof v.price === 'string') {
+              const parsed = parseFloat(v.price.replace(/[^0-9.,]/g, '').replace(',', '.'))
+              price = parsed > 1000 ? parsed / 100 : parsed
+            }
             
             variants.push({
               sku: v.sku || v.id?.toString() || '',
-              name: v.title || v.name || Object.values(attributes).join(' / '),
-              price: parseFloat(v.price) / 100 || 0, // Shopify prices are in cents
-              stock: v.inventory_quantity ?? (v.available ? 99 : 0),
+              name: v.title || v.name || Object.values(attributes).join(' / ') || 'Variant',
+              price,
+              stock: typeof v.inventory_quantity === 'number' ? v.inventory_quantity : (v.available ? 99 : 0),
               available: v.available ?? true,
               image: v.featured_image?.src || v.image || null,
               attributes,
@@ -699,7 +718,7 @@ function extractShopifyVariants(html: string): any[] {
             break
           }
         } catch (e) {
-          console.log('Could not parse Shopify variant JSON:', e)
+          // Silent fail - try next pattern
         }
       }
     }
@@ -1514,6 +1533,13 @@ async function scrapeShopifyProduct(url: string, productHandle: string | null): 
     const compareAtPrices = variants.map((v: any) => v.compare_at_price).filter((p: number | null) => p && p > 0)
     const originalPrice = compareAtPrices.length > 0 ? Math.max(...compareAtPrices) : null
     
+    // Safely handle tags - can be string or array
+    const tagsArray = Array.isArray(product.tags) 
+      ? product.tags 
+      : typeof product.tags === 'string' 
+        ? product.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+        : []
+    
     return {
       title: product.title || 'Produit Shopify',
       description: product.body_html?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '',
@@ -1528,11 +1554,11 @@ async function scrapeShopifyProduct(url: string, productHandle: string | null): 
       specifications: {
         'Type': product.product_type || '',
         'Vendeur': product.vendor || '',
-        'Tags': (product.tags || []).join(', ')
+        'Tags': tagsArray.join(', ')
       },
       handle: product.handle,
       product_type: product.product_type,
-      tags: product.tags || [],
+      tags: tagsArray,
       created_at: product.created_at,
       updated_at: product.updated_at
     }
