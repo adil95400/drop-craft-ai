@@ -12,10 +12,14 @@ export interface UnifiedProduct {
   category?: string
   image_url?: string
   images?: string[]
+  videos?: string[]
   profit_margin?: number
   user_id: string
   source: 'products' | 'imported' | 'premium' | 'catalog' | 'shopify' | 'published' | 'feed' | 'supplier'
   variants?: ProductVariant[]
+  source_url?: string
+  brand?: string
+  specifications?: Record<string, any>
   created_at: string
   updated_at: string
   // AI Scores & Analytics
@@ -197,25 +201,61 @@ export class ProductsUnifiedService {
 
       console.log(`✓ imported_products loaded: ${data?.length || 0} products for user ${userId}`)
       
-      return (data || []).map((p: any) => ({
-        id: p.id,
-        name: p.name || p.product_id || 'Produit sans nom',
-        description: p.description || undefined,
-        price: p.price || 0,
-        cost_price: p.cost_price || undefined,
-        status: (p.status === 'published' || p.status === 'imported' ? 'active' : 'inactive') as 'active' | 'inactive',
-        stock_quantity: p.stock_quantity || undefined,
-        sku: p.sku || undefined,
-        category: p.category || undefined,
-        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
-        images: Array.isArray(p.image_urls) ? p.image_urls : [],
-        profit_margin: p.cost_price && p.price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
-        user_id: p.user_id,
-        source: 'imported' as const,
-        variants: [] as ProductVariant[],
-        created_at: p.created_at || new Date().toISOString(),
-        updated_at: p.updated_at || p.created_at || new Date().toISOString()
-      }))
+      return (data || []).map((p: any) => {
+        // Parse variants from imported product
+        const variants: ProductVariant[] = Array.isArray(p.variants) 
+          ? p.variants.map((v: any, idx: number) => ({
+              id: v.sku || v.id || `variant-${idx}`,
+              name: v.name || 'Variante',
+              sku: v.sku || undefined,
+              price: v.price || undefined,
+              stock_quantity: v.stock || v.stock_quantity || undefined,
+              attributes: v.attributes || {},
+              image: v.image || undefined
+            }))
+          : [];
+
+        // Clean image URLs - remove any corrupted JSON strings
+        const cleanImages = (Array.isArray(p.image_urls) ? p.image_urls : [])
+          .filter((img: string) => 
+            typeof img === 'string' && 
+            img.startsWith('http') && 
+            !img.includes('":[') && 
+            !img.includes('blob:')
+          );
+
+        // Clean video URLs - filter valid URLs
+        const cleanVideos = (Array.isArray(p.video_urls) ? p.video_urls : [])
+          .filter((vid: string) => 
+            typeof vid === 'string' && 
+            vid.startsWith('http') && 
+            !vid.includes('blob:')
+          );
+
+        return {
+          id: p.id,
+          name: p.name || p.product_id || 'Produit sans nom',
+          description: p.description || undefined,
+          price: p.price || 0,
+          cost_price: p.cost_price || undefined,
+          status: (p.status === 'published' || p.status === 'imported' || p.status === 'active' || p.status === 'draft' ? 'active' : 'inactive') as 'active' | 'inactive',
+          stock_quantity: p.stock_quantity || undefined,
+          sku: p.sku || undefined,
+          category: p.category || undefined,
+          image_url: cleanImages.length > 0 ? cleanImages[0] : undefined,
+          images: cleanImages,
+          videos: cleanVideos,
+          profit_margin: p.cost_price && p.price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
+          user_id: p.user_id,
+          source: 'imported' as const,
+          source_url: p.source_url || undefined,
+          brand: p.brand || p.supplier_name || undefined,
+          specifications: p.specifications || undefined,
+          variants,
+          created_at: p.created_at || new Date().toISOString(),
+          updated_at: p.updated_at || p.created_at || new Date().toISOString()
+        };
+      })
     } catch (error) {
       console.error('getImportedProducts failed:', error)
       return []
