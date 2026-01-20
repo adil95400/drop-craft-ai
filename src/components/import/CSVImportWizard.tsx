@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,7 @@ interface ValidationError {
   field: string
   message: string
   severity: 'error' | 'warning'
+  value?: string
 }
 
 interface ProductMapping {
@@ -39,6 +40,13 @@ interface MappingSuggestion {
   field: string
   confidence: number
   matched_pattern: string
+}
+
+type ImportOutcome = {
+  jobId?: string
+  imported: number
+  failed: number
+  errors: string[]
 }
 
 const PRODUCT_FIELDS = {
@@ -59,6 +67,52 @@ const PRODUCT_FIELDS = {
   variant_option2: { label: 'Option 2 (ex: Couleur)', required: false, aliases: ['option2_name', 'option2_value', 'color', 'couleur'] },
   variant_option3: { label: 'Option 3', required: false, aliases: ['option3_name', 'option3_value'] },
   barcode: { label: 'Code-barre', required: false, aliases: ['ean', 'upc', 'gtin', 'isbn', 'variant_barcode'] }
+}
+
+function toCleanString(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  return String(value).trim()
+}
+
+// Accepts: "1 234", "1\u00A0234", "1.234", "1,234", "12,50", "€12,50", "12.50"
+function parseLocaleNumber(value: unknown): number | null {
+  if (value === null || value === undefined) return null
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+
+  const raw = toCleanString(value)
+  if (!raw) return null
+
+  // Keep digits, separators, minus
+  let s = raw
+    .replace(/\u00A0/g, ' ') // nbsp
+    .replace(/[^0-9,.-]/g, '')
+
+  // If both comma and dot exist, assume last separator is decimal and remove the other as thousands
+  const hasComma = s.includes(',')
+  const hasDot = s.includes('.')
+  if (hasComma && hasDot) {
+    const lastComma = s.lastIndexOf(',')
+    const lastDot = s.lastIndexOf('.')
+    if (lastComma > lastDot) {
+      // comma is decimal
+      s = s.replace(/\./g, '').replace(',', '.')
+    } else {
+      // dot is decimal
+      s = s.replace(/,/g, '')
+    }
+  } else if (hasComma && !hasDot) {
+    // comma as decimal
+    s = s.replace(',', '.')
+  }
+
+  const n = Number.parseFloat(s)
+  return Number.isFinite(n) ? n : null
+}
+
+function parseLocaleInt(value: unknown): number | null {
+  const n = parseLocaleNumber(value)
+  if (n === null) return null
+  return Number.isFinite(n) ? Math.trunc(n) : null
 }
 
 // Intelligent mapping algorithm
@@ -136,6 +190,18 @@ export function CSVImportWizard() {
   const [importProgress, setImportProgress] = useState(0)
   const [isImporting, setIsImporting] = useState(false)
   const [autoMappedCount, setAutoMappedCount] = useState(0)
+  const [importOutcome, setImportOutcome] = useState<ImportOutcome | null>(null)
+
+  const requiredFields = useMemo(() => {
+    return Object.entries(PRODUCT_FIELDS)
+      .filter(([, cfg]) => cfg.required)
+      .map(([field]) => field)
+  }, [])
+
+  const hasRequiredMappings = useMemo(() => {
+    const mappedFields = new Set(Object.values(mapping).filter(Boolean))
+    return requiredFields.every((f) => mappedFields.has(f))
+  }, [mapping, requiredFields])
 
   // Auto-detect mapping when CSV data changes
   useEffect(() => {
@@ -222,9 +288,9 @@ export function CSVImportWizard() {
         }
       })
 
-      // Validate required fields
-      Object.entries(PRODUCT_FIELDS).forEach(([field, config]) => {
-        if (config.required && (!product[field] || product[field].toString().trim() === '')) {
+       // Validate required fields
+       Object.entries(PRODUCT_FIELDS).forEach(([field, config]) => {
+         if (config.required && (!toCleanString(product[field]))) {
           errors.push({
             row: index + 1,
             field,
@@ -235,24 +301,29 @@ export function CSVImportWizard() {
         }
       })
 
-      // Validate price format
-      if (product.price && isNaN(parseFloat(product.price))) {
+       // Validate price format (accept comma decimals)
+       const parsedPrice = parseLocaleNumber(product.price)
+       if (toCleanString(product.price) && parsedPrice === null) {
         errors.push({
           row: index + 1,
           field: 'price',
-          message: 'Prix invalide',
-          severity: 'error'
+           message: 'Prix invalide (ex: 12.50 ou 12,50)',
+           severity: 'error',
+           value: toCleanString(product.price)
         })
         hasRequiredFields = false
       }
 
-      // Validate stock quantity
-      if (product.stock_quantity && isNaN(parseInt(product.stock_quantity))) {
+       // Validate stock quantity: only warn when non-empty and non-numeric
+       const rawStock = toCleanString(product.stock_quantity)
+       const parsedStock = parseLocaleInt(product.stock_quantity)
+       if (rawStock && parsedStock === null) {
         errors.push({
           row: index + 1,
           field: 'stock_quantity',
-          message: 'Quantité de stock invalide',
-          severity: 'warning'
+           message: 'Quantité de stock invalide (doit être un nombre)',
+           severity: 'warning',
+           value: rawStock
         })
       }
 
@@ -260,8 +331,8 @@ export function CSVImportWizard() {
         products.push({
           ...product,
           row_number: index + 1,
-          price: parseFloat(product.price) || 0,
-          stock_quantity: parseInt(product.stock_quantity) || 0
+           price: parsedPrice ?? 0,
+           stock_quantity: parsedStock ?? 0
         })
       }
     })
@@ -276,65 +347,59 @@ export function CSVImportWizard() {
 
     setIsImporting(true)
     setImportProgress(0)
+    setImportOutcome(null)
+    setStep('import')
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      let imported = 0
-      const batchSize = 10
-
-      for (let i = 0; i < validProducts.length; i += batchSize) {
-        const batch = validProducts.slice(i, i + batchSize)
-        
-        const productsToInsert = batch.map(product => ({
-          user_id: user.id,
-          external_id: product.sku || `csv_${Date.now()}_${product.row_number}`,
-          name: product.name,
-          description: product.description || '',
-          price: product.price,
-          sku: product.sku || '',
-          category: product.category || 'Imported',
-          brand: product.brand || '',
-          stock_quantity: product.stock_quantity || 0,
-          image_url: product.image_url || '',
-          weight: product.weight ? parseFloat(product.weight) : null,
-          status: 'pending',
-          source: 'csv_import',
-          ai_optimized: false,
-          quality_score: 0.5
-        }))
-
-        const { error } = await supabase
-          .from('imported_products')
-          .insert(productsToInsert)
-
-        if (error) {
-          console.error('Import error:', error)
-          toast({
-            title: "Erreur d'import",
-            description: `Erreur lors de l'import du lot ${Math.floor(i / batchSize) + 1}`,
-            variant: "destructive"
-          })
-        } else {
-          imported += batch.length
-          setImportProgress((imported / validProducts.length) * 100)
+      setImportProgress(10)
+      const { data, error } = await supabase.functions.invoke('bulk-import-products', {
+        body: {
+          products: validProducts,
+          source: 'csv',
+          options: {
+            auto_optimize: false,
+            auto_publish: false
+          }
         }
+      })
+      setImportProgress(90)
+
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || "Import échoué")
+
+      const outcome: ImportOutcome = {
+        jobId: data.job_id,
+        imported: data.succeeded || 0,
+        failed: data.failed || 0,
+        errors: Array.isArray(data.errors) ? data.errors : []
       }
+      setImportOutcome(outcome)
+      setImportProgress(100)
 
       toast({
-        title: "Import réussi",
-        description: `${imported} produits importés avec succès`
+        title: outcome.failed > 0 ? 'Import terminé avec erreurs' : 'Import réussi',
+        description:
+          outcome.failed > 0
+            ? `${outcome.imported} importés • ${outcome.failed} échecs (voir détails)`
+            : `${outcome.imported} produits importés avec succès`,
+        variant: outcome.failed > 0 ? 'default' : 'default'
       })
-
-      setStep('import')
     } catch (error) {
       console.error('Import failed:', error)
+      setImportOutcome({
+        imported: 0,
+        failed: validProducts.length,
+        errors: [error instanceof Error ? error.message : "Erreur lors de l'import"],
+      })
       toast({
         title: "Erreur",
-        description: "Erreur lors de l'import des produits",
+        description: error instanceof Error ? error.message : "Erreur lors de l'import des produits",
         variant: "destructive"
       })
+      setImportProgress(0)
     } finally {
       setIsImporting(false)
     }
@@ -348,6 +413,7 @@ export function CSVImportWizard() {
     setValidProducts([])
     setImportProgress(0)
     setIsImporting(false)
+    setImportOutcome(null)
   }
 
   return (
@@ -535,11 +601,7 @@ export function CSVImportWizard() {
                     <Button onClick={() => setStep('upload')} variant="outline">
                       Retour
                     </Button>
-                    <Button 
-                      onClick={validateData} 
-                      disabled={!mapping['name'] && !Object.values(mapping).some(v => PRODUCT_FIELDS[v as keyof typeof PRODUCT_FIELDS]?.required)}
-                      className="gap-2"
-                    >
+                    <Button onClick={validateData} disabled={!hasRequiredMappings} className="gap-2">
                       Valider les données
                       <ArrowRight className="w-4 h-4" />
                     </Button>
@@ -573,15 +635,20 @@ export function CSVImportWizard() {
                 <CardContent>
                   <ScrollArea className="h-48">
                     <div className="space-y-2">
-                      {validationErrors.slice(0, 50).map((error, index) => (
+                       {validationErrors.slice(0, 50).map((error, index) => (
                         <div key={index} className="flex items-center gap-2 text-sm">
                           {error.severity === 'error' ? (
                             <X className="w-4 h-4 text-red-500" />
                           ) : (
                             <AlertTriangle className="w-4 h-4 text-yellow-500" />
                           )}
-                          <span className="font-medium">Ligne {error.row}:</span>
-                          <span>{error.message}</span>
+                           <span className="font-medium">Ligne {error.row}:</span>
+                           <span>
+                             {error.message}
+                             {error.value ? (
+                               <span className="text-muted-foreground"> — valeur: “{error.value}”</span>
+                             ) : null}
+                           </span>
                         </div>
                       ))}
                     </div>
@@ -636,35 +703,72 @@ export function CSVImportWizard() {
             </div>
           </TabsContent>
 
-          <TabsContent value="import" className="space-y-4">
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
-                <Check className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-lg font-medium">Import terminé !</h3>
-              <p className="text-muted-foreground">
-                {validProducts.length} produits ont été importés avec succès
-              </p>
-              
-              {isImporting && (
-                <div className="space-y-2">
-                  <Progress value={importProgress} className="w-full" />
-                  <p className="text-sm text-muted-foreground">
-                    Import en cours... {Math.round(importProgress)}%
-                  </p>
-                </div>
-              )}
+           <TabsContent value="import" className="space-y-4">
+             <div className="text-center space-y-4">
+               <div className="flex items-center justify-center w-16 h-16 mx-auto bg-primary/10 rounded-full">
+                 {isImporting ? (
+                   <Upload className="w-8 h-8 text-primary" />
+                 ) : (
+                   <Check className="w-8 h-8 text-primary" />
+                 )}
+               </div>
 
-              <div className="flex gap-2 justify-center">
-                <Button onClick={resetWizard} variant="outline">
-                  Nouvel import
-                </Button>
-                <Button onClick={() => navigate('/import/results')}>
-                  Voir les produits importés
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
+               <h3 className="text-lg font-medium">
+                 {isImporting ? 'Import en cours…' : 'Import terminé'}
+               </h3>
+
+               {importOutcome ? (
+                 <div className="space-y-2">
+                   <p className="text-muted-foreground">
+                     {importOutcome.imported} importés • {importOutcome.failed} échecs
+                     {importOutcome.jobId ? (
+                       <span className="text-muted-foreground"> • Job: {importOutcome.jobId}</span>
+                     ) : null}
+                   </p>
+                   {importOutcome.errors?.length ? (
+                     <Card>
+                       <CardHeader>
+                         <CardTitle className="text-base flex items-center gap-2">
+                           <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                           Détails des erreurs (extrait)
+                         </CardTitle>
+                       </CardHeader>
+                       <CardContent>
+                         <ScrollArea className="h-40">
+                           <div className="space-y-2 text-sm">
+                             {importOutcome.errors.slice(0, 20).map((e, idx) => (
+                               <div key={idx} className="flex items-start gap-2">
+                                 <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5" />
+                                 <span>{e}</span>
+                               </div>
+                             ))}
+                           </div>
+                         </ScrollArea>
+                       </CardContent>
+                     </Card>
+                   ) : null}
+                 </div>
+               ) : (
+                 <p className="text-muted-foreground">
+                   Préparation de l'import…
+                 </p>
+               )}
+
+               <div className="space-y-2">
+                 <Progress value={importProgress} className="w-full" />
+                 <p className="text-sm text-muted-foreground">{Math.round(importProgress)}%</p>
+               </div>
+
+               <div className="flex gap-2 justify-center">
+                 <Button onClick={resetWizard} variant="outline" disabled={isImporting}>
+                   Nouvel import
+                 </Button>
+                 <Button onClick={() => navigate('/import/history')} disabled={isImporting}>
+                   Voir l'historique
+                 </Button>
+               </div>
+             </div>
+           </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
