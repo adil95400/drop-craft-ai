@@ -640,9 +640,6 @@ export default function ProductsMainPage() {
             >
               <ProductsPageWrapper
                 products={displayProducts}
-                allProducts={products}
-                filters={filters}
-                categories={categories}
                 onRefresh={handleRefresh}
                 onEdit={handleEdit}
                 onDelete={handleDelete}

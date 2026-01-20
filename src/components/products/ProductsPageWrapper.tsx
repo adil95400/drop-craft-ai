@@ -1,64 +1,51 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ProductActionsBar } from './ProductActionsBar';
-import { ProductBulkOperations } from './ProductBulkOperations';
-import { ProductsTableView } from './ProductsTableView';
 import { ProductsGridView } from './ProductsGridView';
+import { ProductsTableView } from './ProductsTableView';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
-import { FilterState } from '@/hooks/useProductFilters';
-import { useProductActions } from '@/hooks/useProductActions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { LayoutGrid, Table2, Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ProductsPageWrapperProps {
   products: UnifiedProduct[];
-  allProducts?: UnifiedProduct[];
   onEdit: (product: UnifiedProduct) => void;
   onDelete: (id: string) => void;
   onView: (product: UnifiedProduct) => void;
   onRefresh?: () => void;
-  filters?: FilterState;
-  categories?: string[];
-  onFilterChange?: <K extends keyof FilterState>(key: K, value: FilterState[K]) => void;
-  onResetFilters?: () => void;
-  hasActiveFilters?: boolean;
-  onSelectionChange?: (selected: string[]) => void;
   selectedProducts?: string[];
-  isLoading?: boolean;
+  onSelectionChange?: (selected: string[]) => void;
+  showSearch?: boolean;
+  showViewToggle?: boolean;
+  defaultView?: 'grid' | 'list';
 }
 
 /**
- * Wrapper complet pour la page produits avec toutes les actions connectées
- * Gère la recherche, le tri, les filtres, la pagination et les actions en masse
+ * Wrapper simplifié pour afficher les produits en grille ou tableau
+ * Sans boutons en double - les actions principales sont dans ProductsQuickActionsBar
  */
 export function ProductsPageWrapper({
   products,
-  allProducts = products,
   onEdit,
   onDelete,
   onView,
   onRefresh,
-  filters,
-  categories = [],
-  onFilterChange,
-  onResetFilters,
-  hasActiveFilters = false,
-  onSelectionChange,
   selectedProducts = [],
-  isLoading = false
+  onSelectionChange,
+  showSearch = true,
+  showViewToggle = true,
+  defaultView = 'grid'
 }: ProductsPageWrapperProps) {
-  const [searchTerm, setSearchTerm] = useState(filters?.search || '');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [localSelectedProducts, setLocalSelectedProducts] = useState<string[]>(selectedProducts || []);
-  
-  const { handleImport, handleExport, isExporting } = useProductActions();
-  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(defaultView);
+  const [localSelectedProducts, setLocalSelectedProducts] = useState<string[]>(selectedProducts);
 
-  // Sync local selection with parent
   const handleSelectionChange = useCallback((newSelection: string[]) => {
     setLocalSelectedProducts(newSelection);
     onSelectionChange?.(newSelection);
   }, [onSelectionChange]);
 
-  // Recherche locale rapide avec debounce implicite via useMemo
+  // Recherche locale
   const displayedProducts = useMemo(() => {
     if (!searchTerm) return products;
     
@@ -71,66 +58,67 @@ export function ProductsPageWrapper({
     );
   }, [products, searchTerm]);
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchTerm(value);
-    if (onFilterChange) {
-      onFilterChange('search', value);
-    }
-  }, [onFilterChange]);
-
-  const handleSortChange = useCallback((value: string) => {
-    // Format: field_order (ex: created_at_desc, name_asc)
-    const parts = value.split('_');
-    const order = parts.pop() as 'asc' | 'desc';
-    const field = parts.join('_');
-    
-    if (onFilterChange) {
-      onFilterChange('sortBy', field as any);
-      onFilterChange('sortOrder', order);
-    }
-  }, [onFilterChange]);
-
-  const handleCreateNew = useCallback(() => {
-    navigate('/products/create');
-  }, [navigate]);
-
-  const handleExportClick = useCallback(async () => {
-    await handleExport(localSelectedProducts.length > 0 ? localSelectedProducts : undefined);
-  }, [handleExport, localSelectedProducts]);
-
   const handleClearSelection = useCallback(() => {
     handleSelectionChange([]);
   }, [handleSelectionChange]);
 
   return (
-    <div className="space-y-6">
-      <ProductActionsBar
-        searchTerm={searchTerm}
-        onSearchChange={handleSearchChange}
-        selectedCount={localSelectedProducts.length}
-        totalCount={displayedProducts.length}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        onCreateNew={handleCreateNew}
-        onImport={handleImport}
-        onExport={handleExportClick}
-        onRefresh={onRefresh}
-        categories={categories}
-        onCategoryChange={(cat) => onFilterChange?.('category', cat)}
-        onStatusChange={(status) => onFilterChange?.('status', status as any)}
-        onSortChange={handleSortChange}
-        hasActiveFilters={hasActiveFilters}
-        onResetFilters={onResetFilters}
-        isLoading={isLoading}
-      />
-
-      {localSelectedProducts.length > 0 && (
-        <ProductBulkOperations
-          selectedProducts={localSelectedProducts}
-          onClearSelection={handleClearSelection}
-        />
+    <div className="space-y-4">
+      {/* Barre de recherche et toggle vue - compacte */}
+      {(showSearch || showViewToggle) && (
+        <div className="flex items-center gap-3">
+          {showSearch && (
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-9 h-9 bg-background/80"
+              />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => setSearchTerm('')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
+          
+          {showViewToggle && (
+            <div className="flex border border-border/50 rounded-lg overflow-hidden bg-background/80">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className={cn("rounded-none h-9 w-9 p-0", viewMode === 'grid' && "shadow-sm")}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className={cn("rounded-none h-9 w-9 p-0", viewMode === 'list' && "shadow-sm")}
+              >
+                <Table2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          
+          {displayedProducts.length > 0 && (
+            <span className="text-sm text-muted-foreground">
+              {displayedProducts.length} produit{displayedProducts.length > 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
       )}
 
+      {/* Vue grille ou tableau */}
       {viewMode === 'grid' ? (
         <ProductsGridView
           products={displayedProducts}
@@ -151,10 +139,7 @@ export function ProductsPageWrapper({
             handleClearSelection();
             onRefresh?.();
           }}
-          onBulkEdit={(ids) => {
-            // Naviguer vers l'édition en masse
-            navigate(`/products/bulk-edit?ids=${ids.join(',')}`);
-          }}
+          onBulkEdit={() => {}}
           onProductUpdate={onRefresh}
         />
       )}

@@ -1,11 +1,11 @@
 /**
- * Vue Standard du catalogue produits
+ * Vue Standard du catalogue produits - Simplifiée sans boutons en double
  */
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Package } from 'lucide-react'
-import { ProductsPageWrapper } from '@/components/products/ProductsPageWrapper'
+import { ProductsGridView } from '@/components/products/ProductsGridView'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { FilterState } from '@/hooks/useProductFilters'
 
@@ -60,20 +60,12 @@ export function ProductsStandardView({
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ProductsPageWrapper
+        <CardContent className="p-0">
+          <ProductsGridView
             products={products}
-            allProducts={allProducts}
             onEdit={onEdit}
             onDelete={onDelete}
             onView={onView}
-            onRefresh={onRefresh}
-            filters={filters}
-            categories={categories}
-            onFilterChange={onFilterChange}
-            onResetFilters={onResetFilters}
-            hasActiveFilters={hasActiveFilters}
-            isLoading={isLoading}
           />
         </CardContent>
       </Card>

@@ -284,29 +284,24 @@ export default function ChannableProductsPage() {
         icon: mainView === 'products' ? Package : GitBranch
       }}
       actions={
-        <div className="flex items-center gap-3">
-          <Button 
-            onClick={mainView === 'products' ? () => navigate('/products/create') : handleNewRule}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            {mainView === 'products' ? 'Nouveau produit' : 'Nouvelle règle'}
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={mainView === 'products' ? handleRefresh : () => setTemplatesOpen(true)}
-            className="gap-2 bg-background/80 backdrop-blur"
-          >
-            {mainView === 'products' ? (
-              <>
-                <RefreshCw className="h-4 w-4" />
-                Actualiser
-              </>
-            ) : (
-              <>Templates</>
-            )}
-          </Button>
-        </div>
+        mainView === 'rules' ? (
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={handleNewRule}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Nouvelle règle
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setTemplatesOpen(true)}
+              className="gap-2 bg-background/80 backdrop-blur"
+            >
+              Templates
+            </Button>
+          </div>
+        ) : null
       }
     >
       {/* Main View Tabs: Products / Rules */}
@@ -381,6 +376,11 @@ export default function ChannableProductsPage() {
             onExpertModeChange={setExpertMode}
             hasActiveFilters={hasActiveFilters || auditActiveCount > 0}
             onShowFilters={() => setShowAdvancedFilters(true)}
+            onResetFilters={() => {
+              resetFilters()
+              resetAuditFilters()
+            }}
+            isLoading={isLoading}
           />
 
           {/* Bulk Edit Trigger */}
