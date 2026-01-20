@@ -135,23 +135,35 @@ function isBlockedOrErrorHtml(html: string): boolean {
 function extractHQImages(html: string, platform: string, markdown: string = ''): string[] {
   const images: string[] = []
   const seenUrls = new Set<string>()
-
+  const seenAmazonImageKeys = new Set<string>()
   const normalizeAmazonImageUrl = (url: string) => {
     // Convert various Amazon image hosts/sizes to the cleanest possible URL.
     let u = url
 
     // Prefer m.media-amazon.com when we can
-    u = u.replace(/^https?:\/\/images-[a-z0-9-]+\.ssl-images-amazon\.com\//i, 'https://m.media-amazon.com/')
+    u = u.replace(
+      /^https?:\/\/images-[a-z0-9-]+\.ssl-images-amazon\.com\//i,
+      'https://m.media-amazon.com/'
+    )
 
-    // Remove size/transform segments
+    // Strip query/hash
+    try {
+      const parsed = new URL(u)
+      parsed.search = ''
+      parsed.hash = ''
+      u = parsed.toString()
+    } catch {
+      // keep original
+    }
+
+    // Remove size/transform segments (keep original asset)
+    // Examples: ._AC_UL165_SR165,165_.jpg  /  ._SX679_.jpg  /  ._AC_SX679_.jpg
     u = u
-      .replace(/\._AC_[^._]+_\./g, '.')
-      .replace(/\._AC_\./g, '.')
-      .replace(/\._S[LXSMY]\d+_\./g, '.')
-      .replace(/\._UX\d+_\./g, '.')
-      .replace(/\._UY\d+_\./g, '.')
-      .replace(/\._UL\d+_\./g, '.')
-      .replace(/\._SR\d+,\d+,\d+,[^_]+_\./g, '.')
+      // generic "._SOMETHING_." pattern
+      .replace(/\._[^.]+_\./g, '.')
+      // extra safety for some AC_UL/SR shapes
+      .replace(/\._AC_UL\d+_SR\d+,\d+_\./g, '.')
+      .replace(/\._AC_UL\d+_\./g, '.')
 
     return u
   }
@@ -163,6 +175,12 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
 
     if (platform === 'amazon') {
       cleanUrl = normalizeAmazonImageUrl(cleanUrl)
+
+      // De-duplicate by the underlying asset id (avoid 10 thumbnails of the same photo)
+      const m = cleanUrl.match(/\/images\/I\/([^._/]+)(?:\._[^.]+_)?\./i)
+      const key = m?.[1]
+      if (key && seenAmazonImageKeys.has(key)) return
+      if (key) seenAmazonImageKeys.add(key)
     }
 
     if (!cleanUrl.startsWith('http')) return
@@ -172,7 +190,6 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
     images.push(cleanUrl)
     seenUrls.add(cleanUrl)
   }
-  
   // Platform-specific high-quality image extraction
   if (platform === 'amazon') {
     console.log('🔍 Extracting Amazon images...')
@@ -299,12 +316,19 @@ function extractVideos(html: string, platform: string): string[] {
   
   // Helper to add video
   const addVideo = (url: string) => {
-    if (url && !seenUrls.has(url) && videos.length < 10 && !url.includes('blank') && !url.includes('placeholder')) {
-      videos.push(url)
-      seenUrls.add(url)
+    if (!url) return
+
+    const cleanUrl = String(url).replace(/\\u002F/g, '/').replace(/\\/g, '').trim()
+
+    // Blob URLs come from browser runtime and are not usable outside Amazon page
+    if (!cleanUrl.startsWith('http')) return
+    if (cleanUrl.includes('blank') || cleanUrl.includes('placeholder')) return
+
+    if (!seenUrls.has(cleanUrl) && videos.length < 10) {
+      videos.push(cleanUrl)
+      seenUrls.add(cleanUrl)
     }
   }
-  
   // Platform-specific video extraction
   if (platform === 'amazon') {
     // Strategy 1: Look for Amazon video JSON data (BEST for Amazon)
