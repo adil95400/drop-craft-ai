@@ -155,7 +155,7 @@ export default function ImageAuditPage() {
     );
   };
 
-  const handleEnrichment = async (method: 'scrape' | 'ai' | 'search') => {
+  const handleEnrichment = async (method: 'scrape' | 'ai' | 'search' | 'multi-search') => {
     if (selectedProducts.length === 0) return;
     
     setProcessing(true);
@@ -181,13 +181,22 @@ export default function ImageAuditPage() {
         });
 
         if (error) throw error;
-        success++;
+        if (data?.success) {
+          success++;
+        } else {
+          failed++;
+        }
       } catch (error) {
         console.error(`Failed to enrich product ${productId}:`, error);
         failed++;
       }
 
       setProcessProgress({ current: i + 1, total: selectedProducts.length, success, failed });
+      
+      // Small delay to avoid overwhelming the API
+      if (i < selectedProducts.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
 
     toast({
