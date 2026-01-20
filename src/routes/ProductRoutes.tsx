@@ -44,6 +44,7 @@ const ProductSourcingPage = lazy(() => import('@/pages/products/ProductSourcingP
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
 const ProductScoringPage = lazy(() => import('@/pages/products/ProductScoringPage'));
 const AIContentPage = lazy(() => import('@/pages/products/AIContentPage'));
+const ImageAuditPage = lazy(() => import('@/pages/ImageAuditPage'));
 
 export function ProductRoutes() {
   return (
@@ -66,6 +67,7 @@ export function ProductRoutes() {
       <Route path="price-rules" element={<PriceRulesPage />} />
       <Route path="scoring" element={<ProductScoringPage />} />
       <Route path="ai-content" element={<AIContentPage />} />
+      <Route path="image-audit" element={<ImageAuditPage />} />
       
       {/* Import - Redirect to dedicated module */}
       <Route path="import/*" element={<Navigate to="/import" replace />} />
