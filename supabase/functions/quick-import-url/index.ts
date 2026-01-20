@@ -70,9 +70,9 @@ function detectPlatform(url: string): { platform: string; productId: string | nu
     return { platform: 'shein', productId: match?.[1] || null }
   }
   
-  // Shopify stores (generic detection)
-  if (urlLower.includes('/products/') && !urlLower.includes('amazon') && !urlLower.includes('ebay')) {
-    const match = url.match(/\/products\/([^\/\?]+)/)
+  // Shopify stores (generic detection) - Also check for .myshopify.com domains
+  if ((urlLower.includes('/products/') || urlLower.includes('.myshopify.com')) && !urlLower.includes('amazon') && !urlLower.includes('ebay') && !urlLower.includes('aliexpress')) {
+    const match = url.match(/\/products\/([^\/\?#]+)/)
     return { platform: 'shopify', productId: match?.[1] || null }
   }
   
@@ -284,6 +284,51 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
     }
   }
   
+  if (platform === 'shopify') {
+    console.log('🛍️ Extracting Shopify images...')
+    
+    // Strategy 1: Product JSON (most reliable for Shopify)
+    const productJsonMatch = html.match(/var\s+meta\s*=\s*({[\s\S]*?});/i) ||
+                              html.match(/"product"\s*:\s*({[\s\S]*?}),\s*"/i)
+    if (productJsonMatch) {
+      try {
+        const productData = JSON.parse(productJsonMatch[1])
+        const images = productData?.product?.images || productData?.images || []
+        for (const img of images) {
+          const src = img?.src || img?.url || img
+          if (typeof src === 'string') {
+            // Get the best quality by removing size modifiers
+            const hqUrl = src.replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')
+            addImage(hqUrl)
+          }
+        }
+      } catch (e) {
+        console.log('Could not parse Shopify product JSON')
+      }
+    }
+    
+    // Strategy 2: featured_image and images in script tags
+    const imgUrlMatches = html.matchAll(/"(?:featured_image|src|url)"\s*:\s*"(https?:\/\/cdn\.shopify\.com\/[^"]+)"/gi)
+    for (const m of imgUrlMatches) {
+      // Remove size modifiers for max quality
+      const hqUrl = m[1].replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')
+      addImage(hqUrl)
+    }
+    
+    // Strategy 3: product-image or product__media elements
+    const productImgMatches = html.matchAll(/(?:data-src|data-srcset|src)=["'](https?:\/\/cdn\.shopify\.com\/[^"'\s]+)["']/gi)
+    for (const m of productImgMatches) {
+      const hqUrl = m[1].replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')
+      addImage(hqUrl)
+    }
+    
+    // Strategy 4: og:image meta tags
+    const ogShopifyImgs = html.matchAll(/og:image"[^>]*content="(https?:\/\/cdn\.shopify\.com\/[^"]+)"/gi)
+    for (const m of ogShopifyImgs) {
+      addImage(m[1])
+    }
+  }
+  
   // Generic high quality extraction
   const ogImages = html.matchAll(/og:image"[^>]*content="([^"]+)"/gi)
   for (const m of ogImages) {
@@ -373,6 +418,40 @@ function extractVideos(html: string, platform: string): string[] {
     const videoJsonMatch = html.match(/videoUrl['"]\s*:\s*['"](https?:\/\/[^'"]+)['"]/i)
     if (videoJsonMatch) {
       addVideo(videoJsonMatch[1])
+    }
+  }
+  
+  if (platform === 'shopify') {
+    console.log('🎬 Extracting Shopify videos...')
+    
+    // Shopify product media (videos are often in JSON)
+    const mediaMatches = html.matchAll(/"(?:sources|preview_video|video_url|external_video)"\s*:\s*\[\s*{[^}]*"url"\s*:\s*"([^"]+)"/gi)
+    for (const m of mediaMatches) {
+      if (m[1].includes('.mp4') || m[1].includes('.webm') || m[1].includes('youtube') || m[1].includes('vimeo')) {
+        addVideo(m[1])
+      }
+    }
+    
+    // Video tags with Shopify CDN
+    const videoTagMatches = html.matchAll(/<video[^>]*>[\s\S]*?<source[^>]*src=["']([^"']+\.(?:mp4|webm))["']/gi)
+    for (const m of videoTagMatches) {
+      addVideo(m[1])
+    }
+    
+    // YouTube/Vimeo embeds
+    const embedMatches = html.matchAll(/(?:youtube\.com\/embed\/|vimeo\.com\/video\/)([^"'?\s]+)/gi)
+    for (const m of embedMatches) {
+      if (m[0].includes('youtube')) {
+        addVideo(`https://www.youtube.com/embed/${m[1]}`)
+      } else if (m[0].includes('vimeo')) {
+        addVideo(`https://player.vimeo.com/video/${m[1]}`)
+      }
+    }
+    
+    // External video URLs in data attributes
+    const externalVideoMatches = html.matchAll(/data-(?:video|media)-url=["']([^"']+)["']/gi)
+    for (const m of externalVideoMatches) {
+      addVideo(m[1])
     }
   }
   
@@ -569,10 +648,124 @@ function extractAmazonVariants(html: string, markdown: string = ''): any[] {
   return variants.slice(0, 200)
 }
 
+// Extract Shopify variants from product JSON
+function extractShopifyVariants(html: string): any[] {
+  const variants: any[] = []
+  const seen = new Set<string>()
+  
+  console.log('🛍️ Extracting Shopify variants...')
+  
+  try {
+    // Strategy 1: Look for product JSON data (most reliable)
+    const productJsonPatterns = [
+      /var\s+product\s*=\s*({[\s\S]*?});/i,
+      /"product"\s*:\s*({[\s\S]*?variants[\s\S]*?})\s*[,}]/i,
+      /ShopifyAnalytics\.meta\.product\s*=\s*({[\s\S]*?});/i,
+      /window\.ShopifyProduct\s*=\s*({[\s\S]*?});/i,
+    ]
+    
+    for (const pattern of productJsonPatterns) {
+      const match = html.match(pattern)
+      if (match) {
+        try {
+          const data = JSON.parse(match[1])
+          const productVariants = data.variants || data.product?.variants || []
+          
+          for (const v of productVariants) {
+            const key = v.id?.toString() || v.sku || JSON.stringify(v)
+            if (seen.has(key)) continue
+            seen.add(key)
+            
+            // Build attributes from option values
+            const attributes: Record<string, string> = {}
+            if (v.option1) attributes[data.options?.[0] || 'Option 1'] = v.option1
+            if (v.option2) attributes[data.options?.[1] || 'Option 2'] = v.option2
+            if (v.option3) attributes[data.options?.[2] || 'Option 3'] = v.option3
+            
+            variants.push({
+              sku: v.sku || v.id?.toString() || '',
+              name: v.title || v.name || Object.values(attributes).join(' / '),
+              price: parseFloat(v.price) / 100 || 0, // Shopify prices are in cents
+              stock: v.inventory_quantity ?? (v.available ? 99 : 0),
+              available: v.available ?? true,
+              image: v.featured_image?.src || v.image || null,
+              attributes,
+              variant_id: v.id?.toString()
+            })
+          }
+          
+          if (variants.length > 0) {
+            console.log(`📋 Found ${variants.length} Shopify variants from JSON`)
+            break
+          }
+        } catch (e) {
+          console.log('Could not parse Shopify variant JSON:', e)
+        }
+      }
+    }
+    
+    // Strategy 2: Look for variants in script tags with specific patterns
+    if (variants.length === 0) {
+      const variantArrayMatch = html.match(/"variants"\s*:\s*(\[[^\]]+\])/i)
+      if (variantArrayMatch) {
+        try {
+          const variantData = JSON.parse(variantArrayMatch[1])
+          for (const v of variantData) {
+            const key = v.id?.toString() || v.sku || JSON.stringify(v)
+            if (seen.has(key)) continue
+            seen.add(key)
+            
+            variants.push({
+              sku: v.sku || v.id?.toString() || '',
+              name: v.title || v.name || 'Variant',
+              price: parseFloat(v.price) / 100 || 0,
+              stock: v.inventory_quantity ?? (v.available ? 99 : 0),
+              available: v.available ?? true,
+              image: v.featured_image?.src || v.image || null,
+              attributes: {}
+            })
+          }
+        } catch (e) {
+          console.log('Could not parse variant array')
+        }
+      }
+    }
+    
+    // Strategy 3: Extract from select elements (fallback)
+    if (variants.length === 0) {
+      const optionMatches = html.matchAll(/data-variant-id=["'](\d+)["'][^>]*>([^<]+)</gi)
+      for (const m of optionMatches) {
+        if (!seen.has(m[1])) {
+          seen.add(m[1])
+          variants.push({
+            sku: m[1],
+            name: m[2].trim(),
+            price: 0,
+            stock: 99,
+            available: true,
+            image: null,
+            attributes: {},
+            variant_id: m[1]
+          })
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error extracting Shopify variants:', error)
+  }
+  
+  console.log(`🎨 Shopify variants extracted: ${variants.length}`)
+  return variants.slice(0, 100)
+}
+
 // Extract product variants
 function extractVariants(html: string, platform: string, markdown: string = ''): any[] {
   if (platform === 'amazon') {
     return extractAmazonVariants(html, markdown)
+  }
+  
+  if (platform === 'shopify') {
+    return extractShopifyVariants(html)
   }
   
   const variants: any[] = []
@@ -1235,6 +1428,120 @@ function extractAmazonSKU(html: string, markdown: string, asin: string): string 
   return `AMZ-${asin}`
 }
 
+// Scrape Shopify product using the public JSON API (most reliable method)
+async function scrapeShopifyProduct(url: string, productHandle: string | null): Promise<any | null> {
+  console.log('🛍️ Attempting Shopify JSON API scraping...')
+  
+  try {
+    // Build the JSON API URL
+    const urlObj = new URL(url)
+    const baseUrl = `${urlObj.protocol}//${urlObj.host}`
+    
+    // If we have a handle, use it directly
+    let jsonUrl = ''
+    if (productHandle) {
+      jsonUrl = `${baseUrl}/products/${productHandle}.json`
+    } else {
+      // Try to extract handle from URL
+      const handleMatch = url.match(/\/products\/([^\/\?#]+)/)
+      if (handleMatch) {
+        jsonUrl = `${baseUrl}/products/${handleMatch[1]}.json`
+      }
+    }
+    
+    if (!jsonUrl) {
+      console.log('Could not build Shopify JSON URL')
+      return null
+    }
+    
+    console.log(`📡 Fetching Shopify JSON: ${jsonUrl}`)
+    
+    const response = await fetch(jsonUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      }
+    })
+    
+    if (!response.ok) {
+      console.log(`Shopify JSON API returned ${response.status}`)
+      return null
+    }
+    
+    const data = await response.json()
+    const product = data.product
+    
+    if (!product) {
+      console.log('No product found in Shopify JSON response')
+      return null
+    }
+    
+    console.log(`✅ Shopify JSON API success: "${product.title}"`)
+    
+    // Extract all images (high quality)
+    const images = (product.images || []).map((img: any) => {
+      // Remove size modifiers for max quality
+      return (img.src || img.url || '').replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')
+    }).filter(Boolean)
+    
+    // Extract variants with full details
+    const variants = (product.variants || []).map((v: any) => {
+      const attributes: Record<string, string> = {}
+      if (v.option1) attributes[product.options?.[0]?.name || 'Option 1'] = v.option1
+      if (v.option2) attributes[product.options?.[1]?.name || 'Option 2'] = v.option2
+      if (v.option3) attributes[product.options?.[2]?.name || 'Option 3'] = v.option3
+      
+      return {
+        sku: v.sku || v.id?.toString() || '',
+        name: v.title || Object.values(attributes).join(' / '),
+        price: parseFloat(v.price) || 0,
+        compare_at_price: v.compare_at_price ? parseFloat(v.compare_at_price) : null,
+        stock: v.inventory_quantity ?? (v.available ? 99 : 0),
+        available: v.available ?? true,
+        image: v.featured_image?.src || (v.image_id && images[0]) || null,
+        attributes,
+        variant_id: v.id?.toString(),
+        weight: v.weight,
+        weight_unit: v.weight_unit
+      }
+    })
+    
+    // Get the best price (lowest variant price)
+    const prices = variants.map((v: any) => v.price).filter((p: number) => p > 0)
+    const price = prices.length > 0 ? Math.min(...prices) : 0
+    
+    // Get compare_at_price if available
+    const compareAtPrices = variants.map((v: any) => v.compare_at_price).filter((p: number | null) => p && p > 0)
+    const originalPrice = compareAtPrices.length > 0 ? Math.max(...compareAtPrices) : null
+    
+    return {
+      title: product.title || 'Produit Shopify',
+      description: product.body_html?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '',
+      price,
+      original_price: originalPrice,
+      currency: 'EUR', // Shopify JSON doesn't include currency, default to EUR
+      sku: product.variants?.[0]?.sku || product.handle || `SHOPIFY-${product.id}`,
+      brand: product.vendor || 'Shopify Store',
+      images,
+      videos: [], // Will be populated from HTML if needed
+      variants,
+      specifications: {
+        'Type': product.product_type || '',
+        'Vendeur': product.vendor || '',
+        'Tags': (product.tags || []).join(', ')
+      },
+      handle: product.handle,
+      product_type: product.product_type,
+      tags: product.tags || [],
+      created_at: product.created_at,
+      updated_at: product.updated_at
+    }
+  } catch (error) {
+    console.error('Shopify JSON API error:', error)
+    return null
+  }
+}
+
 // Scrape product data using Firecrawl if available, otherwise fallback
 async function scrapeProductData(url: string, platform: string, externalProductId?: string | null): Promise<any> {
   // Amazon links with many params often lead to bot/error/offline pages; canonicalize early.
@@ -1243,6 +1550,21 @@ async function scrapeProductData(url: string, platform: string, externalProductI
   const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId) : url
 
   console.log(`📦 Scraping product from ${platform}: ${effectiveUrl}`)
+  
+  // Special handling for Shopify - try JSON API first (most reliable)
+  if (platform === 'shopify') {
+    const shopifyData = await scrapeShopifyProduct(url, productId)
+    if (shopifyData) {
+      // Shopify JSON API worked, return the data
+      return {
+        source_url: url,
+        platform,
+        scraped_at: new Date().toISOString(),
+        ...shopifyData
+      }
+    }
+    console.log('⚠️ Shopify JSON API failed, falling back to HTML scraping')
+  }
 
   const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
   let html = ''
