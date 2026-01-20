@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
+import { fetchAllRecords } from '@/utils/supabaseUnlimited'
 
 export interface UnifiedProduct {
   id: string
@@ -129,79 +130,98 @@ export class ProductsUnifiedService {
    * Table products - Produits principaux de l'utilisateur
    */
   private static async getProductsTable(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
-    
-    let query = supabase.from('products').select('*')
-    
-    // Filtre user_id (sauf si on veut les produits globaux)
-    if (!options?.includeGlobalProducts) {
-      query = query.eq('user_id', userId)
-    } else {
-      query = query.or(`user_id.eq.${userId},user_id.is.null`)
+    try {
+      // Use unlimited fetch to bypass Supabase 1000 row limit
+      const { data, error } = await fetchAllRecords<any>('products', {
+        select: '*',
+        userId: options?.includeGlobalProducts ? undefined : userId,
+        orderBy: { column: 'created_at', ascending: false },
+        filters: {
+          ...(filters?.status && { status: filters.status }),
+          ...(filters?.category && { category: filters.category })
+        }
+      });
+
+      if (error) throw error;
+
+      let products = data || [];
+
+      // Apply search filter client-side (for better performance with LIKE queries)
+      if (filters?.search) {
+        const searchLower = filters.search.toLowerCase();
+        products = products.filter((p: any) => 
+          (p.name?.toLowerCase().includes(searchLower)) ||
+          (p.title?.toLowerCase().includes(searchLower)) ||
+          (p.sku?.toLowerCase().includes(searchLower))
+        );
+      }
+
+      // Apply lowStock filter client-side
+      if (filters?.lowStock) {
+        products = products.filter((p: any) => (p.stock_quantity || 0) < 10);
+      }
+
+      console.log(`✓ products table loaded: ${products.length} products for user ${userId}`);
+
+      return products.map((p: any) => ({
+        id: p.id,
+        name: p.name || p.title || 'Produit sans nom',
+        description: p.description || undefined,
+        price: p.price || 0,
+        cost_price: p.cost_price || undefined,
+        status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity || undefined,
+        sku: p.sku || undefined,
+        category: p.category || undefined,
+        image_url: p.image_url || undefined,
+        images: p.image_url ? [p.image_url] : [],
+        profit_margin: (p as any).profit_margin || undefined,
+        user_id: p.user_id,
+        source: 'products' as const,
+        variants: [] as ProductVariant[],
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error('getProductsTable failed:', error);
+      return [];
     }
-
-    if (filters?.status) query = query.eq('status', filters.status)
-    if (filters?.category) query = query.eq('category', filters.category)
-    if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
-    }
-    if (filters?.lowStock) query = query.lt('stock_quantity', 10)
-
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
-    if (error) throw error
-
-    return (data || []).map(p => ({
-      id: p.id,
-      name: p.name || 'Produit sans nom',
-      description: p.description || undefined,
-      price: p.price || 0,
-      cost_price: p.cost_price || undefined,
-      status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
-      stock_quantity: p.stock_quantity || undefined,
-      sku: p.sku || undefined,
-      category: p.category || undefined,
-      image_url: p.image_url || undefined,
-      images: p.image_url ? [p.image_url] : [],
-      profit_margin: (p as any).profit_margin || undefined,
-      user_id: p.user_id,
-      source: 'products' as const,
-      variants: [] as ProductVariant[],
-      created_at: p.created_at || new Date().toISOString(),
-      updated_at: p.updated_at || new Date().toISOString()
-    }))
   }
 
   /**
    * Table imported_products - Produits importés depuis CSV/API
    */
   private static async getImportedProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
-    
     try {
-      // D'abord essayer avec le user_id de l'utilisateur
-      let query = (supabase as any).from('imported_products').select('*')
-      
-      if (!options?.includeGlobalProducts) {
-        query = query.eq('user_id', userId)
-      } else {
-        query = query.or(`user_id.eq.${userId},user_id.is.null`)
-      }
-
-      if (filters?.category) query = query.eq('category', filters.category)
-      if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
+      // Use unlimited fetch to bypass Supabase 1000 row limit
+      const { data, error } = await fetchAllRecords<any>('imported_products', {
+        select: '*',
+        userId: options?.includeGlobalProducts ? undefined : userId,
+        orderBy: { column: 'created_at', ascending: false },
+        filters: {
+          ...(filters?.category && { category: filters.category })
+        }
+      });
       
       if (error) {
         console.error('Error fetching imported_products:', error)
         throw error
       }
 
-      console.log(`✓ imported_products loaded: ${data?.length || 0} products for user ${userId}`)
+      let products = data || [];
+
+      // Apply search filter client-side
+      if (filters?.search) {
+        const searchLower = filters.search.toLowerCase();
+        products = products.filter((p: any) => 
+          (p.name?.toLowerCase().includes(searchLower)) ||
+          (p.sku?.toLowerCase().includes(searchLower))
+        );
+      }
+
+      console.log(`✓ imported_products loaded: ${products.length} products for user ${userId}`)
       
-      return (data || []).map((p: any) => {
+      return products.map((p: any) => {
         // Parse variants from imported product
         const variants: ProductVariant[] = Array.isArray(p.variants) 
           ? p.variants.map((v: any, idx: number) => ({
@@ -275,37 +295,54 @@ export class ProductsUnifiedService {
    * Table catalog_products - Catalogue global disponible pour tous les utilisateurs
    */
   private static async getCatalogProducts(filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
-    
-    let query = supabase.from('catalog_products').select('*')
+    try {
+      // Use unlimited fetch to bypass Supabase 1000 row limit
+      const { data, error } = await fetchAllRecords<any>('catalog_products', {
+        select: '*',
+        orderBy: { column: 'created_at', ascending: false },
+        filters: {
+          ...(filters?.category && { category: filters.category })
+        }
+      });
 
-    if (filters?.category) query = query.eq('category', filters.category)
-    if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%`)
+      if (error) throw error;
+
+      let products = data || [];
+
+      // Apply search filter client-side
+      if (filters?.search) {
+        const searchLower = filters.search.toLowerCase();
+        products = products.filter((p: any) => 
+          (p.title?.toLowerCase().includes(searchLower)) ||
+          (p.name?.toLowerCase().includes(searchLower))
+        );
+      }
+
+      console.log(`✓ catalog_products loaded: ${products.length} products`);
+
+      return products.map((p: any) => ({
+        id: p.id,
+        name: p.title || p.name || 'Produit sans nom',
+        description: p.description || undefined,
+        price: p.price || 0,
+        cost_price: p.cost_price || undefined,
+        status: 'active' as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity || undefined,
+        sku: p.sku || undefined,
+        category: p.category || undefined,
+        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
+        images: Array.isArray(p.image_urls) ? p.image_urls : [],
+        profit_margin: p.profit_margin || undefined,
+        user_id: p.user_id || 'catalog',
+        source: 'catalog' as const,
+        variants: [] as ProductVariant[],
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error('getCatalogProducts failed:', error);
+      return [];
     }
-
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
-    if (error) throw error
-
-    return (data || []).map((p: any) => ({
-      id: p.id,
-      name: p.title || p.name || 'Produit sans nom',
-      description: p.description || undefined,
-      price: p.price || 0,
-      cost_price: p.cost_price || undefined,
-      status: 'active' as 'active' | 'inactive',
-      stock_quantity: p.stock_quantity || undefined,
-      sku: p.sku || undefined,
-      category: p.category || undefined,
-      image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
-      images: Array.isArray(p.image_urls) ? p.image_urls : [],
-      profit_margin: p.profit_margin || undefined,
-      user_id: p.user_id || 'catalog',
-      source: 'catalog' as const,
-      variants: [] as ProductVariant[],
-      created_at: p.created_at || new Date().toISOString(),
-      updated_at: p.updated_at || new Date().toISOString()
-    }))
   }
 
   /**
@@ -330,16 +367,17 @@ export class ProductsUnifiedService {
    * Table feed_products - Produits optimisés pour les flux (Google Shopping, etc.)
    */
   private static async getFeedProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     try {
-      const { data, error } = await (supabase as any)
-        .from('feed_products')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit)
+      // Use unlimited fetch to bypass Supabase 1000 row limit
+      const { data, error } = await fetchAllRecords<any>('feed_products', {
+        select: '*',
+        userId,
+        orderBy: { column: 'created_at', ascending: false }
+      });
 
-      if (error) throw error
+      if (error) throw error;
+
+      console.log(`✓ feed_products loaded: ${(data || []).length} products for user ${userId}`);
 
       return (data || []).map((p: any) => ({
         id: p.id,
@@ -358,10 +396,10 @@ export class ProductsUnifiedService {
         source: 'feed' as const,
         created_at: p.created_at || new Date().toISOString(),
         updated_at: p.updated_at || new Date().toISOString()
-      }))
+      }));
     } catch (error) {
-      console.error('Error loading feed_products:', error)
-      return []
+      console.error('Error loading feed_products:', error);
+      return [];
     }
   }
 
@@ -370,45 +408,49 @@ export class ProductsUnifiedService {
    * Note: Les produits sont importés avec le champ 'title' et le prix en centimes
    */
   private static async getSupplierProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
-    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     try {
-      let query = (supabase as any)
-        .from('supplier_products')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit)
-
-      // Appliquer les filtres si présents
-      if (filters?.search) {
-        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
-      }
-      if (filters?.category) {
-        query = query.eq('category', filters.category)
-      }
-
-      const { data, error } = await query
+      // Use unlimited fetch to bypass Supabase 1000 row limit
+      const { data, error } = await fetchAllRecords<any>('supplier_products', {
+        select: '*',
+        userId,
+        orderBy: { column: 'created_at', ascending: false },
+        filters: {
+          ...(filters?.category && { category: filters.category })
+        }
+      });
 
       if (error) {
-        console.error('Error fetching supplier_products:', error)
-        throw error
+        console.error('Error fetching supplier_products:', error);
+        throw error;
       }
 
-      console.log(`✓ supplier_products loaded: ${data?.length || 0} products for user ${userId}`)
+      let products = data || [];
 
-      return (data || []).map((p: any) => {
+      // Apply search filter client-side
+      if (filters?.search) {
+        const searchLower = filters.search.toLowerCase();
+        products = products.filter((p: any) => 
+          (p.title?.toLowerCase().includes(searchLower)) ||
+          (p.description?.toLowerCase().includes(searchLower)) ||
+          (p.sku?.toLowerCase().includes(searchLower))
+        );
+      }
+
+      console.log(`✓ supplier_products loaded: ${products.length} products for user ${userId}`);
+
+      return products.map((p: any) => {
         // Le prix peut être en centimes (ex: 59899 = 598.99€) ou en euros
         // On détecte si le prix est > 1000 on divise par 100
-        let price = p.price || 0
+        let price = p.price || 0;
         if (price > 10000) {
-          price = price / 100
+          price = price / 100;
         }
         
         // L'image peut être dans image_url (string) ou images (array)
-        const imageUrl = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : undefined)
+        const imageUrl = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : undefined);
         const images = Array.isArray(p.images) && p.images.length > 0 
           ? p.images 
-          : (p.image_url ? [p.image_url] : [])
+          : (p.image_url ? [p.image_url] : []);
 
         return {
           id: p.id,
@@ -431,11 +473,11 @@ export class ProductsUnifiedService {
           ai_score: p.ai_score,
           is_winner: p.is_winner,
           is_trending: p.is_trending
-        }
-      })
+        };
+      });
     } catch (error) {
-      console.error('Error loading supplier_products:', error)
-      return []
+      console.error('Error loading supplier_products:', error);
+      return [];
     }
   }
 
