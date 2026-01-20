@@ -32,9 +32,21 @@ export default function AuditSEOPage() {
   const [sortBy, setSortBy] = useState<'score' | 'name' | 'issues'>('score');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [filterStatus, setFilterStatus] = useState<'all' | 'good' | 'warning' | 'error'>('all');
+  const [issueFilter, setIssueFilter] = useState<'all' | 'title' | 'description' | 'keyword' | 'image' | 'category'>('all');
   const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Handle issue category click
+  const handleIssueCategoryClick = (category: 'title' | 'description' | 'keyword' | 'image' | 'category') => {
+    setIssueFilter(category);
+    setActiveTab('products');
+  };
+
+  // Handle "Corriger tout" button
+  const handleFixAll = () => {
+    setActiveTab('recommendations');
+  };
 
   // Filtered and sorted analyses
   const filteredAnalyses = useMemo(() => {
@@ -49,6 +61,26 @@ export default function AuditSEOPage() {
       });
     }
 
+    // Filter by issue category
+    if (issueFilter !== 'all') {
+      result = result.filter(a => {
+        switch (issueFilter) {
+          case 'title':
+            return a.metrics.titleOptimization.status !== 'good';
+          case 'description':
+            return a.metrics.descriptionOptimization.status !== 'good';
+          case 'keyword':
+            return a.metrics.keywordDensity.status !== 'good';
+          case 'image':
+            return a.metrics.imageAlt.status !== 'good';
+          case 'category':
+            return a.metrics.categoryMapping.status !== 'good';
+          default:
+            return true;
+        }
+      });
+    }
+
     // Sort
     result.sort((a, b) => {
       let comparison = 0;
@@ -60,7 +92,7 @@ export default function AuditSEOPage() {
     });
 
     return result;
-  }, [seoAnalyses, filterStatus, sortBy, sortOrder]);
+  }, [seoAnalyses, filterStatus, issueFilter, sortBy, sortOrder]);
 
   const toggleSelectAll = () => {
     if (selectedProducts.size === filteredAnalyses.length) {
@@ -309,7 +341,7 @@ export default function AuditSEOPage() {
               </CardTitle>
               <CardDescription>Diagnostic détaillé par catégorie</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleFixAll}>
               <Zap className="h-4 w-4" />
               Corriger tout
             </Button>
@@ -318,11 +350,11 @@ export default function AuditSEOPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-5">
             {[
-              { label: 'Titres', value: stats.issueBreakdown.titleIssues, icon: FileText, color: 'blue', tip: 'Titres trop courts ou manquants' },
-              { label: 'Descriptions', value: stats.issueBreakdown.descriptionIssues, icon: FileText, color: 'indigo', tip: 'Descriptions insuffisantes' },
-              { label: 'Mots-clés', value: stats.issueBreakdown.keywordIssues, icon: Tag, color: 'violet', tip: 'Densité de mots-clés faible' },
-              { label: 'Images', value: stats.issueBreakdown.imageIssues, icon: Image, color: 'pink', tip: 'Images manquantes ou sans alt' },
-              { label: 'Catégories', value: stats.issueBreakdown.categoryIssues, icon: Globe, color: 'orange', tip: 'Catégorisation incomplète' },
+              { label: 'Titres', value: stats.issueBreakdown.titleIssues, icon: FileText, color: 'blue', tip: 'Titres trop courts ou manquants', filterKey: 'title' as const },
+              { label: 'Descriptions', value: stats.issueBreakdown.descriptionIssues, icon: FileText, color: 'indigo', tip: 'Descriptions insuffisantes', filterKey: 'description' as const },
+              { label: 'Mots-clés', value: stats.issueBreakdown.keywordIssues, icon: Tag, color: 'violet', tip: 'Densité de mots-clés faible', filterKey: 'keyword' as const },
+              { label: 'Images', value: stats.issueBreakdown.imageIssues, icon: Image, color: 'pink', tip: 'Images manquantes ou sans alt', filterKey: 'image' as const },
+              { label: 'Catégories', value: stats.issueBreakdown.categoryIssues, icon: Globe, color: 'orange', tip: 'Catégorisation incomplète', filterKey: 'category' as const },
             ].map((item, idx) => (
               <TooltipProvider key={idx}>
                 <Tooltip>
@@ -331,11 +363,13 @@ export default function AuditSEOPage() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: idx * 0.05 }}
+                      onClick={() => item.value > 0 && handleIssueCategoryClick(item.filterKey)}
                       className={cn(
-                        'text-center p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-lg',
+                        'text-center p-4 rounded-xl border-2 transition-all hover:shadow-lg',
                         item.value > 0 
-                          ? 'border-orange-200 bg-orange-50/50 dark:bg-orange-900/10' 
-                          : 'border-emerald-200 bg-emerald-50/50 dark:bg-emerald-900/10'
+                          ? 'border-orange-200 bg-orange-50/50 dark:bg-orange-900/10 cursor-pointer' 
+                          : 'border-emerald-200 bg-emerald-50/50 dark:bg-emerald-900/10',
+                        issueFilter === item.filterKey && 'ring-2 ring-primary ring-offset-2'
                       )}
                     >
                       <item.icon className={cn(
@@ -350,7 +384,14 @@ export default function AuditSEOPage() {
                       </div>
                       <p className="text-sm font-medium text-muted-foreground mt-1">{item.label}</p>
                       {item.value > 0 && (
-                        <Badge variant="outline" className="mt-2 text-xs bg-orange-100 text-orange-700 border-orange-300">
+                        <Badge 
+                          variant="outline" 
+                          className="mt-2 text-xs bg-orange-100 text-orange-700 border-orange-300 cursor-pointer hover:bg-orange-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleIssueCategoryClick(item.filterKey);
+                          }}
+                        >
                           À corriger
                         </Badge>
                       )}
@@ -543,6 +584,27 @@ export default function AuditSEOPage() {
                           </Button>
                         ))}
                       </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Catégorie:</span>
+                        {([
+                          { key: 'all', label: 'Toutes' },
+                          { key: 'title', label: 'Titres' },
+                          { key: 'description', label: 'Descriptions' },
+                          { key: 'keyword', label: 'Mots-clés' },
+                          { key: 'image', label: 'Images' },
+                          { key: 'category', label: 'Catégories' },
+                        ] as const).map(cat => (
+                          <Button
+                            key={cat.key}
+                            size="sm"
+                            variant={issueFilter === cat.key ? 'default' : 'outline'}
+                            onClick={() => setIssueFilter(cat.key)}
+                            className="h-8"
+                          >
+                            {cat.label}
+                          </Button>
+                        ))}
+                      </div>
                       <div className="flex items-center gap-2 ml-auto">
                         <span className="text-sm text-muted-foreground">Trier par:</span>
                         <Button
@@ -574,6 +636,38 @@ export default function AuditSEOPage() {
               </AnimatePresence>
             </CardContent>
           </Card>
+
+          {/* Active Filter Indicator */}
+          {issueFilter !== 'all' && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20"
+            >
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">
+                  Filtre actif : <span className="text-primary capitalize">
+                    {issueFilter === 'title' && 'Titres'}
+                    {issueFilter === 'description' && 'Descriptions'}
+                    {issueFilter === 'keyword' && 'Mots-clés'}
+                    {issueFilter === 'image' && 'Images'}
+                    {issueFilter === 'category' && 'Catégories'}
+                  </span>
+                </span>
+                <Badge variant="secondary">{filteredAnalyses.length} produit(s)</Badge>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIssueFilter('all')}
+                className="gap-1"
+              >
+                <XCircle className="h-4 w-4" />
+                Effacer le filtre
+              </Button>
+            </motion.div>
+          )}
 
           {/* Select All */}
           <div className="flex items-center gap-3 px-2">
