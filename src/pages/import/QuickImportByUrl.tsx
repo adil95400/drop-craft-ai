@@ -41,6 +41,8 @@ interface ProductPreview {
   suggested_price: number
   profit_margin: number
   images: string[]
+  videos?: string[]
+  variants?: any[]
   brand: string
   sku: string
   platform_detected: string
@@ -48,6 +50,10 @@ interface ProductPreview {
   has_reviews?: boolean
   reviews_count?: number
   extracted_reviews?: any[]
+  images_count?: number
+  variants_count?: number
+  videos_count?: number
+  specifications?: Record<string, string>
 }
 
 const supportedPlatforms = [
@@ -364,9 +370,25 @@ export default function QuickImportByUrl() {
                         SKU: {preview.sku.slice(0, 15)}
                       </Badge>
                     )}
-                    <Badge variant="outline">
-                      {preview.images.length} images
+                    <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950/20">
+                      {preview.images?.length || 0} images
                     </Badge>
+                    {(preview.variants_count || preview.variants?.length) ? (
+                      <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950/20">
+                        {preview.variants_count || preview.variants?.length} variantes
+                      </Badge>
+                    ) : null}
+                    {(preview.videos_count || preview.videos?.length) ? (
+                      <Badge variant="outline" className="bg-red-50 dark:bg-red-950/20">
+                        {preview.videos_count || preview.videos?.length} vidéos
+                      </Badge>
+                    ) : null}
+                    {preview.has_reviews && preview.reviews_count ? (
+                      <Badge variant="outline" className="bg-yellow-50 dark:bg-yellow-950/20">
+                        <Star className="h-3 w-3 mr-1 fill-yellow-500 text-yellow-500" />
+                        {preview.reviews_count} avis
+                      </Badge>
+                    ) : null}
                   </div>
 
                   {/* Description preview */}
