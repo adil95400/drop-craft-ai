@@ -1,36 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Image, ImagePlus, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { ImagePlus, RefreshCw, Image } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { ImageEnrichmentModal } from '@/components/products/ImageEnrichmentModal';
-
-interface ProductWithImageCount {
-  id: string;
-  title: string;
-  image_url: string | null;
-  images: string[];
-  supplier_url: string | null;
-  imageCount: number;
-}
-
-interface ImageStats {
-  total: number;
-  noImages: number;
-  oneImage: number;
-  twoImages: number;
-  threeOrMore: number;
-}
+import { ImageAuditStats, ImageStats } from '@/components/products/ImageAuditStats';
+import { ImageAuditProductList, ProductWithImageCount } from '@/components/products/ImageAuditProductList';
+import { ImageAuditProgress } from '@/components/products/ImageAuditProgress';
+import { AnimatePresence } from 'framer-motion';
 
 export default function ImageAuditPage() {
   const { user } = useUnifiedAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(true);
@@ -41,38 +23,32 @@ export default function ImageAuditPage() {
   const [enrichmentModal, setEnrichmentModal] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [processProgress, setProcessProgress] = useState({ current: 0, total: 0, success: 0, failed: 0 });
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      loadProducts();
-    }
-  }, [user]);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     
     try {
-      // Fetch all products with image data
-      const { data: productsData, error } = await supabase
-        .from('products')
-        .select('id, title, image_url, images, supplier_url')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      // Fetch products and imported_products in parallel
+      const [productsResult, importedResult] = await Promise.all([
+        supabase
+          .from('products')
+          .select('id, title, image_url, images, supplier_url')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('imported_products')
+          .select('id, name, image_urls, source_url')
+          .eq('user_id', user.id)
+      ]);
 
-      if (error) throw error;
+      if (productsResult.error) throw productsResult.error;
 
-      // Also fetch imported_products (using correct column names)
-      const { data: importedData } = await supabase
-        .from('imported_products')
-        .select('id, name, image_urls, source_url')
-        .eq('user_id', user.id);
-
-      // Combine and calculate image counts
       const allProducts: ProductWithImageCount[] = [];
       
       // Process main products
-      (productsData || []).forEach(p => {
+      (productsResult.data || []).forEach(p => {
         const rawImages = p.images as unknown;
         const imagesArray = Array.isArray(rawImages) 
           ? (rawImages as string[]).filter((img): img is string => typeof img === 'string' && Boolean(img)) 
@@ -91,7 +67,7 @@ export default function ImageAuditPage() {
       });
 
       // Process imported products
-      (importedData || []).forEach(p => {
+      (importedResult.data || []).forEach(p => {
         const rawImages = p.image_urls as unknown;
         const imagesArray = Array.isArray(rawImages) 
           ? (rawImages as string[]).filter((img): img is string => typeof img === 'string' && Boolean(img)) 
@@ -129,31 +105,38 @@ export default function ImageAuditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
-  const filteredProducts = products.filter(p => {
-    switch (filter) {
-      case '0': return p.imageCount === 0;
-      case '1': return p.imageCount === 1;
-      case '2': return p.imageCount === 2;
-      case '3+': return p.imageCount >= 3;
-      default: return true;
-    }
-  });
+  useEffect(() => {
+    if (user) loadProducts();
+  }, [user, loadProducts]);
 
-  const toggleSelectAll = () => {
-    if (selectedProducts.length === filteredProducts.length) {
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      switch (filter) {
+        case '0': return p.imageCount === 0;
+        case '1': return p.imageCount === 1;
+        case '2': return p.imageCount === 2;
+        case '3+': return p.imageCount >= 3;
+        default: return true;
+      }
+    });
+  }, [products, filter]);
+
+  const toggleSelectAll = useCallback(() => {
+    const displayedIds = filteredProducts.slice(0, 200).map(p => p.id);
+    if (displayedIds.every(id => selectedProducts.includes(id))) {
       setSelectedProducts([]);
     } else {
-      setSelectedProducts(filteredProducts.map(p => p.id));
+      setSelectedProducts(displayedIds);
     }
-  };
+  }, [filteredProducts, selectedProducts]);
 
-  const toggleProduct = (id: string) => {
+  const toggleProduct = useCallback((id: string) => {
     setSelectedProducts(prev => 
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
-  };
+  }, []);
 
   const handleEnrichment = async (method: 'scrape' | 'ai' | 'search' | 'multi-search') => {
     if (selectedProducts.length === 0) return;
@@ -193,9 +176,9 @@ export default function ImageAuditPage() {
 
       setProcessProgress({ current: i + 1, total: selectedProducts.length, success, failed });
       
-      // Small delay to avoid overwhelming the API
+      // Rate limiting delay
       if (i < selectedProducts.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
       }
     }
 
@@ -210,151 +193,59 @@ export default function ImageAuditPage() {
     loadProducts();
   };
 
-  const getImageBadge = (count: number) => {
-    if (count === 0) return <Badge variant="destructive">0 image</Badge>;
-    if (count === 1) return <Badge variant="secondary" className="bg-orange-500/20 text-orange-600">1 image</Badge>;
-    if (count === 2) return <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-600">2 images</Badge>;
-    return <Badge variant="secondary" className="bg-green-500/20 text-green-600">{count} images</Badge>;
-  };
+  const selectedWithUrls = useMemo(() => 
+    products.filter(p => selectedProducts.includes(p.id) && p.supplier_url).length,
+    [products, selectedProducts]
+  );
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/products')}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Audit des Images</h1>
-          <p className="text-muted-foreground">Identifiez et enrichissez les produits avec peu d'images</p>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="cursor-pointer hover:border-primary" onClick={() => setFilter('all')}>
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Total</div>
-          </CardContent>
-        </Card>
-        <Card className="cursor-pointer hover:border-primary border-destructive/50" onClick={() => setFilter('0')}>
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-destructive">{stats.noImages}</div>
-            <div className="text-sm text-muted-foreground">0 image</div>
-          </CardContent>
-        </Card>
-        <Card className="cursor-pointer hover:border-primary border-orange-500/50" onClick={() => setFilter('1')}>
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-orange-500">{stats.oneImage}</div>
-            <div className="text-sm text-muted-foreground">1 image</div>
-          </CardContent>
-        </Card>
-        <Card className="cursor-pointer hover:border-primary border-yellow-500/50" onClick={() => setFilter('2')}>
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-yellow-500">{stats.twoImages}</div>
-            <div className="text-sm text-muted-foreground">2 images</div>
-          </CardContent>
-        </Card>
-        <Card className="cursor-pointer hover:border-primary border-green-500/50" onClick={() => setFilter('3+')}>
-          <CardContent className="p-4 text-center">
-            <div className="text-3xl font-bold text-green-500">{stats.threeOrMore}</div>
-            <div className="text-sm text-muted-foreground">3+ images</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Processing Progress */}
-      {processing && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4 mb-2">
-              <RefreshCw className="h-5 w-5 animate-spin" />
-              <span>Enrichissement en cours... {processProgress.current}/{processProgress.total}</span>
-            </div>
-            <Progress value={(processProgress.current / processProgress.total) * 100} />
-            <div className="flex gap-4 mt-2 text-sm">
-              <span className="text-green-500 flex items-center gap-1">
-                <CheckCircle className="h-4 w-4" /> {processProgress.success} réussis
-              </span>
-              <span className="text-destructive flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" /> {processProgress.failed} échecs
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Actions */}
-      <div className="flex flex-wrap items-center gap-4">
-        <Button 
-          onClick={() => setEnrichmentModal(true)} 
-          disabled={selectedProducts.length === 0 || processing}
-        >
-          <ImagePlus className="h-4 w-4 mr-2" />
-          Enrichir {selectedProducts.length > 0 ? `(${selectedProducts.length})` : ''}
-        </Button>
-        <Button variant="outline" onClick={loadProducts} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Actualiser
-        </Button>
-        {filteredProducts.length > 0 && (
-          <Button variant="ghost" onClick={toggleSelectAll}>
-            {selectedProducts.length === filteredProducts.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+    <ChannablePageWrapper
+      title="Audit des Images"
+      subtitle="Qualité Produits"
+      description="Identifiez les produits avec peu d'images et enrichissez-les automatiquement via Firecrawl ou génération IA"
+      heroImage="products"
+      badge={{ label: `${stats.noImages + stats.oneImage} à enrichir`, icon: Image }}
+      actions={
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            onClick={() => setEnrichmentModal(true)} 
+            disabled={selectedProducts.length === 0 || processing}
+            size="lg"
+          >
+            <ImagePlus className="h-4 w-4 mr-2" />
+            Enrichir {selectedProducts.length > 0 ? `(${selectedProducts.length})` : ''}
           </Button>
-        )}
-      </div>
+          <Button variant="outline" onClick={loadProducts} disabled={loading} size="lg">
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Stats Cards */}
+        <ImageAuditStats 
+          stats={stats} 
+          activeFilter={filter} 
+          onFilterChange={setFilter} 
+        />
 
-      {/* Products List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Image className="h-5 w-5" />
-            Produits ({filteredProducts.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Chargement...</div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">Aucun produit dans cette catégorie</div>
-          ) : (
-            <div className="space-y-2 max-h-[500px] overflow-y-auto">
-              {filteredProducts.slice(0, 100).map(product => (
-                <div 
-                  key={product.id}
-                  className="flex items-center gap-4 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer"
-                  onClick={() => toggleProduct(product.id)}
-                >
-                  <Checkbox 
-                    checked={selectedProducts.includes(product.id)}
-                    onCheckedChange={() => toggleProduct(product.id)}
-                  />
-                  <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Image className="h-6 w-6 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{product.title}</div>
-                    {product.supplier_url && (
-                      <div className="text-xs text-muted-foreground truncate">{product.supplier_url}</div>
-                    )}
-                  </div>
-                  {getImageBadge(product.imageCount)}
-                </div>
-              ))}
-              {filteredProducts.length > 100 && (
-                <div className="text-center py-4 text-muted-foreground">
-                  + {filteredProducts.length - 100} autres produits
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* Processing Progress */}
+        <AnimatePresence>
+          <ImageAuditProgress progress={processProgress} isProcessing={processing} />
+        </AnimatePresence>
+
+        {/* Products List */}
+        <ImageAuditProductList
+          products={filteredProducts}
+          selectedProducts={selectedProducts}
+          onToggleProduct={toggleProduct}
+          onToggleAll={toggleSelectAll}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          loading={loading}
+        />
+      </div>
 
       {/* Enrichment Modal */}
       <ImageEnrichmentModal
@@ -362,8 +253,8 @@ export default function ImageAuditPage() {
         onClose={() => setEnrichmentModal(false)}
         onEnrich={handleEnrichment}
         selectedCount={selectedProducts.length}
-        hasSourceUrls={products.filter(p => selectedProducts.includes(p.id) && p.supplier_url).length}
+        hasSourceUrls={selectedWithUrls}
       />
-    </div>
+    </ChannablePageWrapper>
   );
 }
