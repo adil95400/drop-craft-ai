@@ -1037,11 +1037,13 @@ async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: 
 }
 
 // New function to import Shopify customers to the ShopOpti 'customers' table
+// Imports ALL customers including email subscribers/newsletter subscribers
 async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: string, credentials: any) {
   const normalizedDomain = normalizeShopifyDomain(credentials.shop_domain)
   const accessToken = credentials.access_token
 
-  console.log(`Starting customers import to ShopOpti for store: ${storeId}`)
+  console.log(`Starting FULL customers import to ShopOpti for store: ${storeId}`)
+  console.log('This includes ALL customers: buyers, email subscribers, newsletter subscribers, etc.')
   
   // Get user_id from the integration
   const { data: integration, error: intError } = await supabaseClient
@@ -1059,12 +1061,13 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
   let allCustomers: any[] = []
   let nextPageInfo: string | null = null
   let pageCount = 0
-  const maxPages = 20
+  const maxPages = 100 // Increased from 20 to 100 to fetch more customers
   
   do {
     pageCount++
     console.log(`Fetching customers page ${pageCount}`)
     
+    // Fetch ALL customers - no filtering, includes email subscribers
     let url = `https://${normalizedDomain}/admin/api/2023-10/customers.json?limit=250`
     if (nextPageInfo) {
       url += `&page_info=${nextPageInfo}`
@@ -1095,22 +1098,54 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
     }
     
     console.log(`Page ${pageCount}: ${data.customers?.length || 0} customers, total: ${allCustomers.length}`)
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, 300)) // Reduced delay for faster import
     
   } while (nextPageInfo && pageCount < maxPages)
   
-  console.log(`Total customers fetched: ${allCustomers.length}`)
+  console.log(`Total customers fetched from Shopify: ${allCustomers.length}`)
+  
+  // Count different types of customers
+  const emailSubscribers = allCustomers.filter(c => c.accepts_marketing).length
+  const buyersWithOrders = allCustomers.filter(c => c.orders_count > 0).length
+  const subscribersOnly = allCustomers.filter(c => c.accepts_marketing && c.orders_count === 0).length
+  
+  console.log(`Breakdown: ${buyersWithOrders} buyers, ${emailSubscribers} email subscribers, ${subscribersOnly} subscribers only (no orders)`)
   
   // Insert into 'customers' table (not shopify_customers)
   const batchSize = 50
   let importedCount = 0
   let errorCount = 0
+  let skippedNoEmail = 0
   
   for (let i = 0; i < allCustomers.length; i += batchSize) {
     const batch = allCustomers.slice(i, i + batchSize)
     
     for (const customer of batch) {
       try {
+        // Prepare customer tags - include email subscription status
+        const existingTags = customer.tags ? customer.tags.split(',').map((t: string) => t.trim()) : []
+        
+        // Add subscription-related tags
+        if (customer.accepts_marketing && !existingTags.includes('email_subscriber')) {
+          existingTags.push('email_subscriber')
+        }
+        if (customer.accepts_marketing && customer.orders_count === 0 && !existingTags.includes('newsletter_only')) {
+          existingTags.push('newsletter_only')
+        }
+        if (customer.email_marketing_consent?.state === 'subscribed') {
+          existingTags.push('marketing_subscribed')
+        }
+        
+        // Determine customer type for notes
+        let customerType = 'Client'
+        if (customer.orders_count === 0 && customer.accepts_marketing) {
+          customerType = 'Abonné newsletter'
+        } else if (customer.orders_count > 0 && customer.accepts_marketing) {
+          customerType = 'Client + Abonné newsletter'
+        } else if (customer.orders_count > 0) {
+          customerType = 'Client'
+        }
+        
         const customerData = {
           user_id: userId,
           email: customer.email,
@@ -1125,8 +1160,8 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
           country: customer.default_address?.country || null,
           total_orders: customer.orders_count || 0,
           total_spent: parseFloat(customer.total_spent || '0'),
-          tags: customer.tags ? customer.tags.split(',').map((t: string) => t.trim()) : [],
-          notes: `Importé depuis Shopify (ID: ${customer.id})`,
+          tags: existingTags,
+          notes: `${customerType} - Importé depuis Shopify (ID: ${customer.id})`,
           accepts_marketing: customer.accepts_marketing || false
         }
 
@@ -1145,6 +1180,8 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
           } else {
             importedCount++
           }
+        } else {
+          skippedNoEmail++
         }
       } catch (err) {
         console.error('Error processing customer:', err)
@@ -1155,15 +1192,22 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
     console.log(`Processed ${i + batch.length}/${allCustomers.length} customers`)
   }
   
-  console.log(`Import complete: ${importedCount} imported, ${errorCount} errors`)
+  console.log(`Import complete: ${importedCount} imported, ${errorCount} errors, ${skippedNoEmail} skipped (no email)`)
   
   return new Response(
     JSON.stringify({ 
       success: true, 
-      message: `${importedCount} clients importés avec succès`,
+      message: `${importedCount} clients importés avec succès (dont ${subscribersOnly} abonnés newsletter uniquement)`,
       imported_count: importedCount,
       error_count: errorCount,
-      total_fetched: allCustomers.length
+      skipped_no_email: skippedNoEmail,
+      total_fetched: allCustomers.length,
+      breakdown: {
+        total: allCustomers.length,
+        buyers: buyersWithOrders,
+        email_subscribers: emailSubscribers,
+        newsletter_only: subscribersOnly
+      }
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
