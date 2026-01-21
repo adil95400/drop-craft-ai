@@ -120,32 +120,15 @@ export function BulkEnrichmentDialog({
   const [step, setStep] = useState<'config' | 'processing' | 'complete'>('config');
   const { toast } = useToast();
 
-  // Reset state when modal opens
-  useEffect(() => {
-    if (open) {
-      setStep('config');
-      setProgress(0);
-      setResults([]);
-      setCurrentProduct('');
-      setSelectedSources(['amazon', 'aliexpress']);
-      setIncludeAI(true);
-    }
-  }, [open]);
-
-  // Load categories
-  useEffect(() => {
-    if (open && categories.length === 0) {
-      loadCategories();
-    } else if (categories.length > 0) {
-      setAvailableCategories(categories.map(c => ({ ...c, productCount: c.productCount || 0 })));
-    }
-  }, [open, categories]);
-
+  // Load categories function - defined first
   const loadCategories = useCallback(async () => {
     setLoadingCategories(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoadingCategories(false);
+        return;
+      }
 
       const { data: products } = await supabase
         .from('products')
@@ -173,6 +156,27 @@ export function BulkEnrichmentDialog({
       setLoadingCategories(false);
     }
   }, []);
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (open) {
+      setStep('config');
+      setProgress(0);
+      setResults([]);
+      setCurrentProduct('');
+      setSelectedSources(['amazon', 'aliexpress']);
+      setIncludeAI(true);
+      setSelectedCategories([]);
+      // Set correct initial mode based on productIds
+      setSelectionMode(productIds.length > 0 ? 'products' : 'categories');
+      // Load categories when modal opens
+      if (categories.length === 0) {
+        loadCategories();
+      } else {
+        setAvailableCategories(categories.map(c => ({ ...c, productCount: c.productCount || 0 })));
+      }
+    }
+  }, [open, productIds.length, categories, loadCategories]);
 
   const toggleSource = useCallback((sourceId: string) => {
     setSelectedSources(prev =>
