@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -13,10 +13,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Checkbox } from '@/components/ui/checkbox'
 import { 
   ImageIcon, Trash2, Check, X, ShoppingCart, 
-  Package, Eye, Copy, Plus
+  Package, Eye, Copy, Plus, GripVertical, RotateCcw,
+  ZoomIn, Loader2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
@@ -77,12 +77,10 @@ const normalizeImageUrl = (url: string): string => {
 // Fonction pour extraire un hash simple d'une URL
 const getImageHash = (url: string): string => {
   const normalized = normalizeImageUrl(url)
-  // Extraire le nom de fichier ou un identifiant unique
   try {
     const urlObj = new URL(normalized)
     const pathParts = urlObj.pathname.split('/')
     const filename = pathParts[pathParts.length - 1]
-    // Supprimer les extensions et paramètres courants
     return filename.replace(/\.(jpg|jpeg|png|webp|gif)/gi, '').toLowerCase()
   } catch {
     return normalized.toLowerCase()
@@ -116,11 +114,13 @@ export function ProductPreviewEditModal({
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set())
   const [duplicatesRemoved, setDuplicatesRemoved] = useState(0)
   const [newImageUrl, setNewImageUrl] = useState('')
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [loadingImages, setLoadingImages] = useState<Set<number>>(new Set())
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
 
   // Initialiser le produit édité quand le modal s'ouvre
-  useMemo(() => {
+  useEffect(() => {
     if (product && open) {
-      // Dédupliquer les images
       const originalCount = product.images?.length || 0
       const uniqueImages = deduplicateImages(product.images || [])
       const removedCount = originalCount - uniqueImages.length
@@ -132,8 +132,35 @@ export function ProductPreviewEditModal({
       })
       // Sélectionner toutes les images par défaut
       setSelectedImages(new Set(uniqueImages.map((_, i) => i)))
+      setFailedImages(new Set())
+      setLoadingImages(new Set(uniqueImages.map((_, i) => i)))
     }
   }, [product, open])
+
+  // Reset à la fermeture
+  useEffect(() => {
+    if (!open) {
+      setPreviewImage(null)
+      setNewImageUrl('')
+    }
+  }, [open])
+
+  const handleImageLoad = useCallback((index: number) => {
+    setLoadingImages(prev => {
+      const next = new Set(prev)
+      next.delete(index)
+      return next
+    })
+  }, [])
+
+  const handleImageError = useCallback((index: number) => {
+    setLoadingImages(prev => {
+      const next = new Set(prev)
+      next.delete(index)
+      return next
+    })
+    setFailedImages(prev => new Set(prev).add(index))
+  }, [])
 
   if (!editedProduct) return null
 
@@ -141,7 +168,12 @@ export function ProductPreviewEditModal({
     setEditedProduct(prev => prev ? { ...prev, [field]: value } : null)
   }
 
-  const toggleImageSelection = (index: number) => {
+  const toggleImageSelection = (index: number, event?: React.MouseEvent) => {
+    // Empêcher la propagation si c'est un clic sur le checkbox
+    if (event) {
+      event.stopPropagation()
+    }
+    
     setSelectedImages(prev => {
       const newSet = new Set(prev)
       if (newSet.has(index)) {
@@ -164,13 +196,36 @@ export function ProductPreviewEditModal({
   const deleteSelectedImages = () => {
     if (selectedImages.size === 0) return
     
+    const count = selectedImages.size
     const remainingImages = editedProduct.images.filter((_, i) => !selectedImages.has(i))
+    
+    // Réindexer les images restantes
     setEditedProduct(prev => prev ? { ...prev, images: remainingImages } : null)
+    // Sélectionner toutes les images restantes
     setSelectedImages(new Set(remainingImages.map((_, i) => i)))
+    // Nettoyer les états de chargement
+    setFailedImages(new Set())
+    setLoadingImages(new Set())
     
     toast({
       title: 'Images supprimées',
-      description: `${selectedImages.size} image(s) supprimée(s)`,
+      description: `${count} image(s) supprimée(s)`,
+    })
+  }
+
+  const removeFailedImages = () => {
+    if (failedImages.size === 0) return
+    
+    const count = failedImages.size
+    const remainingImages = editedProduct.images.filter((_, i) => !failedImages.has(i))
+    
+    setEditedProduct(prev => prev ? { ...prev, images: remainingImages } : null)
+    setSelectedImages(new Set(remainingImages.map((_, i) => i)))
+    setFailedImages(new Set())
+    
+    toast({
+      title: 'Images invalides supprimées',
+      description: `${count} image(s) en erreur supprimée(s)`,
     })
   }
 
@@ -201,9 +256,11 @@ export function ProductPreviewEditModal({
       return
     }
 
+    const newIndex = editedProduct.images.length
     const newImages = [...editedProduct.images, newImageUrl.trim()]
     setEditedProduct(prev => prev ? { ...prev, images: newImages } : null)
-    setSelectedImages(prev => new Set([...prev, newImages.length - 1]))
+    setSelectedImages(prev => new Set([...prev, newIndex]))
+    setLoadingImages(prev => new Set(prev).add(newIndex))
     setNewImageUrl('')
     
     toast({
@@ -212,17 +269,58 @@ export function ProductPreviewEditModal({
     })
   }
 
+  const setAsPrimary = (index: number) => {
+    if (index === 0) return
+    
+    const newImages = [...editedProduct.images]
+    const [moved] = newImages.splice(index, 1)
+    newImages.unshift(moved)
+    
+    // Réindexer la sélection
+    const newSelection = new Set<number>()
+    selectedImages.forEach(i => {
+      if (i === index) {
+        newSelection.add(0)
+      } else if (i < index) {
+        newSelection.add(i + 1)
+      } else {
+        newSelection.add(i)
+      }
+    })
+    
+    setEditedProduct(prev => prev ? { ...prev, images: newImages } : null)
+    setSelectedImages(newSelection)
+    
+    toast({
+      title: 'Image principale définie',
+      description: 'Cette image sera utilisée comme miniature principale',
+    })
+  }
+
   const handleConfirm = () => {
     if (!editedProduct) return
     
-    // Ne garder que les images sélectionnées
-    const filteredImages = editedProduct.images.filter((_, i) => selectedImages.has(i))
+    // Ne garder que les images sélectionnées (et non en erreur)
+    const filteredImages = editedProduct.images.filter((_, i) => 
+      selectedImages.has(i) && !failedImages.has(i)
+    )
+    
+    if (filteredImages.length === 0) {
+      toast({
+        title: 'Aucune image valide',
+        description: 'Veuillez sélectionner au moins une image valide',
+        variant: 'destructive'
+      })
+      return
+    }
     
     onConfirmImport({
       ...editedProduct,
       images: filteredImages
     })
   }
+
+  const validSelectedCount = [...selectedImages].filter(i => !failedImages.has(i)).length
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -322,14 +420,22 @@ export function ProductPreviewEditModal({
               </div>
             </div>
 
-            {/* Sélection des images */}
+            {/* Sélection des images - Section améliorée */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <Label className="flex items-center gap-2">
                   <ImageIcon className="h-4 w-4" />
-                  Images ({selectedImages.size}/{editedProduct.images.length} sélectionnées)
+                  Images 
+                  <Badge variant="secondary">
+                    {validSelectedCount}/{editedProduct.images.length}
+                  </Badge>
+                  {failedImages.size > 0 && (
+                    <Badge variant="destructive" className="text-xs">
+                      {failedImages.size} en erreur
+                    </Badge>
+                  )}
                 </Label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -348,6 +454,17 @@ export function ProductPreviewEditModal({
                     <X className="h-3 w-3 mr-1" />
                     Aucun
                   </Button>
+                  {failedImages.size > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={removeFailedImages}
+                      className="text-orange-600 border-orange-300"
+                    >
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      Retirer invalides
+                    </Button>
+                  )}
                   <Button
                     variant="destructive"
                     size="sm"
@@ -379,6 +496,7 @@ export function ProductPreviewEditModal({
                 </Button>
               </div>
 
+              {/* Grille d'images améliorée */}
               {editedProduct.images.length === 0 ? (
                 <div className="flex items-center justify-center p-8 border-2 border-dashed rounded-lg text-muted-foreground">
                   <ImageIcon className="h-6 w-6 mr-2" />
@@ -386,40 +504,110 @@ export function ProductPreviewEditModal({
                 </div>
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                  {editedProduct.images.map((img, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => toggleImageSelection(idx)}
-                      className={cn(
-                        "relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all",
-                        selectedImages.has(idx)
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-transparent opacity-50 hover:opacity-75"
-                      )}
-                    >
-                      <img
-                        src={img}
-                        alt={`Image ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={e => {
-                          (e.target as HTMLImageElement).src = '/placeholder.svg'
-                        }}
-                      />
-                      <div className={cn(
-                        "absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center transition-colors",
-                        selectedImages.has(idx)
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-background/80 border"
-                      )}>
-                        {selectedImages.has(idx) && <Check className="h-3 w-3" />}
+                  {editedProduct.images.map((img, idx) => {
+                    const isSelected = selectedImages.has(idx)
+                    const isFailed = failedImages.has(idx)
+                    const isLoading = loadingImages.has(idx)
+                    
+                    return (
+                      <div
+                        key={`${idx}-${img.slice(-20)}`}
+                        className={cn(
+                          "relative aspect-square rounded-lg overflow-hidden border-2 transition-all group",
+                          isFailed 
+                            ? "border-destructive/50 opacity-50" 
+                            : isSelected
+                              ? "border-primary ring-2 ring-primary/20 cursor-pointer"
+                              : "border-muted opacity-60 hover:opacity-80 cursor-pointer"
+                        )}
+                      >
+                        {/* Zone cliquable principale pour toggle */}
+                        <div 
+                          className="absolute inset-0 z-10"
+                          onClick={(e) => toggleImageSelection(idx, e)}
+                        />
+                        
+                        {/* Image */}
+                        <img
+                          src={img}
+                          alt={`Image ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                          onLoad={() => handleImageLoad(idx)}
+                          onError={() => handleImageError(idx)}
+                        />
+                        
+                        {/* Loader */}
+                        {isLoading && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                        
+                        {/* Indicateur d'erreur */}
+                        {isFailed && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-destructive/20">
+                            <X className="h-6 w-6 text-destructive" />
+                          </div>
+                        )}
+                        
+                        {/* Checkbox de sélection - TOUJOURS VISIBLE */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleImageSelection(idx)
+                          }}
+                          className={cn(
+                            "absolute top-1.5 right-1.5 z-20 w-6 h-6 rounded-full flex items-center justify-center transition-all",
+                            "border-2 shadow-sm",
+                            isSelected
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "bg-background/90 border-muted-foreground/30 hover:border-primary/50"
+                          )}
+                        >
+                          {isSelected && <Check className="h-3.5 w-3.5" />}
+                        </button>
+                        
+                        {/* Actions au survol */}
+                        <div className="absolute bottom-0 left-0 right-0 z-20 p-1 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 justify-center">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-white hover:bg-white/20"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setPreviewImage(img)
+                            }}
+                          >
+                            <ZoomIn className="h-3.5 w-3.5" />
+                          </Button>
+                          {idx !== 0 && isSelected && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-white hover:bg-white/20"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setAsPrimary(idx)
+                              }}
+                              title="Définir comme image principale"
+                            >
+                              <GripVertical className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {/* Badge image principale */}
+                        {idx === 0 && isSelected && !isFailed && (
+                          <Badge className="absolute bottom-1 left-1 z-20 text-xs bg-primary pointer-events-none">
+                            Principale
+                          </Badge>
+                        )}
                       </div>
-                      {idx === 0 && selectedImages.has(idx) && (
-                        <Badge className="absolute bottom-1 left-1 text-xs bg-primary">
-                          Principale
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -464,22 +652,35 @@ export function ProductPreviewEditModal({
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={isImporting || selectedImages.size === 0}
+            disabled={isImporting || validSelectedCount === 0}
             className="bg-gradient-to-r from-green-500 to-emerald-600"
           >
             {isImporting ? (
               <>
-                <span className="animate-spin mr-2">⏳</span>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Import en cours...
               </>
             ) : (
               <>
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Importer avec {selectedImages.size} image{selectedImages.size > 1 ? 's' : ''}
+                Importer avec {validSelectedCount} image{validSelectedCount > 1 ? 's' : ''}
               </>
             )}
           </Button>
         </DialogFooter>
+
+        {/* Modal de prévisualisation */}
+        {previewImage && (
+          <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+            <DialogContent className="max-w-3xl p-2">
+              <img 
+                src={previewImage} 
+                alt="Preview" 
+                className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </DialogContent>
     </Dialog>
   )
