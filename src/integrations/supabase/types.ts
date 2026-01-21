@@ -5508,6 +5508,7 @@ export type Database = {
           store_id: string | null
           store_url: string | null
           sync_frequency: string | null
+          sync_settings: Json | null
           updated_at: string | null
           user_id: string
           webhook_url: string | null
@@ -5531,6 +5532,7 @@ export type Database = {
           store_id?: string | null
           store_url?: string | null
           sync_frequency?: string | null
+          sync_settings?: Json | null
           updated_at?: string | null
           user_id: string
           webhook_url?: string | null
@@ -5554,6 +5556,7 @@ export type Database = {
           store_id?: string | null
           store_url?: string | null
           sync_frequency?: string | null
+          sync_settings?: Json | null
           updated_at?: string | null
           user_id?: string
           webhook_url?: string | null
