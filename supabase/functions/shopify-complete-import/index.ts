@@ -32,29 +32,31 @@ serve(async (req) => {
 
     console.log('📦 Import config:', { historyId, includeVariants, filters })
 
-    // Get Shopify integration (check both 'shopify' and 'ecommerce' platform types with Shopify domain)
+    // Get Shopify integration - use correct column names (platform, store_url)
     const { data: integrations, error: intError } = await supabase
       .from('integrations')
       .select('*')
       .eq('user_id', user.id)
       .eq('is_active', true)
 
-    // Find a Shopify integration (by platform_type or by shop_domain containing 'myshopify')
+    // Find a Shopify integration (by platform or by store_url containing 'myshopify')
     const integration = integrations?.find(i => 
-      i.platform_type === 'shopify' || 
-      (i.shop_domain && i.shop_domain.includes('myshopify.com')) ||
-      (i.platform_url && i.platform_url.includes('myshopify.com'))
+      i.platform === 'shopify' || 
+      (i.store_url && i.store_url.includes('myshopify.com'))
     )
 
     if (intError || !integration) {
       throw new Error('No active Shopify integration found')
     }
 
-    const shopifyUrl = integration.shop_domain || integration.platform_url
+    // Get shop domain from store_url or config
+    const configData = integration.config as Record<string, any> || {}
+    const credentials = configData?.credentials as Record<string, any> || {}
+    const shopifyUrl = integration.store_url || credentials?.shop_domain
     if (!shopifyUrl) throw new Error('Shopify URL not configured')
 
-    // Try access_token from integration, fallback to SHOPIFY_ADMIN_ACCESS_TOKEN, then SHOPIFY_ACCESS_TOKEN
-    const accessToken = integration.access_token || 
+    // Try access_token from config credentials, fallback to env vars
+    const accessToken = credentials?.access_token || 
       Deno.env.get('SHOPIFY_ADMIN_ACCESS_TOKEN') || 
       Deno.env.get('SHOPIFY_ACCESS_TOKEN')
     if (!accessToken) throw new Error('Shopify access token not found - please configure SHOPIFY_ADMIN_ACCESS_TOKEN in secrets')
