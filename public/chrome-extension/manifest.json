@@ -81,6 +81,8 @@
         "sidebar.css",
         "grabber.js",
         "reviews-extractor.js",
+        "video-extractor.js",
+        "variants-extractor.js",
         "fulfillment.js",
         "automation.js",
         "faq.js",

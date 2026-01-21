@@ -14,7 +14,14 @@ interface ProductData {
   images?: string[]
   platform?: string
   variants?: any[]
+  variant_options?: Record<string, string[]>
+  videos?: string[]
+  video_urls?: string[]
   reviews?: any[]
+  sku?: string
+  description?: string
+  has_videos?: boolean
+  has_variants?: boolean
 }
 
 interface ImportResult {
@@ -129,17 +136,24 @@ serve(async (req) => {
               }
             }
             
-            // Direct product data insert
+            // Direct product data insert with videos and variants
+            const allVideos = [...(product.videos || []), ...(product.video_urls || [])]
+            const uniqueVideos = [...new Set(allVideos)].filter(v => v && v.length > 0)
+            
             const productData = {
               user_id: userId,
               title: product.title || 'Produit importé',
               name: product.title || 'Produit importé',
+              description: product.description,
               price: product.price || 0,
               image_url: product.image || (product.images?.[0]),
               images: product.images || (product.image ? [product.image] : []),
+              videos: uniqueVideos,
               source_url: product.url,
               source_platform: product.platform || 'unknown',
+              sku: product.sku,
               variants: product.variants || [],
+              variant_options: product.variant_options || {},
               status: 'imported',
               created_at: new Date().toISOString()
             }
