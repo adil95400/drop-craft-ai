@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <title>Mode Hors Ligne - ShopOpti</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    
+    .offline-container {
+      background: white;
+      border-radius: 24px;
+      padding: 3rem 2rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    .offline-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    h1 {
+      color: #1f2937;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    
+    .subtitle {
+      color: #6b7280;
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    
+    .status-card {
+      background: #f3f4f6;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .status-item:last-child {
+      border-bottom: none;
+    }
+    
+    .status-label {
+      color: #374151;
+      font-size: 0.875rem;
+    }
+    
+    .status-value {
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    
+    .status-value.online {
+      color: #10b981;
+    }
+    
+    .status-value.offline {
+      color: #ef4444;
+    }
+    
+    .status-value.pending {
+      color: #f59e0b;
+    }
+    
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .btn {
+      padding: 0.875rem 1.5rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+    
+    .tips {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .tips-title {
+      color: #374151;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    
+    .tips-list {
+      color: #6b7280;
+      font-size: 0.8125rem;
+      text-align: left;
+      padding-left: 1.25rem;
+    }
+    
+    .tips-list li {
+      margin-bottom: 0.5rem;
+    }
+    
+    @media (max-width: 480px) {
+      .offline-container {
+        padding: 2rem 1.5rem;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">📡</div>
+    <h1>Vous êtes hors ligne</h1>
+    <p class="subtitle">
+      Pas de panique ! Vos données sont en sécurité et seront synchronisées dès que vous serez reconnecté.
+    </p>
+    
+    <div class="status-card">
+      <div class="status-item">
+        <span class="status-label">Connexion Internet</span>
+        <span class="status-value offline" id="connectionStatus">Hors ligne</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Actions en attente</span>
+        <span class="status-value pending" id="pendingCount">0</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Données en cache</span>
+        <span class="status-value" id="cacheStatus">Disponibles</span>
+      </div>
+    </div>
+    
+    <div class="actions">
+      <button class="btn btn-primary" onclick="retryConnection()">
+        🔄 Réessayer la connexion
+      </button>
+      <button class="btn btn-secondary" onclick="goToCachedDashboard()">
+        📊 Voir les données en cache
+      </button>
+    </div>
+    
+    <div class="tips">
+      <p class="tips-title">💡 Conseils</p>
+      <ul class="tips-list">
+        <li>Vérifiez votre connexion Wi-Fi ou données mobiles</li>
+        <li>Les modifications seront synchronisées automatiquement</li>
+        <li>Vous pouvez toujours consulter vos données en cache</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Vérifier la connexion
+    function checkConnection() {
+      const statusEl = document.getElementById('connectionStatus');
+      if (navigator.onLine) {
+        statusEl.textContent = 'En ligne';
+        statusEl.className = 'status-value online';
+        // Rediriger vers le dashboard
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      } else {
+        statusEl.textContent = 'Hors ligne';
+        statusEl.className = 'status-value offline';
+      }
+    }
+
+    // Récupérer les actions en attente
+    async function updatePendingCount() {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        const messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = (event) => {
+          if (event.data.pending !== undefined) {
+            document.getElementById('pendingCount').textContent = event.data.pending;
+          }
+        };
+        navigator.serviceWorker.controller.postMessage(
+          { type: 'GET_CACHE_STATUS' },
+          [messageChannel.port2]
+        );
+      }
+    }
+
+    // Réessayer la connexion
+    function retryConnection() {
+      window.location.reload();
+    }
+
+    // Aller au dashboard en mode cache
+    function goToCachedDashboard() {
+      window.location.href = '/dashboard?offline=true';
+    }
+
+    // Écouter les changements de connexion
+    window.addEventListener('online', checkConnection);
+    window.addEventListener('offline', checkConnection);
+
+    // Initialisation
+    checkConnection();
+    updatePendingCount();
+    setInterval(updatePendingCount, 5000);
+  </script>
+</body>
+</html>
