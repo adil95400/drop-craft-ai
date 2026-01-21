@@ -33,6 +33,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { useImportUltraPro, type ImportedProduct } from '@/hooks/useImportUltraPro'
+import { ShopifyExportDialog } from '@/components/products/export/ShopifyExportDialog'
 
 export const EnhancedImportResults = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -41,6 +42,7 @@ export const EnhancedImportResults = () => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
   const [editingProduct, setEditingProduct] = useState<ImportedProduct | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [showShopifyExport, setShowShopifyExport] = useState(false)
 
   // Use real data from useImportUltraPro hook
   const { importedProducts } = useImportUltraPro()
@@ -92,8 +94,8 @@ export const EnhancedImportResults = () => {
           toast.success(`${selectedProducts.length} produit(s) optimisé(s) par IA`)
           break
         case 'export-shopify':
-          toast.success(`${selectedProducts.length} produit(s) envoyé(s) vers Shopify`)
-          break
+          setShowShopifyExport(true)
+          return // Don't clear selection, let dialog handle it
         case 'export-marketplace':
           toast.success(`${selectedProducts.length} produit(s) envoyé(s) vers les marketplaces`)
           break
@@ -622,6 +624,19 @@ export const EnhancedImportResults = () => {
           </CardContent>
         </Card>
       )}
+      {/* Shopify Export Dialog */}
+      <ShopifyExportDialog
+        open={showShopifyExport}
+        onOpenChange={setShowShopifyExport}
+        productIds={selectedProducts}
+        productNames={importedProducts
+          .filter(p => selectedProducts.includes(p.id))
+          .map(p => p.name)}
+        onSuccess={() => {
+          setSelectedProducts([])
+          toast.success('Export Shopify terminé')
+        }}
+      />
     </div>
   )
 }
