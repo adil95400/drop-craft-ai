@@ -78,6 +78,36 @@ class DropCraftContentScript {
     imageOptimizerScript.src = chrome.runtime.getURL('image-optimizer.js');
     imageOptimizerScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(imageOptimizerScript);
+    
+    // Inject multi-store manager
+    const multiStoreScript = document.createElement('script');
+    multiStoreScript.src = chrome.runtime.getURL('multi-store-manager.js');
+    multiStoreScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(multiStoreScript);
+    
+    // Inject platform-specific extractors
+    this.injectPlatformExtractors();
+  }
+  
+  // NEW: Inject platform-specific extractors based on current site
+  injectPlatformExtractors() {
+    const hostname = window.location.hostname;
+    
+    // TikTok Shop
+    if (hostname.includes('tiktok') || hostname.includes('tiktokshop')) {
+      const tiktokScript = document.createElement('script');
+      tiktokScript.src = chrome.runtime.getURL('platforms/tiktok-shop.js');
+      tiktokScript.onload = function() { this.remove(); };
+      (document.head || document.documentElement).appendChild(tiktokScript);
+    }
+    
+    // Cdiscount
+    if (hostname.includes('cdiscount')) {
+      const cdiscountScript = document.createElement('script');
+      cdiscountScript.src = chrome.runtime.getURL('platforms/cdiscount.js');
+      cdiscountScript.onload = function() { this.remove(); };
+      (document.head || document.documentElement).appendChild(cdiscountScript);
+    }
   }
 
   setupMessageListener() {
