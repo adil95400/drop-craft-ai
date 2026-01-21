@@ -174,7 +174,7 @@ export const AuthInterface = () => {
           <img 
             src={shopOptiLogo} 
             alt="ShopOpti+" 
-            className="h-[100px] w-auto object-contain"
+            className="h-[150px] w-[200px] object-contain"
           />
         </div>
 
