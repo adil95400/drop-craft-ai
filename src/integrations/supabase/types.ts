@@ -2849,6 +2849,104 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_checks: {
+        Row: {
+          created_at: string
+          description: string | null
+          evidence: string | null
+          framework_id: string | null
+          framework_name: string | null
+          id: string
+          last_checked: string | null
+          priority: string | null
+          requirement: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          evidence?: string | null
+          framework_id?: string | null
+          framework_name?: string | null
+          id?: string
+          last_checked?: string | null
+          priority?: string | null
+          requirement: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          evidence?: string | null
+          framework_id?: string | null
+          framework_name?: string | null
+          id?: string
+          last_checked?: string | null
+          priority?: string | null
+          requirement?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_checks_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_frameworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_frameworks: {
+        Row: {
+          compliance_percentage: number | null
+          created_at: string
+          description: string | null
+          id: string
+          last_audit: string | null
+          name: string
+          next_audit: string | null
+          requirements_met: number | null
+          requirements_total: number | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          compliance_percentage?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_audit?: string | null
+          name: string
+          next_audit?: string | null
+          requirements_met?: number | null
+          requirements_total?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          compliance_percentage?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_audit?: string | null
+          name?: string
+          next_audit?: string | null
+          requirements_met?: number | null
+          requirements_total?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
