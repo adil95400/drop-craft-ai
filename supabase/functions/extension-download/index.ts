@@ -442,13 +442,13 @@ function sendToApp(products) {
 
 function openDashboard() {
   chrome.tabs.create({
-    url: 'https://drop-craft-ai.lovable.app/dashboard'
+    url: 'https://shopopti.io/dashboard'
   });
 }
 
 function openSettings() {
   chrome.tabs.create({
-    url: 'https://drop-craft-ai.lovable.app/settings'
+    url: 'https://shopopti.io/settings'
   });
 }
 
@@ -488,7 +488,7 @@ function updateUI() {
 
 function checkConnection() {
   // Simple connection check to the app - use correct production URL
-  fetch('https://drop-craft-ai.lovable.app/')
+  fetch('https://shopopti.io/')
     .then(() => {
       document.querySelector('.status').className = 'status connected';
       document.querySelector('.status').innerHTML = '✅ Connecté à l\\'application';

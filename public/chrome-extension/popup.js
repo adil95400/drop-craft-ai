@@ -10,7 +10,7 @@ class DropCraftPopup {
     this.pendingItems = [];
     this.currentPlatform = null;
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
-    this.APP_URL = 'https://drop-craft-ai.lovable.app';
+    this.APP_URL = 'https://shopopti.io';
   }
 
   async init() {

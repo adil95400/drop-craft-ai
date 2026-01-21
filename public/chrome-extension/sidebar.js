@@ -10,7 +10,7 @@
 
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
-    APP_URL: 'https://drop-craft-ai.lovable.app',
+    APP_URL: 'https://shopopti.io',
     SUPPORTED_PLATFORMS: {
       'aliexpress': { name: 'AliExpress', icon: '🛒', color: '#ff6a00' },
       'amazon': { name: 'Amazon', icon: '📦', color: '#ff9900' },

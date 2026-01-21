@@ -3,7 +3,7 @@
 
 const CONFIG = {
   API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
-  APP_URL: 'https://drop-craft-ai.lovable.app',
+  APP_URL: 'https://shopopti.io',
   VERSION: '4.0.0'
 };
 
