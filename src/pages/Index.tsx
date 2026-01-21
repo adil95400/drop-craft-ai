@@ -10,6 +10,9 @@ import { SEO } from "@/components/SEO";
 import { SoftwareAppSchema, OrganizationSchema } from "@/components/seo/StructuredData";
 import { StickyCtaBar } from "@/components/landing/StickyCtaBar";
 import { LiveDemoPreview } from "@/components/landing/LiveDemoPreview";
+import { TestimonialsWithPhotos } from "@/components/landing/TestimonialsWithPhotos";
+import { InteractiveDemo } from "@/components/landing/InteractiveDemo";
+import { LiveDemoPreview } from "@/components/landing/LiveDemoPreview";
 // Hero images in public folder for LCP discovery
 const heroImage = "/images/hero-automation.jpg";
 const heroImageSm = "/images/hero-automation-sm.jpg";
@@ -674,12 +677,13 @@ const Index = () => {
       <main>
         <HeroSection />
         <StatsSection />
+        <InteractiveDemo />
         <LiveDemoPreview />
         <FeaturesSection />
         <BenefitsSection />
         <UseCasesSection />
         <PricingPreviewSection />
-        <TestimonialsSection />
+        <TestimonialsWithPhotos />
         <FinalCTASection />
       </main>
       <StickyCtaBar />
