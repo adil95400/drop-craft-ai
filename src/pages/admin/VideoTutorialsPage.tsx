@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Video, Upload, Play, Trash2, Edit, Search, Filter } from 'lucide-react';
+import { Video, Upload, Play, Trash2, Edit, Search, Filter, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Select,
   SelectContent,
@@ -14,49 +16,115 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 interface VideoTutorial {
   id: string;
   title: string;
   description: string;
-  videoUrl: string;
-  thumbnail: string;
+  video_url: string;
+  thumbnail_url: string;
   category: string;
   duration: string;
   views: number;
-  publishedAt: string;
+  created_at: string;
 }
 
 export default function VideoTutorialsPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [newVideo, setNewVideo] = useState({
+    title: '',
+    description: '',
+    video_url: '',
+    thumbnail_url: '',
+    category: 'getting-started',
+    duration: ''
+  });
 
-  // Mock data - remplacer par des vraies données Supabase
-  const [tutorials] = useState<VideoTutorial[]>([
-    {
-      id: '1',
-      title: 'Introduction à ShopOpti',
-      description: 'Découvrez les fonctionnalités principales de ShopOpti et comment démarrer',
-      videoUrl: 'https://example.com/video1.mp4',
-      thumbnail: '/placeholder.svg',
-      category: 'getting-started',
-      duration: '12:34',
-      views: 1250,
-      publishedAt: '2024-01-15'
-    },
-    {
-      id: '2',
-      title: 'Importer des produits depuis AliExpress',
-      description: 'Guide complet pour importer et synchroniser vos produits',
-      videoUrl: 'https://example.com/video2.mp4',
-      thumbnail: '/placeholder.svg',
-      category: 'import',
-      duration: '18:45',
-      views: 890,
-      publishedAt: '2024-01-20'
+  // Fetch tutorials from blog_posts table with category = 'video_tutorial'
+  const { data: tutorials = [], isLoading } = useQuery({
+    queryKey: ['video-tutorials'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('category', 'video_tutorial')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map((item): VideoTutorial => ({
+        id: item.id,
+        title: item.title,
+        description: item.excerpt || item.content || '',
+        video_url: item.image_url || '',
+        thumbnail_url: item.seo_title || '/placeholder.svg',
+        category: item.seo_description || 'getting-started',
+        duration: '00:00',
+        views: item.views || 0,
+        created_at: item.created_at || new Date().toISOString()
+      }));
     }
-  ]);
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (videoData: typeof newVideo) => {
+      const { error } = await supabase
+        .from('blog_posts')
+        .insert({
+          user_id: user?.id || '',
+          title: videoData.title,
+          content: videoData.description,
+          excerpt: videoData.description,
+          category: 'video_tutorial',
+          image_url: videoData.video_url,
+          seo_title: videoData.thumbnail_url || '/placeholder.svg',
+          seo_description: videoData.category,
+          status: 'published'
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Succès', description: 'Vidéo ajoutée avec succès' });
+      queryClient.invalidateQueries({ queryKey: ['video-tutorials'] });
+      setIsUploadDialogOpen(false);
+      setNewVideo({ title: '', description: '', video_url: '', thumbnail_url: '', category: 'getting-started', duration: '' });
+    },
+    onError: () => {
+      toast({ title: 'Erreur', description: 'Impossible d\'ajouter la vidéo', variant: 'destructive' });
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Succès', description: 'Vidéo supprimée' });
+      queryClient.invalidateQueries({ queryKey: ['video-tutorials'] });
+    },
+    onError: () => {
+      toast({ title: 'Erreur', description: 'Impossible de supprimer la vidéo', variant: 'destructive' });
+    }
+  });
 
   const categories = [
     { value: 'all', label: 'Toutes les catégories' },
@@ -67,26 +135,23 @@ export default function VideoTutorialsPage() {
     { value: 'advanced', label: 'Fonctionnalités avancées' }
   ];
 
-  const handleUploadVideo = () => {
-    toast({
-      title: 'Upload vidéo',
-      description: 'Fonctionnalité d\'upload en cours de développement'
-    });
-  };
-
-  const handleDeleteVideo = (id: string) => {
-    toast({
-      title: 'Vidéo supprimée',
-      description: `La vidéo ${id} a été supprimée avec succès`
-    });
-  };
-
   const filteredTutorials = tutorials.filter(tutorial => {
     const matchesSearch = tutorial.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          tutorial.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || tutorial.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Chargement des vidéos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -100,10 +165,78 @@ export default function VideoTutorialsPage() {
             Gérez les vidéos tutoriels de la marketplace ShopOpti
           </p>
         </div>
-        <Button onClick={handleUploadVideo} className="gap-2">
-          <Upload className="h-4 w-4" />
-          Uploader une vidéo
-        </Button>
+        <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Upload className="h-4 w-4" />
+              Uploader une vidéo
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ajouter une vidéo</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Titre *</Label>
+                <Input
+                  value={newVideo.title}
+                  onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
+                  placeholder="Titre de la vidéo"
+                />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  value={newVideo.description}
+                  onChange={(e) => setNewVideo({ ...newVideo, description: e.target.value })}
+                  placeholder="Description de la vidéo"
+                />
+              </div>
+              <div>
+                <Label>URL de la vidéo *</Label>
+                <Input
+                  value={newVideo.video_url}
+                  onChange={(e) => setNewVideo({ ...newVideo, video_url: e.target.value })}
+                  placeholder="https://youtube.com/watch?v=..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Catégorie</Label>
+                  <Select value={newVideo.category} onValueChange={(v) => setNewVideo({ ...newVideo, category: v })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.filter(c => c.value !== 'all').map(cat => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Durée</Label>
+                  <Input
+                    value={newVideo.duration}
+                    onChange={(e) => setNewVideo({ ...newVideo, duration: e.target.value })}
+                    placeholder="12:34"
+                  />
+                </div>
+              </div>
+              <Button 
+                className="w-full" 
+                onClick={() => uploadMutation.mutate(newVideo)}
+                disabled={!newVideo.title || !newVideo.video_url || uploadMutation.isPending}
+              >
+                {uploadMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Ajouter la vidéo
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats Cards */}
@@ -138,10 +271,10 @@ export default function VideoTutorialsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Durée Totale</p>
-                <p className="text-2xl font-bold">2h 45m</p>
+                <p className="text-sm text-muted-foreground">Catégories</p>
+                <p className="text-2xl font-bold">{categories.length - 1}</p>
               </div>
-              <Video className="h-8 w-8 text-blue-500" />
+              <Filter className="h-8 w-8 text-orange-500" />
             </div>
           </CardContent>
         </Card>
@@ -150,10 +283,16 @@ export default function VideoTutorialsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Catégories</p>
-                <p className="text-2xl font-bold">{categories.length - 1}</p>
+                <p className="text-sm text-muted-foreground">Ce mois</p>
+                <p className="text-2xl font-bold">
+                  {tutorials.filter(t => {
+                    const created = new Date(t.created_at);
+                    const now = new Date();
+                    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+                  }).length}
+                </p>
               </div>
-              <Filter className="h-8 w-8 text-orange-500" />
+              <Video className="h-8 w-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
@@ -201,12 +340,16 @@ export default function VideoTutorialsPage() {
           <Card key={tutorial.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="relative aspect-video bg-muted">
               <img 
-                src={tutorial.thumbnail} 
+                src={tutorial.thumbnail_url} 
                 alt={tutorial.title}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity">
-                <Button size="icon" className="rounded-full">
+                <Button 
+                  size="icon" 
+                  className="rounded-full"
+                  onClick={() => window.open(tutorial.video_url, '_blank')}
+                >
                   <Play className="h-6 w-6" />
                 </Button>
               </div>
@@ -227,7 +370,7 @@ export default function VideoTutorialsPage() {
             <CardContent>
               <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                 <span>{tutorial.views.toLocaleString()} vues</span>
-                <span>{new Date(tutorial.publishedAt).toLocaleDateString('fr-FR')}</span>
+                <span>{new Date(tutorial.created_at).toLocaleDateString('fr-FR')}</span>
               </div>
               
               <div className="flex gap-2">
@@ -238,11 +381,11 @@ export default function VideoTutorialsPage() {
                 <Button 
                   variant="destructive" 
                   size="sm" 
-                  onClick={() => handleDeleteVideo(tutorial.id)}
+                  onClick={() => deleteMutation.mutate(tutorial.id)}
+                  disabled={deleteMutation.isPending}
                   className="gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Supprimer
                 </Button>
               </div>
             </CardContent>
@@ -252,8 +395,15 @@ export default function VideoTutorialsPage() {
 
       {filteredTutorials.length === 0 && (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Aucune vidéo trouvée pour les critères sélectionnés
+          <CardContent className="py-12 text-center">
+            <Video className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Aucune vidéo trouvée</h3>
+            <p className="text-muted-foreground mb-4">
+              {tutorials.length === 0 
+                ? 'Commencez par ajouter votre première vidéo tutoriel' 
+                : 'Aucune vidéo ne correspond aux critères sélectionnés'}
+            </p>
+            <Button onClick={() => setIsUploadDialogOpen(true)}>Ajouter une vidéo</Button>
           </CardContent>
         </Card>
       )}
