@@ -4,11 +4,9 @@
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChannableQuickActions } from '@/components/channable'
-import { ChannableQuickAction } from '@/components/channable/types'
 import { 
-  Plus, Upload, Download, Wand2, Image, RefreshCw, 
-  Grid, Target, Sparkles, Filter 
+  Plus, Upload, Download, Wand2, RefreshCw, 
+  Grid, Target, Filter 
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -31,8 +29,6 @@ export function ProductsQuickActionsBar({
   onEnrich,
   viewMode,
   onViewModeChange,
-  expertMode,
-  onExpertModeChange,
   hasActiveFilters,
   onShowFilters,
   onResetFilters,
@@ -53,94 +49,100 @@ export function ProductsQuickActionsBar({
     }
   }
 
-  // Action gauche : Nouveau produit
-  const leftActions: ChannableQuickAction[] = [
-    {
-      id: 'add-product',
-      label: 'Nouveau produit',
-      icon: Plus,
-      onClick: () => navigate('/products/create'),
-      variant: 'primary'
-    }
-  ]
-
   return (
-    <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-      {/* Actions gauche */}
-      <ChannableQuickActions actions={leftActions} variant="compact" />
-      
-      {/* Actions droite */}
+    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+      {/* Actions principales (gauche) */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Boutons Standard / Audit / Enrichir IA */}
         <Button
-          variant={viewMode === 'standard' ? 'default' : 'outline'}
-          onClick={() => onViewModeChange('standard')}
+          onClick={() => navigate('/products/create')}
           size="sm"
           className="gap-2"
         >
-          <Grid className="h-4 w-4" />
-          Standard
+          <Plus className="h-4 w-4" />
+          Nouveau produit
         </Button>
         <Button
-          variant={viewMode === 'audit' ? 'default' : 'outline'}
-          onClick={() => onViewModeChange('audit')}
-          size="sm"
-          className="gap-2"
-        >
-          <Target className="h-4 w-4" />
-          Audit
-        </Button>
-        <Button
-          variant="default"
+          variant="outline"
           onClick={onEnrich}
           size="sm"
-          className="gap-2 bg-gradient-to-r from-primary to-primary/80"
+          className="gap-2 border-primary/50 text-primary hover:bg-primary/10"
         >
           <Wand2 className="h-4 w-4" />
           Enrichir IA
         </Button>
+      </div>
+      
+      {/* Actions secondaires (droite) */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Toggles de vue */}
+        <div className="flex items-center rounded-md border bg-muted/30 p-0.5">
+          <Button
+            variant={viewMode === 'standard' ? 'default' : 'ghost'}
+            onClick={() => onViewModeChange('standard')}
+            size="sm"
+            className="gap-1.5 h-7 px-2.5"
+          >
+            <Grid className="h-3.5 w-3.5" />
+            Standard
+          </Button>
+          <Button
+            variant={viewMode === 'audit' ? 'default' : 'ghost'}
+            onClick={() => onViewModeChange('audit')}
+            size="sm"
+            className="gap-1.5 h-7 px-2.5"
+          >
+            <Target className="h-3.5 w-3.5" />
+            Audit
+          </Button>
+        </div>
         
-        {/* Séparateur visuel */}
-        <div className="h-6 w-px bg-border mx-1" />
+        {/* Séparateur */}
+        <div className="hidden sm:block h-6 w-px bg-border" />
         
-        {/* Importer / Actualiser / Exporter / Filtres */}
+        {/* Actions données */}
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="gap-2"
+          className="gap-1.5 h-8"
+          onClick={onRefresh}
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <span className="hidden md:inline">Actualiser</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 h-8"
           onClick={() => navigate('/import/quick')}
         >
           <Upload className="h-4 w-4" />
-          Importer
+          <span className="hidden md:inline">Importer</span>
         </Button>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="gap-2"
-          onClick={onRefresh}
-        >
-          <RefreshCw className="h-4 w-4" />
-          Actualiser
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
+          className="gap-1.5 h-8"
           onClick={handleExport}
         >
           <Download className="h-4 w-4" />
-          Exporter
+          <span className="hidden md:inline">Exporter</span>
         </Button>
+        
+        {/* Séparateur */}
+        <div className="hidden sm:block h-6 w-px bg-border" />
+        
+        {/* Filtres */}
         <Button 
-          variant="outline" 
+          variant={hasActiveFilters ? 'secondary' : 'outline'}
           size="sm" 
-          className="gap-2"
+          className="gap-1.5 h-8"
           onClick={onShowFilters}
         >
           <Filter className="h-4 w-4" />
           Filtres
           {hasActiveFilters && (
-            <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+            <Badge variant="destructive" className="ml-1 h-4 min-w-4 p-0 flex items-center justify-center text-[10px]">
               !
             </Badge>
           )}
@@ -150,7 +152,7 @@ export function ProductsQuickActionsBar({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-muted-foreground hover:text-destructive"
+            className="h-8 text-xs text-muted-foreground hover:text-destructive"
             onClick={onResetFilters}
           >
             Réinitialiser
