@@ -530,9 +530,10 @@ export default function ChannableProductsPage() {
       <BulkEnrichmentDialog
         open={showBulkEnrichment}
         onOpenChange={setShowBulkEnrichment}
-        productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 50).map(p => p.id)}
+        productIds={selectedProducts}
         onComplete={() => {
           setShowBulkEnrichment(false)
+          setSelectedProducts([])
           handleRefresh()
         }}
       />
