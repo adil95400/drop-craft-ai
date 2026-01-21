@@ -1,12 +1,17 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { Activity, Mail, Phone, Calendar, FileText, Search, Filter, Clock, User } from 'lucide-react'
+import { Activity, Mail, Phone, Calendar, FileText, Search, Filter, Clock, User, Plus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 interface ActivityRecord {
   id: string
@@ -22,78 +27,57 @@ interface ActivityRecord {
   nextAction?: string
 }
 
-const mockActivities: ActivityRecord[] = [
-  {
-    id: '1',
-    type: 'email',
-    customerName: 'Marie Dubois',
-    customerEmail: 'marie.dubois@email.com',
-    title: 'Email de suivi commercial',
-    description: 'Envoi de la proposition commerciale pour la collection printemps',
-    date: '2024-01-15T14:30:00',
-    status: 'completed',
-    priority: 'high',
-    outcome: 'Proposition envoyée, client intéressé',
-    nextAction: 'Rappel prévu dans 3 jours'
-  },
-  {
-    id: '2',
-    type: 'call',
-    customerName: 'Pierre Martin',
-    customerEmail: 'p.martin@commerce.fr',
-    title: 'Appel de prospection',
-    description: 'Premier contact pour présenter nos services',
-    date: '2024-01-15T11:15:00',
-    status: 'completed',
-    priority: 'medium',
-    outcome: 'Intéressé, demande plus d\'informations',
-    nextAction: 'Envoyer catalogue détaillé'
-  },
-  {
-    id: '3',
-    type: 'meeting',
-    customerName: 'Sophie Bernard',
-    customerEmail: 'sophie@startupmode.com',
-    title: 'Rendez-vous commercial',
-    description: 'Présentation de nos solutions e-commerce',
-    date: '2024-01-16T10:00:00',
-    status: 'scheduled',
-    priority: 'high'
-  },
-  {
-    id: '4',
-    type: 'note',
-    customerName: 'Lucas Petit',
-    customerEmail: 'lucas.petit@retail.com',
-    title: 'Note de suivi',
-    description: 'Client demande des modifications sur la proposition',
-    date: '2024-01-14T16:00:00',
-    status: 'completed',
-    priority: 'medium',
-    outcome: 'Modifications acceptées',
-    nextAction: 'Nouvelle proposition à envoyer'
-  },
-  {
-    id: '5',
-    type: 'order',
-    customerName: 'Emma Durand',
-    customerEmail: 'emma.durand@boutique.fr',
-    title: 'Nouvelle commande',
-    description: 'Commande n°ORD-2024-156 - 50 articles',
-    date: '2024-01-15T09:45:00',
-    status: 'completed',
-    priority: 'high',
-    outcome: 'Commande confirmée et traitée'
-  }
-]
-
 export default function CRMActivity() {
-  const { toast } = useToast();
-  const [activities, setActivities] = useState(mockActivities)
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+
+  // Fetch activities from activity_logs table
+  const { data: activities = [], isLoading } = useQuery({
+    queryKey: ['crm-activities'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (error) throw error
+
+      return (data || []).map((log): ActivityRecord => {
+        const details = log.details as any || {}
+        return {
+          id: log.id,
+          type: mapActionToType(log.action),
+          customerName: details.customer_name || 'Client',
+          customerEmail: details.customer_email || '',
+          title: log.description || log.action,
+          description: details.description || log.description || '',
+          date: log.created_at || new Date().toISOString(),
+          status: details.status || 'completed',
+          priority: details.priority || 'medium',
+          outcome: details.outcome,
+          nextAction: details.next_action
+        }
+      })
+    }
+  })
+
+  function mapActionToType(action: string): ActivityRecord['type'] {
+    if (action.includes('email') || action.includes('Email')) return 'email'
+    if (action.includes('call') || action.includes('Appel')) return 'call'
+    if (action.includes('meeting') || action.includes('RDV')) return 'meeting'
+    if (action.includes('order') || action.includes('Commande')) return 'order'
+    if (action.includes('task') || action.includes('Tâche')) return 'task'
+    return 'note'
+  }
 
   const filteredActivities = activities.filter(activity => {
     const matchesSearch = activity.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -183,6 +167,47 @@ export default function CRMActivity() {
     scheduledActivities: activities.filter(a => a.status === 'scheduled').length
   }
 
+  const handleQuickAction = async (actionType: string) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      toast({ title: 'Erreur', description: 'Vous devez être connecté', variant: 'destructive' })
+      return
+    }
+
+    const actionMap: Record<string, string> = {
+      email: 'Email envoyé',
+      call: 'Appel effectué',
+      meeting: 'RDV programmé',
+      note: 'Note ajoutée'
+    }
+
+    const { error } = await supabase.from('activity_logs').insert({
+      user_id: user.id,
+      action: actionMap[actionType] || 'Action effectuée',
+      description: `${actionMap[actionType] || 'Action'} - ${new Date().toLocaleString('fr-FR')}`,
+      entity_type: 'crm',
+      severity: 'info',
+      details: { type: actionType, status: 'completed', priority: 'medium' }
+    })
+
+    if (error) {
+      toast({ title: 'Erreur', description: 'Impossible d\'enregistrer l\'activité', variant: 'destructive' })
+    } else {
+      toast({ title: 'Succès', description: actionMap[actionType] || 'Action enregistrée' })
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Chargement des activités...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -190,10 +215,43 @@ export default function CRMActivity() {
           <h1 className="text-3xl font-bold">Activité Client</h1>
           <p className="text-muted-foreground">Suivi de toutes les interactions clients</p>
         </div>
-        <Button className="gap-2">
-          <Activity className="h-4 w-4" />
-          Nouvelle Activité
-        </Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Nouvelle Activité
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ajouter une activité</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Type</Label>
+                <Select defaultValue="note">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="call">Appel</SelectItem>
+                    <SelectItem value="meeting">Rendez-vous</SelectItem>
+                    <SelectItem value="note">Note</SelectItem>
+                    <SelectItem value="task">Tâche</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea placeholder="Décrivez l'activité..." />
+              </div>
+              <Button className="w-full" onClick={() => setIsAddDialogOpen(false)}>
+                Ajouter
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats */}
@@ -248,7 +306,7 @@ export default function CRMActivity() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-4 items-center flex-wrap">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -259,7 +317,7 @@ export default function CRMActivity() {
           />
         </div>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-40">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Type" />
           </SelectTrigger>
@@ -273,7 +331,7 @@ export default function CRMActivity() {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-40">
             <SelectValue placeholder="Statut" />
           </SelectTrigger>
           <SelectContent>
@@ -284,7 +342,7 @@ export default function CRMActivity() {
           </SelectContent>
         </Select>
         <Select value={dateFilter} onValueChange={setDateFilter}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-40">
             <SelectValue placeholder="Période" />
           </SelectTrigger>
           <SelectContent>
@@ -309,7 +367,7 @@ export default function CRMActivity() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
                       {getTypeIcon(activity.type)}
                       <h3 className="font-semibold">{activity.title}</h3>
                       <Badge className={getStatusColor(activity.status)}>
@@ -322,7 +380,8 @@ export default function CRMActivity() {
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground mb-2">
-                      <strong>{activity.customerName}</strong> • {activity.customerEmail}
+                      <strong>{activity.customerName}</strong> 
+                      {activity.customerEmail && ` • ${activity.customerEmail}`}
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
                       {activity.description}
@@ -363,8 +422,12 @@ export default function CRMActivity() {
           <CardContent className="text-center py-12">
             <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Aucune activité trouvée</h3>
-            <p className="text-muted-foreground mb-4">Commencez à enregistrer vos interactions clients</p>
-            <Button>Nouvelle activité</Button>
+            <p className="text-muted-foreground mb-4">
+              {activities.length === 0 
+                ? 'Commencez à enregistrer vos interactions clients' 
+                : 'Aucune activité ne correspond aux filtres'}
+            </p>
+            <Button onClick={() => setIsAddDialogOpen(true)}>Nouvelle activité</Button>
           </CardContent>
         </Card>
       )}
@@ -376,39 +439,19 @@ export default function CRMActivity() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => {
-              toast({
-                title: "Email envoyé",
-                description: "L'email a été envoyé avec succès",
-              });
-            }}>
+            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => handleQuickAction('email')}>
               <Mail className="h-6 w-6" />
               <span className="text-sm">Envoyer Email</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => {
-              toast({
-                title: "Appel initié",
-                description: "L'appel est en cours...",
-              });
-            }}>
+            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => handleQuickAction('call')}>
               <Phone className="h-6 w-6" />
               <span className="text-sm">Passer Appel</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => {
-              toast({
-                title: "Rendez-vous programmé",
-                description: "Le rendez-vous a été ajouté au calendrier",
-              });
-            }}>
+            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => handleQuickAction('meeting')}>
               <Calendar className="h-6 w-6" />
               <span className="text-sm">Programmer RDV</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => {
-              toast({
-                title: "Note créée",
-                description: "Une nouvelle note a été créée",
-              });
-            }}>
+            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => handleQuickAction('note')}>
               <FileText className="h-6 w-6" />
               <span className="text-sm">Ajouter Note</span>
             </Button>

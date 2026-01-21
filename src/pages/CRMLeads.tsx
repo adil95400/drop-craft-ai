@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { UserPlus, Mail, Phone, Star, DollarSign, Calendar, Search, Plus, Filter, Eye } from 'lucide-react'
+import { UserPlus, Mail, Phone, Star, DollarSign, Calendar, Search, Plus, Filter, Eye, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -7,84 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
-
-interface Lead {
-  id: string
-  name: string
-  email: string
-  phone: string
-  company: string
-  source: string
-  status: 'new' | 'contacted' | 'qualified' | 'proposal' | 'negotiation' | 'closed_won' | 'closed_lost'
-  value: number
-  priority: 'low' | 'medium' | 'high'
-  createdAt: string
-  lastContact?: string
-  notes?: string
-}
-
-const mockLeads: Lead[] = [
-  {
-    id: '1',
-    name: 'Marie Dubois',
-    email: 'marie.dubois@email.com',
-    phone: '+33 1 23 45 67 89',
-    company: 'Boutique Paris',
-    source: 'Site web',
-    status: 'qualified',
-    value: 5000,
-    priority: 'high',
-    createdAt: '2024-01-15T10:00:00',
-    lastContact: '2024-01-15T14:30:00',
-    notes: 'Intéressée par notre collection printemps'
-  },
-  {
-    id: '2',
-    name: 'Pierre Martin',
-    email: 'p.martin@commerce.fr',
-    phone: '+33 6 12 34 56 78',
-    company: 'E-commerce Plus',
-    source: 'Référence',
-    status: 'proposal',
-    value: 12000,
-    priority: 'high',
-    createdAt: '2024-01-14T09:30:00',
-    lastContact: '2024-01-15T11:15:00'
-  },
-  {
-    id: '3',
-    name: 'Sophie Bernard',
-    email: 'sophie@startupmode.com',
-    phone: '+33 7 98 76 54 32',
-    company: 'Startup Mode',
-    source: 'LinkedIn',
-    status: 'new',
-    value: 3000,
-    priority: 'medium',
-    createdAt: '2024-01-15T16:45:00'
-  },
-  {
-    id: '4',
-    name: 'Lucas Petit',
-    email: 'lucas.petit@retail.com',
-    phone: '+33 1 11 22 33 44',
-    company: 'Retail Solutions',
-    source: 'Salon professionnel',
-    status: 'negotiation',
-    value: 8500,
-    priority: 'high',
-    createdAt: '2024-01-13T14:20:00',
-    lastContact: '2024-01-14T16:00:00'
-  }
-]
+import { Label } from '@/components/ui/label'
+import { useCRMLeads, CRMLead } from '@/hooks/useCRMLeads'
 
 export default function CRMLeads() {
-  const [leads, setLeads] = useState(mockLeads)
+  const { leads, stats, isLoading, createLead, isCreating } = useCRMLeads()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
+  const [selectedLead, setSelectedLead] = useState<CRMLead | null>(null)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [newLead, setNewLead] = useState({
     name: '',
     email: '',
@@ -92,15 +24,25 @@ export default function CRMLeads() {
     company: '',
     source: 'Site web',
     value: '',
-    priority: 'medium' as 'low' | 'medium' | 'high'
+    notes: ''
   })
 
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         lead.company.toLowerCase().includes(searchTerm.toLowerCase())
+                         (lead.company || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter
-    const matchesPriority = priorityFilter === 'all' || lead.priority === priorityFilter
+    
+    let matchesPriority = true
+    if (priorityFilter !== 'all') {
+      const score = lead.lead_score
+      switch (priorityFilter) {
+        case 'high': matchesPriority = score >= 70; break
+        case 'medium': matchesPriority = score >= 40 && score < 70; break
+        case 'low': matchesPriority = score < 40; break
+      }
+    }
+    
     return matchesSearch && matchesStatus && matchesPriority
   })
 
@@ -111,8 +53,8 @@ export default function CRMLeads() {
       case 'qualified': return 'bg-green-100 text-green-800'
       case 'proposal': return 'bg-purple-100 text-purple-800'
       case 'negotiation': return 'bg-orange-100 text-orange-800'
-      case 'closed_won': return 'bg-emerald-100 text-emerald-800'
-      case 'closed_lost': return 'bg-red-100 text-red-800'
+      case 'won': return 'bg-emerald-100 text-emerald-800'
+      case 'lost': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -124,27 +66,44 @@ export default function CRMLeads() {
       case 'qualified': return 'Qualifié'
       case 'proposal': return 'Proposition'
       case 'negotiation': return 'Négociation'
-      case 'closed_won': return 'Gagné'
-      case 'closed_lost': return 'Perdu'
+      case 'won': return 'Gagné'
+      case 'lost': return 'Perdu'
       default: return 'Inconnu'
     }
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'low': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
+  const getPriorityFromScore = (score: number) => {
+    if (score >= 70) return { label: 'Haute', color: 'bg-red-100 text-red-800' }
+    if (score >= 40) return { label: 'Moyenne', color: 'bg-yellow-100 text-yellow-800' }
+    return { label: 'Faible', color: 'bg-green-100 text-green-800' }
   }
 
-  const stats = {
-    totalLeads: leads.length,
-    newLeads: leads.filter(l => l.status === 'new').length,
-    qualifiedLeads: leads.filter(l => l.status === 'qualified').length,
-    totalValue: leads.reduce((acc, l) => acc + l.value, 0),
-    conversionRate: leads.filter(l => l.status === 'closed_won').length / leads.length * 100
+  const handleAddLead = () => {
+    if (!newLead.name || !newLead.email) return
+    
+    createLead({
+      name: newLead.name,
+      email: newLead.email,
+      phone: newLead.phone || undefined,
+      company: newLead.company || undefined,
+      source: newLead.source,
+      estimated_value: newLead.value ? parseFloat(newLead.value) : undefined,
+      notes: newLead.notes || undefined,
+    })
+    
+    setNewLead({ name: '', email: '', phone: '', company: '', source: 'Site web', value: '', notes: '' })
+    setIsAddDialogOpen(false)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Chargement des prospects...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -154,7 +113,7 @@ export default function CRMLeads() {
           <h1 className="text-3xl font-bold">Gestion des Prospects</h1>
           <p className="text-muted-foreground">Suivez et gérez vos prospects commerciaux</p>
         </div>
-        <Dialog>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
@@ -168,7 +127,7 @@ export default function CRMLeads() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Nom complet</label>
+                  <Label>Nom complet *</Label>
                   <Input 
                     placeholder="Nom Prénom"
                     value={newLead.name}
@@ -176,7 +135,7 @@ export default function CRMLeads() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Entreprise</label>
+                  <Label>Entreprise</Label>
                   <Input 
                     placeholder="Nom de l'entreprise"
                     value={newLead.company}
@@ -186,7 +145,7 @@ export default function CRMLeads() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <Label>Email *</Label>
                   <Input 
                     type="email"
                     placeholder="email@exemple.com"
@@ -195,7 +154,7 @@ export default function CRMLeads() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Téléphone</label>
+                  <Label>Téléphone</Label>
                   <Input 
                     placeholder="+33 1 23 45 67 89"
                     value={newLead.phone}
@@ -203,9 +162,9 @@ export default function CRMLeads() {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Source</label>
+                  <Label>Source</Label>
                   <Select value={newLead.source} onValueChange={(value) => setNewLead({...newLead, source: value})}>
                     <SelectTrigger>
                       <SelectValue />
@@ -220,7 +179,7 @@ export default function CRMLeads() {
                   </Select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Valeur estimée (€)</label>
+                  <Label>Valeur estimée (€)</Label>
                   <Input 
                     type="number"
                     placeholder="5000"
@@ -228,21 +187,15 @@ export default function CRMLeads() {
                     onChange={(e) => setNewLead({...newLead, value: e.target.value})}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Priorité</label>
-                  <Select value={newLead.priority} onValueChange={(value) => setNewLead({...newLead, priority: value as 'low' | 'medium' | 'high'})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Faible</SelectItem>
-                      <SelectItem value="medium">Moyenne</SelectItem>
-                      <SelectItem value="high">Haute</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
-              <Button className="w-full">Ajouter le prospect</Button>
+              <Button 
+                className="w-full" 
+                onClick={handleAddLead}
+                disabled={isCreating || !newLead.name || !newLead.email}
+              >
+                {isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Ajouter le prospect
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -258,7 +211,7 @@ export default function CRMLeads() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalLeads}</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
         
@@ -270,7 +223,7 @@ export default function CRMLeads() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.newLeads}</div>
+            <div className="text-2xl font-bold">{stats.new}</div>
           </CardContent>
         </Card>
 
@@ -282,7 +235,7 @@ export default function CRMLeads() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.qualifiedLeads}</div>
+            <div className="text-2xl font-bold">{stats.qualified}</div>
           </CardContent>
         </Card>
 
@@ -302,11 +255,11 @@ export default function CRMLeads() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Star className="h-4 w-4 text-emerald-500" />
-              Conversion
+              Score Moyen
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.conversionRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">{stats.avgScore.toFixed(0)}</div>
           </CardContent>
         </Card>
       </div>
@@ -334,6 +287,8 @@ export default function CRMLeads() {
             <SelectItem value="qualified">Qualifiés</SelectItem>
             <SelectItem value="proposal">Proposition</SelectItem>
             <SelectItem value="negotiation">Négociation</SelectItem>
+            <SelectItem value="won">Gagnés</SelectItem>
+            <SelectItem value="lost">Perdus</SelectItem>
           </SelectContent>
         </Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}>
@@ -342,9 +297,9 @@ export default function CRMLeads() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes priorités</SelectItem>
-            <SelectItem value="high">Haute</SelectItem>
-            <SelectItem value="medium">Moyenne</SelectItem>
-            <SelectItem value="low">Faible</SelectItem>
+            <SelectItem value="high">Haute (score ≥70)</SelectItem>
+            <SelectItem value="medium">Moyenne (40-69)</SelectItem>
+            <SelectItem value="low">Faible (&lt;40)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -357,70 +312,76 @@ export default function CRMLeads() {
               <TableHead>Prospect</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Statut</TableHead>
-              <TableHead>Priorité</TableHead>
+              <TableHead>Score</TableHead>
               <TableHead>Valeur</TableHead>
               <TableHead>Source</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredLeads.map((lead) => (
-              <TableRow key={lead.id} className="hover:bg-muted/50">
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{lead.name}</div>
-                    <div className="text-sm text-muted-foreground">{lead.company}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    <div className="flex items-center gap-1 mb-1">
-                      <Mail className="h-3 w-3" />
-                      {lead.email}
+            {filteredLeads.map((lead) => {
+              const priority = getPriorityFromScore(lead.lead_score)
+              return (
+                <TableRow key={lead.id} className="hover:bg-muted/50">
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{lead.name}</div>
+                      <div className="text-sm text-muted-foreground">{lead.company || '-'}</div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Phone className="h-3 w-3" />
-                      {lead.phone}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Mail className="h-3 w-3" />
+                        {lead.email}
+                      </div>
+                      {lead.phone && (
+                        <div className="flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {lead.phone}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getStatusColor(lead.status)}>
-                    {getStatusText(lead.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getPriorityColor(lead.priority)} variant="outline">
-                    {lead.priority === 'high' && 'Haute'}
-                    {lead.priority === 'medium' && 'Moyenne'}
-                    {lead.priority === 'low' && 'Faible'}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-medium">
-                  {lead.value.toLocaleString()}€
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {lead.source}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => setSelectedLead(lead)}
-                    >
-                      <Eye className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Mail className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Phone className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(lead.status)}>
+                      {getStatusText(lead.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{lead.lead_score}</span>
+                      <Badge className={priority.color} variant="outline">
+                        {priority.label}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {(lead.estimated_value || 0).toLocaleString()}€
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {lead.source || '-'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => setSelectedLead(lead)}
+                      >
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Mail className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Phone className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </Card>
@@ -430,8 +391,12 @@ export default function CRMLeads() {
           <CardContent className="text-center py-12">
             <UserPlus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Aucun prospect trouvé</h3>
-            <p className="text-muted-foreground mb-4">Commencez à ajouter vos premiers prospects</p>
-            <Button>Ajouter un prospect</Button>
+            <p className="text-muted-foreground mb-4">
+              {leads.length === 0 
+                ? 'Commencez à ajouter vos premiers prospects' 
+                : 'Aucun prospect ne correspond aux filtres'}
+            </p>
+            <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter un prospect</Button>
           </CardContent>
         </Card>
       )}
@@ -448,52 +413,36 @@ export default function CRMLeads() {
                 <div>
                   <h4 className="font-medium mb-2">Informations générales</h4>
                   <div className="space-y-2 text-sm">
-                    <div><strong>Entreprise:</strong> {selectedLead.company}</div>
+                    <div><strong>Entreprise:</strong> {selectedLead.company || '-'}</div>
                     <div><strong>Email:</strong> {selectedLead.email}</div>
-                    <div><strong>Téléphone:</strong> {selectedLead.phone}</div>
-                    <div><strong>Source:</strong> {selectedLead.source}</div>
+                    <div><strong>Téléphone:</strong> {selectedLead.phone || '-'}</div>
+                    <div><strong>Source:</strong> {selectedLead.source || '-'}</div>
                   </div>
                 </div>
                 <div>
                   <h4 className="font-medium mb-2">Statut commercial</h4>
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <strong>Statut:</strong>
                       <Badge className={getStatusColor(selectedLead.status)}>
                         {getStatusText(selectedLead.status)}
                       </Badge>
-                      <Badge className={getPriorityColor(selectedLead.priority)} variant="outline">
-                        Priorité {selectedLead.priority}
-                      </Badge>
                     </div>
-                    <div className="text-sm"><strong>Valeur:</strong> {selectedLead.value.toLocaleString()}€</div>
-                    <div className="text-sm"><strong>Créé le:</strong> {new Date(selectedLead.createdAt).toLocaleDateString('fr-FR')}</div>
-                    {selectedLead.lastContact && (
-                      <div className="text-sm"><strong>Dernier contact:</strong> {new Date(selectedLead.lastContact).toLocaleDateString('fr-FR')}</div>
-                    )}
+                    <div><strong>Score:</strong> {selectedLead.lead_score}/100</div>
+                    <div><strong>Valeur estimée:</strong> {(selectedLead.estimated_value || 0).toLocaleString()}€</div>
+                    <div><strong>Date de création:</strong> {new Date(selectedLead.created_at).toLocaleDateString('fr-FR')}</div>
                   </div>
                 </div>
               </div>
               {selectedLead.notes && (
                 <div>
                   <h4 className="font-medium mb-2">Notes</h4>
-                  <div className="bg-muted p-3 rounded-md text-sm">
-                    {selectedLead.notes}
-                  </div>
+                  <p className="text-sm text-muted-foreground">{selectedLead.notes}</p>
                 </div>
               )}
-              <div className="flex gap-2">
-                <Button size="sm" className="gap-2">
-                  <Mail className="h-4 w-4" />
-                  Envoyer Email
-                </Button>
-                <Button size="sm" variant="outline" className="gap-2">
-                  <Phone className="h-4 w-4" />
-                  Appeler
-                </Button>
-                <Button size="sm" variant="outline" className="gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Programmer RDV
-                </Button>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setSelectedLead(null)}>Fermer</Button>
+                <Button>Modifier</Button>
               </div>
             </div>
           </DialogContent>
