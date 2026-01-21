@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { 
   Key, 
   Plus, 
@@ -29,209 +29,155 @@ import {
   Book
 } from 'lucide-react'
 
-interface APIKey {
-  id: string
-  name: string
-  key: string
-  permissions: string[]
-  usage_count: number
-  last_used?: string
-  created_at: string
-  expires_at?: string
-  status: 'active' | 'revoked' | 'expired'
-}
-
-interface APILog {
-  id: string
-  api_key_id: string
-  endpoint: string
-  method: string
-  status_code: number
-  response_time: number
-  timestamp: string
-  ip_address: string
-}
-
 const APIManagement = () => {
   const { user } = useAuth()
-  const [loading, setLoading] = useState(false)
-  const [apiKeys, setApiKeys] = useState<APIKey[]>([])
-  const [apiLogs, setApiLogs] = useState<APILog[]>([])
+  const queryClient = useQueryClient()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set())
   const [newKeyForm, setNewKeyForm] = useState({
     name: '',
     permissions: [] as string[],
-    expires_in: '365' // days
+    expires_in: '365'
   })
 
-  useEffect(() => {
-    if (user?.id) {
-      loadAPIKeys()
-      loadAPILogs()
-    }
-  }, [user?.id])
+  // Fetch API keys from Supabase
+  const { data: apiKeys = [], isLoading: loadingKeys } = useQuery({
+    queryKey: ['api-keys', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+      const { data, error } = await supabase
+        .from('api_keys')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data
+    },
+    enabled: !!user?.id
+  })
 
-  const loadAPIKeys = async () => {
-    try {
-      // Mock data for now - in real app would fetch from user_api_keys table
-      const mockAPIKeys: APIKey[] = [
-        {
-          id: '1',
-          name: 'Production API',
-          key: 'sk_live_51H8QxhJ2eZvKYlo2C8M3nA9oKoJGWa4VgBB0mQO6X1',
-          permissions: ['products:read', 'products:write', 'orders:read'],
-          usage_count: 15420,
-          last_used: '2024-01-20T10:30:00Z',
-          created_at: '2023-06-15T09:00:00Z',
-          status: 'active'
-        },
-        {
-          id: '2',
-          name: 'Mobile App',
-          key: 'sk_test_4eC39HqLyjWDarjtT1zdp7dc',
-          permissions: ['orders:read', 'customers:read'],
-          usage_count: 8947,
-          last_used: '2024-01-19T16:45:00Z',
-          created_at: '2023-09-10T14:20:00Z',
-          status: 'active'
-        },
-        {
-          id: '3',
-          name: 'Analytics Dashboard',
-          key: 'sk_test_BQokikJOvBiI2HlWgH4olfQ2',
-          permissions: ['analytics:read'],
-          usage_count: 2341,
-          last_used: '2024-01-18T08:15:00Z',
-          created_at: '2023-12-01T11:00:00Z',
-          expires_at: '2024-12-01T11:00:00Z',
-          status: 'active'
-        },
-        {
-          id: '4',
-          name: 'Legacy Integration',
-          key: 'sk_live_rHb1g2IEF4CvgfzVz4Z4rOoU',
-          permissions: ['products:read'],
-          usage_count: 0,
-          created_at: '2023-03-15T10:30:00Z',
-          status: 'revoked'
-        }
-      ]
+  // Fetch API logs from Supabase
+  const { data: apiLogs = [], isLoading: loadingLogs } = useQuery({
+    queryKey: ['api-logs', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+      const { data, error } = await supabase
+        .from('api_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100)
+      
+      if (error) throw error
+      return data
+    },
+    enabled: !!user?.id
+  })
 
-      setApiKeys(mockAPIKeys)
-    } catch (error) {
-      console.error('Error loading API keys:', error)
-      toast.error('Erreur lors du chargement des clés API')
-    }
-  }
-
-  const loadAPILogs = async () => {
-    try {
-      // Mock data for now
-      const mockLogs: APILog[] = [
-        {
-          id: '1',
-          api_key_id: '1',
-          endpoint: '/api/v1/products',
-          method: 'GET',
-          status_code: 200,
-          response_time: 124,
-          timestamp: '2024-01-20T10:30:15Z',
-          ip_address: '192.168.1.100'
-        },
-        {
-          id: '2',
-          api_key_id: '1',
-          endpoint: '/api/v1/orders',
-          method: 'POST',
-          status_code: 201,
-          response_time: 98,
-          timestamp: '2024-01-20T10:29:42Z',
-          ip_address: '192.168.1.100'
-        },
-        {
-          id: '3',
-          api_key_id: '2',
-          endpoint: '/api/v1/customers',
-          method: 'GET',
-          status_code: 200,
-          response_time: 76,
-          timestamp: '2024-01-20T10:28:33Z',
-          ip_address: '10.0.0.25'
-        },
-        {
-          id: '4',
-          api_key_id: '1',
-          endpoint: '/api/v1/products/123',
-          method: 'PUT',
-          status_code: 404,
-          response_time: 45,
-          timestamp: '2024-01-20T10:27:18Z',
-          ip_address: '192.168.1.100'
-        }
-      ]
-
-      setApiLogs(mockLogs)
-    } catch (error) {
-      console.error('Error loading API logs:', error)
-    }
-  }
-
-  const createAPIKey = async () => {
-    setLoading(true)
-    try {
-      const newKey: APIKey = {
-        id: Date.now().toString(),
-        name: newKeyForm.name,
-        key: `sk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
-        permissions: newKeyForm.permissions,
-        usage_count: 0,
-        created_at: new Date().toISOString(),
-        expires_at: newKeyForm.expires_in === '0' ? undefined : 
-          new Date(Date.now() + parseInt(newKeyForm.expires_in) * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'active'
-      }
-
-      setApiKeys(prev => [...prev, newKey])
+  // Create API key mutation
+  const createKeyMutation = useMutation({
+    mutationFn: async (form: typeof newKeyForm) => {
+      if (!user?.id) throw new Error('Non authentifié')
+      
+      const keyValue = `sk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+      const expiresAt = form.expires_in === '0' ? null : 
+        new Date(Date.now() + parseInt(form.expires_in) * 24 * 60 * 60 * 1000).toISOString()
+      
+      const { data, error } = await supabase
+        .from('api_keys')
+        .insert({
+          user_id: user.id,
+          name: form.name,
+          key: keyValue,
+          scopes: form.permissions,
+          expires_at: expiresAt,
+          is_active: true
+        })
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['api-keys'] })
       setShowCreateDialog(false)
       setNewKeyForm({ name: '', permissions: [], expires_in: '365' })
-      
       toast.success('Clé API créée avec succès')
-    } catch (error) {
-      console.error('Error creating API key:', error)
+    },
+    onError: () => {
       toast.error('Erreur lors de la création de la clé API')
-    } finally {
-      setLoading(false)
     }
-  }
+  })
 
-  const revokeAPIKey = async (keyId: string) => {
-    try {
-      setApiKeys(prev => prev.map(key => 
-        key.id === keyId ? { ...key, status: 'revoked' as const } : key
-      ))
+  // Revoke API key mutation
+  const revokeKeyMutation = useMutation({
+    mutationFn: async (keyId: string) => {
+      if (!user?.id) throw new Error('Non authentifié')
       
+      const { error } = await supabase
+        .from('api_keys')
+        .update({ is_active: false })
+        .eq('id', keyId)
+        .eq('user_id', user.id)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['api-keys'] })
       toast.success('Clé API révoquée')
-    } catch (error) {
-      console.error('Error revoking API key:', error)
+    },
+    onError: () => {
       toast.error('Erreur lors de la révocation')
     }
-  }
+  })
 
-  const regenerateAPIKey = async (keyId: string) => {
-    try {
+  // Regenerate API key mutation
+  const regenerateKeyMutation = useMutation({
+    mutationFn: async (keyId: string) => {
+      if (!user?.id) throw new Error('Non authentifié')
+      
       const newKeyValue = `sk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
       
-      setApiKeys(prev => prev.map(key => 
-        key.id === keyId ? { ...key, key: newKeyValue, usage_count: 0 } : key
-      ))
+      const { error } = await supabase
+        .from('api_keys')
+        .update({ key: newKeyValue })
+        .eq('id', keyId)
+        .eq('user_id', user.id)
       
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['api-keys'] })
       toast.success('Clé API régénérée')
-    } catch (error) {
-      console.error('Error regenerating API key:', error)
+    },
+    onError: () => {
       toast.error('Erreur lors de la régénération')
     }
-  }
+  })
+
+  // Delete API key mutation
+  const deleteKeyMutation = useMutation({
+    mutationFn: async (keyId: string) => {
+      if (!user?.id) throw new Error('Non authentifié')
+      
+      const { error } = await supabase
+        .from('api_keys')
+        .delete()
+        .eq('id', keyId)
+        .eq('user_id', user.id)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['api-keys'] })
+      toast.success('Clé API supprimée')
+    },
+    onError: () => {
+      toast.error('Erreur lors de la suppression')
+    }
+  })
 
   const toggleKeyVisibility = (keyId: string) => {
     setVisibleKeys(prev => {
@@ -250,7 +196,7 @@ const APIManagement = () => {
     toast.success('Copié dans le presse-papiers')
   }
 
-  const formatLastUsed = (lastUsed?: string) => {
+  const formatLastUsed = (lastUsed?: string | null) => {
     if (!lastUsed) return 'Jamais'
     
     const date = new Date(lastUsed)
@@ -262,20 +208,12 @@ const APIManagement = () => {
     return date.toLocaleDateString('fr-FR')
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800'
-      case 'revoked':
-        return 'bg-red-100 text-red-800'
-      case 'expired':
-        return 'bg-gray-100 text-gray-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
+  const getStatusColor = (isActive: boolean) => {
+    return isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
   }
 
-  const getHTTPStatusColor = (statusCode: number) => {
+  const getHTTPStatusColor = (statusCode: number | null) => {
+    if (!statusCode) return 'text-gray-600'
     if (statusCode >= 200 && statusCode < 300) return 'text-green-600'
     if (statusCode >= 400 && statusCode < 500) return 'text-orange-600'
     if (statusCode >= 500) return 'text-red-600'
@@ -283,6 +221,7 @@ const APIManagement = () => {
   }
 
   const maskAPIKey = (key: string) => {
+    if (key.length < 20) return key
     return key.substring(0, 12) + '••••••••••••••••••••' + key.substring(key.length - 8)
   }
 
@@ -297,6 +236,8 @@ const APIManagement = () => {
     { id: 'integrations:read', label: 'Intégrations - Lecture' },
     { id: 'integrations:write', label: 'Intégrations - Écriture' }
   ]
+
+  const loading = loadingKeys || loadingLogs
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -389,10 +330,10 @@ const APIManagement = () => {
                   Annuler
                 </Button>
                 <Button 
-                  onClick={createAPIKey} 
-                  disabled={loading || !newKeyForm.name || newKeyForm.permissions.length === 0}
+                  onClick={() => createKeyMutation.mutate(newKeyForm)} 
+                  disabled={createKeyMutation.isPending || !newKeyForm.name || newKeyForm.permissions.length === 0}
                 >
-                  Créer la clé API
+                  {createKeyMutation.isPending ? 'Création...' : 'Créer la clé API'}
                 </Button>
               </div>
             </div>
@@ -419,7 +360,7 @@ const APIManagement = () => {
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-green-600" />
               <div>
-                <p className="text-2xl font-bold">{apiKeys.filter(k => k.status === 'active').length}</p>
+                <p className="text-2xl font-bold">{apiKeys.filter(k => k.is_active).length}</p>
                 <p className="text-sm text-muted-foreground">Actives</p>
               </div>
             </div>
@@ -431,10 +372,8 @@ const APIManagement = () => {
             <div className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-2xl font-bold">
-                  {apiKeys.reduce((sum, key) => sum + key.usage_count, 0).toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">Requêtes totales</p>
+                <p className="text-2xl font-bold">{apiLogs.length}</p>
+                <p className="text-sm text-muted-foreground">Requêtes récentes</p>
               </div>
             </div>
           </CardContent>
@@ -445,7 +384,7 @@ const APIManagement = () => {
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-orange-600" />
               <div>
-                <p className="text-2xl font-bold">{apiKeys.filter(k => k.status === 'revoked').length}</p>
+                <p className="text-2xl font-bold">{apiKeys.filter(k => !k.is_active).length}</p>
                 <p className="text-sm text-muted-foreground">Révoquées</p>
               </div>
             </div>
@@ -464,117 +403,120 @@ const APIManagement = () => {
           <Card>
             <CardHeader>
               <CardTitle>Clés API</CardTitle>
-              <CardDescription>
-                Gérez vos clés API et leurs permissions
-              </CardDescription>
+              <CardDescription>Gérez vos clés API et leurs permissions</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Clé</TableHead>
-                    <TableHead>Permissions</TableHead>
-                    <TableHead>Utilisation</TableHead>
-                    <TableHead>Dernière utilisation</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {apiKeys.map((apiKey) => (
-                    <TableRow key={apiKey.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{apiKey.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Créée le {new Date(apiKey.created_at).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <code className="text-sm bg-muted px-2 py-1 rounded">
-                            {visibleKeys.has(apiKey.id) ? apiKey.key : maskAPIKey(apiKey.key)}
-                          </code>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleKeyVisibility(apiKey.id)}
-                          >
-                            {visibleKeys.has(apiKey.id) ? 
-                              <EyeOff className="w-4 h-4" /> : 
-                              <Eye className="w-4 h-4" />
-                            }
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(apiKey.key)}
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {apiKey.permissions.slice(0, 2).map((permission) => (
-                            <Badge key={permission} variant="secondary" className="text-xs">
-                              {permission.split(':')[0]}
-                            </Badge>
-                          ))}
-                          {apiKey.permissions.length > 2 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{apiKey.permissions.length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{apiKey.usage_count.toLocaleString()}</p>
-                          <p className="text-sm text-muted-foreground">requêtes</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {formatLastUsed(apiKey.last_used)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(apiKey.status)}>
-                          {apiKey.status === 'active' ? 'Active' :
-                           apiKey.status === 'revoked' ? 'Révoquée' : 'Expirée'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => regenerateAPIKey(apiKey.id)}>
-                              <RefreshCw className="w-4 h-4 mr-2" />
-                              Régénérer
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => copyToClipboard(apiKey.key)}>
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copier la clé
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="text-red-600"
-                              onClick={() => revokeAPIKey(apiKey.id)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Révoquer
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : apiKeys.length === 0 ? (
+                <div className="text-center py-8">
+                  <Key className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Aucune clé API</h3>
+                  <p className="text-muted-foreground mb-4">Créez votre première clé API</p>
+                  <Button onClick={() => setShowCreateDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nouvelle clé API
+                  </Button>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom</TableHead>
+                      <TableHead>Clé</TableHead>
+                      <TableHead>Permissions</TableHead>
+                      <TableHead>Dernière utilisation</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {apiKeys.map((apiKey) => (
+                      <TableRow key={apiKey.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{apiKey.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Créée le {new Date(apiKey.created_at || '').toLocaleDateString('fr-FR')}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <code className="text-sm bg-muted px-2 py-1 rounded">
+                              {visibleKeys.has(apiKey.id) ? apiKey.key : maskAPIKey(apiKey.key)}
+                            </code>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => toggleKeyVisibility(apiKey.id)}
+                            >
+                              {visibleKeys.has(apiKey.id) ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => copyToClipboard(apiKey.key)}
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {(apiKey.scopes || []).slice(0, 2).map((scope: string) => (
+                              <Badge key={scope} variant="outline" className="text-xs">
+                                {scope}
+                              </Badge>
+                            ))}
+                            {(apiKey.scopes || []).length > 2 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{(apiKey.scopes || []).length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{formatLastUsed(apiKey.last_used_at)}</TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(apiKey.is_active || false)}>
+                            {apiKey.is_active ? 'Active' : 'Révoquée'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => regenerateKeyMutation.mutate(apiKey.id)}>
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Régénérer
+                              </DropdownMenuItem>
+                              {apiKey.is_active && (
+                                <DropdownMenuItem onClick={() => revokeKeyMutation.mutate(apiKey.id)}>
+                                  <AlertTriangle className="w-4 h-4 mr-2" />
+                                  Révoquer
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem 
+                                onClick={() => deleteKeyMutation.mutate(apiKey.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -583,55 +525,47 @@ const APIManagement = () => {
           <Card>
             <CardHeader>
               <CardTitle>Logs d'activité API</CardTitle>
-              <CardDescription>
-                Historique des requêtes API récentes
-              </CardDescription>
+              <CardDescription>Historique des appels API récents</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Endpoint</TableHead>
-                    <TableHead>Méthode</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Temps de réponse</TableHead>
-                    <TableHead>IP</TableHead>
-                    <TableHead>Clé API</TableHead>
-                    <TableHead>Timestamp</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {apiLogs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell>
-                        <code className="text-sm">{log.endpoint}</code>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {log.method}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`font-medium ${getHTTPStatusColor(log.status_code)}`}>
-                          {log.status_code}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {log.response_time}ms
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {log.ip_address}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {apiKeys.find(k => k.id === log.api_key_id)?.name || 'Inconnue'}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {new Date(log.timestamp).toLocaleString('fr-FR')}
-                      </TableCell>
+              {apiLogs.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Aucun log d'activité
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Endpoint</TableHead>
+                      <TableHead>Méthode</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Temps de réponse</TableHead>
+                      <TableHead>IP</TableHead>
+                      <TableHead>Date</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {apiLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="font-mono text-sm">{log.endpoint}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{log.method}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className={getHTTPStatusColor(log.status_code)}>
+                            {log.status_code}
+                          </span>
+                        </TableCell>
+                        <TableCell>{log.response_time_ms || log.duration_ms || 0}ms</TableCell>
+                        <TableCell className="font-mono text-sm">{log.ip_address || '-'}</TableCell>
+                        <TableCell>
+                          {new Date(log.created_at || '').toLocaleString('fr-FR')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -643,92 +577,42 @@ const APIManagement = () => {
                 <Book className="w-5 h-5" />
                 Documentation API
               </CardTitle>
-              <CardDescription>
-                Guide d'utilisation et exemples d'intégration
-              </CardDescription>
+              <CardDescription>Guide d'utilisation de l'API</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Authentification</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Incluez votre clé API dans l'en-tête Authorization de vos requêtes :
-                  </p>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <code className="text-sm">
-                      curl -H "Authorization: Bearer YOUR_API_KEY" https://api.votre-saas.com/v1/products
-                    </code>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Authentification</h3>
+                <p className="text-muted-foreground mb-3">
+                  Incluez votre clé API dans le header Authorization de chaque requête:
+                </p>
+                <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
+                  <code>Authorization: Bearer sk_votre_cle_api</code>
+                </pre>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Endpoints disponibles</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Badge variant="outline">GET</Badge>
+                    <code className="text-sm">/api/v1/products</code>
+                    <span className="text-muted-foreground text-sm">- Liste des produits</span>
                   </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Endpoints disponibles</h3>
-                  <div className="space-y-3">
-                    <div className="border rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline">GET</Badge>
-                        <code className="text-sm">/api/v1/products</code>
-                      </div>
-                      <p className="text-sm text-muted-foreground">Récupère la liste des produits</p>
-                    </div>
-                    
-                    <div className="border rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline">POST</Badge>
-                        <code className="text-sm">/api/v1/products</code>
-                      </div>
-                      <p className="text-sm text-muted-foreground">Crée un nouveau produit</p>
-                    </div>
-                    
-                    <div className="border rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline">GET</Badge>
-                        <code className="text-sm">/api/v1/orders</code>
-                      </div>
-                      <p className="text-sm text-muted-foreground">Récupère la liste des commandes</p>
-                    </div>
-                    
-                    <div className="border rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline">GET</Badge>
-                        <code className="text-sm">/api/v1/customers</code>
-                      </div>
-                      <p className="text-sm text-muted-foreground">Récupère la liste des clients</p>
-                    </div>
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Badge variant="outline">POST</Badge>
+                    <code className="text-sm">/api/v1/products</code>
+                    <span className="text-muted-foreground text-sm">- Créer un produit</span>
                   </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Exemple de réponse</h3>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <pre className="text-sm overflow-x-auto">
-{`{
-  "data": [
-    {
-      "id": "prod_123",
-      "name": "Produit Example",
-      "price": 29.99,
-      "currency": "EUR",
-      "status": "active"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "per_page": 20,
-    "total": 150
-  }
-}`}
-                    </pre>
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Badge variant="outline">GET</Badge>
+                    <code className="text-sm">/api/v1/orders</code>
+                    <span className="text-muted-foreground text-sm">- Liste des commandes</span>
                   </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Limites de taux</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Standard: 1,000 requêtes/heure</li>
-                    <li>• Pro: 10,000 requêtes/heure</li>
-                    <li>• Ultra Pro: 100,000 requêtes/heure</li>
-                  </ul>
+                  <div className="flex items-center gap-2 p-2 border rounded">
+                    <Badge variant="outline">GET</Badge>
+                    <code className="text-sm">/api/v1/customers</code>
+                    <span className="text-muted-foreground text-sm">- Liste des clients</span>
+                  </div>
                 </div>
               </div>
             </CardContent>
