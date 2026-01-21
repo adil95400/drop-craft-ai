@@ -42,6 +42,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useImport } from '@/domains/commerce/hooks/useImport'
 import { ImportMethodCard } from './ImportMethodCard'
 import { logAction } from '@/utils/consoleCleanup'
+import { ShopifyExportDialog } from '@/components/products/export/ShopifyExportDialog'
 
 interface FieldMapping {
   source: string
@@ -77,6 +78,7 @@ export const AdvancedImportInterface = () => {
   const [previewData, setPreviewData] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [showShopifyExport, setShowShopifyExport] = useState(false)
   
   const { 
     importFromUrl, 
@@ -180,8 +182,8 @@ export const AdvancedImportInterface = () => {
           toast.success(`${selectedProducts.length} produit(s) optimisé(s) par IA`)
           break
         case 'export-shopify':
-          toast.success(`${selectedProducts.length} produit(s) envoyé(s) vers Shopify`)
-          break
+          setShowShopifyExport(true)
+          return // Don't clear selection, let dialog handle it
         case 'export-marketplace':
           toast.success(`${selectedProducts.length} produit(s) envoyé(s) vers les marketplaces`)
           break
@@ -1092,6 +1094,19 @@ export const AdvancedImportInterface = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      {/* Shopify Export Dialog */}
+      <ShopifyExportDialog
+        open={showShopifyExport}
+        onOpenChange={setShowShopifyExport}
+        productIds={selectedProducts}
+        productNames={[...products, ...mockImportedProducts]
+          .filter(p => selectedProducts.includes(p.id))
+          .map(p => p.name)}
+        onSuccess={() => {
+          setSelectedProducts([])
+          toast.success('Export Shopify terminé')
+        }}
+      />
     </div>
   )
 }

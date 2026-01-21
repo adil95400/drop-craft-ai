@@ -509,21 +509,39 @@ async function exportProductsToShopify(supabaseClient: any, storeId: string, cre
 
   console.log(`Starting product export to Shopify for store: ${storeId}`)
   
-  // Get store integration to find user_id
-  const { data: store, error: storeError } = await supabaseClient
-    .from('store_integrations')
+  // Get integration from 'integrations' table (not store_integrations)
+  let userId: string | null = null
+  
+  // Try integrations table first (correct schema)
+  const { data: integration, error: intError } = await supabaseClient
+    .from('integrations')
     .select('user_id')
     .eq('id', storeId)
     .single()
 
-  if (storeError || !store) {
-    throw new Error('Store not found')
+  if (!intError && integration) {
+    userId = integration.user_id
+  } else {
+    // Fallback to store_integrations for backwards compatibility
+    const { data: store, error: storeError } = await supabaseClient
+      .from('store_integrations')
+      .select('user_id')
+      .eq('id', storeId)
+      .single()
+
+    if (!storeError && store) {
+      userId = store.user_id
+    }
+  }
+
+  if (!userId) {
+    throw new Error('Integration not found - no matching record in integrations or store_integrations')
   }
   
   let query = supabaseClient
     .from('products')
     .select('*')
-    .eq('user_id', store.user_id)
+    .eq('user_id', userId)
   
   if (productIds && productIds.length > 0) {
     query = query.in('id', productIds)
@@ -548,23 +566,30 @@ async function exportProductsToShopify(supabaseClient: any, storeId: string, cre
   console.log(`Exporting ${products.length} products to Shopify`)
   
   let exportedCount = 0
-  let errors = []
+  const errors: string[] = []
   
   for (const product of products) {
     try {
       const shopifyProduct = {
         title: product.name,
         body_html: product.description,
-        vendor: product.brand || 'Default',
-        product_type: product.category || 'Default',
+        vendor: product.vendor || product.brand || 'Default',
+        product_type: product.product_type || product.category || 'Default',
+        handle: product.handle,
         status: 'active',
         variants: [{
-          price: product.price.toString(),
+          price: product.price?.toString() || '0',
           sku: product.sku,
+          barcode: product.barcode,
           inventory_quantity: product.stock_quantity || 0,
-          inventory_management: 'shopify'
+          inventory_management: 'shopify',
+          compare_at_price: product.compare_at_price?.toString(),
+          weight: product.weight,
+          weight_unit: product.weight_unit || 'kg'
         }],
-        images: product.image_urls?.map(url => ({ src: url })) || []
+        images: product.image_url 
+          ? [{ src: product.image_url }]
+          : (product.image_urls?.map((url: string) => ({ src: url })) || [])
       }
       
       const response = await fetch(`https://${normalizedDomain}/admin/api/2023-10/products.json`, {
@@ -585,10 +610,16 @@ async function exportProductsToShopify(supabaseClient: any, storeId: string, cre
       const createdProduct = await response.json()
       exportedCount++
       
+      // Update product with Shopify ID
+      await supabaseClient
+        .from('products')
+        .update({ shopify_id: createdProduct.product.id?.toString() })
+        .eq('id', product.id)
+      
       console.log(`Exported product: ${product.name} -> Shopify ID: ${createdProduct.product.id}`)
       await new Promise(resolve => setTimeout(resolve, 500))
       
-    } catch (error) {
+    } catch (error: any) {
       errors.push(`Produit ${product.name}: ${error.message}`)
     }
   }
