@@ -243,13 +243,46 @@ export function PlatformExportDialog({
         const productName = productNames[i] || `Produit ${i + 1}`
 
         try {
-          const { data: productData, error: productError } = await supabase
-            .from('products')
+          // Essayer d'abord imported_products, puis products
+          let productData = null
+          let productError = null
+
+          // Tenter imported_products d'abord (source principale)
+          const { data: importedData, error: importedError } = await supabase
+            .from('imported_products')
             .select('*')
             .eq('id', productId)
-            .single()
+            .maybeSingle()
 
-          if (productError) throw productError
+          if (importedData) {
+            productData = {
+              name: importedData.name,
+              description: importedData.description,
+              price: importedData.price,
+              sku: importedData.sku,
+              images: importedData.image_urls || [],
+              category: importedData.category,
+              tags: (importedData.metadata as Record<string, unknown>)?.tags || [],
+              stock_quantity: importedData.stock_quantity || 0
+            }
+          } else {
+            // Fallback vers la table products
+            const { data: prodData, error: prodError } = await supabase
+              .from('products')
+              .select('*')
+              .eq('id', productId)
+              .maybeSingle()
+
+            if (prodData) {
+              productData = prodData
+            } else {
+              throw new Error(`Produit non trouvé (ID: ${productId.slice(0, 8)}...)`)
+            }
+          }
+
+          if (!productData) {
+            throw new Error('Données produit introuvables')
+          }
 
           const { data, error } = await supabase.functions.invoke(functionName, {
             body: platform === 'shopify' ? {
