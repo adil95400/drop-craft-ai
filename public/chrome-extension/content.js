@@ -1,7 +1,17 @@
 // Drop Craft AI Chrome Extension - Content Script v4.0
 // Professional Dropshipping Extension
 
-class DropCraftContentScript {
+// IMPORTANT:
+// This file is injected via manifest.json AND (in some cases) via background.js.
+// Without a guard, re-injection causes: "Identifier 'DropCraftContentScript' has already been declared".
+(function () {
+  'use strict';
+
+  // Prevent multiple injections in the same page context
+  if (window.__dropCraftContentScriptLoaded) return;
+  window.__dropCraftContentScriptLoaded = true;
+
+  class DropCraftContentScript {
   constructor() {
     this.isActive = false;
     this.scrapingIndicator = null;
@@ -954,7 +964,8 @@ class DropCraftContentScript {
       this.autoScrapeInterval = null;
     }
   }
-}
+  }
 
-// Initialize content script
-new DropCraftContentScript();
+  // Initialize content script
+  new DropCraftContentScript();
+})();
