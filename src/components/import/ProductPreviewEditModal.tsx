@@ -16,9 +16,10 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
 import { 
   ImageIcon, Trash2, Check, X, ShoppingCart, 
-  Package, Eye, AlertTriangle, Copy
+  Package, Eye, Copy, Plus
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from '@/hooks/use-toast'
 
 interface ProductPreviewData {
   title: string
@@ -114,6 +115,7 @@ export function ProductPreviewEditModal({
   const [editedProduct, setEditedProduct] = useState<ProductPreviewData | null>(null)
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set())
   const [duplicatesRemoved, setDuplicatesRemoved] = useState(0)
+  const [newImageUrl, setNewImageUrl] = useState('')
 
   // Initialiser le produit édité quand le modal s'ouvre
   useMemo(() => {
@@ -157,6 +159,57 @@ export function ProductPreviewEditModal({
 
   const deselectAllImages = () => {
     setSelectedImages(new Set())
+  }
+
+  const deleteSelectedImages = () => {
+    if (selectedImages.size === 0) return
+    
+    const remainingImages = editedProduct.images.filter((_, i) => !selectedImages.has(i))
+    setEditedProduct(prev => prev ? { ...prev, images: remainingImages } : null)
+    setSelectedImages(new Set(remainingImages.map((_, i) => i)))
+    
+    toast({
+      title: 'Images supprimées',
+      description: `${selectedImages.size} image(s) supprimée(s)`,
+    })
+  }
+
+  const addImageUrl = () => {
+    if (!newImageUrl.trim()) return
+    
+    // Vérifier si l'URL est valide
+    try {
+      new URL(newImageUrl)
+    } catch {
+      toast({
+        title: 'URL invalide',
+        description: 'Veuillez entrer une URL d\'image valide',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    // Vérifier les doublons
+    const hash = getImageHash(newImageUrl)
+    const existingHashes = editedProduct.images.map(getImageHash)
+    if (existingHashes.includes(hash)) {
+      toast({
+        title: 'Image déjà présente',
+        description: 'Cette image existe déjà dans la liste',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    const newImages = [...editedProduct.images, newImageUrl.trim()]
+    setEditedProduct(prev => prev ? { ...prev, images: newImages } : null)
+    setSelectedImages(prev => new Set([...prev, newImages.length - 1]))
+    setNewImageUrl('')
+    
+    toast({
+      title: 'Image ajoutée',
+      description: 'L\'image a été ajoutée à la liste',
+    })
   }
 
   const handleConfirm = () => {
@@ -284,7 +337,7 @@ export function ProductPreviewEditModal({
                     disabled={selectedImages.size === editedProduct.images.length}
                   >
                     <Check className="h-3 w-3 mr-1" />
-                    Tout sélectionner
+                    Tout
                   </Button>
                   <Button
                     variant="outline"
@@ -293,15 +346,43 @@ export function ProductPreviewEditModal({
                     disabled={selectedImages.size === 0}
                   >
                     <X className="h-3 w-3 mr-1" />
-                    Tout désélectionner
+                    Aucun
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={deleteSelectedImages}
+                    disabled={selectedImages.size === 0}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Supprimer ({selectedImages.size})
                   </Button>
                 </div>
+              </div>
+
+              {/* Ajouter une image par URL */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Coller une URL d'image..."
+                  value={newImageUrl}
+                  onChange={e => setNewImageUrl(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && addImageUrl()}
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={addImageUrl}
+                  disabled={!newImageUrl.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
 
               {editedProduct.images.length === 0 ? (
                 <div className="flex items-center justify-center p-8 border-2 border-dashed rounded-lg text-muted-foreground">
                   <ImageIcon className="h-6 w-6 mr-2" />
-                  Aucune image disponible
+                  Aucune image - ajoutez-en via l'URL ci-dessus
                 </div>
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
