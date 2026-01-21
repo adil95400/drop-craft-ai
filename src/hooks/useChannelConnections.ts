@@ -108,17 +108,18 @@ export function useChannelConnections() {
     staleTime: 30000
   })
 
-  // Fetch real stats from database
+  // Fetch real stats from database (products + imported_products, orders)
   const { data: realStats } = useQuery({
     queryKey: ['channel-real-stats'],
     queryFn: async () => {
-      const [productsResult, ordersResult] = await Promise.all([
+      const [productsResult, importedProductsResult, ordersResult] = await Promise.all([
         supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('imported_products').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('*', { count: 'exact', head: true })
       ])
 
       return {
-        totalProducts: productsResult.count || 0,
+        totalProducts: (productsResult.count || 0) + (importedProductsResult.count || 0),
         totalOrders: ordersResult.count || 0
       }
     },
