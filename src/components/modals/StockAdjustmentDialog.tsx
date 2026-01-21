@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { motion } from 'framer-motion';
+import { Package, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { OptimizedModal } from "@/components/ui/optimized-modal";
+import { EnhancedInput, EnhancedSelect, EnhancedSwitch, FormGrid } from "@/components/ui/optimized-form";
 
 interface StockAdjustmentDialogProps {
   open: boolean;
@@ -16,6 +17,22 @@ interface StockAdjustmentDialogProps {
   currentStock?: number;
 }
 
+const ADJUSTMENT_TYPES = [
+  { value: 'add', label: 'Ajouter au stock' },
+  { value: 'remove', label: 'Retirer du stock' },
+  { value: 'set', label: 'Définir le stock' },
+];
+
+const ADJUSTMENT_REASONS = [
+  { value: 'received', label: 'Réception de marchandises', description: 'Nouvelle livraison fournisseur' },
+  { value: 'sold', label: 'Vente', description: 'Vente hors système' },
+  { value: 'damaged', label: 'Produit endommagé', description: 'Produit inutilisable' },
+  { value: 'lost', label: 'Produit perdu', description: 'Introuvable en entrepôt' },
+  { value: 'returned', label: 'Retour client', description: 'Article retourné' },
+  { value: 'inventory', label: 'Inventaire physique', description: 'Correction d\'inventaire' },
+  { value: 'other', label: 'Autre', description: 'Raison personnalisée' },
+];
+
 export const StockAdjustmentDialog = ({ 
   open, 
   onOpenChange, 
@@ -24,6 +41,7 @@ export const StockAdjustmentDialog = ({
   currentStock = 0 
 }: StockAdjustmentDialogProps) => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     adjustmentType: "add",
     quantity: "",
@@ -33,7 +51,17 @@ export const StockAdjustmentDialog = ({
     autoReorder: false
   });
 
-  const handleAdjust = () => {
+  const calculateNewStock = () => {
+    const qty = parseInt(formData.quantity) || 0;
+    switch (formData.adjustmentType) {
+      case 'add': return currentStock + qty;
+      case 'remove': return Math.max(0, currentStock - qty);
+      case 'set': return qty;
+      default: return currentStock;
+    }
+  };
+
+  const handleAdjust = async () => {
     if (!formData.quantity || !formData.reason) {
       toast({
         title: "Erreur",
@@ -43,16 +71,19 @@ export const StockAdjustmentDialog = ({
       return;
     }
 
-    const qty = parseInt(formData.quantity);
-    const newStock = formData.adjustmentType === "add" 
-      ? currentStock + qty 
-      : currentStock - qty;
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const newStock = calculateNewStock();
 
     toast({
       title: "Stock mis à jour",
       description: `Stock de "${productName}" ajusté : ${currentStock} → ${newStock}`,
     });
 
+    setIsSubmitting(false);
     onOpenChange(false);
     setFormData({
       adjustmentType: "add",
@@ -64,102 +95,118 @@ export const StockAdjustmentDialog = ({
     });
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Ajuster le Stock</DialogTitle>
-          <DialogDescription>
-            Ajustement du stock pour "{productName}" (Stock actuel: {currentStock})
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="adjustmentType">Type d'ajustement</Label>
-              <Select value={formData.adjustmentType} onValueChange={(value) => setFormData({ ...formData, adjustmentType: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="add">Ajouter au stock</SelectItem>
-                  <SelectItem value="remove">Retirer du stock</SelectItem>
-                  <SelectItem value="set">Définir le stock</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantité</Label>
-              <Input
-                id="quantity"
-                type="number"
-                value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                placeholder="0"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="reason">Raison de l'ajustement</Label>
-            <Select value={formData.reason} onValueChange={(value) => setFormData({ ...formData, reason: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner une raison" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="received">Réception de marchandises</SelectItem>
-                <SelectItem value="sold">Vente</SelectItem>
-                <SelectItem value="damaged">Produit endommagé</SelectItem>
-                <SelectItem value="lost">Produit perdu</SelectItem>
-                <SelectItem value="returned">Retour client</SelectItem>
-                <SelectItem value="inventory">Inventaire physique</SelectItem>
-                <SelectItem value="other">Autre</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optionnel)</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Notes additionnelles..."
-              rows={3}
-            />
-          </div>
-          
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="notifyLowStock"
-                checked={formData.notifyLowStock}
-                onCheckedChange={(checked) => setFormData({ ...formData, notifyLowStock: checked })}
-              />
-              <Label htmlFor="notifyLowStock">Notifier si stock faible</Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="autoReorder"
-                checked={formData.autoReorder}
-                onCheckedChange={(checked) => setFormData({ ...formData, autoReorder: checked })}
-              />
-              <Label htmlFor="autoReorder">Réapprovisionnement automatique</Label>
-            </div>
-          </div>
-        </div>
+  const newStock = calculateNewStock();
+  const stockDiff = newStock - currentStock;
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+  return (
+    <OptimizedModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Ajuster le Stock"
+      description={`${productName} • Stock actuel: ${currentStock} unités`}
+      icon={<Package className="h-5 w-5" />}
+      size="md"
+      footer={
+        <div className="flex gap-3 justify-end w-full">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             Annuler
           </Button>
-          <Button onClick={handleAdjust}>
+          <Button 
+            onClick={handleAdjust} 
+            disabled={isSubmitting || !formData.quantity || !formData.reason}
+          >
+            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Ajuster le stock
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Stock Preview */}
+        <motion.div 
+          className="p-4 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Nouveau stock</p>
+              <p className="text-3xl font-bold">{newStock}</p>
+            </div>
+            {formData.quantity && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className={`text-lg font-semibold px-3 py-1 rounded-full ${
+                  stockDiff > 0 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' 
+                    : stockDiff < 0 
+                      ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+                      : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                }`}
+              >
+                {stockDiff > 0 ? '+' : ''}{stockDiff}
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+
+        <FormGrid columns={2}>
+          <EnhancedSelect
+            label="Type d'ajustement"
+            value={formData.adjustmentType}
+            onValueChange={(value) => setFormData({ ...formData, adjustmentType: value })}
+            options={ADJUSTMENT_TYPES}
+            required
+          />
+          <EnhancedInput
+            label="Quantité"
+            type="number"
+            min={0}
+            value={formData.quantity}
+            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+            placeholder="0"
+            required
+          />
+        </FormGrid>
+        
+        <EnhancedSelect
+          label="Raison de l'ajustement"
+          value={formData.reason}
+          onValueChange={(value) => setFormData({ ...formData, reason: value })}
+          options={ADJUSTMENT_REASONS}
+          placeholder="Sélectionner une raison"
+          required
+        />
+        
+        <div className="space-y-2">
+          <Label htmlFor="notes">Notes (optionnel)</Label>
+          <Textarea
+            id="notes"
+            value={formData.notes}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            placeholder="Notes additionnelles..."
+            rows={3}
+            className="resize-none"
+          />
+        </div>
+        
+        <div className="space-y-3">
+          <EnhancedSwitch
+            label="Notifier si stock faible"
+            description="Recevoir une alerte quand le stock descend sous le seuil"
+            checked={formData.notifyLowStock}
+            onCheckedChange={(checked) => setFormData({ ...formData, notifyLowStock: checked })}
+          />
+          
+          <EnhancedSwitch
+            label="Réapprovisionnement automatique"
+            description="Commander automatiquement auprès du fournisseur"
+            checked={formData.autoReorder}
+            onCheckedChange={(checked) => setFormData({ ...formData, autoReorder: checked })}
+          />
+        </div>
+      </div>
+    </OptimizedModal>
   );
 };
