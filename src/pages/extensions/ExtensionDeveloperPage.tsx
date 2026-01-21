@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code, Book, Rocket, Terminal, GitBranch, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionDeveloperPage() {
@@ -131,7 +132,7 @@ export default function ExtensionDeveloperPage() {
                     Mises à jour temps réel
                   </p>
                 </div>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => navigate('/integrations/api/documentation')}>
                   <Zap className="h-4 w-4 mr-2" />
                   GraphQL Playground
                 </Button>
@@ -151,7 +152,7 @@ export default function ExtensionDeveloperPage() {
                 <pre className="bg-muted p-3 rounded text-sm overflow-x-auto mb-4">
                   npm install @shopopti/sdk
                 </pre>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => toast.info('Repository GitHub bientôt disponible')}>
                   <GitBranch className="h-4 w-4 mr-2" />
                   GitHub Repository
                 </Button>
@@ -167,7 +168,7 @@ export default function ExtensionDeveloperPage() {
                 <pre className="bg-muted p-3 rounded text-sm overflow-x-auto mb-4">
                   npm install @shopopti/react
                 </pre>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => toast.info('Repository GitHub bientôt disponible')}>
                   <GitBranch className="h-4 w-4 mr-2" />
                   GitHub Repository
                 </Button>
@@ -203,7 +204,7 @@ export default function ExtensionDeveloperPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Extension complète pour importer des produits depuis différentes sources
                 </p>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => navigate('/extensions/documentation#examples')}>
                   <Code className="h-4 w-4 mr-2" />
                   Voir le code
                 </Button>
@@ -219,7 +220,7 @@ export default function ExtensionDeveloperPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Extension pour surveiller et ajuster les prix automatiquement
                 </p>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => navigate('/extensions/documentation#examples')}>
                   <Code className="h-4 w-4 mr-2" />
                   Voir le code
                 </Button>
@@ -235,7 +236,7 @@ export default function ExtensionDeveloperPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Créez vos propres dashboards analytics avec visualisations custom
                 </p>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => navigate('/extensions/documentation#examples')}>
                   <Code className="h-4 w-4 mr-2" />
                   Voir le code
                 </Button>
@@ -251,7 +252,7 @@ export default function ExtensionDeveloperPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Automatisez vos campagnes email avec des workflows personnalisés
                 </p>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => navigate('/extensions/documentation#examples')}>
                   <Code className="h-4 w-4 mr-2" />
                   Voir le code
                 </Button>

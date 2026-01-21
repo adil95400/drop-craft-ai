@@ -171,7 +171,7 @@ export default function ExtensionDownloadPage() {
       subtitle="Téléchargement"
       description="Téléchargez et installez l'extension Chrome pour importer des produits en un clic."
       heroImage="extensions"
-      badge={{ label: 'v3.0.0', icon: Chrome }}
+      badge={{ label: 'v4.0.0', icon: Chrome }}
       actions={
         <Button 
           size="lg" 

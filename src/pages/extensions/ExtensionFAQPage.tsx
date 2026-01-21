@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionFAQPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -156,15 +157,13 @@ export default function ExtensionFAQPage() {
   })).filter(category => category.questions.length > 0);
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
-      <div className="text-center space-y-2">
-        <Badge variant="secondary">FAQ</Badge>
-        <h1 className="text-3xl font-bold">Questions Fréquentes</h1>
-        <p className="text-muted-foreground">
-          Trouvez rapidement des réponses à vos questions sur l'extension Chrome
-        </p>
-      </div>
-
+    <ChannablePageWrapper
+      title="FAQ Extension"
+      subtitle="Questions Fréquentes"
+      description="Trouvez rapidement des réponses à vos questions sur l'extension Chrome ShopOpti+"
+      heroImage="extensions"
+      badge={{ label: 'Aide', icon: HelpCircle }}
+    >
       {/* Search */}
       <div className="relative max-w-md mx-auto">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -239,6 +238,6 @@ export default function ExtensionFAQPage() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }
