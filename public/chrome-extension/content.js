@@ -551,7 +551,22 @@ class DropCraftContentScript {
       try {
         const element = container.querySelector(selector);
         if (element && element.textContent.trim()) {
-          return element.textContent.trim();
+          // Clean extracted text - remove UI artifacts like keyboard shortcuts
+          let text = element.textContent.trim();
+          
+          // Remove common UI patterns that pollute titles
+          text = text
+            .replace(/Raccourci clavier[\s\S]*/gi, '')
+            .replace(/shift\s*\+[\s\S]*/gi, '')
+            .replace(/alt\s*\+[\s\S]*/gi, '')
+            .replace(/ctrl\s*\+[\s\S]*/gi, '')
+            .replace(/Ajouter aux favoris[\s\S]*/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+          
+          if (text.length > 3) {
+            return text.substring(0, 500); // Limit length
+          }
         }
       } catch (e) {
         console.log('Invalid selector:', selector);
@@ -569,8 +584,23 @@ class DropCraftContentScript {
         const element = container.querySelector(selector);
         if (element) {
           const text = element.textContent.trim();
-          const priceMatch = text.match(/[\d,.]+(€|$|£|₹|¥|kr|zł|CHF|USD|EUR)/i);
-          if (priceMatch) return priceMatch[0];
+          
+          // Enhanced regex to handle European formats: "4,59€", "1 234,56 €", "1.234,56€"
+          // Matches: 4,59€ | 4.59$ | 1 234,56 € | 1.234,56€ | 12,50 EUR
+          const pricePatterns = [
+            /(\d{1,3}(?:[\s.]?\d{3})*[,]\d{1,2})\s*(€|EUR)/i,  // European: 1.234,56€ or 4,59€
+            /(\d{1,3}(?:[,]?\d{3})*[.]\d{1,2})\s*(\$|USD)/i,   // US: 1,234.56$
+            /(€|EUR)\s*(\d{1,3}(?:[\s.]?\d{3})*[,]\d{1,2})/i,  // €4,59
+            /(\$|USD)\s*(\d{1,3}(?:[,]?\d{3})*[.]\d{1,2})/i,   // $4.59
+            /(\d+[,.]?\d*)\s*(€|\$|£|₹|¥|kr|zł|CHF|USD|EUR)/i  // Fallback
+          ];
+          
+          for (const pattern of pricePatterns) {
+            const match = text.match(pattern);
+            if (match) {
+              return match[0].trim();
+            }
+          }
         }
       } catch (e) {
         console.log('Invalid selector:', selector);

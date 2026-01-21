@@ -420,8 +420,8 @@ function getImageSrc(element, selectors) {
 }
 
 function sendToApp(products) {
-  // Send scraped products to Drop Craft AI app
-  fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-operations', {
+  // Send scraped products to Drop Craft AI app - use correct project URL
+  fetch('https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/extension-sync-realtime', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -442,13 +442,13 @@ function sendToApp(products) {
 
 function openDashboard() {
   chrome.tabs.create({
-    url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/dashboard'
+    url: 'https://drop-craft-ai.lovable.app/dashboard'
   });
 }
 
 function openSettings() {
   chrome.tabs.create({
-    url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/settings'
+    url: 'https://drop-craft-ai.lovable.app/settings'
   });
 }
 
@@ -487,8 +487,8 @@ function updateUI() {
 }
 
 function checkConnection() {
-  // Simple connection check to the app
-  fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/')
+  // Simple connection check to the app - use correct production URL
+  fetch('https://drop-craft-ai.lovable.app/')
     .then(() => {
       document.querySelector('.status').className = 'status connected';
       document.querySelector('.status').innerHTML = '✅ Connecté à l\\'application';

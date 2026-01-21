@@ -281,8 +281,43 @@ serve(async (req) => {
       const itemList = items || []
       console.log('[extension-sync-realtime] Bulk import:', itemList.length, 'items')
 
+      // Reuse helpers from import_products
+      const parsePrice = (priceInput: unknown): number => {
+        if (typeof priceInput === 'number') return priceInput;
+        if (!priceInput || typeof priceInput !== 'string') return 0;
+        const cleanPrice = priceInput.replace(/[€$£¥₹₽]/g, '').replace(/\s+/g, '').trim();
+        if (cleanPrice.includes(',') && !cleanPrice.includes('.')) {
+          return parseFloat(cleanPrice.replace(',', '.')) || 0;
+        } else if (cleanPrice.includes(',') && cleanPrice.includes('.')) {
+          return parseFloat(cleanPrice.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+        return parseFloat(cleanPrice) || 0;
+      };
+
+      const cleanTitle = (title: unknown): string => {
+        if (!title || typeof title !== 'string') return 'Produit importé';
+        let cleaned = title
+          .replace(/Raccourci clavier[\s\S]*$/i, '')
+          .replace(/shift\s*\+[\s\S]*$/i, '')
+          .replace(/alt\s*\+[\s\S]*$/i, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (cleaned.length < 5) return 'Produit importé';
+        return cleaned.substring(0, 500);
+      };
+
+      const validateImageUrl = (url: unknown): string => {
+        if (!url || typeof url !== 'string') return '';
+        if (url.includes('sprite') || url.includes('pixel') || url.includes('grey') || url.includes('transparent') || url.length < 20) return '';
+        try { new URL(url); return url; } catch { return ''; }
+      };
+
       for (const item of itemList) {
         try {
+          const productTitle = cleanTitle(item.title || item.name);
+          const productPrice = parsePrice(item.price);
+          const productImage = validateImageUrl(item.image || item.imageUrl);
+
           const { data: importJob, error: jobError } = await supabase
             .from('extension_data')
             .insert({
@@ -302,19 +337,21 @@ serve(async (req) => {
               .from('supplier_products')
               .insert({
                 user_id: authData.user_id,
-                title: item.title || item.name || 'Produit importé',
-                price: parseFloat(item.price?.toString().replace(/[^\d.]/g, '') || '0'),
-                description: item.description || '',
-                image_url: item.image || item.imageUrl || '',
+                title: productTitle,
+                price: productPrice,
+                description: (item.description || '').substring(0, 5000),
+                image_url: productImage,
                 source_url: item.url || '',
                 stock_quantity: 100,
-                is_active: true
+                is_active: true,
+                category: item.category || null
               })
               .select()
               .single()
 
             if (productError) {
-              errors.push({ item: item.title || item.name, error: productError.message })
+              console.error('[extension-sync-realtime] bulk_import product error:', productError)
+              errors.push({ item: productTitle, error: productError.message })
             } else {
               importResults.push(newProduct)
               await supabase
@@ -324,6 +361,7 @@ serve(async (req) => {
             }
           }
         } catch (error) {
+          console.error('[extension-sync-realtime] bulk_import item error:', error)
           errors.push({ item: item.title || item.name || 'Unknown', error: error.message })
         }
       }
