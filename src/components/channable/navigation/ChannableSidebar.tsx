@@ -10,7 +10,7 @@
  * - Memoization optimisée
  */
 import { useState, useMemo, useCallback, memo } from "react"
-import shopoptiLogo from "@/assets/shopopti-logo.png"
+import shopoptiLogo from "@/assets/logo.svg"
 import { useLocation, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
