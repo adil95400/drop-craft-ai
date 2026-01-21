@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,11 +22,21 @@ export interface Profile {
   updated_at: string;
 }
 
+interface SessionInfo {
+  isExpired: boolean;
+  expiresAt: Date | null;
+  lastActivity: Date | null;
+}
+
 interface UnifiedAuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  
+  // Session management - Phase 2.2
+  sessionInfo: SessionInfo;
+  refreshSession: () => Promise<void>;
   
   // Auth methods
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -50,14 +60,110 @@ interface UnifiedAuthContextType {
 
 const UnifiedAuthContext = createContext<UnifiedAuthContextType | undefined>(undefined);
 
+// Session monitoring constants
+const SESSION_WARNING_THRESHOLD = 5 * 60 * 1000; // 5 minutes before expiry
+const SESSION_CHECK_INTERVAL = 60 * 1000; // Check every minute
+
 export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionInfo, setSessionInfo] = useState<SessionInfo>({
+    isExpired: false,
+    expiresAt: null,
+    lastActivity: null,
+  });
+  
   const { toast } = useToast();
   const fetchingRef = useRef(false);
   const lastFetchedRef = useRef<string | null>(null);
+  const sessionCheckRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Log login activity for security monitoring
+  const logLoginActivity = useCallback(async (userId: string, event: string, success: boolean) => {
+    try {
+      await supabase.from('activity_logs').insert({
+        user_id: userId,
+        action: success ? 'user_login' : 'user_logout',
+        entity_type: 'auth',
+        description: `Auth event: ${event}`,
+        details: {
+          event,
+          user_agent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        },
+        severity: 'info',
+        source: 'client',
+      });
+    } catch (error) {
+      console.error('Error logging auth activity:', error);
+    }
+  }, []);
+
+  // Check session expiration
+  const checkSessionExpiry = useCallback(async () => {
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (!currentSession) {
+        setSessionInfo(prev => ({ ...prev, isExpired: true, expiresAt: null }));
+        return;
+      }
+
+      const expiresAt = new Date(currentSession.expires_at! * 1000);
+      const now = new Date();
+      const timeUntilExpiry = expiresAt.getTime() - now.getTime();
+
+      setSessionInfo(prev => ({
+        ...prev,
+        expiresAt,
+        isExpired: timeUntilExpiry <= 0,
+        lastActivity: new Date(),
+      }));
+
+      // Warn user if session is about to expire
+      if (timeUntilExpiry > 0 && timeUntilExpiry <= SESSION_WARNING_THRESHOLD) {
+        const minutesLeft = Math.ceil(timeUntilExpiry / 60000);
+        toast({
+          title: "Session expirant bientôt",
+          description: `Votre session expire dans ${minutesLeft} minute${minutesLeft > 1 ? 's' : ''}.`,
+        });
+      }
+    } catch (error) {
+      console.error('Session check error:', error);
+    }
+  }, [toast]);
+
+  // Refresh session token
+  const refreshSession = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      
+      if (error) throw error;
+
+      if (data.session) {
+        setSession(data.session);
+        setSessionInfo(prev => ({
+          ...prev,
+          isExpired: false,
+          expiresAt: new Date(data.session!.expires_at! * 1000),
+        }));
+        
+        toast({
+          title: "Session prolongée",
+          description: "Votre session a été renouvelée.",
+        });
+      }
+    } catch (error) {
+      console.error('Session refresh error:', error);
+      toast({
+        title: "Erreur de session",
+        description: "Impossible de renouveler la session.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
   // Initialize auth state
   useEffect(() => {
@@ -69,12 +175,39 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user && event !== 'SIGNED_OUT') {
+        // Log auth events for security
+        if (session?.user) {
+          if (event === 'SIGNED_IN') {
+            logLoginActivity(session.user.id, event, true);
+          }
+          
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
+          
+          // Update session info
+          if (session.expires_at) {
+            setSessionInfo(prev => ({
+              ...prev,
+              isExpired: false,
+              expiresAt: new Date(session.expires_at! * 1000),
+              lastActivity: new Date(),
+            }));
+          }
         } else {
           setProfile(null);
+          setSessionInfo({ isExpired: true, expiresAt: null, lastActivity: null });
+        }
+        
+        if (event === 'SIGNED_OUT' && user) {
+          logLoginActivity(user.id, event, true);
+        }
+        
+        if (event === 'TOKEN_REFRESHED' && session) {
+          setSessionInfo(prev => ({
+            ...prev,
+            expiresAt: new Date(session.expires_at! * 1000),
+          }));
         }
         
         setLoading(false);
@@ -88,13 +221,28 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
       
       if (session?.user) {
         fetchUserProfile(session.user.id);
+        if (session.expires_at) {
+          setSessionInfo(prev => ({
+            ...prev,
+            isExpired: false,
+            expiresAt: new Date(session.expires_at! * 1000),
+          }));
+        }
       } else {
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Set up periodic session checks
+    sessionCheckRef.current = setInterval(checkSessionExpiry, SESSION_CHECK_INTERVAL);
+
+    return () => {
+      subscription.unsubscribe();
+      if (sessionCheckRef.current) {
+        clearInterval(sessionCheckRef.current);
+      }
+    };
+  }, [checkSessionExpiry, logLoginActivity]);
 
   const fetchUserProfile = async (userId: string) => {
     // Prevent duplicate fetches
@@ -321,6 +469,8 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     session,
     profile,
     loading,
+    sessionInfo,
+    refreshSession,
     signIn,
     signUp,
     signOut,
@@ -334,7 +484,7 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     effectivePlan,
     updateProfile,
     refetchProfile,
-  }), [user, session, profile, loading, isAdmin, effectivePlan]);
+  }), [user, session, profile, loading, isAdmin, effectivePlan, sessionInfo, refreshSession]);
 
   return (
     <UnifiedAuthContext.Provider value={value}>
