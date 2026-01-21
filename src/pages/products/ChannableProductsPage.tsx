@@ -473,6 +473,8 @@ export default function ChannableProductsPage() {
               onView={handleView}
               onRefresh={handleRefresh}
               isLoading={isLoading}
+              selectedProducts={selectedProducts}
+              onSelectionChange={setSelectedProducts}
             />
           )}
         </>
