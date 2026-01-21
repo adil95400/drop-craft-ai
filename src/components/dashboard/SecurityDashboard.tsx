@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -8,103 +8,45 @@ import {
   Shield, 
   AlertTriangle, 
   CheckCircle2, 
-  Lock, 
   Eye, 
-  UserCheck,
   Activity,
   Globe,
-  Terminal,
-  FileText,
   Clock
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface SecurityEvent {
-  id: string
-  type: 'login' | 'access_attempt' | 'data_breach' | 'suspicious_activity'
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  message: string
-  timestamp: string
-  ip?: string
-  userAgent?: string
-  resolved: boolean
-}
-
-interface SecurityMetric {
-  name: string
-  value: number
-  status: 'safe' | 'warning' | 'danger'
-  description: string
-}
+import { useRealSecurityEvents, SecurityEvent, SecurityMetric } from '@/hooks/useRealSecurityEvents'
 
 export function SecurityDashboard() {
-  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
-  const [securityScore, setSecurityScore] = useState(85)
-  const [metrics, setMetrics] = useState<SecurityMetric[]>([])
-  const [scanning, setScanning] = useState(false)
+  const {
+    securityScore,
+    events: securityEvents,
+    metrics,
+    blockedAttempts,
+    lastAttackHoursAgo,
+    protectionRate,
+    isLoading,
+    resolveEvent,
+    isResolving,
+    runSecurityScan,
+    isScanning
+  } = useRealSecurityEvents()
 
-  useEffect(() => {
-    // Simuler des événements de sécurité
-    const mockEvents: SecurityEvent[] = [
-      {
-        id: '1',
-        type: 'login',
-        severity: 'low',
-        message: 'Connexion réussie depuis Paris, France',
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-        ip: '192.168.1.1',
-        resolved: true
-      },
-      {
-        id: '2',
-        type: 'suspicious_activity',
-        severity: 'medium',
-        message: 'Tentatives de connexion multiples détectées',
-        timestamp: new Date(Date.now() - 1800000).toISOString(),
-        ip: '45.123.45.67',
-        resolved: false
-      },
-      {
-        id: '3',
-        type: 'access_attempt',
-        severity: 'high',
-        message: 'Tentative d\'accès à des ressources protégées',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        ip: '123.456.78.90',
-        resolved: false
-      }
-    ]
-
-    const mockMetrics: SecurityMetric[] = [
-      {
-        name: 'Authentification 2FA',
-        value: 78,
-        status: 'warning',
-        description: '78% des utilisateurs ont activé la 2FA'
-      },
-      {
-        name: 'Chiffrement des données',
-        value: 100,
-        status: 'safe',
-        description: 'Toutes les données sensibles sont chiffrées'
-      },
-      {
-        name: 'Mises à jour sécurité',
-        value: 92,
-        status: 'safe',
-        description: '92% des composants sont à jour'
-      },
-      {
-        name: 'Tentatives de piratage',
-        value: 15,
-        status: 'warning',
-        description: '15 tentatives bloquées cette semaine'
-      }
-    ]
-
-    setSecurityEvents(mockEvents)
-    setMetrics(mockMetrics)
-  }, [])
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {[...Array(2)].map((_, i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader>
+              <div className="h-6 bg-muted rounded w-3/4"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-32 bg-muted rounded"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
 
   const getSeverityColor = (severity: SecurityEvent['severity']) => {
     switch (severity) {
@@ -148,36 +90,22 @@ export function SecurityDashboard() {
     }
   }
 
-  const runSecurityScan = async () => {
-    setScanning(true)
+  const handleSecurityScan = async () => {
     toast.loading('Analyse de sécurité en cours...', { id: 'security-scan' })
 
     try {
-      // Simuler une analyse de sécurité
-      await new Promise(resolve => setTimeout(resolve, 3000))
-
-      // Mise à jour du score de sécurité
-      const newScore = Math.floor(Math.random() * 10) + 80 // 80-90
-      setSecurityScore(newScore)
-
+      await runSecurityScan()
       toast.success(
-        `Analyse terminée ! Score de sécurité: ${newScore}/100`,
+        `Analyse terminée ! Score de sécurité: ${securityScore}/100`,
         { id: 'security-scan', duration: 4000 }
       )
     } catch (error) {
       toast.error('Erreur lors de l\'analyse de sécurité', { id: 'security-scan' })
-    } finally {
-      setScanning(false)
     }
   }
 
-  const resolveEvent = (eventId: string) => {
-    setSecurityEvents(events =>
-      events.map(event =>
-        event.id === eventId ? { ...event, resolved: true } : event
-      )
-    )
-    toast.success('Événement résolu avec succès')
+  const handleResolveEvent = (eventId: string) => {
+    resolveEvent(eventId)
   }
 
   return (
@@ -254,11 +182,11 @@ export function SecurityDashboard() {
             </div>
 
             <Button 
-              onClick={runSecurityScan} 
-              disabled={scanning}
+              onClick={handleSecurityScan} 
+              disabled={isScanning}
               className="w-full"
             >
-              {scanning ? (
+              {isScanning ? (
                 <>
                   <Activity className="h-4 w-4 mr-2 animate-spin" />
                   Analyse en cours...
@@ -327,10 +255,11 @@ export function SecurityDashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => resolveEvent(event.id)}
+                      onClick={() => handleResolveEvent(event.id)}
                       className="ml-2"
+                      disabled={isResolving}
                     >
-                      Résoudre
+                      {isResolving ? 'En cours...' : 'Résoudre'}
                     </Button>
                   )}
                 </div>
@@ -342,15 +271,15 @@ export function SecurityDashboard() {
 
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-lg font-bold text-green-600">24h</div>
+              <div className="text-lg font-bold text-green-600">{lastAttackHoursAgo}h</div>
               <div className="text-xs text-gray-500">Dernière Attaque</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-blue-600">127</div>
+              <div className="text-lg font-bold text-blue-600">{blockedAttempts}</div>
               <div className="text-xs text-gray-500">Tentatives Bloquées</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-purple-600">99.9%</div>
+              <div className="text-lg font-bold text-purple-600">{protectionRate}%</div>
               <div className="text-xs text-gray-500">Taux de Protection</div>
             </div>
           </div>

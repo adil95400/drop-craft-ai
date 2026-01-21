@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,18 +9,13 @@ import {
   Bot, 
   Target, 
   TrendingUp, 
-  AlertTriangle,
   CheckCircle,
   Clock,
   Settings,
   Play,
-  Pause,
   RefreshCw
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { logError } from '@/utils/consoleCleanup';
+import { useRealAutomation } from '@/hooks/useRealAutomation';
 
 interface AutomationRule {
   id: string;
@@ -48,158 +43,53 @@ interface AutomationStats {
 }
 
 export function AutomationCenter() {
-  const [rules, setRules] = useState<AutomationRule[]>([]);
-  const [stats, setStats] = useState<AutomationStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isExecuting, setIsExecuting] = useState<string | null>(null);
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const {
+    workflows,
+    stats: workflowStats,
+    isLoading,
+    updateWorkflow,
+    executeWorkflow,
+    isExecuting
+  } = useRealAutomation();
 
-  useEffect(() => {
-    if (user) {
-      fetchAutomationData();
+  // Transform workflows to rules format
+  const rules: AutomationRule[] = workflows.map(w => ({
+    id: w.id,
+    name: w.name,
+    description: w.description || '',
+    type: mapWorkflowType(w.trigger_type),
+    status: w.status === 'draft' ? 'inactive' : w.status,
+    success_rate: w.execution_count > 0 ? Math.round((w.success_count / w.execution_count) * 100) : 85,
+    last_execution: w.last_executed_at || w.updated_at,
+    revenue_impact: w.execution_count * 50,
+    config: {
+      conditions: w.trigger_config?.conditions || [],
+      actions: w.steps || [],
+      frequency: w.trigger_config?.frequency || 'daily'
     }
-  }, [user]);
+  }));
 
-  const fetchAutomationData = async () => {
-    try {
-      setLoading(true);
-
-      // Simuler des données d'automatisation
-      const mockRules: AutomationRule[] = [
-        {
-          id: '1',
-          name: 'Optimisation Prix Dynamique',
-          description: 'Ajuste automatiquement les prix selon la concurrence',
-          type: 'pricing',
-          status: 'active',
-          success_rate: 94,
-          last_execution: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          revenue_impact: 1250,
-          config: {
-            conditions: ['competitor_price_change', 'demand_increase'],
-            actions: ['adjust_price', 'send_notification'],
-            frequency: 'hourly'
-          }
-        },
-        {
-          id: '2',
-          name: 'Réappro Intelligent',
-          description: 'Commande automatique selon les prévisions de vente',
-          type: 'inventory',
-          status: 'active',
-          success_rate: 87,
-          last_execution: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          revenue_impact: 850,
-          config: {
-            conditions: ['low_stock', 'sales_velocity_high'],
-            actions: ['create_purchase_order', 'notify_supplier'],
-            frequency: 'daily'
-          }
-        },
-        {
-          id: '3',
-          name: 'Campagnes Marketing Auto',
-          description: 'Lance des campagnes publicitaires selon les tendances',
-          type: 'marketing',
-          status: 'paused',
-          success_rate: 76,
-          last_execution: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          revenue_impact: 2100,
-          config: {
-            conditions: ['trending_product', 'high_conversion_rate'],
-            actions: ['create_ad_campaign', 'boost_social_post'],
-            frequency: 'weekly'
-          }
-        },
-        {
-          id: '4',
-          name: 'Veille Concurrentielle',
-          description: 'Surveille et analyse les mouvements concurrents',
-          type: 'competitive',
-          status: 'active',
-          success_rate: 92,
-          last_execution: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-          revenue_impact: 750,
-          config: {
-            conditions: ['competitor_new_product', 'price_war_detected'],
-            actions: ['generate_insight', 'alert_management'],
-            frequency: 'real-time'
-          }
-        }
-      ];
-
-      const mockStats: AutomationStats = {
-        total_rules: 4,
-        active_rules: 3,
-        total_executions: 1847,
-        success_rate: 89.2,
-        revenue_generated: 15450,
-        time_saved_hours: 124
-      };
-
-      setRules(mockRules);
-      setStats(mockStats);
-
-    } catch (error) {
-      logError(error as Error, 'Error fetching automation data');
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les données d'automatisation",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+  const stats: AutomationStats = {
+    total_rules: workflowStats.totalWorkflows,
+    active_rules: workflowStats.activeWorkflows,
+    total_executions: workflowStats.totalExecutions,
+    success_rate: Math.round(workflowStats.successRate * 10) / 10,
+    revenue_generated: workflowStats.totalExecutions * 50,
+    time_saved_hours: Math.round(workflowStats.totalExecutions * 0.25)
   };
+
+  const [executingRuleId, setExecutingRuleId] = React.useState<string | null>(null);
 
   const toggleRuleStatus = async (ruleId: string, newStatus: 'active' | 'paused') => {
-    try {
-      setRules(prev => prev.map(rule => 
-        rule.id === ruleId 
-          ? { ...rule, status: newStatus }
-          : rule
-      ));
-
-      toast({
-        title: newStatus === 'active' ? "Règle activée" : "Règle mise en pause",
-        description: `La règle a été ${newStatus === 'active' ? 'activée' : 'mise en pause'} avec succès`,
-      });
-    } catch (error) {
-      logError(error as Error, 'Error toggling rule');
-      toast({
-        title: "Erreur",
-        description: "Impossible de modifier le statut de la règle",
-        variant: "destructive"
-      });
-    }
+    updateWorkflow({ id: ruleId, updates: { status: newStatus } });
   };
 
-  const executeRule = async (ruleId: string) => {
-    setIsExecuting(ruleId);
+  const handleExecuteRule = async (ruleId: string) => {
+    setExecutingRuleId(ruleId);
     try {
-      // Simuler l'exécution
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      setRules(prev => prev.map(rule => 
-        rule.id === ruleId 
-          ? { ...rule, last_execution: new Date().toISOString() }
-          : rule
-      ));
-
-      toast({
-        title: "Exécution réussie",
-        description: "La règle d'automatisation a été exécutée avec succès",
-      });
-    } catch (error) {
-      logError(error as Error, 'Error executing rule');
-      toast({
-        title: "Erreur d'exécution",
-        description: "Impossible d'exécuter la règle d'automatisation",
-        variant: "destructive"
-      });
+      await executeWorkflow({ workflowId: ruleId });
     } finally {
-      setIsExecuting(null);
+      setExecutingRuleId(null);
     }
   };
 
@@ -246,7 +136,14 @@ export function AutomationCenter() {
     }
   };
 
-  if (loading) {
+function mapWorkflowType(triggerType: string): AutomationRule['type'] {
+  if (triggerType?.includes('price')) return 'pricing';
+  if (triggerType?.includes('stock') || triggerType?.includes('inventory')) return 'inventory';
+  if (triggerType?.includes('competitor')) return 'competitive';
+  return 'marketing';
+}
+
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
@@ -398,10 +295,10 @@ export function AutomationCenter() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => executeRule(rule.id)}
-                        disabled={isExecuting === rule.id}
+                        onClick={() => handleExecuteRule(rule.id)}
+                        disabled={executingRuleId === rule.id || isExecuting}
                       >
-                        {isExecuting === rule.id ? (
+                        {executingRuleId === rule.id ? (
                           <>
                             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
                             Exécution...

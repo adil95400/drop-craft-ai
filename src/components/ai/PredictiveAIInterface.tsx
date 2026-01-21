@@ -1,180 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, Eye, ShoppingCart, Calendar, Filter } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-
-interface PredictiveInsight {
-  id: string;
-  type: 'sales_forecast' | 'demand_prediction' | 'price_optimization' | 'inventory_alert';
-  title: string;
-  description: string;
-  confidence: number;
-  impact: 'high' | 'medium' | 'low';
-  category: string;
-  predicted_value: number;
-  current_value: number;
-  timeframe: string;
-  actionable_insights: string[];
-}
-
-interface SalesData {
-  date: string;
-  actual: number;
-  predicted: number;
-  trend: number;
-}
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useRealPredictiveAI, PredictiveInsight, SalesData } from '@/hooks/useRealPredictiveAI';
 
 export const PredictiveAIInterface = () => {
-  const { toast } = useToast();
-  const [insights, setInsights] = useState<PredictiveInsight[]>([]);
-  const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    loadPredictiveData();
-  }, [selectedPeriod, selectedCategory]);
-
-  const loadPredictiveData = async () => {
-    setIsLoading(true);
-    try {
-      // Generate mock predictive insights
-      const mockInsights: PredictiveInsight[] = [
-        {
-          id: '1',
-          type: 'sales_forecast',
-          title: 'Hausse des ventes prévue',
-          description: 'Une augmentation de 15% des ventes est prévue pour les 2 prochaines semaines',
-          confidence: 87,
-          impact: 'high',
-          category: 'electronics',
-          predicted_value: 23500,
-          current_value: 20434,
-          timeframe: '2 semaines',
-          actionable_insights: [
-            'Augmenter le stock des produits électroniques populaires',
-            'Préparer une campagne marketing ciblée',
-            'Optimiser la logistique pour gérer l\'augmentation'
-          ]
-        },
-        {
-          id: '2',
-          type: 'demand_prediction',
-          title: 'Demande saisonnière détectée',
-          description: 'Pic de demande prévu pour les accessoires de mode en fin de mois',
-          confidence: 92,
-          impact: 'medium',
-          category: 'fashion',
-          predicted_value: 1850,
-          current_value: 1234,
-          timeframe: '3 semaines',
-          actionable_insights: [
-            'Commander 50% de stock supplémentaire',
-            'Négocier de meilleurs prix avec les fournisseurs',
-            'Préparer les campagnes publicitaires'
-          ]
-        },
-        {
-          id: '3',
-          type: 'price_optimization',
-          title: 'Opportunité d\'optimisation prix',
-          description: 'Réduction de 8% recommandée sur certains produits pour maximiser les ventes',
-          confidence: 76,
-          impact: 'medium',
-          category: 'home',
-          predicted_value: 18.99,
-          current_value: 20.67,
-          timeframe: 'Immédiat',
-          actionable_insights: [
-            'Appliquer une réduction de 8% sur les produits identifiés',
-            'Surveiller la concurrence',
-            'Tester différents prix sur 2 semaines'
-          ]
-        },
-        {
-          id: '4',
-          type: 'inventory_alert',
-          title: 'Risque de rupture de stock',
-          description: 'Stock critique prévu sur 12 produits populaires d\'ici 10 jours',
-          confidence: 94,
-          impact: 'high',
-          category: 'electronics',
-          predicted_value: 0,
-          current_value: 45,
-          timeframe: '10 jours',
-          actionable_insights: [
-            'Commander en urgence les produits identifiés',
-            'Contacter les fournisseurs alternatifs',
-            'Mettre en place des alertes précoces'
-          ]
-        }
-      ];
-
-      // Generate mock sales forecast data
-      const mockSalesData: SalesData[] = [];
-      const today = new Date();
-      for (let i = -30; i <= 30; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() + i);
-        
-        const baseValue = 1000 + Math.sin(i / 7) * 200 + Math.random() * 100;
-        const trend = i > 0 ? baseValue * 1.15 : baseValue;
-        
-        mockSalesData.push({
-          date: date.toISOString().split('T')[0],
-          actual: i <= 0 ? Math.round(baseValue) : 0,
-          predicted: i >= 0 ? Math.round(trend) : 0,
-          trend: Math.round(trend * 1.1)
-        });
-      }
-
-      setInsights(mockInsights);
-      setSalesData(mockSalesData);
-    } catch (error) {
-      logError(error, 'PredictiveAIInterface.loadPredictiveData');
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les données prédictives',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const generateNewPrediction = async () => {
-    setIsLoading(true);
-    try {
-      toast({
-        title: 'Analyse en cours',
-        description: 'Génération de nouvelles prédictions IA...'
-      });
-      
-      // Load real predictive data from database
-      await loadPredictiveData();
-      
-      toast({
-        title: 'Prédictions mises à jour',
-        description: 'Nouvelles analyses IA générées avec succès'
-      });
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de générer de nouvelles prédictions',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    insights,
+    salesData,
+    isLoading,
+    generatePrediction,
+    isGenerating
+  } = useRealPredictiveAI(selectedPeriod, selectedCategory);
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
@@ -213,8 +56,8 @@ export const PredictiveAIInterface = () => {
             Analyses prédictives et recommandations basées sur l'intelligence artificielle
           </p>
         </div>
-        <Button onClick={generateNewPrediction} disabled={isLoading}>
-          {isLoading ? 'Analyse...' : 'Nouvelle Analyse'}
+        <Button onClick={() => generatePrediction()} disabled={isLoading || isGenerating}>
+          {isLoading || isGenerating ? 'Analyse...' : 'Nouvelle Analyse'}
         </Button>
       </div>
 
