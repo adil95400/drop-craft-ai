@@ -37,6 +37,18 @@ class DropCraftContentScript {
     reviewsScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(reviewsScript);
     
+    // Inject video extractor for product videos
+    const videoScript = document.createElement('script');
+    videoScript.src = chrome.runtime.getURL('video-extractor.js');
+    videoScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(videoScript);
+    
+    // Inject variants extractor for complete variant management
+    const variantsScript = document.createElement('script');
+    variantsScript.src = chrome.runtime.getURL('variants-extractor.js');
+    variantsScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(variantsScript);
+    
     // Inject fulfillment tools
     const fulfillmentScript = document.createElement('script');
     fulfillmentScript.src = chrome.runtime.getURL('fulfillment.js');

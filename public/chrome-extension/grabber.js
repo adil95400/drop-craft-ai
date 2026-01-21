@@ -744,6 +744,19 @@
         return el ? el.href : window.location.href;
       };
       
+      // Get all images from the card
+      const getAllImages = () => {
+        const images = [];
+        const imgEls = card.querySelectorAll('img');
+        imgEls.forEach(img => {
+          const src = img.src || img.dataset.src || img.getAttribute('data-lazy-src');
+          if (src && !images.includes(src) && !src.includes('icon') && !src.includes('logo')) {
+            images.push(src);
+          }
+        });
+        return images;
+      };
+      
       const priceText = getText(this.selectors.price);
       const price = this.parsePrice(priceText);
       
@@ -752,12 +765,136 @@
         price: price,
         priceText: priceText,
         image: getImage(this.selectors.image),
+        images: getAllImages(),
         url: getLink(this.selectors.link),
         rating: getText(this.selectors.rating),
         orders: getText(this.selectors.orders),
         platform: this.platform,
         scrapedAt: new Date().toISOString(),
-        source: 'grabber_bulk'
+        source: 'grabber_bulk',
+        // Will be enriched on product page with videos and variants
+        videos: [],
+        variants: []
+      };
+    }
+
+    // NEW: Extract videos and variants for a single product page
+    async extractEnrichedProductData() {
+      const baseData = await this.extractSingleProductData();
+      
+      // Extract videos using the video extractor
+      let videos = [];
+      if (window.DropCraftVideoExtractor) {
+        const videoExtractor = new window.DropCraftVideoExtractor();
+        videos = await videoExtractor.extractVideos();
+      }
+      
+      // Extract variants using the variants extractor
+      let variantData = { variants: [], options: {} };
+      if (window.DropCraftVariantsExtractor) {
+        const variantsExtractor = new window.DropCraftVariantsExtractor();
+        variantData = await variantsExtractor.extractVariants();
+      }
+      
+      return {
+        ...baseData,
+        videos: videos.map(v => v.url),
+        video_urls: videos.map(v => v.url),
+        variants: variantData.variants,
+        variant_options: variantData.options,
+        has_videos: videos.length > 0,
+        has_variants: variantData.variants.length > 0
+      };
+    }
+
+    // Extract single product data from current page
+    async extractSingleProductData() {
+      // Try multiple strategies
+      const strategies = [
+        () => this.extractFromStructuredData(),
+        () => this.extractFromMetaTags(),
+        () => this.extractFromDOM()
+      ];
+      
+      for (const strategy of strategies) {
+        const data = await strategy();
+        if (data && data.title) return data;
+      }
+      
+      return null;
+    }
+
+    extractFromStructuredData() {
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      for (const script of scripts) {
+        try {
+          const data = JSON.parse(script.textContent);
+          const items = Array.isArray(data) ? data : [data];
+          
+          for (const item of items) {
+            if (item['@type'] === 'Product') {
+              const offer = Array.isArray(item.offers) ? item.offers[0] : item.offers;
+              return {
+                title: item.name,
+                price: parseFloat(offer?.price) || 0,
+                image: Array.isArray(item.image) ? item.image[0] : item.image,
+                images: Array.isArray(item.image) ? item.image : [item.image].filter(Boolean),
+                description: item.description,
+                sku: item.sku,
+                brand: item.brand?.name,
+                rating: item.aggregateRating?.ratingValue,
+                url: window.location.href,
+                platform: this.platform
+              };
+            }
+          }
+        } catch (e) {}
+      }
+      return null;
+    }
+
+    extractFromMetaTags() {
+      const getMeta = (name) => {
+        const el = document.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
+        return el?.content;
+      };
+      
+      const title = getMeta('og:title') || document.title;
+      const image = getMeta('og:image');
+      const price = getMeta('product:price:amount') || getMeta('og:price:amount');
+      
+      if (title) {
+        return {
+          title,
+          image,
+          images: image ? [image] : [],
+          price: parseFloat(price) || 0,
+          url: window.location.href,
+          platform: this.platform
+        };
+      }
+      return null;
+    }
+
+    extractFromDOM() {
+      const title = document.querySelector('h1')?.textContent?.trim();
+      const priceEl = document.querySelector('[class*="price"]:not([class*="original"])');
+      const price = priceEl ? this.parsePrice(priceEl.textContent) : 0;
+      
+      const images = [];
+      document.querySelectorAll('.gallery img, .product-image img, [class*="gallery"] img').forEach(img => {
+        if (img.src && !images.includes(img.src)) {
+          images.push(img.src);
+        }
+      });
+      
+      return {
+        title,
+        price,
+        image: images[0],
+        images,
+        url: window.location.href,
+        platform: this.platform
       };
     }
 
