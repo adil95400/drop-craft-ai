@@ -52,7 +52,7 @@ export function useShopifyCustomerImport() {
   });
 
   // Import customers mutation
-  const importCustomers = useMutation({
+  const importCustomersMutation = useMutation({
     mutationFn: async (integrationId: string) => {
       setProgress({
         status: 'fetching',
@@ -79,7 +79,7 @@ export function useShopifyCustomerImport() {
         throw new Error('Credentials Shopify manquants');
       }
 
-      setProgress(prev => ({ ...prev, message: 'Récupération des clients Shopify...' }));
+      setProgress(prev => ({ ...prev, message: 'Récupération de tous les clients et abonnés Shopify...' }));
 
       // Call edge function to import customers
       const { data, error } = await supabase.functions.invoke('shopify-operations', {
@@ -99,15 +99,19 @@ export function useShopifyCustomerImport() {
       setProgress({
         status: 'completed',
         imported: data.imported_count || 0,
-        total: data.imported_count || 0,
-        message: `${data.imported_count} clients importés avec succès`
+        total: data.total_fetched || data.imported_count || 0,
+        message: data.message || `${data.imported_count} clients importés avec succès`
       });
 
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast.success(`${data.imported_count} clients importés depuis Shopify`);
+      const newsletterOnly = data.breakdown?.newsletter_only || 0;
+      const message = newsletterOnly > 0 
+        ? `${data.imported_count} clients importés (dont ${newsletterOnly} abonnés newsletter)`
+        : `${data.imported_count} clients importés depuis Shopify`;
+      toast.success(message);
     },
     onError: (error: Error) => {
       setProgress(prev => ({
@@ -118,6 +122,15 @@ export function useShopifyCustomerImport() {
       toast.error(`Erreur: ${error.message}`);
     }
   });
+
+  // Wrapper function that accepts options
+  const importCustomers = (integrationId: string, options?: { onSuccess?: (data: any) => void }) => {
+    importCustomersMutation.mutate(integrationId, {
+      onSuccess: (data) => {
+        options?.onSuccess?.(data);
+      }
+    });
+  };
 
   const resetProgress = () => {
     setProgress({
@@ -131,8 +144,8 @@ export function useShopifyCustomerImport() {
   return {
     integrations,
     isLoadingIntegrations,
-    importCustomers: importCustomers.mutate,
-    isImporting: importCustomers.isPending,
+    importCustomers,
+    isImporting: importCustomersMutation.isPending,
     progress,
     resetProgress
   };

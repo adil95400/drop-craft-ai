@@ -18,11 +18,21 @@ import {
   Loader2, 
   RefreshCw,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Mail,
+  ShoppingBag,
+  UserPlus
 } from 'lucide-react';
 import { useShopifyCustomerImport } from '@/hooks/useShopifyCustomerImport';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+
+interface ImportBreakdown {
+  total: number;
+  buyers: number;
+  email_subscribers: number;
+  newsletter_only: number;
+}
 
 interface ShopifyCustomerImportDialogProps {
   open: boolean;
@@ -36,6 +46,7 @@ export function ShopifyCustomerImportDialog({
   onSuccess
 }: ShopifyCustomerImportDialogProps) {
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string | null>(null);
+  const [breakdown, setBreakdown] = useState<ImportBreakdown | null>(null);
   
   const {
     integrations,
@@ -48,13 +59,20 @@ export function ShopifyCustomerImportDialog({
 
   const handleImport = () => {
     if (!selectedIntegrationId) return;
-    importCustomers(selectedIntegrationId);
+    importCustomers(selectedIntegrationId, {
+      onSuccess: (data: any) => {
+        if (data?.breakdown) {
+          setBreakdown(data.breakdown);
+        }
+      }
+    });
   };
 
   const handleClose = () => {
     if (!isImporting) {
       resetProgress();
       setSelectedIntegrationId(null);
+      setBreakdown(null);
       onOpenChange(false);
       if (progress.status === 'completed') {
         onSuccess?.();
@@ -77,7 +95,7 @@ export function ShopifyCustomerImportDialog({
             Importer les clients Shopify
           </DialogTitle>
           <DialogDescription>
-            Importez vos clients depuis Shopify vers ShopOpti pour une gestion centralisée.
+            Importez <strong>tous</strong> vos clients depuis Shopify : acheteurs, abonnés newsletter et contacts email.
           </DialogDescription>
         </DialogHeader>
 
@@ -145,6 +163,21 @@ export function ShopifyCustomerImportDialog({
                       ))}
                     </div>
                   )}
+
+                  {/* Info box about what will be imported */}
+                  {integrations?.length > 0 && (
+                    <Card className="bg-blue-500/5 border-blue-500/20">
+                      <CardContent className="p-3">
+                        <div className="flex items-start gap-2">
+                          <Mail className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-blue-700 dark:text-blue-400">
+                            L'import inclut <strong>tous les contacts</strong> : clients ayant passé commande, 
+                            abonnés newsletter, et contacts email marketing.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -167,7 +200,7 @@ export function ShopifyCustomerImportDialog({
                   </div>
                   <p className="mt-4 font-medium">{progress.message}</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Veuillez patienter...
+                    Import de tous les clients et abonnés...
                   </p>
                 </div>
 
@@ -188,21 +221,49 @@ export function ShopifyCustomerImportDialog({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="text-center py-6"
+                className="text-center py-4"
               >
                 <div className="p-4 rounded-full bg-green-500/10 inline-flex mb-4">
                   <CheckCircle2 className="h-10 w-10 text-green-600" />
                 </div>
                 <h3 className="text-lg font-semibold mb-1">Import réussi !</h3>
-                <p className="text-muted-foreground">{progress.message}</p>
+                <p className="text-muted-foreground text-sm">{progress.message}</p>
                 
-                <div className="mt-6 p-4 rounded-lg bg-muted/50">
+                {/* Main stat */}
+                <div className="mt-4 p-4 rounded-lg bg-muted/50">
                   <div className="flex items-center justify-center gap-2 text-2xl font-bold text-primary">
                     <Users className="h-6 w-6" />
                     {progress.imported}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">clients importés</p>
                 </div>
+
+                {/* Breakdown stats */}
+                {breakdown && (
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    <div className="p-3 rounded-lg bg-muted/30">
+                      <div className="flex items-center justify-center gap-1 text-lg font-semibold text-foreground">
+                        <ShoppingBag className="h-4 w-4" />
+                        {breakdown.buyers}
+                      </div>
+                      <p className="text-xs text-muted-foreground">Acheteurs</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-blue-500/10">
+                      <div className="flex items-center justify-center gap-1 text-lg font-semibold text-blue-600">
+                        <Mail className="h-4 w-4" />
+                        {breakdown.email_subscribers}
+                      </div>
+                      <p className="text-xs text-muted-foreground">Abonnés email</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-purple-500/10">
+                      <div className="flex items-center justify-center gap-1 text-lg font-semibold text-purple-600">
+                        <UserPlus className="h-4 w-4" />
+                        {breakdown.newsletter_only}
+                      </div>
+                      <p className="text-xs text-muted-foreground">Newsletter seule</p>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -242,7 +303,7 @@ export function ShopifyCustomerImportDialog({
                 ) : (
                   <ArrowRight className="h-4 w-4" />
                 )}
-                Importer les clients
+                Importer tous les clients
               </Button>
             </>
           )}
