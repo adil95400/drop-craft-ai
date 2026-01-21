@@ -1,10 +1,11 @@
 import React from "react";
-import { Search, Command, Sparkles } from "lucide-react";
+import { Search, Command } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarHeader } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import logoSvg from "@/assets/logo.svg";
 
 interface SidebarHeaderContentProps {
   collapsed: boolean;
@@ -34,12 +35,8 @@ export const SidebarHeaderContent: React.FC<SidebarHeaderContentProps> = ({
       <div className="p-4 space-y-4">
         {/* Logo et titre */}
         <div className="flex items-center gap-3">
-          <div className={cn(
-            "rounded-lg p-2 transition-all duration-200",
-            "bg-gradient-to-br from-primary to-primary/80",
-            "shadow-lg shadow-primary/25"
-          )}>
-            <Sparkles className="h-5 w-5 text-primary-foreground" />
+          <div className="rounded-lg overflow-hidden shadow-lg shadow-primary/25">
+            <img src={logoSvg} alt="Shopopti+ Logo" className="h-9 w-9 object-contain" />
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
