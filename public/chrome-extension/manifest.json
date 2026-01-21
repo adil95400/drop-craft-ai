@@ -95,8 +95,12 @@
         "support.js",
         "image-optimizer.js",
         "multi-store-manager.js",
+        "price-monitor.js",
+        "auto-order.js",
         "platforms/tiktok-shop.js",
         "platforms/cdiscount.js",
+        "platforms/fnac.js",
+        "platforms/rakuten.js",
         "content.css",
         "icons/*"
       ],
