@@ -53,22 +53,14 @@ export function ProductsQuickActionsBar({
     }
   }
 
-  // Actions principales à gauche (sans Nouveau produit ni Audit Images)
+  // Action gauche : Nouveau produit
   const leftActions: ChannableQuickAction[] = [
     {
-      id: 'enrich',
-      label: 'Enrichir IA',
-      icon: Wand2,
-      onClick: onEnrich,
-      variant: 'primary',
-      description: 'Optimisation'
-    },
-    {
-      id: 'refresh',
-      label: 'Actualiser',
-      icon: RefreshCw,
-      onClick: onRefresh,
-      description: 'Recharger'
+      id: 'add-product',
+      label: 'Nouveau produit',
+      icon: Plus,
+      onClick: () => navigate('/products/create'),
+      variant: 'primary'
     }
   ]
 
@@ -79,7 +71,7 @@ export function ProductsQuickActionsBar({
       
       {/* Actions droite */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Boutons Standard / Audit */}
+        {/* Boutons Standard / Audit / Enrichir IA */}
         <Button
           variant={viewMode === 'standard' ? 'default' : 'outline'}
           onClick={() => onViewModeChange('standard')}
@@ -98,25 +90,20 @@ export function ProductsQuickActionsBar({
           <Target className="h-4 w-4" />
           Audit
         </Button>
-        
-        {/* Séparateur visuel */}
-        <div className="h-6 w-px bg-border mx-1" />
-        
-        {/* Toggle Expert (sans Simple) */}
         <Button
-          variant={expertMode ? 'default' : 'outline'}
-          onClick={() => onExpertModeChange(!expertMode)}
+          variant="default"
+          onClick={onEnrich}
           size="sm"
-          className="gap-2"
+          className="gap-2 bg-gradient-to-r from-primary to-primary/80"
         >
-          <Sparkles className="h-4 w-4" />
-          Audit expert
+          <Wand2 className="h-4 w-4" />
+          Enrichir IA
         </Button>
         
         {/* Séparateur visuel */}
         <div className="h-6 w-px bg-border mx-1" />
         
-        {/* Importer / Exporter / Filtres ensemble */}
+        {/* Importer / Actualiser / Exporter / Filtres */}
         <Button
           variant="outline"
           size="sm"
@@ -125,6 +112,15 @@ export function ProductsQuickActionsBar({
         >
           <Upload className="h-4 w-4" />
           Importer
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={onRefresh}
+        >
+          <RefreshCw className="h-4 w-4" />
+          Actualiser
         </Button>
         <Button
           variant="outline"
