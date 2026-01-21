@@ -63,6 +63,8 @@ async function handleUnifiedOperation(supabaseClient: any, requestBody: any) {
       return await importShopifyOrders(supabaseClient, targetId, credentials)
     case 'import-customers':
       return await importShopifyCustomers(supabaseClient, targetId, credentials)
+    case 'import-customers-to-shopopti':
+      return await importShopifyCustomersToShopOpti(supabaseClient, targetId, credentials)
     case 'export-products':
       return await exportProductsToShopify(supabaseClient, targetId, credentials, operation_data?.product_ids)
     case 'full-sync':
@@ -1032,4 +1034,137 @@ async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: 
   }
 
   return { imported: ordersProcessed }
+}
+
+// New function to import Shopify customers to the ShopOpti 'customers' table
+async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: string, credentials: any) {
+  const normalizedDomain = normalizeShopifyDomain(credentials.shop_domain)
+  const accessToken = credentials.access_token
+
+  console.log(`Starting customers import to ShopOpti for store: ${storeId}`)
+  
+  // Get user_id from the integration
+  const { data: integration, error: intError } = await supabaseClient
+    .from('integrations')
+    .select('user_id')
+    .eq('id', storeId)
+    .single()
+
+  if (intError || !integration) {
+    throw new Error('Intégration non trouvée')
+  }
+
+  const userId = integration.user_id
+  
+  let allCustomers: any[] = []
+  let nextPageInfo: string | null = null
+  let pageCount = 0
+  const maxPages = 20
+  
+  do {
+    pageCount++
+    console.log(`Fetching customers page ${pageCount}`)
+    
+    let url = `https://${normalizedDomain}/admin/api/2023-10/customers.json?limit=250`
+    if (nextPageInfo) {
+      url += `&page_info=${nextPageInfo}`
+    }
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    allCustomers.push(...(data.customers || []))
+    
+    const linkHeader = response.headers.get('Link')
+    nextPageInfo = null
+    
+    if (linkHeader) {
+      const nextMatch = linkHeader.match(/<[^>]*page_info=([^&>]+)[^>]*>;\s*rel="next"/)
+      if (nextMatch) {
+        nextPageInfo = nextMatch[1]
+      }
+    }
+    
+    console.log(`Page ${pageCount}: ${data.customers?.length || 0} customers, total: ${allCustomers.length}`)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+  } while (nextPageInfo && pageCount < maxPages)
+  
+  console.log(`Total customers fetched: ${allCustomers.length}`)
+  
+  // Insert into 'customers' table (not shopify_customers)
+  const batchSize = 50
+  let importedCount = 0
+  let errorCount = 0
+  
+  for (let i = 0; i < allCustomers.length; i += batchSize) {
+    const batch = allCustomers.slice(i, i + batchSize)
+    
+    for (const customer of batch) {
+      try {
+        const customerData = {
+          user_id: userId,
+          email: customer.email,
+          first_name: customer.first_name || null,
+          last_name: customer.last_name || null,
+          phone: customer.phone || null,
+          address_line1: customer.default_address?.address1 || null,
+          address_line2: customer.default_address?.address2 || null,
+          city: customer.default_address?.city || null,
+          state: customer.default_address?.province || null,
+          postal_code: customer.default_address?.zip || null,
+          country: customer.default_address?.country || null,
+          total_orders: customer.orders_count || 0,
+          total_spent: parseFloat(customer.total_spent || '0'),
+          tags: customer.tags ? customer.tags.split(',').map((t: string) => t.trim()) : [],
+          notes: `Importé depuis Shopify (ID: ${customer.id})`,
+          accepts_marketing: customer.accepts_marketing || false
+        }
+
+        // Only insert if email exists
+        if (customerData.email) {
+          const { error: upsertError } = await supabaseClient
+            .from('customers')
+            .upsert(customerData, { 
+              onConflict: 'email,user_id',
+              ignoreDuplicates: false 
+            })
+
+          if (upsertError) {
+            console.error('Error upserting customer:', upsertError)
+            errorCount++
+          } else {
+            importedCount++
+          }
+        }
+      } catch (err) {
+        console.error('Error processing customer:', err)
+        errorCount++
+      }
+    }
+    
+    console.log(`Processed ${i + batch.length}/${allCustomers.length} customers`)
+  }
+  
+  console.log(`Import complete: ${importedCount} imported, ${errorCount} errors`)
+  
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: `${importedCount} clients importés avec succès`,
+      imported_count: importedCount,
+      error_count: errorCount,
+      total_fetched: allCustomers.length
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
 }
