@@ -53,41 +53,15 @@ export function ProductsQuickActionsBar({
     }
   }
 
-  const quickActions: ChannableQuickAction[] = [
-    {
-      id: 'add-product',
-      label: 'Nouveau produit',
-      icon: Plus,
-      onClick: () => navigate('/products/create'),
-      variant: 'primary'
-    },
-    {
-      id: 'import',
-      label: 'Importer',
-      icon: Upload,
-      onClick: () => navigate('/import/quick'),
-      description: 'CSV/Excel'
-    },
-    {
-      id: 'export',
-      label: 'Exporter',
-      icon: Download,
-      onClick: handleExport,
-      description: 'Télécharger CSV'
-    },
+  // Actions principales à gauche (sans Nouveau produit ni Audit Images)
+  const leftActions: ChannableQuickAction[] = [
     {
       id: 'enrich',
       label: 'Enrichir IA',
       icon: Wand2,
       onClick: onEnrich,
+      variant: 'primary',
       description: 'Optimisation'
-    },
-    {
-      id: 'image-audit',
-      label: 'Audit Images',
-      icon: Image,
-      onClick: () => navigate('/products/image-audit'),
-      description: 'Enrichir galeries'
     },
     {
       id: 'refresh',
@@ -100,9 +74,12 @@ export function ProductsQuickActionsBar({
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-      <ChannableQuickActions actions={quickActions} variant="compact" />
+      {/* Actions gauche */}
+      <ChannableQuickActions actions={leftActions} variant="compact" />
       
-      <div className="flex flex-wrap gap-2">
+      {/* Actions droite */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Boutons Standard / Audit */}
         <Button
           variant={viewMode === 'standard' ? 'default' : 'outline'}
           onClick={() => onViewModeChange('standard')}
@@ -121,6 +98,11 @@ export function ProductsQuickActionsBar({
           <Target className="h-4 w-4" />
           Audit
         </Button>
+        
+        {/* Séparateur visuel */}
+        <div className="h-6 w-px bg-border mx-1" />
+        
+        {/* Toggle Expert (sans Simple) */}
         <Button
           variant={expertMode ? 'default' : 'outline'}
           onClick={() => onExpertModeChange(!expertMode)}
@@ -128,9 +110,31 @@ export function ProductsQuickActionsBar({
           className="gap-2"
         >
           <Sparkles className="h-4 w-4" />
-          {expertMode ? 'Expert' : 'Simple'}
+          Audit expert
         </Button>
         
+        {/* Séparateur visuel */}
+        <div className="h-6 w-px bg-border mx-1" />
+        
+        {/* Importer / Exporter / Filtres ensemble */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() => navigate('/import/quick')}
+        >
+          <Upload className="h-4 w-4" />
+          Importer
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={handleExport}
+        >
+          <Download className="h-4 w-4" />
+          Exporter
+        </Button>
         <Button 
           variant="outline" 
           size="sm" 
