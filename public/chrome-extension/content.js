@@ -31,6 +31,12 @@ class DropCraftContentScript {
     grabberScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(grabberScript);
     
+    // Inject reviews extractor for advanced review import
+    const reviewsScript = document.createElement('script');
+    reviewsScript.src = chrome.runtime.getURL('reviews-extractor.js');
+    reviewsScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(reviewsScript);
+    
     // Inject fulfillment tools
     const fulfillmentScript = document.createElement('script');
     fulfillmentScript.src = chrome.runtime.getURL('fulfillment.js');
