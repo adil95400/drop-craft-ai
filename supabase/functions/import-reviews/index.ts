@@ -56,13 +56,40 @@ serve(async (req) => {
       }
       userId = user.id
     } else if (extensionToken) {
-      const { data: tokenData, error: tokenError } = await supabase
-        .from('extension_tokens')
-        .select('user_id, is_active')
+      // Try extension_auth_tokens first (primary table)
+      let tokenData = null
+      let tokenError = null
+      
+      const { data: authTokenData, error: authTokenError } = await supabase
+        .from('extension_auth_tokens')
+        .select('user_id, is_active, expires_at')
         .eq('token', extensionToken)
+        .eq('is_active', true)
         .single()
       
-      if (tokenError || !tokenData?.is_active) {
+      if (authTokenData) {
+        // Check expiration
+        if (authTokenData.expires_at && new Date(authTokenData.expires_at) < new Date()) {
+          return new Response(JSON.stringify({ error: 'Token expired' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        tokenData = authTokenData
+      } else {
+        // Fallback to legacy extension_tokens table
+        const { data: legacyToken, error: legacyError } = await supabase
+          .from('extension_tokens')
+          .select('user_id, is_active')
+          .eq('token', extensionToken)
+          .single()
+        
+        tokenData = legacyToken
+        tokenError = legacyError
+      }
+      
+      if (!tokenData || tokenData?.is_active === false) {
+        console.error('[import-reviews] Token validation failed:', tokenError || authTokenError)
         return new Response(JSON.stringify({ error: 'Invalid extension token' }), {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -146,16 +173,18 @@ serve(async (req) => {
     if (action === 'import') {
       const { reviews, productId, options = {} } = body as { 
         reviews: Review[], 
-        productId: string, 
+        productId: string | null, 
         options: ImportOptions 
       }
       
-      if (!reviews || !productId) {
-        return new Response(JSON.stringify({ error: 'Missing reviews or productId' }), {
+      if (!reviews || reviews.length === 0) {
+        return new Response(JSON.stringify({ error: 'No reviews provided' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
+      
+      console.log(`[import-reviews] Importing ${reviews.length} reviews for user ${userId}, productId: ${productId || 'pending'}`)
       
       // Apply filters
       let filteredReviews = [...reviews]
@@ -228,7 +257,7 @@ serve(async (req) => {
       // Insert reviews into database
       const reviewsToInsert = filteredReviews.map(review => ({
         user_id: userId,
-        product_id: productId,
+        product_id: productId || null,
         author: review.author || 'Anonymous',
         rating: review.rating,
         content: review.content,
@@ -239,58 +268,80 @@ serve(async (req) => {
         helpful_count: review.helpful_count || 0,
         country: review.country,
         variant: review.variant,
-        source: 'import',
+        source: 'extension_import',
         created_at: new Date().toISOString()
       }))
       
-      const { data: insertedReviews, error: insertError } = await supabase
+      console.log(`[import-reviews] Inserting ${reviewsToInsert.length} reviews into product_reviews`)
+      
+      let importedCount = 0
+      let insertError = null
+      
+      // Try product_reviews table first
+      const { data: insertedReviews, error: reviewsError } = await supabase
         .from('product_reviews')
         .insert(reviewsToInsert)
         .select('id')
       
-      if (insertError) {
-        // Table might not exist, create it dynamically or log
-        console.error('Error inserting reviews:', insertError)
+      if (reviewsError) {
+        console.error('[import-reviews] product_reviews insert error:', reviewsError)
+        insertError = reviewsError
         
-        // Fallback: store in imported_products metadata
-        const { error: updateError } = await supabase
-          .from('imported_products')
-          .update({
-            reviews: filteredReviews,
-            reviews_count: filteredReviews.length
+        // Fallback: store in extension_data for later processing
+        const { data: extensionData, error: extError } = await supabase
+          .from('extension_data')
+          .insert({
+            user_id: userId,
+            data_type: 'reviews_import',
+            data: { reviews: filteredReviews, productId },
+            status: 'pending',
+            source_url: ''
           })
-          .eq('id', productId)
+          .select('id')
+          .single()
         
-        if (updateError) {
+        if (extError) {
+          console.error('[import-reviews] extension_data fallback error:', extError)
           return new Response(JSON.stringify({ 
             error: 'Failed to save reviews',
-            details: updateError.message 
+            details: extError.message 
           }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
+        
+        importedCount = filteredReviews.length
+        console.log(`[import-reviews] Reviews saved to extension_data: ${extensionData.id}`)
+      } else {
+        importedCount = insertedReviews?.length || filteredReviews.length
+        console.log(`[import-reviews] Successfully inserted ${importedCount} reviews`)
       }
       
       // Log activity
-      await supabase.from('activity_logs').insert({
-        user_id: userId,
-        action: 'reviews_imported',
-        description: `${filteredReviews.length} avis importés pour le produit`,
-        entity_type: 'product',
-        entity_id: productId,
-        source: 'extension',
-        details: {
-          count: filteredReviews.length,
-          withPhotos: filteredReviews.filter(r => r.images?.length).length,
-          averageRating: filteredReviews.reduce((s, r) => s + r.rating, 0) / filteredReviews.length
-        }
-      })
+      try {
+        await supabase.from('activity_logs').insert({
+          user_id: userId,
+          action: 'reviews_imported',
+          description: `${importedCount} avis importés${productId ? ' pour le produit' : ''}`,
+          entity_type: 'review',
+          entity_id: productId || null,
+          source: 'extension',
+          details: {
+            count: importedCount,
+            withPhotos: filteredReviews.filter(r => r.images?.length).length,
+            averageRating: filteredReviews.reduce((s, r) => s + r.rating, 0) / filteredReviews.length
+          }
+        })
+      } catch (logError) {
+        console.warn('[import-reviews] Activity log failed:', logError)
+      }
       
       return new Response(JSON.stringify({
         success: true,
-        imported: filteredReviews.length,
-        message: `${filteredReviews.length} avis importés avec succès`
+        imported: importedCount,
+        message: `${importedCount} avis importés avec succès`,
+        savedToFallback: !!insertError
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })

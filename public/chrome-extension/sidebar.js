@@ -533,40 +533,68 @@
     async extractProductData() {
       const platform = this.platform?.key;
       
-      // Common selectors for different platforms
-      const selectors = {
-        title: [
-          'h1', '.product-title', '#productTitle', '[data-testid="product-title"]',
-          '.product-title-text', '.pdp-mod-product-badge-title'
-        ],
-        price: [
-          '.price', '[class*="price"]', '.product-price', '[data-testid*="price"]',
-          '.a-price-current', '.pdp-price'
-        ],
-        originalPrice: [
-          '.original-price', '[class*="original"]', '.price-original',
-          '.a-price-regular', '.price-del'
-        ],
-        image: [
-          'img[src*="product"]', '.product-image img', '#landingImage',
-          '.main-image img', '[data-testid="product-image"] img',
-          'img[alt*="product"]', '.pdp-mod-image-gallery img'
-        ],
-        rating: [
-          '.rating', '[class*="rating"]', '.star-rating', '.a-icon-star'
-        ],
-        reviews: [
-          '.reviews', '[class*="review"]', '#acrCustomerReviewText'
-        ],
-        orders: [
-          '[class*="order"]', '[class*="sold"]', '.product-sold'
-        ]
+      // Platform-specific selectors
+      const platformSelectors = {
+        aliexpress: {
+          title: ['.product-title-text', 'h1', '[data-pl="product-title"]', '.title--wrap--UUHae_g h1'],
+          price: ['.product-price-value', '.price-current', '.price--currentPriceText--V8_y_b5', '[data-pl="product-price"]'],
+          originalPrice: ['.price-original', '.price-del', '.price--originalText--gxVO5_d'],
+          image: ['.magnifier-image img', '.slider--img--K6MIH9z', '.product-image img', 'img[src*="ae0"]'],
+          rating: ['.product-reviewer-reviews .average-star', '.reviewer--rating--xrWWFzx'],
+          orders: ['[class*="sold"]', '.reviewer--sold--ytPeoEy', '[class*="order"]']
+        },
+        amazon: {
+          title: ['#productTitle', '#title span', 'h1.a-size-large'],
+          price: ['.a-price .a-offscreen', '#priceblock_ourprice', '#priceblock_dealprice', '.a-price-whole', '#corePrice_feature_div .a-offscreen'],
+          originalPrice: ['.a-text-price .a-offscreen', '.priceBlockStrikePriceString'],
+          image: ['#landingImage', '#imgTagWrapperId img', '.imgTagWrapper img', '#main-image-container img'],
+          rating: ['#acrPopover', '.a-icon-star-small span', '#averageCustomerReviews span.a-icon-alt'],
+          orders: ['#acrCustomerReviewText']
+        },
+        temu: {
+          title: ['h1', '[class*="ProductTitle"]', '[class*="goods-title"]'],
+          price: ['[class*="price"]', '[class*="Price"]'],
+          originalPrice: ['[class*="original"]', '[class*="Origin"]'],
+          image: ['[class*="main-image"] img', '[class*="gallery"] img', 'img[src*="temu"]'],
+          rating: ['[class*="rating"]', '[class*="star"]'],
+          orders: ['[class*="sold"]', '[class*="order"]']
+        },
+        ebay: {
+          title: ['h1.x-item-title__mainTitle', '#itemTitle', 'h1[itemprop="name"]'],
+          price: ['#prcIsum', '.x-price-primary span', '[itemprop="price"]', '.x-bin-price__content span'],
+          originalPrice: ['.x-additional-info__textual-display', '.vi-originalPrice'],
+          image: ['#icImg', '.ux-image-carousel-item img', 'img[itemprop="image"]'],
+          rating: ['.ebay-review-start-rating', '[class*="star-rating"]'],
+          orders: ['[class*="sold"]', '.x-quantity__availability']
+        },
+        walmart: {
+          title: ['h1[itemprop="name"]', 'h1.prod-ProductTitle', 'h1'],
+          price: ['[itemprop="price"]', '.price-characteristic', '.price span'],
+          image: ['[data-testid="hero-image-container"] img', '.hover-zoom-hero-image img'],
+          rating: ['[itemprop="ratingValue"]', '.stars-reviews-count-node'],
+          orders: ['[class*="sold"]']
+        }
+      };
+      
+      // Get selectors for current platform or use generic
+      const selectors = platformSelectors[platform] || {
+        title: ['h1', '.product-title', '#productTitle', '[data-testid="product-title"]', '.product-title-text', '.pdp-mod-product-badge-title', '[itemprop="name"]'],
+        price: ['.price', '[class*="price"]', '.product-price', '[data-testid*="price"]', '.a-price-current', '.pdp-price', '[itemprop="price"]'],
+        originalPrice: ['.original-price', '[class*="original"]', '.price-original', '.a-price-regular', '.price-del'],
+        image: ['img[src*="product"]', '.product-image img', '#landingImage', '.main-image img', '[data-testid="product-image"] img', 'img[alt*="product"]', '.pdp-mod-image-gallery img', '[itemprop="image"]'],
+        rating: ['.rating', '[class*="rating"]', '.star-rating', '.a-icon-star', '[itemprop="ratingValue"]'],
+        orders: ['[class*="order"]', '[class*="sold"]', '.product-sold']
       };
       
       const getText = (selectorList) => {
         for (const selector of selectorList) {
           const el = document.querySelector(selector);
-          if (el?.textContent?.trim()) return el.textContent.trim();
+          if (el?.textContent?.trim()) {
+            let text = el.textContent.trim();
+            // Clean up common artifacts
+            text = text.replace(/\s+/g, ' ').trim();
+            return text;
+          }
         }
         return '';
       };
@@ -574,19 +602,35 @@
       const getImage = (selectorList) => {
         for (const selector of selectorList) {
           const el = document.querySelector(selector);
-          if (el?.src) return el.src;
-          if (el?.dataset?.src) return el.dataset.src;
+          if (el) {
+            let src = el.src || el.dataset.src || el.dataset.original || el.getAttribute('data-lazy-src');
+            if (src) {
+              // Clean image URL - get high res version
+              src = src.replace(/_\d+x\d+\./g, '.').replace(/\?.*$/, '');
+              if (src.startsWith('//')) src = 'https:' + src;
+              return src;
+            }
+          }
         }
         return '';
       };
       
       const getPrice = (selectorList) => {
         const text = getText(selectorList);
-        const match = text.match(/[\d,.\s]+/);
-        if (match) {
-          return parseFloat(match[0].replace(/[,\s]/g, '.').replace(/\.(?=.*\.)/g, ''));
+        if (!text) return 0;
+        
+        // Handle various price formats
+        let cleanText = text.replace(/[€$£¥₹₽\s]/g, '');
+        
+        // Handle European format (1.234,56 or 1 234,56)
+        if (cleanText.includes(',') && !cleanText.includes('.')) {
+          return parseFloat(cleanText.replace(',', '.')) || 0;
+        } else if (cleanText.includes(',') && cleanText.includes('.')) {
+          return parseFloat(cleanText.replace(/\./g, '').replace(',', '.')) || 0;
         }
-        return 0;
+        
+        const match = cleanText.match(/[\d.]+/);
+        return match ? parseFloat(match[0]) : 0;
       };
       
       const getRating = () => {
@@ -595,14 +639,47 @@
         return match ? parseFloat(match[1].replace(',', '.')) : null;
       };
       
-      const title = getText(selectors.title);
-      const price = getPrice(selectors.price);
-      const originalPrice = getPrice(selectors.originalPrice);
-      const image = getImage(selectors.image);
-      const rating = getRating();
-      const orders = getText(selectors.orders);
+      // Also try JSON-LD structured data
+      const getFromStructuredData = () => {
+        try {
+          const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+          for (const script of scripts) {
+            const data = JSON.parse(script.textContent);
+            const items = Array.isArray(data) ? data : [data];
+            for (const item of items) {
+              if (item['@type'] === 'Product') {
+                const offer = Array.isArray(item.offers) ? item.offers[0] : item.offers;
+                return {
+                  name: item.name,
+                  price: parseFloat(offer?.price) || 0,
+                  image: Array.isArray(item.image) ? item.image[0] : item.image,
+                  description: item.description,
+                  rating: item.aggregateRating?.ratingValue
+                };
+              }
+            }
+          }
+        } catch (e) {}
+        return null;
+      };
       
-      if (!title) return null;
+      // Try structured data first
+      const structuredData = getFromStructuredData();
+      
+      const title = structuredData?.name || getText(selectors.title);
+      const price = structuredData?.price || getPrice(selectors.price);
+      const originalPrice = getPrice(selectors.originalPrice);
+      const image = structuredData?.image || getImage(selectors.image);
+      const rating = structuredData?.rating || getRating();
+      const orders = getText(selectors.orders);
+      const description = structuredData?.description || '';
+      
+      if (!title) {
+        console.log('[DropCraft] No product title found');
+        return null;
+      }
+      
+      console.log('[DropCraft] Product detected:', { title: title.substring(0, 50), price, image: !!image });
       
       return {
         name: title,
@@ -612,6 +689,7 @@
         image: image,
         rating: rating,
         orders: orders,
+        description: description,
         url: window.location.href,
         platform: this.platform?.name,
         platformKey: this.platform?.key
@@ -709,14 +787,20 @@
         return;
       }
       
-      if (!this.currentProduct) {
-        this.showToast('Aucun produit détecté', 'warning');
-        return;
+      if (!this.currentProduct || !this.currentProduct.name) {
+        // Try to re-detect product
+        await this.detectProduct();
+        
+        if (!this.currentProduct || !this.currentProduct.name) {
+          this.showToast('Aucun produit détecté - naviguez vers une page produit', 'warning');
+          return;
+        }
       }
       
       this.showToast('Import en cours...', 'info');
       
       try {
+        // First try the extension-sync-realtime endpoint
         const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
@@ -728,27 +812,38 @@
             products: [{
               title: this.currentProduct.name,
               name: this.currentProduct.name,
-              price: this.currentProduct.price,
-              image: this.currentProduct.image,
-              url: this.currentProduct.url,
+              price: this.currentProduct.price || 0,
+              image: this.currentProduct.image || '',
+              imageUrl: this.currentProduct.image || '',
+              url: this.currentProduct.url || window.location.href,
               source: 'chrome_extension',
-              platform: this.currentProduct.platformKey
+              platform: this.currentProduct.platformKey || this.platform?.key || 'unknown',
+              description: this.currentProduct.description || '',
+              rating: this.currentProduct.rating || null,
+              originalPrice: this.currentProduct.originalPrice || null
             }]
           })
         });
         
         const result = await response.json();
         
-        if (response.ok && result.imported > 0) {
-          this.showToast(`✅ ${this.currentProduct.name.substring(0, 30)}... importé!`, 'success');
+        console.log('[DropCraft] Import result:', result);
+        
+        if (response.ok && (result.imported > 0 || result.success)) {
+          const productName = this.currentProduct.name.length > 30 
+            ? this.currentProduct.name.substring(0, 30) + '...' 
+            : this.currentProduct.name;
+          this.showToast(`✅ "${productName}" importé!`, 'success');
           
           // Add to history
           this.addToHistory(this.currentProduct);
         } else {
-          throw new Error(result.error || 'Erreur d\'import');
+          const errorMsg = result.error || result.errors?.[0]?.error || 'Erreur d\'import';
+          console.error('[DropCraft] Import error:', result);
+          throw new Error(errorMsg);
         }
       } catch (error) {
-        console.error('Import error:', error);
+        console.error('[DropCraft] Import error:', error);
         this.showToast(`❌ ${error.message}`, 'error');
       }
     }
@@ -790,7 +885,14 @@
     }
 
     async importReviews() {
-      this.showToast('Import des avis... (Bientôt disponible)', 'info');
+      if (!this.isConnected) {
+        this.showToast('Veuillez vous connecter d\'abord', 'warning');
+        return;
+      }
+      
+      // Show reviews panel
+      window.postMessage({ type: 'SHOW_REVIEWS_PANEL' }, '*');
+      this.showToast('Panneau d\'avis ouvert', 'info');
     }
 
     async startMonitoring() {
