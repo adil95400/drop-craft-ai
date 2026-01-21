@@ -3,7 +3,7 @@
  */
 import { memo } from 'react'
 import { cn } from '@/lib/utils'
-import shopoptiLogo from '@/assets/shopopti-logo.png'
+import logoSvg from '@/assets/logo.svg'
 
 interface SidebarLogoProps {
   collapsed?: boolean
@@ -16,8 +16,8 @@ export const SidebarLogo = memo<SidebarLogoProps>(({ collapsed = false, classNam
       <div className={cn("flex items-center justify-center", className)}>
         <div className="relative group cursor-pointer">
           <img 
-            src={shopoptiLogo} 
-            alt="ShopOpti" 
+            src={logoSvg} 
+            alt="Shopopti+" 
             className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-105"
           />
         </div>
@@ -28,8 +28,8 @@ export const SidebarLogo = memo<SidebarLogoProps>(({ collapsed = false, classNam
   return (
     <div className={cn("flex items-center gap-3 group cursor-pointer", className)}>
       <img 
-        src={shopoptiLogo} 
-        alt="ShopOpti" 
+        src={logoSvg} 
+        alt="Shopopti+" 
         className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
       />
     </div>
