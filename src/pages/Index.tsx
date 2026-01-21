@@ -12,7 +12,6 @@ import { StickyCtaBar } from "@/components/landing/StickyCtaBar";
 import { LiveDemoPreview } from "@/components/landing/LiveDemoPreview";
 import { TestimonialsWithPhotos } from "@/components/landing/TestimonialsWithPhotos";
 import { InteractiveDemo } from "@/components/landing/InteractiveDemo";
-import { LiveDemoPreview } from "@/components/landing/LiveDemoPreview";
 // Hero images in public folder for LCP discovery
 const heroImage = "/images/hero-automation.jpg";
 const heroImageSm = "/images/hero-automation-sm.jpg";
