@@ -1174,8 +1174,7 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
           total_orders: customer.orders_count || 0,
           total_spent: parseFloat(customer.total_spent || '0'),
           tags: existingTags,
-          notes: `${customerType} - Importé depuis Shopify (ID: ${customer.id})${isPlaceholderEmail ? ' - Email manquant dans Shopify' : ''}`,
-          accepts_marketing: customer.accepts_marketing || false
+          notes: `${customerType} - Importé depuis Shopify (ID: ${customer.id})${isPlaceholderEmail ? ' - Email manquant dans Shopify' : ''}${customer.accepts_marketing ? ' - Accepte marketing' : ''}`
         }
 
         const { error: upsertError } = await supabaseClient

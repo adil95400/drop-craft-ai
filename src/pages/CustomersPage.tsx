@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import {
   Table,
@@ -87,6 +89,8 @@ export default function CustomersPage() {
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
   const [showImportDialog, setShowImportDialog] = useState(false)
+  const [showAddDialog, setShowAddDialog] = useState(false)
+  const [newCustomer, setNewCustomer] = useState({ first_name: '', last_name: '', email: '', phone: '' })
 
   const { data: customers, isLoading, refetch } = useQuery({
     queryKey: ['customers'],
@@ -143,6 +147,42 @@ export default function CustomersPage() {
     toast({ title: `${customers.length} clients exportés` })
   }
 
+  const handleAddCustomer = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast({ title: 'Erreur', description: 'Vous devez être connecté', variant: 'destructive' })
+        return
+      }
+      
+      if (!newCustomer.email) {
+        toast({ title: 'Erreur', description: 'L\'email est requis', variant: 'destructive' })
+        return
+      }
+
+      const { error } = await supabase
+        .from('customers')
+        .insert({
+          user_id: user.id,
+          first_name: newCustomer.first_name,
+          last_name: newCustomer.last_name,
+          email: newCustomer.email,
+          phone: newCustomer.phone || null,
+          total_orders: 0,
+          total_spent: 0
+        })
+
+      if (error) throw error
+
+      toast({ title: 'Client ajouté avec succès' })
+      setNewCustomer({ first_name: '', last_name: '', email: '', phone: '' })
+      setShowAddDialog(false)
+      refetch()
+    } catch (error: any) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' })
+    }
+  }
+
   return (
     <ChannablePageWrapper
       title="Gestion Clients"
@@ -163,7 +203,10 @@ export default function CustomersPage() {
             <Store className="h-4 w-4" />
             Importer depuis Shopify
           </Button>
-          <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25">
+          <Button 
+            onClick={() => setShowAddDialog(true)}
+            className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
+          >
             <UserPlus className="h-4 w-4" />
             Nouveau client
           </Button>
@@ -390,6 +433,60 @@ export default function CustomersPage() {
         onOpenChange={setShowImportDialog}
         onSuccess={() => refetch()}
       />
+
+      {/* Add Customer Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ajouter un nouveau client</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="first_name">Prénom</Label>
+              <Input
+                id="first_name"
+                value={newCustomer.first_name}
+                onChange={(e) => setNewCustomer({ ...newCustomer, first_name: e.target.value })}
+                placeholder="Jean"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="last_name">Nom</Label>
+              <Input
+                id="last_name"
+                value={newCustomer.last_name}
+                onChange={(e) => setNewCustomer({ ...newCustomer, last_name: e.target.value })}
+                placeholder="Dupont"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newCustomer.email}
+                onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                placeholder="jean.dupont@email.com"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Téléphone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={newCustomer.phone}
+                onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                placeholder="+33 6 12 34 56 78"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Annuler</Button>
+            <Button onClick={handleAddCustomer}>Ajouter</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ChannablePageWrapper>
   )
 }
