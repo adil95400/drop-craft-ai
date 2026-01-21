@@ -257,31 +257,46 @@ export const TestDataGenerator = () => {
 
     setDeleting(true);
     try {
-      // Delete test orders
-      await supabase
+      // Delete test orders - filter by order_number prefix for test data
+      const { data: testOrders } = await supabase
         .from('orders')
-        .delete()
+        .select('id, order_number')
         .eq('user_id', user.id)
-        .eq('is_test_data', true);
+        .like('order_number', 'TEST-%');
+      
+      if (testOrders && testOrders.length > 0) {
+        await supabase
+          .from('orders')
+          .delete()
+          .in('id', testOrders.map(o => o.id));
+      }
 
-      // Delete test products
-      await supabase
+      // Delete test products - filter by SKU prefix for test data
+      const { data: testProducts } = await supabase
         .from('products')
-        .delete()
+        .select('id, sku')
         .eq('user_id', user.id)
-        .contains('tags', ['test-data']);
+        .like('sku', 'TEST-SKU-%');
 
-      // Delete test customers  
+      if (testProducts && testProducts.length > 0) {
+        await supabase
+          .from('products')
+          .delete()
+          .in('id', testProducts.map(p => p.id));
+      }
+
+      // Delete test customers - filter by email pattern  
       const { data: testCustomers } = await supabase
         .from('customers')
-        .select('id')
-        .eq('user_id', user.id);
+        .select('id, email')
+        .eq('user_id', user.id)
+        .like('email', '%@test.com');
       
       if (testCustomers && testCustomers.length > 0) {
         await supabase
           .from('customers')
           .delete()
-          .in('id', testCustomers.filter(c => c.id).map(c => c.id));
+          .in('id', testCustomers.map(c => c.id));
       }
 
       toast.success('Données de test supprimées');
