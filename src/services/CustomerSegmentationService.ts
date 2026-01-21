@@ -21,7 +21,7 @@ export interface CustomerSegment {
 
 export interface SegmentRule {
   field: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'in';
+  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'in' | 'within_days' | 'older_than_days' | 'between';
   value: any;
 }
 
@@ -50,6 +50,204 @@ export interface RFMScore {
   calculated_at: string;
   customer?: { first_name: string; last_name: string; email: string };
 }
+
+// Modèles de segments inspirés de Shopify
+export interface SegmentTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: 'value' | 'behavior' | 'location' | 'engagement';
+  rules: SegmentRule[];
+  icon: string;
+}
+
+export const SEGMENT_TEMPLATES: SegmentTemplate[] = [
+  // Catégorie: Valeur client
+  {
+    id: 'high-spenders-recent',
+    name: 'Clients ayant récemment dépensé un montant élevé',
+    description: 'Effectuez des ventes croisées avec les clients qui ont dépensé beaucoup et qui ont passé une commande au cours des 90 derniers jours.',
+    category: 'value',
+    rules: [
+      { field: 'total_spent', operator: 'greater_than', value: 500 },
+      { field: 'last_order_date', operator: 'within_days', value: 90 }
+    ],
+    icon: 'DollarSign'
+  },
+  {
+    id: 'vip-customers',
+    name: 'Interagissez avec vos clients VIP',
+    description: 'Offrez à vos clients VIP un accès anticipé aux événements promotionnels, aux ventes et aux nouveaux produits.',
+    category: 'value',
+    rules: [
+      { field: 'total_spent', operator: 'greater_than', value: 1000 },
+      { field: 'orders_count', operator: 'greater_than', value: 5 }
+    ],
+    icon: 'Crown'
+  },
+  {
+    id: 'high-potential',
+    name: 'Clients susceptibles de dépenser plus sur votre boutique',
+    description: 'Le niveau de dépenses prévu correspond à une estimation du potentiel de dépenses futures de votre client, classé par niveau : élevé, moyen ou faible.',
+    category: 'value',
+    rules: [
+      { field: 'avg_order_value', operator: 'greater_than', value: 100 },
+      { field: 'orders_count', operator: 'between', value: '2-5' }
+    ],
+    icon: 'TrendingUp'
+  },
+  
+  // Catégorie: Comportement d'achat
+  {
+    id: 'many-orders-recent',
+    name: 'Clients ayant passé récemment de nombreuses commandes',
+    description: 'Engagez-vous auprès des clients qui ont récemment passé de nombreuses commandes. Offrez-leur une expédition gratuite sur leur prochaine commande pour les encourager à acheter à nouveau.',
+    category: 'behavior',
+    rules: [
+      { field: 'orders_count', operator: 'greater_than', value: 3 },
+      { field: 'last_order_date', operator: 'within_days', value: 180 }
+    ],
+    icon: 'ShoppingCart'
+  },
+  {
+    id: 'loyal-with-tag',
+    name: 'Clients fidèles ayant acheté des produits portant une balise spécifique',
+    description: 'Vente incitative aux clients qui ont beaucoup dépensé dans votre boutique et qui ont acheté des produits portant une balise spécifique.',
+    category: 'behavior',
+    rules: [
+      { field: 'total_spent', operator: 'greater_than', value: 300 },
+      { field: 'product_tags', operator: 'contains', value: '' }
+    ],
+    icon: 'Tag'
+  },
+  {
+    id: 'recent-purchasers',
+    name: 'Clients fidèles ayant récemment effectué un achat',
+    description: 'Informez vos clients par e-mail du lancement de nouveaux produits en fonction du montant qu\'ils ont dépensé et de la date de leur dernière commande.',
+    category: 'behavior',
+    rules: [
+      { field: 'last_order_date', operator: 'within_days', value: 30 },
+      { field: 'total_spent', operator: 'greater_than', value: 200 }
+    ],
+    icon: 'Clock'
+  },
+  {
+    id: 'frequent-buyers-yearly',
+    name: 'Clients ayant fréquemment effectué des achats en boutique au cours de l\'année écoulée',
+    description: 'Récompensez et fidélisez vos clients les plus fidèles en boutique avec des offres ou des événements exclusifs.',
+    category: 'behavior',
+    rules: [
+      { field: 'orders_count_year', operator: 'greater_than', value: 4 },
+      { field: 'last_order_date', operator: 'within_days', value: 365 }
+    ],
+    icon: 'Calendar'
+  },
+  {
+    id: 'abandoned-cart',
+    name: 'Clients avec panier abandonné',
+    description: 'Relancez les clients qui ont ajouté des produits au panier sans finaliser leur commande.',
+    category: 'behavior',
+    rules: [
+      { field: 'has_abandoned_cart', operator: 'equals', value: true }
+    ],
+    icon: 'ShoppingBag'
+  },
+  
+  // Catégorie: Localisation
+  {
+    id: 'specific-country',
+    name: 'Clients dans un pays spécifique',
+    description: 'Tous les clients ayant une adresse d\'expédition ou de facturation dans un pays spécifique.',
+    category: 'location',
+    rules: [
+      { field: 'country', operator: 'equals', value: '' }
+    ],
+    icon: 'Globe'
+  },
+  {
+    id: 'specific-region',
+    name: 'Clients dans un état ou province spécifique',
+    description: 'Tous les clients ayant une adresse d\'expédition ou de facturation dans un état, province ou autre localité spécifique.',
+    category: 'location',
+    rules: [
+      { field: 'region', operator: 'equals', value: '' }
+    ],
+    icon: 'Map'
+  },
+  {
+    id: 'specific-city',
+    name: 'Clients dans une ville spécifique',
+    description: 'Tous les clients ayant une adresse d\'expédition ou de facturation dans une ville spécifique.',
+    category: 'location',
+    rules: [
+      { field: 'city', operator: 'equals', value: '' }
+    ],
+    icon: 'MapPin'
+  },
+  {
+    id: 'nearby-store',
+    name: 'Clients à proximité du point de vente physique',
+    description: 'Augmentez le trafic vers votre point de vente physique en ciblant les clients habitant à proximité.',
+    category: 'location',
+    rules: [
+      { field: 'distance_to_store', operator: 'less_than', value: 50 }
+    ],
+    icon: 'Store'
+  },
+  
+  // Catégorie: Engagement
+  {
+    id: 'email-subscribers',
+    name: 'Abonnés à la newsletter',
+    description: 'Clients qui ont accepté de recevoir des e-mails marketing de votre boutique.',
+    category: 'engagement',
+    rules: [
+      { field: 'email_subscribed', operator: 'equals', value: true }
+    ],
+    icon: 'Mail'
+  },
+  {
+    id: 'inactive-customers',
+    name: 'Clients inactifs',
+    description: 'Clients qui n\'ont pas passé de commande depuis plus de 6 mois. Réengagez-les avec une offre spéciale.',
+    category: 'engagement',
+    rules: [
+      { field: 'last_order_date', operator: 'older_than_days', value: 180 }
+    ],
+    icon: 'UserMinus'
+  },
+  {
+    id: 'first-time-buyers',
+    name: 'Nouveaux clients',
+    description: 'Clients qui ont effectué leur première commande. Accueillez-les et encouragez un deuxième achat.',
+    category: 'engagement',
+    rules: [
+      { field: 'orders_count', operator: 'equals', value: 1 }
+    ],
+    icon: 'UserPlus'
+  },
+  {
+    id: 'at-risk-customers',
+    name: 'Clients à risque de churn',
+    description: 'Clients fidèles qui n\'ont pas commandé récemment. Réactivez-les avant qu\'ils ne partent.',
+    category: 'engagement',
+    rules: [
+      { field: 'orders_count', operator: 'greater_than', value: 3 },
+      { field: 'last_order_date', operator: 'older_than_days', value: 90 }
+    ],
+    icon: 'AlertTriangle'
+  },
+  {
+    id: 'shop-app-purchasers',
+    name: 'Clients ayant réalisé un achat via l\'application Shop',
+    description: 'Rétablissez le contact avec les clients ayant acheté via l\'application Shop en leur envoyant des suggestions personnalisées et des offres exclusives.',
+    category: 'engagement',
+    rules: [
+      { field: 'purchase_channel', operator: 'equals', value: 'shop_app' }
+    ],
+    icon: 'Smartphone'
+  }
+];
 
 export const CustomerSegmentationService = {
   // Segments
