@@ -12,46 +12,73 @@
 
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
+    APP_URL: 'https://shopopti.io',
     MAX_SELECTION: 100,
     PLATFORMS: {
       'aliexpress': {
-        listingPage: ['/wholesale', '/category', 'SearchText=', '/w/'],
-        productCard: '.search-item-card-wrapper-gallery, .list--gallery--34TropR, [data-widget-type="search"]',
-        title: 'h1, .multi--titleText--nXeOvyr, .manhattan--titleText--WccHjR6',
-        price: '.multi--price-sale--U-S0jtj, .manhattan--price-sale--1CCSZfK',
-        image: '.images--imageWindow--1Z-J9gn img, .manhattan--image--2R6Y3dg img',
-        link: 'a[href*="/item/"]',
-        orders: '.multi--trade--Ktbl2jB, .manhattan--trade--29OoFSY',
-        rating: '.multi--starIconContainer--2tNYp3F'
+        listingPage: ['/wholesale', '/category', 'SearchText=', '/w/', '/gcp/'],
+        productCard: '.search-item-card-wrapper-gallery, .list--gallery--34TropR, [data-widget-type="search"], .search-card-item, .product-snippet, [class*="SearchProduct"], [class*="gallery-card"], [class*="list--galley"]',
+        productPage: ['/item/', '/i/'],
+        title: '.multi--titleText--nXeOvyr, .manhattan--titleText--WccHjR6, h1, [class*="title"], .title--wrap--UUHae_g h1',
+        price: '.multi--price-sale--U-S0jtj, .manhattan--price-sale--1CCSZfK, [class*="price-current"], [class*="price-sale"]',
+        image: '.images--imageWindow--1Z-J9gn img, .manhattan--image--2R6Y3dg img, .slider--img--K6MIH9z img, img[src*="ae0"]',
+        link: 'a[href*="/item/"], a[href*="/i/"]',
+        orders: '.multi--trade--Ktbl2jB, .manhattan--trade--29OoFSY, [class*="sold"]',
+        rating: '.multi--starIconContainer--2tNYp3F, [class*="rating"]'
       },
       'amazon': {
         listingPage: ['/s?', '/s/', 'keywords='],
-        productCard: '[data-component-type="s-search-result"]',
-        title: 'h2 span',
-        price: '.a-price-whole',
-        image: '.s-image',
-        link: 'a.a-link-normal[href*="/dp/"]',
-        orders: '',
+        productCard: '[data-component-type="s-search-result"], .s-result-item',
+        productPage: ['/dp/', '/gp/product/'],
+        title: 'h2 span, .s-title-instructions-style span',
+        price: '.a-price-whole, .a-offscreen',
+        image: '.s-image, img.s-image',
+        link: 'a.a-link-normal[href*="/dp/"], a[href*="/dp/"]',
+        orders: '.a-size-base.s-underline-text',
         rating: '.a-icon-alt'
       },
       'temu': {
         listingPage: ['/search_result', '/channel/', '/category/'],
-        productCard: '._2BUQJ_w2, [data-testid="goods-item"]',
-        title: '._2G7NFXUf, ._1VOXlKK6',
-        price: '._2RL5rSJD, ._3-xKlY6e',
-        image: '._3tKlrXZ8 img',
+        productCard: '._2BUQJ_w2, [data-testid="goods-item"], [class*="ProductCard"]',
+        productPage: ['/goods/', '/product/'],
+        title: '._2G7NFXUf, ._1VOXlKK6, [class*="ProductTitle"]',
+        price: '._2RL5rSJD, ._3-xKlY6e, [class*="Price"]',
+        image: '._3tKlrXZ8 img, img[src*="temu"]',
         link: 'a',
-        orders: '',
-        rating: ''
+        orders: '[class*="sold"]',
+        rating: '[class*="rating"]'
       },
       'ebay': {
         listingPage: ['/sch/', '/b/', 'LH_BIN='],
-        productCard: '.s-item, [data-view="mi:1686|iid:1"]',
-        title: '.s-item__title',
+        productCard: '.s-item, [data-view*="mi:"], .srp-results .s-item__wrapper',
+        productPage: ['/itm/'],
+        title: '.s-item__title, h3.s-item__title',
         price: '.s-item__price',
         image: '.s-item__image img',
-        link: '.s-item__link',
+        link: '.s-item__link, a.s-item__link',
         orders: '.s-item__quantitySold',
+        rating: ''
+      },
+      'walmart': {
+        listingPage: ['/search?', '/browse/'],
+        productCard: '[data-testid="list-view"], [data-item-id]',
+        productPage: ['/ip/'],
+        title: '[class*="product-title"], span[data-automation-id="product-title"]',
+        price: '[data-automation-id="product-price"] span, [class*="price"]',
+        image: 'img[data-testid*="image"], img[loading="lazy"]',
+        link: 'a[link-identifier]',
+        orders: '',
+        rating: ''
+      },
+      'etsy': {
+        listingPage: ['/search?', '/c/'],
+        productCard: '[data-search-results] .v2-listing-card',
+        productPage: ['/listing/'],
+        title: 'h3',
+        price: 'span[class*="price"]',
+        image: 'img',
+        link: 'a',
+        orders: '',
         rating: ''
       }
     }
@@ -87,6 +114,24 @@
       if (!this.selectors?.listingPage) return false;
       const url = window.location.href;
       return this.selectors.listingPage.some(indicator => url.includes(indicator));
+    }
+
+    isProductPage() {
+      if (!this.selectors?.productPage) return false;
+      const url = window.location.href;
+      return this.selectors.productPage.some(indicator => url.includes(indicator));
+    }
+
+    async getToken() {
+      return new Promise((resolve) => {
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.get(['extensionToken'], (result) => {
+            resolve(result.extensionToken || null);
+          });
+        } else {
+          resolve(null);
+        }
+      });
     }
 
     injectUI() {
@@ -645,6 +690,145 @@
           this.activate();
         }
       });
+      
+      // Also inject import buttons on listing pages immediately
+      this.injectImportButtons();
+    }
+
+    // NEW: Inject import buttons on every product card (catalog pages)
+    injectImportButtons() {
+      if (!this.platform || !this.isListingPage()) return;
+      
+      const cards = document.querySelectorAll(this.selectors.productCard);
+      
+      cards.forEach((card, index) => {
+        if (card.querySelector('.dc-quick-import-btn')) return;
+        
+        // Make container relative if needed
+        const computedStyle = window.getComputedStyle(card);
+        if (computedStyle.position === 'static') {
+          card.style.position = 'relative';
+        }
+        
+        const btn = document.createElement('button');
+        btn.className = 'dc-quick-import-btn';
+        btn.innerHTML = '📥 Import';
+        btn.style.cssText = `
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 8px 14px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          z-index: 1000;
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        `;
+        
+        btn.addEventListener('mouseenter', () => {
+          btn.style.transform = 'translateY(-2px)';
+          btn.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.5)';
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translateY(0)';
+          btn.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.4)';
+        });
+        
+        btn.onclick = async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          await this.quickImportFromCard(card, index);
+        };
+        
+        card.appendChild(btn);
+      });
+      
+      // Observe for new products (infinite scroll)
+      if (!this.buttonObserver) {
+        this.buttonObserver = new MutationObserver(() => {
+          this.injectImportButtons();
+        });
+        
+        this.buttonObserver.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      }
+    }
+
+    async quickImportFromCard(card, index) {
+      const productData = this.extractProductData(card);
+      const btn = card.querySelector('.dc-quick-import-btn');
+      
+      if (btn) {
+        btn.innerHTML = '⏳';
+        btn.disabled = true;
+      }
+      
+      this.showToast('Import en cours...', 'info');
+      
+      try {
+        const token = await this.getToken();
+        
+        const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(token && { 'x-extension-token': token })
+          },
+          body: JSON.stringify({
+            action: 'import_products',
+            products: [{
+              title: productData.title,
+              name: productData.title,
+              price: productData.price || 0,
+              image: productData.image || '',
+              imageUrl: productData.image || '',
+              images: productData.images || [],
+              url: productData.url || window.location.href,
+              source: 'chrome_extension_catalog',
+              platform: this.platform,
+              orders: productData.orders || '',
+              rating: productData.rating || ''
+            }]
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && (result.imported > 0 || result.success)) {
+          if (btn) {
+            btn.innerHTML = '✅';
+            btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+          }
+          this.showToast(`✓ "${productData.title.substring(0, 30)}..." importé!`, 'success');
+        } else {
+          throw new Error(result.error || 'Erreur');
+        }
+      } catch (error) {
+        if (btn) {
+          btn.innerHTML = '❌';
+          btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        }
+        this.showToast('Erreur lors de l\'import: ' + error.message, 'error');
+        
+        // Reset button after 2s
+        setTimeout(() => {
+          if (btn) {
+            btn.innerHTML = '📥 Import';
+            btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            btn.disabled = false;
+          }
+        }, 2000);
+      }
     }
 
     activate() {
@@ -876,6 +1060,8 @@
       let success = 0;
       let failed = 0;
       
+      const token = await this.getToken();
+      
       document.getElementById('dc-bulk-pending').textContent = total;
       document.getElementById('dc-bulk-current').style.display = 'flex';
       
@@ -889,16 +1075,34 @@
         document.getElementById('dc-bulk-progress-fill').style.width = `${((i + 1) / total) * 100}%`;
         
         try {
-          const response = await fetch(`${CONFIG.API_URL}/bulk-import-multi`, {
+          // Use extension-sync-realtime with token for authenticated import
+          const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token && { 'x-extension-token': token })
+            },
             body: JSON.stringify({
-              products: [product],
-              source: 'chrome_extension_bulk'
+              action: 'import_products',
+              products: [{
+                title: product.title,
+                name: product.title,
+                price: product.price || 0,
+                image: product.image || '',
+                imageUrl: product.image || '',
+                images: product.images || [],
+                url: product.url || window.location.href,
+                source: 'chrome_extension_bulk',
+                platform: this.platform,
+                orders: product.orders || '',
+                rating: product.rating || ''
+              }]
             })
           });
           
-          if (response.ok) {
+          const result = await response.json();
+          
+          if (response.ok && (result.imported > 0 || result.success)) {
             success++;
           } else {
             failed++;
@@ -912,7 +1116,7 @@
         document.getElementById('dc-bulk-pending').textContent = total - success - failed;
         
         // Small delay between requests
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 150));
       }
       
       document.getElementById('dc-bulk-current').style.display = 'none';

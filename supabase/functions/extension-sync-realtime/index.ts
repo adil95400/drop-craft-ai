@@ -210,25 +210,36 @@ serve(async (req) => {
             throw jobError
           }
 
-          // Try to create product directly - use correct column names for supplier_products
+          // Insert into imported_products table for proper tracking
           const { data: newProduct, error: productError } = await supabase
-            .from('supplier_products')
+            .from('imported_products')
             .insert({
               user_id: authData.user_id,
-              title: productTitle,
+              name: productTitle,
               price: productPrice,
+              cost_price: productPrice,
               description: (product.description || '').substring(0, 5000),
-              image_url: productImage,
+              image_urls: productImage ? [productImage] : [],
               source_url: product.url || '',
+              source_platform: product.platform || 'extension',
               stock_quantity: 100,
-              is_active: true,
-              category: product.category || null
+              status: 'imported',
+              category: product.category || null,
+              currency: 'EUR',
+              sync_status: 'synced',
+              metadata: {
+                rating: product.rating,
+                orders: product.orders,
+                original_price: product.originalPrice,
+                imported_at: new Date().toISOString(),
+                source: product.source || 'chrome_extension'
+              }
             })
             .select()
             .single()
 
           if (productError) {
-            console.error('[extension-sync-realtime] supplier_products insert error:', productError)
+            console.error('[extension-sync-realtime] imported_products insert error:', productError)
             errors.push({ product: productTitle, error: productError.message })
           } else {
             importResults.push(newProduct)

@@ -900,24 +900,32 @@
     }
 
     injectListingButtons() {
-      // Selectors for product cards on listing pages
-      const listingSelectors = [
-        '[data-component-type="s-search-result"]', // Amazon
-        '.s-item', // eBay
-        '.product-item', '.goods-item', '[data-testid="product-card"]', // Various
-        '.list-item', '.product-card', // Common
-        '.search-card-item', '.product-snippet' // AliExpress
-      ];
+      // Extended selectors for product cards on all listing/catalog pages
+      const listingSelectors = {
+        aliexpress: '.search-item-card-wrapper-gallery, .list--gallery--34TropR, [data-widget-type="search"], .search-card-item, .product-snippet, [class*="SearchProduct"], [class*="gallery-card"], [class*="list--galley"], [class*="list-item"]',
+        amazon: '[data-component-type="s-search-result"], .s-result-item[data-asin]',
+        ebay: '.s-item:not(.s-item__pl-on-bottom), .s-item__wrapper',
+        temu: '._2BUQJ_w2, [data-testid="goods-item"], [class*="ProductCard"]',
+        walmart: '[data-testid="list-view"], [data-item-id], [class*="product-tile"]',
+        etsy: '[data-search-results] .v2-listing-card, .wt-grid__item-xs-6',
+        generic: '.product-item, .product-card, .goods-item, [data-testid="product-card"], .product-snippet'
+      };
       
       let productCards = [];
+      const hostname = window.location.hostname.toLowerCase();
       
-      for (const selector of listingSelectors) {
-        const elements = document.querySelectorAll(selector);
-        if (elements.length > 0) {
-          productCards = Array.from(elements);
-          break;
+      // Try platform-specific selectors first
+      for (const [platform, selector] of Object.entries(listingSelectors)) {
+        if (hostname.includes(platform) || platform === 'generic') {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length > 0) {
+            productCards = [...productCards, ...Array.from(elements)];
+          }
         }
       }
+      
+      // Remove duplicates
+      productCards = [...new Set(productCards)];
       
       productCards.forEach(card => {
         if (card.querySelector('.dc-listing-btn')) return;
@@ -930,54 +938,175 @@
         
         const btn = document.createElement('button');
         btn.className = 'dc-listing-btn';
-        btn.innerHTML = '+ Import';
-        btn.onclick = (e) => {
+        btn.innerHTML = '📥 Import';
+        btn.style.cssText = `
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          z-index: 1000;
+          box-shadow: 0 2px 10px rgba(102, 126, 234, 0.5);
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        `;
+        
+        btn.addEventListener('mouseenter', () => {
+          btn.style.transform = 'scale(1.05)';
+          btn.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.6)';
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'scale(1)';
+          btn.style.boxShadow = '0 2px 10px rgba(102, 126, 234, 0.5)';
+        });
+        
+        btn.onclick = async (e) => {
           e.preventDefault();
           e.stopPropagation();
-          this.importFromCard(card);
+          await this.importFromCard(card, btn);
         };
         
         card.appendChild(btn);
       });
       
-      // Observe for new products
-      const observer = new MutationObserver(() => {
-        this.injectListingButtons();
-      });
-      
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
+      // Observe for new products (infinite scroll / pagination)
+      if (!this.listingObserver) {
+        this.listingObserver = new MutationObserver(() => {
+          setTimeout(() => this.injectListingButtons(), 500);
+        });
+        
+        this.listingObserver.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      }
     }
 
-    async importFromCard(card) {
-      // Find link
-      const link = card.querySelector('a[href*="/"]');
-      const url = link?.href || window.location.href;
+    async importFromCard(card, btn) {
+      // Extract product info from card
+      const extractFromCard = () => {
+        const hostname = window.location.hostname;
+        
+        // Platform-specific extractors
+        if (hostname.includes('aliexpress')) {
+          return {
+            title: card.querySelector('.multi--titleText--nXeOvyr, .manhattan--titleText--WccHjR6, h3, [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.multi--price-sale--U-S0jtj, .manhattan--price-sale--1CCSZfK, [class*="price"]')),
+            image: card.querySelector('img')?.src || '',
+            url: card.querySelector('a[href*="/item/"], a[href*="/i/"]')?.href || window.location.href
+          };
+        }
+        
+        if (hostname.includes('amazon')) {
+          return {
+            title: card.querySelector('h2 span, .s-title-instructions-style span')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.a-price-whole, .a-offscreen')),
+            image: card.querySelector('.s-image')?.src || '',
+            url: card.querySelector('a[href*="/dp/"]')?.href || window.location.href
+          };
+        }
+        
+        if (hostname.includes('ebay')) {
+          return {
+            title: card.querySelector('.s-item__title')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.s-item__price')),
+            image: card.querySelector('.s-item__image img')?.src || '',
+            url: card.querySelector('.s-item__link')?.href || window.location.href
+          };
+        }
+        
+        // Generic extraction
+        const link = card.querySelector('a[href*="/"]');
+        return {
+          title: card.querySelector('h2, h3, [class*="title"]')?.textContent?.trim() || '',
+          price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+          image: card.querySelector('img')?.src || '',
+          url: link?.href || window.location.href
+        };
+      };
+      
+      const productInfo = extractFromCard();
+      
+      if (btn) {
+        btn.innerHTML = '⏳';
+        btn.disabled = true;
+      }
       
       this.showToast('Import en cours...', 'info');
       
       try {
-        const response = await fetch(`${CONFIG.API_URL}/product-url-scraper`, {
+        const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...(this.token && { 'x-extension-token': this.token })
           },
-          body: JSON.stringify({ url })
+          body: JSON.stringify({
+            action: 'import_products',
+            products: [{
+              title: productInfo.title,
+              name: productInfo.title,
+              price: productInfo.price || 0,
+              image: productInfo.image || '',
+              imageUrl: productInfo.image || '',
+              url: productInfo.url,
+              source: 'chrome_extension_catalog',
+              platform: this.platform?.key || 'unknown'
+            }]
+          })
         });
         
         const result = await response.json();
         
-        if (result.success) {
+        if (response.ok && (result.imported > 0 || result.success)) {
+          if (btn) {
+            btn.innerHTML = '✅';
+            btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+          }
           this.showToast('✅ Produit importé!', 'success');
         } else {
           throw new Error(result.error || 'Erreur');
         }
       } catch (error) {
+        if (btn) {
+          btn.innerHTML = '❌';
+          btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        }
         this.showToast(`❌ ${error.message}`, 'error');
+        
+        // Reset button after 2s
+        setTimeout(() => {
+          if (btn) {
+            btn.innerHTML = '📥 Import';
+            btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            btn.disabled = false;
+          }
+        }, 2000);
       }
+    }
+
+    parsePriceFromElement(el) {
+      if (!el) return 0;
+      const text = el.textContent || '';
+      // Handle various price formats
+      let cleanText = text.replace(/[€$£¥₹₽\s]/g, '');
+      
+      if (cleanText.includes(',') && !cleanText.includes('.')) {
+        return parseFloat(cleanText.replace(',', '.')) || 0;
+      } else if (cleanText.includes(',') && cleanText.includes('.')) {
+        return parseFloat(cleanText.replace(/\./g, '').replace(',', '.')) || 0;
+      }
+      
+      const match = cleanText.match(/[\d.]+/);
+      return match ? parseFloat(match[0]) : 0;
     }
 
     showToast(message, type = 'info') {
