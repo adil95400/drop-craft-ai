@@ -116,7 +116,13 @@ export function AppRoutes() {
         
         {/* Autres redirections standardisées */}
         <Route path="/tracking" element={<Navigate to="/orders" replace />} />
-        <Route path="/crm" element={<Navigate to="/customers" replace />} />
+        <Route path="/crm" element={<Navigate to="/marketing/crm" replace />} />
+        <Route path="/crm/leads" element={<Navigate to="/marketing/crm/leads" replace />} />
+        <Route path="/crm/emails" element={<Navigate to="/marketing/crm/emails" replace />} />
+        <Route path="/crm/calls" element={<Navigate to="/marketing/crm/calls" replace />} />
+        <Route path="/crm/calendar" element={<Navigate to="/marketing/crm/calendar" replace />} />
+        <Route path="/crm/activity" element={<Navigate to="/marketing/crm/activity" replace />} />
+        <Route path="/crm/*" element={<Navigate to="/marketing/crm" replace />} />
         <Route path="/modern" element={<Navigate to="/dashboard" replace />} />
         <Route path="/catalog" element={<Navigate to="/products/catalogue" replace />} />
         
