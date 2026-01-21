@@ -1146,9 +1146,22 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
           customerType = 'Client'
         }
         
+        // Generate email for customers without one (using Shopify ID as placeholder)
+        // This allows importing ALL customers including those registered via POS or without email
+        let customerEmail = customer.email
+        let isPlaceholderEmail = false
+        
+        if (!customerEmail) {
+          // Create a placeholder email using the Shopify customer ID
+          customerEmail = `shopify-customer-${customer.id}@placeholder.shopopti.local`
+          isPlaceholderEmail = true
+          existingTags.push('no_email')
+          console.log(`Customer ${customer.first_name} ${customer.last_name} has no email, using placeholder: ${customerEmail}`)
+        }
+        
         const customerData = {
           user_id: userId,
-          email: customer.email,
+          email: customerEmail,
           first_name: customer.first_name || null,
           last_name: customer.last_name || null,
           phone: customer.phone || null,
@@ -1161,27 +1174,25 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
           total_orders: customer.orders_count || 0,
           total_spent: parseFloat(customer.total_spent || '0'),
           tags: existingTags,
-          notes: `${customerType} - Importé depuis Shopify (ID: ${customer.id})`,
+          notes: `${customerType} - Importé depuis Shopify (ID: ${customer.id})${isPlaceholderEmail ? ' - Email manquant dans Shopify' : ''}`,
           accepts_marketing: customer.accepts_marketing || false
         }
 
-        // Only insert if email exists
-        if (customerData.email) {
-          const { error: upsertError } = await supabaseClient
-            .from('customers')
-            .upsert(customerData, { 
-              onConflict: 'email,user_id',
-              ignoreDuplicates: false 
-            })
+        const { error: upsertError } = await supabaseClient
+          .from('customers')
+          .upsert(customerData, { 
+            onConflict: 'email,user_id',
+            ignoreDuplicates: false 
+          })
 
-          if (upsertError) {
-            console.error('Error upserting customer:', upsertError)
-            errorCount++
-          } else {
-            importedCount++
-          }
+        if (upsertError) {
+          console.error('Error upserting customer:', upsertError)
+          errorCount++
         } else {
-          skippedNoEmail++
+          importedCount++
+          if (isPlaceholderEmail) {
+            skippedNoEmail++ // Track customers imported with placeholder emails
+          }
         }
       } catch (err) {
         console.error('Error processing customer:', err)
@@ -1192,21 +1203,24 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
     console.log(`Processed ${i + batch.length}/${allCustomers.length} customers`)
   }
   
-  console.log(`Import complete: ${importedCount} imported, ${errorCount} errors, ${skippedNoEmail} skipped (no email)`)
+  console.log(`Import complete: ${importedCount} imported, ${errorCount} errors, ${skippedNoEmail} without email (imported with placeholder)`)
   
   return new Response(
     JSON.stringify({ 
       success: true, 
-      message: `${importedCount} clients importés avec succès (dont ${subscribersOnly} abonnés newsletter uniquement)`,
+      message: skippedNoEmail > 0 
+        ? `${importedCount} clients importés (dont ${skippedNoEmail} sans email)`
+        : `${importedCount} clients importés avec succès`,
       imported_count: importedCount,
       error_count: errorCount,
-      skipped_no_email: skippedNoEmail,
+      customers_without_email: skippedNoEmail,
       total_fetched: allCustomers.length,
       breakdown: {
         total: allCustomers.length,
         buyers: buyersWithOrders,
         email_subscribers: emailSubscribers,
-        newsletter_only: subscribersOnly
+        newsletter_only: subscribersOnly,
+        no_email: skippedNoEmail
       }
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
