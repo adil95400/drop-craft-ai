@@ -45,9 +45,6 @@ const AvisPositifUltraPro = lazy(() => import('@/pages/AvisPositifUltraPro'));
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
 const OrdersCenterPage = lazy(() => import('@/pages/orders/OrdersCenterPage'));
 const BulkOrdersPage = lazy(() => import('@/pages/orders/BulkOrdersPage'));
-const QADashboard = lazy(() => import('@/pages/qa/QADashboard'));
-const ProductsQA = lazy(() => import('@/pages/qa/ProductsQA'));
-const OrdersQA = lazy(() => import('@/pages/qa/OrdersQA'));
 const ShopifyStore = lazy(() => import('@/pages/ShopifyStore'));
 const ShopifyProductDetail = lazy(() => import('@/pages/ShopifyProductDetail'));
 const CreateProduct = lazy(() => import('@/pages/products/CreateProduct'));
@@ -176,12 +173,6 @@ export function AppRoutes() {
         {/* Sync & Orders */}
         <Route path="/sync-manager" element={<ProtectedRoute><ChannableLayout><SyncManagerPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/orders-center" element={<ProtectedRoute><ChannableLayout><OrdersCenterPage /></ChannableLayout></ProtectedRoute>} />
-        
-        {/* QA Routes - DISABLED IN PRODUCTION */}
-        {/* These routes are for internal QA testing only and are hidden from production users */}
-        {/* <Route path="/qa" element={<ProtectedRoute><ChannableLayout><QADashboard /></ChannableLayout></ProtectedRoute>} /> */}
-        {/* <Route path="/qa/products" element={<ProtectedRoute><ChannableLayout><ProductsQA /></ChannableLayout></ProtectedRoute>} /> */}
-        {/* <Route path="/qa/orders" element={<ProtectedRoute><ChannableLayout><OrdersQA /></ChannableLayout></ProtectedRoute>} /> */}
         
         {/* Shopify Store (public) */}
         <Route path="/store" element={<ShopifyStore />} />
