@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   Link2, Search, Package, ImageIcon, Loader2, CheckCircle2, AlertCircle, 
   Sparkles, ShoppingCart, Plus, Trash2, X, Zap, Globe, Camera,
-  TrendingUp, Clock, ArrowRight, Upload, History
+  TrendingUp, Clock, ArrowRight, Upload, History, Eye, Edit
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -26,6 +26,7 @@ import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ProductPreviewEditModal } from '@/components/import/ProductPreviewEditModal'
 
 // Hook pour préférences réduites
 const useReducedMotion = () => {
@@ -92,6 +93,11 @@ export default function AutoDSImportPage() {
   // Common State
   const [priceMultiplier, setPriceMultiplier] = useState(1.5)
   const [activeTab, setActiveTab] = useState('url')
+  
+  // Preview Modal State
+  const [previewModalOpen, setPreviewModalOpen] = useState(false)
+  const [selectedProductForPreview, setSelectedProductForPreview] = useState<QueuedUrl | null>(null)
+  const [isImportingFromModal, setIsImportingFromModal] = useState(false)
 
   // === URL Import Functions ===
   const addUrlsToQueue = () => {
@@ -136,26 +142,57 @@ export default function AutoDSImportPage() {
     toast.success('Analyse terminée')
   }
 
-  const importFromUrl = async (item: QueuedUrl) => {
+  const openPreviewModal = (item: QueuedUrl) => {
     if (!item.preview) return
+    setSelectedProductForPreview(item)
+    setPreviewModalOpen(true)
+  }
+
+  const importFromUrlWithData = async (item: QueuedUrl, editedProduct?: any) => {
+    if (!item.preview) return
+    setIsImportingFromModal(true)
     setQueuedUrls(prev => prev.map(q => q.id === item.id ? { ...q, status: 'loading' as const } : q))
     try {
+      const productData = editedProduct || item.preview
       const { data, error } = await supabase.functions.invoke('quick-import-url', {
         body: {
           url: item.url,
           user_id: user?.id,
           action: 'import',
-          price_multiplier: priceMultiplier
+          price_multiplier: priceMultiplier,
+          // Passer les données éditées
+          override_data: editedProduct ? {
+            title: productData.title,
+            description: productData.description,
+            price: productData.price,
+            suggested_price: productData.suggested_price,
+            sku: productData.sku,
+            brand: productData.brand,
+            images: productData.images
+          } : undefined
         }
       })
       if (error) throw error
       if (!data.success) throw new Error(data.error)
       setQueuedUrls(prev => prev.filter(q => q.id !== item.id))
-      toast.success(`"${item.preview?.title.slice(0, 50)}..." importé`)
+      setPreviewModalOpen(false)
+      setSelectedProductForPreview(null)
+      toast.success(`"${productData.title?.slice(0, 50)}..." importé`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erreur lors de l\'import')
       setQueuedUrls(prev => prev.map(q => q.id === item.id ? { ...q, status: 'success' as const } : q))
+    } finally {
+      setIsImportingFromModal(false)
     }
+  }
+
+  const importFromUrl = async (item: QueuedUrl) => {
+    await importFromUrlWithData(item)
+  }
+
+  const handleConfirmImportFromModal = async (editedProduct: any) => {
+    if (!selectedProductForPreview) return
+    await importFromUrlWithData(selectedProductForPreview, editedProduct)
   }
 
   const importAllUrls = async () => {
@@ -547,14 +584,25 @@ export default function AutoDSImportPage() {
                         {/* Actions */}
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {item.status === 'success' && (
-                            <Button 
-                              size="sm" 
-                              onClick={() => importFromUrl(item)}
-                              className="bg-gradient-to-r from-green-500 to-emerald-600 shadow-md hover:shadow-lg transition-shadow"
-                            >
-                              <ShoppingCart className="h-4 w-4 mr-1" />
-                              Importer
-                            </Button>
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => openPreviewModal(item)}
+                                className="border-primary/30 hover:bg-primary/5"
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                Aperçu
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                onClick={() => importFromUrl(item)}
+                                className="bg-gradient-to-r from-green-500 to-emerald-600 shadow-md hover:shadow-lg transition-shadow"
+                              >
+                                <ShoppingCart className="h-4 w-4 mr-1" />
+                                Importer
+                              </Button>
+                            </>
                           )}
                           <Button 
                             size="icon" 
@@ -700,6 +748,15 @@ export default function AutoDSImportPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Modal d'aperçu et modification */}
+      <ProductPreviewEditModal
+        open={previewModalOpen}
+        onOpenChange={setPreviewModalOpen}
+        product={selectedProductForPreview?.preview || null}
+        onConfirmImport={handleConfirmImportFromModal}
+        isImporting={isImportingFromModal}
+      />
     </ChannablePageLayout>
   )
 }
