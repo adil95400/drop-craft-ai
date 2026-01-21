@@ -112,10 +112,17 @@ export function useChannelConnections() {
   const { data: realStats } = useQuery({
     queryKey: ['channel-real-stats'],
     queryFn: async () => {
+      // Defensive counting: avoid HEAD/206 edge-cases and always scope to the current user.
+      const { data: { session } } = await supabase.auth.getSession()
+      const userId = session?.user?.id
+      if (!userId) {
+        return { totalProducts: 0, totalOrders: 0 }
+      }
+
       const [productsResult, importedProductsResult, ordersResult] = await Promise.all([
-        supabase.from('products').select('*', { count: 'exact', head: true }),
-        supabase.from('imported_products').select('*', { count: 'exact', head: true }),
-        supabase.from('orders').select('*', { count: 'exact', head: true })
+        supabase.from('products').select('id', { count: 'exact' }).eq('user_id', userId).limit(1),
+        supabase.from('imported_products').select('id', { count: 'exact' }).eq('user_id', userId).limit(1),
+        supabase.from('orders').select('id', { count: 'exact' }).eq('user_id', userId).limit(1)
       ])
 
       return {
