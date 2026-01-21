@@ -13,7 +13,7 @@ import {
   Search, Filter, Package, Truck, CheckCircle2,
   Clock, AlertCircle, Download, RefreshCw, Eye, 
   Plus, DollarSign, TrendingUp, Sparkles, ChevronLeft, ChevronRight,
-  Calendar, MapPin, Loader2
+  Calendar, MapPin, Loader2, Store
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
@@ -24,6 +24,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
+import { useShopifyOrderImport } from '@/hooks/useShopifyOrderImport';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -212,6 +213,9 @@ export default function OrdersCenterPage() {
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
+  
+  // Shopify order import
+  const { integrations, importOrders, isImporting } = useShopifyOrderImport();
 
   useEffect(() => {
     loadOrders();
@@ -282,30 +286,45 @@ export default function OrdersCenterPage() {
         .select(`
           *,
           customers (
-            name
+            first_name,
+            last_name,
+            email
           )
         `)
         .eq('user_id', user.id)
-        .order('order_date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const formattedOrders = (data || []).map((order: any) => ({
-        id: order.id,
-        order_number: order.order_number,
-        customer_id: order.customer_id,
-        customer_name: order.customers?.name || 'Client inconnu',
-        status: order.status,
-        total_amount: order.total_amount || 0,
-        currency: order.currency || 'EUR',
-        created_at: order.created_at,
-        delivery_date: order.delivery_date,
-        items_count: 0,
-        tracking_number: order.tracking_number
-      }));
+      const formattedOrders = (data || []).map((order: any) => {
+        // Build customer name from various sources
+        let customerName = 'Client';
+        if (order.customer_name) {
+          customerName = order.customer_name;
+        } else if (order.customers?.first_name || order.customers?.last_name) {
+          customerName = `${order.customers?.first_name || ''} ${order.customers?.last_name || ''}`.trim();
+        } else if (order.shipping_address?.name) {
+          customerName = order.shipping_address.name;
+        }
+        
+        return {
+          id: order.id,
+          order_number: order.order_number,
+          customer_id: order.customer_id,
+          customer_name: customerName,
+          status: order.status || 'pending',
+          total_amount: order.total_amount || 0,
+          currency: order.currency || 'EUR',
+          created_at: order.created_at,
+          delivery_date: order.delivery_date,
+          items_count: 0,
+          tracking_number: order.tracking_number
+        };
+      });
       
       setOrders(formattedOrders);
     } catch (error: any) {
+      console.warn('Error loading orders:', error);
       toast({
         title: "Erreur de chargement",
         description: error.message,
@@ -425,6 +444,26 @@ export default function OrdersCenterPage() {
       }}
       actions={
         <>
+          {integrations && integrations.length > 0 && (
+            <Button 
+              variant="outline"
+              onClick={() => {
+                const integration = integrations[0];
+                importOrders(integration.id, {
+                  onSuccess: () => loadOrders()
+                });
+              }}
+              disabled={isImporting}
+              className="gap-2 backdrop-blur-sm bg-background/50"
+            >
+              {isImporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Store className="h-4 w-4" />
+              )}
+              Importer Shopify
+            </Button>
+          )}
           <Button 
             onClick={() => navigate('/orders/new')} 
             className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"

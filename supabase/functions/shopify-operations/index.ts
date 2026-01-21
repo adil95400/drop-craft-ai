@@ -61,6 +61,8 @@ async function handleUnifiedOperation(supabaseClient: any, requestBody: any) {
     case 'import-orders':
     case 'sync_orders':
       return await importShopifyOrders(supabaseClient, targetId, credentials)
+    case 'import-orders-to-shopopti':
+      return await importShopifyOrdersToShopOpti(supabaseClient, targetId, credentials)
     case 'import-customers':
       return await importShopifyCustomers(supabaseClient, targetId, credentials)
     case 'import-customers-to-shopopti':
@@ -1221,6 +1223,169 @@ async function importShopifyCustomersToShopOpti(supabaseClient: any, storeId: st
         newsletter_only: subscribersOnly,
         no_email: skippedNoEmail
       }
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
+
+// New function to import Shopify orders to the ShopOpti 'orders' table
+async function importShopifyOrdersToShopOpti(supabaseClient: any, storeId: string, credentials: any) {
+  const normalizedDomain = normalizeShopifyDomain(credentials.shop_domain)
+  const accessToken = credentials.access_token
+
+  console.log(`Starting orders import to ShopOpti orders table for store: ${storeId}`)
+  
+  // Get user_id from the integration
+  const { data: integration, error: intError } = await supabaseClient
+    .from('integrations')
+    .select('user_id')
+    .eq('id', storeId)
+    .single()
+
+  if (intError || !integration) {
+    throw new Error('Intégration non trouvée')
+  }
+
+  const userId = integration.user_id
+  
+  let allOrders: any[] = []
+  let nextPageInfo: string | null = null
+  let pageCount = 0
+  const maxPages = 50
+  
+  do {
+    pageCount++
+    console.log(`Fetching orders page ${pageCount}`)
+    
+    let url = `https://${normalizedDomain}/admin/api/2023-10/orders.json?limit=250&status=any`
+    if (nextPageInfo) {
+      url += `&page_info=${nextPageInfo}`
+    }
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    allOrders.push(...(data.orders || []))
+    
+    const linkHeader = response.headers.get('Link')
+    nextPageInfo = null
+    
+    if (linkHeader) {
+      const nextMatch = linkHeader.match(/<[^>]*page_info=([^&>]+)[^>]*>;\s*rel="next"/)
+      if (nextMatch) {
+        nextPageInfo = nextMatch[1]
+      }
+    }
+    
+    console.log(`Page ${pageCount}: ${data.orders?.length || 0} orders, total: ${allOrders.length}`)
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+  } while (nextPageInfo && pageCount < maxPages)
+  
+  console.log(`Total orders fetched from Shopify: ${allOrders.length}`)
+  
+  let importedCount = 0
+  let errorCount = 0
+  
+  // Map Shopify status to ShopOpti status
+  const mapShopifyStatus = (financialStatus: string, fulfillmentStatus: string) => {
+    if (financialStatus === 'refunded') return 'cancelled'
+    if (fulfillmentStatus === 'fulfilled') return 'delivered'
+    if (fulfillmentStatus === 'partial') return 'shipped'
+    if (financialStatus === 'paid') return 'processing'
+    return 'pending'
+  }
+
+  for (const order of allOrders) {
+    try {
+      // Build customer name and email
+      const customerName = order.customer 
+        ? `${order.customer.first_name || ''} ${order.customer.last_name || ''}`.trim() || 'Client'
+        : order.shipping_address?.name || 'Client'
+      const customerEmail = order.customer?.email || order.email || null
+
+      const orderData = {
+        user_id: userId,
+        order_number: `SHOP-${order.order_number || order.id}`,
+        status: mapShopifyStatus(order.financial_status, order.fulfillment_status),
+        payment_status: order.financial_status === 'paid' ? 'paid' : 'pending',
+        fulfillment_status: order.fulfillment_status || null,
+        subtotal: parseFloat(order.subtotal_price || '0'),
+        shipping_cost: parseFloat(order.total_shipping_price_set?.shop_money?.amount || '0'),
+        tax_amount: parseFloat(order.total_tax || '0'),
+        discount_amount: parseFloat(order.total_discounts || '0'),
+        total_amount: parseFloat(order.total_price || '0'),
+        currency: order.currency || 'EUR',
+        shipping_address: order.shipping_address || null,
+        billing_address: order.billing_address || null,
+        notes: order.note || null,
+        shopify_order_id: order.id?.toString(),
+        external_id: order.id?.toString(),
+        external_platform: 'shopify',
+        customer_name: customerName,
+        customer_email: customerEmail,
+        created_at: order.created_at,
+        updated_at: order.updated_at || new Date().toISOString()
+      }
+
+      // Try to find existing order by shopify_order_id first
+      const { data: existingOrder } = await supabaseClient
+        .from('orders')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('shopify_order_id', order.id?.toString())
+        .maybeSingle()
+
+      if (existingOrder) {
+        // Update existing order
+        const { error: updateError } = await supabaseClient
+          .from('orders')
+          .update(orderData)
+          .eq('id', existingOrder.id)
+
+        if (updateError) {
+          console.error('Error updating order:', updateError)
+          errorCount++
+        } else {
+          importedCount++
+        }
+      } else {
+        // Insert new order
+        const { error: insertError } = await supabaseClient
+          .from('orders')
+          .insert(orderData)
+
+        if (insertError) {
+          console.error('Error inserting order:', insertError)
+          errorCount++
+        } else {
+          importedCount++
+        }
+      }
+    } catch (err) {
+      console.error('Error processing order:', err)
+      errorCount++
+    }
+  }
+  
+  console.log(`Import complete: ${importedCount} orders imported, ${errorCount} errors`)
+  
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: `${importedCount} commandes importées avec succès`,
+      imported_count: importedCount,
+      error_count: errorCount,
+      total_fetched: allOrders.length
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )

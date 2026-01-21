@@ -6394,8 +6394,12 @@ export type Database = {
           carrier: string | null
           created_at: string | null
           currency: string | null
+          customer_email: string | null
           customer_id: string | null
+          customer_name: string | null
           discount_amount: number | null
+          external_id: string | null
+          external_platform: string | null
           fulfillment_status: string | null
           id: string
           notes: string | null
@@ -6419,8 +6423,12 @@ export type Database = {
           carrier?: string | null
           created_at?: string | null
           currency?: string | null
+          customer_email?: string | null
           customer_id?: string | null
+          customer_name?: string | null
           discount_amount?: number | null
+          external_id?: string | null
+          external_platform?: string | null
           fulfillment_status?: string | null
           id?: string
           notes?: string | null
@@ -6444,8 +6452,12 @@ export type Database = {
           carrier?: string | null
           created_at?: string | null
           currency?: string | null
+          customer_email?: string | null
           customer_id?: string | null
+          customer_name?: string | null
           discount_amount?: number | null
+          external_id?: string | null
+          external_platform?: string | null
           fulfillment_status?: string | null
           id?: string
           notes?: string | null
