@@ -840,6 +840,50 @@
       const modal = document.getElementById('dc-import-modal');
       if (modal) modal.classList.add('active');
       
+      const subtitleEl = document.getElementById('dc-import-subtitle');
+      if (subtitleEl) subtitleEl.textContent = `Import de ${products.length} produits en cours...`;
+      
+      this.updateImportStats(0, 0, products.length);
+      this.updateProgress(10);
+      
+      // Show first product as preview
+      if (products.length > 0) {
+        this.updateCurrentProduct(products[0], 1, products.length);
+      }
+      
+      try {
+        // Use bulk import for all products at once (much faster!)
+        this.updateProgress(30);
+        
+        const result = await this.bulkImportAll(products);
+        
+        this.updateProgress(100);
+        this.updateImportStats(result.successful || 0, result.failed || 0, 0);
+        
+        // Complete with success message
+        setTimeout(() => {
+          if (modal) modal.classList.remove('active');
+          
+          if (result.successful > 0) {
+            this.showToast(`✅ Import terminé: ${result.successful} réussis, ${result.failed || 0} échoués`, 'success');
+          } else {
+            this.showToast(`❌ Échec de l'import`, 'error');
+          }
+          
+          this.clearSelection();
+          this.deactivate();
+        }, 1500);
+        
+      } catch (error) {
+        console.error('[Grabber] Bulk import error:', error);
+        
+        // Fallback to individual imports
+        this.showToast('Import en masse échoué, passage en mode séquentiel...', 'warning');
+        await this.importSequentially(products, modal);
+      }
+    }
+
+    async importSequentially(products, modal) {
       let success = 0;
       let failed = 0;
       let pending = products.length;
@@ -849,7 +893,6 @@
       for (let i = 0; i < products.length; i++) {
         const product = products[i];
         
-        // Update current product display
         this.updateCurrentProduct(product, i + 1, products.length);
         
         try {
@@ -863,13 +906,11 @@
         this.updateImportStats(success, failed, pending);
         this.updateProgress((i + 1) / products.length * 100);
         
-        // Small delay between imports
         if (i < products.length - 1) {
-          await this.sleep(500);
+          await this.sleep(300);
         }
       }
       
-      // Complete
       setTimeout(() => {
         if (modal) modal.classList.remove('active');
         this.showToast(`Import terminé: ${success} réussis, ${failed} échoués`, success > 0 ? 'success' : 'error');
@@ -916,30 +957,83 @@
             }
             
             try {
-              const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
+              // Use bulk-import-multi for better performance
+              const response = await fetch(`${CONFIG.API_URL}/bulk-import-multi`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   'x-extension-token': result.extensionToken
                 },
                 body: JSON.stringify({
-                  action: 'import_products',
                   products: products.map(p => ({
+                    url: p.url,
                     title: p.title,
                     name: p.title,
                     price: p.price,
                     image: p.image,
-                    url: p.url,
-                    source: 'chrome_extension_bulk',
-                    platform: p.platform
-                  }))
+                    images: p.image ? [p.image] : [],
+                    platform: p.platform,
+                    source: 'chrome_extension_bulk'
+                  })),
+                  options: {
+                    maxProducts: 50
+                  }
                 })
               });
               
               if (response.ok) {
-                resolve();
+                const data = await response.json();
+                console.log('[Grabber] Import result:', data);
+                resolve(data);
               } else {
-                reject(new Error('API Error'));
+                const errorData = await response.json().catch(() => ({}));
+                reject(new Error(errorData.error || 'API Error'));
+              }
+            } catch (error) {
+              reject(error);
+            }
+          });
+        } else {
+          reject(new Error('Chrome API not available'));
+        }
+      });
+    }
+
+    // New method: Bulk import all products at once (faster)
+    async bulkImportAll(products) {
+      return new Promise((resolve, reject) => {
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.local.get(['extensionToken'], async (result) => {
+            if (!result.extensionToken) {
+              reject(new Error('Non connecté'));
+              return;
+            }
+            
+            try {
+              const response = await fetch(`${CONFIG.API_URL}/bulk-import-multi`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-extension-token': result.extensionToken
+                },
+                body: JSON.stringify({
+                  products: products.map(p => ({
+                    url: p.url,
+                    title: p.title,
+                    price: p.price,
+                    image: p.image,
+                    images: p.image ? [p.image] : [],
+                    platform: p.platform
+                  })),
+                  options: { maxProducts: 100 }
+                })
+              });
+              
+              const data = await response.json();
+              if (response.ok) {
+                resolve(data);
+              } else {
+                reject(new Error(data.error || 'Bulk import failed'));
               }
             } catch (error) {
               reject(error);

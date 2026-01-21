@@ -80,6 +80,7 @@
         "sidebar.js", 
         "sidebar.css",
         "grabber.js",
+        "reviews-extractor.js",
         "fulfillment.js",
         "automation.js",
         "faq.js",
