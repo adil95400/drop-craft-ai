@@ -8,6 +8,8 @@ import { Loader2, Crown, Zap, Users, Star, ArrowRight, TrendingUp, Shield, Globe
 import { useNavigate, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { SoftwareAppSchema, OrganizationSchema } from "@/components/seo/StructuredData";
+import { StickyCtaBar } from "@/components/landing/StickyCtaBar";
+import { LiveDemoPreview } from "@/components/landing/LiveDemoPreview";
 // Hero images in public folder for LCP discovery
 const heroImage = "/images/hero-automation.jpg";
 const heroImageSm = "/images/hero-automation-sm.jpg";
@@ -672,6 +674,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <StatsSection />
+        <LiveDemoPreview />
         <FeaturesSection />
         <BenefitsSection />
         <UseCasesSection />
@@ -679,6 +682,7 @@ const Index = () => {
         <TestimonialsSection />
         <FinalCTASection />
       </main>
+      <StickyCtaBar />
     </PublicLayout>
   );
 };
