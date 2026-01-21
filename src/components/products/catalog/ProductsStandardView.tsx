@@ -23,6 +23,9 @@ interface ProductsStandardViewProps {
   onView: (product: UnifiedProduct) => void
   onRefresh: () => void
   isLoading: boolean
+  // Selection props
+  selectedProducts?: string[]
+  onSelectionChange?: (ids: string[]) => void
 }
 
 export function ProductsStandardView({
@@ -38,7 +41,9 @@ export function ProductsStandardView({
   onDelete,
   onView,
   onRefresh,
-  isLoading
+  isLoading,
+  selectedProducts = [],
+  onSelectionChange
 }: ProductsStandardViewProps) {
   return (
     <motion.div
@@ -66,6 +71,8 @@ export function ProductsStandardView({
             onEdit={onEdit}
             onDelete={onDelete}
             onView={onView}
+            selectedProducts={selectedProducts}
+            onSelectionChange={onSelectionChange}
           />
         </CardContent>
       </Card>
