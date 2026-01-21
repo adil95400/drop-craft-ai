@@ -19,12 +19,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Users, Search, UserPlus, Eye, Mail, TrendingUp, DollarSign, ShoppingCart, RefreshCw, Download, Sparkles } from 'lucide-react'
+import { Users, Search, UserPlus, Eye, Mail, TrendingUp, DollarSign, ShoppingCart, RefreshCw, Download, Sparkles, Store } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { ShopifyCustomerImportDialog } from '@/components/customers/import/ShopifyCustomerImportDialog'
 
 // Composant carte de stat
 function StatCard({ 
@@ -85,6 +86,7 @@ export default function CustomersPage() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
+  const [showImportDialog, setShowImportDialog] = useState(false)
 
   const { data: customers, isLoading, refetch } = useQuery({
     queryKey: ['customers'],
@@ -153,6 +155,14 @@ export default function CustomersPage() {
       }}
       actions={
         <>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowImportDialog(true)}
+            className="gap-2 backdrop-blur-sm bg-background/50 border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <Store className="h-4 w-4" />
+            Importer depuis Shopify
+          </Button>
           <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25">
             <UserPlus className="h-4 w-4" />
             Nouveau client
@@ -373,6 +383,13 @@ export default function CustomersPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Shopify Customer Import Dialog */}
+      <ShopifyCustomerImportDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onSuccess={() => refetch()}
+      />
     </ChannablePageWrapper>
   )
 }
