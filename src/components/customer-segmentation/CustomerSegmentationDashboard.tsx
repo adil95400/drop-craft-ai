@@ -226,6 +226,7 @@ export function CustomerSegmentationDashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Client</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>R</TableHead>
                     <TableHead>F</TableHead>
                     <TableHead>M</TableHead>
@@ -240,8 +241,11 @@ export function CustomerSegmentationDashboard() {
                     <TableRow key={rfm.id}>
                       <TableCell className="font-medium">
                         {rfm.customer 
-                          ? `${rfm.customer.first_name} ${rfm.customer.last_name}`
+                          ? `${rfm.customer.first_name || ''} ${rfm.customer.last_name || ''}`.trim() || 'Sans nom'
                           : 'Client inconnu'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {rfm.customer?.email || '-'}
                       </TableCell>
                       <TableCell>
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs ${getRFMColor(rfm.recency_score)}`}>
@@ -272,7 +276,7 @@ export function CustomerSegmentationDashboard() {
                   ))}
                   {rfmScores.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                         Aucun score RFM calculé. Cliquez sur "Recalculer RFM" pour démarrer.
                       </TableCell>
                     </TableRow>
