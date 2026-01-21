@@ -42,18 +42,34 @@ serve(async (req) => {
     
     let userId: string | null = null;
 
-    // Try extension token first
+    // Try extension token first - check extension_auth_tokens (primary) then legacy table
     if (extensionToken) {
-      const { data: tokenData } = await supabase
-        .from("extension_tokens")
+      // Try primary extension_auth_tokens table
+      const { data: authTokenData } = await supabase
+        .from("extension_auth_tokens")
         .select("user_id, is_active, expires_at")
         .eq("token", extensionToken)
+        .eq("is_active", true)
         .single();
 
-      if (tokenData?.is_active) {
-        if (!tokenData.expires_at || new Date(tokenData.expires_at) > new Date()) {
-          userId = tokenData.user_id;
-          console.log('✅ Authenticated via extension token');
+      if (authTokenData?.is_active) {
+        if (!authTokenData.expires_at || new Date(authTokenData.expires_at) > new Date()) {
+          userId = authTokenData.user_id;
+          console.log('✅ Authenticated via extension_auth_tokens');
+        }
+      } else {
+        // Fallback to legacy extension_tokens table
+        const { data: tokenData } = await supabase
+          .from("extension_tokens")
+          .select("user_id, is_active, expires_at")
+          .eq("token", extensionToken)
+          .single();
+
+        if (tokenData?.is_active) {
+          if (!tokenData.expires_at || new Date(tokenData.expires_at) > new Date()) {
+            userId = tokenData.user_id;
+            console.log('✅ Authenticated via legacy extension_tokens');
+          }
         }
       }
     }

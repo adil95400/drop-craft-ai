@@ -59,14 +59,41 @@ serve(async (req) => {
       }
       userId = user.id
     } else if (extensionToken) {
-      // Validate extension token
-      const { data: tokenData, error: tokenError } = await supabase
-        .from('extension_tokens')
-        .select('user_id, is_active')
+      // Try extension_auth_tokens first (primary table for extension auth)
+      let tokenData = null
+      
+      const { data: authTokenData, error: authTokenError } = await supabase
+        .from('extension_auth_tokens')
+        .select('user_id, is_active, expires_at')
         .eq('token', extensionToken)
+        .eq('is_active', true)
         .single()
       
-      if (tokenError || !tokenData?.is_active) {
+      if (authTokenData) {
+        // Check expiration
+        if (authTokenData.expires_at && new Date(authTokenData.expires_at) < new Date()) {
+          console.warn('[bulk-import-multi] Token expired')
+          return new Response(JSON.stringify({ error: 'Token expired' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        tokenData = authTokenData
+      } else {
+        // Fallback to legacy extension_tokens table
+        const { data: legacyToken, error: legacyError } = await supabase
+          .from('extension_tokens')
+          .select('user_id, is_active')
+          .eq('token', extensionToken)
+          .single()
+        
+        if (legacyToken?.is_active) {
+          tokenData = legacyToken
+        }
+      }
+      
+      if (!tokenData) {
+        console.error('[bulk-import-multi] Token validation failed')
         return new Response(JSON.stringify({ error: 'Invalid extension token' }), {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }

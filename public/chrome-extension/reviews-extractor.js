@@ -12,44 +12,64 @@
     MAX_REVIEWS: 200,
     PLATFORMS: {
       'aliexpress': {
-        reviewsContainer: '.feedback-list, .product-evaluation, [class*="review"]',
-        reviewItem: '.feedback-item, .buyer-feedback, [data-pl="feedback-item"]',
-        author: '.user-name, .buyer-name, .feedback-author',
-        rating: '.star-view, .star-score, [class*="rating"]',
-        content: '.buyer-feedback, .feedback-content, .review-content',
-        date: '.feedback-time, .review-date',
-        images: '.feedback-images img, .review-images img',
+        reviewsContainer: '.feedback-list, .product-evaluation, [class*="review"], .comet-v2-modal-body, .feedback--wrap--bDEEKp5',
+        reviewItem: '.feedback-item, .buyer-feedback, [data-pl="feedback-item"], .feedback--list--dJsbH8z .feedback--item--dj2j9tN',
+        author: '.user-name, .buyer-name, .feedback-author, .feedback--userName--QsU0Wf0',
+        rating: '.star-view, .star-score, [class*="rating"], .feedback--stars--t9_W6T4',
+        content: '.buyer-feedback, .feedback-content, .review-content, .feedback--content--UWfgMTD',
+        date: '.feedback-time, .review-date, .feedback--time--c_Tn30j',
+        images: '.feedback-images img, .review-images img, .feedback--photos--K3Gn6C1 img',
         verified: '.buyer-verified, .verified-purchase'
       },
       'amazon': {
-        reviewsContainer: '#cm_cr-review_list, #reviewsMedley',
-        reviewItem: '[data-hook="review"], .review',
-        author: '.a-profile-name',
-        rating: '.review-rating, [data-hook="review-star-rating"]',
-        content: '[data-hook="review-body"], .review-text',
-        date: '[data-hook="review-date"]',
-        images: '.review-image-tile img, .review-image img',
-        verified: '.avp-badge, [data-hook="avp-badge"]'
+        reviewsContainer: '#cm_cr-review_list, #reviewsMedley, .reviews-content',
+        reviewItem: '[data-hook="review"], .review, .a-section.review',
+        author: '.a-profile-name, [data-hook="genome-widget"] span',
+        rating: '.review-rating span, [data-hook="review-star-rating"] span, .a-icon-star span',
+        content: '[data-hook="review-body"] span, .review-text span, .review-text-content span',
+        date: '[data-hook="review-date"], .review-date',
+        images: '.review-image-tile img, .review-image img, [data-hook="review-image-tile"] img',
+        verified: '.avp-badge, [data-hook="avp-badge"], .a-size-mini'
       },
       'ebay': {
-        reviewsContainer: '.reviews-content, .product-reviews',
-        reviewItem: '.review-item, .ebay-review-section',
-        author: '.review-item-author, .reviewer-name',
-        rating: '.star-rating, .review-stars',
-        content: '.review-item-content',
-        date: '.review-item-date',
-        images: '.review-images img',
+        reviewsContainer: '.reviews-content, .product-reviews, #rwid',
+        reviewItem: '.review-item, .ebay-review-section, .rvw-card',
+        author: '.review-item-author, .reviewer-name, .rvw-card__author',
+        rating: '.star-rating, .review-stars, .rvw-card__rating',
+        content: '.review-item-content, .rvw-card__body',
+        date: '.review-item-date, .rvw-card__date',
+        images: '.review-images img, .rvw-card__image img',
         verified: '.verified-purchase'
       },
       'temu': {
-        reviewsContainer: '[class*="reviews"], [class*="comment"]',
-        reviewItem: '[class*="review-item"], [class*="comment-item"]',
-        author: '[class*="user-name"]',
-        rating: '[class*="star"], [class*="rating"]',
-        content: '[class*="review-content"], [class*="comment-content"]',
-        date: '[class*="date"], [class*="time"]',
-        images: '[class*="review"] img',
+        reviewsContainer: '[class*="reviews"], [class*="comment"], [class*="ReviewList"]',
+        reviewItem: '[class*="review-item"], [class*="comment-item"], [class*="ReviewItem"]',
+        author: '[class*="user-name"], [class*="userName"], [class*="nickname"]',
+        rating: '[class*="star"], [class*="rating"], [class*="Stars"]',
+        content: '[class*="review-content"], [class*="comment-content"], [class*="Content"]',
+        date: '[class*="date"], [class*="time"], [class*="Date"]',
+        images: '[class*="review"] img, [class*="ReviewImage"] img',
         verified: '[class*="verified"]'
+      },
+      'walmart': {
+        reviewsContainer: '[data-testid="reviews-list"], .reviews-list',
+        reviewItem: '[data-testid="review-card"], .review-card',
+        author: '[data-testid="reviewer-name"], .reviewer-name',
+        rating: '[data-testid="star-rating"], .star-rating',
+        content: '[data-testid="review-text"], .review-text',
+        date: '[data-testid="review-date"], .review-date',
+        images: '[data-testid="review-image"] img, .review-image img',
+        verified: '[data-testid="verified-purchase"]'
+      },
+      'etsy': {
+        reviewsContainer: '.reviews-list, [data-region="reviews"]',
+        reviewItem: '.review-item, [data-region="review"]',
+        author: '.shop2-review-attribution a, .reviewer-name',
+        rating: '.stars-svg, .review-stars',
+        content: '.prose, .review-text',
+        date: '.review-date, [data-date]',
+        images: '.listing-page-image img, .review-image img',
+        verified: '.verified-buyer'
       }
     }
   };
