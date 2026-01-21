@@ -15,9 +15,11 @@ import {
   Zap,
   ArrowRight,
   BookOpen,
-  Video
+  Video,
+  GraduationCap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionTutorialsPage() {
   const navigate = useNavigate();
@@ -89,17 +91,13 @@ export default function ExtensionTutorialsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <Badge variant="secondary" className="mb-2">Tutoriels</Badge>
-          <h1 className="text-3xl font-bold">Tutoriels Extension Chrome</h1>
-          <p className="text-muted-foreground mt-1">
-            Apprenez à utiliser toutes les fonctionnalités de ShopOpti+
-          </p>
-        </div>
-      </div>
-
+    <ChannablePageWrapper
+      title="Tutoriels Extension"
+      subtitle="Guides Vidéo"
+      description="Apprenez à utiliser toutes les fonctionnalités de l'extension ShopOpti+ avec nos tutoriels"
+      heroImage="extensions"
+      badge={{ label: 'Formation', icon: GraduationCap }}
+    >
       {/* Quick Start */}
       <Card className="bg-gradient-to-br from-primary/5 to-blue-500/5 border-primary/20">
         <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
@@ -174,7 +172,7 @@ export default function ExtensionTutorialsPage() {
         <CardContent>
           <div className="space-y-3">
             {[
-              { title: "Installation pas à pas", path: "/extensions/installation" },
+              { title: "Installation pas à pas", path: "/extensions/download" },
               { title: "Documentation complète", path: "/extensions/documentation" },
               { title: "FAQ et dépannage", path: "/extensions/faq" }
             ].map((guide) => (
@@ -208,6 +206,6 @@ export default function ExtensionTutorialsPage() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }

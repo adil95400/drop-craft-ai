@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   BookOpen, 
   Code, 
@@ -21,11 +20,11 @@ import {
   Download,
   ArrowRight,
   FileText,
-  Terminal,
   Eye,
   Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ExtensionDocumentationPage() {
   const navigate = useNavigate();
@@ -225,7 +224,7 @@ export default function ExtensionDocumentationPage() {
             </p>
             <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-sm">
 {`// Endpoint principal
-POST https://api.shopopti.com/v1/products/import
+POST https://api.shopopti.io/v1/products/import
 
 // Headers requis
 Authorization: Bearer YOUR_API_TOKEN
@@ -297,21 +296,19 @@ Content-Type: application/json
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Badge variant="secondary" className="mb-2">Documentation</Badge>
-          <h1 className="text-3xl font-bold">Documentation Extension Chrome</h1>
-          <p className="text-muted-foreground mt-1">
-            Guide complet d'utilisation de l'extension ShopOpti+
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Documentation Extension"
+      subtitle="Guide Complet"
+      description="Tout ce que vous devez savoir sur l'utilisation de l'extension Chrome ShopOpti+"
+      heroImage="extensions"
+      badge={{ label: 'Documentation', icon: BookOpen }}
+      actions={
         <Button onClick={() => navigate('/extensions/download')}>
           <Download className="h-4 w-4 mr-2" />
           Télécharger
         </Button>
-      </div>
-
+      }
+    >
       <Tabs defaultValue="getting-started" className="space-y-6">
         <TabsList className="flex flex-wrap h-auto gap-1">
           {sections.map((section) => (
@@ -366,6 +363,6 @@ Content-Type: application/json
           </CardContent>
         </Card>
       </div>
-    </div>
+    </ChannablePageWrapper>
   );
 }

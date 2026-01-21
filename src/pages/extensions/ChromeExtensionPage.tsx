@@ -8,6 +8,7 @@ import {
   Activity, History, TrendingUp, Clock, AlertCircle, Save, Loader2
 } from 'lucide-react';
 import { generateExtensionZip } from '@/utils/extensionZipGenerator';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +55,7 @@ const defaultSettings: ExtensionSettings = {
 
 export default function ChromeExtensionPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [settings, setSettings] = useState<ExtensionSettings>(() => {
     const saved = localStorage.getItem('extension-settings');
@@ -304,7 +306,7 @@ export default function ChromeExtensionPage() {
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-2">
               <Badge className="bg-cyan-500">Extension Chrome</Badge>
-              <Badge variant="outline">v2.5.0</Badge>
+              <Badge variant="outline">v4.0.0</Badge>
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold">
@@ -329,9 +331,9 @@ export default function ChromeExtensionPage() {
                 )}
                 {isDownloading ? 'Téléchargement...' : 'Installer l\'extension'}
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={() => navigate('/extensions/tutorials')}>
                 <Play className="h-5 w-5 mr-2" />
-                Voir la démo
+                Voir les tutoriels
               </Button>
             </div>
             
