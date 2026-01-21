@@ -793,23 +793,29 @@ export function ImageGalleryModal({
             
             <ScrollArea className="flex-1">
               <div className="p-2 space-y-2">
-                {images.map((img, index) => (
-                  <div
-                    key={index}
-                    className={cn(
-                      "relative group cursor-pointer rounded-lg overflow-hidden border-2 transition-all",
-                      currentIndex === index
-                        ? "border-primary ring-2 ring-primary/30"
-                        : "border-transparent hover:border-muted-foreground/30",
-                      selectedImages.includes(index) && "ring-2 ring-blue-500"
-                    )}
-                    onClick={() => {
-                      setCurrentIndex(index)
-                      setZoom(1)
-                      setRotation(0)
-                      if (activeTab !== 'gallery') setActiveTab('gallery')
-                    }}
-                  >
+                 {images.map((img, index) => (
+                   <div
+                     key={index}
+                     className={cn(
+                       "relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all",
+                       currentIndex === index
+                         ? "border-primary ring-2 ring-primary/30"
+                         : "border-transparent hover:border-muted-foreground/30",
+                       selectedImages.includes(index) && "ring-2 ring-primary/60"
+                     )}
+                     onClick={() => {
+                       // Si l'utilisateur a déjà commencé une sélection, cliquer sur la miniature doit aussi sélectionner/désélectionner
+                       if (!readOnly && selectedImages.length > 0) {
+                         handleSelectImage(index)
+                         return
+                       }
+ 
+                       setCurrentIndex(index)
+                       setZoom(1)
+                       setRotation(0)
+                       if (activeTab !== 'gallery') setActiveTab('gallery')
+                     }}
+                   >
                     <div className="aspect-square relative">
                       <img
                         src={img}
@@ -819,32 +825,31 @@ export function ImageGalleryModal({
                           (e.target as HTMLImageElement).src = '/placeholder.svg'
                         }}
                       />
-                      
-                      {/* Overlay on hover */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        {!readOnly && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-white hover:bg-white/20"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleSelectImage(index)
-                            }}
-                          >
-                            <div className={cn(
-                              "h-4 w-4 rounded border-2 flex items-center justify-center",
-                              selectedImages.includes(index)
-                                ? "bg-blue-500 border-blue-500"
-                                : "border-white"
-                            )}>
-                              {selectedImages.includes(index) && (
-                                <Check className="h-3 w-3 text-white" />
-                              )}
-                            </div>
-                          </Button>
-                        )}
-                      </div>
+
+                      {/* Sélection (toujours visible : fonctionne aussi sur mobile, sans hover) */}
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          className={cn(
+                            "absolute top-1 right-1 h-6 w-6 rounded-md border flex items-center justify-center",
+                            "bg-background/80 backdrop-blur-sm",
+                            selectedImages.includes(index)
+                              ? "border-primary text-primary"
+                              : "border-border text-muted-foreground"
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSelectImage(index)
+                          }}
+                          aria-label={selectedImages.includes(index) ? 'Désélectionner l\'image' : 'Sélectionner l\'image'}
+                        >
+                          {selectedImages.includes(index) ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <span className="h-2 w-2 rounded-full bg-current opacity-70" />
+                          )}
+                        </button>
+                      )}
 
                       {/* Primary indicator */}
                       {index === 0 && (
