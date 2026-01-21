@@ -538,37 +538,126 @@ async function exportProductsToShopify(supabaseClient: any, storeId: string, cre
     throw new Error('Integration not found - no matching record in integrations or store_integrations')
   }
   
-  let query = supabaseClient
-    .from('products')
-    .select('*')
-    .eq('user_id', userId)
-  
-  if (productIds && productIds.length > 0) {
-    query = query.in('id', productIds)
+  // NOTE:
+  // - La sélection produit côté app peut venir de plusieurs sources (products, imported_products, etc.)
+  // - Historiquement, cette fonction exportait uniquement depuis public.products.
+  // - On supporte désormais aussi public.imported_products quand les IDs sélectionnés appartiennent à cette table.
+
+  type ExportableProduct = {
+    id: string
+    source_table: 'products' | 'imported_products'
+    name: string
+    description?: string | null
+    vendor?: string | null
+    brand?: string | null
+    product_type?: string | null
+    category?: string | null
+    handle?: string | null
+    price?: number | string | null
+    sku?: string | null
+    barcode?: string | null
+    stock_quantity?: number | null
+    compare_at_price?: number | string | null
+    weight?: number | null
+    weight_unit?: string | null
+    image_url?: string | null
+    image_urls?: string[] | null
+    tags?: string[] | null
   }
-  
-  const { data: products, error: fetchError } = await query
-  
-  if (fetchError) {
-    throw new Error(`Failed to fetch products: ${fetchError.message}`)
+
+  const requestedIds = (productIds || []).filter(Boolean)
+
+  // 1) Essayer d'abord dans products
+  let productsRows: any[] = []
+  {
+    let query = supabaseClient
+      .from('products')
+      .select('*')
+      .eq('user_id', userId)
+
+    if (requestedIds.length > 0) {
+      query = query.in('id', requestedIds)
+    }
+
+    const { data, error } = await query
+    if (error) {
+      throw new Error(`Failed to fetch products: ${error.message}`)
+    }
+    productsRows = data || []
   }
-  
-  if (!products || products.length === 0) {
+
+  // 2) Si des IDs ont été demandés mais non trouvés dans products, tenter imported_products
+  const foundProductIds = new Set(productsRows.map((p) => p.id))
+  const missingIds = requestedIds.length > 0
+    ? requestedIds.filter((id) => !foundProductIds.has(id))
+    : []
+
+  let importedRows: any[] = []
+  if (missingIds.length > 0) {
+    const { data, error } = await supabaseClient
+      .from('imported_products')
+      .select('id, name, description, price, sku, image_urls, category, stock_quantity, metadata')
+      .eq('user_id', userId)
+      .in('id', missingIds)
+
+    if (error) {
+      throw new Error(`Failed to fetch imported_products: ${error.message}`)
+    }
+    importedRows = data || []
+  }
+
+  const exportables: ExportableProduct[] = [
+    ...productsRows.map((p) => ({
+      id: p.id,
+      source_table: 'products' as const,
+      name: p.name,
+      description: p.description,
+      vendor: p.vendor,
+      brand: p.brand,
+      product_type: p.product_type,
+      category: p.category,
+      handle: p.handle,
+      price: p.price,
+      sku: p.sku,
+      barcode: p.barcode,
+      stock_quantity: p.stock_quantity,
+      compare_at_price: p.compare_at_price,
+      weight: p.weight,
+      weight_unit: p.weight_unit,
+      image_url: p.image_url,
+      image_urls: p.image_urls,
+      tags: p.tags,
+    })),
+    ...importedRows.map((p) => ({
+      id: p.id,
+      source_table: 'imported_products' as const,
+      name: p.name,
+      description: p.description,
+      category: p.category,
+      price: p.price,
+      sku: p.sku,
+      stock_quantity: p.stock_quantity,
+      image_urls: p.image_urls,
+      tags: Array.isArray(p?.metadata?.tags) ? p.metadata.tags : [],
+    })),
+  ]
+
+  if (exportables.length === 0) {
     return new Response(
-      JSON.stringify({ 
-        success: false, 
+      JSON.stringify({
+        success: false,
         error: 'Aucun produit à exporter'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
-  
-  console.log(`Exporting ${products.length} products to Shopify`)
+
+  console.log(`Exporting ${exportables.length} products to Shopify`) 
   
   let exportedCount = 0
   const errors: string[] = []
   
-  for (const product of products) {
+  for (const product of exportables) {
     try {
       const shopifyProduct = {
         title: product.name,
@@ -578,7 +667,7 @@ async function exportProductsToShopify(supabaseClient: any, storeId: string, cre
         handle: product.handle,
         status: 'active',
         variants: [{
-          price: product.price?.toString() || '0',
+          price: (product.price as any)?.toString?.() || (product.price ?? '0').toString(),
           sku: product.sku,
           barcode: product.barcode,
           inventory_quantity: product.stock_quantity || 0,
@@ -610,11 +699,13 @@ async function exportProductsToShopify(supabaseClient: any, storeId: string, cre
       const createdProduct = await response.json()
       exportedCount++
       
-      // Update product with Shopify ID
-      await supabaseClient
-        .from('products')
-        .update({ shopify_id: createdProduct.product.id?.toString() })
-        .eq('id', product.id)
+      // Update product with Shopify ID (uniquement si la source est la table products)
+      if (product.source_table === 'products') {
+        await supabaseClient
+          .from('products')
+          .update({ shopify_id: createdProduct.product.id?.toString() })
+          .eq('id', product.id)
+      }
       
       console.log(`Exported product: ${product.name} -> Shopify ID: ${createdProduct.product.id}`)
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -627,7 +718,7 @@ async function exportProductsToShopify(supabaseClient: any, storeId: string, cre
   return new Response(
     JSON.stringify({ 
       success: true, 
-      message: `${exportedCount}/${products.length} produits exportés vers Shopify`,
+      message: `${exportedCount}/${exportables.length} produits exportés vers Shopify`,
       exported_count: exportedCount,
       errors: errors
     }),
