@@ -85,6 +85,36 @@ class DropCraftContentScript {
     multiStoreScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(multiStoreScript);
     
+    // Inject price monitor for real-time price tracking
+    const priceMonitorScript = document.createElement('script');
+    priceMonitorScript.src = chrome.runtime.getURL('price-monitor.js');
+    priceMonitorScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(priceMonitorScript);
+    
+    // Inject auto-order system for automated fulfillment
+    const autoOrderScript = document.createElement('script');
+    autoOrderScript.src = chrome.runtime.getURL('auto-order.js');
+    autoOrderScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(autoOrderScript);
+    
+    // Inject trend analyzer for AI-powered product insights
+    const trendAnalyzerScript = document.createElement('script');
+    trendAnalyzerScript.src = chrome.runtime.getURL('trend-analyzer.js');
+    trendAnalyzerScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(trendAnalyzerScript);
+    
+    // Inject bulk selector for multi-product selection on listing pages
+    const bulkSelectorScript = document.createElement('script');
+    bulkSelectorScript.src = chrome.runtime.getURL('bulk-selector.js');
+    bulkSelectorScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(bulkSelectorScript);
+    
+    // Inject review translator for multilingual review support
+    const reviewTranslatorScript = document.createElement('script');
+    reviewTranslatorScript.src = chrome.runtime.getURL('review-translator.js');
+    reviewTranslatorScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(reviewTranslatorScript);
+    
     // Inject platform-specific extractors
     this.injectPlatformExtractors();
   }
@@ -107,6 +137,46 @@ class DropCraftContentScript {
       cdiscountScript.src = chrome.runtime.getURL('platforms/cdiscount.js');
       cdiscountScript.onload = function() { this.remove(); };
       (document.head || document.documentElement).appendChild(cdiscountScript);
+    }
+    
+    // Fnac
+    if (hostname.includes('fnac')) {
+      const fnacScript = document.createElement('script');
+      fnacScript.src = chrome.runtime.getURL('platforms/fnac.js');
+      fnacScript.onload = function() { this.remove(); };
+      (document.head || document.documentElement).appendChild(fnacScript);
+    }
+    
+    // Rakuten
+    if (hostname.includes('rakuten')) {
+      const rakutenScript = document.createElement('script');
+      rakutenScript.src = chrome.runtime.getURL('platforms/rakuten.js');
+      rakutenScript.onload = function() { this.remove(); };
+      (document.head || document.documentElement).appendChild(rakutenScript);
+    }
+    
+    // Home Depot
+    if (hostname.includes('homedepot')) {
+      const homeDepotScript = document.createElement('script');
+      homeDepotScript.src = chrome.runtime.getURL('platforms/home-depot.js');
+      homeDepotScript.onload = function() { this.remove(); };
+      (document.head || document.documentElement).appendChild(homeDepotScript);
+    }
+    
+    // Lowe's
+    if (hostname.includes('lowes')) {
+      const lowesScript = document.createElement('script');
+      lowesScript.src = chrome.runtime.getURL('platforms/lowes.js');
+      lowesScript.onload = function() { this.remove(); };
+      (document.head || document.documentElement).appendChild(lowesScript);
+    }
+    
+    // Costco
+    if (hostname.includes('costco')) {
+      const costcoScript = document.createElement('script');
+      costcoScript.src = chrome.runtime.getURL('platforms/costco.js');
+      costcoScript.onload = function() { this.remove(); };
+      (document.head || document.documentElement).appendChild(costcoScript);
     }
   }
 
