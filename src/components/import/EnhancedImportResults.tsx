@@ -33,7 +33,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { useImportUltraPro, type ImportedProduct } from '@/hooks/useImportUltraPro'
-import { ShopifyExportDialog } from '@/components/products/export/ShopifyExportDialog'
+import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog'
 
 export const EnhancedImportResults = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -93,7 +93,7 @@ export const EnhancedImportResults = () => {
         case 'optimize':
           toast.success(`${selectedProducts.length} produit(s) optimisé(s) par IA`)
           break
-        case 'export-shopify':
+        case 'export-store':
           setShowShopifyExport(true)
           return // Don't clear selection, let dialog handle it
         case 'export-marketplace':
@@ -286,9 +286,9 @@ export const EnhancedImportResults = () => {
                       Optimiser avec IA
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleBulkAction('export-shopify')}>
+                    <DropdownMenuItem onClick={() => handleBulkAction('export-store')}>
                       <ShoppingCart className="w-4 h-4 mr-2" />
-                      Envoyer vers Shopify
+                      Exporter vers une boutique
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleBulkAction('export-marketplace')}>
                       <Target className="w-4 h-4 mr-2" />
@@ -624,8 +624,8 @@ export const EnhancedImportResults = () => {
           </CardContent>
         </Card>
       )}
-      {/* Shopify Export Dialog */}
-      <ShopifyExportDialog
+      {/* Platform Export Dialog */}
+      <PlatformExportDialog
         open={showShopifyExport}
         onOpenChange={setShowShopifyExport}
         productIds={selectedProducts}
@@ -634,7 +634,7 @@ export const EnhancedImportResults = () => {
           .map(p => p.name)}
         onSuccess={() => {
           setSelectedProducts([])
-          toast.success('Export Shopify terminé')
+          toast.success('Export terminé')
         }}
       />
     </div>
