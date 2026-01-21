@@ -71,19 +71,23 @@ export function FormField({
 interface EnhancedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   description?: string;
+  hint?: string;
   error?: string;
-  icon?: LucideIcon;
+  icon?: React.ReactNode;
   success?: boolean;
   showPasswordToggle?: boolean;
+  status?: 'success' | 'warning' | 'error';
 }
 
 export function EnhancedInput({
   label,
   description,
+  hint,
   error,
-  icon: Icon,
+  icon,
   success,
   showPasswordToggle,
+  status,
   type = 'text',
   required,
   className,
@@ -91,23 +95,27 @@ export function EnhancedInput({
 }: EnhancedInputProps) {
   const [showPassword, setShowPassword] = React.useState(false);
   const inputType = showPasswordToggle ? (showPassword ? 'text' : 'password') : type;
+  
+  const isSuccess = success || status === 'success';
+  const isWarning = status === 'warning';
+  const isError = error || status === 'error';
+  const displayHint = hint || description;
 
   return (
-    <FormField
-      name={props.name || props.id || ''}
-      label={label}
-      description={description}
-      error={error}
-      required={required}
-      icon={Icon}
-    >
+    <div className="space-y-2">
+      <Label className="flex items-center gap-2 text-sm font-medium">
+        {icon && <span className="text-muted-foreground">{icon}</span>}
+        {label}
+        {required && <span className="text-destructive">*</span>}
+      </Label>
       <div className="relative">
         <Input
           type={inputType}
           className={cn(
             'transition-all duration-200',
-            error && 'border-destructive focus-visible:ring-destructive',
-            success && 'border-emerald-500 focus-visible:ring-emerald-500',
+            isError && 'border-destructive focus-visible:ring-destructive',
+            isSuccess && 'border-emerald-500 focus-visible:ring-emerald-500',
+            isWarning && 'border-amber-500 focus-visible:ring-amber-500',
             showPasswordToggle && 'pr-10',
             className
           )}
@@ -122,7 +130,7 @@ export function EnhancedInput({
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         )}
-        {success && !error && (
+        {isSuccess && !isError && (
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -131,8 +139,26 @@ export function EnhancedInput({
             <CheckCircle2 className="h-4 w-4" />
           </motion.div>
         )}
+        {isWarning && !isError && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-500"
+          >
+            <AlertCircle className="h-4 w-4" />
+          </motion.div>
+        )}
       </div>
-    </FormField>
+      {error && (
+        <p className="text-xs text-destructive flex items-center gap-1">
+          <AlertCircle className="h-3 w-3" />
+          {error}
+        </p>
+      )}
+      {displayHint && !error && (
+        <p className="text-xs text-muted-foreground">{displayHint}</p>
+      )}
+    </div>
   );
 }
 
@@ -198,12 +224,12 @@ interface EnhancedSelectProps {
   label: string;
   description?: string;
   error?: string;
-  icon?: LucideIcon;
+  icon?: React.ReactNode;
   required?: boolean;
   value?: string;
   onValueChange?: (value: string) => void;
   placeholder?: string;
-  options: Array<{ value: string; label: string; description?: string }>;
+  options: Array<{ value: string; label: string; description?: string; icon?: string }>;
   disabled?: boolean;
   className?: string;
 }
@@ -222,14 +248,12 @@ export function EnhancedSelect({
   className,
 }: EnhancedSelectProps) {
   return (
-    <FormField
-      name=""
-      label={label}
-      description={description}
-      error={error}
-      required={required}
-      icon={icon}
-    >
+    <div className="space-y-2">
+      <Label className="flex items-center gap-2 text-sm font-medium">
+        {icon && <span className="text-muted-foreground">{icon}</span>}
+        {label}
+        {required && <span className="text-destructive">*</span>}
+      </Label>
       <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger className={cn(
           'transition-all duration-200',
@@ -251,7 +275,16 @@ export function EnhancedSelect({
           ))}
         </SelectContent>
       </Select>
-    </FormField>
+      {error && (
+        <p className="text-xs text-destructive flex items-center gap-1">
+          <AlertCircle className="h-3 w-3" />
+          {error}
+        </p>
+      )}
+      {description && !error && (
+        <p className="text-xs text-muted-foreground">{description}</p>
+      )}
+    </div>
   );
 }
 
