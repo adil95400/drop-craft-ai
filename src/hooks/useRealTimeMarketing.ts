@@ -180,34 +180,97 @@ export const useRealTimeMarketing = () => {
   const queryClient = useQueryClient()
   const [lastActivity, setLastActivity] = useState<Date>(new Date())
 
-  // Use mock campaigns
-  const { data: campaigns = mockCampaigns, isLoading: isLoadingCampaigns } = useQuery({
+  // Fetch real campaigns from ad_campaigns table
+  const { data: campaigns = [], isLoading: isLoadingCampaigns } = useQuery({
     queryKey: ['marketing-campaigns-realtime'],
     queryFn: async () => {
-      return mockCampaigns
+      const { data, error } = await supabase
+        .from('ad_campaigns')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+      if (error) {
+        console.error('Error fetching campaigns:', error)
+        return []
+      }
+
+      return (data || []).map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        description: '',
+        type: c.platform || 'ads',
+        status: c.status as 'draft' | 'active' | 'paused' | 'completed',
+        budget_total: c.budget || 0,
+        budget_spent: c.spend || 0,
+        user_id: c.user_id,
+        created_at: c.created_at,
+        updated_at: c.updated_at,
+        metrics: {
+          impressions: c.impressions || 0,
+          clicks: c.clicks || 0,
+          conversions: c.conversions || 0,
+          roas: c.roas || 0,
+          conversion_rate: c.ctr || 0
+        }
+      })) as MarketingCampaign[]
     },
     refetchInterval: 30000,
   })
 
-  // Use mock segments
-  const { data: segments = mockSegments, isLoading: isLoadingSegments } = useQuery({
+  // Fetch segments from customer_segments table
+  const { data: segments = [], isLoading: isLoadingSegments } = useQuery({
     queryKey: ['marketing-segments-realtime'],
     queryFn: async () => {
-      return mockSegments
+      const { data, error } = await supabase
+        .from('customer_segments')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+      if (error) return []
+      return (data || []).map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        description: s.description,
+        criteria: s.rules || {},
+        contact_count: s.customer_count || 0,
+        user_id: s.user_id,
+        created_at: s.created_at,
+        updated_at: s.updated_at
+      })) as MarketingSegment[]
     },
     refetchInterval: 45000,
   })
 
-  // Use mock contacts
-  const { data: contacts = mockContacts, isLoading: isLoadingContacts } = useQuery({
+  // Fetch contacts from customers table
+  const { data: contacts = [], isLoading: isLoadingContacts } = useQuery({
     queryKey: ['crm-contacts-realtime'],
     queryFn: async () => {
-      return mockContacts
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, first_name, last_name, email, phone, status, total_orders, created_at, updated_at, user_id')
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (error) return []
+      return (data || []).map((c: any) => ({
+        id: c.id,
+        name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Client',
+        email: c.email || '',
+        phone: c.phone,
+        status: c.status || 'active',
+        lifecycle_stage: c.total_orders > 0 ? 'customer' : 'lead',
+        lead_score: Math.min(100, (c.total_orders || 0) * 20 + 30),
+        user_id: c.user_id,
+        created_at: c.created_at,
+        updated_at: c.updated_at
+      })) as CRMContact[]
     },
     refetchInterval: 60000,
   })
 
-  // Fetch AI optimization jobs (this table exists)
+  // Fetch AI optimization jobs
   const { data: automationJobs = [], isLoading: isLoadingJobs } = useQuery({
     queryKey: ['ai-optimization-jobs-realtime'],
     queryFn: async () => {
@@ -218,13 +281,11 @@ export const useRealTimeMarketing = () => {
         .limit(50)
 
       if (error) return []
-      
-      // Transform to match interface with progress field
       return (data || []).map((job: any) => ({
         id: job.id,
         job_type: job.job_type,
         status: job.status,
-        progress: job.metrics?.progress || (job.status === 'completed' ? 100 : job.status === 'pending' ? 0 : 50),
+        progress: job.metrics?.progress || (job.status === 'completed' ? 100 : 50),
         input_data: job.input_data,
         output_data: job.output_data,
         started_at: job.started_at,
@@ -237,7 +298,7 @@ export const useRealTimeMarketing = () => {
     refetchInterval: 15000,
   })
 
-  // Calculate stats from mock data
+  // Calculate stats from real data
   const stats: MarketingStats = {
     totalCampaigns: campaigns.length,
     activeCampaigns: campaigns.filter(c => c.status === 'active').length,
@@ -245,37 +306,19 @@ export const useRealTimeMarketing = () => {
     totalSpent: campaigns.reduce((sum, c) => sum + c.budget_spent, 0),
     totalContacts: contacts.length,
     totalSegments: segments.length,
-    avgROAS: campaigns.length > 0 ? 
-      campaigns.reduce((sum, c) => {
-        const metrics = c.metrics as any
-        return sum + (metrics?.roas || 0)
-      }, 0) / campaigns.length : 0,
-    conversionRate: campaigns.length > 0 ?
-      campaigns.reduce((sum, c) => {
-        const metrics = c.metrics as any
-        return sum + (metrics?.conversion_rate || 0)
-      }, 0) / campaigns.length : 0,
-    totalImpressions: campaigns.reduce((sum, c) => {
-      const metrics = c.metrics as any
-      return sum + (metrics?.impressions || 0)
-    }, 0),
-    totalClicks: campaigns.reduce((sum, c) => {
-      const metrics = c.metrics as any
-      return sum + (metrics?.clicks || 0)
-    }, 0)
+    avgROAS: campaigns.length > 0 ? campaigns.reduce((sum, c) => sum + ((c.metrics as any)?.roas || 0), 0) / campaigns.length : 0,
+    conversionRate: campaigns.length > 0 ? campaigns.reduce((sum, c) => sum + ((c.metrics as any)?.conversion_rate || 0), 0) / campaigns.length : 0,
+    totalImpressions: campaigns.reduce((sum, c) => sum + ((c.metrics as any)?.impressions || 0), 0),
+    totalClicks: campaigns.reduce((sum, c) => sum + ((c.metrics as any)?.clicks || 0), 0)
   }
 
-  // Auto-refresh function
   const refreshData = () => {
     queryClient.invalidateQueries({ queryKey: ['marketing-campaigns-realtime'] })
     queryClient.invalidateQueries({ queryKey: ['marketing-segments-realtime'] })
     queryClient.invalidateQueries({ queryKey: ['crm-contacts-realtime'] })
     queryClient.invalidateQueries({ queryKey: ['ai-optimization-jobs-realtime'] })
     setLastActivity(new Date())
-    toast({
-      title: "Données actualisées",
-      description: "Les données marketing ont été synchronisées",
-    })
+    toast({ title: "Données actualisées", description: "Les données marketing ont été synchronisées" })
   }
 
   const isLoading = isLoadingCampaigns || isLoadingSegments || isLoadingContacts || isLoadingJobs
