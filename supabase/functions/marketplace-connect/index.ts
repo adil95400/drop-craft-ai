@@ -212,18 +212,20 @@ serve(async (req) => {
         .from('integrations')
         .upsert({
           user_id: user.id,
-          platform_type: platformKey,
+          platform: platformKey,
           platform_name: platformConfig.name,
-          shop_domain: shopUrl,
+          store_url: shopUrl,
+          store_id: body.credentials.shop_id || body.credentials.seller_id || shopUrl,
           connection_status: 'connected',
           is_active: true,
           config: {
             ...body.config,
+            platform_type: platformConfig.type,
             credentials: body.credentials,
           },
           last_sync_at: new Date().toISOString(),
         }, {
-          onConflict: 'user_id,platform_type'
+          onConflict: 'user_id,platform'
         })
         .select()
         .single()
