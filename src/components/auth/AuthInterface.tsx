@@ -170,11 +170,11 @@ export const AuthInterface = () => {
       {/* Left Side - Form */}
       <div className="w-full lg:w-1/2 flex flex-col">
         {/* Logo Header */}
-        <div className="p-6 lg:p-10">
+        <div className="p-6 lg:p-10 flex justify-center">
           <img 
             src={shopOptiLogo} 
             alt="ShopOpti+" 
-            className="h-14 w-auto object-contain"
+            className="h-24 w-auto object-contain"
           />
         </div>
 
