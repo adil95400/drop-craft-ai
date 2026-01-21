@@ -14,14 +14,19 @@ import {
   Star,
   TrendingUp,
   DollarSign,
-  Calendar
+  Calendar,
+  LayoutTemplate
 } from 'lucide-react';
 import { useCustomerSegments, useRFMScores, useSegmentStats, useCreateCustomerSegment, useDeleteCustomerSegment, useCalculateRFMScores } from '@/hooks/useCustomerSegmentation';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { SegmentTemplatesModal } from './SegmentTemplatesModal';
+import { SegmentTemplate } from '@/services/CustomerSegmentationService';
+import { toast } from 'sonner';
 
 export function CustomerSegmentationDashboard() {
   const [activeTab, setActiveTab] = useState('segments');
+  const [templatesOpen, setTemplatesOpen] = useState(false);
 
   const { data: segments = [] } = useCustomerSegments();
   const { data: rfmScores = [] } = useRFMScores();
@@ -40,6 +45,22 @@ export function CustomerSegmentationDashboard() {
   const handleDelete = (id: string) => {
     if (confirm('Supprimer ce segment ?')) {
       deleteSegment.mutate(id);
+    }
+  };
+
+  const handleTemplateSelect = async (template: SegmentTemplate) => {
+    try {
+      await createSegment.mutateAsync({
+        name: template.name,
+        description: template.description,
+        segment_type: 'dynamic',
+        rules: template.rules,
+        is_active: true
+      });
+      toast.success(`Segment "${template.name}" créé avec succès`);
+    } catch (error) {
+      console.error('Error creating segment from template:', error);
+      toast.error('Erreur lors de la création du segment');
     }
   };
 
@@ -143,6 +164,10 @@ export function CustomerSegmentationDashboard() {
           </TabsList>
 
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setTemplatesOpen(true)}>
+              <LayoutTemplate className="mr-2 h-4 w-4" />
+              Modèles
+            </Button>
             <Button variant="outline" onClick={() => calculateRFM.mutate()} disabled={calculateRFM.isPending}>
               <RefreshCw className={`mr-2 h-4 w-4 ${calculateRFM.isPending ? 'animate-spin' : ''}`} />
               Recalculer RFM
@@ -287,6 +312,12 @@ export function CustomerSegmentationDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <SegmentTemplatesModal
+        open={templatesOpen}
+        onOpenChange={setTemplatesOpen}
+        onSelectTemplate={handleTemplateSelect}
+      />
     </div>
   );
 }
