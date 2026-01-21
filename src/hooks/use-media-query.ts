@@ -1,42 +1,64 @@
 /**
- * Hook pour détecter les media queries
+ * Hook pour détecter les media queries avec support SSR
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from "react"
 
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false)
 
+  const handleChange = useCallback((event: MediaQueryListEvent | MediaQueryList) => {
+    setMatches(event.matches)
+  }, [])
+
   useEffect(() => {
-    const media = window.matchMedia(query)
+    // Check if we're in a browser environment
+    if (typeof window === "undefined" || !window.matchMedia) {
+      return
+    }
+
+    const mediaQuery = window.matchMedia(query)
     
     // Set initial value
-    setMatches(media.matches)
+    setMatches(mediaQuery.matches)
 
-    // Create listener
-    const listener = (event: MediaQueryListEvent) => {
-      setMatches(event.matches)
+    // Listen for changes
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange)
+      return () => mediaQuery.removeEventListener("change", handleChange)
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleChange)
+      return () => mediaQuery.removeListener(handleChange)
     }
-
-    // Add listener
-    media.addEventListener('change', listener)
-
-    return () => {
-      media.removeEventListener('change', listener)
-    }
-  }, [query])
+  }, [query, handleChange])
 
   return matches
 }
 
-export function useIsMobile(): boolean {
-  return useMediaQuery('(max-width: 768px)')
+/**
+ * Presets for common breakpoints
+ */
+export function useIsMobile() {
+  return useMediaQuery("(max-width: 768px)")
 }
 
-export function useIsTablet(): boolean {
-  return useMediaQuery('(min-width: 769px) and (max-width: 1024px)')
+export function useIsTablet() {
+  return useMediaQuery("(min-width: 769px) and (max-width: 1024px)")
 }
 
-export function useIsDesktop(): boolean {
-  return useMediaQuery('(min-width: 1025px)')
+export function useIsDesktop() {
+  return useMediaQuery("(min-width: 1025px)")
+}
+
+export function useIsTouchDevice() {
+  return useMediaQuery("(hover: none) and (pointer: coarse)")
+}
+
+export function usePrefersDarkMode() {
+  return useMediaQuery("(prefers-color-scheme: dark)")
+}
+
+export function usePrefersReducedMotion() {
+  return useMediaQuery("(prefers-reduced-motion: reduce)")
 }
