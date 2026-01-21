@@ -1,25 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo, memo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from "@/hooks/use-toast"
-import { Users, UserPlus, Mail, Phone, TrendingUp, Search, Target, Activity, Calendar, PhoneCall, MessageSquare, Star, BarChart3, Crown, Zap, Bell, Filter, Download, Eye, Edit, Trash2, MoreHorizontal, ArrowUp, ArrowDown, CheckCircle2, XCircle, Clock, DollarSign } from 'lucide-react'
+import { Users, UserPlus, Mail, Phone, TrendingUp, Search, Target, BarChart3, Crown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-
+import { Skeleton } from '@/components/ui/skeleton'
 import { useCustomersUnified } from '@/hooks/unified'
-import { LeadsManager } from '@/components/crm/LeadsManager'
-import { SalesPipeline } from '@/components/crm/SalesPipeline'
 import { Link } from 'react-router-dom'
+import { useIsMobile } from '@/hooks/use-media-query'
+import { StatsGrid, AnimatedCard } from '@/components/layout/OptimizedPageWrapper'
 
 export default function CRM() {
   const { toast } = useToast();
@@ -128,13 +124,22 @@ export default function CRM() {
     }
   }
 
+  const isMobile = useIsMobile()
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Chargement des données CRM...</p>
+      <div className="space-y-6 p-4 md:p-6">
+        {/* Loading skeleton */}
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-6 w-96" />
         </div>
+        <StatsGrid columns={4}>
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
+        </StatsGrid>
+        <Skeleton className="h-64 rounded-xl" />
       </div>
     )
   }
