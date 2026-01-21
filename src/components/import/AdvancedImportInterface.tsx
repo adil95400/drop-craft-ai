@@ -42,7 +42,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useImport } from '@/domains/commerce/hooks/useImport'
 import { ImportMethodCard } from './ImportMethodCard'
 import { logAction } from '@/utils/consoleCleanup'
-import { ShopifyExportDialog } from '@/components/products/export/ShopifyExportDialog'
+import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog'
 
 interface FieldMapping {
   source: string
@@ -181,7 +181,7 @@ export const AdvancedImportInterface = () => {
         case 'optimize':
           toast.success(`${selectedProducts.length} produit(s) optimisé(s) par IA`)
           break
-        case 'export-shopify':
+        case 'export-store':
           setShowShopifyExport(true)
           return // Don't clear selection, let dialog handle it
         case 'export-marketplace':
@@ -686,9 +686,9 @@ export const AdvancedImportInterface = () => {
                       <Zap className="w-4 h-4 mr-2" />
                       Optimiser avec IA
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkAction('export-shopify')}>
+                    <DropdownMenuItem onClick={() => handleBulkAction('export-store')}>
                       <ShoppingCart className="w-4 h-4 mr-2" />
-                      Envoyer vers Shopify
+                      Exporter vers une boutique
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleBulkAction('export-marketplace')}>
                       <Target className="w-4 h-4 mr-2" />
@@ -1094,8 +1094,8 @@ export const AdvancedImportInterface = () => {
           </Card>
         </TabsContent>
       </Tabs>
-      {/* Shopify Export Dialog */}
-      <ShopifyExportDialog
+      {/* Platform Export Dialog */}
+      <PlatformExportDialog
         open={showShopifyExport}
         onOpenChange={setShowShopifyExport}
         productIds={selectedProducts}
@@ -1104,7 +1104,7 @@ export const AdvancedImportInterface = () => {
           .map(p => p.name)}
         onSuccess={() => {
           setSelectedProducts([])
-          toast.success('Export Shopify terminé')
+          toast.success('Export terminé')
         }}
       />
     </div>

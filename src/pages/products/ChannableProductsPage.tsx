@@ -15,6 +15,7 @@ import { ProductsDebugPanel } from '@/components/debug/ProductsDebugPanel'
 import { ProductViewModal } from '@/components/modals/ProductViewModal'
 import { AdvancedFiltersPanel } from '@/components/products/AdvancedFiltersPanel'
 import { BulkEditPanel } from '@/components/products/BulkEditPanel'
+import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog'
 
 import {
   ChannableCategoryFilter,
@@ -24,7 +25,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
-  Package, Loader2, Plus, RefreshCw, GitBranch, Edit3
+  Package, Loader2, Plus, RefreshCw, GitBranch, Edit3, Upload
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
@@ -98,6 +99,7 @@ export default function ChannableProductsPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [showBulkEdit, setShowBulkEdit] = useState(false)
   const [showBulkEnrichment, setShowBulkEnrichment] = useState(false)
+  const [showPlatformExport, setShowPlatformExport] = useState(false)
   const [expertMode, setExpertMode] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('all')
   const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null)
@@ -385,25 +387,41 @@ export default function ChannableProductsPage() {
 
           {/* Bulk Edit Trigger */}
           {selectedProducts.length > 0 && (
-            <Sheet open={showBulkEdit} onOpenChange={setShowBulkEdit}>
-              <SheetTrigger asChild>
-                <Button variant="default" size="sm" className="gap-2">
-                  <Edit3 className="h-4 w-4" />
-                  Éditer ({selectedProducts.length})
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-                <BulkEditPanel
-                  selectedProducts={products.filter(p => selectedProducts.includes(p.id))}
-                  onComplete={() => {
-                    setShowBulkEdit(false)
-                    setSelectedProducts([])
-                    handleRefresh()
-                  }}
-                  onCancel={() => setShowBulkEdit(false)}
-                />
-              </SheetContent>
-            </Sheet>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-primary/10 text-primary font-medium">
+                {selectedProducts.length} sélectionné(s)
+              </Badge>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                onClick={() => setShowPlatformExport(true)}
+              >
+                <Upload className="h-4 w-4" />
+                Exporter
+              </Button>
+
+              <Sheet open={showBulkEdit} onOpenChange={setShowBulkEdit}>
+                <SheetTrigger asChild>
+                  <Button variant="default" size="sm" className="gap-2">
+                    <Edit3 className="h-4 w-4" />
+                    Éditer
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+                  <BulkEditPanel
+                    selectedProducts={products.filter(p => selectedProducts.includes(p.id))}
+                    onComplete={() => {
+                      setShowBulkEdit(false)
+                      setSelectedProducts([])
+                      handleRefresh()
+                    }}
+                    onCancel={() => setShowBulkEdit(false)}
+                  />
+                </SheetContent>
+              </Sheet>
+            </div>
           )}
 
           {/* Category Filter Pills */}
@@ -640,6 +658,20 @@ export default function ChannableProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Platform Export Dialog */}
+      <PlatformExportDialog
+        open={showPlatformExport}
+        onOpenChange={setShowPlatformExport}
+        productIds={selectedProducts}
+        productNames={products
+          .filter(p => selectedProducts.includes(p.id))
+          .map(p => p.name)}
+        onSuccess={() => {
+          setSelectedProducts([])
+          toast({ title: 'Export terminé', description: 'Les produits ont été exportés avec succès' })
+        }}
+      />
     </ChannablePageWrapper>
   )
 }

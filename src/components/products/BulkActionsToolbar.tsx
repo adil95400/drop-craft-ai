@@ -119,10 +119,10 @@ const ACTION_GROUPS: ActionGroup[] = [
     label: 'Export & Publication',
     actions: [
       {
-        id: 'export-shopify',
-        label: 'Exporter vers Shopify',
+        id: 'export-store',
+        label: 'Exporter vers une boutique',
         icon: Upload,
-        description: 'Publication en masse'
+        description: 'Shopify, WooCommerce, PrestaShop...'
       },
       {
         id: 'export-csv',
@@ -217,11 +217,11 @@ export function BulkActionsToolbar({
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => onAction('export-shopify')}
+                onClick={() => onAction('export-store')}
                 className="h-9"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Exporter
+                Exporter vers boutique
               </Button>
             </div>
           </div>
