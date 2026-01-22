@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +35,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function FulfillmentPage() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
+  
+  // Sync tab with URL
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['overview', 'carriers', 'returns', 'automation'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === 'overview') {
+      searchParams.delete('tab');
+    } else {
+      searchParams.set('tab', value);
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newShipmentOpen, setNewShipmentOpen] = useState(false);
   const [shipmentForm, setShipmentForm] = useState({
@@ -212,7 +233,7 @@ export default function FulfillmentPage() {
       </div>
       
       {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-muted/50">
           <TabsTrigger value="overview" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Package className="h-4 w-4 mr-1 md:mr-2" />
