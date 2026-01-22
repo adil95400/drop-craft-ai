@@ -19,22 +19,94 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// Champs source ShopOpti
+// Colonnes du fichier CSV Shopify - Source fields
 const SOURCE_FIELDS = [
-  { id: 'title', label: 'Titre', type: 'text', required: true },
-  { id: 'description', label: 'Description', type: 'text', required: true },
-  { id: 'price', label: 'Prix', type: 'number', required: true },
-  { id: 'compare_at_price', label: 'Prix barré', type: 'number' },
-  { id: 'sku', label: 'SKU', type: 'text' },
-  { id: 'barcode', label: 'Code-barres (EAN/GTIN)', type: 'text' },
-  { id: 'stock_quantity', label: 'Quantité en stock', type: 'number', required: true },
-  { id: 'weight', label: 'Poids (kg)', type: 'number' },
-  { id: 'category', label: 'Catégorie', type: 'text' },
-  { id: 'brand', label: 'Marque', type: 'text' },
-  { id: 'images', label: 'Images', type: 'array' },
-  { id: 'tags', label: 'Tags', type: 'array' },
-  { id: 'variant_title', label: 'Variante', type: 'text' },
-  { id: 'shipping_class', label: 'Classe expédition', type: 'text' },
+  // Informations de base
+  { id: 'title', label: 'Titre', required: true },
+  { id: 'handle', label: 'Ancre d\'URL' },
+  { id: 'description', label: 'Description' },
+  { id: 'vendor', label: 'Fournisseur' },
+  { id: 'product_category', label: 'Catégorie de produit' },
+  { id: 'type', label: 'Type' },
+  { id: 'tags', label: 'Balises' },
+  { id: 'published_on_online_store', label: 'Publié sur la boutique en ligne' },
+  { id: 'status', label: 'Statut' },
+  
+  // SKU et inventaire
+  { id: 'sku', label: 'SKU' },
+  { id: 'barcode', label: 'Code-barres' },
+  
+  // Options et variantes
+  { id: 'option1_name', label: 'Nom de l\'option1' },
+  { id: 'option1_value', label: 'Valeur de l\'option 1' },
+  { id: 'option1_linked_to', label: 'Option 1 liée à' },
+  { id: 'option2_name', label: 'Nom de l\'option2' },
+  { id: 'option2_value', label: 'Valeur de l\'option 2' },
+  { id: 'option3_name', label: 'Nom de l\'option3' },
+  { id: 'option3_value', label: 'Valeur de l\'option 3' },
+  
+  // Prix
+  { id: 'price', label: 'Prix', required: true },
+  { id: 'price_international', label: 'Prix / International' },
+  { id: 'compare_at_price', label: 'Prix de comparaison' },
+  { id: 'compare_at_price_international', label: 'Prix de comparaison / International' },
+  { id: 'cost_per_item', label: 'Coût par article' },
+  
+  // Taxes
+  { id: 'charge_tax', label: 'Facturer les taxes' },
+  
+  // Stock
+  { id: 'inventory_tracker', label: 'Suivi des stocks' },
+  { id: 'inventory_qty', label: 'Quantité en stock', required: true },
+  { id: 'continue_selling_when_out_of_stock', label: 'Continuer à vendre en cas de rupture de stock' },
+  
+  // Poids et expédition
+  { id: 'weight_grams', label: 'Valeur du poids (grammes)' },
+  { id: 'weight_unit', label: 'Unité de poids pour l\'affichage' },
+  { id: 'requires_shipping', label: 'Nécessite une expédition' },
+  { id: 'fulfillment_service', label: 'Service de traitement des commandes' },
+  
+  // International
+  { id: 'included_primary', label: 'Inclus / [Principal]' },
+  { id: 'included_international', label: 'Inclus / International' },
+  
+  // Images
+  { id: 'image_src', label: 'URL de l\'image de produit' },
+  { id: 'image_position', label: 'Position de l\'image' },
+  { id: 'image_alt_text', label: 'Texte alternatif de l\'image' },
+  { id: 'variant_image', label: 'URL de l\'image de la variante' },
+  
+  // Carte-cadeau
+  { id: 'gift_card', label: 'Carte-cadeau' },
+  
+  // SEO
+  { id: 'seo_title', label: 'Titre pour le référencement naturel (SEO)' },
+  { id: 'seo_description', label: 'Description pour le référencement naturel (SEO)' },
+  
+  // Google Shopping
+  { id: 'google_product_category', label: 'Google Shopping / Catégorie de produits Google' },
+  { id: 'google_gender', label: 'Google Shopping / Sexe' },
+  { id: 'google_age_group', label: 'Google Shopping / Tranche d\'âge' },
+  { id: 'google_mpn', label: 'Google Shopping / Référence fabricant' },
+  { id: 'google_condition', label: 'Google Shopping / État' },
+  { id: 'google_custom_product', label: 'Google Shopping / Produit personnalisé' },
+  { id: 'google_custom_label_0', label: 'Google Shopping / Étiquette personnalisée 0' },
+  { id: 'google_custom_label_1', label: 'Google Shopping / Étiquette personnalisée 1' },
+  { id: 'google_custom_label_2', label: 'Google Shopping / Étiquette personnalisée 2' },
+  { id: 'google_custom_label_3', label: 'Google Shopping / Étiquette personnalisée 3' },
+  { id: 'google_custom_label_4', label: 'Google Shopping / Étiquette personnalisée 4' },
+  
+  // Champs méta
+  { id: 'metafield_boolean', label: 'Champ méta / Booléen' },
+  { id: 'metafield_color', label: 'Champ méta / Couleur' },
+  { id: 'metafield_date', label: 'Champ méta / Date' },
+  { id: 'metafield_dimension', label: 'Champ méta / Dimension' },
+  { id: 'metafield_money', label: 'Champ méta / Argent' },
+  { id: 'metafield_number', label: 'Champ méta / Nombre' },
+  { id: 'metafield_text', label: 'Champ méta / Texte' },
+  { id: 'metafield_url', label: 'Champ méta / URL' },
+  { id: 'metafield_weight', label: 'Champ méta / Poids' },
+  { id: 'metafield_volume', label: 'Champ méta / Volume' },
 ]
 
 // Champs destination par plateforme
