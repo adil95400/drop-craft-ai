@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useApi } from '@/hooks/useApi';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   Package,
@@ -17,6 +19,11 @@ import {
   TrendingUp,
   Calendar,
   Loader2,
+  Star,
+  MessageSquare,
+  User,
+  ThumbsUp,
+  ImageIcon as ImagePlus,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -30,14 +37,28 @@ interface ProductDetailsDialogProps {
   productId?: string;
 }
 
+interface Review {
+  id: string;
+  rating: number;
+  content: string;
+  author_name?: string;
+  created_at: string;
+  is_verified?: boolean;
+  has_images?: boolean;
+  helpful_count?: number;
+}
+
 export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductDetailsDialogProps) {
   const { supabaseQuery } = useApi();
   const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState<any>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
     if (open && productId) {
       loadProductDetails();
+      loadProductReviews();
     }
   }, [open, productId]);
 
@@ -48,7 +69,7 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
     try {
       const { data, error } = await supabaseQuery(
         async () => {
-          const { data, error } = await (await import('@/integrations/supabase/client')).supabase
+          const { data, error } = await supabase
             .from('products')
             .select('*')
             .eq('id', productId)
@@ -65,6 +86,62 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadProductReviews = async () => {
+    if (!productId) return;
+
+    setReviewsLoading(true);
+    try {
+      const { data, error } = await (supabase as any)
+        .from('product_reviews')
+        .select('*')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (!error && data) {
+        setReviews(data);
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const getAverageRating = (): number => {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, review) => acc + (review.rating || 0), 0);
+    return parseFloat((sum / reviews.length).toFixed(1));
+  };
+
+  const getRatingDistribution = () => {
+    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviews.forEach(review => {
+      const rating = Math.round(review.rating || 0);
+      if (rating >= 1 && rating <= 5) {
+        distribution[rating as keyof typeof distribution]++;
+      }
+    });
+    return distribution;
+  };
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-4 w-4 ${
+              star <= rating
+                ? 'fill-yellow-400 text-yellow-400'
+                : 'fill-muted text-muted-foreground'
+            }`}
+          />
+        ))}
+      </div>
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -194,9 +271,18 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
 
           {/* Tabs with detailed information */}
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="w-full grid grid-cols-4">
+            <TabsList className="w-full grid grid-cols-5">
               <TabsTrigger value="general">Général</TabsTrigger>
               <TabsTrigger value="pricing">Prix</TabsTrigger>
+              <TabsTrigger value="reviews" className="gap-1">
+                <MessageSquare className="h-3.5 w-3.5" />
+                Avis
+                {reviews.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {reviews.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
               <TabsTrigger value="stats">Stats</TabsTrigger>
             </TabsList>
@@ -286,6 +372,111 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                   <p className="text-sm font-medium text-muted-foreground">Poids</p>
                   <p className="text-lg font-medium mt-1">{product.weight} kg</p>
                 </div>
+              )}
+            </TabsContent>
+
+            {/* Reviews Tab */}
+            <TabsContent value="reviews" className="space-y-4 mt-4">
+              {reviewsLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-24 w-full rounded-lg" />
+                  ))}
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-12">
+                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Aucun avis pour ce produit</p>
+                </div>
+              ) : (
+                <>
+                  {/* Rating Summary */}
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border">
+                    <div className="flex items-center gap-6">
+                      <div className="text-center">
+                        <p className="text-4xl font-bold text-yellow-600">{getAverageRating().toFixed(1)}</p>
+                        <div className="flex justify-center mt-1">
+                          {renderStars(getAverageRating())}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{reviews.length} avis</p>
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        {[5, 4, 3, 2, 1].map((rating) => {
+                          const distribution = getRatingDistribution();
+                          const count = distribution[rating as keyof typeof distribution];
+                          const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                          return (
+                            <div key={rating} className="flex items-center gap-2 text-sm">
+                              <span className="w-3">{rating}</span>
+                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${percentage}%` }}
+                                  className="h-full bg-yellow-400 rounded-full"
+                                />
+                              </div>
+                              <span className="text-muted-foreground w-8 text-right">{count}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Reviews List */}
+                  <ScrollArea className="h-[300px]">
+                    <div className="space-y-3 pr-4">
+                      {reviews.map((review, index) => (
+                        <motion.div
+                          key={review.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="p-4 border rounded-xl bg-card hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                {renderStars(review.rating)}
+                                {review.is_verified && (
+                                  <Badge variant="secondary" className="text-xs gap-1">
+                                    <ThumbsUp className="h-3 w-3" />
+                                    Vérifié
+                                  </Badge>
+                                )}
+                                {review.has_images && (
+                                  <Badge variant="outline" className="text-xs gap-1">
+                                    <ImagePlus className="h-3 w-3" />
+                                    Photos
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-foreground line-clamp-3">
+                                {review.content || 'Aucun commentaire'}
+                              </p>
+                              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <User className="h-3 w-3" />
+                                  {review.author_name || 'Anonyme'}
+                                </span>
+                                <span>
+                                  {format(new Date(review.created_at), 'dd MMM yyyy', { locale: fr })}
+                                </span>
+                                {review.helpful_count && review.helpful_count > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    <ThumbsUp className="h-3 w-3" />
+                                    {review.helpful_count} utile{review.helpful_count > 1 ? 's' : ''}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </>
               )}
             </TabsContent>
 
