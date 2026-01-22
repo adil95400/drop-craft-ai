@@ -165,10 +165,11 @@ const supportedPlatforms = [
   { name: 'Shopify', logo: '/logos/shopify.svg', products: 'Illimité', status: 'active' },
   { name: 'Amazon', logo: '/logos/amazon.svg', products: '350M+', status: 'active' },
   { name: 'AliExpress', logo: '/logos/aliexpress.svg', products: '500M+', status: 'active' },
-  { name: 'Etsy', logo: '/logos/etsy.svg', products: '100M+', status: 'active' },
-  { name: 'WooCommerce', logo: '/logos/woocommerce.svg', products: 'Illimité', status: 'active' },
   { name: 'eBay', logo: '/logos/ebay.svg', products: '1.9B+', status: 'active' },
-  { name: 'CJ Dropshipping', logo: '/logos/bigbuy.svg', products: '400K+', status: 'active' },
+  { name: 'Etsy', logo: '/logos/etsy.svg', products: '100M+', status: 'active' },
+  { name: 'CJ Dropshipping', logo: '/logos/cj-dropshipping.svg', products: '400K+', status: 'active' },
+  { name: 'Temu', logo: '/logos/temu.svg', products: '100M+', status: 'active' },
+  { name: 'Cdiscount', logo: '/logos/cdiscount.svg', products: '50M+', status: 'active' },
 ]
 
 export default function ImportHub() {
