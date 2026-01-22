@@ -309,10 +309,45 @@ class DropCraftBackground {
   async injectContentScript(tabId, url) {
     if (!url) return;
     
+    // Comprehensive list of all 25+ supported platforms
     const supportedDomains = [
-      'aliexpress.com', 'amazon.', 'ebay.', 'temu.com', 'walmart.com',
-      'etsy.com', 'wish.com', 'banggood.com', 'dhgate.com', 'shein.com',
-      'cjdropshipping.com', 'lightinthebox.com', 'gearbest.com'
+      // Major International
+      'aliexpress.com', 'aliexpress.fr', 'aliexpress.us',
+      'amazon.com', 'amazon.fr', 'amazon.de', 'amazon.co.uk', 'amazon.es', 'amazon.it',
+      'ebay.com', 'ebay.fr', 'ebay.de', 'ebay.co.uk',
+      'temu.com',
+      'walmart.com',
+      'etsy.com',
+      'wish.com',
+      // Asian Suppliers
+      'banggood.com',
+      'dhgate.com',
+      'shein.com',
+      'cjdropshipping.com',
+      'lightinthebox.com',
+      'gearbest.com',
+      '1688.com',
+      'taobao.com',
+      'made-in-china.com',
+      // French Marketplaces
+      'cdiscount.com',
+      'fnac.com',
+      'rakuten.fr',
+      'darty.com',
+      'boulanger.com',
+      'manomano.fr', 'manomano.com',
+      'leroymerlin.fr',
+      // US Home Improvement
+      'homedepot.com',
+      'lowes.com',
+      'costco.com',
+      // TikTok Shop
+      'tiktok.com',
+      'tiktokshop.com',
+      'seller.tiktok.com',
+      // Fashion
+      'asos.com',
+      'zalando.com', 'zalando.fr'
     ];
 
     const isSupported = supportedDomains.some(domain => url.includes(domain));
@@ -328,6 +363,8 @@ class DropCraftBackground {
           target: { tabId },
           files: ['content.css']
         });
+        
+        console.log('[DropCraft] Content script injected for:', url);
       } catch (error) {
         // Content script might already be injected
         console.log('[DropCraft] Script injection skipped:', error.message);

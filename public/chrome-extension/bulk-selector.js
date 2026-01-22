@@ -193,6 +193,62 @@
         link: 'a',
         orders: '',
         rating: '.rating'
+      },
+      // Asian Suppliers
+      'wish': {
+        listingPage: ['/search', '/feed/'],
+        productCard: '.product-feed-item, [data-feed-card], .FeedListItem, .product-item',
+        productPage: ['/product/'],
+        title: '.product-title, [class*="title"]',
+        price: '[class*="price"]',
+        image: 'img',
+        link: 'a',
+        orders: '[class*="bought"]',
+        rating: '.rating'
+      },
+      'banggood': {
+        listingPage: ['/search/', '/category/', '/wholesale/'],
+        productCard: '.goodsItem, .product-item, [data-product-id], .goodsBox',
+        productPage: ['/'],
+        title: '.goodsTitle, .product-title, h3',
+        price: '.newPrice, .price, [class*="price"]',
+        image: 'img.goodsImg, img[src*="banggood"]',
+        link: 'a',
+        orders: '.sold',
+        rating: '.rating, .star'
+      },
+      'dhgate': {
+        listingPage: ['/wholesale/', '/products/'],
+        productCard: '.gallery-item, .product-item, [data-item-id]',
+        productPage: ['/product/'],
+        title: '.product-title, h3',
+        price: '.price',
+        image: 'img[src*="dhgate"]',
+        link: 'a',
+        orders: '.sold',
+        rating: '.rating'
+      },
+      'shein': {
+        listingPage: ['/pdsearch/', '/category/', '/Women/'],
+        productCard: '.S-product-item, .product-card, [data-product-id], .goods-item',
+        productPage: ['/product/', '/'],
+        title: '.goods-title-link, .product-title, h3',
+        price: '.original-price, .price, [class*="price"]',
+        image: '.S-product-item__img img, img[src*="shein"]',
+        link: 'a',
+        orders: '.sold',
+        rating: '.rating'
+      },
+      'cjdropshipping': {
+        listingPage: ['/product-list/', '/category/'],
+        productCard: '.product-item, .goods-item, [data-product-id]',
+        productPage: ['/product-detail/'],
+        title: '.product-title, h3',
+        price: '.price',
+        image: 'img[src*="cjdropshipping"]',
+        link: 'a',
+        orders: '',
+        rating: '.rating'
       }
     }
   };
