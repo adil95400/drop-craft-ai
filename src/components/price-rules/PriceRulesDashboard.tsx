@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Plus, Play, Eye, Trash2, DollarSign, TrendingUp, Package, Zap 
+  Plus, Play, Eye, Trash2, DollarSign, TrendingUp, Package, Zap, Link2 
 } from 'lucide-react';
 import { 
   usePriceRules, usePriceRulesStats, useUpdatePriceRule, 
@@ -16,6 +16,7 @@ import {
 } from '@/hooks/usePriceRules';
 import { CreatePriceRuleDialog } from './CreatePriceRuleDialog';
 import { PriceRuleLogsPanel } from './PriceRuleLogsPanel';
+import { PriceSyncPanel } from './PriceSyncPanel';
 import { PriceRule } from '@/services/PriceRulesService';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -73,6 +74,10 @@ export function PriceRulesDashboard() {
       <Tabs defaultValue="rules" className="space-y-4">
         <TabsList>
           <TabsTrigger value="rules">Mes règles</TabsTrigger>
+          <TabsTrigger value="sync" className="gap-1">
+            <Link2 className="h-4 w-4" />
+            Sync Boutiques
+          </TabsTrigger>
           <TabsTrigger value="logs">Historique</TabsTrigger>
         </TabsList>
 
@@ -129,6 +134,10 @@ export function PriceRulesDashboard() {
               </Card>
             ))
           )}
+        </TabsContent>
+
+        <TabsContent value="sync">
+          <PriceSyncPanel />
         </TabsContent>
 
         <TabsContent value="logs">
