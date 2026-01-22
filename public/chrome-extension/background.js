@@ -527,11 +527,18 @@ class DropCraftBackground {
   async importReviews(config) {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      // MV3 scripting args must be structured-cloneable.
+      // Some callers were passing complex objects (e.g. functions, DOM refs), which
+      // causes: "Value is unserializable".
+      const safeConfig = {
+        maxReviews: Number(config?.maxReviews || 50) || 50,
+      };
       
       const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: extractReviewsFromPage,
-        args: [config]
+        args: [safeConfig]
       });
 
       const reviews = results[0]?.result || [];

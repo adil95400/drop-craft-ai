@@ -877,8 +877,8 @@
       if (!url || typeof url !== 'string') return null;
       
       // Skip invalid images
-      const skipPatterns = ['sprite', 'pixel', 'grey', 'transparent', 'placeholder', 'loading', 'spacer', '1x1', 'blank', 'logo', 'icon', 'badge', 'button'];
-      if (skipPatterns.some(p => url.toLowerCase().includes(p)) || url.length < 30) {
+      const skipPatterns = ['sprite', 'pixel', 'transparent', 'placeholder', 'loading', 'spacer', '1x1', 'blank', 'badge', 'button'];
+      if (skipPatterns.some(p => url.toLowerCase().includes(p)) || url.length < 12) {
         return null;
       }
       
@@ -894,12 +894,25 @@
         .replace(/_\d+x\d+\./g, '.')             // AliExpress: _350x350.
         .replace(/_\d+x\d+_/g, '_')              // Variant: _350x350_
         .replace(/[@_]\d+x\d+/g, '')             // @350x350 or _350x350
-        .replace(/\?.*$/g, '')                   // Remove all query params first
         .replace(/&w=\d+&h=\d+/g, '')            // Width/height params
         .replace(/\/[a-z]_\d+_\d+\//g, '/')      // CDN size paths
         .replace(/\/s\d+\//g, '/')               // Shopify /s100/
         .replace(/_small|_thumb|_mini/gi, '')   // Size suffixes
         .replace(/\?v=\d+$/, '');                // Version params
+
+      // Keep query params unless it's clearly a direct image file URL.
+      try {
+        const u = new URL(clean.startsWith('//') ? `https:${clean}` : clean);
+        const hasImageExt = /\.(png|jpe?g|webp|gif|avif)(?:$)/i.test(u.pathname);
+        if (hasImageExt) {
+          u.search = '';
+        } else {
+          ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','fbclid','gclid','msclkid'].forEach((k) => u.searchParams.delete(k));
+        }
+        clean = u.toString();
+      } catch {
+        // ignore
+      }
 
       // Ensure absolute URL
       if (clean.startsWith('//')) {
