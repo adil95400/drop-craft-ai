@@ -273,7 +273,7 @@ serve(async (req) => {
             throw jobError
           }
 
-          // Insert into imported_products table with ALL data
+          // Insert into imported_products table with ALL data including brand, stock, shipping
           const { data: newProduct, error: productError } = await supabase
             .from('imported_products')
             .insert({
@@ -288,22 +288,38 @@ serve(async (req) => {
               videos: videos.map(url => ({ url, type: 'video' })),
               source_url: product.url || '',
               source_platform: product.platform || 'extension',
-              stock_quantity: 100,
+              stock_quantity: product.stockQuantity || 100,
               status: 'imported',
               category: product.category || null,
-              currency: 'EUR',
+              currency: product.currency || 'EUR',
               sync_status: 'synced',
-              sku: product.sku || null,
+              sku: product.sku || product.mpn || null,
               metadata: {
+                // Basic info
                 rating: product.rating,
                 orders: product.orders,
                 original_price: product.originalPrice,
-                brand: product.brand,
+                // Brand info
+                brand: product.brand || null,
+                gtin: product.gtin || null,
+                mpn: product.mpn || null,
+                // Stock info
+                stock_status: product.stockStatus || 'unknown',
+                in_stock: product.inStock ?? true,
+                // Shipping info
+                shipping_cost: product.shippingCost || null,
+                free_shipping: product.freeShipping || false,
+                delivery_time: product.deliveryTime || null,
+                shipping_info: product.shippingInfo || null,
+                // Specifications
+                specifications: product.specifications || {},
+                // Import metadata
                 imported_at: new Date().toISOString(),
                 source: product.source || 'chrome_extension',
                 reviews_count: reviews.length,
                 images_count: allImages.length,
-                videos_count: videos.length
+                videos_count: videos.length,
+                variants_count: (product.variants || []).length
               }
             })
             .select()

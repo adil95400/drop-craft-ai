@@ -778,8 +778,58 @@
       };
     }
 
-    // NEW: Extract videos and variants for a single product page
+    // NEW: Extract complete product data using Advanced Scraper
     async extractEnrichedProductData() {
+      // Use advanced scraper for complete extraction (brand, stock, shipping, etc.)
+      if (window.AdvancedProductScraper) {
+        const advancedScraper = new window.AdvancedProductScraper();
+        const completeData = await advancedScraper.extractCompleteProduct();
+        
+        // Format for import
+        return {
+          title: completeData.title,
+          name: completeData.title,
+          description: completeData.description,
+          price: completeData.price,
+          originalPrice: completeData.originalPrice,
+          currency: completeData.currency,
+          image: completeData.images?.[0],
+          images: completeData.images || [],
+          url: completeData.url,
+          platform: completeData.platform,
+          brand: completeData.brand,
+          sku: completeData.sku,
+          gtin: completeData.gtin,
+          mpn: completeData.mpn,
+          category: completeData.category,
+          // Stock info
+          stockStatus: completeData.stockStatus,
+          stockQuantity: completeData.stockQuantity,
+          inStock: completeData.inStock,
+          // Shipping info
+          shippingCost: completeData.shippingCost,
+          freeShipping: completeData.freeShipping,
+          deliveryTime: completeData.deliveryTime,
+          shippingInfo: completeData.shippingInfo,
+          // Media
+          videos: completeData.videos || [],
+          video_urls: completeData.videos || [],
+          // Variants
+          variants: completeData.variants || [],
+          // Reviews
+          reviews: completeData.reviews || [],
+          // Specifications
+          specifications: completeData.specifications || {},
+          // Metadata
+          has_videos: (completeData.videos?.length || 0) > 0,
+          has_variants: (completeData.variants?.length || 0) > 0,
+          has_reviews: (completeData.reviews?.length || 0) > 0,
+          scrapedAt: completeData.scrapedAt,
+          source: 'advanced_scraper'
+        };
+      }
+      
+      // Fallback to legacy extraction
       const baseData = await this.extractSingleProductData();
       
       // Extract videos using the video extractor

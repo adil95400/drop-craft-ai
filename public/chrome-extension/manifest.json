@@ -100,6 +100,7 @@
         "trend-analyzer.js",
         "bulk-selector.js",
         "review-translator.js",
+        "advanced-scraper.js",
         "platforms/tiktok-shop.js",
         "platforms/cdiscount.js",
         "platforms/fnac.js",
