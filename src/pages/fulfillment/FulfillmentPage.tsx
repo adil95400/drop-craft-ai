@@ -442,14 +442,14 @@ export default function FulfillmentPage() {
                     Transporteur
                   </Label>
                   <Select
-                    value={shipmentForm.carrier_id}
-                    onValueChange={(value) => setShipmentForm({ ...shipmentForm, carrier_id: value })}
+                    value={shipmentForm.carrier_id || 'auto'}
+                    onValueChange={(value) => setShipmentForm({ ...shipmentForm, carrier_id: value === 'auto' ? '' : value })}
                   >
                     <SelectTrigger className="h-11 bg-muted/30">
                       <SelectValue placeholder="Sélection automatique" />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border">
-                      <SelectItem value="">Sélection automatique</SelectItem>
+                      <SelectItem value="auto">Sélection automatique</SelectItem>
                       {carriers.map((carrier: any) => (
                         <SelectItem key={carrier.id} value={carrier.id}>
                           {carrier.name}
