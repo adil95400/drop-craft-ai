@@ -23,13 +23,16 @@ import {
   Mail,
   FileText,
   Weight,
-  Loader2
+  Loader2,
+  Bell
 } from 'lucide-react';
 import { useFulfillmentStats, useCarriers, useCreateCarrier } from '@/hooks/useFulfillment';
 import { CarriersManager } from '@/components/fulfillment/CarriersManager';
 import { ShipmentsTable } from '@/components/fulfillment/ShipmentsTable';
 import { FulfillmentAutomation } from '@/components/fulfillment/FulfillmentAutomation';
 import { ReturnsHub } from '@/components/returns';
+import { TrackingDashboardContent } from '@/components/fulfillment/TrackingDashboardContent';
+import { NotificationsContent } from '@/components/fulfillment/NotificationsContent';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -42,7 +45,7 @@ export default function FulfillmentPage() {
   // Sync tab with URL
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['overview', 'carriers', 'returns', 'automation'].includes(tab)) {
+    if (tab && ['overview', 'carriers', 'returns', 'tracking', 'notifications', 'automation'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -234,22 +237,36 @@ export default function FulfillmentPage() {
       
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 h-auto bg-muted/50">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto bg-muted/50">
           <TabsTrigger value="overview" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Package className="h-4 w-4 mr-1 md:mr-2" />
-            Expéditions
+            <span className="hidden sm:inline">Expéditions</span>
+            <span className="sm:hidden">Expéd.</span>
           </TabsTrigger>
           <TabsTrigger value="carriers" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Truck className="h-4 w-4 mr-1 md:mr-2" />
-            Transporteurs
+            <span className="hidden sm:inline">Transporteurs</span>
+            <span className="sm:hidden">Transp.</span>
+          </TabsTrigger>
+          <TabsTrigger value="tracking" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
+            <MapPin className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Suivi</span>
+            <span className="sm:hidden">Suivi</span>
           </TabsTrigger>
           <TabsTrigger value="returns" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <RotateCcw className="h-4 w-4 mr-1 md:mr-2" />
-            Retours
+            <span className="hidden sm:inline">Retours</span>
+            <span className="sm:hidden">Retours</span>
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
+            <Bell className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Notifications</span>
+            <span className="sm:hidden">Notif.</span>
           </TabsTrigger>
           <TabsTrigger value="automation" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Settings className="h-4 w-4 mr-1 md:mr-2" />
-            Automatisation
+            <span className="hidden sm:inline">Automatisation</span>
+            <span className="sm:hidden">Auto.</span>
           </TabsTrigger>
         </TabsList>
         
@@ -265,8 +282,16 @@ export default function FulfillmentPage() {
           />
         </TabsContent>
         
+        <TabsContent value="tracking">
+          <TrackingDashboardContent />
+        </TabsContent>
+        
         <TabsContent value="returns">
           <ReturnsHub />
+        </TabsContent>
+        
+        <TabsContent value="notifications">
+          <NotificationsContent />
         </TabsContent>
         
         <TabsContent value="automation">

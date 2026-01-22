@@ -2,16 +2,14 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Bell, Mail, CheckCircle, Clock, Settings } from 'lucide-react';
+import { Bell, Mail, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
-export default function CustomerNotificationsPage() {
+export function NotificationsContent() {
   const { toast } = useToast();
   const [autoOrderPlacement, setAutoOrderPlacement] = useState(true);
   const [autoTracking, setAutoTracking] = useState(true);
@@ -43,14 +41,7 @@ export default function CustomerNotificationsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Notifications Clients</h1>
-          <p className="text-muted-foreground">Configuration des confirmations automatiques</p>
-        </div>
-      </div>
-
+    <div className="space-y-6">
       {/* Settings Card */}
       <Card className="p-6">
         <div className="flex items-center gap-3 mb-6">
