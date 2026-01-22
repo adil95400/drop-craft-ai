@@ -659,14 +659,91 @@
           videos: ['video source', '.vse-player video']
         },
         temu: {
-          title: ['h1', '[class*="ProductTitle"]', '[class*="goods-title"]'],
-          price: ['[class*="price"]', '[class*="Price"]'],
-          originalPrice: ['[class*="original"]', '[class*="Origin"]'],
-          images: ['[class*="gallery"] img', '[class*="main-image"] img', 'img[src*="temu"]'],
-          rating: ['[class*="rating"]', '[class*="star"]'],
-          orders: ['[class*="sold"]', '[class*="order"]'],
-          description: ['[class*="description"]', '[class*="desc"]', '[class*="detail"]'],
-          videos: ['video source', 'video[src]']
+          // Temu uses obfuscated classes - use robust selectors
+          title: [
+            'h1', 
+            '[data-testid*="title"]', 
+            '[class*="ProductTitle"]', 
+            '[class*="goods-title"]',
+            '[class*="product-name"]',
+            '[class*="GoodsDetail"] h1',
+            '.goods-details h1',
+            'main h1',
+            '[class*="title_"] h1',
+            '[class*="Title_"]'
+          ],
+          price: [
+            '[data-testid*="price"]',
+            '[class*="price"]', 
+            '[class*="Price"]',
+            '[class*="goods-price"]',
+            '[class*="salePrice"]',
+            'span[class*="price"]',
+            '[class*="amount"]',
+            '[class*="Amount"]'
+          ],
+          originalPrice: [
+            '[data-testid*="original"]',
+            '[class*="original"]', 
+            '[class*="Origin"]',
+            '[class*="crossed"]',
+            '[class*="strikethrough"]',
+            'del[class*="price"]',
+            's[class*="price"]'
+          ],
+          images: [
+            '[class*="gallery"] img', 
+            '[class*="Gallery"] img',
+            '[class*="main-image"] img', 
+            '[class*="MainImage"] img',
+            '[class*="product-image"] img',
+            '[class*="ProductImage"] img',
+            '[class*="goods-img"] img',
+            'img[src*="temu"]',
+            'img[src*="kwcdn"]',
+            'img[src*="kwimgs"]',
+            '[class*="carousel"] img',
+            '[class*="Carousel"] img',
+            '[class*="swiper"] img',
+            '[class*="Swiper"] img',
+            '[class*="slider"] img',
+            '[class*="Slider"] img',
+            'main img[src*="http"]'
+          ],
+          rating: [
+            '[class*="rating"]', 
+            '[class*="Rating"]',
+            '[class*="star"]',
+            '[class*="Star"]',
+            '[class*="review-score"]',
+            '[class*="score"]'
+          ],
+          orders: [
+            '[class*="sold"]', 
+            '[class*="Sold"]',
+            '[class*="order"]',
+            '[class*="Order"]',
+            '[class*="bought"]',
+            '[class*="purchase"]'
+          ],
+          description: [
+            '[class*="description"]', 
+            '[class*="Description"]',
+            '[class*="desc"]', 
+            '[class*="Desc"]',
+            '[class*="detail"]',
+            '[class*="Detail"]',
+            '[class*="spec"]',
+            '[class*="Spec"]',
+            '[class*="info"]',
+            '[class*="Info"]'
+          ],
+          videos: [
+            'video source', 
+            'video[src]',
+            '[class*="video"] video',
+            '[class*="Video"] video'
+          ]
         },
         ebay: {
           title: ['h1.x-item-title__mainTitle', '#itemTitle', 'h1[itemprop="name"]'],
@@ -1713,7 +1790,7 @@
         aliexpress: '.search-item-card-wrapper-gallery, .list--gallery--34TropR, [data-widget-type="search"], .search-card-item, .product-snippet, [class*="SearchProduct"], [class*="gallery-card"], [class*="list--galley"], [class*="list-item"], .JIIxO, ._1OUGS',
         amazon: '[data-component-type="s-search-result"], .s-result-item[data-asin], .s-main-slot .s-result-item',
         ebay: '.s-item:not(.s-item__pl-on-bottom), .s-item__wrapper, .srp-results .s-item',
-        temu: '._2BUQJ_w2, [data-testid="goods-item"], [class*="ProductCard"], .goods-item, ._2Q8JLHu5',
+        temu: '[class*="ProductCard"], [class*="goods-item"], [class*="product-card"], [class*="GoodsItem"], [class*="SearchProduct"], [class*="card-wrapper"], [class*="CardWrapper"], [class*="goods_item"], [class*="item-wrapper"], [class*="product-item"], article[class*="product"], div[class*="_"][class*="product"], a[href*="/goods/"]',
         walmart: '[data-testid="list-view"], [data-item-id], [class*="product-tile"], .search-result-gridview-item',
         etsy: '[data-search-results] .v2-listing-card, .wt-grid__item-xs-6, .listing-link',
         wish: '.product-feed-item, [data-product-id], .feed-row-product',
@@ -1977,13 +2054,38 @@
           };
         }
         
-        // Temu
+        // Temu - Using robust selectors (Temu obfuscates class names)
         if (hostname.includes('temu')) {
+          // Try multiple strategies for Temu's dynamic classes
+          const title = 
+            card.querySelector('[class*="title" i]')?.textContent?.trim() ||
+            card.querySelector('h3, h2, h1')?.textContent?.trim() ||
+            card.querySelector('span[class*="name" i]')?.textContent?.trim() ||
+            card.querySelector('a[href*="/goods/"]')?.textContent?.trim() ||
+            '';
+          
+          const priceEl = 
+            card.querySelector('[class*="price" i]') ||
+            card.querySelector('[class*="amount" i]') ||
+            card.querySelector('span[class*="sale" i]');
+            
+          const img = 
+            card.querySelector('img[src*="kwcdn"]') ||
+            card.querySelector('img[src*="kwimgs"]') ||
+            card.querySelector('img[src*="temu"]') ||
+            card.querySelector('img[src*="http"]') ||
+            card.querySelector('img');
+            
+          const link = 
+            card.querySelector('a[href*="/goods/"]') ||
+            card.querySelector('a[href*="goods_id"]') ||
+            card.querySelector('a[href]');
+          
           return {
-            title: card.querySelector('._2G7NFXUf, ._1VOXlKK6, [class*="ProductTitle"], [class*="title"]')?.textContent?.trim() || '',
-            price: this.parsePriceFromElement(card.querySelector('._2RL5rSJD, ._3-xKlY6e, [class*="Price"]')),
-            image: card.querySelector('img[src*="temu"], img')?.src || '',
-            url: card.querySelector('a[href*="/goods/"]')?.href || card.querySelector('a')?.href || window.location.href
+            title: title,
+            price: this.parsePriceFromElement(priceEl),
+            image: img?.src || '',
+            url: link?.href || window.location.href
           };
         }
         
