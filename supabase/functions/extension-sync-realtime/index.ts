@@ -204,19 +204,57 @@ serve(async (req) => {
           const productPrice = parsePrice(product.price);
           const productImage = validateImageUrl(product.image || product.imageUrl);
           
-          // Process all images
+          // Process ALL images from multiple sources
           const allImages: string[] = [];
-          if (productImage) allImages.push(productImage);
+          const seenUrls = new Set<string>();
           
-          // Add additional images from array
+          const addImage = (img: unknown) => {
+            const validImg = validateImageUrl(img);
+            if (validImg && !seenUrls.has(validImg)) {
+              seenUrls.add(validImg);
+              allImages.push(validImg);
+            }
+          };
+          
+          // 1. Primary image
+          if (productImage) addImage(productImage);
+          
+          // 2. Images array (most common)
           if (Array.isArray(product.images)) {
             for (const img of product.images) {
-              const validImg = validateImageUrl(img);
-              if (validImg && !allImages.includes(validImg)) {
-                allImages.push(validImg);
-              }
+              addImage(img);
             }
           }
+          
+          // 3. Image URLs array (alternative field name)
+          if (Array.isArray(product.imageUrls)) {
+            for (const img of product.imageUrls) {
+              addImage(img);
+            }
+          }
+          
+          // 4. Additional images (some scrapers use this)
+          if (Array.isArray(product.additionalImages)) {
+            for (const img of product.additionalImages) {
+              addImage(img);
+            }
+          }
+          
+          // 5. Gallery images
+          if (Array.isArray(product.gallery)) {
+            for (const img of product.gallery) {
+              addImage(typeof img === 'string' ? img : img?.url || img?.src);
+            }
+          }
+          
+          console.log('[extension-sync-realtime] Image sources:', {
+            primary: productImage ? 1 : 0,
+            imagesArray: Array.isArray(product.images) ? product.images.length : 0,
+            imageUrlsArray: Array.isArray(product.imageUrls) ? product.imageUrls.length : 0,
+            additionalImages: Array.isArray(product.additionalImages) ? product.additionalImages.length : 0,
+            gallery: Array.isArray(product.gallery) ? product.gallery.length : 0,
+            totalUnique: allImages.length
+          });
           
           // Process videos
           const videos: string[] = [];

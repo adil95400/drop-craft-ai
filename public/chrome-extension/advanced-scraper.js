@@ -629,7 +629,10 @@
     
     async extractImages() {
       const images = new Set();
-      console.log('[AdvancedScraper] Starting image extraction for:', this.platform);
+      console.log('[AdvancedScraper] Starting ENHANCED image extraction for:', this.platform);
+
+      // ===== 0. Click all thumbnails to load full images (critical for galleries) =====
+      await this.expandAllGalleryImages();
 
       // ===== 1. JSON-LD images (highest priority) =====
       const scripts = document.querySelectorAll('script[type="application/ld+json"]');
@@ -869,8 +872,85 @@
         if (url) images.add(url);
       }
 
+      // ===== 6. srcset extraction (high-res images) =====
+      document.querySelectorAll('img[srcset]').forEach(img => {
+        const srcset = img.getAttribute('srcset');
+        if (srcset) {
+          // Parse srcset to get highest resolution
+          const entries = srcset.split(',').map(s => s.trim().split(' '));
+          entries.forEach(entry => {
+            if (entry[0]) {
+              const url = this.cleanImageUrl(entry[0]);
+              if (url && images.size < SCRAPER_CONFIG.MAX_IMAGES) images.add(url);
+            }
+          });
+        }
+      });
+
+      // ===== 7. Extract from thumbnail containers (critical for galleries) =====
+      const thumbContainerSelectors = [
+        '.thumbnails img', '.thumb-list img', '.product-thumbnails img',
+        '#altImages img', '.image-thumbs img', '.gallery-thumbs img',
+        '[class*="thumbnail"] img', '[class*="thumb-"] img', '.fpThumbs img',
+        '.image-gallery-thumbnails img', '.slick-dots img', '.swiper-thumbs img',
+        '.MagicToolboxSelectorsContainer img', '.s7thumbCell img', '#ivThumbs img'
+      ];
+      
+      for (const sel of thumbContainerSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          // Get highest res version from thumb
+          const sources = [
+            img.dataset.zoomImage, img.dataset.large, img.dataset.src,
+            img.dataset.highres, img.dataset.original, img.dataset.zoom,
+            img.src?.replace(/_\d+x\d+\./, '.').replace(/\/s\d+\//, '/').replace(/_SX\d+_/, '_SL1500_')
+          ].filter(Boolean);
+          
+          sources.forEach(src => {
+            const url = this.cleanImageUrl(src);
+            if (url && images.size < SCRAPER_CONFIG.MAX_IMAGES) images.add(url);
+          });
+        });
+      }
+
+      // ===== 8. CSS background images =====
+      document.querySelectorAll('[style*="background-image"]').forEach(el => {
+        const style = el.getAttribute('style');
+        const match = style?.match(/background-image:\s*url\(['"]?([^'")\s]+)['"]?\)/i);
+        if (match && match[1]) {
+          const url = this.cleanImageUrl(match[1]);
+          if (url && images.size < SCRAPER_CONFIG.MAX_IMAGES) images.add(url);
+        }
+      });
+
       console.log('[AdvancedScraper] Final image count:', images.size);
       return Array.from(images).slice(0, SCRAPER_CONFIG.MAX_IMAGES);
+    }
+
+    // Helper to expand gallery images
+    async expandAllGalleryImages() {
+      try {
+        // Click on all thumbnails to load full images
+        const thumbSelectors = [
+          '#altImages .a-button-thumbnail', // Amazon
+          '.thumbnails button', '.thumbnail-item',
+          '[class*="thumb"] button', '.image-thumb',
+          '.swiper-slide-thumb-active', '.gallery-thumb',
+          '.fpThumbs a', '.fpThumbs button', // Cdiscount
+          '.slick-slide', '.carousel-indicators button'
+        ];
+        
+        for (const sel of thumbSelectors) {
+          const thumbs = document.querySelectorAll(sel);
+          for (const thumb of thumbs) {
+            if (thumb.click) {
+              thumb.click();
+              await new Promise(r => setTimeout(r, 100)); // Wait for image load
+            }
+          }
+        }
+      } catch (e) {
+        console.log('[AdvancedScraper] Gallery expansion warning:', e);
+      }
     }
 
     cleanImageUrl(url) {
