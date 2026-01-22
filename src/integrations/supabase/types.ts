@@ -8763,6 +8763,63 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_imports: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          cron_expression: string | null
+          description: string | null
+          frequency: string
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          last_run_status: string | null
+          name: string
+          next_run_at: string
+          products_imported: number | null
+          source_type: string
+          source_url: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          cron_expression?: string | null
+          description?: string | null
+          frequency: string
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          last_run_status?: string | null
+          name: string
+          next_run_at?: string
+          products_imported?: number | null
+          source_type: string
+          source_url?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          cron_expression?: string | null
+          description?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          last_run_status?: string | null
+          name?: string
+          next_run_at?: string
+          products_imported?: number | null
+          source_type?: string
+          source_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       scheduled_tasks: {
         Row: {
           config: Json | null
@@ -11007,6 +11064,7 @@ export type Database = {
           created_at: string | null
           extension_settings: Json | null
           id: string
+          import_config: Json | null
           import_rules: Json | null
           notification_preferences: Json | null
           updated_at: string | null
@@ -11016,6 +11074,7 @@ export type Database = {
           created_at?: string | null
           extension_settings?: Json | null
           id?: string
+          import_config?: Json | null
           import_rules?: Json | null
           notification_preferences?: Json | null
           updated_at?: string | null
@@ -11025,6 +11084,7 @@ export type Database = {
           created_at?: string | null
           extension_settings?: Json | null
           id?: string
+          import_config?: Json | null
           import_rules?: Json | null
           notification_preferences?: Json | null
           updated_at?: string | null
