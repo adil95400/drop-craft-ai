@@ -112,38 +112,48 @@ serve(async (req) => {
       const productList = products || []
       console.log('[extension-sync-realtime] Processing', productList.length, 'products')
 
-      // Helper to parse price from various formats
+      // Helper to parse price from various formats (European, US, Asian)
       const parsePrice = (priceInput: unknown): number => {
         if (typeof priceInput === 'number') return priceInput;
         if (!priceInput || typeof priceInput !== 'string') return 0;
         
-        // Remove currency symbols, spaces, and handle European format
-        const cleanPrice = priceInput
-          .replace(/[€$£¥₹₽]/g, '')
+        // Remove currency symbols, spaces, and handle various formats
+        let cleanPrice = priceInput
+          .replace(/[€$£¥₹₽CHF]/gi, '')
           .replace(/\s+/g, '')
+          .replace(/EUR|USD|GBP/gi, '')
           .trim();
         
-        // Handle European format (1.234,56 or 1 234,56)
-        if (cleanPrice.includes(',') && !cleanPrice.includes('.')) {
+        // Handle European format with space as thousand separator (1 234,56)
+        if (/^\d{1,3}(\s\d{3})*,\d{2}$/.test(cleanPrice.replace(/\s/g, ' '))) {
+          cleanPrice = cleanPrice.replace(/\s/g, '').replace(',', '.');
+        }
+        // Handle European format (1.234,56 or 1234,56)
+        else if (cleanPrice.includes(',') && !cleanPrice.includes('.')) {
           // Simple comma as decimal separator: 598,99 -> 598.99
-          return parseFloat(cleanPrice.replace(',', '.')) || 0;
+          cleanPrice = cleanPrice.replace(',', '.');
         } else if (cleanPrice.includes(',') && cleanPrice.includes('.')) {
           // European thousand separator: 1.234,56 -> 1234.56
-          return parseFloat(cleanPrice.replace(/\./g, '').replace(',', '.')) || 0;
+          cleanPrice = cleanPrice.replace(/\./g, '').replace(',', '.');
         }
         
-        return parseFloat(cleanPrice) || 0;
+        const parsed = parseFloat(cleanPrice);
+        return isNaN(parsed) ? 0 : parsed;
       }
 
-      // Helper to clean product title
+      // Helper to clean product title (Cdiscount, Fnac, etc.)
       const cleanTitle = (title: unknown): string => {
         if (!title || typeof title !== 'string') return 'Produit importé';
         
-        // Remove unwanted patterns like keyboard shortcuts
+        // Remove unwanted patterns (keyboard shortcuts, promo badges, etc.)
         let cleaned = title
           .replace(/Raccourci clavier[\s\S]*$/i, '')
           .replace(/shift\s*\+[\s\S]*$/i, '')
           .replace(/alt\s*\+[\s\S]*$/i, '')
+          .replace(/Ajouter au panier[\s\S]*/i, '')
+          .replace(/Livraison gratuite[\s\S]*/i, '')
+          .replace(/En stock[\s\S]*/i, '')
+          .replace(/\b(Promo|Soldes|Nouveau|New)\b/gi, '')
           .replace(/\s+/g, ' ')
           .trim();
         
@@ -156,25 +166,35 @@ serve(async (req) => {
         return cleaned.substring(0, 500);
       }
 
-      // Helper to validate image URL
+      // Helper to validate image URL (enhanced for French marketplaces)
       const validateImageUrl = (url: unknown): string => {
         if (!url || typeof url !== 'string') return '';
         
-        // Skip sprite images, pixels, and invalid URLs
-        if (url.includes('sprite') || 
-            url.includes('pixel') || 
-            url.includes('grey') ||
-            url.includes('transparent') ||
-            url.length < 20) {
+        // Skip invalid patterns
+        const invalidPatterns = ['sprite', 'pixel', 'grey', 'transparent', 'placeholder', 'loader', 'loading', 'spacer', '1x1'];
+        if (invalidPatterns.some(p => url.toLowerCase().includes(p)) || url.length < 20) {
           return '';
         }
         
+        // Clean up URL - remove size transforms for higher quality
+        let cleanUrl = url
+          .replace(/_\d+x\d+\./, '.')        // AliExpress/Cdiscount size
+          .replace(/\/[a-z]_\d+_\d+\//, '/')  // Cdiscount CDN size
+          .replace(/&w=\d+&h=\d+/, '')        // Query param sizes
+          .replace(/\?.*$/, '');              // Remove query params for cleaner URL
+        
         // Basic URL validation
         try {
-          new URL(url);
-          return url;
+          new URL(cleanUrl);
+          return cleanUrl;
         } catch {
-          return '';
+          // If cleaned URL is invalid, try original
+          try {
+            new URL(url);
+            return url;
+          } catch {
+            return '';
+          }
         }
       }
 

@@ -100,6 +100,69 @@ function detectPlatform(url: string): { platform: string; productId: string | nu
     return { platform: 'walmart', productId: match?.[1] || null }
   }
   
+  // Cdiscount
+  if (urlLower.includes('cdiscount.com')) {
+    // URL patterns: /f-xxx.html, /mp-xxx.html, /fpd/xxx.html
+    const match = url.match(/\/([mf]p?d?)-([^\/\.]+)\.html/i) || 
+                  url.match(/\/dp\/([^\/\?]+)/) ||
+                  url.match(/productId=([^&]+)/)
+    return { platform: 'cdiscount', productId: match?.[2] || match?.[1] || null }
+  }
+  
+  // Fnac
+  if (urlLower.includes('fnac.com')) {
+    const match = url.match(/\/a(\d+)\//) || url.match(/\/(\d+)\.aspx/)
+    return { platform: 'fnac', productId: match?.[1] || null }
+  }
+  
+  // Rakuten
+  if (urlLower.includes('rakuten.com') || urlLower.includes('rakuten.fr')) {
+    const match = url.match(/\/product\/(\d+)/) || url.match(/\/offer\/buy\/(\d+)/)
+    return { platform: 'rakuten', productId: match?.[1] || null }
+  }
+  
+  // Darty
+  if (urlLower.includes('darty.com')) {
+    const match = url.match(/\/([^\/]+)_([^\/]+)\.html/) || url.match(/fp\/(\d+)/)
+    return { platform: 'darty', productId: match?.[2] || match?.[1] || null }
+  }
+  
+  // Boulanger
+  if (urlLower.includes('boulanger.com')) {
+    const match = url.match(/ref\/(\d+)/) || url.match(/\/c(\d+)/)
+    return { platform: 'boulanger', productId: match?.[1] || null }
+  }
+  
+  // Home Depot
+  if (urlLower.includes('homedepot.com')) {
+    const match = url.match(/\/p\/[^\/]+\/(\d+)/) || url.match(/\/(\d+)$/)
+    return { platform: 'homedepot', productId: match?.[1] || null }
+  }
+  
+  // Lowe's
+  if (urlLower.includes('lowes.com')) {
+    const match = url.match(/\/pd\/[^\/]+\/(\d+)/) || url.match(/\/productId=(\d+)/)
+    return { platform: 'lowes', productId: match?.[1] || null }
+  }
+  
+  // Costco
+  if (urlLower.includes('costco.com')) {
+    const match = url.match(/\.product\.(\d+)\.html/) || url.match(/productId=(\d+)/)
+    return { platform: 'costco', productId: match?.[1] || null }
+  }
+  
+  // Manomano
+  if (urlLower.includes('manomano.')) {
+    const match = url.match(/\/p\/([^\/\?]+)/) || url.match(/\/(\d+)$/)
+    return { platform: 'manomano', productId: match?.[1] || null }
+  }
+  
+  // Leroy Merlin
+  if (urlLower.includes('leroymerlin.')) {
+    const match = url.match(/\/p\/[^\/]+-(\d+)\.html/) || url.match(/\/(\d+)\.html/)
+    return { platform: 'leroymerlin', productId: match?.[1] || null }
+  }
+  
   return { platform: 'unknown', productId: null }
 }
 
@@ -326,6 +389,94 @@ function extractHQImages(html: string, platform: string, markdown: string = ''):
     const ogShopifyImgs = html.matchAll(/og:image"[^>]*content="(https?:\/\/cdn\.shopify\.com\/[^"]+)"/gi)
     for (const m of ogShopifyImgs) {
       addImage(m[1])
+    }
+  }
+  
+  // Cdiscount image extraction
+  if (platform === 'cdiscount') {
+    console.log('🛒 Extracting Cdiscount images...')
+    
+    // Strategy 1: JSON-LD structured data
+    const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)
+    if (jsonLdMatch) {
+      for (const match of jsonLdMatch) {
+        const jsonContent = match.replace(/<script[^>]*>|<\/script>/gi, '')
+        try {
+          const data = JSON.parse(jsonContent)
+          if (data.image) {
+            if (Array.isArray(data.image)) {
+              for (const img of data.image) {
+                addImage(typeof img === 'string' ? img : img.url || img)
+              }
+            } else {
+              addImage(typeof data.image === 'string' ? data.image : data.image.url || data.image)
+            }
+          }
+        } catch (e) {}
+      }
+    }
+    
+    // Strategy 2: Product gallery images
+    const galleryMatches = html.matchAll(/(?:data-src|data-lazy|data-original|data-zoom-image)=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/gi)
+    for (const m of galleryMatches) {
+      addImage(m[1])
+    }
+    
+    // Strategy 3: Cdiscount CDN images
+    const cdnMatches = html.matchAll(/(https?:\/\/(?:f\.lp\.cnd|cd[0-9]+|static\.cdiscount)[^"'\s]+\.(?:jpg|jpeg|png|webp)[^"'\s]*)/gi)
+    for (const m of cdnMatches) {
+      // Clean up size modifiers and get full resolution
+      let imgUrl = m[1]
+        .replace(/_\d+x\d+\./, '.')
+        .replace(/\/[a-z]_\d+_\d+\//, '/')
+        .replace(/&w=\d+&h=\d+/, '')
+      addImage(imgUrl)
+    }
+    
+    // Strategy 4: Product image container
+    const imgSrcMatches = html.matchAll(/class=["'][^"']*(?:product-image|gallery|zoom|main-image)[^"']*["'][^>]*>[\s\S]{0,500}?src=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/gi)
+    for (const m of imgSrcMatches) {
+      addImage(m[1])
+    }
+  }
+  
+  // Fnac image extraction
+  if (platform === 'fnac') {
+    console.log('📚 Extracting Fnac images...')
+    
+    // Fnac uses static.fnac-static.com
+    const fnacImgMatches = html.matchAll(/(https?:\/\/static\.fnac-static\.com\/[^"'\s]+\.(?:jpg|jpeg|png|webp)[^"'\s]*)/gi)
+    for (const m of fnacImgMatches) {
+      let imgUrl = m[1].replace(/\/\d+_\d+\//, '/').replace(/_\d+\./, '.')
+      addImage(imgUrl)
+    }
+    
+    // JSON-LD
+    const jsonLdFnac = html.match(/"image"\s*:\s*"([^"]+)"/i)
+    if (jsonLdFnac) addImage(jsonLdFnac[1])
+  }
+  
+  // Darty / Boulanger extraction
+  if (platform === 'darty' || platform === 'boulanger') {
+    console.log(`🏠 Extracting ${platform} images...`)
+    
+    const productImgMatches = html.matchAll(/(https?:\/\/(?:assets|media|images)\.[^"'\s]+\.(?:jpg|jpeg|png|webp)[^"'\s]*)/gi)
+    for (const m of productImgMatches) {
+      addImage(m[1])
+    }
+  }
+  
+  // Home Depot / Lowe's extraction
+  if (platform === 'homedepot' || platform === 'lowes') {
+    console.log(`🏪 Extracting ${platform} images...`)
+    
+    // They often use similar CDN patterns
+    const productImgMatches = html.matchAll(/(https?:\/\/[^"'\s]*(?:images|media|assets)[^"'\s]+\.(?:jpg|jpeg|png|webp))/gi)
+    for (const m of productImgMatches) {
+      let imgUrl = m[1]
+        .replace(/_\d+\./, '.')
+        .replace(/\?.*$/, '')
+      addImage(imgUrl)
     }
   }
   
