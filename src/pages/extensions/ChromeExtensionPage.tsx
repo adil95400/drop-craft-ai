@@ -477,29 +477,58 @@ export default function ChromeExtensionPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {installSteps.map((step) => (
-                  <div 
-                    key={step.step}
-                    className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className={cn(
-                      "h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0",
-                      step.completed 
-                        ? "bg-green-500 text-white" 
-                        : "bg-primary text-primary-foreground"
-                    )}>
-                      {step.completed ? <CheckCircle className="h-4 w-4" /> : step.step}
+                {installSteps.map((step) => {
+                  const handleStepAction = () => {
+                    switch (step.step) {
+                      case 1:
+                        handleDownloadExtension();
+                        break;
+                      case 2:
+                        setActiveTab('auth');
+                        break;
+                      case 3:
+                        setActiveTab('settings');
+                        break;
+                      case 4:
+                        window.open('https://aliexpress.com', '_blank');
+                        toast.success('Naviguez sur un site fournisseur et utilisez l\'extension !');
+                        break;
+                    }
+                  };
+
+                  return (
+                    <div 
+                      key={step.step}
+                      className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0",
+                        step.completed 
+                          ? "bg-green-500 text-white" 
+                          : "bg-primary text-primary-foreground"
+                      )}>
+                        {step.completed ? <CheckCircle className="h-4 w-4" /> : step.step}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium">{step.title}</p>
+                        <p className="text-sm text-muted-foreground">{step.description}</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex-shrink-0"
+                        onClick={handleStepAction}
+                        disabled={step.step === 1 && isDownloading}
+                      >
+                        {step.step === 1 && isDownloading ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : null}
+                        {step.action}
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </Button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium">{step.title}</p>
-                      <p className="text-sm text-muted-foreground">{step.description}</p>
-                    </div>
-                    <Button variant="ghost" size="sm" className="flex-shrink-0">
-                      {step.action}
-                      <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -661,9 +690,13 @@ export default function ChromeExtensionPage() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Commencez à importer des produits avec l'extension Chrome
                   </p>
-                  <Button>
-                    <Chrome className="h-4 w-4 mr-2" />
-                    Installer l'extension
+                  <Button onClick={handleDownloadExtension} disabled={isDownloading}>
+                    {isDownloading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Chrome className="h-4 w-4 mr-2" />
+                    )}
+                    {isDownloading ? 'Téléchargement...' : 'Installer l\'extension'}
                   </Button>
                 </div>
               ) : (
