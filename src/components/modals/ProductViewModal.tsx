@@ -62,6 +62,8 @@ import {
   Image as ImageIcon,
   Play,
   ExternalLink,
+  Plus,
+  Check,
 } from 'lucide-react'
 import { ImageGalleryModal } from './ImageGalleryModal'
 import {
@@ -74,6 +76,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Dialog as AddImageDialog,
+  DialogContent as AddImageDialogContent,
+  DialogHeader as AddImageDialogHeader,
+  DialogTitle as AddImageDialogTitle,
+  DialogFooter as AddImageDialogFooter,
+} from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Tooltip,
   TooltipContent,
@@ -105,6 +115,11 @@ export function ProductViewModal({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [showImageGallery, setShowImageGallery] = useState(false)
+  const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set())
+  const [showAddImageDialog, setShowAddImageDialog] = useState(false)
+  const [showDeleteImagesDialog, setShowDeleteImagesDialog] = useState(false)
+  const [newImageUrl, setNewImageUrl] = useState('')
+  const [isSavingImages, setIsSavingImages] = useState(false)
   const { toast } = useToast()
   const queryClient = useQueryClient()
   
@@ -123,8 +138,144 @@ export function ProductViewModal({
       setCurrentImageIndex(0)
       setIsEditing(false)
       setActiveTab('overview')
+      setSelectedImages(new Set())
     }
   }, [product])
+
+  // Image management functions
+  const toggleImageSelection = (index: number) => {
+    setSelectedImages(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(index)) {
+        newSet.delete(index)
+      } else {
+        newSet.add(index)
+      }
+      return newSet
+    })
+  }
+
+  const selectAllImages = () => {
+    if (selectedImages.size === images.length) {
+      setSelectedImages(new Set())
+    } else {
+      setSelectedImages(new Set(images.map((_: string, i: number) => i)))
+    }
+  }
+
+  const handleAddImage = async () => {
+    if (!newImageUrl.trim() || !product) return
+    
+    try {
+      new URL(newImageUrl)
+    } catch {
+      toast({ title: 'URL invalide', variant: 'destructive' })
+      return
+    }
+
+    setIsSavingImages(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const newImages = [...images, newImageUrl.trim()]
+      const [primaryImage, ...additionalImages] = newImages
+
+      const { error } = await supabase
+        .from('products')
+        .update({
+          image_url: primaryImage || null,
+          images: additionalImages.length > 0 ? additionalImages : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', product.id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      toast({ title: 'Image ajoutée avec succès' })
+      setNewImageUrl('')
+      setShowAddImageDialog(false)
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    } catch (error) {
+      console.error('Error adding image:', error)
+      toast({ title: 'Erreur lors de l\'ajout', variant: 'destructive' })
+    } finally {
+      setIsSavingImages(false)
+    }
+  }
+
+  const handleDeleteSelectedImages = async () => {
+    if (selectedImages.size === 0 || !product) return
+
+    setIsSavingImages(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const newImages = images.filter((_: string, index: number) => !selectedImages.has(index))
+      const [primaryImage, ...additionalImages] = newImages
+
+      const { error } = await supabase
+        .from('products')
+        .update({
+          image_url: primaryImage || null,
+          images: additionalImages.length > 0 ? additionalImages : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', product.id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      toast({ title: `${selectedImages.size} image(s) supprimée(s)` })
+      setSelectedImages(new Set())
+      setShowDeleteImagesDialog(false)
+      setCurrentImageIndex(0)
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    } catch (error) {
+      console.error('Error deleting images:', error)
+      toast({ title: 'Erreur lors de la suppression', variant: 'destructive' })
+    } finally {
+      setIsSavingImages(false)
+    }
+  }
+
+  const handleSetPrimaryImage = async (index: number) => {
+    if (index === 0 || !product) return
+
+    setIsSavingImages(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const newImages = [...images]
+      const [primary] = newImages.splice(index, 1)
+      newImages.unshift(primary)
+      const [primaryImage, ...additionalImages] = newImages
+
+      const { error } = await supabase
+        .from('products')
+        .update({
+          image_url: primaryImage,
+          images: additionalImages.length > 0 ? additionalImages : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', product.id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      toast({ title: 'Image principale mise à jour' })
+      setCurrentImageIndex(0)
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    } catch (error) {
+      console.error('Error setting primary:', error)
+      toast({ title: 'Erreur', variant: 'destructive' })
+    } finally {
+      setIsSavingImages(false)
+    }
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -1018,27 +1169,68 @@ export function ProductViewModal({
 
                     {/* Media Tab - Images, Videos, Variants */}
                     <TabsContent value="media" className="m-0 space-y-6">
-                      {/* Images Gallery */}
+                      {/* Images Gallery with Selection */}
                       <Card>
                         <CardHeader className="pb-3">
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <ImageIcon className="h-4 w-4" />
-                            Images ({images.length})
-                          </CardTitle>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              Images ({images.length})
+                            </CardTitle>
+                            <div className="flex items-center gap-2">
+                              {images.length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={selectAllImages}
+                                  className="h-8 gap-1.5"
+                                >
+                                  <Checkbox 
+                                    checked={selectedImages.size === images.length && images.length > 0}
+                                    className="pointer-events-none h-3.5 w-3.5"
+                                  />
+                                  <span className="text-xs">
+                                    {selectedImages.size === images.length ? 'Désélectionner' : 'Tout'}
+                                  </span>
+                                </Button>
+                              )}
+                              {selectedImages.size > 0 && (
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => setShowDeleteImagesDialog(true)}
+                                  className="h-8 gap-1.5"
+                                  disabled={isSavingImages}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  <span className="text-xs">Supprimer ({selectedImages.size})</span>
+                                </Button>
+                              )}
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => setShowAddImageDialog(true)}
+                                className="h-8 gap-1.5"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                                <span className="text-xs">Ajouter</span>
+                              </Button>
+                            </div>
+                          </div>
                         </CardHeader>
                         <CardContent>
                           {images.length > 0 ? (
                             <div className="grid grid-cols-4 gap-2">
                               {images.map((img: string, idx: number) => (
-                                <button
+                                <div
                                   key={idx}
-                                  onClick={() => setCurrentImageIndex(idx)}
                                   className={cn(
-                                    "aspect-square rounded-lg overflow-hidden border-2 transition-all",
-                                    idx === currentImageIndex
+                                    "relative aspect-square rounded-lg overflow-hidden border-2 transition-all cursor-pointer group",
+                                    selectedImages.has(idx)
                                       ? "border-primary ring-2 ring-primary/20"
                                       : "border-transparent hover:border-muted-foreground/30"
                                   )}
+                                  onClick={() => toggleImageSelection(idx)}
                                 >
                                   <img
                                     src={img}
@@ -1048,13 +1240,65 @@ export function ProductViewModal({
                                       (e.target as HTMLImageElement).src = '/placeholder.svg'
                                     }}
                                   />
-                                </button>
+                                  
+                                  {/* Primary badge */}
+                                  {idx === 0 && (
+                                    <div className="absolute top-1 left-1 bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-0.5">
+                                      <Star className="h-2.5 w-2.5 fill-current" />
+                                      Principale
+                                    </div>
+                                  )}
+                                  
+                                  {/* Selection checkbox */}
+                                  <div 
+                                    className={cn(
+                                      "absolute top-1 right-1 h-5 w-5 rounded flex items-center justify-center transition-all",
+                                      selectedImages.has(idx)
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-background/80 opacity-0 group-hover:opacity-100"
+                                    )}
+                                  >
+                                    {selectedImages.has(idx) ? (
+                                      <Check className="h-3 w-3" />
+                                    ) : (
+                                      <div className="h-3 w-3 border-2 rounded-sm" />
+                                    )}
+                                  </div>
+
+                                  {/* Set as primary overlay */}
+                                  {idx !== 0 && (
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="h-7 text-xs gap-1"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handleSetPrimaryImage(idx)
+                                        }}
+                                        disabled={isSavingImages}
+                                      >
+                                        <Star className="h-3 w-3" />
+                                        Principale
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
                               ))}
                             </div>
                           ) : (
                             <div className="text-center py-8 text-muted-foreground">
                               <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                              <p>Aucune image disponible</p>
+                              <p className="mb-4">Aucune image disponible</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowAddImageDialog(true)}
+                                className="gap-2"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Ajouter une image
+                              </Button>
                             </div>
                           )}
                         </CardContent>
@@ -1677,6 +1921,86 @@ export function ProductViewModal({
         productId={product?.id}
         readOnly={!isEditing}
       />
+
+      {/* Add Image Dialog */}
+      <AddImageDialog open={showAddImageDialog} onOpenChange={setShowAddImageDialog}>
+        <AddImageDialogContent className="sm:max-w-md">
+          <AddImageDialogHeader>
+            <AddImageDialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Ajouter une image
+            </AddImageDialogTitle>
+          </AddImageDialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-image-url">URL de l'image</Label>
+              <Input
+                id="new-image-url"
+                placeholder="https://exemple.com/image.jpg"
+                value={newImageUrl}
+                onChange={(e) => setNewImageUrl(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddImage()}
+              />
+              <p className="text-xs text-muted-foreground">
+                Entrez l'URL complète de l'image
+              </p>
+            </div>
+            {newImageUrl && (
+              <div className="p-4 rounded-lg border bg-muted/50">
+                <p className="text-sm text-muted-foreground mb-2">Aperçu</p>
+                <img
+                  src={newImageUrl}
+                  alt="Aperçu"
+                  className="w-full h-32 object-contain rounded"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none'
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          <AddImageDialogFooter>
+            <Button variant="outline" onClick={() => setShowAddImageDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleAddImage} disabled={isSavingImages || !newImageUrl.trim()}>
+              {isSavingImages ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              Ajouter
+            </Button>
+          </AddImageDialogFooter>
+        </AddImageDialogContent>
+      </AddImageDialog>
+
+      {/* Delete Images Confirmation Dialog */}
+      <AlertDialog open={showDeleteImagesDialog} onOpenChange={setShowDeleteImagesDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer les images sélectionnées ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer {selectedImages.size} image(s) ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSavingImages}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSelectedImages}
+              disabled={isSavingImages}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isSavingImages ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
