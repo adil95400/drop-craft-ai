@@ -176,9 +176,9 @@ export function AppRoutes() {
         {/* Reviews */}
         <Route path="/reviews" element={<ProtectedRoute><ChannableLayout><AvisPositifUltraPro /></ChannableLayout></ProtectedRoute>} />
         
-        {/* Sync & Orders */}
+        {/* Sync & Redirects */}
         <Route path="/sync-manager" element={<ProtectedRoute><ChannableLayout><SyncManagerPage /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/orders-center" element={<ProtectedRoute><ChannableLayout><OrdersCenterPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/orders-center" element={<Navigate to="/orders" replace />} />
         
         {/* Shopify Store (public) */}
         <Route path="/store" element={<ShopifyStore />} />
