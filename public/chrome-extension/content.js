@@ -125,6 +125,12 @@
     reviewTranslatorScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(reviewTranslatorScript);
     
+    // Inject advanced scraper for complete product extraction
+    const advancedScraperScript = document.createElement('script');
+    advancedScraperScript.src = chrome.runtime.getURL('advanced-scraper.js');
+    advancedScraperScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(advancedScraperScript);
+    
     // Inject platform-specific extractors
     this.injectPlatformExtractors();
   }
