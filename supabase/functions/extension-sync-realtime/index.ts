@@ -184,12 +184,55 @@ serve(async (req) => {
           const productPrice = parsePrice(product.price);
           const productImage = validateImageUrl(product.image || product.imageUrl);
           
+          // Process all images
+          const allImages: string[] = [];
+          if (productImage) allImages.push(productImage);
+          
+          // Add additional images from array
+          if (Array.isArray(product.images)) {
+            for (const img of product.images) {
+              const validImg = validateImageUrl(img);
+              if (validImg && !allImages.includes(validImg)) {
+                allImages.push(validImg);
+              }
+            }
+          }
+          
+          // Process videos
+          const videos: string[] = [];
+          if (Array.isArray(product.videos)) {
+            for (const vid of product.videos) {
+              if (vid && typeof vid === 'string' && vid.includes('http')) {
+                videos.push(vid);
+              }
+            }
+          }
+          
+          // Process reviews
+          const reviews: any[] = [];
+          if (Array.isArray(product.reviews)) {
+            for (const review of product.reviews.slice(0, 50)) {
+              if (review && review.text) {
+                reviews.push({
+                  rating: review.rating || null,
+                  text: (review.text || '').substring(0, 2000),
+                  author: (review.author || '').substring(0, 100),
+                  date: review.date || null,
+                  images: Array.isArray(review.images) ? review.images.slice(0, 5) : []
+                });
+              }
+            }
+          }
+          
           console.log('[extension-sync-realtime] Processing product:', {
             originalTitle: (product.title || product.name || '').substring(0, 50),
             cleanedTitle: productTitle.substring(0, 50),
             originalPrice: product.price,
             cleanedPrice: productPrice,
-            hasValidImage: !!productImage
+            imagesCount: allImages.length,
+            videosCount: videos.length,
+            descriptionLength: (product.description || '').length,
+            reviewsCount: reviews.length
           });
 
           // Create import job
@@ -210,7 +253,7 @@ serve(async (req) => {
             throw jobError
           }
 
-          // Insert into imported_products table for proper tracking
+          // Insert into imported_products table with ALL data
           const { data: newProduct, error: productError } = await supabase
             .from('imported_products')
             .insert({
@@ -218,8 +261,11 @@ serve(async (req) => {
               name: productTitle,
               price: productPrice,
               cost_price: productPrice,
-              description: (product.description || '').substring(0, 5000),
-              image_urls: productImage ? [productImage] : [],
+              description: (product.description || '').substring(0, 10000),
+              image_url: allImages[0] || null,
+              image_urls: allImages,
+              images: allImages.map((url, idx) => ({ url, position: idx, alt: productTitle })),
+              videos: videos.map(url => ({ url, type: 'video' })),
               source_url: product.url || '',
               source_platform: product.platform || 'extension',
               stock_quantity: 100,
@@ -227,12 +273,17 @@ serve(async (req) => {
               category: product.category || null,
               currency: 'EUR',
               sync_status: 'synced',
+              sku: product.sku || null,
               metadata: {
                 rating: product.rating,
                 orders: product.orders,
                 original_price: product.originalPrice,
+                brand: product.brand,
                 imported_at: new Date().toISOString(),
-                source: product.source || 'chrome_extension'
+                source: product.source || 'chrome_extension',
+                reviews_count: reviews.length,
+                images_count: allImages.length,
+                videos_count: videos.length
               }
             })
             .select()
@@ -242,8 +293,37 @@ serve(async (req) => {
             console.error('[extension-sync-realtime] imported_products insert error:', productError)
             errors.push({ product: productTitle, error: productError.message })
           } else {
+            // Store reviews if any
+            if (reviews.length > 0) {
+              try {
+                const reviewInserts = reviews.map(r => ({
+                  user_id: authData.user_id,
+                  product_id: newProduct.id,
+                  reviewer_name: r.author || 'Anonymous',
+                  rating: r.rating || 5,
+                  comment: r.text,
+                  review_date: r.date || new Date().toISOString(),
+                  images: r.images,
+                  source_platform: product.platform || 'extension',
+                  is_verified: true
+                }));
+                
+                await supabase
+                  .from('product_reviews')
+                  .insert(reviewInserts);
+                  
+                console.log('[extension-sync-realtime] Imported', reviews.length, 'reviews for product:', newProduct.id);
+              } catch (reviewError) {
+                console.warn('[extension-sync-realtime] Reviews import warning:', reviewError);
+              }
+            }
+            
             importResults.push(newProduct)
-            console.log('[extension-sync-realtime] Product imported:', newProduct.id, productTitle.substring(0, 50))
+            console.log('[extension-sync-realtime] Product imported:', newProduct.id, productTitle.substring(0, 50), {
+              images: allImages.length,
+              videos: videos.length,
+              reviews: reviews.length
+            })
             
             // Update extension_data status
             await supabase
