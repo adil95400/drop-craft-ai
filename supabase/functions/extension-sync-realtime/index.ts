@@ -273,7 +273,7 @@ serve(async (req) => {
             throw jobError
           }
 
-          // Insert into imported_products table with ALL data including brand, stock, shipping
+           // Insert into imported_products table with ALL data including brand, stock, shipping
           const { data: newProduct, error: productError } = await supabase
             .from('imported_products')
             .insert({
@@ -282,10 +282,8 @@ serve(async (req) => {
               price: productPrice,
               cost_price: productPrice,
               description: (product.description || '').substring(0, 10000),
-              image_url: allImages[0] || null,
               image_urls: allImages,
-              images: allImages.map((url, idx) => ({ url, position: idx, alt: productTitle })),
-              videos: videos.map(url => ({ url, type: 'video' })),
+               video_urls: videos,
               source_url: product.url || '',
               source_platform: product.platform || 'extension',
               stock_quantity: product.stockQuantity || 100,
@@ -293,14 +291,18 @@ serve(async (req) => {
               category: product.category || null,
               currency: product.currency || 'EUR',
               sync_status: 'synced',
+               brand: product.brand || null,
               sku: product.sku || product.mpn || null,
+               variants: Array.isArray(product.variants) ? product.variants : null,
+               specifications: product.specifications || null,
+               shipping_info: product.shippingInfo || null,
               metadata: {
                 // Basic info
                 rating: product.rating,
                 orders: product.orders,
                 original_price: product.originalPrice,
                 // Brand info
-                brand: product.brand || null,
+                 brand: product.brand || null,
                 gtin: product.gtin || null,
                 mpn: product.mpn || null,
                 // Stock info
@@ -310,7 +312,6 @@ serve(async (req) => {
                 shipping_cost: product.shippingCost || null,
                 free_shipping: product.freeShipping || false,
                 delivery_time: product.deliveryTime || null,
-                shipping_info: product.shippingInfo || null,
                 // Specifications
                 specifications: product.specifications || {},
                 // Import metadata
@@ -319,15 +320,19 @@ serve(async (req) => {
                 reviews_count: reviews.length,
                 images_count: allImages.length,
                 videos_count: videos.length,
-                variants_count: (product.variants || []).length
+                 variants_count: Array.isArray(product.variants) ? product.variants.length : 0,
+                 primary_image: allImages[0] || null
               }
             })
             .select()
             .single()
 
-          if (productError) {
+           if (productError) {
             console.error('[extension-sync-realtime] imported_products insert error:', productError)
-            errors.push({ product: productTitle, error: productError.message })
+             errors.push({
+               product: productTitle,
+               error: `${productError.code || 'DB_ERROR'}: ${productError.message}${productError.hint ? ` (${productError.hint})` : ''}`,
+             })
           } else {
             // Store reviews if any
             if (reviews.length > 0) {
