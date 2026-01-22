@@ -410,7 +410,7 @@
       
       // Settings button
       this.sidebar.querySelector('#dc-settings-btn')?.addEventListener('click', () => {
-        window.open(chrome.runtime.getURL('auth.html'), '_blank');
+        window.open(`${CONFIG.APP_URL}/extensions/chrome`, '_blank');
       });
       
       // Connect button

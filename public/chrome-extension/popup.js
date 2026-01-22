@@ -10,7 +10,7 @@ class DropCraftPopup {
     this.pendingItems = [];
     this.currentPlatform = null;
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
-    this.APP_URL = 'https://drop-craft-ai.lovable.app';
+    this.APP_URL = 'https://shopopti.io';
   }
 
   async init() {
@@ -669,7 +669,7 @@ class DropCraftPopup {
     try {
       console.log('[Popup] Scraping URL:', url);
       
-      const response = await fetch(`${this.API_URL}/extension-scraper`, {
+      const response = await fetch(`${this.API_URL}/product-url-scraper`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -719,13 +719,11 @@ class DropCraftPopup {
   }
 
   openAuth() {
-    // Open the extension's internal auth page (100% in-extension)
-    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
+    chrome.tabs.create({ url: `${this.APP_URL}/extensions/chrome` });
   }
 
   openSettings() {
-    // Open the extension's internal auth page for connection
-    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
+    chrome.runtime.openOptionsPage();
   }
 
   openDashboard() {

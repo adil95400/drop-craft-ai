@@ -247,8 +247,8 @@ async function toggleConnection() {
     updateConnectionStatus(false);
     showNotification('Déconnecté', 'info');
   } else {
-    // Open extension's internal auth page
-    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
+    // Open app to connect
+    chrome.tabs.create({ url: `${APP_URL}/extensions/chrome` });
   }
 }
 
