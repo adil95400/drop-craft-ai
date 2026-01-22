@@ -1,758 +1,658 @@
-// Drop Craft AI Chrome Extension - Content Script v4.3.4
-// Professional Dropshipping Extension - 100% Inline CSP-Safe Version
-// NO EXTERNAL FILE DEPENDENCIES - All functionality is embedded inline
-
-// CRITICAL: This version is completely self-contained and does NOT use
-// chrome.runtime.getURL() or inject external scripts to avoid ERR_FILE_NOT_FOUND
+// Drop Craft AI Chrome Extension - Content Script v4.3.5
+// Professional Dropshipping Extension - PURE CONTENT SCRIPT (No Script Injection)
+// CSP-SAFE: Works on Amazon, AliExpress, and all strict CSP sites
+// This script runs ONLY in the content script context - no page context injection
 
 (function () {
   'use strict';
 
   // Prevent multiple injections with versioned check
-  if (window.__dropCraftContentScriptLoaded === '4.3.4') return;
-  window.__dropCraftContentScriptLoaded = '4.3.4';
+  if (window.__dropCraftCSVersion === '4.3.5') return;
+  window.__dropCraftCSVersion = '4.3.5';
 
-  console.log('[DropCraft] Content script v4.3.4 initializing (100% inline)...');
+  console.log('[DropCraft] Content script v4.3.5 initializing (pure content script mode)...');
 
-  class DropCraftContentScript {
-    constructor() {
-      this.isActive = false;
-      this.scrapingIndicator = null;
-      this.mutationObserver = null;
-      this.lastInjectedAt = 0;
-      this.init();
-    }
-
-    init() {
-      this.setupMessageListener();
-      this.setupPageMessageRelay();
-      this.injectStyles();
-      this.setupAutoDetection();
-      this.setupDynamicContentObserver();
-      
-      // CSP-Safe: Use inline injection for core functionality
-      // NO external file loading - everything is embedded
-      this.injectCoreModules();
-    }
-
-    // NEW: Relay messages from page context to background script (CSP bypass)
-    setupPageMessageRelay() {
-      window.addEventListener('message', async (event) => {
-        if (event.source !== window) return;
-        
-        const data = event.data;
-        if (!data || typeof data !== 'object') return;
-
-        // Handle fetch requests from page scripts (CSP bypass)
-        if (data.type === 'DC_FETCH_API') {
-          try {
-            const result = await chrome.runtime.sendMessage({
-              type: 'FETCH_API',
-              url: data.url,
-              options: data.options
-            });
-            
-            window.postMessage({
-              type: 'DC_FETCH_API_RESULT',
-              requestId: data.requestId,
-              success: result?.success ?? false,
-              status: result?.status ?? 0,
-              data: result?.data,
-              error: result?.error
-            }, '*');
-          } catch (err) {
-            window.postMessage({
-              type: 'DC_FETCH_API_RESULT',
-              requestId: data.requestId,
-              success: false,
-              status: 0,
-              error: err.message
-            }, '*');
-          }
-        }
-
-        // Handle import requests from page
-        if (data.type === 'DC_IMPORT_PRODUCT') {
-          try {
-            const result = await chrome.runtime.sendMessage({
-              type: 'IMPORT_PRODUCT',
-              product: data.product
-            });
-            
-            window.postMessage({
-              type: 'DC_IMPORT_RESULT',
-              requestId: data.requestId,
-              ...result
-            }, '*');
-          } catch (err) {
-            window.postMessage({
-              type: 'DC_IMPORT_RESULT',
-              requestId: data.requestId,
-              success: false,
-              error: err.message
-            }, '*');
-          }
-        }
-
-        // Handle token requests
-        if (data.type === 'DC_GET_TOKEN') {
-          chrome.storage.local.get(['extensionToken'], (result) => {
-            window.postMessage({
-              type: 'DC_TOKEN_RESULT',
-              requestId: data.requestId,
-              token: result.extensionToken || null
-            }, '*');
-          });
-        }
-
-        // Handle storage requests
-        if (data.type === 'DC_GET_STORAGE') {
-          chrome.storage.local.get(data.keys || null, (result) => {
-            window.postMessage({
-              type: 'DC_STORAGE_RESULT',
-              requestId: data.requestId,
-              data: result
-            }, '*');
-          });
-        }
-
-        // Handle storage set requests
-        if (data.type === 'DC_SET_STORAGE') {
-          chrome.storage.local.set(data.data, () => {
-            window.postMessage({
-              type: 'DC_STORAGE_SET_RESULT',
-              requestId: data.requestId,
-              success: true
-            }, '*');
-          });
-        }
-      });
-
-      console.log('[DropCraft] Page message relay initialized');
-    }
-
-    // CSP-Safe: Inject core modules using inline script with data
-    injectCoreModules() {
-      // Inject the unified module that works in page context
-      const script = document.createElement('script');
-      script.textContent = this.getCoreModuleCode();
-      (document.head || document.documentElement).appendChild(script);
-      script.remove();
-      
-      console.log('[DropCraft] Core modules injected');
-    }
-
-    getCoreModuleCode() {
-      // This code runs in the page context and handles all extraction/UI
-      return `
-(function() {
-  'use strict';
-  
-  if (window.__dropCraftCoreLoaded === '4.3.4') return;
-  window.__dropCraftCoreLoaded = '4.3.4';
-  
-  console.log('[DropCraft] Core module v4.3.4 loaded (inline, no external deps)');
-  
+  // ============================================
+  // CONFIGURATION
+  // ============================================
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
-    APP_URL: 'https://shopopti.io',
-    PLATFORMS: {
-      'aliexpress': { name: 'AliExpress', icon: '🛒', color: '#ff6a00' },
-      'amazon': { name: 'Amazon', icon: '📦', color: '#ff9900' },
-      'ebay': { name: 'eBay', icon: '🏷️', color: '#e53238' },
-      'temu': { name: 'Temu', icon: '🎁', color: '#f97316' },
-      'walmart': { name: 'Walmart', icon: '🏪', color: '#0071ce' },
-      'etsy': { name: 'Etsy', icon: '🎨', color: '#f56400' },
-      'cdiscount': { name: 'Cdiscount', icon: '🇫🇷', color: '#00a0e3' },
-      'fnac': { name: 'Fnac', icon: '📀', color: '#e1a400' },
-      'banggood': { name: 'Banggood', icon: '📱', color: '#ff6600' },
-      'dhgate': { name: 'DHgate', icon: '🏭', color: '#e54d00' },
-      'shein': { name: 'Shein', icon: '👗', color: '#000' }
-    }
+    VERSION: '4.3.5',
+    SUPPORTED_PLATFORMS: ['amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 'wish', 'gearbest', 'lightinthebox', 'cdiscount', 'fnac']
   };
 
-  // ========== CSP-Safe Network Layer ==========
-  const dcRPC = async (type, payload) => {
-    const requestId = 'dc_' + Date.now() + '_' + Math.random().toString(16).slice(2);
+  // ============================================
+  // PLATFORM DETECTION
+  // ============================================
+  function detectPlatform() {
+    const hostname = window.location.hostname.toLowerCase();
     
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        window.removeEventListener('message', handler);
-        reject(new Error('RPC timeout'));
-      }, 20000);
-      
-      const handler = (event) => {
-        if (event.source !== window) return;
-        const data = event.data;
-        if (!data || data.requestId !== requestId) return;
-        
-        clearTimeout(timeout);
-        window.removeEventListener('message', handler);
-        resolve(data);
-      };
-      
-      window.addEventListener('message', handler);
-      window.postMessage({ type, requestId, ...payload }, '*');
-    });
-  };
-
-  const dcFetch = async (url, options) => {
-    // Try direct fetch first
-    try {
-      const res = await fetch(url, options);
-      const data = res.headers.get('content-type')?.includes('json') 
-        ? await res.json() 
-        : await res.text();
-      return { ok: res.ok, status: res.status, data };
-    } catch (e) {
-      console.log('[DropCraft] Direct fetch failed, using proxy');
+    if (hostname.includes('amazon')) return 'amazon';
+    if (hostname.includes('aliexpress')) return 'aliexpress';
+    if (hostname.includes('alibaba')) return 'alibaba';
+    if (hostname.includes('temu')) return 'temu';
+    if (hostname.includes('shein')) return 'shein';
+    if (hostname.includes('ebay')) return 'ebay';
+    if (hostname.includes('etsy')) return 'etsy';
+    if (hostname.includes('walmart')) return 'walmart';
+    if (hostname.includes('cjdropshipping')) return 'cjdropshipping';
+    if (hostname.includes('banggood')) return 'banggood';
+    if (hostname.includes('dhgate')) return 'dhgate';
+    if (hostname.includes('wish')) return 'wish';
+    if (hostname.includes('cdiscount')) return 'cdiscount';
+    if (hostname.includes('fnac')) return 'fnac';
+    
+    // Shopify detection via meta tags (doesn't require page context)
+    if (document.querySelector('meta[name="shopify-checkout-api-token"]') ||
+        document.querySelector('link[href*="cdn.shopify.com"]') ||
+        hostname.includes('myshopify')) {
+      return 'shopify';
     }
     
-    // Fall back to background proxy
-    try {
-      const result = await dcRPC('DC_FETCH_API', { url, options });
-      return {
-        ok: result.success,
-        status: result.status || 0,
-        data: result.data,
-        error: result.error
-      };
-    } catch (e) {
-      return { ok: false, status: 0, error: e.message };
-    }
-  };
+    return 'unknown';
+  }
 
-  const getToken = async () => {
-    try {
-      const result = await dcRPC('DC_GET_TOKEN', {});
-      return result.token;
-    } catch {
-      return null;
-    }
-  };
-
-  // ========== Platform Detection ==========
-  const detectPlatform = () => {
-    const hostname = location.hostname.toLowerCase();
-    for (const [key, info] of Object.entries(CONFIG.PLATFORMS)) {
-      if (hostname.includes(key)) {
-        return { key, ...info };
-      }
-    }
-    if (document.querySelector('meta[name="generator"][content*="Shopify"]')) {
-      return { key: 'shopify', name: 'Shopify', icon: '🛍️', color: '#96bf48' };
-    }
-    return null;
-  };
-
-  // ========== Product Extraction ==========
-  const extractProduct = async () => {
+  function isProductPage() {
+    const url = window.location.href;
     const platform = detectPlatform();
-    if (!platform) return null;
     
-    console.log('[DropCraft] Extracting product from', platform.name);
+    const patterns = {
+      amazon: /\/(dp|gp\/product|product)\/[A-Z0-9]+/i,
+      aliexpress: /\/item\/|\/i\/|\/_p\//i,
+      alibaba: /\/product-detail\//i,
+      temu: /\/[a-z0-9-]+-g-\d+\.html/i,
+      shein: /\/-p-\d+\.html/i,
+      ebay: /\/itm\//i,
+      etsy: /\/listing\//i,
+      walmart: /\/ip\//i,
+      shopify: /\/products\//i,
+      cdiscount: /\/f-\d+|\/fp\/\d+/i,
+      fnac: /\/a\d+\//i
+    };
     
-    let product = {
+    return patterns[platform]?.test(url) || false;
+  }
+
+  // ============================================
+  // DATA EXTRACTION (Pure DOM - No Script Injection)
+  // ============================================
+  function extractProductData() {
+    const platform = detectPlatform();
+    console.log('[DropCraft] Extracting data for platform:', platform);
+
+    const extractors = {
+      amazon: extractAmazonData,
+      aliexpress: extractAliExpressData,
+      shopify: extractShopifyData,
+      temu: extractTemuData,
+      ebay: extractEbayData
+    };
+
+    const extractor = extractors[platform] || extractGenericData;
+    const data = extractor();
+    
+    data.platform = platform;
+    data.source_url = window.location.href;
+    data.extracted_at = new Date().toISOString();
+    
+    console.log('[DropCraft] Extracted data:', data);
+    return data;
+  }
+
+  function extractAmazonData() {
+    const data = {
       title: '',
-      description: '',
       price: 0,
       currency: 'EUR',
+      description: '',
       images: [],
       variants: [],
-      source_url: location.href,
-      platform: platform.name
+      rating: null,
+      reviews_count: 0,
+      asin: ''
     };
-    
-    // Try JSON-LD first
-    const jsonLd = document.querySelectorAll('script[type="application/ld+json"]');
-    for (const script of jsonLd) {
-      try {
-        const data = JSON.parse(script.textContent);
-        const prod = data['@type'] === 'Product' ? data : 
-                    data['@graph']?.find(i => i['@type'] === 'Product');
-        if (prod) {
-          product.title = prod.name || product.title;
-          product.description = prod.description || '';
-          product.price = parseFloat(prod.offers?.price || prod.offers?.[0]?.price) || 0;
-          product.currency = prod.offers?.priceCurrency || 'EUR';
-          product.images = Array.isArray(prod.image) ? prod.image : [prod.image].filter(Boolean);
-          product.brand = prod.brand?.name || prod.brand;
-          product.rating = prod.aggregateRating?.ratingValue;
-          product.reviews_count = prod.aggregateRating?.reviewCount;
-        }
-      } catch {}
-    }
-    
-    // Platform-specific fallbacks
-    if (!product.title) {
-      product.title = 
-        document.querySelector('h1')?.textContent?.trim() ||
-        document.querySelector('[data-testid*="title"]')?.textContent?.trim() ||
-        document.querySelector('.product-title, .pdp-title, #productTitle')?.textContent?.trim() ||
-        document.title.split(' - ')[0].split(' | ')[0];
-    }
-    
-    // Extract images if not found
-    if (product.images.length === 0) {
-      product.images = extractImages();
-    }
-    
-    // Extract price if not found
-    if (!product.price) {
-      product.price = extractPrice();
-    }
-    
-    return product;
-  };
 
-  const extractImages = () => {
-    const images = new Set();
-    
-    // High-res strategies
-    const selectors = [
-      'img[src*="x-large"], img[data-src*="x-large"]',
-      'img[src*="_AC_SL"], img[data-src*="_AC_SL"]',  // Amazon
-      '.gallery img, .image-gallery img',
-      '[class*="thumbnail"] img',
-      'img[srcset]',
-      '.pdp-image img, .product-image img'
-    ];
-    
-    for (const sel of selectors) {
-      document.querySelectorAll(sel).forEach(img => {
-        let src = img.src || img.dataset.src || img.dataset.zoomImage;
-        if (!src) {
-          // Try srcset
-          const srcset = img.srcset || img.dataset.srcset;
-          if (srcset) {
-            const largest = srcset.split(',').pop()?.trim().split(' ')[0];
-            if (largest) src = largest;
-          }
-        }
-        if (src && src.startsWith('http') && !src.includes('sprite') && !src.includes('icon')) {
-          // Clean up Amazon URLs
-          src = src.replace(/\\._.*_\\./, '._AC_SL1500_.');
-          images.add(src);
-        }
-      });
-      if (images.size >= 10) break;
-    }
-    
-    return [...images].slice(0, 15);
-  };
+    // Title
+    const titleEl = document.querySelector('#productTitle, #title, .product-title-word-break');
+    data.title = titleEl?.textContent?.trim() || '';
 
-  const extractPrice = () => {
-    const pricePatterns = [
-      /([\\d\\s]+[,.]\\d{2})\\s*[€$£]/,
-      /[€$£]\\s*([\\d\\s]+[,.]\\d{2})/,
-      /price["\\'\\s:]+([\\d.]+)/i
-    ];
-    
+    // ASIN from URL or data attributes
+    const asinMatch = window.location.href.match(/\/dp\/([A-Z0-9]+)/i) ||
+                      window.location.href.match(/\/gp\/product\/([A-Z0-9]+)/i);
+    data.asin = asinMatch?.[1] || document.querySelector('[data-asin]')?.dataset?.asin || '';
+
+    // Price - multiple selectors for different layouts
     const priceSelectors = [
-      '[class*="price" i] .a-price-whole',
-      '[class*="price" i]',
-      '[data-price]',
-      '.product-price',
+      '.a-price .a-offscreen',
       '#priceblock_ourprice',
-      '#priceblock_dealprice'
+      '#priceblock_dealprice', 
+      '#priceblock_saleprice',
+      '.apexPriceToPay .a-offscreen',
+      '#corePrice_feature_div .a-offscreen',
+      '.priceToPay .a-offscreen',
+      '[data-a-color="price"] .a-offscreen'
     ];
     
-    for (const sel of priceSelectors) {
-      const el = document.querySelector(sel);
-      if (el) {
-        const text = el.textContent || el.dataset.price || '';
-        for (const pattern of pricePatterns) {
-          const match = text.match(pattern);
-          if (match) {
-            return parseFloat(match[1].replace(/\\s/g, '').replace(',', '.'));
-          }
-        }
-        const numMatch = text.match(/([\\d.,]+)/);
-        if (numMatch) {
-          return parseFloat(numMatch[1].replace(/\\s/g, '').replace(',', '.'));
+    for (const selector of priceSelectors) {
+      const priceEl = document.querySelector(selector);
+      if (priceEl) {
+        const priceText = priceEl.textContent?.trim() || '';
+        const priceMatch = priceText.match(/[\d,.]+/);
+        if (priceMatch) {
+          data.price = parseFloat(priceMatch[0].replace(',', '.'));
+          if (priceText.includes('$')) data.currency = 'USD';
+          else if (priceText.includes('£')) data.currency = 'GBP';
+          else if (priceText.includes('€')) data.currency = 'EUR';
+          break;
         }
       }
     }
-    
-    return 0;
-  };
 
-  // ========== UI Components ==========
-  const createImportButton = () => {
-    const existingBtn = document.querySelector('.dc-import-main-btn');
-    if (existingBtn) return;
-    
-    const platform = detectPlatform();
-    if (!platform) return;
-    
-    const btn = document.createElement('button');
-    btn.className = 'dc-import-main-btn';
-    btn.innerHTML = \`
-      <span class="dc-btn-icon">🚀</span>
-      <span class="dc-btn-text">Importer dans Drop Craft AI</span>
-    \`;
-    btn.style.cssText = \`
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 999999;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 14px 24px;
-      border-radius: 50px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 20px rgba(102,126,234,0.4);
-      transition: all 0.3s ease;
-    \`;
-    
-    btn.onmouseenter = () => {
-      btn.style.transform = 'translateY(-2px) scale(1.02)';
-      btn.style.boxShadow = '0 6px 30px rgba(102,126,234,0.5)';
-    };
-    btn.onmouseleave = () => {
-      btn.style.transform = '';
-      btn.style.boxShadow = '0 4px 20px rgba(102,126,234,0.4)';
-    };
-    
-    btn.onclick = handleImport;
-    document.body.appendChild(btn);
-    
-    console.log('[DropCraft] Import button injected');
-  };
+    // Description
+    const descEl = document.querySelector('#productDescription, #feature-bullets');
+    data.description = descEl?.textContent?.trim().slice(0, 1000) || '';
 
-  const showToast = (message, type = 'info') => {
-    const existing = document.querySelector('.dc-toast');
+    // Images - extract high-res versions
+    const imageElements = document.querySelectorAll('#altImages img, #imageBlock img, .imgTagWrapper img, .a-dynamic-image');
+    const imageSet = new Set();
+    
+    imageElements.forEach(img => {
+      let src = img.src || img.dataset?.oldHires || '';
+      if (src && !src.includes('sprite') && !src.includes('transparent') && !src.includes('grey-pixel')) {
+        // Convert to high-res
+        src = src.replace(/\._[A-Z]{2}\d+_\./, '._SL1500_.');
+        src = src.replace(/\._S[XY]\d+_\./, '._SL1500_.');
+        if (src.includes('images/I/') || src.includes('images-amazon.com')) {
+          imageSet.add(src);
+        }
+      }
+    });
+    
+    data.images = Array.from(imageSet).slice(0, 10);
+
+    // Rating
+    const ratingEl = document.querySelector('#acrPopover, .a-icon-star span, [data-action="a-popover"] .a-icon-alt');
+    if (ratingEl) {
+      const ratingMatch = ratingEl.textContent?.match(/[\d,.]+/);
+      data.rating = ratingMatch ? parseFloat(ratingMatch[0].replace(',', '.')) : null;
+    }
+
+    // Reviews count
+    const reviewsEl = document.querySelector('#acrCustomerReviewText, #averageCustomerReviews_feature_div .a-size-base');
+    if (reviewsEl) {
+      const countMatch = reviewsEl.textContent?.match(/[\d,.]+/);
+      data.reviews_count = countMatch ? parseInt(countMatch[0].replace(/[.,]/g, '')) : 0;
+    }
+
+    return data;
+  }
+
+  function extractAliExpressData() {
+    const data = {
+      title: '',
+      price: 0,
+      currency: 'EUR',
+      description: '',
+      images: [],
+      variants: [],
+      rating: null,
+      reviews_count: 0
+    };
+
+    // Title
+    const titleEl = document.querySelector('h1[data-pl="product-title"], .product-title-text, h1');
+    data.title = titleEl?.textContent?.trim() || '';
+
+    // Price
+    const priceEl = document.querySelector('[class*="price--current"], .product-price-value, .uniform-banner-box-price');
+    if (priceEl) {
+      const priceMatch = priceEl.textContent?.match(/[\d,.]+/);
+      data.price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
+    }
+
+    // Images
+    const imageElements = document.querySelectorAll('.images-view-item img, .slider--img--item img, [class*="gallery"] img');
+    const imageSet = new Set();
+    
+    imageElements.forEach(img => {
+      let src = img.src || img.dataset?.src;
+      if (src) {
+        src = src.replace(/_\d+x\d+\./g, '_.');
+        src = src.replace(/\.jpg_\d+x\d+\.jpg/g, '.jpg');
+        if (src.startsWith('//')) src = 'https:' + src;
+        if (src.includes('alicdn.com')) {
+          imageSet.add(src);
+        }
+      }
+    });
+    
+    data.images = Array.from(imageSet).slice(0, 10);
+
+    // Rating
+    const ratingEl = document.querySelector('[class*="rating"] strong, .overview-rating-average');
+    if (ratingEl) {
+      const ratingMatch = ratingEl.textContent?.match(/[\d,.]+/);
+      data.rating = ratingMatch ? parseFloat(ratingMatch[0].replace(',', '.')) : null;
+    }
+
+    return data;
+  }
+
+  function extractTemuData() {
+    const data = {
+      title: '',
+      price: 0,
+      currency: 'EUR',
+      images: []
+    };
+
+    // Temu has obfuscated classes, use flexible selectors
+    const titleEl = document.querySelector('h1, [class*="ProductTitle"], [class*="title"]');
+    data.title = titleEl?.textContent?.trim() || '';
+
+    const priceEl = document.querySelector('[class*="price" i], [class*="Price" i]');
+    if (priceEl) {
+      const priceMatch = priceEl.textContent?.match(/[\d,.]+/);
+      data.price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
+    }
+
+    document.querySelectorAll('img[src*="img.kwcdn.com"]').forEach(img => {
+      if (img.src && !img.src.includes('avatar')) {
+        data.images.push(img.src);
+      }
+    });
+
+    return data;
+  }
+
+  function extractEbayData() {
+    const data = {
+      title: '',
+      price: 0,
+      currency: 'EUR',
+      images: []
+    };
+
+    data.title = document.querySelector('h1.x-item-title__mainTitle, .it-ttl')?.textContent?.trim() || '';
+    
+    const priceEl = document.querySelector('.x-price-primary, #prcIsum');
+    if (priceEl) {
+      const priceMatch = priceEl.textContent?.match(/[\d,.]+/);
+      data.price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
+    }
+
+    document.querySelectorAll('.ux-image-carousel img, .img-wrapper img').forEach(img => {
+      if (img.src) {
+        data.images.push(img.src.replace('/s-l64', '/s-l1600').replace('/s-l300', '/s-l1600'));
+      }
+    });
+
+    return data;
+  }
+
+  function extractShopifyData() {
+    const data = {
+      title: '',
+      price: 0,
+      currency: 'EUR',
+      description: '',
+      images: [],
+      variants: []
+    };
+
+    // Try JSON-LD first
+    const jsonLdScripts = document.querySelectorAll('script[type="application/ld+json"]');
+    for (const script of jsonLdScripts) {
+      try {
+        const parsed = JSON.parse(script.textContent);
+        const product = parsed['@type'] === 'Product' ? parsed : 
+                       parsed['@graph']?.find(i => i['@type'] === 'Product');
+        if (product) {
+          data.title = product.name || '';
+          data.description = product.description || '';
+          if (product.offers) {
+            const offer = Array.isArray(product.offers) ? product.offers[0] : product.offers;
+            data.price = parseFloat(offer.price) || 0;
+            data.currency = offer.priceCurrency || 'EUR';
+          }
+          if (product.image) {
+            data.images = Array.isArray(product.image) ? product.image : [product.image];
+          }
+          break;
+        }
+      } catch (e) {}
+    }
+
+    // Fallback to DOM
+    if (!data.title) {
+      data.title = document.querySelector('.product-title, .product__title, h1')?.textContent?.trim() || '';
+    }
+
+    return data;
+  }
+
+  function extractGenericData() {
+    const data = {
+      title: document.querySelector('h1, .product-title, [class*="title"]')?.textContent?.trim() || document.title,
+      price: 0,
+      currency: 'EUR',
+      description: '',
+      images: []
+    };
+
+    // Try meta tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) data.title = ogTitle.content;
+
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    if (ogImage) data.images.push(ogImage.content);
+
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    if (ogDescription) data.description = ogDescription.content;
+
+    return data;
+  }
+
+  // ============================================
+  // UI CREATION (Pure DOM Manipulation - No CSP Issues)
+  // ============================================
+  function createImportButton() {
+    // Remove existing button
+    const existing = document.getElementById('dropcraft-import-btn');
     if (existing) existing.remove();
+
+    const button = document.createElement('button');
+    button.id = 'dropcraft-import-btn';
+    button.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; flex-shrink: 0;">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7,10 12,15 17,10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span>Importer dans Drop Craft AI</span>
+    `;
+    
+    Object.assign(button.style, {
+      position: 'fixed',
+      bottom: '20px',
+      right: '20px',
+      zIndex: '2147483647',
+      padding: '14px 22px',
+      backgroundColor: '#6366f1',
+      color: 'white',
+      border: 'none',
+      borderRadius: '12px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
+      transition: 'all 0.2s ease'
+    });
+
+    button.addEventListener('mouseenter', () => {
+      button.style.backgroundColor = '#4f46e5';
+      button.style.transform = 'translateY(-2px)';
+      button.style.boxShadow = '0 8px 25px rgba(99, 102, 241, 0.5)';
+    });
+
+    button.addEventListener('mouseleave', () => {
+      button.style.backgroundColor = '#6366f1';
+      button.style.transform = 'translateY(0)';
+      button.style.boxShadow = '0 4px 20px rgba(99, 102, 241, 0.4)';
+    });
+
+    button.addEventListener('click', handleImportClick);
+
+    document.body.appendChild(button);
+    console.log('[DropCraft] Import button created');
+  }
+
+  function updateButtonState(state, message) {
+    const button = document.getElementById('dropcraft-import-btn');
+    if (!button) return;
+
+    const states = {
+      loading: {
+        html: `<span style="display:flex;align-items:center;"><span style="width:16px;height:16px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:dcSpin 1s linear infinite;margin-right:8px;"></span>${message || 'Import en cours...'}</span>`,
+        bg: '#6366f1',
+        disabled: true
+      },
+      success: {
+        html: `<span style="display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><polyline points="20,6 9,17 4,12"/></svg>${message || 'Importé !'}</span>`,
+        bg: '#10b981',
+        disabled: true
+      },
+      error: {
+        html: `<span style="display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>${message || 'Erreur'}</span>`,
+        bg: '#ef4444',
+        disabled: false
+      },
+      idle: {
+        html: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;flex-shrink:0;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Importer dans Drop Craft AI</span>`,
+        bg: '#6366f1',
+        disabled: false
+      }
+    };
+
+    const config = states[state] || states.idle;
+    button.innerHTML = config.html;
+    button.style.backgroundColor = config.bg;
+    button.disabled = config.disabled;
+    button.style.opacity = config.disabled ? '0.9' : '1';
+    button.style.cursor = config.disabled ? 'wait' : 'pointer';
+  }
+
+  // Add CSS animation for spinner (injected as style element, not script)
+  function addStyles() {
+    if (document.getElementById('dropcraft-styles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'dropcraft-styles';
+    style.textContent = `
+      @keyframes dcSpin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ============================================
+  // IMPORT HANDLER (Via Background Script - CSP Safe)
+  // ============================================
+  async function handleImportClick() {
+    console.log('[DropCraft] Import clicked');
+    updateButtonState('loading', 'Extraction...');
+
+    try {
+      // Extract product data from DOM (works in content script context)
+      const productData = extractProductData();
+
+      if (!productData.title) {
+        throw new Error('Impossible d\'extraire les données du produit');
+      }
+
+      updateButtonState('loading', 'Import en cours...');
+
+      // Send to background script for API call (background script can make any fetch)
+      const response = await chrome.runtime.sendMessage({
+        type: 'DC_IMPORT_PRODUCT',
+        payload: {
+          url: productData.source_url,
+          productData: productData
+        }
+      });
+
+      console.log('[DropCraft] Import response:', response);
+
+      if (response?.success) {
+        updateButtonState('success', 'Produit importé !');
+        showToast('✅ Produit importé avec succès !', 'success');
+      } else {
+        throw new Error(response?.error || 'Erreur lors de l\'import');
+      }
+
+      // Reset after 3 seconds
+      setTimeout(() => updateButtonState('idle'), 3000);
+
+    } catch (error) {
+      console.error('[DropCraft] Import error:', error);
+      updateButtonState('error', error.message?.slice(0, 30) || 'Erreur');
+      showToast(`❌ ${error.message}`, 'error');
+      
+      // Reset after 4 seconds
+      setTimeout(() => updateButtonState('idle'), 4000);
+    }
+  }
+
+  function showToast(message, type = 'info') {
+    const existing = document.getElementById('dropcraft-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'dropcraft-toast';
     
     const colors = {
       success: '#10b981',
       error: '#ef4444',
-      info: '#667eea',
-      warning: '#f59e0b'
+      info: '#6366f1'
     };
-    
-    const toast = document.createElement('div');
-    toast.className = 'dc-toast';
-    toast.style.cssText = \`
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999999;
-      background: \${colors[type] || colors.info};
-      color: white;
-      padding: 14px 20px;
-      border-radius: 10px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      animation: dcSlideIn 0.3s ease;
-      max-width: 350px;
-    \`;
-    
+
+    Object.assign(toast.style, {
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      zIndex: '2147483647',
+      backgroundColor: colors[type] || colors.info,
+      color: 'white',
+      padding: '14px 20px',
+      borderRadius: '10px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      fontSize: '14px',
+      fontWeight: '500',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      animation: 'dcSlideIn 0.3s ease',
+      maxWidth: '350px'
+    });
+
     toast.textContent = message;
     document.body.appendChild(toast);
-    
+
+    // Add slide animations if not present
+    if (!document.getElementById('dropcraft-toast-styles')) {
+      const toastStyle = document.createElement('style');
+      toastStyle.id = 'dropcraft-toast-styles';
+      toastStyle.textContent = `
+        @keyframes dcSlideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes dcSlideOut {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(toastStyle);
+    }
+
     setTimeout(() => {
       toast.style.animation = 'dcSlideOut 0.3s ease forwards';
       setTimeout(() => toast.remove(), 300);
     }, 4000);
-  };
-
-  // Add animation styles
-  const style = document.createElement('style');
-  style.textContent = \`
-    @keyframes dcSlideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes dcSlideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-    @keyframes dcPulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-  \`;
-  document.head.appendChild(style);
-
-  // ========== Import Handler ==========
-  const handleImport = async () => {
-    const btn = document.querySelector('.dc-import-main-btn');
-    if (btn) {
-      btn.innerHTML = '<span class="dc-btn-icon" style="animation: dcPulse 1s infinite">⏳</span><span class="dc-btn-text">Import en cours...</span>';
-      btn.disabled = true;
-    }
-    
-    try {
-      // Get token
-      const token = await getToken();
-      if (!token) {
-        showToast('❌ Non connecté - Connectez-vous d\\'abord via la popup', 'error');
-        if (btn) {
-          btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
-          btn.disabled = false;
-        }
-        return;
-      }
-      
-      // Extract product
-      const product = await extractProduct();
-      if (!product || !product.title) {
-        showToast('❌ Produit non détecté sur cette page', 'error');
-        if (btn) {
-          btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
-          btn.disabled = false;
-        }
-        return;
-      }
-      
-      console.log('[DropCraft] Importing product:', product.title);
-      
-      // Send to API via proxy
-      const response = await dcFetch(CONFIG.API_URL + '/extension-sync-realtime', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': token
-        },
-        body: JSON.stringify({
-          action: 'import_products',
-          products: [{
-            title: product.title,
-            name: product.title,
-            description: product.description || '',
-            price: product.price || 0,
-            currency: product.currency || 'EUR',
-            image_urls: product.images || [],
-            source_url: product.source_url,
-            platform: product.platform,
-            brand: product.brand,
-            rating: product.rating,
-            reviews_count: product.reviews_count,
-            variants: product.variants || []
-          }]
-        })
-      });
-      
-      if (response.ok && response.data?.success) {
-        showToast('✅ Produit importé avec succès !', 'success');
-        if (btn) {
-          btn.innerHTML = '<span class="dc-btn-icon">✅</span><span class="dc-btn-text">Importé !</span>';
-          setTimeout(() => {
-            btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
-            btn.disabled = false;
-          }, 3000);
-        }
-      } else {
-        const errorMsg = response.data?.error || response.error || 'Erreur inconnue';
-        console.error('[DropCraft] Import failed:', errorMsg);
-        showToast('❌ ' + errorMsg, 'error');
-        if (btn) {
-          btn.innerHTML = '<span class="dc-btn-icon">❌</span><span class="dc-btn-text">Erreur - Réessayer</span>';
-          setTimeout(() => {
-            btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
-            btn.disabled = false;
-          }, 3000);
-        }
-      }
-    } catch (error) {
-      console.error('[DropCraft] Import error:', error);
-      showToast('❌ Erreur: ' + error.message, 'error');
-      if (btn) {
-        btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
-        btn.disabled = false;
-      }
-    }
-  };
-
-  // ========== Initialization ==========
-  const init = () => {
-    const platform = detectPlatform();
-    if (platform) {
-      console.log('[DropCraft] Platform detected:', platform.name);
-      
-      // Inject import button after page loads
-      if (document.readyState === 'complete') {
-        createImportButton();
-      } else {
-        window.addEventListener('load', createImportButton);
-      }
-      
-      // Also try after a delay for SPAs
-      setTimeout(createImportButton, 2000);
-    }
-  };
-
-  init();
-})();
-      `;
-    }
-
-    setupDynamicContentObserver() {
-      let debounceTimer = null;
-      const DEBOUNCE_MS = 1000;
-      const MIN_INTERVAL_MS = 5000;
-
-      this.mutationObserver = new MutationObserver((mutations) => {
-        let significantChange = false;
-        
-        for (const mutation of mutations) {
-          if (mutation.addedNodes.length > 0) {
-            for (const node of mutation.addedNodes) {
-              if (node.nodeType === Node.ELEMENT_NODE) {
-                const el = node;
-                if (el.matches?.('[class*="product"], [class*="gallery"], [class*="carousel"]') ||
-                    el.querySelector?.('[class*="product"], [class*="gallery"]')) {
-                  significantChange = true;
-                  break;
-                }
-              }
-            }
-          }
-          if (significantChange) break;
-        }
-
-        if (significantChange) {
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            const now = Date.now();
-            if (now - this.lastInjectedAt > MIN_INTERVAL_MS) {
-              this.lastInjectedAt = now;
-              console.log('[DropCraft] Dynamic content detected, re-scanning...');
-            }
-          }, DEBOUNCE_MS);
-        }
-      });
-
-      this.mutationObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: false,
-        characterData: false
-      });
-
-      // URL change detection for SPAs
-      let lastUrl = window.location.href;
-      const urlObserver = new MutationObserver(() => {
-        if (window.location.href !== lastUrl) {
-          lastUrl = window.location.href;
-          console.log('[DropCraft] URL changed, re-initializing...');
-          setTimeout(() => this.injectCoreModules(), 1500);
-        }
-      });
-      urlObserver.observe(document, { subtree: true, childList: true });
-    }
-
-    setupMessageListener() {
-      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        this.handleMessage(message, sender, sendResponse);
-        return true;
-      });
-    }
-
-    handleMessage(message, sender, sendResponse) {
-      switch (message.type) {
-        case 'SCRAPE_PAGE':
-          this.scrapePage().then(sendResponse);
-          break;
-          
-        case 'GET_PAGE_INFO':
-          sendResponse(this.getPageInfo());
-          break;
-          
-        case 'INJECT_ONE_CLICK_BUTTONS':
-          this.injectCoreModules();
-          sendResponse({ success: true });
-          break;
-          
-        default:
-          sendResponse({ success: true });
-      }
-    }
-
-    injectStyles() {
-      const style = document.createElement('style');
-      style.textContent = `
-        .dropcraft-highlight {
-          outline: 2px solid #667eea !important;
-          outline-offset: 2px !important;
-          background: rgba(102, 126, 234, 0.1) !important;
-          transition: all 0.3s ease !important;
-        }
-        
-        .dropcraft-highlight:hover {
-          outline-color: #764ba2 !important;
-          background: rgba(118, 75, 162, 0.2) !important;
-        }
-        
-        .dropcraft-indicator {
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 12px 20px;
-          border-radius: 25px;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          font-size: 14px;
-          font-weight: 500;
-          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-          z-index: 10000;
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-        
-        .dropcraft-indicator:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    async scrapePage() {
-      try {
-        const products = await this.extractProducts();
-        chrome.runtime.sendMessage({
-          type: 'PRODUCTS_SCRAPED',
-          products: products
-        });
-        return { success: true, count: products.length };
-      } catch (error) {
-        return { success: false, error: error.message };
-      }
-    }
-
-    async extractProducts() {
-      // Basic extraction - full extraction happens in page context
-      return [];
-    }
-
-    getPageInfo() {
-      return {
-        url: window.location.href,
-        title: document.title,
-        hostname: window.location.hostname
-      };
-    }
-
-    setupAutoDetection() {
-      // Auto-detection is now handled by the injected core module
-    }
   }
 
-  // Initialize
-  new DropCraftContentScript();
-  console.log('[DropCraft] Content script initialized');
+  // ============================================
+  // INITIALIZATION
+  // ============================================
+  function init() {
+    const platform = detectPlatform();
+    console.log('[DropCraft] Platform detected:', platform);
+
+    if (platform === 'unknown') {
+      console.log('[DropCraft] Unknown platform, not initializing');
+      return;
+    }
+
+    addStyles();
+
+    // Check if product page
+    if (isProductPage()) {
+      console.log('[DropCraft] Product page detected, adding import button');
+      // Small delay to ensure DOM is fully loaded
+      setTimeout(createImportButton, 500);
+    } else {
+      console.log('[DropCraft] Not a product page, waiting for navigation...');
+    }
+
+    // Watch for SPA navigation
+    setupNavigationObserver();
+  }
+
+  function setupNavigationObserver() {
+    let lastUrl = window.location.href;
+
+    // URL change detection
+    const checkUrlChange = () => {
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        console.log('[DropCraft] URL changed, re-checking...');
+        setTimeout(() => {
+          if (isProductPage()) {
+            createImportButton();
+          } else {
+            const btn = document.getElementById('dropcraft-import-btn');
+            if (btn) btn.remove();
+          }
+        }, 1000);
+      }
+    };
+
+    // Listen for history changes
+    window.addEventListener('popstate', checkUrlChange);
+    
+    // Intercept pushState/replaceState
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    history.pushState = function(...args) {
+      originalPushState.apply(this, args);
+      checkUrlChange();
+    };
+    
+    history.replaceState = function(...args) {
+      originalReplaceState.apply(this, args);
+      checkUrlChange();
+    };
+
+    // Also observe DOM for dynamic content loading
+    let debounceTimer = null;
+    const observer = new MutationObserver(() => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (isProductPage() && !document.getElementById('dropcraft-import-btn')) {
+          console.log('[DropCraft] Dynamic content detected, adding button');
+          createImportButton();
+        }
+      }, 800);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  // Start initialization
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  console.log('[DropCraft] Content script v4.3.5 loaded successfully');
+
 })();
