@@ -26,6 +26,7 @@ const AutoDSImportPage = lazy(() => import('@/pages/import/AutoDSImportPage'))
 const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'))
 const BulkImportPage = lazy(() => import('@/pages/import/BulkImportPage'))
 const MultiStoreImportPage = lazy(() => import('@/pages/import/MultiStoreImportPage'))
+const SearchAllSuppliersPage = lazy(() => import('@/pages/import/SearchAllSuppliersPage'))
 const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'))
 const AliExpressImportPageLegacy = lazy(() => import('@/pages/import/AliExpressImportPage'))
 
@@ -71,6 +72,7 @@ export function ImportRoutes() {
       <Route path="advanced" element={<AdvancedImportPage />} />
       <Route path="bulk" element={<BulkImportPage />} />
       <Route path="multi-store" element={<MultiStoreImportPage />} />
+      <Route path="search-suppliers" element={<SearchAllSuppliersPage />} />
       <Route path="shopify-hub" element={<ShopifyImportHub />} />
       <Route path="aliexpress-legacy" element={<AliExpressImportPageLegacy />} />
       
