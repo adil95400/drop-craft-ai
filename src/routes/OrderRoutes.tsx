@@ -15,10 +15,8 @@ const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNoti
 const BulkOrdersPage = lazy(() => import('@/pages/orders/BulkOrdersPage'));
 const CreateOrder = lazy(() => import('@/pages/orders/CreateOrder'));
 
-// Fulfillment pages (sous-module de orders)
+// Fulfillment - Consolidated to single page with tabs
 const FulfillmentPage = lazy(() => import('@/pages/fulfillment/FulfillmentPage'));
-const CarriersManagementPage = lazy(() => import('@/pages/CarriersManagementPage'));
-const FulfillmentRulesPage = lazy(() => import('@/pages/FulfillmentRulesPage'));
 
 export function OrderRoutes() {
   return (
@@ -34,8 +32,8 @@ export function OrderRoutes() {
       
       {/* Fulfillment - Sous-module de Commandes */}
       <Route path="fulfillment" element={<FulfillmentPage />} />
-      <Route path="fulfillment/carriers" element={<CarriersManagementPage />} />
-      <Route path="fulfillment/rules" element={<FulfillmentRulesPage />} />
+      <Route path="fulfillment/carriers" element={<Navigate to="/orders/fulfillment?tab=carriers" replace />} />
+      <Route path="fulfillment/rules" element={<Navigate to="/orders/fulfillment?tab=automation" replace />} />
       
       {/* Redirection legacy */}
       <Route path="shipping" element={<Navigate to="/orders/fulfillment" replace />} />
