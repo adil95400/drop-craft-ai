@@ -1088,6 +1088,54 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_order_queue: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          max_retries: number
+          next_retry_at: string | null
+          order_id: string
+          payload: Json
+          result: Json | null
+          retry_count: number
+          status: string
+          supplier_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          next_retry_at?: string | null
+          order_id: string
+          payload?: Json
+          result?: Json | null
+          retry_count?: number
+          status?: string
+          supplier_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          next_retry_at?: string | null
+          order_id?: string
+          payload?: Json
+          result?: Json | null
+          retry_count?: number
+          status?: string
+          supplier_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       automated_campaigns: {
         Row: {
           actions: Json | null
