@@ -465,25 +465,42 @@ serve(async (req) => {
           if (jobError) throw jobError
 
           if (item.type === 'product' || !item.type) {
+            // Keep bulk imports consistent with 1-click imports: store in imported_products
+            // so they appear in /products via ProductsUnifiedService.
+            const imageUrls = productImage ? [productImage] : []
+
             const { data: newProduct, error: productError } = await supabase
-              .from('supplier_products')
+              .from('imported_products')
               .insert({
                 user_id: authData.user_id,
-                title: productTitle,
+                name: productTitle,
                 price: productPrice,
-                description: (item.description || '').substring(0, 5000),
-                image_url: productImage,
+                cost_price: productPrice,
+                description: (item.description || '').substring(0, 10000),
+                image_urls: imageUrls,
+                video_urls: Array.isArray(item.videos) ? item.videos : [],
                 source_url: item.url || '',
+                source_platform: item.platform || 'extension',
                 stock_quantity: 100,
-                is_active: true,
-                category: item.category || null
+                status: 'imported',
+                category: item.category || null,
+                currency: item.currency || 'EUR',
+                sync_status: 'synced',
+                metadata: {
+                  imported_at: new Date().toISOString(),
+                  source: 'chrome_extension_bulk',
+                  primary_image: imageUrls[0] || null,
+                },
               })
               .select()
               .single()
 
             if (productError) {
               console.error('[extension-sync-realtime] bulk_import product error:', productError)
-              errors.push({ item: productTitle, error: productError.message })
+              errors.push({
+                item: productTitle,
+                error: `${productError.code || 'DB_ERROR'}: ${productError.message}${productError.hint ? ` (${productError.hint})` : ''}`,
+              })
             } else {
               importResults.push(newProduct)
               await supabase
