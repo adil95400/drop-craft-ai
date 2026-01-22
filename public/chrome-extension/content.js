@@ -1,1125 +1,756 @@
-// Drop Craft AI Chrome Extension - Content Script v4.0
-// Professional Dropshipping Extension
+// Drop Craft AI Chrome Extension - Content Script v4.3.2
+// Professional Dropshipping Extension - CSP-Safe Version
 
-// IMPORTANT:
-// This file is injected via manifest.json AND (in some cases) via background.js.
-// Without a guard, re-injection causes: "Identifier 'DropCraftContentScript' has already been declared".
+// CRITICAL: This version uses message passing instead of script injection
+// to work on sites with strict Content Security Policies (Amazon, etc.)
+
 (function () {
   'use strict';
 
-  // Prevent multiple injections in the same page context
+  // Prevent multiple injections
   if (window.__dropCraftContentScriptLoaded) return;
   window.__dropCraftContentScriptLoaded = true;
 
+  console.log('[DropCraft] Content script v4.3.2 initializing...');
+
   class DropCraftContentScript {
-  constructor() {
-    this.isActive = false;
-    this.scrapingIndicator = null;
-    this.mutationObserver = null;
-    this.lastInjectedAt = 0;
-    this.init();
-  }
+    constructor() {
+      this.isActive = false;
+      this.scrapingIndicator = null;
+      this.mutationObserver = null;
+      this.lastInjectedAt = 0;
+      this.init();
+    }
 
-  init() {
-    this.setupMessageListener();
-    this.injectStyles();
-    this.setupAutoDetection();
-    this.injectSidebar(); // NEW: Inject professional sidebar
-    this.injectScript();
-    this.setupInjectedScriptListener();
-    this.setupDynamicContentObserver(); // NEW: MutationObserver for dynamic content
-  }
-
-  // NEW: MutationObserver to handle SPA navigation and lazy-loaded content
-  setupDynamicContentObserver() {
-    // Debounce re-injection to avoid performance issues
-    let debounceTimer = null;
-    const DEBOUNCE_MS = 1000;
-    const MIN_INTERVAL_MS = 5000;
-
-    this.mutationObserver = new MutationObserver((mutations) => {
-      // Check if significant DOM changes occurred
-      let significantChange = false;
+    init() {
+      this.setupMessageListener();
+      this.setupPageMessageRelay();
+      this.injectStyles();
+      this.setupAutoDetection();
+      this.setupDynamicContentObserver();
       
-      for (const mutation of mutations) {
-        if (mutation.addedNodes.length > 0) {
-          for (const node of mutation.addedNodes) {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              // Check for product-related elements
-              const el = node;
-              if (el.matches?.('[class*="product"], [class*="gallery"], [class*="review"], [class*="feedback"], [data-testid*="product"], [class*="carousel"]') ||
-                  el.querySelector?.('[class*="product"], [class*="gallery"], [class*="review"], [class*="feedback"]')) {
-                significantChange = true;
-                break;
-              }
-            }
+      // CSP-Safe: Use inline injection for core functionality
+      this.injectCoreModules();
+    }
+
+    // NEW: Relay messages from page context to background script (CSP bypass)
+    setupPageMessageRelay() {
+      window.addEventListener('message', async (event) => {
+        if (event.source !== window) return;
+        
+        const data = event.data;
+        if (!data || typeof data !== 'object') return;
+
+        // Handle fetch requests from page scripts (CSP bypass)
+        if (data.type === 'DC_FETCH_API') {
+          try {
+            const result = await chrome.runtime.sendMessage({
+              type: 'FETCH_API',
+              url: data.url,
+              options: data.options
+            });
+            
+            window.postMessage({
+              type: 'DC_FETCH_API_RESULT',
+              requestId: data.requestId,
+              success: result?.success ?? false,
+              status: result?.status ?? 0,
+              data: result?.data,
+              error: result?.error
+            }, '*');
+          } catch (err) {
+            window.postMessage({
+              type: 'DC_FETCH_API_RESULT',
+              requestId: data.requestId,
+              success: false,
+              status: 0,
+              error: err.message
+            }, '*');
           }
         }
-        if (significantChange) break;
-      }
 
-      if (significantChange) {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-          const now = Date.now();
-          if (now - this.lastInjectedAt > MIN_INTERVAL_MS) {
-            this.lastInjectedAt = now;
-            console.log('[DropCraft] Dynamic content detected, re-scanning...');
-            // Re-inject listing buttons for new products
-            window.postMessage({ type: 'DC_RESCAN_PRODUCTS' }, '*');
+        // Handle import requests from page
+        if (data.type === 'DC_IMPORT_PRODUCT') {
+          try {
+            const result = await chrome.runtime.sendMessage({
+              type: 'IMPORT_PRODUCT',
+              product: data.product
+            });
+            
+            window.postMessage({
+              type: 'DC_IMPORT_RESULT',
+              requestId: data.requestId,
+              ...result
+            }, '*');
+          } catch (err) {
+            window.postMessage({
+              type: 'DC_IMPORT_RESULT',
+              requestId: data.requestId,
+              success: false,
+              error: err.message
+            }, '*');
           }
-        }, DEBOUNCE_MS);
-      }
-    });
-
-    // Observe the main content area
-    this.mutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-      characterData: false
-    });
-
-    // Also listen for URL changes (SPA navigation)
-    let lastUrl = window.location.href;
-    const urlObserver = new MutationObserver(() => {
-      if (window.location.href !== lastUrl) {
-        lastUrl = window.location.href;
-        console.log('[DropCraft] URL changed, re-initializing...');
-        // Wait for page to settle
-        setTimeout(() => {
-          window.postMessage({ type: 'DC_URL_CHANGED' }, '*');
-        }, 1500);
-      }
-    });
-    urlObserver.observe(document, { subtree: true, childList: true });
-
-    // Listen for scroll events to trigger lazy-load detection
-    let scrollTimer = null;
-    window.addEventListener('scroll', () => {
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => {
-        // Check if we scrolled to reviews section
-        const reviewsVisible = document.querySelector('.feedback-list, #cm_cr-review_list, [class*="reviews"]');
-        if (reviewsVisible && this.isElementInViewport(reviewsVisible)) {
-          window.postMessage({ type: 'DC_REVIEWS_IN_VIEW' }, '*');
         }
-      }, 500);
-    }, { passive: true });
-  }
 
-  isElementInViewport(el) {
-    const rect = el.getBoundingClientRect();
-    return (
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.top <= (window.innerHeight || document.documentElement.clientHeight)
-    );
-  }
+        // Handle token requests
+        if (data.type === 'DC_GET_TOKEN') {
+          chrome.storage.local.get(['extensionToken'], (result) => {
+            window.postMessage({
+              type: 'DC_TOKEN_RESULT',
+              requestId: data.requestId,
+              token: result.extensionToken || null
+            }, '*');
+          });
+        }
 
-  // NEW: Inject the professional sidebar and tools
-  injectSidebar() {
-    // Inject sidebar
-    const sidebarScript = document.createElement('script');
-    sidebarScript.src = chrome.runtime.getURL('sidebar.js');
-    sidebarScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(sidebarScript);
-    
-    // Inject grabber for bulk import
-    const grabberScript = document.createElement('script');
-    grabberScript.src = chrome.runtime.getURL('grabber.js');
-    grabberScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(grabberScript);
-    
-    // Inject reviews extractor for advanced review import
-    const reviewsScript = document.createElement('script');
-    reviewsScript.src = chrome.runtime.getURL('reviews-extractor.js');
-    reviewsScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(reviewsScript);
-    
-    // Inject video extractor for product videos
-    const videoScript = document.createElement('script');
-    videoScript.src = chrome.runtime.getURL('video-extractor.js');
-    videoScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(videoScript);
-    
-    // Inject variants extractor for complete variant management
-    const variantsScript = document.createElement('script');
-    variantsScript.src = chrome.runtime.getURL('variants-extractor.js');
-    variantsScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(variantsScript);
-    
-    // Inject fulfillment tools
-    const fulfillmentScript = document.createElement('script');
-    fulfillmentScript.src = chrome.runtime.getURL('fulfillment.js');
-    fulfillmentScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(fulfillmentScript);
-    
-    // Inject automation engine
-    const automationScript = document.createElement('script');
-    automationScript.src = chrome.runtime.getURL('automation.js');
-    automationScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(automationScript);
-    
-    // Inject FAQ system
-    const faqScript = document.createElement('script');
-    faqScript.src = chrome.runtime.getURL('faq.js');
-    faqScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(faqScript);
-    
-    // Inject support system
-    const supportScript = document.createElement('script');
-    supportScript.src = chrome.runtime.getURL('support.js');
-    supportScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(supportScript);
-    
-    // Inject image optimizer
-    const imageOptimizerScript = document.createElement('script');
-    imageOptimizerScript.src = chrome.runtime.getURL('image-optimizer.js');
-    imageOptimizerScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(imageOptimizerScript);
-    
-    // Inject multi-store manager
-    const multiStoreScript = document.createElement('script');
-    multiStoreScript.src = chrome.runtime.getURL('multi-store-manager.js');
-    multiStoreScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(multiStoreScript);
-    
-    // Inject price monitor for real-time price tracking
-    const priceMonitorScript = document.createElement('script');
-    priceMonitorScript.src = chrome.runtime.getURL('price-monitor.js');
-    priceMonitorScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(priceMonitorScript);
-    
-    // Inject auto-order system for automated fulfillment
-    const autoOrderScript = document.createElement('script');
-    autoOrderScript.src = chrome.runtime.getURL('auto-order.js');
-    autoOrderScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(autoOrderScript);
-    
-    // Inject trend analyzer for AI-powered product insights
-    const trendAnalyzerScript = document.createElement('script');
-    trendAnalyzerScript.src = chrome.runtime.getURL('trend-analyzer.js');
-    trendAnalyzerScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(trendAnalyzerScript);
-    
-  // Inject bulk selector for multi-product selection on listing pages
-    const bulkSelectorScript = document.createElement('script');
-    bulkSelectorScript.src = chrome.runtime.getURL('bulk-selector.js');
-    bulkSelectorScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(bulkSelectorScript);
-    
-    // Inject review translator for multilingual review support
-    const reviewTranslatorScript = document.createElement('script');
-    reviewTranslatorScript.src = chrome.runtime.getURL('review-translator.js');
-    reviewTranslatorScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(reviewTranslatorScript);
-    
-    // Inject advanced scraper for complete product extraction
-    const advancedScraperScript = document.createElement('script');
-    advancedScraperScript.src = chrome.runtime.getURL('advanced-scraper.js');
-    advancedScraperScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(advancedScraperScript);
-    
-    // Inject Shopify universal detector
-    const shopifyUniversalScript = document.createElement('script');
-    shopifyUniversalScript.src = chrome.runtime.getURL('platforms/shopify-universal.js');
-    shopifyUniversalScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(shopifyUniversalScript);
-    
-    // Inject import overlay for professional import UI
-    const importOverlayScript = document.createElement('script');
-    importOverlayScript.src = chrome.runtime.getURL('import-overlay.js');
-    importOverlayScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(importOverlayScript);
-    
-    // Inject debug panel for troubleshooting (Ctrl+Shift+D to toggle)
-    const debugPanelScript = document.createElement('script');
-    debugPanelScript.src = chrome.runtime.getURL('debug-panel.js');
-    debugPanelScript.onload = function() { this.remove(); };
-    (document.head || document.documentElement).appendChild(debugPanelScript);
-    
-    // Inject platform-specific extractors
-    this.injectPlatformExtractors();
-  }
-  
-  // NEW: Inject platform-specific extractors based on current site
-  injectPlatformExtractors() {
-    const hostname = window.location.hostname;
-    
-    // TikTok Shop
-    if (hostname.includes('tiktok') || hostname.includes('tiktokshop')) {
-      const tiktokScript = document.createElement('script');
-      tiktokScript.src = chrome.runtime.getURL('platforms/tiktok-shop.js');
-      tiktokScript.onload = function() { this.remove(); };
-      (document.head || document.documentElement).appendChild(tiktokScript);
-    }
-    
-    // Cdiscount
-    if (hostname.includes('cdiscount')) {
-      const cdiscountScript = document.createElement('script');
-      cdiscountScript.src = chrome.runtime.getURL('platforms/cdiscount.js');
-      cdiscountScript.onload = function() { this.remove(); };
-      (document.head || document.documentElement).appendChild(cdiscountScript);
-    }
-    
-    // Fnac
-    if (hostname.includes('fnac')) {
-      const fnacScript = document.createElement('script');
-      fnacScript.src = chrome.runtime.getURL('platforms/fnac.js');
-      fnacScript.onload = function() { this.remove(); };
-      (document.head || document.documentElement).appendChild(fnacScript);
-    }
-    
-    // Rakuten
-    if (hostname.includes('rakuten')) {
-      const rakutenScript = document.createElement('script');
-      rakutenScript.src = chrome.runtime.getURL('platforms/rakuten.js');
-      rakutenScript.onload = function() { this.remove(); };
-      (document.head || document.documentElement).appendChild(rakutenScript);
-    }
-    
-    // Home Depot
-    if (hostname.includes('homedepot')) {
-      const homeDepotScript = document.createElement('script');
-      homeDepotScript.src = chrome.runtime.getURL('platforms/home-depot.js');
-      homeDepotScript.onload = function() { this.remove(); };
-      (document.head || document.documentElement).appendChild(homeDepotScript);
-    }
-    
-    // Lowe's
-    if (hostname.includes('lowes')) {
-      const lowesScript = document.createElement('script');
-      lowesScript.src = chrome.runtime.getURL('platforms/lowes.js');
-      lowesScript.onload = function() { this.remove(); };
-      (document.head || document.documentElement).appendChild(lowesScript);
-    }
-    
-    // Costco
-    if (hostname.includes('costco')) {
-      const costcoScript = document.createElement('script');
-      costcoScript.src = chrome.runtime.getURL('platforms/costco.js');
-      costcoScript.onload = function() { this.remove(); };
-      (document.head || document.documentElement).appendChild(costcoScript);
-    }
-  }
+        // Handle storage requests
+        if (data.type === 'DC_GET_STORAGE') {
+          chrome.storage.local.get(data.keys || null, (result) => {
+            window.postMessage({
+              type: 'DC_STORAGE_RESULT',
+              requestId: data.requestId,
+              data: result
+            }, '*');
+          });
+        }
 
-  setupMessageListener() {
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      this.handleMessage(message, sender, sendResponse);
-      return true;
-    });
-  }
-
-  handleMessage(message, sender, sendResponse) {
-    switch (message.type) {
-      case 'SCRAPE_PAGE':
-        this.scrapePage().then(sendResponse);
-        break;
-        
-      case 'HIGHLIGHT_PRODUCTS':
-        this.highlightProducts();
-        sendResponse({ success: true });
-        break;
-        
-      case 'REMOVE_HIGHLIGHTS':
-        this.removeHighlights();
-        sendResponse({ success: true });
-        break;
-        
-      case 'GET_PAGE_INFO':
-        sendResponse(this.getPageInfo());
-        break;
-        
-      case 'AUTO_SCRAPE':
-        this.startAutoScraping();
-        sendResponse({ success: true });
-        break;
-        
-        case 'STOP_AUTO_SCRAPE':
-        this.stopAutoScraping();
-        sendResponse({ success: true });
-        break;
-        
-      case 'INJECT_ONE_CLICK_BUTTONS':
-        this.injectOneClickButtons();
-        sendResponse({ success: true });
-        break;
-    }
-  }
-
-  injectStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .dropcraft-highlight {
-        outline: 2px solid #667eea !important;
-        outline-offset: 2px !important;
-        background: rgba(102, 126, 234, 0.1) !important;
-        transition: all 0.3s ease !important;
-      }
-      
-      .dropcraft-highlight:hover {
-        outline-color: #764ba2 !important;
-        background: rgba(118, 75, 162, 0.2) !important;
-      }
-      
-      .dropcraft-indicator {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 25px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-        z-index: 10000;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-      
-      .dropcraft-indicator:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
-      }
-      
-      .dropcraft-indicator.active {
-        animation: pulse 2s infinite;
-      }
-      
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-      }
-      
-      .dropcraft-tooltip {
-        position: absolute;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 10001;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  async scrapePage() {
-    this.showScrapingIndicator();
-    
-    try {
-      const products = await this.extractProducts();
-      
-      // Send to background script
-      chrome.runtime.sendMessage({
-        type: 'PRODUCTS_SCRAPED',
-        products: products
+        // Handle storage set requests
+        if (data.type === 'DC_SET_STORAGE') {
+          chrome.storage.local.set(data.data, () => {
+            window.postMessage({
+              type: 'DC_STORAGE_SET_RESULT',
+              requestId: data.requestId,
+              success: true
+            }, '*');
+          });
+        }
       });
-      
-      this.hideScrapingIndicator();
-      return { success: true, count: products.length };
-    } catch (error) {
-      this.hideScrapingIndicator();
-      return { success: false, error: error.message };
-    }
-  }
 
-  async extractProducts() {
-    const products = [];
+      console.log('[DropCraft] Page message relay initialized');
+    }
+
+    // CSP-Safe: Inject core modules using inline script with data
+    injectCoreModules() {
+      // Inject the unified module that works in page context
+      const script = document.createElement('script');
+      script.textContent = this.getCoreModuleCode();
+      (document.head || document.documentElement).appendChild(script);
+      script.remove();
+      
+      console.log('[DropCraft] Core modules injected');
+    }
+
+    getCoreModuleCode() {
+      // This code runs in the page context and handles all extraction/UI
+      return `
+(function() {
+  'use strict';
+  
+  if (window.__dropCraftCoreLoaded) return;
+  window.__dropCraftCoreLoaded = true;
+  
+  console.log('[DropCraft] Core module v4.3.2 loaded');
+  
+  const CONFIG = {
+    API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
+    APP_URL: 'https://shopopti.io',
+    PLATFORMS: {
+      'aliexpress': { name: 'AliExpress', icon: '🛒', color: '#ff6a00' },
+      'amazon': { name: 'Amazon', icon: '📦', color: '#ff9900' },
+      'ebay': { name: 'eBay', icon: '🏷️', color: '#e53238' },
+      'temu': { name: 'Temu', icon: '🎁', color: '#f97316' },
+      'walmart': { name: 'Walmart', icon: '🏪', color: '#0071ce' },
+      'etsy': { name: 'Etsy', icon: '🎨', color: '#f56400' },
+      'cdiscount': { name: 'Cdiscount', icon: '🇫🇷', color: '#00a0e3' },
+      'fnac': { name: 'Fnac', icon: '📀', color: '#e1a400' },
+      'banggood': { name: 'Banggood', icon: '📱', color: '#ff6600' },
+      'dhgate': { name: 'DHgate', icon: '🏭', color: '#e54d00' },
+      'shein': { name: 'Shein', icon: '👗', color: '#000' }
+    }
+  };
+
+  // ========== CSP-Safe Network Layer ==========
+  const dcRPC = async (type, payload) => {
+    const requestId = 'dc_' + Date.now() + '_' + Math.random().toString(16).slice(2);
     
-    // Advanced product detection with multiple strategies
-    const strategies = [
-      this.extractFromStructuredData.bind(this),
-      this.extractFromMicrodata.bind(this),
-      this.extractFromContainers.bind(this),
-      this.extractSingleProduct.bind(this)
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        window.removeEventListener('message', handler);
+        reject(new Error('RPC timeout'));
+      }, 20000);
+      
+      const handler = (event) => {
+        if (event.source !== window) return;
+        const data = event.data;
+        if (!data || data.requestId !== requestId) return;
+        
+        clearTimeout(timeout);
+        window.removeEventListener('message', handler);
+        resolve(data);
+      };
+      
+      window.addEventListener('message', handler);
+      window.postMessage({ type, requestId, ...payload }, '*');
+    });
+  };
+
+  const dcFetch = async (url, options) => {
+    // Try direct fetch first
+    try {
+      const res = await fetch(url, options);
+      const data = res.headers.get('content-type')?.includes('json') 
+        ? await res.json() 
+        : await res.text();
+      return { ok: res.ok, status: res.status, data };
+    } catch (e) {
+      console.log('[DropCraft] Direct fetch failed, using proxy');
+    }
+    
+    // Fall back to background proxy
+    try {
+      const result = await dcRPC('DC_FETCH_API', { url, options });
+      return {
+        ok: result.success,
+        status: result.status || 0,
+        data: result.data,
+        error: result.error
+      };
+    } catch (e) {
+      return { ok: false, status: 0, error: e.message };
+    }
+  };
+
+  const getToken = async () => {
+    try {
+      const result = await dcRPC('DC_GET_TOKEN', {});
+      return result.token;
+    } catch {
+      return null;
+    }
+  };
+
+  // ========== Platform Detection ==========
+  const detectPlatform = () => {
+    const hostname = location.hostname.toLowerCase();
+    for (const [key, info] of Object.entries(CONFIG.PLATFORMS)) {
+      if (hostname.includes(key)) {
+        return { key, ...info };
+      }
+    }
+    if (document.querySelector('meta[name="generator"][content*="Shopify"]')) {
+      return { key: 'shopify', name: 'Shopify', icon: '🛍️', color: '#96bf48' };
+    }
+    return null;
+  };
+
+  // ========== Product Extraction ==========
+  const extractProduct = async () => {
+    const platform = detectPlatform();
+    if (!platform) return null;
+    
+    console.log('[DropCraft] Extracting product from', platform.name);
+    
+    let product = {
+      title: '',
+      description: '',
+      price: 0,
+      currency: 'EUR',
+      images: [],
+      variants: [],
+      source_url: location.href,
+      platform: platform.name
+    };
+    
+    // Try JSON-LD first
+    const jsonLd = document.querySelectorAll('script[type="application/ld+json"]');
+    for (const script of jsonLd) {
+      try {
+        const data = JSON.parse(script.textContent);
+        const prod = data['@type'] === 'Product' ? data : 
+                    data['@graph']?.find(i => i['@type'] === 'Product');
+        if (prod) {
+          product.title = prod.name || product.title;
+          product.description = prod.description || '';
+          product.price = parseFloat(prod.offers?.price || prod.offers?.[0]?.price) || 0;
+          product.currency = prod.offers?.priceCurrency || 'EUR';
+          product.images = Array.isArray(prod.image) ? prod.image : [prod.image].filter(Boolean);
+          product.brand = prod.brand?.name || prod.brand;
+          product.rating = prod.aggregateRating?.ratingValue;
+          product.reviews_count = prod.aggregateRating?.reviewCount;
+        }
+      } catch {}
+    }
+    
+    // Platform-specific fallbacks
+    if (!product.title) {
+      product.title = 
+        document.querySelector('h1')?.textContent?.trim() ||
+        document.querySelector('[data-testid*="title"]')?.textContent?.trim() ||
+        document.querySelector('.product-title, .pdp-title, #productTitle')?.textContent?.trim() ||
+        document.title.split(' - ')[0].split(' | ')[0];
+    }
+    
+    // Extract images if not found
+    if (product.images.length === 0) {
+      product.images = extractImages();
+    }
+    
+    // Extract price if not found
+    if (!product.price) {
+      product.price = extractPrice();
+    }
+    
+    return product;
+  };
+
+  const extractImages = () => {
+    const images = new Set();
+    
+    // High-res strategies
+    const selectors = [
+      'img[src*="x-large"], img[data-src*="x-large"]',
+      'img[src*="_AC_SL"], img[data-src*="_AC_SL"]',  // Amazon
+      '.gallery img, .image-gallery img',
+      '[class*="thumbnail"] img',
+      'img[srcset]',
+      '.pdp-image img, .product-image img'
     ];
     
-    for (const strategy of strategies) {
-      const result = await strategy();
-      if (result && result.length > 0) {
-        products.push(...result);
-        break; // Use the first successful strategy
-      }
-    }
-    
-    // Deduplicate products
-    return this.deduplicateProducts(products);
-  }
-
-  injectScript() {
-    // Inject the advanced detector script into the page
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('injected.js');
-    script.onload = function() {
-      this.remove();
-    };
-    (document.head || document.documentElement).appendChild(script);
-  }
-
-  setupInjectedScriptListener() {
-    window.addEventListener('message', (event) => {
-      if (event.source !== window || !event.data.type) return;
-      
-      switch (event.data.type) {
-        // Proxy network requests through the extension context to bypass site CSP.
-        // Page-injected scripts (sidebar.js, bulk-selector.js, etc.) cannot reliably
-        // call external APIs on many marketplaces due to connect-src restrictions.
-        case 'DC_FETCH_API': {
-          const { requestId, url, options } = event.data || {};
-          if (!requestId || !url) return;
-
-          try {
-            chrome.runtime.sendMessage(
-              {
-                type: 'FETCH_API',
-                url,
-                options: options || {},
-              },
-              (resp) => {
-                // Always respond (no silent failures)
-                window.postMessage(
-                  {
-                    type: 'DC_FETCH_API_RESULT',
-                    requestId,
-                    ...(resp || { success: false, error: 'No response from background' }),
-                  },
-                  '*'
-                );
-              }
-            );
-          } catch (err) {
-            window.postMessage(
-              {
-                type: 'DC_FETCH_API_RESULT',
-                requestId,
-                success: false,
-                error: err?.message || String(err),
-              },
-              '*'
-            );
+    for (const sel of selectors) {
+      document.querySelectorAll(sel).forEach(img => {
+        let src = img.src || img.dataset.src || img.dataset.zoomImage;
+        if (!src) {
+          // Try srcset
+          const srcset = img.srcset || img.dataset.srcset;
+          if (srcset) {
+            const largest = srcset.split(',').pop()?.trim().split(' ')[0];
+            if (largest) src = largest;
           }
-          break;
         }
-
-        case 'IMPORT_PRODUCTS':
-          this.handleImportProducts(event.data.products);
-          break;
-          
-        case 'PRODUCTS_EXTRACTED':
-          this.handleExtractedProducts(event.data.products);
-          break;
-          
-        case 'SINGLE_PRODUCT_EXTRACTED':
-          if (event.data.product) {
-            this.handleImportProducts([event.data.product]);
-          }
-          break;
-      }
-    });
-  }
-
-  async handleImportProducts(products) {
-    if (!products || products.length === 0) return;
-    
-    this.showScrapingIndicator(`Importation de ${products.length} produit(s)...`);
-    
-    try {
-      // Send to background script for processing
-      chrome.runtime.sendMessage({
-        type: 'PRODUCTS_SCRAPED',
-        products: products
+        if (src && src.startsWith('http') && !src.includes('sprite') && !src.includes('icon')) {
+          // Clean up Amazon URLs
+          src = src.replace(/\\._.*_\\./, '._AC_SL1500_.');
+          images.add(src);
+        }
       });
-      
-      this.showImportNotification(`${products.length} produit(s) importé(s) avec succès!`);
-      this.hideScrapingIndicator();
-    } catch (error) {
-      this.showImportNotification('Erreur lors de l\'importation', 'error');
-      this.hideScrapingIndicator();
+      if (images.size >= 10) break;
     }
-  }
-
-  handleExtractedProducts(products) {
-    this.handleImportProducts(products);
-  }
-
-  injectOneClickButtons() {
-    // Trigger the injected script to add one-click buttons
-    window.postMessage({
-      type: 'INJECT_ONE_CLICK_BUTTONS'
-    }, '*');
-  }
-
-  showImportNotification(message, type = 'success') {
-    // Create a toast notification
-    const toast = document.createElement('div');
-    toast.className = `dropcraft-toast dropcraft-toast-${type}`;
-    toast.textContent = message;
     
-    toast.style.cssText = `
+    return [...images].slice(0, 15);
+  };
+
+  const extractPrice = () => {
+    const pricePatterns = [
+      /([\\d\\s]+[,.]\\d{2})\\s*[€$£]/,
+      /[€$£]\\s*([\\d\\s]+[,.]\\d{2})/,
+      /price["\\'\\s:]+([\\d.]+)/i
+    ];
+    
+    const priceSelectors = [
+      '[class*="price" i] .a-price-whole',
+      '[class*="price" i]',
+      '[data-price]',
+      '.product-price',
+      '#priceblock_ourprice',
+      '#priceblock_dealprice'
+    ];
+    
+    for (const sel of priceSelectors) {
+      const el = document.querySelector(sel);
+      if (el) {
+        const text = el.textContent || el.dataset.price || '';
+        for (const pattern of pricePatterns) {
+          const match = text.match(pattern);
+          if (match) {
+            return parseFloat(match[1].replace(/\\s/g, '').replace(',', '.'));
+          }
+        }
+        const numMatch = text.match(/([\\d.,]+)/);
+        if (numMatch) {
+          return parseFloat(numMatch[1].replace(/\\s/g, '').replace(',', '.'));
+        }
+      }
+    }
+    
+    return 0;
+  };
+
+  // ========== UI Components ==========
+  const createImportButton = () => {
+    const existingBtn = document.querySelector('.dc-import-main-btn');
+    if (existingBtn) return;
+    
+    const platform = detectPlatform();
+    if (!platform) return;
+    
+    const btn = document.createElement('button');
+    btn.className = 'dc-import-main-btn';
+    btn.innerHTML = \`
+      <span class="dc-btn-icon">🚀</span>
+      <span class="dc-btn-text">Importer dans Drop Craft AI</span>
+    \`;
+    btn.style.cssText = \`
       position: fixed;
-      top: 80px;
+      bottom: 20px;
       right: 20px;
-      background: ${type === 'success' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'};
+      z-index: 999999;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 50px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(102,126,234,0.4);
+      transition: all 0.3s ease;
+    \`;
+    
+    btn.onmouseenter = () => {
+      btn.style.transform = 'translateY(-2px) scale(1.02)';
+      btn.style.boxShadow = '0 6px 30px rgba(102,126,234,0.5)';
+    };
+    btn.onmouseleave = () => {
+      btn.style.transform = '';
+      btn.style.boxShadow = '0 4px 20px rgba(102,126,234,0.4)';
+    };
+    
+    btn.onclick = handleImport;
+    document.body.appendChild(btn);
+    
+    console.log('[DropCraft] Import button injected');
+  };
+
+  const showToast = (message, type = 'info') => {
+    const existing = document.querySelector('.dc-toast');
+    if (existing) existing.remove();
+    
+    const colors = {
+      success: '#10b981',
+      error: '#ef4444',
+      info: '#667eea',
+      warning: '#f59e0b'
+    };
+    
+    const toast = document.createElement('div');
+    toast.className = 'dc-toast';
+    toast.style.cssText = \`
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999999;
+      background: \${colors[type] || colors.info};
+      color: white;
+      padding: 14px 20px;
+      border-radius: 10px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 14px;
       font-weight: 500;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-      z-index: 10002;
-      animation: slideIn 0.3s ease-out;
-      max-width: 300px;
-    `;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: dcSlideIn 0.3s ease;
+      max-width: 350px;
+    \`;
     
-    // Add animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-    `;
-    document.head.appendChild(style);
-    
+    toast.textContent = message;
     document.body.appendChild(toast);
     
-    // Auto remove after 3 seconds
     setTimeout(() => {
-      toast.style.animation = 'slideIn 0.3s ease-out reverse';
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, 3000);
-  }
+      toast.style.animation = 'dcSlideOut 0.3s ease forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  };
 
-  extractFromStructuredData() {
-    const products = [];
-    const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+  // Add animation styles
+  const style = document.createElement('style');
+  style.textContent = \`
+    @keyframes dcSlideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes dcSlideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    @keyframes dcPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  \`;
+  document.head.appendChild(style);
+
+  // ========== Import Handler ==========
+  const handleImport = async () => {
+    const btn = document.querySelector('.dc-import-main-btn');
+    if (btn) {
+      btn.innerHTML = '<span class="dc-btn-icon" style="animation: dcPulse 1s infinite">⏳</span><span class="dc-btn-text">Import en cours...</span>';
+      btn.disabled = true;
+    }
     
-    scripts.forEach(script => {
-      try {
-        const data = JSON.parse(script.textContent);
-        const items = Array.isArray(data) ? data : [data];
+    try {
+      // Get token
+      const token = await getToken();
+      if (!token) {
+        showToast('❌ Non connecté - Connectez-vous d\\'abord via la popup', 'error');
+        if (btn) {
+          btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
+          btn.disabled = false;
+        }
+        return;
+      }
+      
+      // Extract product
+      const product = await extractProduct();
+      if (!product || !product.title) {
+        showToast('❌ Produit non détecté sur cette page', 'error');
+        if (btn) {
+          btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
+          btn.disabled = false;
+        }
+        return;
+      }
+      
+      console.log('[DropCraft] Importing product:', product.title);
+      
+      // Send to API via proxy
+      const response = await dcFetch(CONFIG.API_URL + '/extension-sync-realtime', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': token
+        },
+        body: JSON.stringify({
+          action: 'import_products',
+          products: [{
+            title: product.title,
+            name: product.title,
+            description: product.description || '',
+            price: product.price || 0,
+            currency: product.currency || 'EUR',
+            image_urls: product.images || [],
+            source_url: product.source_url,
+            platform: product.platform,
+            brand: product.brand,
+            rating: product.rating,
+            reviews_count: product.reviews_count,
+            variants: product.variants || []
+          }]
+        })
+      });
+      
+      if (response.ok && response.data?.success) {
+        showToast('✅ Produit importé avec succès !', 'success');
+        if (btn) {
+          btn.innerHTML = '<span class="dc-btn-icon">✅</span><span class="dc-btn-text">Importé !</span>';
+          setTimeout(() => {
+            btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
+            btn.disabled = false;
+          }, 3000);
+        }
+      } else {
+        const errorMsg = response.data?.error || response.error || 'Erreur inconnue';
+        console.error('[DropCraft] Import failed:', errorMsg);
+        showToast('❌ ' + errorMsg, 'error');
+        if (btn) {
+          btn.innerHTML = '<span class="dc-btn-icon">❌</span><span class="dc-btn-text">Erreur - Réessayer</span>';
+          setTimeout(() => {
+            btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
+            btn.disabled = false;
+          }, 3000);
+        }
+      }
+    } catch (error) {
+      console.error('[DropCraft] Import error:', error);
+      showToast('❌ Erreur: ' + error.message, 'error');
+      if (btn) {
+        btn.innerHTML = '<span class="dc-btn-icon">🚀</span><span class="dc-btn-text">Importer dans Drop Craft AI</span>';
+        btn.disabled = false;
+      }
+    }
+  };
+
+  // ========== Initialization ==========
+  const init = () => {
+    const platform = detectPlatform();
+    if (platform) {
+      console.log('[DropCraft] Platform detected:', platform.name);
+      
+      // Inject import button after page loads
+      if (document.readyState === 'complete') {
+        createImportButton();
+      } else {
+        window.addEventListener('load', createImportButton);
+      }
+      
+      // Also try after a delay for SPAs
+      setTimeout(createImportButton, 2000);
+    }
+  };
+
+  init();
+})();
+      `;
+    }
+
+    setupDynamicContentObserver() {
+      let debounceTimer = null;
+      const DEBOUNCE_MS = 1000;
+      const MIN_INTERVAL_MS = 5000;
+
+      this.mutationObserver = new MutationObserver((mutations) => {
+        let significantChange = false;
         
-        items.forEach(item => {
-          if (item['@type'] === 'Product' || item.type === 'Product') {
-            products.push({
-              id: `structured_${Date.now()}_${products.length}`,
-              name: item.name,
-              price: this.extractPriceFromOffer(item.offers),
-              image: item.image?.[0] || item.image,
-              description: item.description,
-              brand: item.brand?.name,
-              category: item.category,
-              rating: item.aggregateRating?.ratingValue,
-              availability: this.mapAvailability(item.offers?.availability),
-              url: window.location.href,
-              domain: window.location.hostname,
-              scrapedAt: new Date().toISOString(),
-              source: 'structured_data'
-            });
-          }
-        });
-      } catch (e) {
-        console.log('Error parsing structured data:', e);
-      }
-    });
-    
-    return products;
-  }
-
-  extractFromMicrodata() {
-    const products = [];
-    const productElements = document.querySelectorAll('[itemtype*="Product"]');
-    
-    productElements.forEach((element, index) => {
-      const product = {
-        id: `microdata_${Date.now()}_${index}`,
-        name: this.getMicrodataProperty(element, 'name'),
-        price: this.getMicrodataProperty(element, 'price'),
-        image: this.getMicrodataProperty(element, 'image'),
-        description: this.getMicrodataProperty(element, 'description'),
-        brand: this.getMicrodataProperty(element, 'brand'),
-        category: this.getMicrodataProperty(element, 'category'),
-        url: window.location.href,
-        domain: window.location.hostname,
-        scrapedAt: new Date().toISOString(),
-        source: 'microdata'
-      };
-      
-      if (product.name) {
-        products.push(product);
-      }
-    });
-    
-    return products;
-  }
-
-  extractFromContainers() {
-    const products = [];
-    
-    // Platform-specific selectors
-    const platformSelectors = this.getPlatformSelectors();
-    const selectors = platformSelectors[this.detectPlatform()] || platformSelectors.generic;
-    
-    const productElements = this.findElements(selectors.products);
-    
-    productElements.forEach((element, index) => {
-      const product = {
-        id: `container_${Date.now()}_${index}`,
-        name: this.extractText(element, selectors.title),
-        price: this.extractPrice(element, selectors.price),
-        image: this.extractImage(element, selectors.image),
-        description: this.extractText(element, selectors.description),
-        category: this.extractCategory(),
-        availability: this.extractAvailability(element),
-        rating: this.extractRating(element),
-        url: window.location.href,
-        domain: window.location.hostname,
-        scrapedAt: new Date().toISOString(),
-        source: 'container_extraction',
-        platform: this.detectPlatform()
-      };
-      
-      if (product.name && product.price) {
-        products.push(product);
-      }
-    });
-    
-    return products;
-  }
-
-  extractSingleProduct() {
-    // Try to extract single product from current page
-    const selectors = this.getPlatformSelectors().generic;
-    
-    const product = {
-      id: `single_${Date.now()}`,
-      name: this.extractText(document, ['h1', '.product-title', '.title', selectors.title]),
-      price: this.extractPrice(document, ['.price', '[class*="price"]', selectors.price]),
-      image: this.extractImage(document, ['img', selectors.image]),
-      description: this.extractText(document, ['.description', '.product-description']),
-      category: this.extractCategory(),
-      availability: this.extractAvailability(document),
-      rating: this.extractRating(document),
-      url: window.location.href,
-      domain: window.location.hostname,
-      scrapedAt: new Date().toISOString(),
-      source: 'single_product'
-    };
-    
-    return product.name ? [product] : [];
-  }
-
-  getPlatformSelectors() {
-    return {
-      shopify: {
-        products: '.product-item, .grid-product__content, .product-card',
-        title: '.product-item__title, .grid-product__title, h3',
-        price: '.product-item__price, .grid-product__price, .price',
-        image: '.product-item__image img, .grid-product__image img',
-        description: '.product-item__description'
-      },
-      
-      woocommerce: {
-        products: '.product, .woocommerce-loop-product__link',
-        title: '.woocommerce-loop-product__title, h2',
-        price: '.price, .woocommerce-Price-amount',
-        image: '.wp-post-image, .attachment-woocommerce_thumbnail',
-        description: '.woocommerce-product-details__short-description'
-      },
-      
-      magento: {
-        products: '.product-item, .item',
-        title: '.product-item-name, .product-name',
-        price: '.price, .regular-price',
-        image: '.product-image-photo',
-        description: '.product-item-description'
-      },
-      
-      prestashop: {
-        products: '.product-miniature, .product',
-        title: '.product-title, h3',
-        price: '.price, .product-price',
-        image: '.product-thumbnail img',
-        description: '.product-description'
-      },
-      
-      generic: {
-        products: [
-          '[data-testid*="product"]',
-          '.product-item, .product-card, .product',
-          '[class*="product-"]',
-          '.item[data-product]',
-          '.listing-item'
-        ],
-        title: [
-          'h1, h2, h3',
-          '.product-title, .title, .name',
-          '[data-testid*="title"]'
-        ],
-        price: [
-          '.price, [class*="price"]',
-          '[data-testid*="price"]',
-          '.cost, .amount'
-        ],
-        image: [
-          'img[src*="product"]',
-          'img[alt*="product"]',
-          '.product-image img',
-          'img'
-        ],
-        description: [
-          '.description, .product-description',
-          '.summary, .excerpt'
-        ]
-      }
-    };
-  }
-
-  detectPlatform() {
-    const indicators = {
-      shopify: ['Shopify', 'shopify', '/cdn/shop/', 'myshopify.com'],
-      woocommerce: ['woocommerce', 'wp-content', 'wp-includes'],
-      magento: ['Magento', 'magento', '/static/version'],
-      prestashop: ['PrestaShop', 'prestashop'],
-      opencart: ['catalog/view/javascript', 'OpenCart']
-    };
-
-    const pageSource = document.documentElement.outerHTML.toLowerCase();
-    
-    for (const [platform, signs] of Object.entries(indicators)) {
-      if (signs.some(sign => pageSource.includes(sign.toLowerCase()))) {
-        return platform;
-      }
-    }
-    
-    return 'generic';
-  }
-
-  findElements(selectors) {
-    if (typeof selectors === 'string') selectors = [selectors];
-    if (!Array.isArray(selectors)) return [];
-    
-    for (const selector of selectors) {
-      try {
-        const elements = document.querySelectorAll(selector);
-        if (elements.length > 0) return Array.from(elements);
-      } catch (e) {
-        console.log('Invalid selector:', selector);
-      }
-    }
-    
-    return [];
-  }
-
-  extractText(container, selectors) {
-    if (typeof selectors === 'string') selectors = [selectors];
-    if (!Array.isArray(selectors)) return '';
-    
-    for (const selector of selectors) {
-      try {
-        const element = container.querySelector(selector);
-        if (element && element.textContent.trim()) {
-          // Clean extracted text - remove UI artifacts like keyboard shortcuts
-          let text = element.textContent.trim();
-          
-          // Remove common UI patterns that pollute titles
-          text = text
-            .replace(/Raccourci clavier[\s\S]*/gi, '')
-            .replace(/shift\s*\+[\s\S]*/gi, '')
-            .replace(/alt\s*\+[\s\S]*/gi, '')
-            .replace(/ctrl\s*\+[\s\S]*/gi, '')
-            .replace(/Ajouter aux favoris[\s\S]*/gi, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-          
-          if (text.length > 3) {
-            return text.substring(0, 500); // Limit length
-          }
-        }
-      } catch (e) {
-        console.log('Invalid selector:', selector);
-      }
-    }
-    return '';
-  }
-
-  extractPrice(container, selectors) {
-    if (typeof selectors === 'string') selectors = [selectors];
-    if (!Array.isArray(selectors)) return '';
-    
-    for (const selector of selectors) {
-      try {
-        const element = container.querySelector(selector);
-        if (element) {
-          const text = element.textContent.trim();
-          
-          // Enhanced regex to handle European formats: "4,59€", "1 234,56 €", "1.234,56€"
-          // Matches: 4,59€ | 4.59$ | 1 234,56 € | 1.234,56€ | 12,50 EUR
-          const pricePatterns = [
-            /(\d{1,3}(?:[\s.]?\d{3})*[,]\d{1,2})\s*(€|EUR)/i,  // European: 1.234,56€ or 4,59€
-            /(\d{1,3}(?:[,]?\d{3})*[.]\d{1,2})\s*(\$|USD)/i,   // US: 1,234.56$
-            /(€|EUR)\s*(\d{1,3}(?:[\s.]?\d{3})*[,]\d{1,2})/i,  // €4,59
-            /(\$|USD)\s*(\d{1,3}(?:[,]?\d{3})*[.]\d{1,2})/i,   // $4.59
-            /(\d+[,.]?\d*)\s*(€|\$|£|₹|¥|kr|zł|CHF|USD|EUR)/i  // Fallback
-          ];
-          
-          for (const pattern of pricePatterns) {
-            const match = text.match(pattern);
-            if (match) {
-              return match[0].trim();
+        for (const mutation of mutations) {
+          if (mutation.addedNodes.length > 0) {
+            for (const node of mutation.addedNodes) {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                const el = node;
+                if (el.matches?.('[class*="product"], [class*="gallery"], [class*="carousel"]') ||
+                    el.querySelector?.('[class*="product"], [class*="gallery"]')) {
+                  significantChange = true;
+                  break;
+                }
+              }
             }
           }
+          if (significantChange) break;
         }
-      } catch (e) {
-        console.log('Invalid selector:', selector);
+
+        if (significantChange) {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            const now = Date.now();
+            if (now - this.lastInjectedAt > MIN_INTERVAL_MS) {
+              this.lastInjectedAt = now;
+              console.log('[DropCraft] Dynamic content detected, re-scanning...');
+            }
+          }, DEBOUNCE_MS);
+        }
+      });
+
+      this.mutationObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false
+      });
+
+      // URL change detection for SPAs
+      let lastUrl = window.location.href;
+      const urlObserver = new MutationObserver(() => {
+        if (window.location.href !== lastUrl) {
+          lastUrl = window.location.href;
+          console.log('[DropCraft] URL changed, re-initializing...');
+          setTimeout(() => this.injectCoreModules(), 1500);
+        }
+      });
+      urlObserver.observe(document, { subtree: true, childList: true });
+    }
+
+    setupMessageListener() {
+      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        this.handleMessage(message, sender, sendResponse);
+        return true;
+      });
+    }
+
+    handleMessage(message, sender, sendResponse) {
+      switch (message.type) {
+        case 'SCRAPE_PAGE':
+          this.scrapePage().then(sendResponse);
+          break;
+          
+        case 'GET_PAGE_INFO':
+          sendResponse(this.getPageInfo());
+          break;
+          
+        case 'INJECT_ONE_CLICK_BUTTONS':
+          this.injectCoreModules();
+          sendResponse({ success: true });
+          break;
+          
+        default:
+          sendResponse({ success: true });
       }
     }
-    return '';
-  }
 
-  extractImage(container, selectors) {
-    if (typeof selectors === 'string') selectors = [selectors];
-    if (!Array.isArray(selectors)) return '';
-    
-    for (const selector of selectors) {
+    injectStyles() {
+      const style = document.createElement('style');
+      style.textContent = `
+        .dropcraft-highlight {
+          outline: 2px solid #667eea !important;
+          outline-offset: 2px !important;
+          background: rgba(102, 126, 234, 0.1) !important;
+          transition: all 0.3s ease !important;
+        }
+        
+        .dropcraft-highlight:hover {
+          outline-color: #764ba2 !important;
+          background: rgba(118, 75, 162, 0.2) !important;
+        }
+        
+        .dropcraft-indicator {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 12px 20px;
+          border-radius: 25px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-size: 14px;
+          font-weight: 500;
+          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+          z-index: 10000;
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .dropcraft-indicator:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    async scrapePage() {
       try {
-        const element = container.querySelector(selector);
-        if (element) {
-          return element.src || element.dataset.src || element.dataset.original || '';
-        }
-      } catch (e) {
-        console.log('Invalid selector:', selector);
+        const products = await this.extractProducts();
+        chrome.runtime.sendMessage({
+          type: 'PRODUCTS_SCRAPED',
+          products: products
+        });
+        return { success: true, count: products.length };
+      } catch (error) {
+        return { success: false, error: error.message };
       }
     }
-    return '';
-  }
 
-  extractCategory() {
-    const breadcrumbs = document.querySelector('.breadcrumb, .breadcrumbs, nav[aria-label="breadcrumb"]');
-    if (breadcrumbs) {
-      const links = breadcrumbs.querySelectorAll('a');
-      if (links.length > 1) {
-        return links[links.length - 2].textContent.trim();
-      }
+    async extractProducts() {
+      // Basic extraction - full extraction happens in page context
+      return [];
     }
-    return '';
-  }
 
-  extractAvailability(container) {
-    const stockSelectors = ['.stock', '.availability', '.in-stock', '.out-of-stock'];
-    for (const selector of stockSelectors) {
-      const element = container.querySelector(selector);
-      if (element) {
-        const text = element.textContent.toLowerCase();
-        if (text.includes('stock') || text.includes('disponible')) return 'in_stock';
-        if (text.includes('rupture') || text.includes('indisponible')) return 'out_of_stock';
-      }
+    getPageInfo() {
+      return {
+        url: window.location.href,
+        title: document.title,
+        hostname: window.location.hostname
+      };
     }
-    return 'unknown';
-  }
 
-  extractRating(container) {
-    const ratingSelectors = ['.rating', '.stars', '.review-rating'];
-    for (const selector of ratingSelectors) {
-      const element = container.querySelector(selector);
-      if (element) {
-        const ratingMatch = element.textContent.match(/(\d+\.?\d*)/);
-        if (ratingMatch) return parseFloat(ratingMatch[1]);
-      }
-    }
-    return null;
-  }
-
-  getMicrodataProperty(element, property) {
-    const prop = element.querySelector(`[itemprop="${property}"]`);
-    if (prop) {
-      return prop.content || prop.textContent.trim() || prop.src;
-    }
-    return '';
-  }
-
-  extractPriceFromOffer(offers) {
-    if (!offers) return '';
-    const offerArray = Array.isArray(offers) ? offers : [offers];
-    const offer = offerArray[0];
-    return offer?.price || offer?.lowPrice || '';
-  }
-
-  mapAvailability(availability) {
-    if (!availability) return 'unknown';
-    const av = availability.toLowerCase();
-    if (av.includes('instock')) return 'in_stock';
-    if (av.includes('outofstock')) return 'out_of_stock';
-    return 'unknown';
-  }
-
-  deduplicateProducts(products) {
-    const seen = new Map();
-    return products.filter(product => {
-      const key = `${product.name}_${product.price}`;
-      if (seen.has(key)) return false;
-      seen.set(key, true);
-      return true;
-    });
-  }
-
-  highlightProducts() {
-    const selectors = this.getPlatformSelectors().generic.products;
-    const elements = this.findElements(selectors);
-    
-    elements.forEach(element => {
-      element.classList.add('dropcraft-highlight');
-      
-      element.addEventListener('mouseenter', this.showTooltip.bind(this));
-      element.addEventListener('mouseleave', this.hideTooltip.bind(this));
-    });
-  }
-
-  removeHighlights() {
-    const highlighted = document.querySelectorAll('.dropcraft-highlight');
-    highlighted.forEach(element => {
-      element.classList.remove('dropcraft-highlight');
-    });
-  }
-
-  showTooltip(event) {
-    const element = event.target;
-    const name = this.extractText(element, this.getPlatformSelectors().generic.title);
-    const price = this.extractPrice(element, this.getPlatformSelectors().generic.price);
-    
-    if (name || price) {
-      const tooltip = document.createElement('div');
-      tooltip.className = 'dropcraft-tooltip';
-      tooltip.textContent = `${name} - ${price}`;
-      tooltip.style.left = event.pageX + 10 + 'px';
-      tooltip.style.top = event.pageY - 30 + 'px';
-      
-      document.body.appendChild(tooltip);
-      
-      setTimeout(() => {
-        if (tooltip.parentNode) {
-          tooltip.parentNode.removeChild(tooltip);
-        }
-      }, 3000);
+    setupAutoDetection() {
+      // Auto-detection is now handled by the injected core module
     }
   }
 
-  hideTooltip() {
-    const tooltips = document.querySelectorAll('.dropcraft-tooltip');
-    tooltips.forEach(tooltip => {
-      if (tooltip.parentNode) {
-        tooltip.parentNode.removeChild(tooltip);
-      }
-    });
-  }
-
-  showScrapingIndicator() {
-    if (this.scrapingIndicator) return;
-    
-    this.scrapingIndicator = document.createElement('div');
-    this.scrapingIndicator.className = 'dropcraft-indicator active';
-    this.scrapingIndicator.textContent = '🚀 Scraping en cours...';
-    
-    document.body.appendChild(this.scrapingIndicator);
-  }
-
-  hideScrapingIndicator() {
-    if (this.scrapingIndicator) {
-      this.scrapingIndicator.remove();
-      this.scrapingIndicator = null;
-    }
-  }
-
-  getPageInfo() {
-    return {
-      url: window.location.href,
-      title: document.title,
-      domain: window.location.hostname,
-      platform: this.detectPlatform(),
-      productCount: this.findElements(this.getPlatformSelectors().generic.products).length
-    };
-  }
-
-  setupAutoDetection() {
-    // Detect if this is an e-commerce page
-    const isEcommercePage = this.detectEcommercePage();
-    
-    if (isEcommercePage) {
-      // Show subtle indicator
-      this.showPageIndicator();
-    }
-  }
-
-  detectEcommercePage() {
-    const ecommerceIndicators = [
-      'add to cart', 'buy now', 'checkout', 'shopping cart',
-      'product', 'price', '€', '$', '£', 'shop', 'store'
-    ];
-    
-    const pageText = document.body.textContent.toLowerCase();
-    const hasIndicators = ecommerceIndicators.some(indicator => 
-      pageText.includes(indicator)
-    );
-    
-    const hasProductStructure = this.findElements(
-      this.getPlatformSelectors().generic.products
-    ).length > 0;
-    
-    return hasIndicators || hasProductStructure;
-  }
-
-  showPageIndicator() {
-    const indicator = document.createElement('div');
-    indicator.className = 'dropcraft-indicator';
-    indicator.textContent = '🛍️ Page e-commerce détectée';
-    indicator.style.cursor = 'pointer';
-    
-    indicator.addEventListener('click', () => {
-      this.scrapePage();
-    });
-    
-    document.body.appendChild(indicator);
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-      if (indicator.parentNode) {
-        indicator.style.opacity = '0.5';
-      }
-    }, 5000);
-  }
-
-  startAutoScraping() {
-    this.isActive = true;
-    this.autoScrapeInterval = setInterval(() => {
-      if (this.isActive) {
-        this.scrapePage();
-      }
-    }, 30000); // Every 30 seconds
-  }
-
-  stopAutoScraping() {
-    this.isActive = false;
-    if (this.autoScrapeInterval) {
-      clearInterval(this.autoScrapeInterval);
-      this.autoScrapeInterval = null;
-    }
-  }
-  }
-
-  // Initialize content script
+  // Initialize
   new DropCraftContentScript();
+  console.log('[DropCraft] Content script initialized');
 })();

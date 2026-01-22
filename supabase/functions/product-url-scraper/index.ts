@@ -36,6 +36,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const requestId = `req_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
+  console.log(`[${requestId}] 🔄 Product URL scraper request received`);
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -46,35 +49,52 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     
     let userId: string | null = null;
+    let authMethod = 'anonymous';
 
     // Try extension token first - check extension_auth_tokens (primary) then legacy table
     if (extensionToken) {
+      console.log(`[${requestId}] 🔑 Checking extension token...`);
+      
       // Try primary extension_auth_tokens table
-      const { data: authTokenData } = await supabase
+      const { data: authTokenData, error: authErr } = await supabase
         .from("extension_auth_tokens")
         .select("user_id, is_active, expires_at")
         .eq("token", extensionToken)
         .eq("is_active", true)
         .maybeSingle();
 
+      if (authErr) {
+        console.log(`[${requestId}] ⚠️ extension_auth_tokens query error:`, authErr.message);
+      }
+
       if (authTokenData?.is_active) {
         if (!authTokenData.expires_at || new Date(authTokenData.expires_at) > new Date()) {
           userId = authTokenData.user_id;
-          console.log('✅ Authenticated via extension_auth_tokens');
+          authMethod = 'extension_auth_tokens';
+          console.log(`[${requestId}] ✅ Authenticated via extension_auth_tokens`);
+        } else {
+          console.log(`[${requestId}] ⚠️ Token expired`);
         }
       } else {
         // Fallback to legacy extension_tokens table
-        const { data: tokenData } = await supabase
+        const { data: tokenData, error: tokenErr } = await supabase
           .from("extension_tokens")
           .select("user_id, is_active, expires_at")
           .eq("token", extensionToken)
           .maybeSingle();
 
+        if (tokenErr) {
+          console.log(`[${requestId}] ⚠️ extension_tokens query error:`, tokenErr.message);
+        }
+
         if (tokenData?.is_active) {
           if (!tokenData.expires_at || new Date(tokenData.expires_at) > new Date()) {
             userId = tokenData.user_id;
-            console.log('✅ Authenticated via legacy extension_tokens');
+            authMethod = 'extension_tokens';
+            console.log(`[${requestId}] ✅ Authenticated via legacy extension_tokens`);
           }
+        } else {
+          console.log(`[${requestId}] ⚠️ Token not found or inactive in either table`);
         }
       }
     }
@@ -87,8 +107,14 @@ serve(async (req) => {
       const { data: { user } } = await supabaseClient.auth.getUser();
       if (user) {
         userId = user.id;
-        console.log('✅ Authenticated via JWT');
+        authMethod = 'jwt';
+        console.log(`[${requestId}] ✅ Authenticated via JWT`);
       }
+    }
+
+    // Log auth status (but don't fail - allow anonymous scraping)
+    if (!userId) {
+      console.log(`[${requestId}] ℹ️ Proceeding without authentication (anonymous scrape)`);
     }
 
     const { url } = await req.json();
