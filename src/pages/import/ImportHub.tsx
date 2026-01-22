@@ -17,7 +17,7 @@ import {
   ExternalLink, ChevronRight, Box, Layers, Target,
   MousePointerClick, Wand2, History, Trash2,
   TrendingDown, Loader2, AlertTriangle, ArrowUpRight, Timer,
-  Pause, RotateCcw,
+  Pause, RotateCcw, Settings,
   FileJson, FileCode, Calendar, Bolt,
   ChevronDown, LayoutGrid, List, SortAsc, SortDesc
 } from 'lucide-react'
@@ -509,6 +509,10 @@ export default function ImportHub() {
             <TabsTrigger value="methods" className="data-[state=active]:bg-background">
               <Layers className="w-4 h-4 mr-2" />
               Méthodes
+            </TabsTrigger>
+            <TabsTrigger value="config" className="data-[state=active]:bg-background" onClick={() => navigate('/import/config')}>
+              <Settings className="w-4 h-4 mr-2" />
+              Configuration
             </TabsTrigger>
             <TabsTrigger value="history" className="data-[state=active]:bg-background">
               <History className="w-4 h-4 mr-2" />
