@@ -947,29 +947,63 @@
       try {
         const token = await this.getToken();
         
-        const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(token && { 'x-extension-token': token })
-          },
-          body: JSON.stringify({
-            action: 'import_products',
-            products: [{
-              title: productData.title,
-              name: productData.title,
-              price: productData.price || 0,
-              image: productData.image || '',
-              imageUrl: productData.image || '',
-              images: productData.images || [],
-              url: productData.url || window.location.href,
-              source: 'chrome_extension_catalog',
-              platform: this.platform,
-              orders: productData.orders || '',
-              rating: productData.rating || ''
-            }]
-          })
-        });
+        if (!token) {
+          throw new Error('Non connecté - ouvrez la sidebar pour vous connecter');
+        }
+
+        // Use RPC to bypass CSP if needed
+        let response;
+        try {
+          response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'x-extension-token': token
+            },
+            body: JSON.stringify({
+              action: 'import_products',
+              products: [{
+                title: productData.title,
+                name: productData.title,
+                price: productData.price || 0,
+                image: productData.image || '',
+                imageUrl: productData.image || '',
+                images: productData.images || [],
+                url: productData.url || window.location.href,
+                source: 'chrome_extension_catalog',
+                platform: this.platform,
+                orders: productData.orders || '',
+                rating: productData.rating || ''
+              }]
+            })
+          });
+        } catch (fetchError) {
+          // CSP blocked - try via background script
+          console.warn('[BulkSelector] Direct fetch blocked, trying background proxy');
+          response = await this.fetchViaBackground(`${CONFIG.API_URL}/extension-sync-realtime`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'x-extension-token': token
+            },
+            body: JSON.stringify({
+              action: 'import_products',
+              products: [{
+                title: productData.title,
+                name: productData.title,
+                price: productData.price || 0,
+                image: productData.image || '',
+                imageUrl: productData.image || '',
+                images: productData.images || [],
+                url: productData.url || window.location.href,
+                source: 'chrome_extension_catalog',
+                platform: this.platform,
+                orders: productData.orders || '',
+                rating: productData.rating || ''
+              }]
+            })
+          });
+        }
         
         const result = await response.json();
         
@@ -980,14 +1014,15 @@
           }
           this.showToast(`✓ "${productData.title.substring(0, 30)}..." importé!`, 'success');
         } else {
-          throw new Error(result.error || 'Erreur');
+          throw new Error(result.error || result.errors?.[0]?.error || 'Erreur d\'import');
         }
       } catch (error) {
+        console.error('[BulkSelector] Import error:', error);
         if (btn) {
           btn.innerHTML = '❌';
           btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
         }
-        this.showToast('Erreur lors de l\'import: ' + error.message, 'error');
+        this.showToast(`Erreur: ${error.message}`, 'error');
         
         // Reset button after 2s
         setTimeout(() => {
@@ -998,6 +1033,49 @@
           }
         }, 2000);
       }
+    }
+
+    // Fallback fetch via background script for CSP-blocked sites
+    async fetchViaBackground(url, options) {
+      return new Promise((resolve, reject) => {
+        const requestId = `bulk_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        
+        const timeout = setTimeout(() => {
+          window.removeEventListener('message', onMessage);
+          reject(new Error('Timeout proxy réseau'));
+        }, 20000);
+        
+        const onMessage = (event) => {
+          if (event.source !== window) return;
+          if (event.data?.type !== 'DC_FETCH_API_RESULT' || event.data?.requestId !== requestId) return;
+          
+          clearTimeout(timeout);
+          window.removeEventListener('message', onMessage);
+          
+          if (event.data.success) {
+            // Create a fake response object
+            resolve({
+              ok: event.data.status >= 200 && event.data.status < 300,
+              status: event.data.status,
+              json: async () => event.data.data
+            });
+          } else {
+            reject(new Error(event.data.error || 'Network error'));
+          }
+        };
+        
+        window.addEventListener('message', onMessage);
+        window.postMessage({ 
+          type: 'DC_FETCH_API', 
+          requestId, 
+          url, 
+          options: {
+            method: options.method,
+            headers: options.headers,
+            body: options.body
+          }
+        }, '*');
+      });
     }
 
     activate() {
@@ -1231,6 +1309,11 @@
       
       const token = await this.getToken();
       
+      if (!token) {
+        this.showToast('Non connecté - ouvrez la sidebar pour vous connecter', 'error');
+        return;
+      }
+      
       document.getElementById('dc-bulk-pending').textContent = total;
       document.getElementById('dc-bulk-current').style.display = 'flex';
       
@@ -1244,39 +1327,69 @@
         document.getElementById('dc-bulk-progress-fill').style.width = `${((i + 1) / total) * 100}%`;
         
         try {
-          // Use extension-sync-realtime with token for authenticated import
-          const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              ...(token && { 'x-extension-token': token })
-            },
-            body: JSON.stringify({
-              action: 'import_products',
-              products: [{
-                title: product.title,
-                name: product.title,
-                price: product.price || 0,
-                image: product.image || '',
-                imageUrl: product.image || '',
-                images: product.images || [],
-                url: product.url || window.location.href,
-                source: 'chrome_extension_bulk',
-                platform: this.platform,
-                orders: product.orders || '',
-                rating: product.rating || ''
-              }]
-            })
-          });
+          // Try direct fetch first, fallback to background proxy
+          let response;
+          try {
+            response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'x-extension-token': token
+              },
+              body: JSON.stringify({
+                action: 'import_products',
+                products: [{
+                  title: product.title,
+                  name: product.title,
+                  price: product.price || 0,
+                  image: product.image || '',
+                  imageUrl: product.image || '',
+                  images: product.images || [],
+                  url: product.url || window.location.href,
+                  source: 'chrome_extension_bulk',
+                  platform: this.platform,
+                  orders: product.orders || '',
+                  rating: product.rating || ''
+                }]
+              })
+            });
+          } catch (fetchError) {
+            // CSP blocked - try via background script
+            response = await this.fetchViaBackground(`${CONFIG.API_URL}/extension-sync-realtime`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'x-extension-token': token
+              },
+              body: JSON.stringify({
+                action: 'import_products',
+                products: [{
+                  title: product.title,
+                  name: product.title,
+                  price: product.price || 0,
+                  image: product.image || '',
+                  imageUrl: product.image || '',
+                  images: product.images || [],
+                  url: product.url || window.location.href,
+                  source: 'chrome_extension_bulk',
+                  platform: this.platform,
+                  orders: product.orders || '',
+                  rating: product.rating || ''
+                }]
+              })
+            });
+          }
           
           const result = await response.json();
           
           if (response.ok && (result.imported > 0 || result.success)) {
             success++;
           } else {
+            console.error('[BulkSelector] Product failed:', result.error || result.errors);
             failed++;
           }
         } catch (e) {
+          console.error('[BulkSelector] Request failed:', e);
           failed++;
         }
         
@@ -1284,12 +1397,16 @@
         document.getElementById('dc-bulk-error').textContent = failed;
         document.getElementById('dc-bulk-pending').textContent = total - success - failed;
         
-        // Small delay between requests
-        await new Promise(r => setTimeout(r, 150));
+        // Small delay between requests to avoid rate limiting
+        await new Promise(r => setTimeout(r, 200));
       }
       
       document.getElementById('dc-bulk-current').style.display = 'none';
-      document.getElementById('dc-bulk-progress-text').textContent = 'Import terminé!';
+      document.getElementById('dc-bulk-progress-text').textContent = `Import terminé! ${success}/${total} réussis`;
+      
+      if (failed > 0) {
+        this.showToast(`${success} produits importés, ${failed} échecs`, 'warning');
+      }
     }
 
     showModal() {

@@ -852,11 +852,83 @@
         return '';
       };
       
-      // Get ALL images from the page
+      // Get ALL images from the page - enhanced for AliExpress
       const getAllImages = (selectorList) => {
         const images = new Set();
         
-        // Try specific selectors first
+        // Special handling for AliExpress - extract from gallery JSON data
+        if (this.platform?.key === 'aliexpress') {
+          // Try to get images from AliExpress data layers
+          try {
+            // Check for embedded JSON data
+            const scripts = document.querySelectorAll('script');
+            for (const script of scripts) {
+              const content = script.textContent || '';
+              // Look for image arrays in JSON
+              const imageMatches = content.match(/"imageUrl"\s*:\s*"([^"]+)"/g) || [];
+              for (const match of imageMatches) {
+                const urlMatch = match.match(/"imageUrl"\s*:\s*"([^"]+)"/);
+                if (urlMatch && urlMatch[1]) {
+                  const cleaned = this.cleanImageUrl(urlMatch[1]);
+                  if (this.isValidImageUrl(cleaned)) {
+                    images.add(cleaned);
+                  }
+                }
+              }
+              
+              // Also look for imagePathList
+              const pathListMatch = content.match(/"imagePathList"\s*:\s*\[([^\]]+)\]/);
+              if (pathListMatch) {
+                const paths = pathListMatch[1].match(/"([^"]+)"/g);
+                if (paths) {
+                  for (const path of paths) {
+                    const url = path.replace(/"/g, '');
+                    if (url.startsWith('//')) {
+                      const cleaned = this.cleanImageUrl('https:' + url);
+                      if (this.isValidImageUrl(cleaned)) {
+                        images.add(cleaned);
+                      }
+                    } else if (url.startsWith('http')) {
+                      const cleaned = this.cleanImageUrl(url);
+                      if (this.isValidImageUrl(cleaned)) {
+                        images.add(cleaned);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('[DropCraft] Error extracting AliExpress images from JSON:', e);
+          }
+          
+          // Also get from gallery/slider elements
+          const aliexpressImageSelectors = [
+            '.slider--slide--K6MIH9z img',
+            '.image-view-magnifier-wrap img',
+            '.images-view-wrap img',
+            '.pdp-slide img',
+            'img[src*="ae0"]',
+            'img[src*="alicdn"]',
+            '.sku--image--jvAmHBF img',
+            '[class*="gallery"] img',
+            '.product-image-view img'
+          ];
+          
+          for (const selector of aliexpressImageSelectors) {
+            document.querySelectorAll(selector).forEach(el => {
+              let src = el.src || el.dataset.src || el.dataset.original || el.getAttribute('data-lazy-src') || el.dataset.zoom || el.dataset.highres;
+              if (src) {
+                src = this.cleanImageUrl(src);
+                if (this.isValidImageUrl(src)) {
+                  images.add(src);
+                }
+              }
+            });
+          }
+        }
+        
+        // Try specific selectors
         for (const selector of selectorList) {
           document.querySelectorAll(selector).forEach(el => {
             let src = el.src || el.dataset.src || el.dataset.original || el.getAttribute('data-lazy-src') || el.dataset.zoom || el.dataset.highres;
@@ -881,6 +953,7 @@
           }
         });
         
+        console.log('[DropCraft] Extracted', images.size, 'unique images');
         return Array.from(images).slice(0, 20); // Max 20 images
       };
       
