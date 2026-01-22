@@ -25,7 +25,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
-  Package, Loader2, Plus, RefreshCw, GitBranch, Edit3, Upload
+  Package, Loader2, Plus, RefreshCw, GitBranch, Edit3, Upload, Trash2
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
@@ -103,6 +103,8 @@ export default function ChannableProductsPage() {
   const [expertMode, setExpertMode] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('all')
   const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null)
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
 
   // === RULES STATE ===
   const initialMainView = searchParams.get('tab') === 'rules' ? 'rules' : 'products'
@@ -234,6 +236,35 @@ export default function ChannableProductsPage() {
     queryClient.invalidateQueries({ queryKey: ['unified-products'] })
     toast({ title: 'Catalogue actualisé' })
   }, [refetch, queryClient, toast])
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedProducts.length === 0) return
+
+    setIsBulkDeleting(true)
+    try {
+      const { importExportService } = await import('@/services/importExportService')
+      const success = await importExportService.bulkDelete(selectedProducts)
+      
+      if (success) {
+        toast({ 
+          title: '✅ Suppression réussie', 
+          description: `${selectedProducts.length} produit(s) supprimé(s)` 
+        })
+        setSelectedProducts([])
+        setBulkDeleteDialogOpen(false)
+        handleRefresh()
+      }
+    } catch (error) {
+      console.error('Bulk delete error:', error)
+      toast({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Impossible de supprimer les produits',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }, [selectedProducts, toast, handleRefresh])
 
   // === DERIVED DATA ===
   const categoryFilters: ChannableCategory[] = useMemo(() => [
@@ -385,12 +416,18 @@ export default function ChannableProductsPage() {
             isLoading={isLoading}
           />
 
-          {/* Bulk Edit Trigger */}
+          {/* Bulk Actions Bar */}
           {selectedProducts.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-primary/10 text-primary font-medium">
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg"
+            >
+              <Badge variant="secondary" className="bg-primary/20 text-primary font-medium">
                 {selectedProducts.length} sélectionné(s)
               </Badge>
+              
+              <div className="flex-1" />
               
               <Button 
                 variant="outline" 
@@ -404,7 +441,7 @@ export default function ChannableProductsPage() {
 
               <Sheet open={showBulkEdit} onOpenChange={setShowBulkEdit}>
                 <SheetTrigger asChild>
-                  <Button variant="default" size="sm" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2">
                     <Edit3 className="h-4 w-4" />
                     Éditer
                   </Button>
@@ -421,7 +458,25 @@ export default function ChannableProductsPage() {
                   />
                 </SheetContent>
               </Sheet>
-            </div>
+
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="gap-2"
+                onClick={() => setBulkDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+                Supprimer
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setSelectedProducts([])}
+              >
+                Désélectionner
+              </Button>
+            </motion.div>
           )}
 
           {/* Category Filter Pills */}
@@ -654,6 +709,38 @@ export default function ChannableProductsPage() {
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteRule} disabled={isDeleting}>
               Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer {selectedProducts.length} produit(s) ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Tous les produits sélectionnés seront définitivement supprimés de votre catalogue.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBulkDeleting}>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleBulkDelete} 
+              disabled={isBulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isBulkDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Suppression...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Supprimer
+                </>
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
