@@ -1,20 +1,28 @@
 /**
- * Page Gestion des Retours - Optimisée
+ * Page Gestion des Retours - Style Channable
  * Hub centralisé pour la gestion des retours, automation et analytics
  */
-import { ReturnsHub } from '@/components/returns'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { ReturnsHub } from '@/components/returns';
+import { RotateCcw, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function ReturnsManagementPage() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gestion des Retours</h1>
-        <p className="text-muted-foreground mt-1">
-          Gérez les demandes de retour, automatisez les remboursements et analysez les tendances
-        </p>
-      </div>
-      
+    <ChannablePageWrapper
+      title="Gestion des Retours"
+      subtitle="Après-vente"
+      description="Gérez les demandes de retour, automatisez les remboursements et analysez les tendances"
+      heroImage="orders"
+      badge={{ label: "Retours", icon: RotateCcw }}
+      actions={
+        <Button className="gap-2">
+          <Plus className="h-4 w-4" />
+          Nouveau retour
+        </Button>
+      }
+    >
       <ReturnsHub />
-    </div>
+    </ChannablePageWrapper>
   );
 }
