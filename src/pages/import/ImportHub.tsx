@@ -162,14 +162,14 @@ const importMethodsConfig = [
 
 // Supported platforms configuration
 const supportedPlatforms = [
-  { name: 'Shopify', logo: '/logos/shopify.svg', products: 'Illimité', status: 'active' },
-  { name: 'Amazon', logo: '/logos/amazon-logo.svg', products: '350M+', status: 'active' },
-  { name: 'AliExpress', logo: '/logos/aliexpress-logo.svg', products: '500M+', status: 'active' },
-  { name: 'eBay', logo: '/logos/ebay-icon.svg', products: '1.9B+', status: 'active' },
-  { name: 'Etsy', logo: '/logos/etsy.svg', products: '100M+', status: 'active' },
-  { name: 'CJ Dropshipping', logo: '/logos/cj-logo.svg', products: '400K+', status: 'active' },
-  { name: 'Temu', logo: '/logos/temu-logo.svg', products: '100M+', status: 'active' },
-  { name: 'Cdiscount', logo: '/logos/cdiscount-icon.svg', products: '50M+', status: 'active' },
+  { name: 'Shopify', logo: '/logos/shopify.svg', products: 'Illimité', status: 'active', path: '/import/shopify' },
+  { name: 'Amazon', logo: '/logos/amazon-logo.svg', products: '350M+', status: 'active', path: '/import/amazon' },
+  { name: 'AliExpress', logo: '/logos/aliexpress-logo.svg', products: '500M+', status: 'active', path: '/import/aliexpress' },
+  { name: 'eBay', logo: '/logos/ebay-icon.svg', products: '1.9B+', status: 'active', path: '/import/ebay' },
+  { name: 'Etsy', logo: '/logos/etsy.svg', products: '100M+', status: 'active', path: '/import/etsy' },
+  { name: 'CJ Dropshipping', logo: '/logos/cj-logo.svg', products: '400K+', status: 'active', path: '/import/cj-dropshipping' },
+  { name: 'Temu', logo: '/logos/temu-logo.svg', products: '100M+', status: 'active', path: '/import/temu' },
+  { name: 'Cdiscount', logo: '/logos/cdiscount-icon.svg', products: '50M+', status: 'active', path: '/import/cdiscount' },
 ]
 
 export default function ImportHub() {
@@ -905,20 +905,22 @@ export default function ImportHub() {
                 {supportedPlatforms.map((platform) => (
                   <div 
                     key={platform.name}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(platform.path)}
+                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group"
                   >
                     <img 
                       src={platform.logo} 
                       alt={platform.name} 
-                      className="w-8 h-8 object-contain flex-shrink-0"
+                      className="w-8 h-8 object-contain flex-shrink-0 group-hover:scale-110 transition-transform"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{platform.name}</p>
+                      <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">{platform.name}</p>
                       <p className="text-xs text-muted-foreground">{platform.products}</p>
                     </div>
                     {platform.status === 'beta' && (
                       <Badge variant="outline" className="text-xs">Beta</Badge>
                     )}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 ))}
               </div>
