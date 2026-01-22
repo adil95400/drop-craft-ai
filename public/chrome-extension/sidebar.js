@@ -28,6 +28,66 @@
     }
   };
 
+  // ---- CSP-safe network layer (page context -> content script -> background fetch) ----
+  const DC_RPC_TIMEOUT_MS = 20000;
+
+  const dcFetchJson = async (url, options) => {
+    const normalizeOptions = (opts) => {
+      const safe = { ...(opts || {}) };
+      // Ensure headers are plain objects
+      safe.headers = { ...(safe.headers || {}) };
+      return safe;
+    };
+
+    // 1) Try direct fetch (works on sites without restrictive connect-src)
+    try {
+      const res = await fetch(url, normalizeOptions(options));
+      const ct = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json() : await res.text();
+      return { ok: res.ok, status: res.status, data, via: 'direct' };
+    } catch (err) {
+      // fall through to RPC
+      console.warn('[DropCraft] Direct fetch failed, falling back to background proxy', err);
+    }
+
+    // 2) RPC to content script (which calls background.js FETCH_API)
+    const requestId = `dc_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const payload = { type: 'DC_FETCH_API', requestId, url, options: normalizeOptions(options) };
+
+    const result = await new Promise((resolve) => {
+      let done = false;
+
+      const timeout = setTimeout(() => {
+        if (done) return;
+        done = true;
+        window.removeEventListener('message', onMessage);
+        resolve({ success: false, status: 0, error: 'Timeout proxy réseau (CSP?)' });
+      }, DC_RPC_TIMEOUT_MS);
+
+      const onMessage = (event) => {
+        if (event.source !== window) return;
+        const data = event.data;
+        if (!data || data.type !== 'DC_FETCH_API_RESULT' || data.requestId !== requestId) return;
+        if (done) return;
+        done = true;
+        clearTimeout(timeout);
+        window.removeEventListener('message', onMessage);
+        resolve(data);
+      };
+
+      window.addEventListener('message', onMessage);
+      window.postMessage(payload, '*');
+    });
+
+    return {
+      ok: Boolean(result.success),
+      status: result.status || 0,
+      data: result.data,
+      error: result.error,
+      via: 'proxy',
+    };
+  };
+
   class DropCraftSidebar {
     constructor() {
       this.isOpen = false;
@@ -50,6 +110,7 @@
         this.bindEvents();
         this.detectProduct();
         this.injectListingButtons();
+        this.injectProductPageButton();
         
         // Show page badge
         this.showPageBadge();
@@ -414,16 +475,16 @@
       this.showToast('Connexion en cours...', 'info');
       
       try {
-        const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
+        const res = await dcFetchJson(`${CONFIG.API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-extension-token': token
+            'x-extension-token': token,
           },
-          body: JSON.stringify({ action: 'sync_status' })
+          body: JSON.stringify({ action: 'sync_status' }),
         });
-        
-        if (response.ok) {
+
+        if (res.ok) {
           this.token = token;
           this.isConnected = true;
           
@@ -450,10 +511,11 @@
             connectionBar.querySelector('.dc-connect-btn').textContent = 'Déconnecter';
           }
         } else {
-          throw new Error('Token invalide');
+          const message = res?.data?.error || res?.error || 'Token invalide';
+          throw new Error(message);
         }
       } catch (error) {
-        this.showToast('Erreur: Token invalide', 'error');
+        this.showToast(`Erreur: ${error.message || 'Token invalide'}`, 'error');
       }
     }
 
@@ -800,36 +862,36 @@
       this.showToast('Import en cours...', 'info');
       
       try {
-        // First try the extension-sync-realtime endpoint
-        const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
+        const res = await dcFetchJson(`${CONFIG.API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-extension-token': this.token
+            'x-extension-token': this.token,
           },
           body: JSON.stringify({
             action: 'import_products',
-            products: [{
-              title: this.currentProduct.name,
-              name: this.currentProduct.name,
-              price: this.currentProduct.price || 0,
-              image: this.currentProduct.image || '',
-              imageUrl: this.currentProduct.image || '',
-              url: this.currentProduct.url || window.location.href,
-              source: 'chrome_extension',
-              platform: this.currentProduct.platformKey || this.platform?.key || 'unknown',
-              description: this.currentProduct.description || '',
-              rating: this.currentProduct.rating || null,
-              originalPrice: this.currentProduct.originalPrice || null
-            }]
-          })
+            products: [
+              {
+                title: this.currentProduct.name,
+                name: this.currentProduct.name,
+                price: this.currentProduct.price || 0,
+                image: this.currentProduct.image || '',
+                imageUrl: this.currentProduct.image || '',
+                url: this.currentProduct.url || window.location.href,
+                source: 'chrome_extension',
+                platform: this.currentProduct.platformKey || this.platform?.key || 'unknown',
+                description: this.currentProduct.description || '',
+                rating: this.currentProduct.rating || null,
+                originalPrice: this.currentProduct.originalPrice || null,
+              },
+            ],
+          }),
         });
-        
-        const result = await response.json();
-        
-        console.log('[DropCraft] Import result:', result);
-        
-        if (response.ok && (result.imported > 0 || result.success)) {
+
+        console.log('[DropCraft] Import result:', res);
+
+        const result = res.data;
+        if (res.ok && (result?.imported > 0 || result?.success)) {
           const productName = this.currentProduct.name.length > 30 
             ? this.currentProduct.name.substring(0, 30) + '...' 
             : this.currentProduct.name;
@@ -838,13 +900,62 @@
           // Add to history
           this.addToHistory(this.currentProduct);
         } else {
-          const errorMsg = result.error || result.errors?.[0]?.error || 'Erreur d\'import';
-          console.error('[DropCraft] Import error:', result);
+          const errorMsg = result?.error || result?.errors?.[0]?.error || res.error || `Erreur d'import (HTTP ${res.status})`;
+          console.error('[DropCraft] Import error:', { res, result });
           throw new Error(errorMsg);
         }
       } catch (error) {
         console.error('[DropCraft] Import error:', error);
         this.showToast(`❌ ${error.message}`, 'error');
+      }
+    }
+
+    injectProductPageButton() {
+      // A visible "Import" button on product pages (in-page UI) + safe fallback as floating button.
+      if (document.querySelector('.dc-product-page-btn')) return;
+
+      const btn = document.createElement('button');
+      btn.className = 'dc-product-page-btn';
+      btn.type = 'button';
+      btn.textContent = '📥 Importer';
+      btn.style.cssText = `
+        position: fixed;
+        top: 90px;
+        right: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        z-index: 2147483646;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.45);
+      `;
+
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!this.isConnected) {
+          this.showToast('Veuillez vous connecter d\'abord (clé extension)', 'warning');
+          this.open();
+          return;
+        }
+        await this.importProduct();
+      });
+
+      document.body.appendChild(btn);
+
+      // Keep it available on SPA navigations.
+      if (!this.productBtnObserver) {
+        this.productBtnObserver = new MutationObserver(() => {
+          if (!document.querySelector('.dc-product-page-btn')) {
+            this.injectProductPageButton();
+          }
+        });
+
+        this.productBtnObserver.observe(document.documentElement, { childList: true, subtree: true });
       }
     }
 
@@ -1043,37 +1154,38 @@
       this.showToast('Import en cours...', 'info');
       
       try {
-        const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
+        const res = await dcFetchJson(`${CONFIG.API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(this.token && { 'x-extension-token': this.token })
+            ...(this.token && { 'x-extension-token': this.token }),
           },
           body: JSON.stringify({
             action: 'import_products',
-            products: [{
-              title: productInfo.title,
-              name: productInfo.title,
-              price: productInfo.price || 0,
-              image: productInfo.image || '',
-              imageUrl: productInfo.image || '',
-              url: productInfo.url,
-              source: 'chrome_extension_catalog',
-              platform: this.platform?.key || 'unknown'
-            }]
-          })
+            products: [
+              {
+                title: productInfo.title,
+                name: productInfo.title,
+                price: productInfo.price || 0,
+                image: productInfo.image || '',
+                imageUrl: productInfo.image || '',
+                url: productInfo.url,
+                source: 'chrome_extension_catalog',
+                platform: this.platform?.key || 'unknown',
+              },
+            ],
+          }),
         });
-        
-        const result = await response.json();
-        
-        if (response.ok && (result.imported > 0 || result.success)) {
+
+        const result = res.data;
+        if (res.ok && (result?.imported > 0 || result?.success)) {
           if (btn) {
             btn.innerHTML = '✅';
             btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
           }
           this.showToast('✅ Produit importé!', 'success');
         } else {
-          throw new Error(result.error || 'Erreur');
+          throw new Error(result?.error || res.error || `Erreur (HTTP ${res.status})`);
         }
       } catch (error) {
         if (btn) {

@@ -356,6 +356,46 @@
       if (event.source !== window || !event.data.type) return;
       
       switch (event.data.type) {
+        // Proxy network requests through the extension context to bypass site CSP.
+        // Page-injected scripts (sidebar.js, bulk-selector.js, etc.) cannot reliably
+        // call external APIs on many marketplaces due to connect-src restrictions.
+        case 'DC_FETCH_API': {
+          const { requestId, url, options } = event.data || {};
+          if (!requestId || !url) return;
+
+          try {
+            chrome.runtime.sendMessage(
+              {
+                type: 'FETCH_API',
+                url,
+                options: options || {},
+              },
+              (resp) => {
+                // Always respond (no silent failures)
+                window.postMessage(
+                  {
+                    type: 'DC_FETCH_API_RESULT',
+                    requestId,
+                    ...(resp || { success: false, error: 'No response from background' }),
+                  },
+                  '*'
+                );
+              }
+            );
+          } catch (err) {
+            window.postMessage(
+              {
+                type: 'DC_FETCH_API_RESULT',
+                requestId,
+                success: false,
+                error: err?.message || String(err),
+              },
+              '*'
+            );
+          }
+          break;
+        }
+
         case 'IMPORT_PRODUCTS':
           this.handleImportProducts(event.data.products);
           break;
