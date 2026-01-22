@@ -599,7 +599,7 @@ class DropCraftBackground {
     try {
       const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
 
-      const response = await fetch(`${API_URL}/product-url-scraper`, {
+      const response = await fetch(`${API_URL}/extension-scraper`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
