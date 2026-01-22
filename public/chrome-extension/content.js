@@ -1,17 +1,18 @@
-// Drop Craft AI Chrome Extension - Content Script v4.3.2
-// Professional Dropshipping Extension - CSP-Safe Version
+// Drop Craft AI Chrome Extension - Content Script v4.3.4
+// Professional Dropshipping Extension - 100% Inline CSP-Safe Version
+// NO EXTERNAL FILE DEPENDENCIES - All functionality is embedded inline
 
-// CRITICAL: This version uses message passing instead of script injection
-// to work on sites with strict Content Security Policies (Amazon, etc.)
+// CRITICAL: This version is completely self-contained and does NOT use
+// chrome.runtime.getURL() or inject external scripts to avoid ERR_FILE_NOT_FOUND
 
 (function () {
   'use strict';
 
-  // Prevent multiple injections
-  if (window.__dropCraftContentScriptLoaded) return;
-  window.__dropCraftContentScriptLoaded = true;
+  // Prevent multiple injections with versioned check
+  if (window.__dropCraftContentScriptLoaded === '4.3.4') return;
+  window.__dropCraftContentScriptLoaded = '4.3.4';
 
-  console.log('[DropCraft] Content script v4.3.2 initializing...');
+  console.log('[DropCraft] Content script v4.3.4 initializing (100% inline)...');
 
   class DropCraftContentScript {
     constructor() {
@@ -30,6 +31,7 @@
       this.setupDynamicContentObserver();
       
       // CSP-Safe: Use inline injection for core functionality
+      // NO external file loading - everything is embedded
       this.injectCoreModules();
     }
 
@@ -146,10 +148,10 @@
 (function() {
   'use strict';
   
-  if (window.__dropCraftCoreLoaded) return;
-  window.__dropCraftCoreLoaded = true;
+  if (window.__dropCraftCoreLoaded === '4.3.4') return;
+  window.__dropCraftCoreLoaded = '4.3.4';
   
-  console.log('[DropCraft] Core module v4.3.2 loaded');
+  console.log('[DropCraft] Core module v4.3.4 loaded (inline, no external deps)');
   
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
