@@ -723,7 +723,8 @@ class DropCraftPopup {
   }
 
   openSettings() {
-    chrome.runtime.openOptionsPage();
+    // Open settings in the app instead of options page
+    chrome.tabs.create({ url: `${this.APP_URL}/extensions/chrome` });
   }
 
   openDashboard() {
