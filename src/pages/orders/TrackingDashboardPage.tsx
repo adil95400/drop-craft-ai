@@ -3,6 +3,7 @@ import { useRealtimeTracking, TrackingInfo } from '@/hooks/useRealtimeTracking';
 import { TrackingList } from '@/components/tracking/TrackingList';
 import { TrackingTimeline } from '@/components/tracking/TrackingTimeline';
 import { TrackingStatsCards, DeliveryRateCard } from '@/components/tracking/TrackingStatsCards';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,8 @@ import {
   ExternalLink,
   Copy,
   Mail,
-  User
+  User,
+  MapPin
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -68,193 +70,159 @@ export default function TrackingDashboardPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Suivi Temps Réel</h1>
-          <p className="text-muted-foreground">
-            Tracking automatique avec 17Track • 2000+ transporteurs
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Suivi Temps Réel"
+      subtitle="Tracking"
+      description={`${trackingData?.length || 0} colis suivis • ${stats?.delivered || 0} livrés • Tracking automatique avec 17Track`}
+      heroImage="orders"
+      badge={{ label: "Tracking", icon: MapPin }}
+      actions={
         <div className="flex gap-2">
           <Button 
             variant="outline" 
             onClick={handleRegisterWebhooks}
+            disabled={isSyncing}
           >
-            <Bell className="mr-2 h-4 w-4" />
-            Activer Notifications
+            <Bell className="h-4 w-4 mr-2" />
+            Activer Webhooks
           </Button>
           <Button 
             onClick={handleSyncAll}
             disabled={isSyncing}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-            Synchroniser Tout
+            <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+            Synchroniser
           </Button>
         </div>
-      </div>
-
-      {/* Stats */}
+      }
+    >
+      {/* Stats Cards */}
       <TrackingStatsCards stats={stats} />
 
-      {/* Delivery Rate + Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <DeliveryRateCard stats={stats} />
-        
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-4 w-4" />
-              Actions Rapides
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={handleSyncAll}>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Sync tous les colis
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleRegisterWebhooks}>
-                <Bell className="mr-2 h-4 w-4" />
-                Activer alertes push
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.open('https://t.17track.net', '_blank')}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Ouvrir 17Track
-              </Button>
+      {/* Delivery Rate */}
+      <DeliveryRateCard stats={stats} />
+
+      {/* Features Banner */}
+      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/20">
+                <Zap className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">Tracking automatique</p>
+                <p className="text-sm text-muted-foreground">2000+ transporteurs supportés via 17Track</p>
+              </div>
             </div>
-            
-            <div className="mt-4 p-3 rounded-lg bg-muted/50">
-              <p className="text-sm text-muted-foreground">
-                💡 <strong>Astuce:</strong> Activez les notifications pour recevoir des alertes 
-                automatiques lorsque le statut de vos colis change.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Badge variant="outline" className="bg-background">
+              Temps réel
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Tracking List */}
-      <TrackingList
-        trackingData={trackingData}
-        isLoading={isLoading}
-        onSync={syncSingle}
-        onViewDetails={handleViewDetails}
-        isSyncing={isSyncing}
-      />
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span>Colis en cours</span>
+            <Badge variant="secondary">{trackingData?.length || 0} colis</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TrackingList 
+            trackingData={trackingData}
+            isLoading={isLoading}
+            onViewDetails={handleViewDetails}
+            onSync={syncSingle}
+          />
+        </CardContent>
+      </Card>
 
       {/* Detail Sheet */}
       <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
+        <SheetContent className="sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Détails du Suivi
+            </SheetTitle>
+            <SheetDescription>
+              Historique complet du colis
+            </SheetDescription>
+          </SheetHeader>
+          
           {selectedTracking && (
-            <>
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  Commande #{selectedTracking.orderNumber}
-                </SheetTitle>
-                <SheetDescription>
-                  Détails du suivi de colis
-                </SheetDescription>
-              </SheetHeader>
-
-              <div className="mt-6 space-y-6">
-                {/* Tracking Number */}
-                <Card className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Numéro de tracking</p>
-                      <p className="font-mono font-medium">{selectedTracking.trackingNumber}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => copyTrackingNumber(selectedTracking.trackingNumber)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => window.open(`https://t.17track.net/en#nums=${selectedTracking.trackingNumber}`, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Carrier Info */}
-                <Card className="p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Transporteur</p>
-                      <p className="font-medium">{selectedTracking.carrier}</p>
-                    </div>
-                    {selectedTracking.estimatedDelivery && (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Livraison estimée</p>
-                        <p className="font-medium">
-                          {format(new Date(selectedTracking.estimatedDelivery), 'dd MMMM yyyy', { locale: fr })}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-
-                {/* Customer Info */}
-                <Card className="p-4">
-                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Client
-                  </h4>
-                  <div className="space-y-2">
-                    <p className="text-sm">{selectedTracking.customerName}</p>
-                    {selectedTracking.customerEmail && (
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          {selectedTracking.customerEmail}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-
-                {/* Timeline */}
-                <TrackingTimeline 
-                  events={selectedTracking.events} 
-                  status={selectedTracking.status}
-                />
-
-                {/* Actions */}
-                <div className="flex gap-2">
+            <div className="mt-6 space-y-6">
+              {/* Tracking Number */}
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Numéro de suivi</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-muted px-3 py-2 rounded-lg text-sm font-mono">
+                    {selectedTracking.trackingNumber}
+                  </code>
                   <Button 
-                    className="flex-1"
-                    onClick={() => syncSingle(selectedTracking.trackingNumber)}
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => copyTrackingNumber(selectedTracking.trackingNumber)}
                   >
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Rafraîchir
+                    <Copy className="h-4 w-4" />
                   </Button>
                   <Button 
-                    variant="outline"
-                    className="flex-1"
+                    variant="ghost" 
+                    size="icon"
                     onClick={() => window.open(`https://t.17track.net/en#nums=${selectedTracking.trackingNumber}`, '_blank')}
                   >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Voir sur 17Track
+                    <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-            </>
+
+              {/* Status & Carrier */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Statut</p>
+                  <Badge className="mt-1">{selectedTracking.status}</Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Transporteur</p>
+                  <p className="font-medium mt-1">{selectedTracking.carrier || 'Auto-détecté'}</p>
+                </div>
+              </div>
+
+              {/* Customer Info */}
+              {selectedTracking.customerEmail && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <User className="h-3 w-3" /> Client
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    {selectedTracking.customerEmail}
+                  </p>
+                </div>
+              )}
+
+              {/* Estimated Delivery */}
+              {selectedTracking.estimatedDelivery && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Livraison estimée</p>
+                  <p className="font-medium mt-1">
+                    {format(new Date(selectedTracking.estimatedDelivery), 'PPP', { locale: fr })}
+                  </p>
+                </div>
+              )}
+
+              {/* Timeline */}
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">Historique</p>
+                <TrackingTimeline events={selectedTracking.events} status={selectedTracking.status} />
+              </div>
+            </div>
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </ChannablePageWrapper>
   );
 }

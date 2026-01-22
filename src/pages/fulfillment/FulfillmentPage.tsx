@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   Truck, 
   Package, 
@@ -102,85 +103,89 @@ export default function FulfillmentPage() {
     onError: (err: Error) => toast.error(err.message)
   });
   
-  const statCards = [
-    {
-      title: 'Expéditions totales',
-      value: stats?.total_shipments || 0,
-      icon: Package,
-      color: 'text-blue-500',
-      bg: 'bg-blue-500/10'
-    },
-    {
-      title: 'En transit',
-      value: stats?.in_transit || 0,
-      icon: Truck,
-      color: 'text-orange-500',
-      bg: 'bg-orange-500/10'
-    },
-    {
-      title: 'Livrées',
-      value: stats?.delivered || 0,
-      icon: CheckCircle,
-      color: 'text-green-500',
-      bg: 'bg-green-500/10'
-    },
-    {
-      title: 'Retours en cours',
-      value: stats?.pending_returns || 0,
-      icon: RotateCcw,
-      color: 'text-purple-500',
-      bg: 'bg-purple-500/10'
-    }
-  ];
-  
   const handleCreateCarrier = (carrier: any) => {
     createCarrier.mutate(carrier);
   };
   
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Logistique & Expéditions</h1>
-          <p className="text-muted-foreground">
-            Gestion des transporteurs, expéditions et retours
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Logistique & Expéditions"
+      subtitle="Fulfillment"
+      description={`${stats?.total_shipments || 0} expéditions • ${stats?.in_transit || 0} en transit • Taux de livraison: ${stats?.delivery_rate || 0}%`}
+      heroImage="orders"
+      badge={{ label: "Logistique", icon: Truck }}
+      actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
+          <Button variant="outline" onClick={() => setSettingsOpen(true)}>
             <Settings className="h-4 w-4 mr-2" />
             Paramètres
           </Button>
-          <Button size="sm" onClick={() => setNewShipmentOpen(true)}>
+          <Button onClick={() => setNewShipmentOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Nouvelle expédition
           </Button>
         </div>
-      </div>
-      
+      }
+    >
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCards.map((stat, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs md:text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-xl md:text-2xl font-bold mt-1">{stat.value}</p>
-                </div>
-                <div className={`p-2 md:p-3 rounded-full ${stat.bg}`}>
-                  <stat.icon className={`h-4 w-4 md:h-5 md:w-5 ${stat.color}`} />
-                </div>
+        <Card className="hover:shadow-md transition-shadow border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs md:text-sm text-muted-foreground">Expéditions totales</p>
+                <p className="text-xl md:text-2xl font-bold mt-1">{stats?.total_shipments || 0}</p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+              <div className="p-2 md:p-3 rounded-xl bg-blue-500/10">
+                <Package className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-md transition-shadow border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs md:text-sm text-muted-foreground">En transit</p>
+                <p className="text-xl md:text-2xl font-bold mt-1">{stats?.in_transit || 0}</p>
+              </div>
+              <div className="p-2 md:p-3 rounded-xl bg-orange-500/10">
+                <Truck className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-md transition-shadow border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs md:text-sm text-muted-foreground">Livrées</p>
+                <p className="text-xl md:text-2xl font-bold mt-1">{stats?.delivered || 0}</p>
+              </div>
+              <div className="p-2 md:p-3 rounded-xl bg-green-500/10">
+                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-md transition-shadow border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs md:text-sm text-muted-foreground">Retours en cours</p>
+                <p className="text-xl md:text-2xl font-bold mt-1">{stats?.pending_returns || 0}</p>
+              </div>
+              <div className="p-2 md:p-3 rounded-xl bg-purple-500/10">
+                <RotateCcw className="h-4 w-4 md:h-5 md:w-5 text-purple-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
       {/* Additional Stats */}
       <div className="grid md:grid-cols-2 gap-4">
-        <Card>
+        <Card className="border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -191,7 +196,7 @@ export default function FulfillmentPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -208,20 +213,20 @@ export default function FulfillmentPage() {
       
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
-          <TabsTrigger value="overview" className="text-xs md:text-sm py-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto bg-muted/50">
+          <TabsTrigger value="overview" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Package className="h-4 w-4 mr-1 md:mr-2" />
             Expéditions
           </TabsTrigger>
-          <TabsTrigger value="carriers" className="text-xs md:text-sm py-2">
+          <TabsTrigger value="carriers" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Truck className="h-4 w-4 mr-1 md:mr-2" />
             Transporteurs
           </TabsTrigger>
-          <TabsTrigger value="returns" className="text-xs md:text-sm py-2">
+          <TabsTrigger value="returns" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <RotateCcw className="h-4 w-4 mr-1 md:mr-2" />
             Retours
           </TabsTrigger>
-          <TabsTrigger value="automation" className="text-xs md:text-sm py-2">
+          <TabsTrigger value="automation" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Settings className="h-4 w-4 mr-1 md:mr-2" />
             Automatisation
           </TabsTrigger>
@@ -248,118 +253,120 @@ export default function FulfillmentPage() {
         </TabsContent>
       </Tabs>
       
-      {/* Settings Modal */}
+      {/* Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="sm:max-w-lg bg-background border-border shadow-2xl">
-          <DialogHeader className="pb-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-primary/10">
-                <Settings className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <DialogTitle className="text-xl font-semibold">Paramètres d'expédition</DialogTitle>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Configurez vos préférences de livraison
-                </p>
-              </div>
-            </div>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-primary" />
+              Paramètres Logistique
+            </DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-6 pt-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl border border-border/50">
-                <div>
-                  <Label className="font-medium">Génération automatique des étiquettes</Label>
-                  <p className="text-sm text-muted-foreground">Créer les étiquettes dès confirmation</p>
-                </div>
-                <Badge variant="outline">Activé</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl border border-border/50">
-                <div>
-                  <Label className="font-medium">Notifications client</Label>
-                  <p className="text-sm text-muted-foreground">Envoyer les emails de suivi</p>
-                </div>
-                <Badge variant="outline">Activé</Badge>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl border border-border/50">
-                <div>
-                  <Label className="font-medium">Transporteur par défaut</Label>
-                  <p className="text-sm text-muted-foreground">Sélection automatique</p>
-                </div>
-                <Badge>Le moins cher</Badge>
-              </div>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Délai de traitement par défaut</Label>
+              <Select defaultValue="24h">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12h">12 heures</SelectItem>
+                  <SelectItem value="24h">24 heures</SelectItem>
+                  <SelectItem value="48h">48 heures</SelectItem>
+                  <SelectItem value="72h">72 heures</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
-              <Button variant="outline" onClick={() => setSettingsOpen(false)}>
-                Fermer
-              </Button>
-              <Button onClick={() => { setSettingsOpen(false); setActiveTab('automation'); }}>
-                Gérer les règles
-              </Button>
+            <div className="space-y-2">
+              <Label>Notification client automatique</Label>
+              <Select defaultValue="shipped">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Désactivé</SelectItem>
+                  <SelectItem value="shipped">À l'expédition</SelectItem>
+                  <SelectItem value="all">Toutes les étapes</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            <div className="space-y-2">
+              <Label>Transporteur par défaut</Label>
+              <Select defaultValue="auto">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Sélection automatique</SelectItem>
+                  {carriers.map((carrier: any) => (
+                    <SelectItem key={carrier.id} value={carrier.id}>
+                      {carrier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => { toast.success('Paramètres sauvegardés'); setSettingsOpen(false); }}>
+              Sauvegarder
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
       
-      {/* New Shipment Modal */}
+      {/* New Shipment Dialog */}
       <Dialog open={newShipmentOpen} onOpenChange={setNewShipmentOpen}>
-        <DialogContent className="sm:max-w-2xl bg-background border-border shadow-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-4 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-green-500/10">
-                <Package className="h-5 w-5 text-green-600" />
+              <div className="p-2.5 rounded-xl bg-primary/10">
+                <Truck className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <DialogTitle className="text-xl font-semibold">Nouvelle expédition</DialogTitle>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Créez une nouvelle expédition manuelle
-                </p>
+                <DialogTitle className="text-xl">Nouvelle Expédition</DialogTitle>
+                <p className="text-sm text-muted-foreground">Créer une expédition manuelle</p>
               </div>
             </div>
           </DialogHeader>
           
-          <form onSubmit={(e) => { e.preventDefault(); createShipmentMutation.mutate(shipmentForm); }} className="space-y-6 pt-4">
-            {/* Destinataire */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Informations destinataire
-              </Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-6 py-4">
+            {/* Recipient Info */}
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-foreground">
+                <User className="h-4 w-4 text-primary" />
+                Destinataire
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    Nom complet *
-                  </Label>
+                  <Label htmlFor="recipient_name">Nom complet *</Label>
                   <Input
+                    id="recipient_name"
                     value={shipmentForm.recipient_name}
                     onChange={(e) => setShipmentForm({ ...shipmentForm, recipient_name: e.target.value })}
                     placeholder="Jean Dupont"
                     className="h-11 bg-muted/30"
-                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    Email
+                  <Label htmlFor="recipient_email" className="flex items-center gap-1">
+                    <Mail className="h-3 w-3" /> Email
                   </Label>
                   <Input
+                    id="recipient_email"
                     type="email"
                     value={shipmentForm.recipient_email}
                     onChange={(e) => setShipmentForm({ ...shipmentForm, recipient_email: e.target.value })}
-                    placeholder="jean@exemple.com"
+                    placeholder="jean@example.com"
                     className="h-11 bg-muted/30"
                   />
                 </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    Téléphone
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="recipient_phone" className="flex items-center gap-1">
+                    <Phone className="h-3 w-3" /> Téléphone
                   </Label>
                   <Input
+                    id="recipient_phone"
                     value={shipmentForm.recipient_phone}
                     onChange={(e) => setShipmentForm({ ...shipmentForm, recipient_phone: e.target.value })}
                     placeholder="+33 6 12 34 56 78"
@@ -368,47 +375,58 @@ export default function FulfillmentPage() {
                 </div>
               </div>
             </div>
-            
-            {/* Adresse */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+
+            {/* Address */}
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-foreground">
+                <MapPin className="h-4 w-4 text-primary" />
                 Adresse de livraison
-              </Label>
+              </h3>
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    Adresse *
-                  </Label>
+                  <Label htmlFor="address_line1">Adresse *</Label>
                   <Input
+                    id="address_line1"
                     value={shipmentForm.address_line1}
                     onChange={(e) => setShipmentForm({ ...shipmentForm, address_line1: e.target.value })}
-                    placeholder="123 Rue de la Paix"
+                    placeholder="123 rue de Paris"
                     className="h-11 bg-muted/30"
-                    required
                   />
                 </div>
-                <Input
-                  value={shipmentForm.address_line2}
-                  onChange={(e) => setShipmentForm({ ...shipmentForm, address_line2: e.target.value })}
-                  placeholder="Appartement, étage, etc. (optionnel)"
-                  className="h-11 bg-muted/30"
-                />
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="address_line2">Complément d'adresse</Label>
                   <Input
-                    value={shipmentForm.postal_code}
-                    onChange={(e) => setShipmentForm({ ...shipmentForm, postal_code: e.target.value })}
-                    placeholder="Code postal *"
+                    id="address_line2"
+                    value={shipmentForm.address_line2}
+                    onChange={(e) => setShipmentForm({ ...shipmentForm, address_line2: e.target.value })}
+                    placeholder="Bâtiment A, Étage 3"
                     className="h-11 bg-muted/30"
-                    required
                   />
-                  <Input
-                    value={shipmentForm.city}
-                    onChange={(e) => setShipmentForm({ ...shipmentForm, city: e.target.value })}
-                    placeholder="Ville *"
-                    className="h-11 bg-muted/30"
-                    required
-                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="postal_code">Code postal *</Label>
+                    <Input
+                      id="postal_code"
+                      value={shipmentForm.postal_code}
+                      onChange={(e) => setShipmentForm({ ...shipmentForm, postal_code: e.target.value })}
+                      placeholder="75001"
+                      className="h-11 bg-muted/30"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Ville *</Label>
+                    <Input
+                      id="city"
+                      value={shipmentForm.city}
+                      onChange={(e) => setShipmentForm({ ...shipmentForm, city: e.target.value })}
+                      placeholder="Paris"
+                      className="h-11 bg-muted/30"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">Pays</Label>
                   <Select
                     value={shipmentForm.country}
                     onValueChange={(value) => setShipmentForm({ ...shipmentForm, country: value })}
@@ -416,11 +434,11 @@ export default function FulfillmentPage() {
                     <SelectTrigger className="h-11 bg-muted/30">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-popover border-border">
+                    <SelectContent>
                       <SelectItem value="France">France</SelectItem>
                       <SelectItem value="Belgique">Belgique</SelectItem>
                       <SelectItem value="Suisse">Suisse</SelectItem>
-                      <SelectItem value="Canada">Canada</SelectItem>
+                      <SelectItem value="Luxembourg">Luxembourg</SelectItem>
                       <SelectItem value="Allemagne">Allemagne</SelectItem>
                       <SelectItem value="Espagne">Espagne</SelectItem>
                       <SelectItem value="Italie">Italie</SelectItem>
@@ -429,18 +447,16 @@ export default function FulfillmentPage() {
                 </div>
               </div>
             </div>
-            
-            {/* Options d'expédition */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+
+            {/* Shipping Options */}
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-foreground">
+                <Truck className="h-4 w-4 text-primary" />
                 Options d'expédition
-              </Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm">
-                    <Truck className="h-4 w-4 text-muted-foreground" />
-                    Transporteur
-                  </Label>
+                  <Label htmlFor="carrier_id">Transporteur</Label>
                   <Select
                     value={shipmentForm.carrier_id || 'auto'}
                     onValueChange={(value) => setShipmentForm({ ...shipmentForm, carrier_id: value === 'auto' ? '' : value })}
@@ -459,13 +475,13 @@ export default function FulfillmentPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm">
-                    <Weight className="h-4 w-4 text-muted-foreground" />
-                    Poids (kg)
+                  <Label htmlFor="weight" className="flex items-center gap-1">
+                    <Weight className="h-3 w-3" /> Poids (kg)
                   </Label>
                   <Input
+                    id="weight"
                     type="number"
-                    step="0.01"
+                    step="0.1"
                     value={shipmentForm.weight}
                     onChange={(e) => setShipmentForm({ ...shipmentForm, weight: e.target.value })}
                     placeholder="0.5"
@@ -473,38 +489,44 @@ export default function FulfillmentPage() {
                   />
                 </div>
               </div>
-              
               <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-sm">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  Notes
+                <Label htmlFor="notes" className="flex items-center gap-1">
+                  <FileText className="h-3 w-3" /> Notes
                 </Label>
                 <Textarea
+                  id="notes"
                   value={shipmentForm.notes}
                   onChange={(e) => setShipmentForm({ ...shipmentForm, notes: e.target.value })}
-                  placeholder="Instructions spéciales de livraison..."
+                  placeholder="Instructions spéciales, références..."
                   className="bg-muted/30 min-h-[80px]"
                 />
               </div>
             </div>
-            
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
-              <Button type="button" variant="outline" onClick={() => setNewShipmentOpen(false)}>
-                Annuler
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={createShipmentMutation.isPending || !shipmentForm.recipient_name || !shipmentForm.address_line1}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {createShipmentMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Créer l'expédition
-              </Button>
-            </div>
-          </form>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <Button variant="outline" onClick={() => setNewShipmentOpen(false)}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={() => createShipmentMutation.mutate(shipmentForm)}
+              disabled={createShipmentMutation.isPending || !shipmentForm.recipient_name || !shipmentForm.address_line1 || !shipmentForm.city || !shipmentForm.postal_code}
+            >
+              {createShipmentMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Création...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Créer l'expédition
+                </>
+              )}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </ChannablePageWrapper>
   );
 }
