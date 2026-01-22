@@ -217,10 +217,10 @@ async function handleSyncAll(supabase: any, userId: string) {
   // Get all orders with tracking numbers that need updating
   const { data: orders, error } = await supabase
     .from('orders')
-    .select('id, tracking_number, carrier, delivery_status')
+    .select('id, tracking_number, carrier, status, fulfillment_status')
     .eq('user_id', userId)
     .not('tracking_number', 'is', null)
-    .in('delivery_status', ['pending', 'in_transit', 'out_for_delivery', 'info_received'])
+    .in('status', ['processing', 'shipped', 'pending'])
     .limit(100)
 
   if (error) {
@@ -417,12 +417,22 @@ function getStatusDescription(statusCode: number): string {
 }
 
 async function updateOrderTracking(supabase: any, trackingNumber: string, result: TrackingResult, userId: string) {
-  // Map our status to order delivery_status
-  const deliveryStatusMap: Record<string, string> = {
+  // Map our status to order status
+  const statusMap: Record<string, string> = {
+    'pending': 'processing',
+    'info_received': 'processing',
+    'in_transit': 'shipped',
+    'out_for_delivery': 'shipped',
+    'delivered': 'delivered',
+    'exception': 'cancelled',
+    'expired': 'cancelled'
+  }
+
+  const fulfillmentStatusMap: Record<string, string> = {
     'pending': 'pending',
-    'info_received': 'pending',
-    'in_transit': 'in_transit',
-    'out_for_delivery': 'out_for_delivery',
+    'info_received': 'processing',
+    'in_transit': 'shipped',
+    'out_for_delivery': 'shipped',
     'delivered': 'delivered',
     'exception': 'failed',
     'expired': 'failed'
@@ -431,11 +441,9 @@ async function updateOrderTracking(supabase: any, trackingNumber: string, result
   const { error } = await supabase
     .from('orders')
     .update({
-      delivery_status: deliveryStatusMap[result.status] || 'pending',
+      status: statusMap[result.status] || 'processing',
+      fulfillment_status: fulfillmentStatusMap[result.status] || 'pending',
       carrier: result.carrier,
-      tracking_events: result.events,
-      estimated_delivery_date: result.estimatedDelivery,
-      last_tracking_update: new Date().toISOString(),
       updated_at: new Date().toISOString()
     })
     .eq('tracking_number', trackingNumber)
@@ -445,17 +453,5 @@ async function updateOrderTracking(supabase: any, trackingNumber: string, result
     console.error(`[updateOrderTracking] Error:`, error)
   } else {
     console.log(`[updateOrderTracking] Updated order with tracking ${trackingNumber}`)
-  }
-
-  // If status is delivered, update fulfillment_status
-  if (result.status === 'delivered') {
-    await supabase
-      .from('orders')
-      .update({
-        fulfillment_status: 'delivered',
-        delivered_at: new Date().toISOString()
-      })
-      .eq('tracking_number', trackingNumber)
-      .eq('user_id', userId)
   }
 }
