@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="40" fill="#FF6F00"/>
+  <g fill="white">
+    <!-- Shopping icons at top -->
+    <path d="M55 50 L55 70 L75 70 L75 55 L65 45 L55 50Z"/>
+    <ellipse cx="100" cy="60" rx="15" ry="12"/>
+    <path d="M125 45 C125 45 145 50 145 65 L145 70 L125 70 L125 45Z"/>
+    <circle cx="155" cy="55" r="12"/>
+  </g>
+  <text x="100" y="130" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="42" font-weight="900" fill="white">TEMU</text>
+</svg>
