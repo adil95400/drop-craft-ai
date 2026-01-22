@@ -242,7 +242,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       chrome.storage.local.set({ hasOpenedInstallPage: true });
 
       chrome.tabs.create({
-        url: `${CONFIG.APP_URL}/auth?redirect=/extensions/chrome&installed=true&v=${encodeURIComponent(CONFIG.VERSION)}`
+        url: `${CONFIG.APP_URL}/auth?redirect=${encodeURIComponent(`/extensions/chrome?installed=true&v=${CONFIG.VERSION}`)}&force=true`
       });
     });
   }
