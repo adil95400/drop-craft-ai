@@ -1,17 +1,20 @@
-// Drop Craft AI Chrome Extension - Authentication v4.0
-// Professional authentication with enhanced UX
+// Shopopti+ Chrome Extension - Authentication v4.3.6
+// Connexion 100% dans l'extension (email/password + token)
 
 const CONFIG = {
+  SUPABASE_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXdja3pybXFlY3d3cnN3d3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxNjY0NDEsImV4cCI6MjA4MTc0MjQ0MX0.jhrwOY7-tKeNF54E3Ec6yRzjmTW8zJyKuE9R4rvi41I',
   API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
-  APP_URL: 'https://shopopti.io',
-  VERSION: '4.0.0'
+  APP_URL: 'https://drop-craft-ai.lovable.app',
+  VERSION: chrome.runtime?.getManifest?.()?.version || '4.3.6'
 };
 
-class DropCraftAuth {
+class ShopoptiAuth {
   constructor() {
     this.elements = {};
     this.isConnected = false;
     this.token = null;
+    this.currentTab = 'email';
     
     this.init();
   }
@@ -21,7 +24,13 @@ class DropCraftAuth {
       this.cacheElements();
       this.bindEvents();
       this.loadStoredData();
+      this.updateVersion();
     });
+  }
+
+  updateVersion() {
+    const badge = document.getElementById('versionBadge');
+    if (badge) badge.textContent = `v${CONFIG.VERSION}`;
   }
 
   cacheElements() {
@@ -30,16 +39,20 @@ class DropCraftAuth {
       statusText: document.getElementById('statusText'),
       statusInfo: document.getElementById('statusInfo'),
       statsGrid: document.getElementById('statsGrid'),
-      featuresGrid: document.getElementById('featuresGrid'),
       messageToast: document.getElementById('messageToast'),
+      authTabs: document.getElementById('authTabs'),
+      panelEmail: document.getElementById('panelEmail'),
+      panelToken: document.getElementById('panelToken'),
+      emailInput: document.getElementById('emailInput'),
+      passwordInput: document.getElementById('passwordInput'),
+      loginBtn: document.getElementById('loginBtn'),
+      signupBtn: document.getElementById('signupBtn'),
       tokenInput: document.getElementById('tokenInput'),
       connectBtn: document.getElementById('connectBtn'),
-      formSection: document.getElementById('formSection'),
       connectedActions: document.getElementById('connectedActions'),
       dashboardBtn: document.getElementById('dashboardBtn'),
       settingsBtn: document.getElementById('settingsBtn'),
       disconnectBtn: document.getElementById('disconnectBtn'),
-      helpSection: document.getElementById('helpSection'),
       statImports: document.getElementById('statImports'),
       statReviews: document.getElementById('statReviews'),
       statMonitored: document.getElementById('statMonitored')
@@ -47,12 +60,31 @@ class DropCraftAuth {
   }
 
   bindEvents() {
-    // Connect button
-    this.elements.connectBtn?.addEventListener('click', () => this.connect());
+    // Tab switching
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
+    });
     
-    // Enter key on input
+    // Login button
+    this.elements.loginBtn?.addEventListener('click', () => this.loginWithEmail());
+    
+    // Signup button
+    this.elements.signupBtn?.addEventListener('click', () => this.signupWithEmail());
+    
+    // Connect with token button
+    this.elements.connectBtn?.addEventListener('click', () => this.connectWithToken());
+    
+    // Enter key on inputs
+    this.elements.emailInput?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') this.elements.passwordInput?.focus();
+    });
+    
+    this.elements.passwordInput?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') this.loginWithEmail();
+    });
+    
     this.elements.tokenInput?.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') this.connect();
+      if (e.key === 'Enter') this.connectWithToken();
     });
     
     // Dashboard button
@@ -67,11 +99,19 @@ class DropCraftAuth {
     
     // Disconnect button
     this.elements.disconnectBtn?.addEventListener('click', () => this.disconnect());
+  }
+
+  switchTab(tabName) {
+    this.currentTab = tabName;
     
-    // Real-time validation
-    this.elements.tokenInput?.addEventListener('input', (e) => {
-      this.validateTokenFormat(e.target.value);
+    // Update tab buttons
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
+    
+    // Update panels
+    this.elements.panelEmail?.classList.toggle('active', tabName === 'email');
+    this.elements.panelToken?.classList.toggle('active', tabName === 'token');
   }
 
   async loadStoredData() {
@@ -80,13 +120,12 @@ class DropCraftAuth {
         'extensionToken',
         'connectedAt',
         'lastSync',
-        'userPlan',
+        'userEmail',
         'stats'
       ]);
       
       if (result.extensionToken) {
         this.token = result.extensionToken;
-        this.elements.tokenInput.value = this.token;
         await this.verifyConnection();
       }
     } catch (error) {
@@ -94,22 +133,156 @@ class DropCraftAuth {
     }
   }
 
-  async connect() {
+  // ===== Email/Password Authentication =====
+  
+  async loginWithEmail() {
+    const email = this.elements.emailInput?.value.trim();
+    const password = this.elements.passwordInput?.value;
+    
+    if (!email || !password) {
+      this.showMessage('Veuillez remplir tous les champs', 'error');
+      return;
+    }
+    
+    this.setLoading(this.elements.loginBtn, true, 'Connexion...');
+    this.updateStatus('connecting', 'Connexion en cours...', 'Vérification des identifiants...');
+    
+    try {
+      // Call Supabase Auth directly
+      const response = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': CONFIG.SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error_description || data.msg || 'Identifiants invalides');
+      }
+      
+      // We have a valid session, now get or create extension token
+      const accessToken = data.access_token;
+      const userId = data.user?.id;
+      
+      if (!userId) {
+        throw new Error('Impossible de récupérer l\'utilisateur');
+      }
+      
+      // Get or create extension token via edge function
+      const tokenResponse = await fetch(`${CONFIG.API_URL}/extension-auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ action: 'get_or_create_token' })
+      });
+      
+      if (!tokenResponse.ok) {
+        // Fallback: use the access token as extension token temporarily
+        console.warn('Extension auth endpoint not available, using access token');
+        await this.saveConnectionData(accessToken, email);
+        return;
+      }
+      
+      const tokenData = await tokenResponse.json();
+      await this.saveConnectionData(tokenData.token || accessToken, email);
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      this.showMessage(`Erreur: ${error.message}`, 'error');
+      this.updateStatus('disconnected', 'Échec de connexion', error.message);
+    } finally {
+      this.setLoading(this.elements.loginBtn, false, '🔗 Se connecter');
+    }
+  }
+  
+  async signupWithEmail() {
+    const email = this.elements.emailInput?.value.trim();
+    const password = this.elements.passwordInput?.value;
+    
+    if (!email || !password) {
+      this.showMessage('Veuillez remplir tous les champs', 'error');
+      return;
+    }
+    
+    if (password.length < 6) {
+      this.showMessage('Le mot de passe doit contenir au moins 6 caractères', 'error');
+      return;
+    }
+    
+    this.setLoading(this.elements.signupBtn, true, 'Création...');
+    this.updateStatus('connecting', 'Création du compte...', 'Veuillez patienter...');
+    
+    try {
+      // Call Supabase Auth signup
+      const response = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': CONFIG.SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: `${CONFIG.APP_URL}/extensions/chrome`
+          }
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error_description || data.msg || 'Erreur lors de l\'inscription');
+      }
+      
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        this.showMessage('✓ Compte créé ! Vérifiez votre email pour confirmer.', 'success');
+        this.updateStatus('disconnected', 'Confirmation requise', 'Vérifiez votre boîte email');
+        return;
+      }
+      
+      // Auto-confirmed, proceed with login
+      if (data.session?.access_token) {
+        const accessToken = data.session.access_token;
+        await this.saveConnectionData(accessToken, email);
+      } else {
+        this.showMessage('✓ Compte créé ! Vous pouvez maintenant vous connecter.', 'success');
+      }
+      
+    } catch (error) {
+      console.error('Signup error:', error);
+      this.showMessage(`Erreur: ${error.message}`, 'error');
+      this.updateStatus('disconnected', 'Échec inscription', error.message);
+    } finally {
+      this.setLoading(this.elements.signupBtn, false, '✨ Créer un compte');
+    }
+  }
+  
+  // ===== Token Authentication =====
+  
+  async connectWithToken() {
     const token = this.elements.tokenInput?.value.trim();
     
     if (!token) {
       this.showMessage('Veuillez entrer votre clé d\'extension', 'error');
-      this.shakeInput();
+      this.shakeInput(this.elements.tokenInput);
       return;
     }
     
     if (!this.isValidToken(token)) {
       this.showMessage('Format de clé invalide. Vérifiez votre clé.', 'error');
-      this.shakeInput();
+      this.shakeInput(this.elements.tokenInput);
       return;
     }
     
-    this.setLoading(true);
+    this.setLoading(this.elements.connectBtn, true, 'Connexion...');
     this.updateStatus('connecting', 'Connexion en cours...', 'Vérification de la clé...');
     
     try {
@@ -124,37 +297,40 @@ class DropCraftAuth {
       
       if (response.ok) {
         const data = await response.json();
-        
-        // Save token and data
-        await chrome.storage.local.set({
-          extensionToken: token,
-          connectedAt: new Date().toISOString(),
-          lastSync: new Date().toISOString(),
-          userPlan: data.userPlan || 'free',
-          stats: data.todayStats || { imports: 0, reviews: 0, monitored: 0 }
-        });
-        
-        this.token = token;
-        this.isConnected = true;
-        
-        this.showMessage('✓ Connexion réussie!', 'success');
-        this.updateUI(true, data.todayStats);
-        
-        // Animate success
-        this.celebrateConnection();
-        
-        // Auto close after success
-        setTimeout(() => window.close(), 2000);
+        await this.saveConnectionData(token, data.email || null, data.todayStats);
       } else {
         const error = await response.json().catch(() => ({ error: 'Erreur serveur' }));
         throw new Error(error.error || 'Clé invalide ou expirée');
       }
     } catch (error) {
+      console.error('Token connect error:', error);
       this.showMessage(`Erreur: ${error.message}`, 'error');
       this.updateStatus('disconnected', 'Échec de connexion', error.message);
     } finally {
-      this.setLoading(false);
+      this.setLoading(this.elements.connectBtn, false, '🔗 Connecter avec la clé');
     }
+  }
+  
+  // ===== Common Methods =====
+  
+  async saveConnectionData(token, email = null, stats = null) {
+    await chrome.storage.local.set({
+      extensionToken: token,
+      connectedAt: new Date().toISOString(),
+      lastSync: new Date().toISOString(),
+      userEmail: email,
+      stats: stats || { imports: 0, reviews: 0, monitored: 0 }
+    });
+    
+    this.token = token;
+    this.isConnected = true;
+    
+    this.showMessage('✓ Connexion réussie!', 'success');
+    this.updateUI(true, stats);
+    this.celebrateConnection();
+    
+    // Auto close after success
+    setTimeout(() => window.close(), 2000);
   }
 
   async verifyConnection() {
@@ -173,10 +349,8 @@ class DropCraftAuth {
       if (response.ok) {
         const data = await response.json();
         
-        // Update stored data
         await chrome.storage.local.set({
           lastSync: new Date().toISOString(),
-          userPlan: data.userPlan || 'free',
           stats: data.todayStats || { imports: 0, reviews: 0, monitored: 0 }
         });
         
@@ -197,13 +371,15 @@ class DropCraftAuth {
         'extensionToken',
         'connectedAt',
         'lastSync',
-        'userPlan',
+        'userEmail',
         'stats'
       ]);
       
       this.token = null;
       this.isConnected = false;
       this.elements.tokenInput.value = '';
+      this.elements.emailInput.value = '';
+      this.elements.passwordInput.value = '';
       
       this.showMessage('Extension déconnectée', 'info');
       this.updateUI(false);
@@ -214,60 +390,60 @@ class DropCraftAuth {
 
   updateUI(connected, stats = null) {
     const { 
-      statusCard, formSection, connectedActions, 
-      helpSection, statsGrid, featuresGrid 
+      statusCard, authTabs, panelEmail, panelToken, 
+      connectedActions, statsGrid 
     } = this.elements;
     
     if (connected) {
-      statusCard.classList.add('connected');
-      statusCard.classList.remove('connecting');
-      formSection.style.display = 'none';
-      connectedActions.style.display = 'flex';
-      helpSection.style.display = 'none';
-      statsGrid.classList.add('show');
-      featuresGrid.style.display = 'none';
+      statusCard?.classList.add('connected');
+      statusCard?.classList.remove('connecting');
+      authTabs?.classList.add('hidden');
+      panelEmail?.classList.remove('active');
+      panelToken?.classList.remove('active');
+      connectedActions?.classList.remove('hidden');
+      statsGrid?.classList.add('show');
       
       this.updateStatus('connected', 'Connecté', 'Extension active');
       
       if (stats) {
-        this.elements.statImports.textContent = stats.imports || 0;
-        this.elements.statReviews.textContent = stats.reviews || 0;
-        this.elements.statMonitored.textContent = stats.monitored || 0;
+        if (this.elements.statImports) this.elements.statImports.textContent = stats.imports || 0;
+        if (this.elements.statReviews) this.elements.statReviews.textContent = stats.reviews || 0;
+        if (this.elements.statMonitored) this.elements.statMonitored.textContent = stats.monitored || 0;
       }
     } else {
-      statusCard.classList.remove('connected', 'connecting');
-      formSection.style.display = 'flex';
-      connectedActions.style.display = 'none';
-      helpSection.style.display = 'block';
-      statsGrid.classList.remove('show');
-      featuresGrid.style.display = 'grid';
+      statusCard?.classList.remove('connected', 'connecting');
+      authTabs?.classList.remove('hidden');
+      panelEmail?.classList.add('active');
+      panelToken?.classList.remove('active');
+      connectedActions?.classList.add('hidden');
+      statsGrid?.classList.remove('show');
       
-      this.updateStatus('disconnected', 'Non connecté', 'Entrez votre clé pour démarrer');
+      this.updateStatus('disconnected', 'Non connecté', 'Connectez-vous pour démarrer');
     }
   }
 
   updateStatus(status, text, info) {
     const { statusCard, statusText, statusInfo } = this.elements;
     
-    statusCard.classList.remove('connected', 'connecting');
+    statusCard?.classList.remove('connected', 'connecting');
     
     if (status === 'connected') {
-      statusCard.classList.add('connected');
+      statusCard?.classList.add('connected');
     } else if (status === 'connecting') {
-      statusCard.classList.add('connecting');
+      statusCard?.classList.add('connecting');
     }
     
-    if (text) statusText.textContent = text;
-    if (info) statusInfo.textContent = info;
+    if (text && statusText) statusText.textContent = text;
+    if (info && statusInfo) statusInfo.textContent = info;
   }
 
   showMessage(text, type = 'info') {
     const { messageToast } = this.elements;
+    if (!messageToast) return;
     
     messageToast.textContent = text;
     messageToast.className = `message-toast show ${type}`;
     
-    // Auto-hide after 5 seconds (except for errors)
     if (type !== 'error') {
       setTimeout(() => {
         messageToast.classList.remove('show');
@@ -275,53 +451,29 @@ class DropCraftAuth {
     }
   }
 
-  setLoading(loading) {
-    const { connectBtn } = this.elements;
+  setLoading(button, loading, text) {
+    if (!button) return;
     
     if (loading) {
-      connectBtn.disabled = true;
-      connectBtn.innerHTML = '<span class="spinner"></span><span>Connexion...</span>';
+      button.disabled = true;
+      button.innerHTML = `<span class="spinner"></span><span>${text}</span>`;
     } else {
-      connectBtn.disabled = false;
-      connectBtn.innerHTML = '<span>🔗</span><span>Connecter l\'extension</span>';
+      button.disabled = false;
+      button.innerHTML = `<span>${text.split(' ')[0]}</span><span>${text.split(' ').slice(1).join(' ')}</span>`;
     }
   }
 
   isValidToken(token) {
     if (!token || token.length < 20) return false;
-    
-    // ext_ prefix
     if (token.startsWith('ext_')) return true;
-    
-    // UUID pattern
     const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     if (uuidPattern.test(token)) return true;
-    
-    // Alphanumeric token (32+ chars)
     if (/^[a-zA-Z0-9_-]{32,}$/.test(token)) return true;
-    
     return false;
   }
 
-  validateTokenFormat(token) {
-    const input = this.elements.tokenInput;
-    
-    if (!token) {
-      input.style.borderColor = '';
-      return;
-    }
-    
-    if (this.isValidToken(token)) {
-      input.style.borderColor = 'var(--dc-success)';
-    } else if (token.length > 10) {
-      input.style.borderColor = 'var(--dc-error)';
-    } else {
-      input.style.borderColor = '';
-    }
-  }
-
-  shakeInput() {
-    const input = this.elements.tokenInput;
+  shakeInput(input) {
+    if (!input) return;
     input.style.animation = 'shake 0.5s ease';
     setTimeout(() => {
       input.style.animation = '';
@@ -329,7 +481,6 @@ class DropCraftAuth {
   }
 
   celebrateConnection() {
-    // Add confetti or celebration effect
     const celebration = document.createElement('div');
     celebration.innerHTML = '🎉';
     celebration.style.cssText = `
@@ -350,21 +501,14 @@ class DropCraftAuth {
         50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
         100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
       }
-      @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        20%, 60% { transform: translateX(-5px); }
-        40%, 80% { transform: translateX(5px); }
-      }
     `;
     
     document.head.appendChild(style);
     document.body.appendChild(celebration);
     
-    setTimeout(() => {
-      celebration.remove();
-    }, 1000);
+    setTimeout(() => celebration.remove(), 1000);
   }
 }
 
 // Initialize
-new DropCraftAuth();
+new ShopoptiAuth();

@@ -87,5 +87,12 @@
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "options_page": "options.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["auth.html", "auth.js", "options.html", "options.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
