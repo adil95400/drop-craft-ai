@@ -1,40 +1,88 @@
+/**
+ * Routes Import - Module complet 100%
+ * Toutes les routes d'import de produits
+ */
 import { lazy } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 
+// Hub principal
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'))
+const ImportConfigPage = lazy(() => import('@/pages/import/ImportConfigPage'))
+
+// Méthodes d'import
 const QuickImportPage = lazy(() => import('@/pages/import/quick/QuickImportPage'))
 const UrlImportPage = lazy(() => import('@/pages/import/UrlImportPage'))
-
 const AutoDSImportPage = lazy(() => import('@/pages/import/AutoDSImportPage'))
 const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'))
-const ImportHistoryPage = lazy(() => import('@/pages/import/manage/ImportHistoryPage'))
-const ImportScheduledPage = lazy(() => import('@/pages/import/ImportScheduledPage'))
-const ImportConfigPage = lazy(() => import('@/pages/import/ImportConfigPage'))
-const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMarketplacePage'))
-const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPublishingPage'))
+const BulkImportPage = lazy(() => import('@/pages/import/BulkImportPage'))
 const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'))
 const AliExpressImportPage = lazy(() => import('@/pages/import/AliExpressImportPage'))
-const BulkImportPage = lazy(() => import('@/pages/import/BulkImportPage'))
+
+// IA & Génération
+const AIGenerationPage = lazy(() => import('@/pages/import/AIGenerationPage'))
+
+// Extensions & Navigateur
+const ExtensionNavigatorPage = lazy(() => import('@/pages/import/ExtensionNavigatorPage'))
+
+// Gestion & Historique
+const ImportHistoryPage = lazy(() => import('@/pages/import/manage/ImportHistoryPage'))
+const ImportScheduledPage = lazy(() => import('@/pages/import/ImportScheduledPage'))
+const ImportedProductsList = lazy(() => import('@/pages/import/manage/ImportedProductsList'))
+
+// Publication & Marketplaces
+const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPublishingPage'))
+const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMarketplacePage'))
+
+// Historique simplifié
+const SimpleHistoryPage = lazy(() => import('@/pages/import/history/SimpleHistoryPage'))
 
 export function ImportRoutes() {
   return (
     <Routes>
+      {/* Hub principal */}
       <Route index element={<ImportHub />} />
+      <Route path="config" element={<ImportConfigPage />} />
+      
+      {/* Méthodes d'import */}
       <Route path="quick" element={<QuickImportPage />} />
-      
-      {/* URL Import - redirects to AutoDS with URL param */}
       <Route path="url" element={<UrlImportPage />} />
-      
       <Route path="autods" element={<AutoDSImportPage />} />
       <Route path="advanced" element={<AdvancedImportPage />} />
       <Route path="bulk" element={<BulkImportPage />} />
-      <Route path="history" element={<ImportHistoryPage />} />
-      <Route path="scheduled" element={<ImportScheduledPage />} />
-      <Route path="config" element={<ImportConfigPage />} />
-      <Route path="marketplace" element={<ImportMarketplacePage />} />
-      <Route path="publishing" element={<ImportPublishingPage />} />
       <Route path="shopify" element={<ShopifyImportHub />} />
       <Route path="aliexpress" element={<AliExpressImportPage />} />
+      
+      {/* IA & Génération */}
+      <Route path="ai-generation" element={<AIGenerationPage />} />
+      <Route path="ai" element={<AIGenerationPage />} />
+      
+      {/* Extensions */}
+      <Route path="extensions" element={<ExtensionNavigatorPage />} />
+      <Route path="navigator" element={<ExtensionNavigatorPage />} />
+      
+      {/* Gestion & Historique */}
+      <Route path="history" element={<ImportHistoryPage />} />
+      <Route path="history/simple" element={<SimpleHistoryPage />} />
+      <Route path="scheduled" element={<ImportScheduledPage />} />
+      <Route path="products" element={<ImportedProductsList />} />
+      <Route path="manage" element={<ImportedProductsList />} />
+      
+      {/* Publication & Marketplaces */}
+      <Route path="publishing" element={<ImportPublishingPage />} />
+      <Route path="marketplace" element={<ImportMarketplacePage />} />
+      
+      {/* Sous-routes manage/ */}
+      <Route path="manage/history" element={<ImportHistoryPage />} />
+      <Route path="manage/products" element={<ImportedProductsList />} />
+      <Route path="manage/publishing" element={<ImportPublishingPage />} />
+      <Route path="manage/marketplace" element={<ImportMarketplacePage />} />
+      
+      {/* Legacy redirects */}
+      <Route path="csv" element={<Navigate to="/import/quick" replace />} />
+      <Route path="excel" element={<Navigate to="/import/quick" replace />} />
+      <Route path="ftp" element={<Navigate to="/import/advanced" replace />} />
+      <Route path="xml" element={<Navigate to="/import/advanced" replace />} />
+      <Route path="api" element={<Navigate to="/import/advanced" replace />} />
     </Routes>
   )
 }
