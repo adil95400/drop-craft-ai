@@ -142,6 +142,24 @@ export function ProductViewModal({
     }
   }, [product])
 
+  // Local images state that updates immediately
+  const [localImages, setLocalImages] = useState<string[]>([])
+
+  // Sync local images when product changes
+  useEffect(() => {
+    if (product) {
+      const productImages = (product as any).images || []
+      const primaryImage = product.image_url ? [product.image_url] : []
+      const allImages = primaryImage.concat(productImages.filter((img: string) => img !== product.image_url))
+      const filteredImages = allImages.filter((url: string) => 
+        typeof url === 'string' && 
+        url.startsWith('http') && 
+        !url.includes('":[')
+      )
+      setLocalImages(filteredImages)
+    }
+  }, [product])
+
   // Image management functions
   const toggleImageSelection = (index: number) => {
     setSelectedImages(prev => {
@@ -156,10 +174,10 @@ export function ProductViewModal({
   }
 
   const selectAllImages = () => {
-    if (selectedImages.size === images.length) {
+    if (selectedImages.size === localImages.length) {
       setSelectedImages(new Set())
     } else {
-      setSelectedImages(new Set(images.map((_: string, i: number) => i)))
+      setSelectedImages(new Set(localImages.map((_: string, i: number) => i)))
     }
   }
 
@@ -178,7 +196,7 @@ export function ProductViewModal({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const newImages = [...images, newImageUrl.trim()]
+      const newImages = [...localImages, newImageUrl.trim()]
       const [primaryImage, ...additionalImages] = newImages
 
       const { error } = await supabase
@@ -193,6 +211,8 @@ export function ProductViewModal({
 
       if (error) throw error
 
+      // Update local state immediately
+      setLocalImages(newImages)
       toast({ title: 'Image ajoutée avec succès' })
       setNewImageUrl('')
       setShowAddImageDialog(false)
@@ -213,8 +233,8 @@ export function ProductViewModal({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const newImages = images.filter((_: string, index: number) => !selectedImages.has(index))
-      const [primaryImage, ...additionalImages] = newImages
+      const newImages = localImages.filter((_: string, index: number) => !selectedImages.has(index))
+      const [primaryImage, ...additionalImages] = newImages.length > 0 ? newImages : [null]
 
       const { error } = await supabase
         .from('products')
@@ -228,6 +248,8 @@ export function ProductViewModal({
 
       if (error) throw error
 
+      // Update local state immediately
+      setLocalImages(newImages)
       toast({ title: `${selectedImages.size} image(s) supprimée(s)` })
       setSelectedImages(new Set())
       setShowDeleteImagesDialog(false)
@@ -249,7 +271,7 @@ export function ProductViewModal({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const newImages = [...images]
+      const newImages = [...localImages]
       const [primary] = newImages.splice(index, 1)
       newImages.unshift(primary)
       const [primaryImage, ...additionalImages] = newImages
@@ -266,6 +288,8 @@ export function ProductViewModal({
 
       if (error) throw error
 
+      // Update local state immediately
+      setLocalImages(newImages)
       toast({ title: 'Image principale mise à jour' })
       setCurrentImageIndex(0)
       queryClient.invalidateQueries({ queryKey: ['products'] })
@@ -284,23 +308,10 @@ export function ProductViewModal({
     }).format(amount || 0)
   }
 
-  // Images handling
-  const images = useMemo(() => {
-    if (!product) return []
-    const imgs = (product as any).images?.length 
-      ? (product as any).images 
-      : product.image_url 
-        ? [product.image_url] 
-        : []
-    // Filter out corrupted URLs
-    return imgs.filter((url: string) => 
-      typeof url === 'string' && 
-      url.startsWith('http') && 
-      !url.includes('":[')
-    )
-  }, [product])
+  // Use localImages for display, fallback to computed images for initial load
+  const images = localImages
 
-  const hasMultipleImages = images.length > 1
+  const hasMultipleImages = localImages.length > 1
 
   // Videos handling
   const videos = useMemo(() => {
