@@ -472,16 +472,52 @@
       }
 
       const reviews = [];
-      const reviewItems = document.querySelectorAll(this.selectors.reviewItem);
-
-      reviewItems.forEach((item, index) => {
-        if (reviews.length >= CONFIG.MAX_REVIEWS) return;
-
-        const review = this.parseReviewItem(item, index);
-        if (review && review.content) {
-          reviews.push(review);
+      
+      // Special handling for AliExpress - reviews are often in a modal or lazy-loaded
+      if (this.platform === 'aliexpress') {
+        // Try to find reviews in the feedback section
+        const feedbackSelectors = [
+          '.feedback--list--dJsbH8z .feedback--item--dj2j9tN',
+          '.feedback--wrap--bDEEKp5 .feedback-item',
+          '.comet-v2-modal-body .feedback-item',
+          '.product-evaluation .buyer-feedback',
+          '[data-pl="feedback-list"] > div',
+          '.feedback-list-wrap .feedback-item',
+          '.review-list .review-item'
+        ];
+        
+        for (const selector of feedbackSelectors) {
+          const items = document.querySelectorAll(selector);
+          if (items.length > 0) {
+            console.log('[Reviews] Found AliExpress reviews with selector:', selector, items.length);
+            items.forEach((item, index) => {
+              if (reviews.length >= CONFIG.MAX_REVIEWS) return;
+              const review = this.parseAliExpressReview(item, index);
+              if (review && review.content && review.content.length > 5) {
+                reviews.push(review);
+              }
+            });
+            break;
+          }
         }
-      });
+        
+        // If no reviews found in DOM, show hint
+        if (reviews.length === 0) {
+          this.showToast('⚠️ Faites défiler jusqu\'aux avis puis cliquez Extraire', 'info');
+        }
+      } else {
+        // Generic extraction for other platforms
+        const reviewItems = document.querySelectorAll(this.selectors.reviewItem);
+        console.log('[Reviews] Found', reviewItems.length, 'review items with selector:', this.selectors.reviewItem);
+
+        reviewItems.forEach((item, index) => {
+          if (reviews.length >= CONFIG.MAX_REVIEWS) return;
+          const review = this.parseReviewItem(item, index);
+          if (review && review.content && review.content.length > 5) {
+            reviews.push(review);
+          }
+        });
+      }
 
       this.extractedReviews = reviews;
       this.applyFilters();
@@ -489,8 +525,77 @@
       if (reviews.length > 0) {
         this.showToast(`${reviews.length} avis détectés`, 'success');
       } else {
-        this.showToast('Aucun avis trouvé sur cette page', 'warning');
+        this.showToast('Aucun avis trouvé - faites défiler jusqu\'à la section avis', 'warning');
       }
+    }
+
+    parseAliExpressReview(item, index) {
+      const getText = (selector) => {
+        const el = item.querySelector(selector);
+        return el ? el.textContent.trim() : '';
+      };
+
+      const getImages = () => {
+        const imgs = item.querySelectorAll('img[src*="feedback"], img[src*="review"], .feedback--photos--K3Gn6C1 img');
+        return Array.from(imgs).map(img => img.src || img.dataset.src).filter(Boolean);
+      };
+
+      const parseRating = () => {
+        // AliExpress uses star elements
+        const starContainer = item.querySelector('.feedback--stars--t9_W6T4, .star-view, [class*="stars"]');
+        if (starContainer) {
+          const fullStars = starContainer.querySelectorAll('.comet-icon-starreviewfilled, [class*="full"], .star-on');
+          return fullStars.length || 5;
+        }
+        return 5;
+      };
+
+      // Try multiple selectors for content
+      const contentSelectors = [
+        '.feedback--content--UWfgMTD',
+        '.buyer-feedback span',
+        '.feedback-content',
+        '.review-content'
+      ];
+      
+      let contentText = '';
+      for (const sel of contentSelectors) {
+        const el = item.querySelector(sel);
+        if (el) {
+          contentText = el.textContent.trim();
+          if (contentText.length > 5) break;
+        }
+      }
+
+      // Author
+      const authorSelectors = ['.feedback--userName--QsU0Wf0', '.user-name', '.buyer-name'];
+      let authorText = '';
+      for (const sel of authorSelectors) {
+        authorText = getText(sel);
+        if (authorText) break;
+      }
+
+      // Date
+      const dateSelectors = ['.feedback--time--c_Tn30j', '.feedback-time', '.review-date'];
+      let dateText = '';
+      for (const sel of dateSelectors) {
+        dateText = getText(sel);
+        if (dateText) break;
+      }
+
+      const images = getImages();
+
+      return {
+        id: `review_${index}_${Date.now()}`,
+        author: authorText || 'Client AliExpress',
+        rating: parseRating(),
+        content: contentText,
+        date: dateText,
+        images: images,
+        verified: true,
+        selected: true,
+        platform: this.platform
+      };
     }
 
     parseReviewItem(item, index) {
@@ -613,15 +718,30 @@
         return;
       }
 
+      // First, we need to extract reviews if not already done
+      if (this.extractedReviews.length === 0) {
+        this.extractReviews();
+        if (this.extractedReviews.length === 0) {
+          this.showToast('Aucun avis détecté - essayez d\'abord le bouton Extraire', 'warning');
+          return;
+        }
+      }
+
       this.showToast('Import en cours...', 'info');
 
       try {
         const result = await this.sendReviewsToAPI(selectedReviews);
-        this.showToast(`✓ ${selectedReviews.length} avis importés!`, 'success');
-        this.hide();
+        if (result.success) {
+          this.showToast(`✓ ${result.imported || selectedReviews.length} avis importés!`, 'success');
+          this.hide();
+        } else if (result.upgrade_required) {
+          this.showToast(`⚠️ Upgrade requis: ${result.error}`, 'warning');
+        } else {
+          throw new Error(result.error || 'Erreur inconnue');
+        }
       } catch (error) {
         console.error('[Reviews] Import error:', error);
-        this.showToast('Erreur lors de l\'import', 'error');
+        this.showToast(`Erreur: ${error.message || 'Erreur lors de l\'import'}`, 'error');
       }
     }
 
@@ -630,45 +750,67 @@
         if (typeof chrome !== 'undefined' && chrome.storage) {
           chrome.storage.local.get(['extensionToken'], async (result) => {
             if (!result.extensionToken) {
-              reject(new Error('Non connecté'));
+              reject(new Error('Non connecté - veuillez vous reconnecter via la sidebar'));
               return;
             }
 
             try {
-              const response = await fetch(`${CONFIG.API_URL}/import-reviews`, {
+              // Get current product URL to associate reviews
+              const currentUrl = window.location.href;
+              const productIdMatch = currentUrl.match(/\/item\/(\d+)|\/dp\/([A-Z0-9]+)|\/product\/(\d+)|\/i\/(\d+)/i);
+              const externalProductId = productIdMatch ? (productIdMatch[1] || productIdMatch[2] || productIdMatch[3] || productIdMatch[4]) : null;
+
+              // Use extension-sync-realtime with reviews action since extension-import-reviews requires productId
+              const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   'x-extension-token': result.extensionToken
                 },
                 body: JSON.stringify({
-                  action: 'import',
-                  reviews: reviews.map(r => ({
-                    author: r.author,
-                    rating: r.rating,
-                    content: r.content,
-                    date: r.date,
-                    images: r.images || [],
-                    verified: r.verified
-                  })),
-                  productId: null, // Will be assigned in dashboard
-                  options: {}
+                  action: 'import_products',
+                  products: [{
+                    title: document.title || 'Produit avec avis',
+                    name: document.title || 'Produit avec avis',
+                    price: 0,
+                    url: currentUrl,
+                    source: 'reviews_import',
+                    platform: this.platform || 'unknown',
+                    externalProductId: externalProductId,
+                    reviews: reviews.map(r => ({
+                      author: r.author,
+                      rating: r.rating,
+                      text: r.content,
+                      date: r.date,
+                      images: r.images || [],
+                      verified: r.verified
+                    }))
+                  }]
                 })
               });
 
               if (response.ok) {
                 const data = await response.json();
-                resolve(data);
+                if (data.success || data.imported > 0) {
+                  resolve({ 
+                    success: true, 
+                    imported: reviews.length,
+                    message: `${reviews.length} avis importés avec le produit`
+                  });
+                } else {
+                  reject(new Error(data.error || data.errors?.[0]?.error || 'Erreur d\'import'));
+                }
               } else {
                 const errorData = await response.json().catch(() => ({}));
-                reject(new Error(errorData.error || 'API Error'));
+                reject(new Error(errorData.error || `Erreur HTTP ${response.status}`));
               }
             } catch (error) {
+              console.error('[Reviews] API call error:', error);
               reject(error);
             }
           });
         } else {
-          reject(new Error('Chrome API not available'));
+          reject(new Error('Chrome API not available - extension context error'));
         }
       });
     }
