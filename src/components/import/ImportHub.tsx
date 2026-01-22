@@ -91,7 +91,7 @@ export const ImportHub = ({ onViewChange, onCategorySelect }: ImportHubProps) =>
           </Button>
           <Button
             variant="outline"
-            onClick={() => navigate('/products/import/manage')}
+            onClick={() => navigate('/import/config')}
             className="flex items-center gap-2"
           >
             <Settings2 className="h-4 w-4" />
