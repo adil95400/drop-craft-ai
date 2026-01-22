@@ -451,6 +451,30 @@
       this.sidebar.querySelector('#dc-token-input')?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') this.authenticate();
       });
+
+      // Listen for dynamic content events from content.js
+      window.addEventListener('message', (event) => {
+        if (event.source !== window) return;
+        
+        if (event.data.type === 'DC_RESCAN_PRODUCTS') {
+          console.log('[Sidebar] Re-scanning products after DOM change');
+          this.detectProduct();
+          this.injectListingButtons();
+        }
+        
+        if (event.data.type === 'DC_URL_CHANGED') {
+          console.log('[Sidebar] URL changed, re-initializing');
+          this.detectPlatform();
+          this.detectProduct();
+          this.injectListingButtons();
+          this.injectProductPageButton();
+        }
+        
+        if (event.data.type === 'DC_REVIEWS_IN_VIEW') {
+          console.log('[Sidebar] Reviews section in view');
+          // Could trigger auto-extract here if desired
+        }
+      });
     }
 
     toggle() {
