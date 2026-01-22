@@ -236,18 +236,24 @@ export function ProductMappingEditor({
                     destField?.required && !mapping.source && "border-destructive/50"
                   )}
                 >
-                  {/* Source field - Static text like destination */}
-                  <div className="flex items-center gap-2 h-9 px-3 rounded-md border bg-background">
-                    <span className={cn(
-                      "text-sm",
-                      !sourceField && "text-muted-foreground"
-                    )}>
-                      {sourceField?.label || '-- Non mappé --'}
-                    </span>
-                    {sourceField?.required && (
-                      <span className="text-destructive">*</span>
-                    )}
-                  </div>
+                  {/* Source field - Dropdown */}
+                  <Select
+                    value={mapping.source || '__none__'}
+                    onValueChange={(value) => updateMapping(mapping.id, { source: value === '__none__' ? '' : value })}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border z-50">
+                      <SelectItem value="__none__">-- Non mappé --</SelectItem>
+                      {SOURCE_FIELDS.map(field => (
+                        <SelectItem key={field.id} value={field.id}>
+                          {field.label}
+                          {field.required && <span className="text-destructive ml-1">*</span>}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   {/* Arrow */}
                   <div className="flex justify-center">
@@ -258,7 +264,7 @@ export function ProductMappingEditor({
                     )}
                   </div>
 
-                  {/* Destination field - Static text */}
+                  {/* Destination field - Static text like source dropdown style */}
                   <div className="flex items-center gap-2 h-9 px-3 rounded-md border bg-background">
                     <span className="text-sm">
                       {destField?.label || mapping.destination}
