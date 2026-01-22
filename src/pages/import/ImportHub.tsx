@@ -162,14 +162,14 @@ const importMethodsConfig = [
 
 // Supported platforms configuration
 const supportedPlatforms = [
-  { name: 'AliExpress', logo: '🛒', products: '500M+', status: 'active' },
-  { name: 'Amazon', logo: '📦', products: '350M+', status: 'active' },
-  { name: 'Shopify', logo: '🛍️', products: 'Illimité', status: 'active' },
-  { name: 'Temu', logo: '🎯', products: '100M+', status: 'active' },
-  { name: 'CJ Dropshipping', logo: '🚚', products: '400K+', status: 'active' },
-  { name: 'eBay', logo: '🏷️', products: '1.9B+', status: 'active' },
-  { name: 'Banggood', logo: '📱', products: '1M+', status: 'active' },
-  { name: 'Wish', logo: '⭐', products: '150M+', status: 'beta' },
+  { name: 'AliExpress', logo: '/logos/aliexpress.svg', products: '500M+', status: 'active' },
+  { name: 'Amazon', logo: '/logos/amazon-text.svg', products: '350M+', status: 'active' },
+  { name: 'Shopify', logo: '/logos/shopify.svg', products: 'Illimité', status: 'active' },
+  { name: 'Temu', logo: '/logos/tiktok-shop.svg', products: '100M+', status: 'active' },
+  { name: 'CJ Dropshipping', logo: '/logos/bigbuy.svg', products: '400K+', status: 'active' },
+  { name: 'eBay', logo: '/logos/ebay-text.svg', products: '1.9B+', status: 'active' },
+  { name: 'Banggood', logo: '/logos/rakuten.svg', products: '1M+', status: 'active' },
+  { name: 'Wish', logo: '/logos/etsy.svg', products: '150M+', status: 'beta' },
 ]
 
 export default function ImportHub() {
@@ -907,7 +907,11 @@ export default function ImportHub() {
                     key={platform.name}
                     className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                   >
-                    <span className="text-2xl">{platform.logo}</span>
+                    <img 
+                      src={platform.logo} 
+                      alt={platform.name} 
+                      className="w-8 h-8 object-contain flex-shrink-0"
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{platform.name}</p>
                       <p className="text-xs text-muted-foreground">{platform.products}</p>
