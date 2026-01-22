@@ -131,7 +131,7 @@ export function useProductChannelMappings(productId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []) as ChannelMapping[];
+      return (data || []) as unknown as ChannelMapping[];
     },
     enabled: true,
   });
@@ -149,7 +149,7 @@ export function usePriceSyncQueue() {
         .limit(100);
 
       if (error) throw error;
-      return (data || []) as PriceSyncQueueItem[];
+      return (data || []) as unknown as PriceSyncQueueItem[];
     },
     refetchInterval: 10000,
   });
@@ -167,7 +167,7 @@ export function usePriceSyncLogs(limit = 50) {
         .limit(limit);
 
       if (error) throw error;
-      return (data || []) as PriceSyncLog[];
+      return (data || []) as unknown as PriceSyncLog[];
     },
   });
 }
@@ -224,8 +224,9 @@ export function useTriggerPriceSync() {
 
       if (queueError) throw queueError;
 
+      const queueRecord = queueItem as unknown as { id: string };
       const { data, error } = await supabase.functions.invoke('sync-prices-to-channels', {
-        body: { queue_id: queueItem.id, product_id: productId, new_price: newPrice, user_id: user.id, channels }
+        body: { queue_id: queueRecord.id, product_id: productId, new_price: newPrice, user_id: user.id, channels }
       });
 
       if (error) throw error;
