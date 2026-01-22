@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
   Clock, Plus, Calendar, TrendingUp, Settings, Play, Pause,
   MoreVertical, Edit, Trash2, CheckCircle, AlertCircle, Search,
-  RefreshCw, Timer, Zap, Copy, ExternalLink
+  RefreshCw, Timer, Zap, Copy, ExternalLink, Loader2
 } from 'lucide-react'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
@@ -35,22 +36,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { ScheduleFormDialog, ScheduleFormData } from '@/components/import/ScheduleFormDialog'
-
-interface Schedule {
-  id: string
-  name: string
-  source_type: string
-  source_url?: string
-  frequency: string
-  next_run: string
-  last_run?: string
-  active: boolean
-  last_run_status: 'completed' | 'failed' | 'pending' | 'never'
-  products_imported?: number
-  description?: string
-  auto_optimize?: boolean
-  auto_publish?: boolean
-}
+import { useScheduledImports, ScheduledImport, CreateScheduledImportData } from '@/hooks/useScheduledImports'
 
 export default function ImportScheduledPage() {
   const prefersReducedMotion = useReducedMotion()
@@ -59,52 +45,31 @@ export default function ImportScheduledPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null)
+  const [selectedSchedule, setSelectedSchedule] = useState<ScheduledImport | null>(null)
 
-  const [schedules, setSchedules] = useState<Schedule[]>([
-    {
-      id: '1',
-      name: 'Import AliExpress Quotidien',
-      source_type: 'url',
-      source_url: 'https://aliexpress.com/store/123',
-      frequency: 'daily',
-      next_run: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      last_run: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      active: true,
-      last_run_status: 'completed',
-      products_imported: 145
-    },
-    {
-      id: '2',
-      name: 'Sync CSV Hebdomadaire',
-      source_type: 'csv',
-      frequency: 'weekly',
-      next_run: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-      active: false,
-      last_run_status: 'pending',
-      products_imported: 0
-    },
-    {
-      id: '3',
-      name: 'Feed XML Fournisseur',
-      source_type: 'xml',
-      source_url: 'https://supplier.com/feed.xml',
-      frequency: 'hourly',
-      next_run: new Date(Date.now() + 45 * 60 * 1000).toISOString(),
-      last_run: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-      active: true,
-      last_run_status: 'completed',
-      products_imported: 892
-    }
-  ])
+  // Use real data from hook
+  const {
+    schedules,
+    isLoading,
+    stats,
+    createSchedule,
+    updateSchedule,
+    deleteSchedule,
+    toggleActive,
+    executeNow,
+    isCreating,
+    isUpdating,
+    isDeleting,
+    isExecuting
+  } = useScheduledImports()
 
-  // Stats calculation
-  const stats = useMemo(() => [
-    { label: 'Total plannings', value: schedules.length.toString() },
-    { label: 'Actifs', value: schedules.filter(s => s.active).length.toString() },
-    { label: 'Produits importés', value: schedules.reduce((sum, s) => sum + (s.products_imported || 0), 0).toString() },
-    { label: 'Inactifs', value: schedules.filter(s => !s.active).length.toString() }
-  ], [schedules])
+  // Stats for hero
+  const heroStats = useMemo(() => [
+    { label: 'Total plannings', value: stats.total.toString() },
+    { label: 'Actifs', value: stats.active.toString() },
+    { label: 'Produits importés', value: stats.totalProductsImported.toString() },
+    { label: 'Inactifs', value: stats.inactive.toString() }
+  ], [stats])
 
   // Filtered schedules
   const filteredSchedules = useMemo(() => {
@@ -115,109 +80,81 @@ export default function ImportScheduledPage() {
     )
   }, [schedules, searchQuery])
 
-  const toggleSchedule = (id: string) => {
-    setSchedules(prev =>
-      prev.map(s => (s.id === id ? { ...s, active: !s.active } : s))
-    )
-    const schedule = schedules.find(s => s.id === id)
-    toast({
-      title: schedule?.active ? 'Planning désactivé' : 'Planning activé',
-      description: `Le planning "${schedule?.name}" a été ${schedule?.active ? 'désactivé' : 'activé'}`
-    })
+  const handleToggleSchedule = async (id: string) => {
+    await toggleActive(id)
   }
 
-
   const runNow = (id: string) => {
-    const schedule = schedules.find(s => s.id === id)
-    toast({
-      title: 'Import lancé',
-      description: `L'import "${schedule?.name}" a été lancé manuellement`
-    })
+    executeNow(id)
   }
 
   const handleCreateSchedule = (data: ScheduleFormData) => {
-    const schedule: Schedule = {
-      id: Date.now().toString(),
+    const payload: CreateScheduledImportData = {
       name: data.name,
-      source_type: data.source_type,
+      source_type: data.source_type as ScheduledImport['source_type'],
       source_url: data.source_url || undefined,
-      frequency: data.frequency,
-      next_run: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      active: data.active,
-      last_run_status: 'never',
-      products_imported: 0,
+      frequency: data.frequency as ScheduledImport['frequency'],
+      is_active: data.active,
       description: data.description,
-      auto_optimize: data.auto_optimize,
-      auto_publish: data.auto_publish
+      config: {
+        auto_optimize: data.auto_optimize,
+        auto_publish: data.auto_publish
+      }
     }
-
-    setSchedules(prev => [schedule, ...prev])
+    createSchedule(payload)
     setIsCreateDialogOpen(false)
-    
-    toast({
-      title: 'Planning créé',
-      description: `Le planning "${schedule.name}" a été créé avec succès`
-    })
   }
 
   const handleEditSchedule = (data: ScheduleFormData) => {
     if (!selectedSchedule) return
     
-    setSchedules(prev => prev.map(s => 
-      s.id === selectedSchedule.id 
-        ? { 
-            ...s, 
-            name: data.name,
-            source_type: data.source_type,
-            source_url: data.source_url,
-            frequency: data.frequency,
-            active: data.active,
-            description: data.description,
-            auto_optimize: data.auto_optimize,
-            auto_publish: data.auto_publish
-          }
-        : s
-    ))
+    updateSchedule({
+      id: selectedSchedule.id,
+      data: {
+        name: data.name,
+        source_type: data.source_type as ScheduledImport['source_type'],
+        source_url: data.source_url || undefined,
+        frequency: data.frequency as ScheduledImport['frequency'],
+        is_active: data.active,
+        description: data.description,
+        config: {
+          auto_optimize: data.auto_optimize,
+          auto_publish: data.auto_publish
+        }
+      }
+    })
     setIsEditDialogOpen(false)
     setSelectedSchedule(null)
-    
-    toast({
-      title: 'Planning modifié',
-      description: `Le planning "${data.name}" a été mis à jour`
-    })
   }
 
   const handleDeleteConfirm = () => {
     if (!selectedSchedule) return
-    setSchedules(prev => prev.filter(s => s.id !== selectedSchedule.id))
+    deleteSchedule(selectedSchedule.id)
     setIsDeleteDialogOpen(false)
-    toast({
-      title: 'Planning supprimé',
-      description: `Le planning "${selectedSchedule.name}" a été supprimé`
-    })
     setSelectedSchedule(null)
   }
 
-  const openEditDialog = (schedule: Schedule) => {
+  const openEditDialog = (schedule: ScheduledImport) => {
     setSelectedSchedule(schedule)
     setIsEditDialogOpen(true)
   }
 
-  const openDeleteDialog = (schedule: Schedule) => {
+  const openDeleteDialog = (schedule: ScheduledImport) => {
     setSelectedSchedule(schedule)
     setIsDeleteDialogOpen(true)
   }
 
-  const duplicateSchedule = (schedule: Schedule) => {
-    const newSched: Schedule = {
-      ...schedule,
-      id: Date.now().toString(),
+  const duplicateSchedule = (schedule: ScheduledImport) => {
+    const payload: CreateScheduledImportData = {
       name: `${schedule.name} (copie)`,
-      last_run: undefined,
-      last_run_status: 'never',
-      products_imported: 0
+      source_type: schedule.source_type,
+      source_url: schedule.source_url,
+      frequency: schedule.frequency,
+      is_active: false,
+      description: schedule.description,
+      config: schedule.config
     }
-    setSchedules(prev => [newSched, ...prev])
+    createSchedule(payload)
     toast({
       title: 'Planning dupliqué',
       description: `Le planning "${schedule.name}" a été dupliqué`
@@ -254,6 +191,7 @@ export default function ImportScheduledPage() {
       case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />
       case 'failed': return <AlertCircle className="w-4 h-4 text-red-500" />
       case 'pending': return <Clock className="w-4 h-4 text-amber-500" />
+      case 'running': return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
       default: return <Clock className="w-4 h-4 text-muted-foreground" />
     }
   }
@@ -279,7 +217,7 @@ export default function ImportScheduledPage() {
           onClick: () => setIsCreateDialogOpen(true),
           icon: Plus
         }}
-        stats={stats}
+        stats={heroStats}
         showHexagons={!prefersReducedMotion}
         variant="compact"
       />
@@ -307,8 +245,13 @@ export default function ImportScheduledPage() {
               <Button 
                 className="bg-gradient-to-r from-primary to-purple-600"
                 onClick={() => setIsCreateDialogOpen(true)}
+                disabled={isCreating}
               >
-                <Plus className="w-4 h-4 mr-2" />
+                {isCreating ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4 mr-2" />
+                )}
                 Nouveau Planning
               </Button>
             </div>
@@ -319,10 +262,10 @@ export default function ImportScheduledPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Plannings', value: schedules.length, icon: Calendar, color: 'blue' },
-          { label: 'Actifs', value: schedules.filter(s => s.active).length, icon: TrendingUp, color: 'green' },
-          { label: 'Inactifs', value: schedules.filter(s => !s.active).length, icon: Pause, color: 'gray' },
-          { label: 'Produits importés', value: schedules.reduce((sum, s) => sum + (s.products_imported || 0), 0), icon: Zap, color: 'purple' }
+          { label: 'Total Plannings', value: stats.total, icon: Calendar, color: 'blue' },
+          { label: 'Actifs', value: stats.active, icon: TrendingUp, color: 'green' },
+          { label: 'Inactifs', value: stats.inactive, icon: Pause, color: 'gray' },
+          { label: 'Produits importés', value: stats.totalProductsImported, icon: Zap, color: 'purple' }
         ].map((stat, index) => (
           <motion.div
             key={stat.label}
@@ -363,7 +306,20 @@ export default function ImportScheduledPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredSchedules.length === 0 ? (
+          {isLoading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 border rounded-xl">
+                  <Skeleton className="w-12 h-6" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-48" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                  <Skeleton className="w-20 h-8" />
+                </div>
+              ))}
+            </div>
+          ) : filteredSchedules.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Calendar className="w-10 h-10 text-muted-foreground" />
@@ -396,13 +352,14 @@ export default function ImportScheduledPage() {
                   })}
                   className={cn(
                     "flex items-center justify-between p-4 border rounded-xl transition-all hover:shadow-md group",
-                    schedule.active ? "bg-gradient-to-r from-primary/5 to-transparent" : "opacity-60"
+                    schedule.is_active ? "bg-gradient-to-r from-primary/5 to-transparent" : "opacity-60"
                   )}
                 >
                   <div className="flex items-center gap-4">
                     <Switch
-                      checked={schedule.active}
-                      onCheckedChange={() => toggleSchedule(schedule.id)}
+                      checked={schedule.is_active}
+                      onCheckedChange={() => handleToggleSchedule(schedule.id)}
+                      disabled={isUpdating}
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
@@ -415,12 +372,12 @@ export default function ImportScheduledPage() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Timer className="w-3 h-3" />
-                          Prochain: {format(new Date(schedule.next_run), 'dd MMM à HH:mm', { locale: fr })}
+                          Prochain: {format(new Date(schedule.next_run_at), 'dd MMM à HH:mm', { locale: fr })}
                         </span>
-                        {schedule.last_run && (
+                        {schedule.last_run_at && (
                           <span className="flex items-center gap-1">
                             {getStatusIcon(schedule.last_run_status)}
-                            Dernier: {formatDistanceToNow(new Date(schedule.last_run), { addSuffix: true, locale: fr })}
+                            Dernier: {formatDistanceToNow(new Date(schedule.last_run_at), { addSuffix: true, locale: fr })}
                           </span>
                         )}
                       </div>
@@ -438,8 +395,8 @@ export default function ImportScheduledPage() {
                       <p className="text-xs text-muted-foreground">produits</p>
                     </div>
                     
-                    <Badge variant={schedule.active ? 'default' : 'secondary'}>
-                      {schedule.active ? 'Actif' : 'Inactif'}
+                    <Badge variant={schedule.is_active ? 'default' : 'secondary'}>
+                      {schedule.is_active ? 'Actif' : 'Inactif'}
                     </Badge>
                     
                     <DropdownMenu>
@@ -449,8 +406,12 @@ export default function ImportScheduledPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => runNow(schedule.id)}>
-                          <Play className="w-4 h-4 mr-2" />
+                        <DropdownMenuItem onClick={() => runNow(schedule.id)} disabled={isExecuting}>
+                          {isExecuting ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Play className="w-4 h-4 mr-2" />
+                          )}
                           Exécuter maintenant
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openEditDialog(schedule)}>
@@ -503,9 +464,9 @@ export default function ImportScheduledPage() {
           source_type: selectedSchedule.source_type as any,
           source_url: selectedSchedule.source_url || '',
           frequency: selectedSchedule.frequency as any,
-          active: selectedSchedule.active,
-          auto_optimize: selectedSchedule.auto_optimize ?? true,
-          auto_publish: selectedSchedule.auto_publish ?? false,
+          active: selectedSchedule.is_active,
+          auto_optimize: selectedSchedule.config?.auto_optimize ?? true,
+          auto_publish: selectedSchedule.config?.auto_publish ?? false,
           description: selectedSchedule.description,
           notify_on_complete: true,
           notify_on_error: true,
@@ -530,8 +491,12 @@ export default function ImportScheduledPage() {
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteConfirm}
+              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
+              {isDeleting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : null}
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
