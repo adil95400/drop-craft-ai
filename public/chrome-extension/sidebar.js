@@ -12,6 +12,7 @@
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     APP_URL: 'https://shopopti.io',
     SUPPORTED_PLATFORMS: {
+      // Major International
       'aliexpress': { name: 'AliExpress', icon: '🛒', color: '#ff6a00' },
       'amazon': { name: 'Amazon', icon: '📦', color: '#ff9900' },
       'ebay': { name: 'eBay', icon: '🏷️', color: '#e53238' },
@@ -19,10 +20,26 @@
       'walmart': { name: 'Walmart', icon: '🏪', color: '#0071ce' },
       'etsy': { name: 'Etsy', icon: '🎨', color: '#f56400' },
       'wish': { name: 'Wish', icon: '⭐', color: '#2fb7ec' },
+      // French Marketplaces
+      'cdiscount': { name: 'Cdiscount', icon: '🇫🇷', color: '#00a0e3' },
+      'fnac': { name: 'Fnac', icon: '📀', color: '#e1a400' },
+      'rakuten': { name: 'Rakuten', icon: '🛍️', color: '#bf0000' },
+      'darty': { name: 'Darty', icon: '⚡', color: '#e30613' },
+      'boulanger': { name: 'Boulanger', icon: '🔌', color: '#004a9f' },
+      'manomano': { name: 'ManoMano', icon: '🔧', color: '#00c7b7' },
+      'leroymerlin': { name: 'Leroy Merlin', icon: '🏠', color: '#78be20' },
+      // US Home Improvement
+      'homedepot': { name: 'Home Depot', icon: '🏠', color: '#f96302' },
+      'lowes': { name: 'Lowes', icon: '🔨', color: '#004990' },
+      'costco': { name: 'Costco', icon: '🏬', color: '#e31837' },
+      // Fashion
+      'shein': { name: 'Shein', icon: '👗', color: '#000' },
+      'asos': { name: 'ASOS', icon: '👔', color: '#2d2d2d' },
+      'zalando': { name: 'Zalando', icon: '👟', color: '#ff6900' },
+      // Asian Suppliers
       'banggood': { name: 'Banggood', icon: '📱', color: '#ff6600' },
       'dhgate': { name: 'DHgate', icon: '🏭', color: '#e54d00' },
       'cjdropshipping': { name: 'CJ', icon: '📦', color: '#1a73e8' },
-      'shein': { name: 'Shein', icon: '👗', color: '#000' },
       '1688': { name: '1688', icon: '🏭', color: '#ff6600' },
       'taobao': { name: 'Taobao', icon: '🛍️', color: '#ff4400' }
     }
@@ -1201,15 +1218,45 @@
     }
 
     injectListingButtons() {
-      // Extended selectors for product cards on all listing/catalog pages
+      // Extended selectors for product cards on ALL listing/catalog pages (25+ platforms)
       const listingSelectors = {
-        aliexpress: '.search-item-card-wrapper-gallery, .list--gallery--34TropR, [data-widget-type="search"], .search-card-item, .product-snippet, [class*="SearchProduct"], [class*="gallery-card"], [class*="list--galley"], [class*="list-item"]',
-        amazon: '[data-component-type="s-search-result"], .s-result-item[data-asin]',
-        ebay: '.s-item:not(.s-item__pl-on-bottom), .s-item__wrapper',
-        temu: '._2BUQJ_w2, [data-testid="goods-item"], [class*="ProductCard"]',
-        walmart: '[data-testid="list-view"], [data-item-id], [class*="product-tile"]',
-        etsy: '[data-search-results] .v2-listing-card, .wt-grid__item-xs-6',
-        generic: '.product-item, .product-card, .goods-item, [data-testid="product-card"], .product-snippet'
+        // Major Marketplaces
+        aliexpress: '.search-item-card-wrapper-gallery, .list--gallery--34TropR, [data-widget-type="search"], .search-card-item, .product-snippet, [class*="SearchProduct"], [class*="gallery-card"], [class*="list--galley"], [class*="list-item"], .JIIxO, ._1OUGS',
+        amazon: '[data-component-type="s-search-result"], .s-result-item[data-asin], .s-main-slot .s-result-item',
+        ebay: '.s-item:not(.s-item__pl-on-bottom), .s-item__wrapper, .srp-results .s-item',
+        temu: '._2BUQJ_w2, [data-testid="goods-item"], [class*="ProductCard"], .goods-item, ._2Q8JLHu5',
+        walmart: '[data-testid="list-view"], [data-item-id], [class*="product-tile"], .search-result-gridview-item',
+        etsy: '[data-search-results] .v2-listing-card, .wt-grid__item-xs-6, .listing-link',
+        wish: '.product-feed-item, [data-product-id], .feed-row-product',
+        
+        // French Marketplaces
+        cdiscount: '.prdtBILDetails, .prdtBIL, .product-box, .product-item, [data-productid], .prdtBloc',
+        fnac: '.Article-item, .SearchResult, .productItem, .product-list-item, [data-product], .js-Product',
+        rakuten: '.productOfferInfo, .product-list-item, .item-link, [data-product-id], .ProductCard',
+        darty: '.product-tile, .product-item, .product-card, [data-product-id]',
+        boulanger: '.product-item, .product-card, [data-product-sku]',
+        manomano: '.product-card, .ProductCard, [data-product-id], .listing-product',
+        leroymerlin: '.product-item, .product-card, [data-product-id], .product-tile',
+        
+        // US Home Improvement
+        homedepot: '.product-pod, .browse-search__pod, [data-product-id], .plp-pod',
+        lowes: '.product-card, [data-product-id], .product-item, .pl-card',
+        costco: '.product-tile, .product-card, [data-product-id], .product-item',
+        
+        // Fashion
+        shein: '.S-product-item, .product-item, [data-product-id], .product-card',
+        asos: '.product-card, [data-product-id], .product-list-item',
+        zalando: '.product-card, [data-product-id], .catalog-item',
+        
+        // Asian Suppliers
+        '1688': '.offer-list-row .sm-offer-item, .space-offer-card-box, .offer-item',
+        taobao: '.item, .J_MouserOn498, [data-item-id]',
+        dhgate: '.gallery-item, .product-item, [data-product-id]',
+        banggood: '.product-item, [data-product-id], .product-card',
+        cjdropshipping: '.product-card, [data-product-id], .goods-item',
+        
+        // Generic fallback (last resort)
+        generic: '.product-item, .product-card, .goods-item, [data-testid="product-card"], .product-snippet, [class*="product-item"], [class*="ProductCard"], [data-product], article[class*="product"]'
       };
       
       let productCards = [];
@@ -1218,15 +1265,24 @@
       // Try platform-specific selectors first
       for (const [platform, selector] of Object.entries(listingSelectors)) {
         if (hostname.includes(platform) || platform === 'generic') {
-          const elements = document.querySelectorAll(selector);
-          if (elements.length > 0) {
-            productCards = [...productCards, ...Array.from(elements)];
+          try {
+            const elements = document.querySelectorAll(selector);
+            if (elements.length > 0) {
+              productCards = [...productCards, ...Array.from(elements)];
+            }
+          } catch (e) {
+            // Invalid selector for this platform, skip
           }
         }
       }
       
-      // Remove duplicates
-      productCards = [...new Set(productCards)];
+      // Remove duplicates and filter out tiny elements
+      productCards = [...new Set(productCards)].filter(card => {
+        const rect = card.getBoundingClientRect();
+        return rect.width > 100 && rect.height > 100; // Filter tiny elements
+      });
+      
+      console.log(`[DropCraft] Found ${productCards.length} product cards on listing page`);
       
       productCards.forEach(card => {
         if (card.querySelector('.dc-listing-btn')) return;
@@ -1258,30 +1314,36 @@
           display: flex;
           align-items: center;
           gap: 4px;
+          opacity: 0.95;
         `;
         
         btn.addEventListener('mouseenter', () => {
           btn.style.transform = 'scale(1.05)';
           btn.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.6)';
+          btn.style.opacity = '1';
         });
         btn.addEventListener('mouseleave', () => {
           btn.style.transform = 'scale(1)';
           btn.style.boxShadow = '0 2px 10px rgba(102, 126, 234, 0.5)';
+          btn.style.opacity = '0.95';
         });
         
         btn.onclick = async (e) => {
           e.preventDefault();
           e.stopPropagation();
+          e.stopImmediatePropagation();
           await this.importFromCard(card, btn);
+          return false;
         };
         
         card.appendChild(btn);
       });
       
-      // Observe for new products (infinite scroll / pagination)
+      // Observe for new products (infinite scroll / pagination / SPA)
       if (!this.listingObserver) {
         this.listingObserver = new MutationObserver(() => {
-          setTimeout(() => this.injectListingButtons(), 500);
+          clearTimeout(this.listingDebounce);
+          this.listingDebounce = setTimeout(() => this.injectListingButtons(), 500);
         });
         
         this.listingObserver.observe(document.body, {
@@ -1292,11 +1354,11 @@
     }
 
     async importFromCard(card, btn) {
-      // Extract product info from card
+      // Extract product info from card - Platform-specific extractors
       const extractFromCard = () => {
         const hostname = window.location.hostname;
         
-        // Platform-specific extractors
+        // AliExpress
         if (hostname.includes('aliexpress')) {
           return {
             title: card.querySelector('.multi--titleText--nXeOvyr, .manhattan--titleText--WccHjR6, h3, [class*="title"]')?.textContent?.trim() || '',
@@ -1306,6 +1368,7 @@
           };
         }
         
+        // Amazon
         if (hostname.includes('amazon')) {
           return {
             title: card.querySelector('h2 span, .s-title-instructions-style span')?.textContent?.trim() || '',
@@ -1315,6 +1378,7 @@
           };
         }
         
+        // eBay
         if (hostname.includes('ebay')) {
           return {
             title: card.querySelector('.s-item__title')?.textContent?.trim() || '',
@@ -1324,12 +1388,146 @@
           };
         }
         
-        // Generic extraction
+        // Cdiscount
+        if (hostname.includes('cdiscount')) {
+          return {
+            title: card.querySelector('.prdtBILTit, .prdtTitle, h2, .product-name, [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.price, .prdtPrice, [class*="price"]')),
+            image: card.querySelector('img.prdtImg, img[src*="cdscdn"], img')?.src || '',
+            url: card.querySelector('a[href*="/f-"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Fnac
+        if (hostname.includes('fnac')) {
+          return {
+            title: card.querySelector('.Article-desc, .product-title, h2, [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.userPrice, .price, [class*="price"]')),
+            image: card.querySelector('img.Article-img, img[src*="static.fnac"], img')?.src || '',
+            url: card.querySelector('a[href*="/a"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Rakuten
+        if (hostname.includes('rakuten')) {
+          return {
+            title: card.querySelector('.productTitle, .product-name, h2, [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.productPrice, .price, [class*="price"]')),
+            image: card.querySelector('img.productImage, img[src*="priceminister"], img')?.src || '',
+            url: card.querySelector('a[href*="/offer/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Darty
+        if (hostname.includes('darty')) {
+          return {
+            title: card.querySelector('.product-title, h2, [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.product-price, .price, [class*="price"]')),
+            image: card.querySelector('img[src*="darty"], img')?.src || '',
+            url: card.querySelector('a[href*="/nav/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Boulanger
+        if (hostname.includes('boulanger')) {
+          return {
+            title: card.querySelector('.product-title, h2, [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.product-price, .price, [class*="price"]')),
+            image: card.querySelector('img[src*="boulanger"], img')?.src || '',
+            url: card.querySelector('a[href*="/ref/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // ManoMano
+        if (hostname.includes('manomano')) {
+          return {
+            title: card.querySelector('.product-title, h2, [class*="title"], [class*="name"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.price, [class*="price"]')),
+            image: card.querySelector('img[src*="manomano"], img')?.src || '',
+            url: card.querySelector('a[href*="/p/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Leroy Merlin
+        if (hostname.includes('leroymerlin')) {
+          return {
+            title: card.querySelector('.product-title, h2, [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('.price, [class*="price"]')),
+            image: card.querySelector('img[src*="leroymerlin"], img')?.src || '',
+            url: card.querySelector('a[href*="/p/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Home Depot
+        if (hostname.includes('homedepot')) {
+          return {
+            title: card.querySelector('.product-title, [class*="title"], h2')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+            image: card.querySelector('img[src*="homedepot"], img')?.src || '',
+            url: card.querySelector('a[href*="/p/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Lowes
+        if (hostname.includes('lowes')) {
+          return {
+            title: card.querySelector('.product-title, [class*="title"], h2')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+            image: card.querySelector('img[src*="lowes"], img')?.src || '',
+            url: card.querySelector('a[href*="/pd/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Costco
+        if (hostname.includes('costco')) {
+          return {
+            title: card.querySelector('.product-title, [class*="title"], h2')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+            image: card.querySelector('img[src*="costco"], img')?.src || '',
+            url: card.querySelector('a[href*="/.product."]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Temu
+        if (hostname.includes('temu')) {
+          return {
+            title: card.querySelector('._2G7NFXUf, ._1VOXlKK6, [class*="ProductTitle"], [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('._2RL5rSJD, ._3-xKlY6e, [class*="Price"]')),
+            image: card.querySelector('img[src*="temu"], img')?.src || '',
+            url: card.querySelector('a[href*="/goods/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Walmart
+        if (hostname.includes('walmart')) {
+          return {
+            title: card.querySelector('[data-automation-id="product-title"], span[class*="product-title"], [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[data-automation-id="product-price"], [class*="price"]')),
+            image: card.querySelector('img[data-testid*="image"], img')?.src || '',
+            url: card.querySelector('a[href*="/ip/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Etsy
+        if (hostname.includes('etsy')) {
+          return {
+            title: card.querySelector('h3, [class*="title"]')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('span[class*="price"]')),
+            image: card.querySelector('img')?.src || '',
+            url: card.querySelector('a[href*="/listing/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Generic extraction (fallback for all other platforms)
         const link = card.querySelector('a[href*="/"]');
+        const title = card.querySelector('h1, h2, h3, [class*="title"], [class*="name"]')?.textContent?.trim() || '';
+        const priceEl = card.querySelector('[class*="price"]');
+        const image = card.querySelector('img')?.src || '';
+        
         return {
-          title: card.querySelector('h2, h3, [class*="title"]')?.textContent?.trim() || '',
-          price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
-          image: card.querySelector('img')?.src || '',
+          title: title,
+          price: this.parsePriceFromElement(priceEl),
+          image: image,
           url: link?.href || window.location.href
         };
       };
