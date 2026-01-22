@@ -1,24 +1,25 @@
+// ============================================
 // Drop Craft AI Chrome Extension - Content Script v4.3.5
-// Professional Dropshipping Extension - PURE CONTENT SCRIPT (No Script Injection)
-// CSP-SAFE: Works on Amazon, AliExpress, and all strict CSP sites
-// This script runs ONLY in the content script context - no page context injection
+// Professional Dropshipping Extension - 100% CSP-SAFE
+// NO SCRIPT INJECTION - Pure Content Script Mode
+// Works on Amazon, AliExpress, and all strict CSP sites
+// ============================================
 
 (function () {
   'use strict';
 
-  // Prevent multiple injections with versioned check
+  // Prevent multiple injections
   if (window.__dropCraftCSVersion === '4.3.5') return;
   window.__dropCraftCSVersion = '4.3.5';
 
-  console.log('[DropCraft] Content script v4.3.5 initializing (pure content script mode)...');
+  console.log('[DropCraft] Content script v4.3.5 initializing (CSP-SAFE mode)...');
 
   // ============================================
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     VERSION: '4.3.5',
-    SUPPORTED_PLATFORMS: ['amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 'wish', 'gearbest', 'lightinthebox', 'cdiscount', 'fnac']
+    SUPPORTED_PLATFORMS: ['amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 'wish', 'cdiscount', 'fnac']
   };
 
   // ============================================
@@ -42,7 +43,7 @@
     if (hostname.includes('cdiscount')) return 'cdiscount';
     if (hostname.includes('fnac')) return 'fnac';
     
-    // Shopify detection via meta tags (doesn't require page context)
+    // Shopify detection via meta tags
     if (document.querySelector('meta[name="shopify-checkout-api-token"]') ||
         document.querySelector('link[href*="cdn.shopify.com"]') ||
         hostname.includes('myshopify')) {
@@ -74,7 +75,7 @@
   }
 
   // ============================================
-  // DATA EXTRACTION (Pure DOM - No Script Injection)
+  // DATA EXTRACTION (Pure DOM - No CSP Issues)
   // ============================================
   function extractProductData() {
     const platform = detectPlatform();
@@ -116,12 +117,12 @@
     const titleEl = document.querySelector('#productTitle, #title, .product-title-word-break');
     data.title = titleEl?.textContent?.trim() || '';
 
-    // ASIN from URL or data attributes
+    // ASIN from URL
     const asinMatch = window.location.href.match(/\/dp\/([A-Z0-9]+)/i) ||
                       window.location.href.match(/\/gp\/product\/([A-Z0-9]+)/i);
     data.asin = asinMatch?.[1] || document.querySelector('[data-asin]')?.dataset?.asin || '';
 
-    // Price - multiple selectors for different layouts
+    // Price
     const priceSelectors = [
       '.a-price .a-offscreen',
       '#priceblock_ourprice',
@@ -152,14 +153,13 @@
     const descEl = document.querySelector('#productDescription, #feature-bullets');
     data.description = descEl?.textContent?.trim().slice(0, 1000) || '';
 
-    // Images - extract high-res versions
+    // Images
     const imageElements = document.querySelectorAll('#altImages img, #imageBlock img, .imgTagWrapper img, .a-dynamic-image');
     const imageSet = new Set();
     
     imageElements.forEach(img => {
       let src = img.src || img.dataset?.oldHires || '';
       if (src && !src.includes('sprite') && !src.includes('transparent') && !src.includes('grey-pixel')) {
-        // Convert to high-res
         src = src.replace(/\._[A-Z]{2}\d+_\./, '._SL1500_.');
         src = src.replace(/\._S[XY]\d+_\./, '._SL1500_.');
         if (src.includes('images/I/') || src.includes('images-amazon.com')) {
@@ -199,18 +199,15 @@
       reviews_count: 0
     };
 
-    // Title
     const titleEl = document.querySelector('h1[data-pl="product-title"], .product-title-text, h1');
     data.title = titleEl?.textContent?.trim() || '';
 
-    // Price
     const priceEl = document.querySelector('[class*="price--current"], .product-price-value, .uniform-banner-box-price');
     if (priceEl) {
       const priceMatch = priceEl.textContent?.match(/[\d,.]+/);
       data.price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
     }
 
-    // Images
     const imageElements = document.querySelectorAll('.images-view-item img, .slider--img--item img, [class*="gallery"] img');
     const imageSet = new Set();
     
@@ -228,7 +225,6 @@
     
     data.images = Array.from(imageSet).slice(0, 10);
 
-    // Rating
     const ratingEl = document.querySelector('[class*="rating"] strong, .overview-rating-average');
     if (ratingEl) {
       const ratingMatch = ratingEl.textContent?.match(/[\d,.]+/);
@@ -246,7 +242,6 @@
       images: []
     };
 
-    // Temu has obfuscated classes, use flexible selectors
     const titleEl = document.querySelector('h1, [class*="ProductTitle"], [class*="title"]');
     data.title = titleEl?.textContent?.trim() || '';
 
@@ -340,7 +335,6 @@
       images: []
     };
 
-    // Try meta tags
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) data.title = ogTitle.content;
 
@@ -354,10 +348,57 @@
   }
 
   // ============================================
-  // UI CREATION (Pure DOM Manipulation - No CSP Issues)
+  // UI CREATION (Pure DOM - CSP Safe)
   // ============================================
+  function addStyles() {
+    if (document.getElementById('dropcraft-styles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'dropcraft-styles';
+    style.textContent = `
+      @keyframes dcSpin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      #dropcraft-import-btn {
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        z-index: 2147483647 !important;
+        padding: 14px 22px !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4) !important;
+        transition: all 0.2s ease !important;
+      }
+      #dropcraft-import-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5) !important;
+      }
+      #dropcraft-import-btn.loading {
+        opacity: 0.9 !important;
+        cursor: wait !important;
+      }
+      #dropcraft-import-btn.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+      }
+      #dropcraft-import-btn.error {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function createImportButton() {
-    // Remove existing button
     const existing = document.getElementById('dropcraft-import-btn');
     if (existing) existing.remove();
 
@@ -369,44 +410,10 @@
         <polyline points="7,10 12,15 17,10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
-      <span>Importer dans Drop Craft AI</span>
+      <span>Importer dans Shopopti+</span>
     `;
-    
-    Object.assign(button.style, {
-      position: 'fixed',
-      bottom: '20px',
-      right: '20px',
-      zIndex: '2147483647',
-      padding: '14px 22px',
-      backgroundColor: '#6366f1',
-      color: 'white',
-      border: 'none',
-      borderRadius: '12px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      fontSize: '14px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
-      transition: 'all 0.2s ease'
-    });
-
-    button.addEventListener('mouseenter', () => {
-      button.style.backgroundColor = '#4f46e5';
-      button.style.transform = 'translateY(-2px)';
-      button.style.boxShadow = '0 8px 25px rgba(99, 102, 241, 0.5)';
-    });
-
-    button.addEventListener('mouseleave', () => {
-      button.style.backgroundColor = '#6366f1';
-      button.style.transform = 'translateY(0)';
-      button.style.boxShadow = '0 4px 20px rgba(99, 102, 241, 0.4)';
-    });
 
     button.addEventListener('click', handleImportClick);
-
     document.body.appendChild(button);
     console.log('[DropCraft] Import button created');
   }
@@ -415,61 +422,62 @@
     const button = document.getElementById('dropcraft-import-btn');
     if (!button) return;
 
-    const states = {
-      loading: {
-        html: `<span style="display:flex;align-items:center;"><span style="width:16px;height:16px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:dcSpin 1s linear infinite;margin-right:8px;"></span>${message || 'Import en cours...'}</span>`,
-        bg: '#6366f1',
-        disabled: true
-      },
-      success: {
-        html: `<span style="display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><polyline points="20,6 9,17 4,12"/></svg>${message || 'Importé !'}</span>`,
-        bg: '#10b981',
-        disabled: true
-      },
-      error: {
-        html: `<span style="display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>${message || 'Erreur'}</span>`,
-        bg: '#ef4444',
-        disabled: false
-      },
-      idle: {
-        html: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;flex-shrink:0;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Importer dans Drop Craft AI</span>`,
-        bg: '#6366f1',
-        disabled: false
-      }
-    };
-
-    const config = states[state] || states.idle;
-    button.innerHTML = config.html;
-    button.style.backgroundColor = config.bg;
-    button.disabled = config.disabled;
-    button.style.opacity = config.disabled ? '0.9' : '1';
-    button.style.cursor = config.disabled ? 'wait' : 'pointer';
-  }
-
-  // Add CSS animation for spinner (injected as style element, not script)
-  function addStyles() {
-    if (document.getElementById('dropcraft-styles')) return;
+    button.className = '';
     
-    const style = document.createElement('style');
-    style.id = 'dropcraft-styles';
-    style.textContent = `
-      @keyframes dcSpin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-      }
-    `;
-    document.head.appendChild(style);
+    switch (state) {
+      case 'loading':
+        button.classList.add('loading');
+        button.innerHTML = `
+          <span style="width:16px;height:16px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:dcSpin 1s linear infinite;margin-right:8px;"></span>
+          ${message || 'Import en cours...'}
+        `;
+        button.disabled = true;
+        break;
+      case 'success':
+        button.classList.add('success');
+        button.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;">
+            <polyline points="20,6 9,17 4,12"/>
+          </svg>
+          ${message || 'Importé !'}
+        `;
+        button.disabled = true;
+        setTimeout(() => updateButtonState('idle'), 3000);
+        break;
+      case 'error':
+        button.classList.add('error');
+        button.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          ${message || 'Erreur'}
+        `;
+        button.disabled = false;
+        setTimeout(() => updateButtonState('idle'), 3000);
+        break;
+      default:
+        button.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;flex-shrink:0;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7,10 12,15 17,10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Importer dans Shopopti+</span>
+        `;
+        button.disabled = false;
+    }
   }
 
   // ============================================
-  // IMPORT HANDLER (Via Background Script - CSP Safe)
+  // IMPORT HANDLER (Via Background Script)
   // ============================================
   async function handleImportClick() {
     console.log('[DropCraft] Import clicked');
     updateButtonState('loading', 'Extraction...');
 
     try {
-      // Extract product data from DOM (works in content script context)
       const productData = extractProductData();
 
       if (!productData.title) {
@@ -478,7 +486,7 @@
 
       updateButtonState('loading', 'Import en cours...');
 
-      // Send to background script for API call (background script can make any fetch)
+      // Send to background script for API call
       const response = await chrome.runtime.sendMessage({
         type: 'DC_IMPORT_PRODUCT',
         payload: {
@@ -491,168 +499,93 @@
 
       if (response?.success) {
         updateButtonState('success', 'Produit importé !');
-        showToast('✅ Produit importé avec succès !', 'success');
       } else {
-        throw new Error(response?.error || 'Erreur lors de l\'import');
+        throw new Error(response?.error || 'Échec de l\'import');
       }
-
-      // Reset after 3 seconds
-      setTimeout(() => updateButtonState('idle'), 3000);
-
     } catch (error) {
       console.error('[DropCraft] Import error:', error);
-      updateButtonState('error', error.message?.slice(0, 30) || 'Erreur');
-      showToast(`❌ ${error.message}`, 'error');
-      
-      // Reset after 4 seconds
-      setTimeout(() => updateButtonState('idle'), 4000);
+      updateButtonState('error', error.message || 'Erreur');
     }
   }
 
-  function showToast(message, type = 'info') {
-    const existing = document.getElementById('dropcraft-toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.id = 'dropcraft-toast';
+  // ============================================
+  // MESSAGE LISTENER (Communication with Background)
+  // ============================================
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log('[DropCraft] Message received:', message.type);
     
-    const colors = {
-      success: '#10b981',
-      error: '#ef4444',
-      info: '#6366f1'
-    };
-
-    Object.assign(toast.style, {
-      position: 'fixed',
-      top: '20px',
-      right: '20px',
-      zIndex: '2147483647',
-      backgroundColor: colors[type] || colors.info,
-      color: 'white',
-      padding: '14px 20px',
-      borderRadius: '10px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      fontSize: '14px',
-      fontWeight: '500',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-      animation: 'dcSlideIn 0.3s ease',
-      maxWidth: '350px'
-    });
-
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    // Add slide animations if not present
-    if (!document.getElementById('dropcraft-toast-styles')) {
-      const toastStyle = document.createElement('style');
-      toastStyle.id = 'dropcraft-toast-styles';
-      toastStyle.textContent = `
-        @keyframes dcSlideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes dcSlideOut {
-          from { transform: translateX(0); opacity: 1; }
-          to { transform: translateX(100%); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(toastStyle);
+    switch (message.type) {
+      case 'GET_PRODUCT_DATA':
+        const data = extractProductData();
+        sendResponse({ success: true, data });
+        break;
+        
+      case 'PING':
+        sendResponse({ success: true, version: CONFIG.VERSION });
+        break;
+        
+      default:
+        sendResponse({ success: false, error: 'Unknown message type' });
     }
+    
+    return true;
+  });
 
-    setTimeout(() => {
-      toast.style.animation = 'dcSlideOut 0.3s ease forwards';
-      setTimeout(() => toast.remove(), 300);
-    }, 4000);
+  // ============================================
+  // SPA NAVIGATION DETECTION
+  // ============================================
+  let lastUrl = window.location.href;
+  
+  function checkUrlChange() {
+    if (window.location.href !== lastUrl) {
+      lastUrl = window.location.href;
+      console.log('[DropCraft] URL changed, re-initializing...');
+      setTimeout(init, 500);
+    }
   }
+
+  // Monitor URL changes for SPAs
+  const urlObserver = new MutationObserver(checkUrlChange);
+  urlObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Also intercept history API
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+  
+  history.pushState = function(...args) {
+    originalPushState.apply(this, args);
+    setTimeout(checkUrlChange, 100);
+  };
+  
+  history.replaceState = function(...args) {
+    originalReplaceState.apply(this, args);
+    setTimeout(checkUrlChange, 100);
+  };
+
+  window.addEventListener('popstate', () => setTimeout(checkUrlChange, 100));
 
   // ============================================
   // INITIALIZATION
   // ============================================
   function init() {
-    const platform = detectPlatform();
-    console.log('[DropCraft] Platform detected:', platform);
-
-    if (platform === 'unknown') {
-      console.log('[DropCraft] Unknown platform, not initializing');
-      return;
-    }
-
     addStyles();
-
-    // Check if product page
+    
     if (isProductPage()) {
-      console.log('[DropCraft] Product page detected, adding import button');
-      // Small delay to ensure DOM is fully loaded
-      setTimeout(createImportButton, 500);
+      console.log('[DropCraft] Product page detected');
+      createImportButton();
     } else {
-      console.log('[DropCraft] Not a product page, waiting for navigation...');
+      console.log('[DropCraft] Not a product page');
+      const existing = document.getElementById('dropcraft-import-btn');
+      if (existing) existing.remove();
     }
-
-    // Watch for SPA navigation
-    setupNavigationObserver();
   }
 
-  function setupNavigationObserver() {
-    let lastUrl = window.location.href;
-
-    // URL change detection
-    const checkUrlChange = () => {
-      if (window.location.href !== lastUrl) {
-        lastUrl = window.location.href;
-        console.log('[DropCraft] URL changed, re-checking...');
-        setTimeout(() => {
-          if (isProductPage()) {
-            createImportButton();
-          } else {
-            const btn = document.getElementById('dropcraft-import-btn');
-            if (btn) btn.remove();
-          }
-        }, 1000);
-      }
-    };
-
-    // Listen for history changes
-    window.addEventListener('popstate', checkUrlChange);
-    
-    // Intercept pushState/replaceState
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-    
-    history.pushState = function(...args) {
-      originalPushState.apply(this, args);
-      checkUrlChange();
-    };
-    
-    history.replaceState = function(...args) {
-      originalReplaceState.apply(this, args);
-      checkUrlChange();
-    };
-
-    // Also observe DOM for dynamic content loading
-    let debounceTimer = null;
-    const observer = new MutationObserver(() => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        if (isProductPage() && !document.getElementById('dropcraft-import-btn')) {
-          console.log('[DropCraft] Dynamic content detected, adding button');
-          createImportButton();
-        }
-      }, 800);
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-  }
-
-  // Start initialization
+  // Run on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  console.log('[DropCraft] Content script v4.3.5 loaded successfully');
-
+  console.log('[DropCraft] Content script initialized');
 })();
