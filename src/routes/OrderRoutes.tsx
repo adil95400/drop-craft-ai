@@ -24,7 +24,7 @@ export function OrderRoutes() {
       <Route index element={<OrdersCenterPage />} />
       <Route path=":id" element={<OrderDetail />} />
       <Route path="center" element={<Navigate to="/orders" replace />} />
-      <Route path="returns" element={<Navigate to="/orders/fulfillment?tab=returns" replace />} />
+      <Route path="returns" element={<ReturnsManagementPage />} />
       <Route path="tracking" element={<TrackingDashboardPage />} />
       <Route path="notifications" element={<CustomerNotificationsPage />} />
       <Route path="bulk" element={<BulkOrdersPage />} />
