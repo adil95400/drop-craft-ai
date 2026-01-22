@@ -10387,6 +10387,69 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_configurations: {
+        Row: {
+          conflict_resolution: string | null
+          created_at: string
+          id: string
+          integration_id: string
+          is_active: boolean | null
+          last_full_sync_at: string | null
+          platform: string
+          sync_customers: boolean | null
+          sync_direction: string | null
+          sync_frequency: string | null
+          sync_orders: boolean | null
+          sync_prices: boolean | null
+          sync_products: boolean | null
+          sync_reviews: boolean | null
+          sync_stock: boolean | null
+          sync_tracking: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conflict_resolution?: string | null
+          created_at?: string
+          id?: string
+          integration_id: string
+          is_active?: boolean | null
+          last_full_sync_at?: string | null
+          platform: string
+          sync_customers?: boolean | null
+          sync_direction?: string | null
+          sync_frequency?: string | null
+          sync_orders?: boolean | null
+          sync_prices?: boolean | null
+          sync_products?: boolean | null
+          sync_reviews?: boolean | null
+          sync_stock?: boolean | null
+          sync_tracking?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conflict_resolution?: string | null
+          created_at?: string
+          id?: string
+          integration_id?: string
+          is_active?: boolean | null
+          last_full_sync_at?: string | null
+          platform?: string
+          sync_customers?: boolean | null
+          sync_direction?: string | null
+          sync_frequency?: string | null
+          sync_orders?: boolean | null
+          sync_prices?: boolean | null
+          sync_products?: boolean | null
+          sync_reviews?: boolean | null
+          sync_stock?: boolean | null
+          sync_tracking?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sync_conflicts: {
         Row: {
           conflict_type: string
@@ -10639,6 +10702,134 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      unified_sync_logs: {
+        Row: {
+          action: string
+          created_at: string
+          duration_ms: number | null
+          entity_id: string | null
+          entity_type: string
+          error_details: Json | null
+          id: string
+          items_failed: number | null
+          items_processed: number | null
+          items_succeeded: number | null
+          metadata: Json | null
+          platform: string
+          queue_id: string | null
+          status: string
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type: string
+          error_details?: Json | null
+          id?: string
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: number | null
+          metadata?: Json | null
+          platform: string
+          queue_id?: string | null
+          status: string
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type?: string
+          error_details?: Json | null
+          id?: string
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: number | null
+          metadata?: Json | null
+          platform?: string
+          queue_id?: string | null
+          status?: string
+          sync_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unified_sync_logs_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "unified_sync_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unified_sync_queue: {
+        Row: {
+          action: string
+          channels: Json | null
+          completed_at: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          error_message: string | null
+          id: string
+          max_retries: number
+          payload: Json | null
+          priority: number
+          retry_count: number
+          scheduled_at: string
+          started_at: string | null
+          status: string
+          sync_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          channels?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          payload?: Json | null
+          priority?: number
+          retry_count?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
+          sync_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          channels?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          payload?: Json | null
+          priority?: number
+          retry_count?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
+          sync_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_kpis: {
         Row: {
