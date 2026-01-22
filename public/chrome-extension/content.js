@@ -15,6 +15,8 @@
   constructor() {
     this.isActive = false;
     this.scrapingIndicator = null;
+    this.mutationObserver = null;
+    this.lastInjectedAt = 0;
     this.init();
   }
 
@@ -25,6 +27,94 @@
     this.injectSidebar(); // NEW: Inject professional sidebar
     this.injectScript();
     this.setupInjectedScriptListener();
+    this.setupDynamicContentObserver(); // NEW: MutationObserver for dynamic content
+  }
+
+  // NEW: MutationObserver to handle SPA navigation and lazy-loaded content
+  setupDynamicContentObserver() {
+    // Debounce re-injection to avoid performance issues
+    let debounceTimer = null;
+    const DEBOUNCE_MS = 1000;
+    const MIN_INTERVAL_MS = 5000;
+
+    this.mutationObserver = new MutationObserver((mutations) => {
+      // Check if significant DOM changes occurred
+      let significantChange = false;
+      
+      for (const mutation of mutations) {
+        if (mutation.addedNodes.length > 0) {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              // Check for product-related elements
+              const el = node;
+              if (el.matches?.('[class*="product"], [class*="gallery"], [class*="review"], [class*="feedback"], [data-testid*="product"], [class*="carousel"]') ||
+                  el.querySelector?.('[class*="product"], [class*="gallery"], [class*="review"], [class*="feedback"]')) {
+                significantChange = true;
+                break;
+              }
+            }
+          }
+        }
+        if (significantChange) break;
+      }
+
+      if (significantChange) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          const now = Date.now();
+          if (now - this.lastInjectedAt > MIN_INTERVAL_MS) {
+            this.lastInjectedAt = now;
+            console.log('[DropCraft] Dynamic content detected, re-scanning...');
+            // Re-inject listing buttons for new products
+            window.postMessage({ type: 'DC_RESCAN_PRODUCTS' }, '*');
+          }
+        }, DEBOUNCE_MS);
+      }
+    });
+
+    // Observe the main content area
+    this.mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+      characterData: false
+    });
+
+    // Also listen for URL changes (SPA navigation)
+    let lastUrl = window.location.href;
+    const urlObserver = new MutationObserver(() => {
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        console.log('[DropCraft] URL changed, re-initializing...');
+        // Wait for page to settle
+        setTimeout(() => {
+          window.postMessage({ type: 'DC_URL_CHANGED' }, '*');
+        }, 1500);
+      }
+    });
+    urlObserver.observe(document, { subtree: true, childList: true });
+
+    // Listen for scroll events to trigger lazy-load detection
+    let scrollTimer = null;
+    window.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        // Check if we scrolled to reviews section
+        const reviewsVisible = document.querySelector('.feedback-list, #cm_cr-review_list, [class*="reviews"]');
+        if (reviewsVisible && this.isElementInViewport(reviewsVisible)) {
+          window.postMessage({ type: 'DC_REVIEWS_IN_VIEW' }, '*');
+        }
+      }, 500);
+    }, { passive: true });
+  }
+
+  isElementInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    return (
+      rect.top >= 0 &&
+      rect.left >= 0 &&
+      rect.top <= (window.innerHeight || document.documentElement.clientHeight)
+    );
   }
 
   // NEW: Inject the professional sidebar and tools

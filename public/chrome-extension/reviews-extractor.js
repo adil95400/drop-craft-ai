@@ -1,5 +1,5 @@
-// Drop Craft AI - Reviews Extractor v4.0
-// Extract and filter customer reviews from product pages
+// Drop Craft AI - Reviews Extractor v4.1
+// Extract and filter customer reviews from product pages with auto-scroll support
 
 (function() {
   'use strict';
@@ -10,66 +10,96 @@
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     MAX_REVIEWS: 200,
+    SCROLL_DELAY_MS: 800,
+    MAX_SCROLL_ATTEMPTS: 10,
     PLATFORMS: {
       'aliexpress': {
-        reviewsContainer: '.feedback-list, .product-evaluation, [class*="review"], .comet-v2-modal-body, .feedback--wrap--bDEEKp5',
-        reviewItem: '.feedback-item, .buyer-feedback, [data-pl="feedback-item"], .feedback--list--dJsbH8z .feedback--item--dj2j9tN',
-        author: '.user-name, .buyer-name, .feedback-author, .feedback--userName--QsU0Wf0',
-        rating: '.star-view, .star-score, [class*="rating"], .feedback--stars--t9_W6T4',
-        content: '.buyer-feedback, .feedback-content, .review-content, .feedback--content--UWfgMTD',
-        date: '.feedback-time, .review-date, .feedback--time--c_Tn30j',
-        images: '.feedback-images img, .review-images img, .feedback--photos--K3Gn6C1 img',
-        verified: '.buyer-verified, .verified-purchase'
+        reviewsContainer: '.feedback-list, .product-evaluation, [class*="review"], .comet-v2-modal-body, .feedback--wrap--bDEEKp5, [class*="feedback-list"]',
+        reviewItem: '.feedback-item, .buyer-feedback, [data-pl="feedback-item"], .feedback--list--dJsbH8z .feedback--item--dj2j9tN, [class*="feedback-item"], .feedback--item, .review-item',
+        author: '.user-name, .buyer-name, .feedback-author, .feedback--userName--QsU0Wf0, [class*="user-name"], [class*="userName"]',
+        rating: '.star-view, .star-score, [class*="rating"], .feedback--stars--t9_W6T4, [class*="stars"], .stars',
+        content: '.buyer-feedback, .feedback-content, .review-content, .feedback--content--UWfgMTD, [class*="feedback-content"], [class*="review-text"]',
+        date: '.feedback-time, .review-date, .feedback--time--c_Tn30j, [class*="feedback-time"], [class*="date"]',
+        images: '.feedback-images img, .review-images img, .feedback--photos--K3Gn6C1 img, [class*="feedback-photo"] img, [class*="review-image"] img',
+        verified: '.buyer-verified, .verified-purchase, [class*="verified"]',
+        scrollTarget: '.feedback-list, [class*="feedback"], [class*="review"]'
       },
       'amazon': {
-        reviewsContainer: '#cm_cr-review_list, #reviewsMedley, .reviews-content',
-        reviewItem: '[data-hook="review"], .review, .a-section.review',
-        author: '.a-profile-name, [data-hook="genome-widget"] span',
-        rating: '.review-rating span, [data-hook="review-star-rating"] span, .a-icon-star span',
-        content: '[data-hook="review-body"] span, .review-text span, .review-text-content span',
-        date: '[data-hook="review-date"], .review-date',
-        images: '.review-image-tile img, .review-image img, [data-hook="review-image-tile"] img',
-        verified: '.avp-badge, [data-hook="avp-badge"], .a-size-mini'
+        reviewsContainer: '#cm_cr-review_list, #reviewsMedley, .reviews-content, #customer-reviews',
+        reviewItem: '[data-hook="review"], .review, .a-section.review, .review-views .review',
+        author: '.a-profile-name, [data-hook="genome-widget"] span, .review-byline a',
+        rating: '.review-rating span, [data-hook="review-star-rating"] span, .a-icon-star span, [class*="star-rating"]',
+        content: '[data-hook="review-body"] span, .review-text span, .review-text-content span, .reviewText',
+        date: '[data-hook="review-date"], .review-date, .review-date-submissionDate',
+        images: '.review-image-tile img, .review-image img, [data-hook="review-image-tile"] img, .cr-lightbox-image-thumbnail img',
+        verified: '.avp-badge, [data-hook="avp-badge"], .a-size-mini, [class*="verified"]',
+        scrollTarget: '#cm_cr-review_list, #reviewsMedley'
       },
       'ebay': {
-        reviewsContainer: '.reviews-content, .product-reviews, #rwid',
-        reviewItem: '.review-item, .ebay-review-section, .rvw-card',
-        author: '.review-item-author, .reviewer-name, .rvw-card__author',
-        rating: '.star-rating, .review-stars, .rvw-card__rating',
-        content: '.review-item-content, .rvw-card__body',
-        date: '.review-item-date, .rvw-card__date',
+        reviewsContainer: '.reviews-content, .product-reviews, #rwid, [class*="review-list"]',
+        reviewItem: '.review-item, .ebay-review-section, .rvw-card, [class*="review-item"]',
+        author: '.review-item-author, .reviewer-name, .rvw-card__author, [class*="author"]',
+        rating: '.star-rating, .review-stars, .rvw-card__rating, [class*="star"]',
+        content: '.review-item-content, .rvw-card__body, [class*="review-text"], [class*="content"]',
+        date: '.review-item-date, .rvw-card__date, [class*="date"]',
         images: '.review-images img, .rvw-card__image img',
-        verified: '.verified-purchase'
+        verified: '.verified-purchase, [class*="verified"]',
+        scrollTarget: '.reviews-content, #rwid'
       },
       'temu': {
-        reviewsContainer: '[class*="reviews"], [class*="comment"], [class*="ReviewList"]',
-        reviewItem: '[class*="review-item"], [class*="comment-item"], [class*="ReviewItem"]',
-        author: '[class*="user-name"], [class*="userName"], [class*="nickname"]',
+        reviewsContainer: '[class*="reviews"], [class*="comment"], [class*="ReviewList"], [class*="feedback"]',
+        reviewItem: '[class*="review-item"], [class*="comment-item"], [class*="ReviewItem"], [class*="feedback-item"]',
+        author: '[class*="user-name"], [class*="userName"], [class*="nickname"], [class*="author"]',
         rating: '[class*="star"], [class*="rating"], [class*="Stars"]',
-        content: '[class*="review-content"], [class*="comment-content"], [class*="Content"]',
+        content: '[class*="review-content"], [class*="comment-content"], [class*="Content"], [class*="text"]',
         date: '[class*="date"], [class*="time"], [class*="Date"]',
-        images: '[class*="review"] img, [class*="ReviewImage"] img',
-        verified: '[class*="verified"]'
+        images: '[class*="review"] img, [class*="ReviewImage"] img, [class*="photo"] img',
+        verified: '[class*="verified"]',
+        scrollTarget: '[class*="reviews"], [class*="comment"]'
       },
       'walmart': {
-        reviewsContainer: '[data-testid="reviews-list"], .reviews-list',
-        reviewItem: '[data-testid="review-card"], .review-card',
-        author: '[data-testid="reviewer-name"], .reviewer-name',
-        rating: '[data-testid="star-rating"], .star-rating',
-        content: '[data-testid="review-text"], .review-text',
-        date: '[data-testid="review-date"], .review-date',
+        reviewsContainer: '[data-testid="reviews-list"], .reviews-list, #reviews-list',
+        reviewItem: '[data-testid="review-card"], .review-card, [class*="review-item"]',
+        author: '[data-testid="reviewer-name"], .reviewer-name, [class*="author"]',
+        rating: '[data-testid="star-rating"], .star-rating, [class*="rating"]',
+        content: '[data-testid="review-text"], .review-text, [class*="content"]',
+        date: '[data-testid="review-date"], .review-date, [class*="date"]',
         images: '[data-testid="review-image"] img, .review-image img',
-        verified: '[data-testid="verified-purchase"]'
+        verified: '[data-testid="verified-purchase"], [class*="verified"]',
+        scrollTarget: '[data-testid="reviews-list"], .reviews-list'
       },
       'etsy': {
-        reviewsContainer: '.reviews-list, [data-region="reviews"]',
-        reviewItem: '.review-item, [data-region="review"]',
-        author: '.shop2-review-attribution a, .reviewer-name',
-        rating: '.stars-svg, .review-stars',
-        content: '.prose, .review-text',
-        date: '.review-date, [data-date]',
+        reviewsContainer: '.reviews-list, [data-region="reviews"], [class*="reviews"]',
+        reviewItem: '.review-item, [data-region="review"], [class*="review-item"]',
+        author: '.shop2-review-attribution a, .reviewer-name, [class*="author"]',
+        rating: '.stars-svg, .review-stars, [class*="star"]',
+        content: '.prose, .review-text, [class*="content"]',
+        date: '.review-date, [data-date], [class*="date"]',
         images: '.listing-page-image img, .review-image img',
-        verified: '.verified-buyer'
+        verified: '.verified-buyer, [class*="verified"]',
+        scrollTarget: '.reviews-list, [data-region="reviews"]'
+      },
+      'shein': {
+        reviewsContainer: '[class*="reviews"], [class*="comment"], .goods-review',
+        reviewItem: '[class*="review-item"], [class*="comment-item"], .review-item',
+        author: '[class*="user-name"], [class*="nickname"]',
+        rating: '[class*="star"], [class*="rating"]',
+        content: '[class*="review-content"], [class*="text"]',
+        date: '[class*="date"], [class*="time"]',
+        images: '[class*="review"] img, [class*="photo"] img',
+        verified: '[class*="verified"]',
+        scrollTarget: '[class*="reviews"]'
+      },
+      'cdiscount': {
+        reviewsContainer: '.reviews, #product-reviews, [class*="review"]',
+        reviewItem: '.review, [class*="review-item"], .avis',
+        author: '.author, [class*="author"], .reviewer',
+        rating: '.rating, [class*="star"], .note',
+        content: '.review-text, [class*="content"], .comment',
+        date: '.date, [class*="date"]',
+        images: '.review img',
+        verified: '.verified, [class*="verified"]',
+        scrollTarget: '.reviews, #product-reviews'
       }
     }
   };
@@ -471,8 +501,114 @@
         return;
       }
 
+      // Show loading state
+      const extractBtn = document.getElementById('dc-reviews-extract');
+      if (extractBtn) {
+        extractBtn.textContent = '⏳ Extraction...';
+        extractBtn.disabled = true;
+      }
+
+      // Start extraction with auto-scroll
+      this.extractWithAutoScroll().then(reviews => {
+        this.extractedReviews = reviews;
+        this.applyFilters();
+        
+        if (extractBtn) {
+          extractBtn.textContent = '🔍 Extraire';
+          extractBtn.disabled = false;
+        }
+        
+        if (reviews.length > 0) {
+          this.showToast(`${reviews.length} avis détectés`, 'success');
+        } else {
+          this.showToast('Aucun avis trouvé - faites défiler jusqu\'à la section avis', 'warning');
+        }
+      });
+    }
+
+    async extractWithAutoScroll() {
       const reviews = [];
+      let scrollAttempts = 0;
+      let lastReviewCount = 0;
       
+      // Try to find and scroll to reviews section first
+      const reviewsSection = document.querySelector(this.selectors.scrollTarget || this.selectors.reviewsContainer);
+      if (reviewsSection) {
+        reviewsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        await this.sleep(500);
+      }
+
+      // Extract with progressive scrolling
+      while (scrollAttempts < CONFIG.MAX_SCROLL_ATTEMPTS) {
+        // Extract current visible reviews
+        const currentReviews = this.extractVisibleReviews();
+        
+        // Merge new reviews (deduplicate by content hash)
+        for (const review of currentReviews) {
+          const hash = this.hashReview(review);
+          if (!reviews.find(r => this.hashReview(r) === hash)) {
+            reviews.push(review);
+          }
+        }
+
+        // Check if we got new reviews
+        if (reviews.length === lastReviewCount) {
+          // No new reviews, try clicking "load more" button
+          const loadMoreClicked = await this.tryClickLoadMore();
+          if (!loadMoreClicked) {
+            break; // No more reviews to load
+          }
+        }
+        
+        lastReviewCount = reviews.length;
+        
+        // Scroll down to load more
+        const scrollContainer = document.querySelector(this.selectors.scrollTarget) || window;
+        if (scrollContainer === window) {
+          window.scrollBy({ top: 500, behavior: 'smooth' });
+        } else {
+          scrollContainer.scrollBy({ top: 300, behavior: 'smooth' });
+        }
+        
+        await this.sleep(CONFIG.SCROLL_DELAY_MS);
+        scrollAttempts++;
+        
+        // Stop if we have enough reviews
+        if (reviews.length >= CONFIG.MAX_REVIEWS) break;
+      }
+
+      return reviews.slice(0, CONFIG.MAX_REVIEWS);
+    }
+
+    async tryClickLoadMore() {
+      const loadMoreSelectors = [
+        '[class*="load-more"]', '[class*="show-more"]', '[class*="voir-plus"]',
+        'button[class*="more"]', 'a[class*="more"]', '.pagination-next',
+        '[data-action="load-more"]', '.see-more', '.btn-load-more'
+      ];
+
+      for (const sel of loadMoreSelectors) {
+        const btn = document.querySelector(sel);
+        if (btn && btn.offsetParent !== null) { // Check if visible
+          btn.click();
+          await this.sleep(CONFIG.SCROLL_DELAY_MS * 2);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    hashReview(review) {
+      return (review.content || '').substring(0, 50) + (review.author || '');
+    }
+
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    extractVisibleReviews() {
+      const reviews = [];
+
       // Special handling for AliExpress - reviews are often in a modal or lazy-loaded
       if (this.platform === 'aliexpress') {
         // Try to find reviews in the feedback section
@@ -483,7 +619,9 @@
           '.product-evaluation .buyer-feedback',
           '[data-pl="feedback-list"] > div',
           '.feedback-list-wrap .feedback-item',
-          '.review-list .review-item'
+          '.review-list .review-item',
+          '[class*="feedback-item"]',
+          '[class*="review-item"]'
         ];
         
         for (const selector of feedbackSelectors) {
@@ -503,7 +641,7 @@
         
         // If no reviews found in DOM, show hint
         if (reviews.length === 0) {
-          this.showToast('⚠️ Faites défiler jusqu\'aux avis puis cliquez Extraire', 'info');
+          console.log('[Reviews] No AliExpress reviews found in DOM - user may need to scroll to reviews section');
         }
       } else {
         // Generic extraction for other platforms
@@ -519,14 +657,7 @@
         });
       }
 
-      this.extractedReviews = reviews;
-      this.applyFilters();
-      
-      if (reviews.length > 0) {
-        this.showToast(`${reviews.length} avis détectés`, 'success');
-      } else {
-        this.showToast('Aucun avis trouvé - faites défiler jusqu\'à la section avis', 'warning');
-      }
+      return reviews;
     }
 
     parseAliExpressReview(item, index) {
