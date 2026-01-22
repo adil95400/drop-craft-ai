@@ -26,6 +26,9 @@ const FeedOptimizationPage = lazy(() => import('@/pages/FeedOptimizationPage'));
 const StockSyncDashboard = lazy(() => import('@/pages/StockManagementDashboard'));
 const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssistant'));
 
+// Unified Sync
+const UnifiedSyncDashboard = lazy(() => import('@/components/sync/UnifiedSyncDashboard'));
+
 // Advanced Automation
 const WorkflowBuilderPage = lazy(() => import('@/pages/WorkflowBuilderPage'));
 const WorkflowEditorPage = lazy(() => import('@/pages/WorkflowEditorPage'));
@@ -59,6 +62,7 @@ export function AutomationRoutes() {
       <Route path="optimization" element={<OptimizationHub />} />
       <Route path="feed-optimization" element={<FeedOptimizationPage />} />
       <Route path="stock-sync" element={<StockSyncDashboard />} />
+      <Route path="unified-sync" element={<UnifiedSyncDashboard />} />
       <Route path="sourcing-assistant" element={<ProductSourcingAssistant />} />
       
       {/* Advanced Automation */}
