@@ -191,7 +191,7 @@ class BaseDetector {
     this.showLoadingToast('⏳ Import en cours...');
     
     try {
-      const response = await fetch(`${this.API_URL}/product-url-scraper`, {
+      const response = await fetch(`${this.API_URL}/extension-scraper`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

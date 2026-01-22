@@ -669,7 +669,7 @@ class DropCraftPopup {
     try {
       console.log('[Popup] Scraping URL:', url);
       
-      const response = await fetch(`${this.API_URL}/product-url-scraper`, {
+      const response = await fetch(`${this.API_URL}/extension-scraper`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
