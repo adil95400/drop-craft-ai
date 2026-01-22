@@ -2,6 +2,7 @@
 export { ProductTranslations } from './ProductTranslations'
 export { ProductReviews } from './ProductReviews'
 export { ProductImageGallery } from './ProductImageGallery'
+export { MediaGalleryManager } from './MediaGalleryManager'
 export { AdvancedProductCatalog } from './AdvancedProductCatalog'
 export { ProductActionMenu } from './ProductActionMenu'
 export { ProductOptimizeDialog } from './ProductOptimizeDialog'
