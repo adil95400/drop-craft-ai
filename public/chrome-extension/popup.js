@@ -719,12 +719,12 @@ class DropCraftPopup {
   }
 
   openAuth() {
-    chrome.tabs.create({ url: `${this.APP_URL}/auth?redirect=/extensions/chrome` });
+    chrome.tabs.create({ url: `${this.APP_URL}/auth?redirect=/extensions/chrome&force=true` });
   }
 
   openSettings() {
     // Open settings/auth page for connection
-    chrome.tabs.create({ url: `${this.APP_URL}/auth?redirect=/extensions/chrome` });
+    chrome.tabs.create({ url: `${this.APP_URL}/auth?redirect=/extensions/chrome&force=true` });
   }
 
   openDashboard() {

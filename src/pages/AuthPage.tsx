@@ -13,6 +13,7 @@ export default function AuthPage() {
   const { user, loading } = useAuth()
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
+  const force = searchParams.get('force') === 'true'
 
   // Preload animation CSS for loading state animation
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function AuthPage() {
     )
   }
 
-  if (user) {
+  if (user && !force) {
     const redirectUrl = searchParams.get('redirect')
     return <Navigate to={redirectUrl || '/dashboard'} replace />
   }
