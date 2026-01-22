@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Shopopti+ - Dropshipping Pro",
-  "version": "4.2.0",
-  "description": "Extension professionnelle de dropshipping - Import 1-clic, IA SEO, comparaison fournisseurs, optimisation images, Shopify universel",
+  "version": "4.3.0",
+  "description": "Extension professionnelle de dropshipping - Import 1-clic, IA SEO avancée, détection winning products, comparaison fournisseurs, 25+ plateformes",
   "permissions": [
     "activeTab",
     "storage",
@@ -116,6 +116,9 @@
         "multi-store.js",
         "supplier-search.js",
         "ads-spy.js",
+        "seo-meta-generator.js",
+        "winning-product-detector.js",
+        "price-optimizer.js",
         "platforms/shopify-universal.js",
         "platforms/tiktok-shop.js",
         "platforms/cdiscount.js",
