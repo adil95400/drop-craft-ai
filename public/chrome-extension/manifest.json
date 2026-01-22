@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Shopopti+ - Dropshipping Pro",
-  "version": "4.1.0",
-  "description": "Extension professionnelle de dropshipping - Import 1-clic, avis, vidéos, sync stock automatique, Shopify universel",
+  "version": "4.2.0",
+  "description": "Extension professionnelle de dropshipping - Import 1-clic, IA SEO, comparaison fournisseurs, optimisation images, Shopify universel",
   "permissions": [
     "activeTab",
     "storage",
@@ -110,6 +110,9 @@
         "review-translator.js",
         "advanced-scraper.js",
         "import-overlay.js",
+        "ai-content-generator.js",
+        "supplier-compare.js",
+        "watermark-remover.js",
         "platforms/shopify-universal.js",
         "platforms/tiktok-shop.js",
         "platforms/cdiscount.js",
