@@ -3,7 +3,6 @@ import { useRealtimeTracking, TrackingInfo } from '@/hooks/useRealtimeTracking';
 import { TrackingList } from '@/components/tracking/TrackingList';
 import { TrackingTimeline } from '@/components/tracking/TrackingTimeline';
 import { TrackingStatsCards, DeliveryRateCard } from '@/components/tracking/TrackingStatsCards';
-import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +27,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
 
-export default function TrackingDashboardPage() {
+export function TrackingDashboardContent() {
   const { 
     trackingData, 
     stats, 
@@ -70,32 +69,26 @@ export default function TrackingDashboardPage() {
   };
 
   return (
-    <ChannablePageWrapper
-      title="Suivi Temps Réel"
-      subtitle="Tracking"
-      description={`${trackingData?.length || 0} colis suivis • ${stats?.delivered || 0} livrés • Tracking automatique avec 17Track`}
-      heroImage="orders"
-      badge={{ label: "Tracking", icon: MapPin }}
-      actions={
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handleRegisterWebhooks}
-            disabled={isSyncing}
-          >
-            <Bell className="h-4 w-4 mr-2" />
-            Activer Webhooks
-          </Button>
-          <Button 
-            onClick={handleSyncAll}
-            disabled={isSyncing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-            Synchroniser
-          </Button>
-        </div>
-      }
-    >
+    <div className="space-y-6">
+      {/* Actions Bar */}
+      <div className="flex justify-end gap-2">
+        <Button 
+          variant="outline" 
+          onClick={handleRegisterWebhooks}
+          disabled={isSyncing}
+        >
+          <Bell className="h-4 w-4 mr-2" />
+          Activer Webhooks
+        </Button>
+        <Button 
+          onClick={handleSyncAll}
+          disabled={isSyncing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+          Synchroniser
+        </Button>
+      </div>
+
       {/* Stats Cards */}
       <TrackingStatsCards stats={stats} />
 
@@ -223,6 +216,6 @@ export default function TrackingDashboardPage() {
           )}
         </SheetContent>
       </Sheet>
-    </ChannablePageWrapper>
+    </div>
   );
 }

@@ -9,8 +9,6 @@ import { lazy } from 'react';
 // Orders - Consolidated to OrdersCenterPage
 const OrdersCenterPage = lazy(() => import('@/pages/orders/OrdersCenterPage'));
 const OrderDetail = lazy(() => import('@/pages/orders/OrderDetail'));
-const TrackingDashboardPage = lazy(() => import('@/pages/orders/TrackingDashboardPage'));
-const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNotificationsPage'));
 const BulkOrdersPage = lazy(() => import('@/pages/orders/BulkOrdersPage'));
 const CreateOrder = lazy(() => import('@/pages/orders/CreateOrder'));
 
@@ -24,8 +22,8 @@ export function OrderRoutes() {
       <Route path=":id" element={<OrderDetail />} />
       <Route path="center" element={<Navigate to="/orders" replace />} />
       <Route path="returns" element={<Navigate to="/orders/fulfillment?tab=returns" replace />} />
-      <Route path="tracking" element={<TrackingDashboardPage />} />
-      <Route path="notifications" element={<CustomerNotificationsPage />} />
+      <Route path="tracking" element={<Navigate to="/orders/fulfillment?tab=tracking" replace />} />
+      <Route path="notifications" element={<Navigate to="/orders/fulfillment?tab=notifications" replace />} />
       <Route path="bulk" element={<BulkOrdersPage />} />
       <Route path="create" element={<CreateOrder />} />
       
