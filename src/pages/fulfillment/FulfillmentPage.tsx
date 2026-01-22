@@ -28,6 +28,7 @@ import {
 import { useFulfillmentStats, useCarriers, useCreateCarrier } from '@/hooks/useFulfillment';
 import { CarriersManager } from '@/components/fulfillment/CarriersManager';
 import { ShipmentsTable } from '@/components/fulfillment/ShipmentsTable';
+import { ReturnsManager } from '@/components/fulfillment/ReturnsManager';
 import { FulfillmentAutomation } from '@/components/fulfillment/FulfillmentAutomation';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +42,7 @@ export default function FulfillmentPage() {
   // Sync tab with URL
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['overview', 'carriers', 'automation'].includes(tab)) {
+    if (tab && ['overview', 'carriers', 'returns', 'automation'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -233,7 +234,7 @@ export default function FulfillmentPage() {
       
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 h-auto bg-muted/50">
+        <TabsList className="grid w-full grid-cols-4 h-auto bg-muted/50">
           <TabsTrigger value="overview" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Package className="h-4 w-4 mr-1 md:mr-2" />
             Expéditions
@@ -241,6 +242,10 @@ export default function FulfillmentPage() {
           <TabsTrigger value="carriers" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Truck className="h-4 w-4 mr-1 md:mr-2" />
             Transporteurs
+          </TabsTrigger>
+          <TabsTrigger value="returns" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
+            <RotateCcw className="h-4 w-4 mr-1 md:mr-2" />
+            Retours
           </TabsTrigger>
           <TabsTrigger value="automation" className="text-xs md:text-sm py-2 data-[state=active]:bg-background">
             <Settings className="h-4 w-4 mr-1 md:mr-2" />
@@ -258,6 +263,10 @@ export default function FulfillmentPage() {
             isLoading={carriersLoading} 
             onCreate={handleCreateCarrier}
           />
+        </TabsContent>
+        
+        <TabsContent value="returns">
+          <ReturnsManager />
         </TabsContent>
         
         <TabsContent value="automation">
