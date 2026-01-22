@@ -113,7 +113,7 @@
     trendAnalyzerScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(trendAnalyzerScript);
     
-    // Inject bulk selector for multi-product selection on listing pages
+  // Inject bulk selector for multi-product selection on listing pages
     const bulkSelectorScript = document.createElement('script');
     bulkSelectorScript.src = chrome.runtime.getURL('bulk-selector.js');
     bulkSelectorScript.onload = function() { this.remove(); };
@@ -130,6 +130,18 @@
     advancedScraperScript.src = chrome.runtime.getURL('advanced-scraper.js');
     advancedScraperScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(advancedScraperScript);
+    
+    // Inject Shopify universal detector
+    const shopifyUniversalScript = document.createElement('script');
+    shopifyUniversalScript.src = chrome.runtime.getURL('platforms/shopify-universal.js');
+    shopifyUniversalScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(shopifyUniversalScript);
+    
+    // Inject import overlay for professional import UI
+    const importOverlayScript = document.createElement('script');
+    importOverlayScript.src = chrome.runtime.getURL('import-overlay.js');
+    importOverlayScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(importOverlayScript);
     
     // Inject platform-specific extractors
     this.injectPlatformExtractors();

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Drop Craft AI | Dropshipping Pro",
-  "version": "4.0.0",
-  "description": "Extension Dropshipping Professionnelle - Import 1-Click, Calculateur de Profit, Suivi des Prix, Multi-Plateformes (AliExpress, Amazon, eBay, Temu...)",
+  "name": "Shopopti+ - Dropshipping Pro",
+  "version": "4.1.0",
+  "description": "Extension professionnelle de dropshipping - Import 1-clic, avis, vidéos, sync stock automatique, Shopify universel",
   "permissions": [
     "activeTab",
     "storage",
@@ -16,55 +16,16 @@
     "https://*/*",
     "http://*/*",
     "*://shopopti.io/*",
-    "*://*.shopopti.io/*"
+    "*://*.shopopti.io/*",
+    "*://*.myshopify.com/*",
+    "*://*/products/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "*://*.aliexpress.com/*",
-        "*://*.aliexpress.fr/*",
-        "*://*.aliexpress.us/*",
-        "*://*.amazon.com/*",
-        "*://*.amazon.fr/*",
-        "*://*.amazon.de/*",
-        "*://*.amazon.co.uk/*",
-        "*://*.amazon.es/*",
-        "*://*.amazon.it/*",
-        "*://*.ebay.com/*",
-        "*://*.ebay.fr/*",
-        "*://*.ebay.de/*",
-        "*://*.ebay.co.uk/*",
-        "*://*.walmart.com/*",
-        "*://*.etsy.com/*",
-        "*://*.temu.com/*",
-        "*://*.wish.com/*",
-        "*://*.banggood.com/*",
-        "*://*.dhgate.com/*",
-        "*://*.1688.com/*",
-        "*://*.taobao.com/*",
-        "*://*.shein.com/*",
-        "*://*.cjdropshipping.com/*",
-        "*://*.lightinthebox.com/*",
-        "*://*.gearbest.com/*",
-        "*://*.made-in-china.com/*",
-        "*://shop.tiktok.com/*",
-        "*://*.tiktokshop.com/*",
-        "*://seller.tiktok.com/*",
-        "*://*.cdiscount.com/*",
-        "*://*.fnac.com/*",
-        "*://*.rakuten.fr/*"
-      ],
-      "js": ["content.js"],
-      "css": ["content.css"],
-      "run_at": "document_idle"
-    }
-  ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Drop Craft AI - Dropshipping Pro",
+    "default_title": "Shopopti+ - Dropshipping Pro",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -153,8 +114,19 @@
         "*://*.rakuten.fr/*",
         "*://*.homedepot.com/*",
         "*://*.lowes.com/*",
-        "*://*.costco.com/*"
+        "*://*.costco.com/*",
+        "*://*.darty.com/*",
+        "*://*.boulanger.com/*",
+        "*://*.manomano.fr/*",
+        "*://*.leroymerlin.fr/*",
+        "*://*.myshopify.com/*"
       ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*/products/*"],
       "js": ["content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"
