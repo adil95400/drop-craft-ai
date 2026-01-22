@@ -7735,6 +7735,56 @@ export type Database = {
           },
         ]
       }
+      product_sources: {
+        Row: {
+          created_at: string | null
+          external_product_id: string
+          id: string
+          last_synced_at: string | null
+          product_id: string | null
+          source_data: Json | null
+          source_platform: string
+          source_url: string | null
+          sync_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          external_product_id: string
+          id?: string
+          last_synced_at?: string | null
+          product_id?: string | null
+          source_data?: Json | null
+          source_platform: string
+          source_url?: string | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          external_product_id?: string
+          id?: string
+          last_synced_at?: string | null
+          product_id?: string | null
+          source_data?: Json | null
+          source_platform?: string
+          source_url?: string | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_sources_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "imported_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_supplier_mapping: {
         Row: {
           auto_switch_enabled: boolean | null
@@ -9345,6 +9395,98 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_sync_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          product_id: string | null
+          result: Json | null
+          source_id: string | null
+          started_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          product_id?: string | null
+          result?: Json | null
+          source_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          product_id?: string | null
+          result?: Json | null
+          source_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_sync_jobs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "product_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_sync_logs: {
+        Row: {
+          changes: string[] | null
+          created_at: string | null
+          id: string
+          new_price: number | null
+          new_stock: number | null
+          previous_price: number | null
+          previous_stock: number | null
+          product_id: string | null
+          source_id: string | null
+          status: string | null
+          sync_type: string | null
+          user_id: string
+        }
+        Insert: {
+          changes?: string[] | null
+          created_at?: string | null
+          id?: string
+          new_price?: number | null
+          new_stock?: number | null
+          previous_price?: number | null
+          previous_stock?: number | null
+          product_id?: string | null
+          source_id?: string | null
+          status?: string | null
+          sync_type?: string | null
+          user_id: string
+        }
+        Update: {
+          changes?: string[] | null
+          created_at?: string | null
+          id?: string
+          new_price?: number | null
+          new_stock?: number | null
+          previous_price?: number | null
+          previous_stock?: number | null
+          product_id?: string | null
+          source_id?: string | null
+          status?: string | null
+          sync_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       store_integrations: {
         Row: {
           access_token_encrypted: string | null
@@ -10665,6 +10807,36 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string | null
+          extension_settings: Json | null
+          id: string
+          import_rules: Json | null
+          notification_preferences: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          extension_settings?: Json | null
+          id?: string
+          import_rules?: Json | null
+          notification_preferences?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          extension_settings?: Json | null
+          id?: string
+          import_rules?: Json | null
+          notification_preferences?: Json | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
