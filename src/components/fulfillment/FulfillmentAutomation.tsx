@@ -259,101 +259,157 @@ export function FulfillmentAutomation() {
               Nouvelle règle
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                {editingRule ? 'Modifier la règle' : 'Nouvelle règle d\'automatisation'}
-              </DialogTitle>
+          <DialogContent className="sm:max-w-lg bg-background border-border shadow-2xl">
+            <DialogHeader className="pb-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/10">
+                  <Zap className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-semibold">
+                    {editingRule ? 'Modifier la règle' : 'Nouvelle règle d\'automatisation'}
+                  </DialogTitle>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Configurez le déclenchement et les actions automatiques
+                  </p>
+                </div>
+              </div>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            
+            <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+              {/* Nom de la règle */}
               <div className="space-y-2">
-                <Label htmlFor="name">Nom de la règle</Label>
+                <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  Nom de la règle
+                </Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Ex: Commandes France standard"
+                  className="h-11 bg-muted/30 border-border focus:ring-2 focus:ring-primary/20"
                   required
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label>Déclencheur</Label>
-                <Select
-                  value={formData.trigger}
-                  onValueChange={(value) => setFormData({ ...formData, trigger: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="paid">Commande payée</SelectItem>
-                    <SelectItem value="confirmed">Commande confirmée</SelectItem>
-                    <SelectItem value="processing">En traitement</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Sélection du transporteur</Label>
-                <Select
-                  value={formData.carrier_selection}
-                  onValueChange={(value) => setFormData({ ...formData, carrier_selection: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cheapest">Le moins cher</SelectItem>
-                    <SelectItem value="fastest">Le plus rapide</SelectItem>
-                    <SelectItem value="preferred">Transporteur préféré</SelectItem>
-                    <SelectItem value="rules_based">Selon règles personnalisées</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <Label>Générer l'étiquette automatiquement</Label>
-                  </div>
-                  <Switch
-                    checked={formData.auto_label}
-                    onCheckedChange={(checked) => setFormData({ ...formData, auto_label: checked })}
-                  />
+              {/* Configuration Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-amber-500" />
+                    Déclencheur
+                  </Label>
+                  <Select
+                    value={formData.trigger}
+                    onValueChange={(value) => setFormData({ ...formData, trigger: value })}
+                  >
+                    <SelectTrigger className="h-11 bg-muted/30 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      <SelectItem value="paid">Commande payée</SelectItem>
+                      <SelectItem value="confirmed">Commande confirmée</SelectItem>
+                      <SelectItem value="processing">En traitement</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Printer className="h-4 w-4 text-muted-foreground" />
-                    <Label>Imprimer automatiquement</Label>
-                  </div>
-                  <Switch
-                    checked={formData.auto_print}
-                    onCheckedChange={(checked) => setFormData({ ...formData, auto_print: checked })}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <Label>Notifier le client</Label>
-                  </div>
-                  <Switch
-                    checked={formData.auto_notify}
-                    onCheckedChange={(checked) => setFormData({ ...formData, auto_notify: checked })}
-                  />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-blue-500" />
+                    Sélection transporteur
+                  </Label>
+                  <Select
+                    value={formData.carrier_selection}
+                    onValueChange={(value) => setFormData({ ...formData, carrier_selection: value })}
+                  >
+                    <SelectTrigger className="h-11 bg-muted/30 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      <SelectItem value="cheapest">Le moins cher</SelectItem>
+                      <SelectItem value="fastest">Le plus rapide</SelectItem>
+                      <SelectItem value="preferred">Transporteur préféré</SelectItem>
+                      <SelectItem value="rules_based">Selon règles personnalisées</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              {/* Actions automatiques */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Actions automatiques
+                </Label>
+                <div className="bg-muted/20 rounded-xl p-4 space-y-4 border border-border/50">
+                  <div className="flex items-center justify-between group hover:bg-muted/30 -mx-2 px-2 py-1.5 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-green-500/10">
+                        <Package className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <Label className="font-medium cursor-pointer">Générer l'étiquette</Label>
+                        <p className="text-xs text-muted-foreground">Création automatique à l'expédition</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.auto_label}
+                      onCheckedChange={(checked) => setFormData({ ...formData, auto_label: checked })}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between group hover:bg-muted/30 -mx-2 px-2 py-1.5 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blue-500/10">
+                        <Printer className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <Label className="font-medium cursor-pointer">Imprimer automatiquement</Label>
+                        <p className="text-xs text-muted-foreground">Envoi direct à l'imprimante</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.auto_print}
+                      onCheckedChange={(checked) => setFormData({ ...formData, auto_print: checked })}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between group hover:bg-muted/30 -mx-2 px-2 py-1.5 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-purple-500/10">
+                        <Mail className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div>
+                        <Label className="font-medium cursor-pointer">Notifier le client</Label>
+                        <p className="text-xs text-muted-foreground">Email avec suivi d'expédition</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.auto_notify}
+                      onCheckedChange={(checked) => setFormData({ ...formData, auto_notify: checked })}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsDialogOpen(false)}
+                  className="px-6"
+                >
                   Annuler
                 </Button>
-                <Button type="submit" disabled={isMutating}>
+                <Button 
+                  type="submit" 
+                  disabled={isMutating || !formData.name.trim()}
+                  className="px-6 bg-primary hover:bg-primary/90"
+                >
                   {isMutating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {editingRule ? 'Mettre à jour' : 'Créer'}
+                  {editingRule ? 'Mettre à jour' : 'Créer la règle'}
                 </Button>
               </div>
             </form>
