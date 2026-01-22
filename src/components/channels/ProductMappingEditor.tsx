@@ -382,20 +382,31 @@ export function ProductMappingEditor({
                     destField?.required && !mapping.source && "border-destructive/50"
                   )}
                 >
-                  {/* Source field - Dropdown */}
+                  {/* Source field - Dropdown with search */}
                   <Select
                     value={mapping.source || '__none__'}
                     onValueChange={(value) => updateMapping(mapping.id, { source: value === '__none__' ? '' : value })}
                   >
                     <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Sélectionner..." />
+                      <SelectValue placeholder="Sélectionner un champ source..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-background border z-50">
-                      <SelectItem value="__none__">-- Non mappé --</SelectItem>
+                    <SelectContent 
+                      className="bg-background border shadow-lg z-[200] max-h-[320px] overflow-y-auto"
+                      position="popper"
+                      sideOffset={4}
+                    >
+                      <div className="sticky top-0 bg-background border-b px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                        Champs source ({SOURCE_FIELDS.length})
+                      </div>
+                      <SelectItem value="__none__" className="text-muted-foreground">
+                        -- Non mappé --
+                      </SelectItem>
                       {SOURCE_FIELDS.map(field => (
-                        <SelectItem key={field.id} value={field.id}>
-                          {field.label}
-                          {field.required && <span className="text-destructive ml-1">*</span>}
+                        <SelectItem key={field.id} value={field.id} className="py-2">
+                          <span className="flex items-center gap-2">
+                            {field.label}
+                            {field.required && <Badge variant="destructive" className="text-[10px] px-1 py-0">Requis</Badge>}
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -410,20 +421,31 @@ export function ProductMappingEditor({
                     )}
                   </div>
 
-                  {/* Destination field - Dropdown */}
+                  {/* Destination field - Dropdown with search */}
                   <Select
                     value={mapping.destination || '__none__'}
                     onValueChange={(value) => updateMapping(mapping.id, { destination: value === '__none__' ? '' : value })}
                   >
                     <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Sélectionner..." />
+                      <SelectValue placeholder="Sélectionner un champ destination..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-background border z-50 max-h-[300px]">
-                      <SelectItem value="__none__">-- Non mappé --</SelectItem>
+                    <SelectContent 
+                      className="bg-background border shadow-lg z-[200] max-h-[320px] overflow-y-auto"
+                      position="popper"
+                      sideOffset={4}
+                    >
+                      <div className="sticky top-0 bg-background border-b px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                        Champs {platformName} ({destinationFields.length})
+                      </div>
+                      <SelectItem value="__none__" className="text-muted-foreground">
+                        -- Non mappé --
+                      </SelectItem>
                       {destinationFields.map(field => (
-                        <SelectItem key={field.id} value={field.id}>
-                          {field.label}
-                          {field.required && <span className="text-destructive ml-1">*</span>}
+                        <SelectItem key={field.id} value={field.id} className="py-2">
+                          <span className="flex items-center gap-2">
+                            {field.label}
+                            {field.required && <Badge variant="destructive" className="text-[10px] px-1 py-0">Requis</Badge>}
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>

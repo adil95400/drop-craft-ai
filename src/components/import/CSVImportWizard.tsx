@@ -377,6 +377,38 @@ export function CSVImportWizard() {
   const [isImporting, setIsImporting] = useState(false)
   const [autoMappedCount, setAutoMappedCount] = useState(0)
   const [importOutcome, setImportOutcome] = useState<ImportOutcome | null>(null)
+  const [searchFilter, setSearchFilter] = useState('')
+
+  // Filter errors by category
+  const errorsByCategory = useMemo(() => {
+    const categories: Record<string, ValidationError[]> = {
+      required: [],
+      format: [],
+      warning: []
+    }
+    validationErrors.forEach(e => {
+      if (e.severity === 'warning') {
+        categories.warning.push(e)
+      } else if (e.message.includes('requis')) {
+        categories.required.push(e)
+      } else {
+        categories.format.push(e)
+      }
+    })
+    return categories
+  }, [validationErrors])
+
+  // Filter headers for search
+  const filteredHeaders = useMemo(() => {
+    if (!csvData) return []
+    if (!searchFilter.trim()) return csvData.headers
+    const search = searchFilter.toLowerCase()
+    return csvData.headers.filter(h => 
+      h.toLowerCase().includes(search) ||
+      mapping[h]?.toLowerCase().includes(search) ||
+      PRODUCT_FIELDS[mapping[h] as keyof typeof PRODUCT_FIELDS]?.label.toLowerCase().includes(search)
+    )
+  }, [csvData, searchFilter, mapping])
 
   const requiredFields = useMemo(() => {
     return Object.entries(PRODUCT_FIELDS)
@@ -631,30 +663,64 @@ export function CSVImportWizard() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upload" className="space-y-4">
+          <TabsContent value="upload" className="space-y-6">
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
-              }`}
+              className={cn(
+                "border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200",
+                isDragActive 
+                  ? 'border-primary bg-primary/10 scale-[1.02] shadow-lg' 
+                  : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5'
+              )}
             >
               <input {...getInputProps()} />
-              <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-medium mb-2">
-                {isDragActive ? 'Déposez le fichier ici' : 'Glissez-déposez votre fichier CSV'}
+              <div className={cn(
+                "w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center transition-colors",
+                isDragActive ? "bg-primary/20" : "bg-muted"
+              )}>
+                <Upload className={cn(
+                  "w-8 h-8 transition-colors",
+                  isDragActive ? "text-primary" : "text-muted-foreground"
+                )} />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
+                {isDragActive ? '✨ Déposez le fichier ici' : 'Glissez-déposez votre fichier'}
               </h3>
               <p className="text-muted-foreground mb-4">
-                ou cliquez pour sélectionner un fichier
+                ou cliquez pour parcourir vos fichiers
               </p>
-              <Badge variant="outline">CSV, XLS, XLSX acceptés</Badge>
+              <div className="flex items-center justify-center gap-2">
+                <Badge variant="outline" className="bg-background">CSV</Badge>
+                <Badge variant="outline" className="bg-background">XLS</Badge>
+                <Badge variant="outline" className="bg-background">XLSX</Badge>
+              </div>
+            </div>
+
+            {/* Quick tips */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                <Sparkles className="w-5 h-5 text-primary mb-2" />
+                <h4 className="font-medium text-sm mb-1">Mapping intelligent</h4>
+                <p className="text-xs text-muted-foreground">Détection automatique des colonnes</p>
+              </div>
+              <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/10">
+                <Check className="w-5 h-5 text-green-600 mb-2" />
+                <h4 className="font-medium text-sm mb-1">Validation avancée</h4>
+                <p className="text-xs text-muted-foreground">Vérification des données en temps réel</p>
+              </div>
+              <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/10">
+                <FileText className="w-5 h-5 text-blue-600 mb-2" />
+                <h4 className="font-medium text-sm mb-1">Format Shopify</h4>
+                <p className="text-xs text-muted-foreground">Compatible template Shopify FR/EN</p>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="mapping" className="space-y-4">
             {csvData && (
               <>
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1">
                     <h3 className="text-lg font-medium flex items-center gap-2">
                       Mapping des colonnes
                       {autoMappedCount > 0 && (
@@ -668,103 +734,154 @@ export function CSVImportWizard() {
                       Fichier: {csvData.fileName} ({csvData.rows.length} lignes)
                     </p>
                   </div>
-                  <Button onClick={() => setStep('upload')} variant="outline">
-                    Changer de fichier
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Rechercher une colonne..."
+                      value={searchFilter}
+                      onChange={(e) => setSearchFilter(e.target.value)}
+                      className="w-64"
+                    />
+                    <Button onClick={() => setStep('upload')} variant="outline" size="sm">
+                      Changer de fichier
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Auto-mapping summary */}
                 {autoMappedCount > 0 && (
-                  <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                    <Wand2 className="w-5 h-5 text-primary" />
+                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl">
+                    <div className="p-2 bg-primary/20 rounded-lg">
+                      <Wand2 className="w-5 h-5 text-primary" />
+                    </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Mapping intelligent activé</p>
+                      <p className="text-sm font-semibold">Mapping intelligent activé</p>
                       <p className="text-xs text-muted-foreground">
-                        {autoMappedCount} colonnes mappées automatiquement. Vérifiez et ajustez si nécessaire.
+                        {autoMappedCount} colonnes mappées automatiquement sur {csvData.headers.length}. Vérifiez et ajustez si nécessaire.
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap justify-end max-w-md">
                       {Object.entries(PRODUCT_FIELDS)
                         .filter(([key]) => Object.values(mapping).includes(key))
-                        .slice(0, 4)
+                        .slice(0, 5)
                         .map(([key, config]) => (
-                          <Badge key={key} variant="outline" className="text-xs">
+                          <Badge key={key} variant="outline" className="text-xs bg-background">
+                            <CheckCircle2 className="w-3 h-3 mr-1 text-green-500" />
                             {config.label}
                           </Badge>
                         ))}
-                      {Object.values(mapping).length > 4 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{Object.values(mapping).length - 4}
+                      {Object.values(mapping).filter(v => v && v !== 'ignore').length > 5 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{Object.values(mapping).filter(v => v && v !== 'ignore').length - 5} autres
                         </Badge>
                       )}
                     </div>
                   </div>
                 )}
 
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="grid gap-3">
-                    {csvData.headers.map((header, index) => {
+                {/* Stats bar */}
+                <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <span className="text-sm">{Object.values(mapping).filter(v => v && v !== 'ignore').length} mappées</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <span className="text-sm">{csvData.headers.length - Object.values(mapping).filter(v => v && v !== 'ignore').length} non mappées</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <span className="text-sm">{requiredFields.filter(f => !Object.values(mapping).includes(f)).length} champs requis manquants</span>
+                  </div>
+                  {searchFilter && (
+                    <Badge variant="outline" className="ml-auto">
+                      {filteredHeaders.length} résultats
+                    </Badge>
+                  )}
+                </div>
+
+                <ScrollArea className="h-[450px] pr-4">
+                  <div className="grid gap-2">
+                    {filteredHeaders.map((header, index) => {
                       const suggestion = mappingSuggestions[header]
                       const isAutoMapped = !!suggestion
                       const confidence = suggestion?.confidence || 0
+                      const isMapped = mapping[header] && mapping[header] !== 'ignore'
+                      const fieldConfig = PRODUCT_FIELDS[mapping[header] as keyof typeof PRODUCT_FIELDS]
                       
                       return (
                         <div 
                           key={index} 
                           className={cn(
-                            "flex items-center gap-4 p-3 border rounded-lg transition-colors",
-                            isAutoMapped && "border-primary/30 bg-primary/5",
-                            !isAutoMapped && mapping[header] && "border-green-500/30 bg-green-500/5"
+                            "flex items-center gap-4 p-3 border rounded-xl transition-all duration-200 hover:shadow-sm",
+                            isAutoMapped && "border-primary/40 bg-gradient-to-r from-primary/5 to-transparent",
+                            !isAutoMapped && isMapped && "border-green-500/40 bg-gradient-to-r from-green-500/5 to-transparent",
+                            !isMapped && "hover:border-muted-foreground/50"
                           )}
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <Label className="font-medium truncate">{header}</Label>
+                              <div className={cn(
+                                "w-2 h-2 rounded-full shrink-0",
+                                isMapped ? "bg-green-500" : "bg-muted-foreground/30"
+                              )} />
+                              <Label className="font-semibold truncate">{header}</Label>
                               {isAutoMapped && (
                                 <Badge 
                                   variant="secondary" 
                                   className={cn(
-                                    "text-[10px] px-1.5 py-0",
-                                    confidence >= 90 ? "bg-green-500/20 text-green-700" :
+                                    "text-[10px] px-1.5 py-0 shrink-0",
+                                    confidence >= 90 ? "bg-green-500/20 text-green-700 dark:text-green-400" :
                                     confidence >= 70 ? "bg-primary/20 text-primary" :
-                                    "bg-yellow-500/20 text-yellow-700"
+                                    "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
                                   )}
                                 >
-                                  {confidence >= 90 ? <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" /> : null}
+                                  {confidence >= 90 ? <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" /> : <Sparkles className="w-2.5 h-2.5 mr-0.5" />}
                                   {confidence}%
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground truncate">
-                              Exemple: {csvData.rows[0]?.[header]?.toString().substring(0, 60) || '(vide)'}
-                              {csvData.rows[0]?.[header]?.toString().length > 60 ? '...' : ''}
+                            <p className="text-xs text-muted-foreground truncate mt-0.5 pl-4">
+                              Exemple: <span className="font-mono bg-muted px-1 rounded">{csvData.rows[0]?.[header]?.toString().substring(0, 50) || '(vide)'}</span>
+                              {csvData.rows[0]?.[header]?.toString().length > 50 ? '...' : ''}
                             </p>
                           </div>
                           
-                          <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <div className={cn(
+                            "p-1.5 rounded-full transition-colors",
+                            isMapped ? "bg-green-500/10" : "bg-muted"
+                          )}>
+                            <ArrowRight className={cn(
+                              "w-4 h-4 transition-colors",
+                              isMapped ? "text-green-500" : "text-muted-foreground"
+                            )} />
+                          </div>
                           
-                          <div className="w-52 shrink-0">
+                          <div className="w-60 shrink-0">
                             <Select
                               value={mapping[header] || ''}
                               onValueChange={(value) => handleMappingChange(header, value)}
                             >
                               <SelectTrigger className={cn(
-                                mapping[header] && "border-primary"
+                                "transition-colors",
+                                isMapped && "border-green-500/50 bg-green-500/5"
                               )}>
-                                <SelectValue placeholder="Sélectionner un..." />
+                                <SelectValue placeholder="Sélectionner un champ..." />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="bg-background border shadow-lg z-[200] max-h-[320px] overflow-y-auto">
+                                <div className="sticky top-0 bg-background border-b px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                                  Champs ShopOpti ({Object.keys(PRODUCT_FIELDS).length})
+                                </div>
                                 <SelectItem value="ignore">
                                   <span className="flex items-center gap-2 text-muted-foreground">
                                     <X className="w-3 h-3" />
-                                    Ignorer
+                                    Ignorer cette colonne
                                   </span>
                                 </SelectItem>
                                 {Object.entries(PRODUCT_FIELDS).map(([field, config]) => (
-                                  <SelectItem key={field} value={field}>
+                                  <SelectItem key={field} value={field} className="py-2">
                                     <span className="flex items-center gap-2">
                                       {config.label}
-                                      {config.required && <span className="text-destructive">*</span>}
+                                      {config.required && <Badge variant="destructive" className="text-[10px] px-1 py-0">Requis</Badge>}
                                     </span>
                                   </SelectItem>
                                 ))}
@@ -774,6 +891,15 @@ export function CSVImportWizard() {
                         </div>
                       )
                     })}
+                    
+                    {filteredHeaders.length === 0 && searchFilter && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>Aucune colonne ne correspond à "{searchFilter}"</p>
+                        <Button variant="link" onClick={() => setSearchFilter('')} className="mt-2">
+                          Effacer la recherche
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </ScrollArea>
 
@@ -811,30 +937,59 @@ export function CSVImportWizard() {
             </div>
 
             {validationErrors.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                    Erreurs de validation
+              <Card className="border-destructive/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                      Erreurs de validation ({validationErrors.length})
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {errorsByCategory.required.length > 0 && (
+                        <Badge variant="destructive" className="text-xs">
+                          {errorsByCategory.required.length} champs requis
+                        </Badge>
+                      )}
+                      {errorsByCategory.format.length > 0 && (
+                        <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
+                          {errorsByCategory.format.length} format invalide
+                        </Badge>
+                      )}
+                      {errorsByCategory.warning.length > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {errorsByCategory.warning.length} avertissements
+                        </Badge>
+                      )}
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ScrollArea className="h-48">
                     <div className="space-y-2">
-                       {validationErrors.slice(0, 50).map((error, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm">
-                          {error.severity === 'error' ? (
-                            <X className="w-4 h-4 text-red-500" />
-                          ) : (
-                            <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                      {validationErrors.slice(0, 50).map((error, index) => (
+                        <div 
+                          key={index} 
+                          className={cn(
+                            "flex items-start gap-3 text-sm p-2 rounded-lg",
+                            error.severity === 'error' ? "bg-red-500/5" : "bg-yellow-500/5"
                           )}
-                           <span className="font-medium">Ligne {error.row}:</span>
-                           <span>
-                             {error.message}
-                             {error.value ? (
-                               <span className="text-muted-foreground"> — valeur: “{error.value}”</span>
-                             ) : null}
-                           </span>
+                        >
+                          {error.severity === 'error' ? (
+                            <X className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                          ) : (
+                            <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <span className="font-semibold">Ligne {error.row}</span>
+                            <span className="mx-2 text-muted-foreground">•</span>
+                            <span className="text-muted-foreground">{error.field}</span>
+                            <p className="mt-0.5">{error.message}</p>
+                            {error.value && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Valeur: <code className="bg-muted px-1 rounded">{error.value}</code>
+                              </p>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
