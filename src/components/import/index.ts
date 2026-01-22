@@ -68,3 +68,7 @@ export { ImportFilters } from './ImportFilters';
 export { MultiStoreImportSelector } from './MultiStoreImportSelector';
 export { MultiStoreImportDialog } from './MultiStoreImportDialog';
 export { MultiStoreUrlImport } from './MultiStoreUrlImport';
+
+// Supplier Search
+export { SupplierSearchForm } from './SupplierSearchForm';
+export { SupplierComparisonTable } from './SupplierComparisonTable';
