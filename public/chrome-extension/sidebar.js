@@ -662,6 +662,169 @@
           orders: ['[class*="sold"]'],
           description: ['[data-testid="product-description"]', '.about-product-description'],
           videos: ['video source', 'video[src]']
+        },
+        etsy: {
+          title: ['h1[data-buy-box-listing-title]', 'h1', '.wt-text-body-01'],
+          price: ['[data-buy-box-region="price"] span', '.wt-text-title-03', '[class*="price"]'],
+          originalPrice: ['.wt-text-strikethrough'],
+          images: ['[data-image-carousel] img', '.carousel-image img', '.image-carousel-container img', 'img[data-index]'],
+          rating: ['.wt-icon-star', '[class*="rating"]'],
+          orders: ['[class*="sold"]', '.wt-text-body-02'],
+          description: ['#description-text', '.wt-content-toggle__body', '#listing-page-description'],
+          videos: ['video source', 'video[src]']
+        },
+        // French Marketplaces
+        cdiscount: {
+          title: ['h1[itemprop="name"]', '.fpDesCol h1', '[data-testid="product-title"]', '.prdtTit', '.product-title'],
+          price: ['[itemprop="price"]', '.fpPrice .price', '[data-testid="price"]', '.prdtPrice', '.product-price'],
+          originalPrice: ['.fpPriBrut', '.oldPrice', '[class*="crossed"]', '.prdtPriceOld'],
+          images: ['#fpImgMain img', '.fpMainImg img', '.prdtImg img', '.fpMedia img', 'img[src*="cdscdn"]'],
+          rating: ['[itemprop="ratingValue"]', '.fpRating', '[data-testid="rating"]'],
+          orders: [],
+          description: ['[itemprop="description"]', '.fpDescTxt', '[data-testid="description"]', '.prdtDesc'],
+          videos: ['video source', 'video[src]', 'iframe[src*="youtube"]']
+        },
+        fnac: {
+          title: ['h1.f-productHeader-Title', '.Article-desc', '.product-title', 'h1'],
+          price: ['.f-priceBox-price', '.userPrice', '.price', '[class*="price"]'],
+          originalPrice: ['.f-priceBox-oldPrice', '.oldPrice'],
+          images: ['.f-productVisuals-mainImage img', '.Article-img', 'img[src*="static.fnac"]', '.product-image img'],
+          rating: ['.f-rating', '.rating', '[class*="star"]'],
+          orders: [],
+          description: ['.f-productDetails-text', '.product-description', '.Article-txt'],
+          videos: ['video source', 'video[src]']
+        },
+        rakuten: {
+          title: ['.productTitle', '.product-name', 'h1', '.offer-title'],
+          price: ['.productPrice', '.price', '.offer-price'],
+          originalPrice: ['.oldPrice', '.crossed-price'],
+          images: ['.productImage', 'img[src*="priceminister"]', '.product-gallery img', '.offer-image img'],
+          rating: ['.rating', '[class*="star"]'],
+          orders: [],
+          description: ['.productDescription', '.description', '.product-info'],
+          videos: ['video source', 'video[src]']
+        },
+        darty: {
+          title: ['.product-title', 'h1', '.product-name'],
+          price: ['.product-price', '.price', '[class*="price"]'],
+          originalPrice: ['.old-price', '.crossed-price'],
+          images: ['.product-image img', 'img[src*="darty"]', '.gallery img'],
+          rating: ['.rating', '[class*="star"]'],
+          orders: [],
+          description: ['.product-description', '.description'],
+          videos: ['video source', 'video[src]']
+        },
+        boulanger: {
+          title: ['.product-title', 'h1', '.product-name'],
+          price: ['.product-price', '.price', '[class*="price"]'],
+          originalPrice: ['.old-price'],
+          images: ['.product-image img', 'img[src*="boulanger"]', '.gallery img'],
+          rating: ['.rating'],
+          orders: [],
+          description: ['.product-description'],
+          videos: ['video source', 'video[src]']
+        },
+        manomano: {
+          title: ['.product-title', 'h1', '.ProductTitle'],
+          price: ['.price', '.ProductPrice', '[class*="price"]'],
+          originalPrice: ['.old-price', '.crossed'],
+          images: ['.product-image img', '.ProductImage img', '.gallery img'],
+          rating: ['.rating', '.stars'],
+          orders: [],
+          description: ['.product-description', '.ProductDescription'],
+          videos: ['video source', 'video[src]']
+        },
+        leroymerlin: {
+          title: ['h1', '.product-title', '[class*="title"]'],
+          price: ['.price', '[class*="price"]'],
+          originalPrice: ['.old-price'],
+          images: ['.product-image img', 'img[src*="leroymerlin"]', '.gallery img'],
+          rating: ['.rating'],
+          orders: [],
+          description: ['.product-description'],
+          videos: ['video source', 'video[src]']
+        },
+        // US Home Improvement
+        homedepot: {
+          title: ['.product-title__brand-name', 'h1', '.product-details__title'],
+          price: ['.price', '.price-format__main-price', '[class*="price"]'],
+          originalPrice: ['.price-format__was-price'],
+          images: ['.mediagallery__mainimage img', '.product-image img', 'img[src*="homedepot"]'],
+          rating: ['.ratings__stars', '.rating'],
+          orders: [],
+          description: ['.product-details__description', '.product-overview'],
+          videos: ['video source', 'video[src]']
+        },
+        lowes: {
+          title: ['h1', '.product-title', '[class*="title"]'],
+          price: ['.price', '.product-price', '[class*="price"]'],
+          originalPrice: ['.was-price'],
+          images: ['.product-image img', 'img[src*="lowes"]', '.gallery img'],
+          rating: ['.rating'],
+          orders: [],
+          description: ['.product-description'],
+          videos: ['video source', 'video[src]']
+        },
+        costco: {
+          title: ['h1', '.product-title', '.product-name'],
+          price: ['.price', '[class*="price"]'],
+          originalPrice: ['.was-price'],
+          images: ['.product-image img', 'img[src*="costco"]', '.gallery img'],
+          rating: ['.rating'],
+          orders: [],
+          description: ['.product-description'],
+          videos: ['video source', 'video[src]']
+        },
+        // Asian Suppliers
+        banggood: {
+          title: ['.product-title', 'h1', '.goodsTitle'],
+          price: ['.price', '.product-price', '.newPrice'],
+          originalPrice: ['.oldPrice', '.crossed'],
+          images: ['.product-image img', 'img[src*="banggood"]', '.gallery img'],
+          rating: ['.rating', '.star'],
+          orders: ['.sold', '.orders'],
+          description: ['.product-description', '.description'],
+          videos: ['video source', 'video[src]']
+        },
+        dhgate: {
+          title: ['.product-title', 'h1'],
+          price: ['.price', '.product-price'],
+          originalPrice: ['.old-price'],
+          images: ['.product-image img', 'img[src*="dhgate"]', '.gallery img'],
+          rating: ['.rating'],
+          orders: ['.sold'],
+          description: ['.product-description'],
+          videos: ['video source', 'video[src]']
+        },
+        shein: {
+          title: ['.product-intro__head-name', 'h1', '.goods-title'],
+          price: ['.product-intro__head-price', '.price', '.goods-price'],
+          originalPrice: ['.del-price', '.old-price'],
+          images: ['.product-intro__main-image img', '.goods-detail-bigImg img', 'img[src*="shein"]'],
+          rating: ['.rate-star', '.rating'],
+          orders: ['.sold'],
+          description: ['.product-intro__description', '.goods-desc'],
+          videos: ['video source', 'video[src]']
+        },
+        cjdropshipping: {
+          title: ['.product-title', 'h1', '.goods-name'],
+          price: ['.price', '.product-price'],
+          originalPrice: ['.old-price'],
+          images: ['.product-image img', 'img[src*="cjdropshipping"]', '.gallery img'],
+          rating: ['.rating'],
+          orders: [],
+          description: ['.product-description'],
+          videos: ['video source', 'video[src]']
+        },
+        wish: {
+          title: ['.product-title', 'h1', '.ProductTitle'],
+          price: ['.price', '.ProductPrice'],
+          originalPrice: ['.original-price'],
+          images: ['.product-image img', '.ProductImage img', '.gallery img'],
+          rating: ['.rating', '.stars'],
+          orders: ['.bought'],
+          description: ['.product-description'],
+          videos: ['video source', 'video[src]']
         }
       };
       
