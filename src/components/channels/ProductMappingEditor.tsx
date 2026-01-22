@@ -217,7 +217,7 @@ export function ProductMappingEditor({
           <span>Champ ShopOpti</span>
           <span></span>
           <span>Champ {platformName}</span>
-          <span className="w-20 text-center">Actions</span>
+          <span className="w-24 text-center">Actions</span>
         </div>
 
         {/* Mappings */}
@@ -236,24 +236,18 @@ export function ProductMappingEditor({
                     destField?.required && !mapping.source && "border-destructive/50"
                   )}
                 >
-                  {/* Source field */}
-                  <Select
-                    value={mapping.source || '__none__'}
-                    onValueChange={(value) => updateMapping(mapping.id, { source: value === '__none__' ? '' : value })}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Sélectionner..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">-- Non mappé --</SelectItem>
-                      {SOURCE_FIELDS.map(field => (
-                        <SelectItem key={field.id} value={field.id}>
-                          {field.label}
-                          {field.required && <span className="text-destructive ml-1">*</span>}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* Source field - Static text like destination */}
+                  <div className="flex items-center gap-2 h-9 px-3 rounded-md border bg-background">
+                    <span className={cn(
+                      "text-sm",
+                      !sourceField && "text-muted-foreground"
+                    )}>
+                      {sourceField?.label || '-- Non mappé --'}
+                    </span>
+                    {sourceField?.required && (
+                      <span className="text-destructive">*</span>
+                    )}
+                  </div>
 
                   {/* Arrow */}
                   <div className="flex justify-center">
@@ -264,20 +258,18 @@ export function ProductMappingEditor({
                     )}
                   </div>
 
-                  {/* Destination field */}
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={destField?.label || mapping.destination}
-                      disabled
-                      className="h-9 bg-muted"
-                    />
+                  {/* Destination field - Static text */}
+                  <div className="flex items-center gap-2 h-9 px-3 rounded-md border bg-background">
+                    <span className="text-sm">
+                      {destField?.label || mapping.destination}
+                    </span>
                     {destField?.required && (
                       <Badge variant="secondary" className="text-xs shrink-0">Requis</Badge>
                     )}
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 w-20 justify-center">
+                  <div className="flex items-center gap-1 w-24 justify-center">
                     <Switch
                       checked={mapping.enabled}
                       onCheckedChange={(checked) => updateMapping(mapping.id, { enabled: checked })}
