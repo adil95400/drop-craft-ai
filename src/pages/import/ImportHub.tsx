@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Package, Upload, FileText, TrendingUp, Zap,
   FileSpreadsheet, Link as LinkIcon, BarChart3,
@@ -17,11 +18,12 @@ import {
   ExternalLink, ChevronRight, Box, Layers, Target,
   MousePointerClick, Wand2, History, Trash2,
   TrendingDown, Loader2, AlertTriangle, ArrowUpRight, Timer,
-  Pause, RotateCcw, Settings,
-  FileJson, FileCode, Calendar, Bolt,
+  Pause, RotateCcw, Settings, ShoppingCart, Wifi, WifiOff,
+  FileJson, FileCode, Calendar, Bolt, Unplug,
   ChevronDown, LayoutGrid, List, SortAsc, SortDesc
 } from 'lucide-react'
 import { useRealImportMethods } from '@/hooks/useRealImportMethods'
+import { useChannelConnections } from '@/hooks/useChannelConnections'
 import { format, formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import {
@@ -44,7 +46,24 @@ import { useToast } from '@/hooks/use-toast'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useReducedMotion, getMotionProps } from '@/hooks/useReducedMotion'
 
-// Import methods with full configuration - Cleaned up obsolete links
+// Platform logos mapping
+const platformLogos: Record<string, string> = {
+  shopify: '🛍️',
+  woocommerce: '🛒',
+  prestashop: '🏪',
+  magento: '🧲',
+  amazon: '📦',
+  ebay: '🏷️',
+  etsy: '🎨',
+  google: '🔍',
+  facebook: '📘',
+  tiktok: '🎵',
+  cdiscount: '🔴',
+  fnac: '📀',
+  default: '🌐'
+}
+
+// Import methods with full configuration
 const importMethodsConfig = [
   {
     id: 'autods-style',
@@ -59,7 +78,8 @@ const importMethodsConfig = [
     badge: '⭐ Nouveau',
     badgeColor: 'bg-gradient-to-r from-orange-500 to-red-500',
     features: ['Import masse URL', 'Import par image', 'File d\'attente'],
-    avgTime: '~30 sec'
+    avgTime: '~30 sec',
+    usageCount: 0
   },
   {
     id: 'bulk-urls',
@@ -74,7 +94,8 @@ const importMethodsConfig = [
     badge: 'Pro',
     badgeColor: 'bg-purple-500',
     features: ['Jusqu\'à 500 URLs', 'Queue intelligente', 'Rapport détaillé'],
-    avgTime: '~5 min'
+    avgTime: '~5 min',
+    usageCount: 0
   },
   {
     id: 'csv-excel',
@@ -87,7 +108,8 @@ const importMethodsConfig = [
     borderColor: 'border-green-500/20 hover:border-green-500/50',
     link: '/import/quick',
     features: ['Glisser-déposer', 'Mapping auto', 'Validation colonnes'],
-    avgTime: '~2 min'
+    avgTime: '~2 min',
+    usageCount: 0
   },
   {
     id: 'api-feed',
@@ -102,7 +124,8 @@ const importMethodsConfig = [
     badge: 'Avancé',
     badgeColor: 'bg-indigo-500',
     features: ['REST / GraphQL', 'XML / JSON', 'Webhooks'],
-    avgTime: 'Variable'
+    avgTime: 'Variable',
+    usageCount: 0
   },
   {
     id: 'chrome-extension',
@@ -116,7 +139,8 @@ const importMethodsConfig = [
     link: '/extensions',
     external: true,
     features: ['1-clic browser', 'Tous les sites', 'Sync temps réel'],
-    avgTime: '~5 sec'
+    avgTime: '~5 sec',
+    usageCount: 0
   },
   {
     id: 'advanced-engine',
@@ -131,7 +155,8 @@ const importMethodsConfig = [
     badge: 'IA',
     badgeColor: 'bg-gradient-to-r from-pink-500 to-rose-500',
     features: ['Analyse IA', 'Produits gagnants', 'Veille prix'],
-    avgTime: 'Temps réel'
+    avgTime: 'Temps réel',
+    usageCount: 0
   }
 ]
 
@@ -152,6 +177,7 @@ export default function ImportHub() {
   const { toast } = useToast()
   const prefersReducedMotion = useReducedMotion()
   const { importMethods, stats, isLoading, deleteMethod, executeImport, isExecuting } = useRealImportMethods()
+  const { connections, stats: channelStats, isLoading: isLoadingChannels, syncMutation } = useChannelConnections()
   
   // State
   const [searchQuery, setSearchQuery] = useState('')
@@ -169,11 +195,25 @@ export default function ImportHub() {
     transition: { duration: 0.3 }
   })
 
-  const fadeInLeft = getMotionProps(prefersReducedMotion, {
-    initial: { opacity: 0, x: -20 },
-    animate: { opacity: 1, x: 0 },
-    transition: { duration: 0.3 }
-  })
+  // Connected channels summary
+  const connectedChannels = useMemo(() => 
+    connections.filter(c => c.connection_status === 'connected'),
+    [connections]
+  )
+
+  const storeConnections = useMemo(() => 
+    connectedChannels.filter(c => 
+      ['shopify', 'woocommerce', 'prestashop', 'magento', 'wix', 'bigcommerce'].includes(c.platform_type?.toLowerCase())
+    ),
+    [connectedChannels]
+  )
+
+  const marketplaceConnections = useMemo(() => 
+    connectedChannels.filter(c => 
+      ['amazon', 'ebay', 'etsy', 'google', 'facebook', 'tiktok', 'cdiscount', 'fnac'].includes(c.platform_type?.toLowerCase())
+    ),
+    [connectedChannels]
+  )
 
   // Computed values
   const recentImports = useMemo(() => 
@@ -264,6 +304,10 @@ export default function ImportHub() {
     }
   }, [deleteMethod, toast])
 
+  const handleSyncChannel = useCallback((connectionId: string) => {
+    syncMutation.mutate([connectionId])
+  }, [syncMutation])
+
   // Status helpers
   const getStatusConfig = useCallback((status: string) => {
     const configs: Record<string, { icon: any; color: string; bgColor: string; label: string }> = {
@@ -314,14 +358,6 @@ export default function ImportHub() {
     )
   }, [getStatusConfig, prefersReducedMotion])
 
-  // Stats for hero section
-  const heroStats = useMemo(() => [
-    { label: 'Total imports', value: stats.totalMethods.toString() },
-    { label: 'Réussis', value: stats.successfulJobs.toString() },
-    { label: 'En cours', value: stats.pendingJobs.toString() },
-    { label: 'Taux succès', value: `${stats.totalMethods > 0 ? Math.round((stats.successfulJobs / stats.totalMethods) * 100) : 0}%` }
-  ], [stats])
-
   return (
     <ChannablePageWrapper
       title="Importez vos produits"
@@ -348,6 +384,97 @@ export default function ImportHub() {
         </div>
       }
     >
+      {/* Connected Channels Status Bar */}
+      <motion.div {...fadeInUp}>
+        <Card className="border-2 border-primary/10 bg-gradient-to-r from-primary/5 via-transparent to-purple-500/5">
+          <CardContent className="p-4">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              {/* Left: Stats summary */}
+              <div className="flex items-center gap-6 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <Wifi className="w-4 h-4 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{channelStats.totalConnected} canaux connectés</p>
+                    <p className="text-xs text-muted-foreground">
+                      {channelStats.storesCount} boutiques • {channelStats.marketplacesCount} marketplaces
+                    </p>
+                  </div>
+                </div>
+                
+                <Separator orientation="vertical" className="h-10 hidden lg:block" />
+                
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <Package className="w-4 h-4 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{channelStats.totalProducts.toLocaleString()} produits</p>
+                    <p className="text-xs text-muted-foreground">dans votre catalogue</p>
+                  </div>
+                </div>
+                
+                <Separator orientation="vertical" className="h-10 hidden lg:block" />
+                
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <ShoppingCart className="w-4 h-4 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{channelStats.totalOrders.toLocaleString()} commandes</p>
+                    <p className="text-xs text-muted-foreground">synchronisées</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Connected platforms badges */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <TooltipProvider>
+                  {connectedChannels.slice(0, 5).map((channel) => (
+                    <Tooltip key={channel.id}>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-background border rounded-full text-sm">
+                          <span>{platformLogos[channel.platform_type?.toLowerCase()] || platformLogos.default}</span>
+                          <span className="font-medium truncate max-w-[80px]">{channel.platform_name}</span>
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{channel.shop_domain || channel.platform_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Dernière sync: {channel.last_sync_at 
+                            ? formatDistanceToNow(new Date(channel.last_sync_at), { addSuffix: true, locale: fr })
+                            : 'Jamais'
+                          }
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
+                
+                {connectedChannels.length > 5 && (
+                  <Badge variant="outline">+{connectedChannels.length - 5}</Badge>
+                )}
+                
+                {connectedChannels.length === 0 && (
+                  <Button variant="outline" size="sm" onClick={() => navigate('/stores')}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Connecter une boutique
+                  </Button>
+                )}
+                
+                {connectedChannels.length > 0 && (
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/stores')}>
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Quick URL Import */}
       <motion.div {...fadeInUp}>
         <Card className="border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
@@ -402,6 +529,40 @@ export default function ImportHub() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Quick Actions - Shortcuts */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Import URL', icon: Bolt, link: '/import/autods', color: 'orange' },
+          { label: 'CSV / Excel', icon: FileSpreadsheet, link: '/import/quick', color: 'green' },
+          { label: 'Import en Masse', icon: Layers, link: '/import/bulk', color: 'purple' },
+          { label: 'Historique', icon: History, link: '/import/history', color: 'blue' },
+        ].map((action, index) => (
+          <motion.div
+            key={action.label}
+            {...getMotionProps(prefersReducedMotion, {
+              initial: { opacity: 0, y: 10 },
+              animate: { opacity: 1, y: 0 },
+              transition: { delay: index * 0.05 }
+            })}
+          >
+            <Link to={action.link}>
+              <Card className={cn(
+                "cursor-pointer transition-all hover:shadow-md border-2 hover:border-primary/30",
+                `hover:bg-${action.color}-500/5`
+              )}>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className={cn("p-2 rounded-lg", `bg-${action.color}-500/10`)}>
+                    <action.icon className={cn("w-5 h-5", `text-${action.color}-500`)} />
+                  </div>
+                  <span className="font-medium text-sm">{action.label}</span>
+                  <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground" />
+                </CardContent>
+              </Card>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -509,6 +670,13 @@ export default function ImportHub() {
             <TabsTrigger value="methods" className="data-[state=active]:bg-background">
               <Layers className="w-4 h-4 mr-2" />
               Méthodes
+            </TabsTrigger>
+            <TabsTrigger value="channels" className="data-[state=active]:bg-background">
+              <Store className="w-4 h-4 mr-2" />
+              Canaux
+              {connectedChannels.length > 0 && (
+                <Badge variant="secondary" className="ml-1.5 h-5 px-1.5">{connectedChannels.length}</Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="config" className="data-[state=active]:bg-background" onClick={() => navigate('/import/config')}>
               <Settings className="w-4 h-4 mr-2" />
@@ -821,6 +989,223 @@ export default function ImportHub() {
                 </Link>
               </motion.div>
             ))}
+          </div>
+        </TabsContent>
+
+        {/* Channels Tab */}
+        <TabsContent value="channels" className="space-y-6 mt-0">
+          {/* Stores Section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <Store className="w-5 h-5" />
+                  Boutiques connectées
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Synchronisez vos produits avec vos boutiques e-commerce
+                </p>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/stores')}>
+                <Plus className="w-4 h-4 mr-2" />
+                Ajouter une boutique
+              </Button>
+            </div>
+            
+            {isLoadingChannels ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="w-12 h-12 rounded-xl" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : storeConnections.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Store className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Aucune boutique connectée</h3>
+                  <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                    Connectez votre boutique Shopify, WooCommerce ou PrestaShop pour synchroniser vos produits
+                  </p>
+                  <Button onClick={() => navigate('/stores')}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Connecter une boutique
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {storeConnections.map((store, index) => (
+                  <motion.div
+                    key={store.id}
+                    {...getMotionProps(prefersReducedMotion, {
+                      initial: { opacity: 0, y: 10 },
+                      animate: { opacity: 1, y: 0 },
+                      transition: { delay: index * 0.05 }
+                    })}
+                  >
+                    <Card className="hover:shadow-md transition-all group">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="text-3xl">
+                              {platformLogos[store.platform_type?.toLowerCase()] || platformLogos.default}
+                            </div>
+                            <div>
+                              <p className="font-semibold">{store.platform_name}</p>
+                              <p className="text-xs text-muted-foreground truncate max-w-[150px]">
+                                {store.shop_domain || 'Non configuré'}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                            <Wifi className="w-3 h-3 mr-1" />
+                            Connecté
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div className="text-center p-2 bg-muted/50 rounded-lg">
+                            <p className="text-lg font-bold">{store.products_synced}</p>
+                            <p className="text-xs text-muted-foreground">Produits</p>
+                          </div>
+                          <div className="text-center p-2 bg-muted/50 rounded-lg">
+                            <p className="text-lg font-bold">{store.orders_synced}</p>
+                            <p className="text-xs text-muted-foreground">Commandes</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Sync: {store.last_sync_at 
+                              ? formatDistanceToNow(new Date(store.last_sync_at), { addSuffix: true, locale: fr })
+                              : 'Jamais'
+                            }
+                          </span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleSyncChannel(store.id)}
+                            disabled={syncMutation.isPending}
+                          >
+                            <RefreshCw className={cn("w-4 h-4", syncMutation.isPending && "animate-spin")} />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Marketplaces Section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <Globe className="w-5 h-5" />
+                  Marketplaces connectées
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Publiez vos produits sur les principales marketplaces
+                </p>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/stores?tab=marketplaces')}>
+                <Plus className="w-4 h-4 mr-2" />
+                Ajouter une marketplace
+              </Button>
+            </div>
+            
+            {marketplaceConnections.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Globe className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Aucune marketplace connectée</h3>
+                  <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                    Connectez Amazon, eBay, Etsy ou d'autres marketplaces pour élargir votre audience
+                  </p>
+                  <Button onClick={() => navigate('/stores?tab=marketplaces')}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Connecter une marketplace
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {marketplaceConnections.map((marketplace, index) => (
+                  <motion.div
+                    key={marketplace.id}
+                    {...getMotionProps(prefersReducedMotion, {
+                      initial: { opacity: 0, y: 10 },
+                      animate: { opacity: 1, y: 0 },
+                      transition: { delay: index * 0.05 }
+                    })}
+                  >
+                    <Card className="hover:shadow-md transition-all">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="text-3xl">
+                              {platformLogos[marketplace.platform_type?.toLowerCase()] || platformLogos.default}
+                            </div>
+                            <div>
+                              <p className="font-semibold">{marketplace.platform_name}</p>
+                              <p className="text-xs text-muted-foreground">Marketplace</p>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                            <Wifi className="w-3 h-3 mr-1" />
+                            Connecté
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div className="text-center p-2 bg-muted/50 rounded-lg">
+                            <p className="text-lg font-bold">{marketplace.products_synced}</p>
+                            <p className="text-xs text-muted-foreground">Produits</p>
+                          </div>
+                          <div className="text-center p-2 bg-muted/50 rounded-lg">
+                            <p className="text-lg font-bold">{marketplace.orders_synced}</p>
+                            <p className="text-xs text-muted-foreground">Commandes</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Sync: {marketplace.last_sync_at 
+                              ? formatDistanceToNow(new Date(marketplace.last_sync_at), { addSuffix: true, locale: fr })
+                              : 'Jamais'
+                            }
+                          </span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleSyncChannel(marketplace.id)}
+                            disabled={syncMutation.isPending}
+                          >
+                            <RefreshCw className={cn("w-4 h-4", syncMutation.isPending && "animate-spin")} />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         </TabsContent>
 
