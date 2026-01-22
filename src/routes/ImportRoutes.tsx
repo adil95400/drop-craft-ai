@@ -9,6 +9,16 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'))
 const ImportConfigPage = lazy(() => import('@/pages/import/ImportConfigPage'))
 
+// Pages plateformes professionnelles
+const ShopifyImportPage = lazy(() => import('@/pages/import/platforms/ShopifyImportPage'))
+const AmazonImportPage = lazy(() => import('@/pages/import/platforms/AmazonImportPage'))
+const AliExpressImportPage = lazy(() => import('@/pages/import/platforms/AliExpressImportPage'))
+const EbayImportPage = lazy(() => import('@/pages/import/platforms/EbayImportPage'))
+const EtsyImportPage = lazy(() => import('@/pages/import/platforms/EtsyImportPage'))
+const CJDropshippingImportPage = lazy(() => import('@/pages/import/platforms/CJDropshippingImportPage'))
+const TemuImportPage = lazy(() => import('@/pages/import/platforms/TemuImportPage'))
+const CdiscountImportPage = lazy(() => import('@/pages/import/platforms/CdiscountImportPage'))
+
 // Méthodes d'import
 const QuickImportPage = lazy(() => import('@/pages/import/quick/QuickImportPage'))
 const UrlImportPage = lazy(() => import('@/pages/import/UrlImportPage'))
@@ -16,7 +26,7 @@ const AutoDSImportPage = lazy(() => import('@/pages/import/AutoDSImportPage'))
 const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'))
 const BulkImportPage = lazy(() => import('@/pages/import/BulkImportPage'))
 const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'))
-const AliExpressImportPage = lazy(() => import('@/pages/import/AliExpressImportPage'))
+const AliExpressImportPageLegacy = lazy(() => import('@/pages/import/AliExpressImportPage'))
 
 // IA & Génération
 const AIGenerationPage = lazy(() => import('@/pages/import/AIGenerationPage'))
@@ -43,14 +53,24 @@ export function ImportRoutes() {
       <Route index element={<ImportHub />} />
       <Route path="config" element={<ImportConfigPage />} />
       
+      {/* Pages plateformes professionnelles */}
+      <Route path="shopify" element={<ShopifyImportPage />} />
+      <Route path="amazon" element={<AmazonImportPage />} />
+      <Route path="aliexpress" element={<AliExpressImportPage />} />
+      <Route path="ebay" element={<EbayImportPage />} />
+      <Route path="etsy" element={<EtsyImportPage />} />
+      <Route path="cj-dropshipping" element={<CJDropshippingImportPage />} />
+      <Route path="temu" element={<TemuImportPage />} />
+      <Route path="cdiscount" element={<CdiscountImportPage />} />
+      
       {/* Méthodes d'import */}
       <Route path="quick" element={<QuickImportPage />} />
       <Route path="url" element={<UrlImportPage />} />
       <Route path="autods" element={<AutoDSImportPage />} />
       <Route path="advanced" element={<AdvancedImportPage />} />
       <Route path="bulk" element={<BulkImportPage />} />
-      <Route path="shopify" element={<ShopifyImportHub />} />
-      <Route path="aliexpress" element={<AliExpressImportPage />} />
+      <Route path="shopify-hub" element={<ShopifyImportHub />} />
+      <Route path="aliexpress-legacy" element={<AliExpressImportPageLegacy />} />
       
       {/* IA & Génération */}
       <Route path="ai-generation" element={<AIGenerationPage />} />
