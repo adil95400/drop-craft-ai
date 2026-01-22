@@ -855,6 +855,14 @@
       // Get ALL images from the page - comprehensive multi-platform extraction
       const getAllImages = (selectorList) => {
         const images = new Set();
+
+        const parseSrcset = (srcset) => {
+          if (!srcset || typeof srcset !== 'string') return [];
+          return srcset
+            .split(',')
+            .map((part) => part.trim().split(/\s+/)[0])
+            .filter(Boolean);
+        };
         const platform = this.platform?.key || 'generic';
         
         console.log('[DropCraft] Starting image extraction for platform:', platform);
@@ -1064,6 +1072,7 @@
             // Get all possible image sources
             const sources = [
               el.src,
+              ...(parseSrcset(el.srcset) || []),
               el.dataset.src,
               el.dataset.original,
               el.dataset.zoom,
@@ -1339,9 +1348,9 @@
       // Handle protocol-relative URLs
       if (clean.startsWith('//')) clean = 'https:' + clean;
       
-      // Skip invalid images
-      const skipPatterns = ['sprite', 'pixel', 'grey', 'transparent', 'placeholder', 'loading', 'spacer', '1x1', 'blank', 'logo', 'icon', 'badge', 'button'];
-      if (skipPatterns.some(p => clean.toLowerCase().includes(p)) || clean.length < 30) {
+      // Skip obviously invalid images
+      const skipPatterns = ['sprite', 'pixel', 'transparent', 'placeholder', 'loading', 'spacer', '1x1', 'blank', 'badge', 'button'];
+      if (skipPatterns.some(p => clean.toLowerCase().includes(p)) || clean.length < 12) {
         return '';
       }
       
@@ -1350,7 +1359,7 @@
         return '';
       }
       
-      // Clean size parameters for high-res
+      // Clean size parameters for high-res (keep query if URL has no clear extension)
       clean = clean
         .replace(/\._AC_.*?\./g, '.')              // Amazon: ._AC_SX200_.
         .replace(/\._[A-Z]+\d+_\./g, '.')          // Amazon: ._SS40_.
@@ -1360,8 +1369,23 @@
         .replace(/[@_]\d+x\d+/g, '')                // @350x350 or _350x350
         .replace(/\/s\d+\//g, '/')                  // Shopify /s100/
         .replace(/_small|_thumb|_mini/gi, '')       // Size suffixes
-        .replace(/\?v=\d+$/, '')                    // Version params
-        .replace(/\?.*$/, '');                      // Remove query params
+
+      // If the URL clearly points to an image file, strip query params (tracking/size).
+      // Otherwise keep the query (some CDNs require it to serve the actual asset).
+      try {
+        const u = new URL(clean);
+        const hasImageExt = /\.(png|jpe?g|webp|gif|avif)(?:$|\?)/i.test(u.pathname);
+        if (hasImageExt) {
+          u.search = '';
+          clean = u.toString();
+        } else {
+          // Remove common tracking params but keep functional params.
+          ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','fbclid','gclid','msclkid'].forEach((k) => u.searchParams.delete(k));
+          clean = u.toString();
+        }
+      } catch {
+        // If URL parsing fails, keep as-is.
+      }
       
       // Handle relative URLs
       if (clean.startsWith('/') && !clean.startsWith('//')) {
@@ -1372,15 +1396,12 @@
     }
 
     isValidImageUrl(url) {
-      if (!url || typeof url !== 'string' || url.length < 30) return false;
+      if (!url || typeof url !== 'string' || url.length < 12) return false;
       
       // Skip invalid patterns
       const skipPatterns = [
-        'sprite', 'pixel', 'transparent', 'grey', 'gray',
-        'placeholder', 'loading', 'avatar', 'profile', 'icon',
-        'logo', 'button', 'badge', 'star', 'rating', 'flag',
-        'emoji', 'thumb', 'spacer', '1x1', 'blank', '.svg',
-        'data:image/svg', 'data:image/gif'
+        'sprite', 'pixel', 'transparent', 'placeholder', 'loading',
+        'spacer', '1x1', 'blank', '.svg', 'data:image/svg'
       ];
       
       const lowerUrl = url.toLowerCase();
