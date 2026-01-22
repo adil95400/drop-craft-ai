@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,12 +24,14 @@ import {
   User,
   ThumbsUp,
   ImageIcon as ImagePlus,
+  Images,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { OptimizedModal } from '@/components/ui/optimized-modal';
 import { StatCard, CompactStat } from '@/components/ui/optimized-stats-grid';
+import { MediaGalleryManager } from '@/components/products/MediaGalleryManager';
 
 interface ProductDetailsDialogProps {
   open: boolean;
@@ -51,7 +53,9 @@ interface Review {
 export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductDetailsDialogProps) {
   const { supabaseQuery } = useApi();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [product, setProduct] = useState<any>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
 
@@ -81,12 +85,48 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
 
       if (error) throw new Error(error);
       setProduct(data);
+      // Parse images from product data
+      const images: string[] = [];
+      if (data?.image_url) images.push(data.image_url);
+      if (data?.images && Array.isArray(data.images)) {
+        images.push(...data.images.filter((img: unknown): img is string => typeof img === 'string' && img !== '' && !images.includes(img as string)));
+      }
+      setProductImages(images);
     } catch (error) {
       toast.error('Erreur lors du chargement du produit');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleImagesChange = useCallback(async (newImages: string[]) => {
+    if (!productId || !product) return;
+    
+    setIsSaving(true);
+    try {
+      const [primaryImage, ...additionalImages] = newImages;
+      
+      const { error } = await (supabase as any)
+        .from('products')
+        .update({
+          image_url: primaryImage || null,
+          images: additionalImages.length > 0 ? additionalImages : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', productId);
+      
+      if (error) throw error;
+      
+      setProductImages(newImages);
+      setProduct({ ...product, image_url: primaryImage, images: additionalImages });
+      toast.success('Images mises à jour');
+    } catch (error) {
+      console.error('Error updating images:', error);
+      toast.error('Erreur lors de la mise à jour des images');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [productId, product]);
 
   const loadProductReviews = async () => {
     if (!productId) return;
@@ -271,8 +311,17 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
 
           {/* Tabs with detailed information */}
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="w-full grid grid-cols-5">
+            <TabsList className="w-full grid grid-cols-6">
               <TabsTrigger value="general">Général</TabsTrigger>
+              <TabsTrigger value="media" className="gap-1">
+                <Images className="h-3.5 w-3.5" />
+                Médias
+                {productImages.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                    {productImages.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
               <TabsTrigger value="pricing">Prix</TabsTrigger>
               <TabsTrigger value="reviews" className="gap-1">
                 <MessageSquare className="h-3.5 w-3.5" />
@@ -327,6 +376,15 @@ export function ProductDetailsDialog({ open, onOpenChange, productId }: ProductD
                   </div>
                 </div>
               </div>
+            </TabsContent>
+
+            {/* Media Tab */}
+            <TabsContent value="media" className="space-y-4 mt-4">
+              <MediaGalleryManager
+                images={productImages}
+                onImagesChange={handleImagesChange}
+                isLoading={isSaving}
+              />
             </TabsContent>
 
             <TabsContent value="pricing" className="space-y-4 mt-4">
