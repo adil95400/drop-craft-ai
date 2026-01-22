@@ -425,7 +425,7 @@ export function ChannableSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['home', 'catalog']);
+  const [openGroups, setOpenGroups] = useState<NavGroupId[]>(['home']);
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({
     marketing: true
   });
