@@ -384,12 +384,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'orders-all', name: 'Toutes les commandes', route: '/orders', icon: 'ShoppingCart', description: 'Liste complète', features: ['list'], order: 1 },
       { id: 'orders-create', name: 'Créer', route: '/orders/create', icon: 'Plus', description: 'Nouvelle commande', features: ['create'], order: 2 },
       { id: 'orders-bulk', name: 'Commandes en masse', route: '/orders/bulk', icon: 'Layers', description: 'Gestion par lot', features: ['bulk'], order: 3 },
-      { id: 'orders-fulfillment', name: 'Fulfillment', route: '/orders/fulfillment', icon: 'PackageCheck', description: 'Expédition automatique', features: ['fulfillment'], order: 4 },
-      { id: 'orders-fulfillment-carriers', name: 'Transporteurs', route: '/orders/fulfillment/carriers', icon: 'Truck', description: 'Gestion transporteurs', features: ['carriers'], order: 5 },
-      { id: 'orders-fulfillment-rules', name: 'Règles Expédition', route: '/orders/fulfillment/rules', icon: 'GitBranch', description: 'Règles d\'expédition', features: ['rules'], order: 6 },
-      { id: 'orders-returns', name: 'Retours', route: '/orders/returns', icon: 'RotateCcw', description: 'Gestion retours', features: ['returns'], order: 7 },
-      { id: 'orders-tracking', name: 'Suivi', route: '/orders/tracking', icon: 'Truck', description: 'Suivi livraisons', features: ['tracking'], order: 8 },
-      { id: 'orders-notifications', name: 'Notifications Client', route: '/orders/notifications', icon: 'Bell', description: 'Alertes clients', features: ['notifications'], order: 9 },
+      { id: 'orders-fulfillment', name: 'Fulfillment', route: '/orders/fulfillment', icon: 'PackageCheck', description: 'Expédition automatique', features: ['fulfillment', 'carriers', 'rules'], order: 4 },
+      { id: 'orders-returns', name: 'Retours', route: '/orders/returns', icon: 'RotateCcw', description: 'Gestion retours', features: ['returns'], order: 5 },
+      { id: 'orders-tracking', name: 'Suivi', route: '/orders/tracking', icon: 'Truck', description: 'Suivi livraisons', features: ['tracking'], order: 6 },
+      { id: 'orders-notifications', name: 'Notifications Client', route: '/orders/notifications', icon: 'Bell', description: 'Alertes clients', features: ['notifications'], order: 7 },
     ]
   },
   
