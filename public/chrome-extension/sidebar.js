@@ -1920,6 +1920,13 @@
     }
 
     async importFromCard(card, btn) {
+      // ===== CONNECTION CHECK (critical fix) =====
+      if (!this.isConnected || !this.token) {
+        this.showToast('⚠️ Veuillez vous connecter d\'abord (ouvrez le panneau Drop Craft AI)', 'warning');
+        this.open(); // Open sidebar to show auth panel
+        return;
+      }
+
       // Extract product info from card - Platform-specific extractors
       const extractFromCard = () => {
         const hostname = window.location.hostname;
@@ -2109,6 +2116,56 @@
           };
         }
         
+        // Shein
+        if (hostname.includes('shein')) {
+          return {
+            title: card.querySelector('.S-product-item__name, [class*="title"], h3')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+            image: card.querySelector('img[src*="shein"], img')?.src || '',
+            url: card.querySelector('a[href*="/product"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Wish
+        if (hostname.includes('wish')) {
+          return {
+            title: card.querySelector('.product-title, [class*="title"], h3')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+            image: card.querySelector('img')?.src || '',
+            url: card.querySelector('a[href*="/product"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // Banggood
+        if (hostname.includes('banggood')) {
+          return {
+            title: card.querySelector('.product-title, [class*="title"], h3')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+            image: card.querySelector('img[src*="banggood"], img')?.src || '',
+            url: card.querySelector('a[href*="/p/"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // DHgate
+        if (hostname.includes('dhgate')) {
+          return {
+            title: card.querySelector('.product-title, [class*="title"], h3')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+            image: card.querySelector('img[src*="dhgate"], img')?.src || '',
+            url: card.querySelector('a[href*="/product"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
+        // CJDropshipping
+        if (hostname.includes('cjdropshipping')) {
+          return {
+            title: card.querySelector('.product-title, [class*="title"], h3')?.textContent?.trim() || '',
+            price: this.parsePriceFromElement(card.querySelector('[class*="price"]')),
+            image: card.querySelector('img')?.src || '',
+            url: card.querySelector('a[href*="/product"]')?.href || card.querySelector('a')?.href || window.location.href
+          };
+        }
+        
         // Generic extraction (fallback for all other platforms)
         const link = card.querySelector('a[href*="/"]');
         const title = card.querySelector('h1, h2, h3, [class*="title"], [class*="name"]')?.textContent?.trim() || '';
@@ -2125,6 +2182,12 @@
       
       const productInfo = extractFromCard();
       
+      // Validate extracted data
+      if (!productInfo.title && !productInfo.image) {
+        this.showToast('❌ Impossible d\'extraire les données du produit', 'error');
+        return;
+      }
+      
       if (btn) {
         btn.innerHTML = '⏳';
         btn.disabled = true;
@@ -2133,21 +2196,29 @@
       this.showToast('Import en cours...', 'info');
       
       try {
+        console.log('[DropCraft] Importing from card:', {
+          title: productInfo.title?.substring(0, 50),
+          price: productInfo.price,
+          hasImage: !!productInfo.image,
+          url: productInfo.url?.substring(0, 50)
+        });
+
         const res = await dcFetchJson(`${CONFIG.API_URL}/extension-sync-realtime`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(this.token && { 'x-extension-token': this.token }),
+            'x-extension-token': this.token,
           },
           body: JSON.stringify({
             action: 'import_products',
             products: [
               {
-                title: productInfo.title,
-                name: productInfo.title,
+                title: productInfo.title || 'Produit importé',
+                name: productInfo.title || 'Produit importé',
                 price: productInfo.price || 0,
                 image: productInfo.image || '',
                 imageUrl: productInfo.image || '',
+                images: productInfo.image ? [productInfo.image] : [],
                 url: productInfo.url,
                 source: 'chrome_extension_catalog',
                 platform: this.platform?.key || 'unknown',
@@ -2156,22 +2227,36 @@
           }),
         });
 
+        console.log('[DropCraft] Card import result:', res);
+
         const result = res.data;
         if (res.ok && (result?.imported > 0 || result?.success)) {
           if (btn) {
             btn.innerHTML = '✅';
             btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
           }
-          this.showToast('✅ Produit importé!', 'success');
+          const displayTitle = productInfo.title?.length > 25 
+            ? productInfo.title.substring(0, 25) + '...' 
+            : (productInfo.title || 'Produit');
+          this.showToast(`✅ "${displayTitle}" importé!`, 'success');
         } else {
-          throw new Error(result?.error || res.error || `Erreur (HTTP ${res.status})`);
+          // Extract detailed error message
+          const errorMsg = result?.error || 
+                          result?.errors?.[0]?.error || 
+                          res.error || 
+                          (res.status === 401 ? 'Token expiré - reconnectez-vous' : 
+                           res.status === 400 ? 'Données invalides' :
+                           res.status === 500 ? 'Erreur serveur' :
+                           `Erreur HTTP ${res.status}`);
+          throw new Error(errorMsg);
         }
       } catch (error) {
+        console.error('[DropCraft] Card import error:', error);
         if (btn) {
           btn.innerHTML = '❌';
           btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
         }
-        this.showToast(`❌ ${error.message}`, 'error');
+        this.showToast(`❌ ${error.message || 'Erreur inconnue'}`, 'error');
         
         // Reset button after 2s
         setTimeout(() => {
