@@ -410,8 +410,7 @@
       
       // Settings button
       this.sidebar.querySelector('#dc-settings-btn')?.addEventListener('click', () => {
-        const redirect = encodeURIComponent('/extensions/chrome');
-        window.open(`${CONFIG.APP_URL}/auth?redirect=${redirect}&force=true`, '_blank');
+        window.open(chrome.runtime.getURL('auth.html'), '_blank');
       });
       
       // Connect button

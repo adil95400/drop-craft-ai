@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Drop Craft AI - Connexion</title>
+  <title>Shopopti+ - Connexion</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -59,13 +59,13 @@
       flex-direction: column;
       min-height: 100vh;
       padding: 24px;
-      gap: 20px;
+      gap: 16px;
     }
     
     /* Header */
     .header {
       text-align: center;
-      padding: 20px 0;
+      padding: 16px 0;
     }
     
     .logo-container {
@@ -73,18 +73,18 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     
     .logo-icon {
-      width: 56px;
-      height: 56px;
+      width: 48px;
+      height: 48px;
       background: var(--dc-gradient);
-      border-radius: 16px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
+      font-size: 24px;
       box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4);
       animation: float 3s ease-in-out infinite;
     }
@@ -95,7 +95,7 @@
     }
     
     .logo-text {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 800;
       color: var(--dc-text);
     }
@@ -108,18 +108,18 @@
     }
     
     .subtitle {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--dc-text-secondary);
       max-width: 300px;
       margin: 0 auto;
-      line-height: 1.5;
+      line-height: 1.4;
     }
     
     /* Status Card */
     .status-card {
       background: var(--dc-bg-surface);
       border-radius: 16px;
-      padding: 20px;
+      padding: 16px;
       border: 1px solid var(--dc-border);
       transition: all 0.3s ease;
     }
@@ -133,7 +133,6 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 16px;
     }
     
     .status-indicator {
@@ -166,13 +165,13 @@
     }
     
     .status-text {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--dc-text);
     }
     
     .status-info {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--dc-text-secondary);
     }
     
@@ -180,8 +179,8 @@
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 16px;
+      gap: 10px;
+      margin-top: 12px;
       display: none;
     }
     
@@ -191,20 +190,15 @@
     
     .stat-item {
       background: var(--dc-bg-elevated);
-      border-radius: 12px;
-      padding: 12px;
+      border-radius: 10px;
+      padding: 10px;
       text-align: center;
       border: 1px solid transparent;
       transition: all 0.3s ease;
     }
     
-    .stat-item:hover {
-      border-color: var(--dc-primary);
-      transform: translateY(-2px);
-    }
-    
     .stat-value {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
       background: var(--dc-gradient);
       -webkit-background-clip: text;
@@ -213,28 +207,61 @@
     }
     
     .stat-label {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--dc-text-muted);
-      margin-top: 4px;
+      margin-top: 2px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+    
+    /* Tabs */
+    .auth-tabs {
+      display: flex;
+      background: var(--dc-bg-surface);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+    
+    .auth-tab {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      color: var(--dc-text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+    
+    .auth-tab:hover {
+      color: var(--dc-text);
+      background: var(--dc-bg-elevated);
+    }
+    
+    .auth-tab.active {
+      background: var(--dc-gradient);
+      color: white;
     }
     
     /* Form */
     .form-section {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
     
     .input-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     
     .input-label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       color: var(--dc-text-secondary);
       display: flex;
@@ -244,20 +271,24 @@
     
     .input-field {
       width: 100%;
-      padding: 14px 16px;
+      padding: 12px 14px;
       background: var(--dc-bg-surface);
       border: 2px solid var(--dc-border);
-      border-radius: 12px;
+      border-radius: 10px;
       color: var(--dc-text);
       font-size: 14px;
-      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
       transition: all 0.3s ease;
       outline: none;
+      font-family: inherit;
+    }
+    
+    .input-field.mono {
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      font-size: 13px;
     }
     
     .input-field::placeholder {
       color: var(--dc-text-muted);
-      font-family: 'Inter', sans-serif;
     }
     
     .input-field:focus {
@@ -266,24 +297,20 @@
       box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
     }
     
-    .input-field:valid:not(:placeholder-shown) {
-      border-color: var(--dc-success);
-    }
-    
     /* Buttons */
     .btn {
       width: 100%;
-      padding: 14px 24px;
+      padding: 12px 20px;
       border: none;
-      border-radius: 12px;
-      font-size: 15px;
+      border-radius: 10px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       font-family: inherit;
     }
     
@@ -296,10 +323,6 @@
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5);
-    }
-    
-    .btn-primary:active {
-      transform: translateY(0);
     }
     
     .btn-primary:disabled {
@@ -331,7 +354,7 @@
     
     .btn-group {
       display: flex;
-      gap: 12px;
+      gap: 10px;
     }
     
     .btn-group .btn {
@@ -340,13 +363,13 @@
     
     /* Message Toast */
     .message-toast {
-      padding: 14px 18px;
-      border-radius: 12px;
-      font-size: 13px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 12px;
       font-weight: 500;
       display: none;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       animation: slideIn 0.3s ease;
     }
     
@@ -377,82 +400,41 @@
       color: var(--dc-accent);
     }
     
-    /* Help Section */
-    .help-section {
-      background: var(--dc-bg-surface);
-      border-radius: 16px;
-      padding: 20px;
-      border: 1px solid var(--dc-border);
+    /* Tab Panels */
+    .tab-panel {
+      display: none;
     }
     
-    .help-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--dc-text);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .help-steps {
+    .tab-panel.active {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
     
-    .help-step {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px;
-      background: var(--dc-bg-elevated);
-      border-radius: 10px;
-      transition: all 0.3s ease;
-    }
-    
-    .help-step:hover {
-      background: var(--dc-bg-dark);
-      transform: translateX(4px);
-    }
-    
-    .step-number {
-      width: 24px;
-      height: 24px;
-      min-width: 24px;
-      background: var(--dc-gradient);
-      border-radius: 50%;
+    /* Divider */
+    .divider {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 700;
-      color: white;
-    }
-    
-    .step-content {
-      flex: 1;
-    }
-    
-    .step-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--dc-text);
-      margin-bottom: 2px;
-    }
-    
-    .step-desc {
-      font-size: 11px;
+      gap: 12px;
       color: var(--dc-text-muted);
+      font-size: 11px;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--dc-border);
     }
     
     /* Footer Links */
     .footer-links {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       margin-top: auto;
-      padding-top: 20px;
+      padding-top: 16px;
     }
     
     .footer-link {
@@ -460,12 +442,12 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 12px;
+      padding: 10px;
       background: var(--dc-bg-surface);
-      border-radius: 10px;
+      border-radius: 8px;
       color: var(--dc-text-secondary);
       text-decoration: none;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       transition: all 0.3s ease;
       border: 1px solid var(--dc-border);
@@ -479,8 +461,8 @@
     
     /* Spinner */
     .spinner {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-top-color: white;
       border-radius: 50%;
@@ -491,40 +473,29 @@
       to { transform: rotate(360deg); }
     }
     
-    /* Features Grid */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-top: 16px;
-    }
-    
-    .feature-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      background: var(--dc-bg-elevated);
-      border-radius: 10px;
-      font-size: 12px;
-      color: var(--dc-text-secondary);
-    }
-    
-    .feature-icon {
-      font-size: 16px;
-    }
-    
     /* Version Badge */
     .version-badge {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      padding: 4px 10px;
+      top: 16px;
+      right: 16px;
+      padding: 4px 8px;
       background: var(--dc-bg-surface);
-      border-radius: 20px;
-      font-size: 11px;
+      border-radius: 16px;
+      font-size: 10px;
       color: var(--dc-text-muted);
       border: 1px solid var(--dc-border);
+    }
+    
+    /* Shake animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    
+    /* Hide sections */
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
@@ -532,15 +503,15 @@
   <div class="bg-animation"></div>
   
   <div class="container">
-    <span class="version-badge">v4.0.0</span>
+    <span class="version-badge" id="versionBadge">v4.3.6</span>
     
     <!-- Header -->
     <header class="header">
       <div class="logo-container">
         <div class="logo-icon">🚀</div>
-        <div class="logo-text">Drop Craft <span>AI</span></div>
+        <div class="logo-text">Shopopti<span>+</span></div>
       </div>
-      <p class="subtitle">Extension de dropshipping professionnelle avec IA intégrée</p>
+      <p class="subtitle">Extension de dropshipping professionnelle</p>
     </header>
     
     <!-- Status Card -->
@@ -549,7 +520,7 @@
         <div class="status-indicator"></div>
         <div>
           <div class="status-text" id="statusText">Non connecté</div>
-          <div class="status-info" id="statusInfo">Entrez votre clé pour démarrer</div>
+          <div class="status-info" id="statusInfo">Connectez-vous pour démarrer</div>
         </div>
       </div>
       
@@ -568,55 +539,75 @@
           <div class="stat-label">Surveillés</div>
         </div>
       </div>
-      
-      <!-- Features Grid (shown when disconnected) -->
-      <div class="features-grid" id="featuresGrid">
-        <div class="feature-item">
-          <span class="feature-icon">⚡</span>
-          <span>Import 1-Click</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-icon">🤖</span>
-          <span>IA Intégrée</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-icon">📊</span>
-          <span>Calcul Profit</span>
-        </div>
-        <div class="feature-item">
-          <span class="feature-icon">⭐</span>
-          <span>Import Avis</span>
-        </div>
-      </div>
     </div>
     
     <!-- Message Toast -->
     <div class="message-toast" id="messageToast"></div>
     
-    <!-- Form Section -->
-    <div class="form-section" id="formSection">
-      <div class="input-group">
-        <label class="input-label">
-          🔑 Clé d'extension
-        </label>
-        <input 
-          type="text" 
-          class="input-field" 
-          id="tokenInput" 
-          placeholder="Collez votre clé ici (ex: ext_abc123...)"
-          autocomplete="off"
-          spellcheck="false"
-        >
+    <!-- Auth Tabs (hidden when connected) -->
+    <div class="auth-tabs" id="authTabs">
+      <button class="auth-tab active" data-tab="email">📧 Email</button>
+      <button class="auth-tab" data-tab="token">🔑 Clé</button>
+    </div>
+    
+    <!-- Email/Password Panel -->
+    <div class="tab-panel active" id="panelEmail">
+      <div class="form-section">
+        <div class="input-group">
+          <label class="input-label">📧 Adresse email</label>
+          <input 
+            type="email" 
+            class="input-field" 
+            id="emailInput" 
+            placeholder="votre@email.com"
+            autocomplete="email"
+          >
+        </div>
+        <div class="input-group">
+          <label class="input-label">🔒 Mot de passe</label>
+          <input 
+            type="password" 
+            class="input-field" 
+            id="passwordInput" 
+            placeholder="••••••••"
+            autocomplete="current-password"
+          >
+        </div>
+        <button class="btn btn-primary" id="loginBtn">
+          <span>🔗</span>
+          <span>Se connecter</span>
+        </button>
+        <div class="divider">ou</div>
+        <button class="btn btn-secondary" id="signupBtn">
+          <span>✨</span>
+          <span>Créer un compte</span>
+        </button>
       </div>
-      
-      <button class="btn btn-primary" id="connectBtn">
-        <span>🔗</span>
-        <span>Connecter l'extension</span>
-      </button>
+    </div>
+    
+    <!-- Token Panel -->
+    <div class="tab-panel" id="panelToken">
+      <div class="form-section">
+        <div class="input-group">
+          <label class="input-label">🔑 Clé d'extension</label>
+          <input 
+            type="text" 
+            class="input-field mono" 
+            id="tokenInput" 
+            placeholder="Collez votre clé ici (ex: ext_abc123...)"
+            autocomplete="off"
+            spellcheck="false"
+          >
+        </div>
+        <button class="btn btn-primary" id="connectBtn">
+          <span>🔗</span>
+          <span>Connecter avec la clé</span>
+        </button>
+      </div>
     </div>
     
     <!-- Connected Actions (hidden initially) -->
-    <div class="form-section" id="connectedActions" style="display: none;">
+    <div class="form-section hidden" id="connectedActions">
       <div class="btn-group">
         <button class="btn btn-secondary" id="dashboardBtn">
           <span>📊</span>
@@ -633,42 +624,11 @@
       </button>
     </div>
     
-    <!-- Help Section -->
-    <div class="help-section" id="helpSection">
-      <div class="help-title">
-        <span>📋</span>
-        <span>Comment obtenir votre clé ?</span>
-      </div>
-      <div class="help-steps">
-        <div class="help-step">
-          <span class="step-number">1</span>
-          <div class="step-content">
-            <div class="step-title">Créez un compte</div>
-            <div class="step-desc">Inscrivez-vous gratuitement sur Drop Craft AI</div>
-          </div>
-        </div>
-        <div class="help-step">
-          <span class="step-number">2</span>
-          <div class="step-content">
-            <div class="step-title">Générez votre clé</div>
-            <div class="step-desc">Extensions → Chrome → Générer une clé</div>
-          </div>
-        </div>
-        <div class="help-step">
-          <span class="step-number">3</span>
-          <div class="step-content">
-            <div class="step-title">Collez et connectez</div>
-            <div class="step-desc">Collez la clé ci-dessus et cliquez sur Connecter</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
     <!-- Footer Links -->
     <div class="footer-links">
       <a href="https://drop-craft-ai.lovable.app/extensions/chrome" target="_blank" class="footer-link">
         <span>🌐</span>
-        <span>Ouvrir Drop Craft AI</span>
+        <span>Ouvrir Shopopti+</span>
       </a>
       <a href="https://drop-craft-ai.lovable.app/extensions/documentation" target="_blank" class="footer-link">
         <span>📚</span>

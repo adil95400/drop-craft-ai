@@ -247,9 +247,8 @@ async function toggleConnection() {
     updateConnectionStatus(false);
     showNotification('Déconnecté', 'info');
   } else {
-    // Open app to connect
-    const redirect = encodeURIComponent('/extensions/chrome');
-    chrome.tabs.create({ url: `${APP_URL}/auth?redirect=${redirect}&force=true` });
+    // Open extension's internal auth page
+    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
   }
 }
 
