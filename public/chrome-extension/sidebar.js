@@ -852,108 +852,270 @@
         return '';
       };
       
-      // Get ALL images from the page - enhanced for AliExpress
+      // Get ALL images from the page - comprehensive multi-platform extraction
       const getAllImages = (selectorList) => {
         const images = new Set();
+        const platform = this.platform?.key || 'generic';
         
-        // Special handling for AliExpress - extract from gallery JSON data
-        if (this.platform?.key === 'aliexpress') {
-          // Try to get images from AliExpress data layers
-          try {
-            // Check for embedded JSON data
-            const scripts = document.querySelectorAll('script');
-            for (const script of scripts) {
-              const content = script.textContent || '';
-              // Look for image arrays in JSON
-              const imageMatches = content.match(/"imageUrl"\s*:\s*"([^"]+)"/g) || [];
-              for (const match of imageMatches) {
-                const urlMatch = match.match(/"imageUrl"\s*:\s*"([^"]+)"/);
-                if (urlMatch && urlMatch[1]) {
-                  const cleaned = this.cleanImageUrl(urlMatch[1]);
-                  if (this.isValidImageUrl(cleaned)) {
-                    images.add(cleaned);
-                  }
+        console.log('[DropCraft] Starting image extraction for platform:', platform);
+
+        // ===== 1. JSON-LD structured data (highest priority) =====
+        try {
+          const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+          for (const script of scripts) {
+            try {
+              const data = JSON.parse(script.textContent);
+              const items = Array.isArray(data) ? data : [data];
+              for (const item of items) {
+                if (item['@type'] === 'Product' && item.image) {
+                  const imgs = Array.isArray(item.image) ? item.image : [item.image];
+                  imgs.forEach(img => {
+                    const url = this.cleanImageUrl(typeof img === 'string' ? img : img.url);
+                    if (this.isValidImageUrl(url)) images.add(url);
+                  });
+                }
+              }
+            } catch (e) {}
+          }
+        } catch (e) {}
+        console.log('[DropCraft] After JSON-LD:', images.size, 'images');
+
+        // ===== 2. Embedded JSON data extraction =====
+        try {
+          const allScripts = document.querySelectorAll('script:not([type]), script[type="text/javascript"]');
+          for (const script of allScripts) {
+            const content = script.textContent || '';
+            
+            // AliExpress patterns
+            if (platform === 'aliexpress' || content.includes('alicdn') || content.includes('imagePathList')) {
+              const patterns = [
+                /"imageUrl"\s*:\s*"([^"]+)"/g,
+                /"originalUrl"\s*:\s*"([^"]+)"/g,
+                /"imgUrl"\s*:\s*"([^"]+)"/g,
+                /"imageSrc"\s*:\s*"([^"]+)"/g
+              ];
+              
+              for (const pattern of patterns) {
+                let match;
+                while ((match = pattern.exec(content)) !== null) {
+                  const url = this.cleanImageUrl(match[1]);
+                  if (this.isValidImageUrl(url)) images.add(url);
                 }
               }
               
-              // Also look for imagePathList
+              // imagePathList array
               const pathListMatch = content.match(/"imagePathList"\s*:\s*\[([^\]]+)\]/);
               if (pathListMatch) {
                 const paths = pathListMatch[1].match(/"([^"]+)"/g);
                 if (paths) {
-                  for (const path of paths) {
-                    const url = path.replace(/"/g, '');
-                    if (url.startsWith('//')) {
-                      const cleaned = this.cleanImageUrl('https:' + url);
-                      if (this.isValidImageUrl(cleaned)) {
-                        images.add(cleaned);
-                      }
-                    } else if (url.startsWith('http')) {
-                      const cleaned = this.cleanImageUrl(url);
-                      if (this.isValidImageUrl(cleaned)) {
-                        images.add(cleaned);
-                      }
-                    }
-                  }
+                  paths.forEach(p => {
+                    let imgUrl = p.replace(/"/g, '');
+                    if (imgUrl.startsWith('//')) imgUrl = 'https:' + imgUrl;
+                    const url = this.cleanImageUrl(imgUrl);
+                    if (this.isValidImageUrl(url)) images.add(url);
+                  });
                 }
               }
             }
-          } catch (e) {
-            console.warn('[DropCraft] Error extracting AliExpress images from JSON:', e);
-          }
-          
-          // Also get from gallery/slider elements
-          const aliexpressImageSelectors = [
-            '.slider--slide--K6MIH9z img',
-            '.image-view-magnifier-wrap img',
-            '.images-view-wrap img',
-            '.pdp-slide img',
-            'img[src*="ae0"]',
-            'img[src*="alicdn"]',
-            '.sku--image--jvAmHBF img',
-            '[class*="gallery"] img',
-            '.product-image-view img'
-          ];
-          
-          for (const selector of aliexpressImageSelectors) {
-            document.querySelectorAll(selector).forEach(el => {
-              let src = el.src || el.dataset.src || el.dataset.original || el.getAttribute('data-lazy-src') || el.dataset.zoom || el.dataset.highres;
-              if (src) {
-                src = this.cleanImageUrl(src);
-                if (this.isValidImageUrl(src)) {
-                  images.add(src);
+            
+            // Amazon patterns
+            if (platform === 'amazon' || content.includes('colorImages') || content.includes('ImageBlockATF')) {
+              const hiResMatches = content.match(/"hiRes"\s*:\s*"([^"]+)"/g) || [];
+              hiResMatches.forEach(m => {
+                const urlMatch = m.match(/"hiRes"\s*:\s*"([^"]+)"/);
+                if (urlMatch) {
+                  const url = this.cleanImageUrl(urlMatch[1]);
+                  if (this.isValidImageUrl(url)) images.add(url);
                 }
-              }
+              });
+              
+              const largeMatches = content.match(/"large"\s*:\s*"([^"]+)"/g) || [];
+              largeMatches.forEach(m => {
+                const urlMatch = m.match(/"large"\s*:\s*"([^"]+)"/);
+                if (urlMatch) {
+                  const url = this.cleanImageUrl(urlMatch[1]);
+                  if (this.isValidImageUrl(url)) images.add(url);
+                }
+              });
+            }
+            
+            // Shopify patterns
+            if (platform === 'shopify' || content.includes('Shopify') || content.includes('product.variants')) {
+              const shopifyMatches = content.match(/"src"\s*:\s*"(https?:\/\/[^"]+shopify[^"]+)"/g) || [];
+              shopifyMatches.forEach(m => {
+                const urlMatch = m.match(/"src"\s*:\s*"([^"]+)"/);
+                if (urlMatch) {
+                  const url = this.cleanImageUrl(urlMatch[1]);
+                  if (this.isValidImageUrl(url)) images.add(url);
+                }
+              });
+            }
+            
+            // Cdiscount patterns
+            if (platform === 'cdiscount' || content.includes('cdiscount')) {
+              const cdMatches = content.match(/"(https?:\/\/[^"]*cdnssl\.cdscdn[^"]+)"/g) || [];
+              cdMatches.forEach(m => {
+                const url = this.cleanImageUrl(m.replace(/"/g, ''));
+                if (this.isValidImageUrl(url)) images.add(url);
+              });
+            }
+            
+            // Generic image URL patterns
+            const genericMatches = content.match(/"(https?:\/\/[^"]+\.(jpg|jpeg|png|webp)[^"]*)"/gi) || [];
+            genericMatches.forEach(m => {
+              const url = this.cleanImageUrl(m.replace(/"/g, ''));
+              if (this.isValidImageUrl(url)) images.add(url);
             });
           }
+        } catch (e) {
+          console.warn('[DropCraft] Error extracting images from scripts:', e);
         }
+        console.log('[DropCraft] After script extraction:', images.size, 'images');
+
+        // ===== 3. Platform-specific DOM selectors =====
+        const platformSelectors = {
+          aliexpress: [
+            '.slider--img--item img', '.slider--slide--K6MIH9z img', '.image-view-magnifier-wrap img',
+            '.images-view-wrap img', '.pdp-slide img', 'img[src*="ae0"]', 'img[src*="alicdn"]',
+            '.sku--image--jvAmHBF img', '[class*="gallery"] img', '.product-image-view img',
+            '.magnifier-image img', '.pdp-module-img img', '.swiper-slide img'
+          ],
+          amazon: [
+            '#imgTagWrapperId img', '#landingImage', '.a-dynamic-image', '#altImages img',
+            '#imageBlock img', '.imgTagWrapper img', '[data-old-hires]', '.image-thumb img'
+          ],
+          ebay: [
+            '[data-testid="ux-image-carousel"] img', '.ux-image-carousel img', '#mainImgHldr img',
+            '.ux-image-grid img', '.filmstrip img'
+          ],
+          cdiscount: [
+            '.fpMainPicture img', '.fpThumbs img', '.productMedia img', '.product-gallery img',
+            '.jsMainProductPicture img', '.product-picture img', '.swiper-slide img',
+            'img[src*="cdscdn"]', 'img[src*="cdiscount"]'
+          ],
+          fnac: [
+            '.f-productVisual img', '.gallery img', '.product-image img', '.slider img',
+            '.carousel-item img', 'img[src*="fnac"]'
+          ],
+          rakuten: [
+            '.productImage img', 'img[src*="rakuten"]', '.product-gallery img', '.offer-image img',
+            '.gallery-item img', 'img[src*="priceminister"]'
+          ],
+          darty: [
+            '.product-image img', 'img[src*="darty"]', '.gallery img', '.carousel img',
+            '.product-picture img'
+          ],
+          boulanger: [
+            '.product-image img', 'img[src*="boulanger"]', '.gallery img', '.media-gallery img'
+          ],
+          manomano: [
+            '.product-image img', '.ProductImage img', '.gallery img', '.swiper-slide img',
+            'img[src*="manomano"]'
+          ],
+          leroymerlin: [
+            '.product-image img', 'img[src*="leroymerlin"]', '.gallery img', '.media img',
+            'img[src*="lmfr"]'
+          ],
+          shopify: [
+            '.product__media img', '.product-featured-img', '.product-single__photo img',
+            '.product-images img', '.ProductGallery img', '[data-product-featured-image]',
+            '.product__photos img', '.carousel img'
+          ],
+          walmart: [
+            '[data-testid="product-image"] img', '.prod-hero-image img', '.zoom-image img',
+            'img[src*="walmart"]'
+          ],
+          temu: [
+            '[class*="gallery"] img', '[class*="product-image"] img', '.swiper-slide img',
+            'img[src*="temu"]'
+          ],
+          etsy: [
+            '.listing-page-image img', '[data-carousel-image] img', '.carousel-image img',
+            'img[src*="etsy"]'
+          ],
+          homedepot: [
+            '.mediagallery__mainimage img', '.product-image img', 'img[src*="homedepot"]'
+          ],
+          lowes: [
+            '.product-image img', 'img[src*="lowes"]', '.gallery img'
+          ],
+          costco: [
+            '.product-image img', 'img[src*="costco"]', '.gallery img'
+          ],
+          shein: [
+            '.product-intro__main-image img', '.goods-detail-bigImg img', 'img[src*="shein"]'
+          ],
+          banggood: [
+            '.product-image img', 'img[src*="banggood"]', '.gallery img'
+          ],
+          dhgate: [
+            '.product-image img', 'img[src*="dhgate"]', '.gallery img'
+          ],
+          wish: [
+            '.product-image img', '.ProductImage img', '.gallery img'
+          ]
+        };
         
-        // Try specific selectors
-        for (const selector of selectorList) {
+        const platformSels = platformSelectors[platform] || [];
+        const allSelectors = [...platformSels, ...selectorList];
+        
+        for (const selector of allSelectors) {
           document.querySelectorAll(selector).forEach(el => {
-            let src = el.src || el.dataset.src || el.dataset.original || el.getAttribute('data-lazy-src') || el.dataset.zoom || el.dataset.highres;
-            if (src) {
-              // Clean and get high-res version
-              src = this.cleanImageUrl(src);
-              if (this.isValidImageUrl(src)) {
-                images.add(src);
-              }
+            // Get all possible image sources
+            const sources = [
+              el.src,
+              el.dataset.src,
+              el.dataset.original,
+              el.dataset.zoom,
+              el.dataset.zoomImage,
+              el.dataset.large,
+              el.dataset.highres,
+              el.dataset.lazySrc,
+              el.getAttribute('data-lazy-src'),
+              el.getAttribute('data-old-hires')
+            ].filter(Boolean);
+            
+            // Also check for Amazon's dynamic image data
+            const dynamicImg = el.getAttribute('data-a-dynamic-image');
+            if (dynamicImg) {
+              try {
+                const imgData = JSON.parse(dynamicImg);
+                Object.keys(imgData).forEach(url => {
+                  const cleaned = this.cleanImageUrl(url);
+                  if (this.isValidImageUrl(cleaned)) images.add(cleaned);
+                });
+              } catch (e) {}
             }
+            
+            sources.forEach(src => {
+              const url = this.cleanImageUrl(src);
+              if (this.isValidImageUrl(url)) images.add(url);
+            });
           });
         }
-        
-        // Also scan for high-res data attributes
-        document.querySelectorAll('img[data-zoom-image], img[data-large], img[data-src]').forEach(el => {
-          const src = el.dataset.zoomImage || el.dataset.large || el.dataset.src;
-          if (src) {
-            const cleaned = this.cleanImageUrl(src);
-            if (this.isValidImageUrl(cleaned)) {
-              images.add(cleaned);
-            }
-          }
+        console.log('[DropCraft] After DOM extraction:', images.size, 'images');
+
+        // ===== 4. High-res attribute scan =====
+        document.querySelectorAll('img[data-zoom-image], img[data-large], img[data-src], img[data-highres], img[data-original]').forEach(el => {
+          const sources = [
+            el.dataset.zoomImage, el.dataset.large, el.dataset.src,
+            el.dataset.highres, el.dataset.original, el.src
+          ].filter(Boolean);
+          
+          sources.forEach(src => {
+            const url = this.cleanImageUrl(src);
+            if (this.isValidImageUrl(url)) images.add(url);
+          });
         });
-        
-        console.log('[DropCraft] Extracted', images.size, 'unique images');
+
+        // ===== 5. OG image fallback =====
+        const ogImage = document.querySelector('meta[property="og:image"]')?.content;
+        if (ogImage) {
+          const url = this.cleanImageUrl(ogImage);
+          if (this.isValidImageUrl(url)) images.add(url);
+        }
+
+        console.log('[DropCraft] Final extracted images:', images.size);
         return Array.from(images).slice(0, 20); // Max 20 images
       };
       
@@ -1170,21 +1332,67 @@
     }
 
     cleanImageUrl(url) {
-      if (!url) return '';
-      if (url.startsWith('//')) url = 'https:' + url;
-      // Remove size transforms for Amazon, AliExpress
-      url = url.replace(/\._AC_.*?\./g, '.');
-      url = url.replace(/_\d+x\d+\./g, '.');
-      url = url.replace(/\?.*$/, '');
-      return url;
+      if (!url || typeof url !== 'string') return '';
+      
+      let clean = url;
+      
+      // Handle protocol-relative URLs
+      if (clean.startsWith('//')) clean = 'https:' + clean;
+      
+      // Skip invalid images
+      const skipPatterns = ['sprite', 'pixel', 'grey', 'transparent', 'placeholder', 'loading', 'spacer', '1x1', 'blank', 'logo', 'icon', 'badge', 'button'];
+      if (skipPatterns.some(p => clean.toLowerCase().includes(p)) || clean.length < 30) {
+        return '';
+      }
+      
+      // Skip SVGs and data URIs
+      if (clean.includes('.svg') || clean.includes('data:image/svg') || clean.startsWith('data:')) {
+        return '';
+      }
+      
+      // Clean size parameters for high-res
+      clean = clean
+        .replace(/\._AC_.*?\./g, '.')              // Amazon: ._AC_SX200_.
+        .replace(/\._[A-Z]+\d+_\./g, '.')          // Amazon: ._SS40_.
+        .replace(/\._[A-Z]+_\./g, '.')              // Amazon: ._SS_.
+        .replace(/_\d+x\d+\./g, '.')                // AliExpress: _350x350.
+        .replace(/_\d+x\d+_/g, '_')                 // Variant: _350x350_
+        .replace(/[@_]\d+x\d+/g, '')                // @350x350 or _350x350
+        .replace(/\/s\d+\//g, '/')                  // Shopify /s100/
+        .replace(/_small|_thumb|_mini/gi, '')       // Size suffixes
+        .replace(/\?v=\d+$/, '')                    // Version params
+        .replace(/\?.*$/, '');                      // Remove query params
+      
+      // Handle relative URLs
+      if (clean.startsWith('/') && !clean.startsWith('//')) {
+        clean = window.location.origin + clean;
+      }
+      
+      return clean;
     }
 
     isValidImageUrl(url) {
-      if (!url || url.length < 30) return false;
-      if (url.includes('sprite') || url.includes('pixel') || url.includes('transparent')) return false;
-      if (url.includes('grey') || url.includes('placeholder') || url.includes('loading')) return false;
-      if (url.includes('avatar') || url.includes('profile') || url.includes('icon')) return false;
-      try { new URL(url); return true; } catch { return false; }
+      if (!url || typeof url !== 'string' || url.length < 30) return false;
+      
+      // Skip invalid patterns
+      const skipPatterns = [
+        'sprite', 'pixel', 'transparent', 'grey', 'gray',
+        'placeholder', 'loading', 'avatar', 'profile', 'icon',
+        'logo', 'button', 'badge', 'star', 'rating', 'flag',
+        'emoji', 'thumb', 'spacer', '1x1', 'blank', '.svg',
+        'data:image/svg', 'data:image/gif'
+      ];
+      
+      const lowerUrl = url.toLowerCase();
+      if (skipPatterns.some(p => lowerUrl.includes(p))) return false;
+      
+      // Must be a valid URL
+      try { 
+        new URL(url); 
+        return true; 
+      } catch { 
+        return false; 
+      }
     }
 
     getProductCardHTML(product) {

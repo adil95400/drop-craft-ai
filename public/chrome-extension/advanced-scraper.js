@@ -629,8 +629,9 @@
     
     async extractImages() {
       const images = new Set();
+      console.log('[AdvancedScraper] Starting image extraction for:', this.platform);
 
-      // JSON-LD images
+      // ===== 1. JSON-LD images (highest priority) =====
       const scripts = document.querySelectorAll('script[type="application/ld+json"]');
       for (const script of scripts) {
         try {
@@ -647,38 +648,228 @@
           }
         } catch (e) {}
       }
+      console.log('[AdvancedScraper] After JSON-LD:', images.size, 'images');
 
-      // Platform-specific image selectors
+      // ===== 2. Embedded JSON data (AliExpress, Temu, Shopify) =====
+      const allScripts = document.querySelectorAll('script:not([type]), script[type="text/javascript"]');
+      for (const script of allScripts) {
+        const content = script.textContent || '';
+        
+        // AliExpress patterns
+        const aliPatterns = [
+          /"imageUrl"\s*:\s*"([^"]+)"/g,
+          /"imagePathList"\s*:\s*\[([^\]]+)\]/,
+          /"originalUrl"\s*:\s*"([^"]+)"/g,
+          /"imgUrl"\s*:\s*"([^"]+)"/g,
+          /"imageSrc"\s*:\s*"([^"]+)"/g
+        ];
+        
+        for (const pattern of aliPatterns) {
+          if (pattern.global) {
+            let match;
+            while ((match = pattern.exec(content)) !== null) {
+              const url = this.cleanImageUrl(match[1]);
+              if (url) images.add(url);
+            }
+          } else {
+            const match = content.match(pattern);
+            if (match && match[1]) {
+              // Handle array of paths
+              const paths = match[1].match(/"([^"]+)"/g);
+              if (paths) {
+                paths.forEach(p => {
+                  let imgUrl = p.replace(/"/g, '');
+                  if (imgUrl.startsWith('//')) imgUrl = 'https:' + imgUrl;
+                  const url = this.cleanImageUrl(imgUrl);
+                  if (url) images.add(url);
+                });
+              }
+            }
+          }
+        }
+        
+        // Amazon patterns
+        if (content.includes('colorImages') || content.includes('ImageBlockATF')) {
+          const amazonMatches = content.match(/"hiRes"\s*:\s*"([^"]+)"/g) || [];
+          amazonMatches.forEach(m => {
+            const urlMatch = m.match(/"hiRes"\s*:\s*"([^"]+)"/);
+            if (urlMatch) {
+              const url = this.cleanImageUrl(urlMatch[1]);
+              if (url) images.add(url);
+            }
+          });
+          
+          const largeMatches = content.match(/"large"\s*:\s*"([^"]+)"/g) || [];
+          largeMatches.forEach(m => {
+            const urlMatch = m.match(/"large"\s*:\s*"([^"]+)"/);
+            if (urlMatch) {
+              const url = this.cleanImageUrl(urlMatch[1]);
+              if (url) images.add(url);
+            }
+          });
+        }
+        
+        // Shopify patterns
+        if (content.includes('Shopify') || content.includes('product.variants')) {
+          const shopifyMatches = content.match(/"src"\s*:\s*"(https?:\/\/[^"]+shopify[^"]+)"/g) || [];
+          shopifyMatches.forEach(m => {
+            const urlMatch = m.match(/"src"\s*:\s*"([^"]+)"/);
+            if (urlMatch) {
+              const url = this.cleanImageUrl(urlMatch[1]);
+              if (url) images.add(url);
+            }
+          });
+        }
+      }
+      console.log('[AdvancedScraper] After embedded JSON:', images.size, 'images');
+
+      // ===== 3. Platform-specific image selectors =====
       const imageSelectors = {
-        amazon: ['#imgTagWrapperId img', '#landingImage', '.a-dynamic-image', '#altImages img'],
-        aliexpress: ['.slider--img--item img', '[class*="gallery"] img', '.images-view-item img'],
-        ebay: ['[data-testid="ux-image-carousel"] img', '.ux-image-carousel img', '#mainImgHldr img'],
-        walmart: ['[data-testid="product-image"] img', '.prod-hero-image img'],
-        cdiscount: ['.fpMainPicture img', '.fpThumbs img', '.productMedia img'],
-        fnac: ['.f-productVisual img', '.gallery img'],
-        temu: ['[class*="gallery"] img', '[class*="product-image"] img'],
-        etsy: ['.listing-page-image img', '[data-carousel-image] img'],
-        generic: ['[itemprop="image"]', '.product-image img', '.gallery img', '[class*="product"] img']
+        aliexpress: [
+          '.slider--img--item img', '.slider--slide--K6MIH9z img', '.image-view-magnifier-wrap img',
+          '.images-view-wrap img', '.pdp-slide img', 'img[src*="ae0"]', 'img[src*="alicdn"]',
+          '.sku--image--jvAmHBF img', '[class*="gallery"] img', '.product-image-view img',
+          '.magnifier-image img', '.pdp-module-img img', '.swiper-slide img'
+        ],
+        amazon: [
+          '#imgTagWrapperId img', '#landingImage', '.a-dynamic-image', '#altImages img',
+          '#imageBlock img', '.imgTagWrapper img', '[data-old-hires]', '.image-thumb img',
+          '#ivLargeImage img', '.mainImageContainer img'
+        ],
+        ebay: [
+          '[data-testid="ux-image-carousel"] img', '.ux-image-carousel img', '#mainImgHldr img',
+          '.ux-image-grid img', '.vi-image-gallery img', '.filmstrip img', '.picture-panel img'
+        ],
+        walmart: [
+          '[data-testid="product-image"] img', '.prod-hero-image img', '.zoom-image img',
+          '.ProductImageGroup img', '.hover-zoom-hero-image img', '.thumbnail-image img'
+        ],
+        cdiscount: [
+          '.fpMainPicture img', '.fpThumbs img', '.productMedia img', '.product-gallery img',
+          '.jsMainProductPicture img', '.product-picture img', '.swiper-slide img'
+        ],
+        fnac: [
+          '.f-productVisual img', '.gallery img', '.product-image img', '.slider img',
+          '.carousel-item img', '.thumb-item img', '.picture img'
+        ],
+        shopify: [
+          '.product__media img', '.product-featured-img', '.product-single__photo img',
+          '.product-images img', '.ProductGallery img', '[data-product-featured-image]',
+          '.product__photos img', '.carousel img', '.swiper-slide img'
+        ],
+        temu: [
+          '[class*="gallery"] img', '[class*="product-image"] img', '.swiper-slide img',
+          '[class*="slider"] img', '.goods-gallery img', '[class*="carousel"] img'
+        ],
+        etsy: [
+          '.listing-page-image img', '[data-carousel-image] img', '.carousel-image img',
+          '.image-carousel img', '.listing-image img', '.wt-max-width-full img'
+        ],
+        homedepot: [
+          '.mediagallery__mainimage img', '.product-image img', 'img[src*="homedepot"]',
+          '.thumbnails img', '.media-gallery img', '.main-image img'
+        ],
+        lowes: [
+          '.product-image img', 'img[src*="lowes"]', '.gallery img', '.main-image img',
+          '.carousel img', '.thumbnail img', '.product-hero img'
+        ],
+        costco: [
+          '.product-image img', 'img[src*="costco"]', '.gallery img', '.main-image img',
+          '.thumbnail-list img', '.image-carousel img'
+        ],
+        rakuten: [
+          '.productImage', 'img[src*="rakuten"]', '.product-gallery img', '.offer-image img',
+          '.gallery-item img', '.main-image img', '.thumbnail img'
+        ],
+        darty: [
+          '.product-image img', 'img[src*="darty"]', '.gallery img', '.carousel img',
+          '.product-picture img', '.slider-item img', '.thumbnail img'
+        ],
+        boulanger: [
+          '.product-image img', 'img[src*="boulanger"]', '.gallery img', '.carousel img',
+          '.slider img', '.media-gallery img', '.product-gallery img'
+        ],
+        manomano: [
+          '.product-image img', '.ProductImage img', '.gallery img', '.carousel img',
+          '.swiper-slide img', '.thumbnail img', '.media-gallery img'
+        ],
+        leroymerlin: [
+          '.product-image img', 'img[src*="leroymerlin"]', '.gallery img', '.carousel img',
+          '.media img', '.slider img', '.thumbnail img'
+        ],
+        shein: [
+          '.product-intro__main-image img', '.goods-detail-bigImg img', 'img[src*="shein"]',
+          '.product-image-carousel img', '.crop-image-container img', '.swiper-slide img'
+        ],
+        banggood: [
+          '.product-image img', 'img[src*="banggood"]', '.gallery img', '.slide img',
+          '.product-gallery img', '.thumbnail img', '.main-image img'
+        ],
+        dhgate: [
+          '.product-image img', 'img[src*="dhgate"]', '.gallery img', '.slide img',
+          '.product-gallery img', '.carousel img', '.main-image img'
+        ],
+        wish: [
+          '.product-image img', '.ProductImage img', '.gallery img', '.carousel img',
+          '.swiper-slide img', '.main-image img', '.thumbnail img'
+        ],
+        generic: [
+          '[itemprop="image"]', '.product-image img', '.gallery img', 'img[class*="product"]',
+          '.carousel img', '.slider img', '.swiper-slide img', '.thumbnail img',
+          '[data-testid*="image"] img', 'main img', '.main-image img'
+        ]
       };
 
       const selectors = imageSelectors[this.platform] || imageSelectors.generic;
 
       for (const sel of selectors) {
         document.querySelectorAll(sel).forEach(img => {
-          const url = this.cleanImageUrl(img.src || img.dataset.src || img.dataset.original || img.dataset.zoom);
-          if (url) images.add(url);
+          // Get all possible image sources
+          const sources = [
+            img.src,
+            img.dataset.src,
+            img.dataset.original,
+            img.dataset.zoom,
+            img.dataset.zoomImage,
+            img.dataset.large,
+            img.dataset.highres,
+            img.dataset.lazySrc,
+            img.getAttribute('data-lazy-src'),
+            img.getAttribute('data-old-hires'),
+            img.getAttribute('data-a-dynamic-image') ? Object.keys(JSON.parse(img.getAttribute('data-a-dynamic-image') || '{}'))[0] : null
+          ].filter(Boolean);
+          
+          sources.forEach(src => {
+            const url = this.cleanImageUrl(src);
+            if (url) images.add(url);
+          });
         });
 
         if (images.size >= SCRAPER_CONFIG.MAX_IMAGES) break;
       }
+      console.log('[AdvancedScraper] After DOM selectors:', images.size, 'images');
 
-      // OG image fallback
+      // ===== 4. High-res data attributes scan =====
+      document.querySelectorAll('img[data-zoom-image], img[data-large], img[data-src], img[data-highres], img[data-original]').forEach(el => {
+        const sources = [
+          el.dataset.zoomImage, el.dataset.large, el.dataset.src,
+          el.dataset.highres, el.dataset.original, el.src
+        ].filter(Boolean);
+        
+        sources.forEach(src => {
+          const url = this.cleanImageUrl(src);
+          if (url && images.size < SCRAPER_CONFIG.MAX_IMAGES) images.add(url);
+        });
+      });
+
+      // ===== 5. OG image fallback =====
       const ogImage = document.querySelector('meta[property="og:image"]')?.content;
       if (ogImage && images.size < SCRAPER_CONFIG.MAX_IMAGES) {
         const url = this.cleanImageUrl(ogImage);
         if (url) images.add(url);
       }
 
+      console.log('[AdvancedScraper] Final image count:', images.size);
       return Array.from(images).slice(0, SCRAPER_CONFIG.MAX_IMAGES);
     }
 
@@ -686,19 +877,29 @@
       if (!url || typeof url !== 'string') return null;
       
       // Skip invalid images
-      const skipPatterns = ['sprite', 'pixel', 'grey', 'transparent', 'placeholder', 'loading', 'spacer', '1x1', 'blank'];
+      const skipPatterns = ['sprite', 'pixel', 'grey', 'transparent', 'placeholder', 'loading', 'spacer', '1x1', 'blank', 'logo', 'icon', 'badge', 'button'];
       if (skipPatterns.some(p => url.toLowerCase().includes(p)) || url.length < 30) {
+        return null;
+      }
+      
+      // Skip SVGs and tiny images
+      if (url.includes('.svg') || url.includes('data:image/svg')) {
         return null;
       }
 
       // Clean size parameters for high-res
       let clean = url
-        .replace(/\._[A-Z]+\d+_\./, '.') // Amazon: ._AC_SX200_. 
-        .replace(/\._[A-Z]+_\./, '.')    // Amazon: ._SS40_.
-        .replace(/_\d+x\d+\./, '.')       // AliExpress: _350x350.
-        .replace(/\?.*$/, '')             // Remove query params
-        .replace(/&w=\d+&h=\d+/, '')      // Width/height params
-        .replace(/\/[a-z]_\d+_\d+\//, '/'); // CDN size paths
+        .replace(/\._[A-Z]+\d+_\./g, '.')       // Amazon: ._AC_SX200_.
+        .replace(/\._[A-Z]+_\./g, '.')          // Amazon: ._SS40_.
+        .replace(/_\d+x\d+\./g, '.')             // AliExpress: _350x350.
+        .replace(/_\d+x\d+_/g, '_')              // Variant: _350x350_
+        .replace(/[@_]\d+x\d+/g, '')             // @350x350 or _350x350
+        .replace(/\?.*$/g, '')                   // Remove all query params first
+        .replace(/&w=\d+&h=\d+/g, '')            // Width/height params
+        .replace(/\/[a-z]_\d+_\d+\//g, '/')      // CDN size paths
+        .replace(/\/s\d+\//g, '/')               // Shopify /s100/
+        .replace(/_small|_thumb|_mini/gi, '')   // Size suffixes
+        .replace(/\?v=\d+$/, '');                // Version params
 
       // Ensure absolute URL
       if (clean.startsWith('//')) {
