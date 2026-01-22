@@ -410,15 +410,24 @@ export function ProductMappingEditor({
                     )}
                   </div>
 
-                  {/* Destination field - Static text like source dropdown style */}
-                  <div className="flex items-center gap-2 h-9 px-3 rounded-md border bg-background">
-                    <span className="text-sm">
-                      {destField?.label || mapping.destination}
-                    </span>
-                    {destField?.required && (
-                      <Badge variant="secondary" className="text-xs shrink-0">Requis</Badge>
-                    )}
-                  </div>
+                  {/* Destination field - Dropdown */}
+                  <Select
+                    value={mapping.destination || '__none__'}
+                    onValueChange={(value) => updateMapping(mapping.id, { destination: value === '__none__' ? '' : value })}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Sélectionner..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border z-50 max-h-[300px]">
+                      <SelectItem value="__none__">-- Non mappé --</SelectItem>
+                      {destinationFields.map(field => (
+                        <SelectItem key={field.id} value={field.id}>
+                          {field.label}
+                          {field.required && <span className="text-destructive ml-1">*</span>}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   {/* Actions */}
                   <div className="flex items-center gap-1 w-24 justify-center">
