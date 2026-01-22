@@ -162,14 +162,13 @@ const importMethodsConfig = [
 
 // Supported platforms configuration
 const supportedPlatforms = [
-  { name: 'AliExpress', logo: '/logos/aliexpress.svg', products: '500M+', status: 'active' },
-  { name: 'Amazon', logo: '/logos/amazon-text.svg', products: '350M+', status: 'active' },
   { name: 'Shopify', logo: '/logos/shopify.svg', products: 'Illimité', status: 'active' },
-  { name: 'Temu', logo: '/logos/tiktok-shop.svg', products: '100M+', status: 'active' },
+  { name: 'Amazon', logo: '/logos/amazon.svg', products: '350M+', status: 'active' },
+  { name: 'AliExpress', logo: '/logos/aliexpress.svg', products: '500M+', status: 'active' },
+  { name: 'Etsy', logo: '/logos/etsy.svg', products: '100M+', status: 'active' },
+  { name: 'WooCommerce', logo: '/logos/woocommerce.svg', products: 'Illimité', status: 'active' },
+  { name: 'eBay', logo: '/logos/ebay.svg', products: '1.9B+', status: 'active' },
   { name: 'CJ Dropshipping', logo: '/logos/bigbuy.svg', products: '400K+', status: 'active' },
-  { name: 'eBay', logo: '/logos/ebay-text.svg', products: '1.9B+', status: 'active' },
-  { name: 'Banggood', logo: '/logos/rakuten.svg', products: '1M+', status: 'active' },
-  { name: 'Wish', logo: '/logos/etsy.svg', products: '150M+', status: 'beta' },
 ]
 
 export default function ImportHub() {
