@@ -7,8 +7,224 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+// ============================================================================
+// HELPER FUNCTIONS - Enhanced for robust multi-platform extraction
+// ============================================================================
+
+// Parse price from various formats (European, US, Asian, etc.)
+const parsePrice = (priceInput: unknown): number => {
+  if (typeof priceInput === 'number') return priceInput;
+  if (!priceInput || typeof priceInput !== 'string') return 0;
+  
+  let cleanPrice = priceInput
+    .replace(/[€$£¥₹₽CHF₿฿₫₭₦₲₵₡₢₠₩₮₰₪]/gi, '')
+    .replace(/\s+/g, '')
+    .replace(/EUR|USD|GBP|JPY|CNY|CAD|AUD/gi, '')
+    .replace(/à partir de|from|ab|desde/gi, '')
+    .trim();
+  
+  // Handle European format with space as thousand separator (1 234,56)
+  if (/^\d{1,3}(\s\d{3})*,\d{2}$/.test(cleanPrice.replace(/\s/g, ' '))) {
+    cleanPrice = cleanPrice.replace(/\s/g, '').replace(',', '.');
+  }
+  // Handle European format (1.234,56 or 1234,56)
+  else if (cleanPrice.includes(',') && !cleanPrice.includes('.')) {
+    cleanPrice = cleanPrice.replace(',', '.');
+  } else if (cleanPrice.includes(',') && cleanPrice.includes('.')) {
+    cleanPrice = cleanPrice.replace(/\./g, '').replace(',', '.');
+  }
+  
+  // Extract first valid number
+  const match = cleanPrice.match(/[\d]+[.,]?[\d]*/);
+  if (match) {
+    const parsed = parseFloat(match[0].replace(',', '.'));
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  
+  return 0;
+}
+
+// Clean product title from UI artifacts
+const cleanTitle = (title: unknown): string => {
+  if (!title || typeof title !== 'string') return 'Produit importé';
+  
+  let cleaned = title
+    .replace(/Raccourci clavier[\s\S]*$/i, '')
+    .replace(/shift\s*\+[\s\S]*$/i, '')
+    .replace(/alt\s*\+[\s\S]*$/i, '')
+    .replace(/ctrl\s*\+[\s\S]*$/i, '')
+    .replace(/Ajouter au panier[\s\S]*/i, '')
+    .replace(/Add to cart[\s\S]*/i, '')
+    .replace(/Livraison gratuite[\s\S]*/i, '')
+    .replace(/Free shipping[\s\S]*/i, '')
+    .replace(/En stock[\s\S]*/i, '')
+    .replace(/In stock[\s\S]*/i, '')
+    .replace(/\b(Promo|Soldes|Nouveau|New|Sale|Hot|Best Seller)\b/gi, '')
+    .replace(/\|.*$/, '') // Remove everything after pipe
+    .replace(/-\s*\d+%\s*$/i, '') // Remove discount suffix
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  if (cleaned.length < 3) return 'Produit importé';
+  return cleaned.substring(0, 500);
+}
+
+// Validate and clean image URL
+const validateImageUrl = (url: unknown): string => {
+  if (!url || typeof url !== 'string') return '';
+  
+  const invalidPatterns = [
+    'sprite', 'pixel', 'grey', 'transparent', 'placeholder', 
+    'loader', 'loading', 'spacer', '1x1', 'blank', 'empty',
+    'data:image', 'svg+xml', 'base64,R0lGO' // Tiny base64 images
+  ];
+  
+  if (invalidPatterns.some(p => url.toLowerCase().includes(p)) || url.length < 20) {
+    return '';
+  }
+  
+  // Clean up URL - remove size transforms for higher quality
+  let cleanUrl = url
+    // AliExpress size transforms
+    .replace(/_\d+x\d+\./, '.')
+    .replace(/_\d+x\d+_/, '_')
+    // Amazon size transforms
+    .replace(/\._AC_.*?\./, '.')
+    .replace(/\._S[LRXYM]\d+_\./, '.')
+    .replace(/\._U[SXY]\d+_\./, '.')
+    // Cdiscount/Fnac size
+    .replace(/\/[a-z]_\d+_\d+\//, '/')
+    // General query param sizes
+    .replace(/[?&](w|h|width|height|size|resize)=\d+/gi, '')
+    .replace(/[?&]quality=\d+/gi, '');
+  
+  try {
+    new URL(cleanUrl);
+    return cleanUrl;
+  } catch {
+    try {
+      new URL(url);
+      return url;
+    } catch {
+      return '';
+    }
+  }
+}
+
+// Extract all images from various product fields
+const extractAllImages = (product: any): string[] => {
+  const allImages: string[] = [];
+  const seenUrls = new Set<string>();
+  
+  const addImage = (img: unknown) => {
+    const validImg = validateImageUrl(img);
+    if (validImg && !seenUrls.has(validImg)) {
+      seenUrls.add(validImg);
+      allImages.push(validImg);
+    }
+  };
+  
+  // 1. Primary image fields
+  addImage(product.image);
+  addImage(product.imageUrl);
+  addImage(product.mainImage);
+  addImage(product.primaryImage);
+  addImage(product.thumbnail);
+  addImage(product.featuredImage);
+  
+  // 2. Array fields
+  const arrayFields = [
+    'images', 'imageUrls', 'additionalImages', 'gallery', 
+    'galleryImages', 'productImages', 'allImages', 'photos',
+    'mediaGallery', 'imageGallery'
+  ];
+  
+  for (const field of arrayFields) {
+    if (Array.isArray(product[field])) {
+      for (const img of product[field]) {
+        if (typeof img === 'string') {
+          addImage(img);
+        } else if (img && typeof img === 'object') {
+          addImage(img.url || img.src || img.href || img.image || img.original);
+        }
+      }
+    }
+  }
+  
+  // 3. Variant images
+  if (Array.isArray(product.variants)) {
+    for (const variant of product.variants) {
+      addImage(variant.image);
+      addImage(variant.imageUrl);
+      if (Array.isArray(variant.images)) {
+        for (const img of variant.images) {
+          addImage(typeof img === 'string' ? img : img?.url || img?.src);
+        }
+      }
+    }
+  }
+  
+  // 4. SKU images (AliExpress style)
+  if (product.skuImages && typeof product.skuImages === 'object') {
+    for (const key of Object.keys(product.skuImages)) {
+      addImage(product.skuImages[key]);
+    }
+  }
+  
+  return allImages;
+}
+
+// Extract all videos
+const extractAllVideos = (product: any): string[] => {
+  const videos: string[] = [];
+  const seenUrls = new Set<string>();
+  
+  const addVideo = (vid: unknown) => {
+    if (vid && typeof vid === 'string' && vid.includes('http') && !seenUrls.has(vid)) {
+      seenUrls.add(vid);
+      videos.push(vid);
+    }
+  };
+  
+  addVideo(product.video);
+  addVideo(product.videoUrl);
+  addVideo(product.mainVideo);
+  
+  const arrayFields = ['videos', 'videoUrls', 'mediaVideos'];
+  for (const field of arrayFields) {
+    if (Array.isArray(product[field])) {
+      for (const vid of product[field]) {
+        if (typeof vid === 'string') {
+          addVideo(vid);
+        } else if (vid && typeof vid === 'object') {
+          addVideo(vid.url || vid.src || vid.href);
+        }
+      }
+    }
+  }
+  
+  return videos;
+}
+
+// Process reviews with validation
+const processReviews = (reviews: any[]): any[] => {
+  if (!Array.isArray(reviews)) return [];
+  
+  return reviews.slice(0, 100).filter(r => r && (r.text || r.comment || r.content)).map(r => ({
+    rating: Math.min(5, Math.max(0, parseInt(r.rating) || 5)),
+    text: String(r.text || r.comment || r.content || '').substring(0, 2000),
+    author: String(r.author || r.reviewer || r.name || 'Anonymous').substring(0, 100),
+    date: r.date || r.reviewDate || null,
+    images: Array.isArray(r.images) ? r.images.slice(0, 5) : [],
+    verified: Boolean(r.verified || r.isVerified)
+  }));
+}
+
+// ============================================================================
+// MAIN SERVER
+// ============================================================================
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -18,20 +234,17 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    // Token can come from header (preferred) or JSON body fallback
     const rawHeaderToken = req.headers.get('x-extension-token')
+    const requestId = crypto.randomUUID().substring(0, 8)
+    
+    console.log(`[${requestId}] ========== NEW REQUEST ==========`)
+    console.log(`[${requestId}] Method: ${req.method}, Token: ${rawHeaderToken ? 'present' : 'missing'}`)
 
-    console.log('[extension-sync-realtime] Incoming request', {
-      method: req.method,
-      hasToken: Boolean(rawHeaderToken),
-      tokenPrefix: rawHeaderToken ? rawHeaderToken.slice(0, 12) : null,
-    })
-
-    // Parse body early so we can also read token from body if header missing
     let payload: any = null
     try {
       payload = await req.json()
-    } catch {
+    } catch (e) {
+      console.error(`[${requestId}] JSON parse error:`, e)
       payload = null
     }
 
@@ -45,8 +258,9 @@ serve(async (req) => {
     const token = sanitizeToken(rawHeaderToken || payload?.token)
 
     if (!token) {
+      console.error(`[${requestId}] No valid token provided`)
       return new Response(
-        JSON.stringify({ error: 'Extension token required' }),
+        JSON.stringify({ error: 'Extension token required', requestId }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -60,17 +274,18 @@ serve(async (req) => {
       .single()
 
     if (tokenError) {
-      console.warn('[extension-sync-realtime] Token lookup error', tokenError)
+      console.error(`[${requestId}] Token lookup error:`, tokenError)
     }
 
     if (!authData) {
+      console.error(`[${requestId}] Invalid or inactive token`)
       return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
+        JSON.stringify({ error: 'Invalid token', requestId }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Check expiration (if present)
+    // Check expiration
     if (authData.expires_at && new Date(authData.expires_at) < new Date()) {
       await supabase
         .from('extension_auth_tokens')
@@ -78,12 +293,12 @@ serve(async (req) => {
         .eq('id', authData.id)
 
       return new Response(
-        JSON.stringify({ error: 'Token expired' }),
+        JSON.stringify({ error: 'Token expired', requestId }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Update last-used counters (best-effort)
+    // Update usage
     await supabase
       .from('extension_auth_tokens')
       .update({
@@ -92,226 +307,93 @@ serve(async (req) => {
       })
       .eq('id', authData.id)
 
-    // If body JSON failed earlier, now we must fail for actions needing a body
     if (!payload) {
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON body' }),
+        JSON.stringify({ error: 'Invalid JSON body', requestId }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const { action, products } = payload
+    const { action } = payload
+    console.log(`[${requestId}] Action: ${action}, User: ${authData.user_id}`)
 
-    console.log('[extension-sync-realtime] Action', { action, userId: authData.user_id })
-
+    // ========================================================================
+    // ACTION: import_products
+    // ========================================================================
     if (action === 'import_products') {
-      // Process products from extension
-      const importResults = []
-      const errors = []
-
-      const productList = products || []
-      console.log('[extension-sync-realtime] Processing', productList.length, 'products')
-
-      // Helper to parse price from various formats (European, US, Asian)
-      const parsePrice = (priceInput: unknown): number => {
-        if (typeof priceInput === 'number') return priceInput;
-        if (!priceInput || typeof priceInput !== 'string') return 0;
-        
-        // Remove currency symbols, spaces, and handle various formats
-        let cleanPrice = priceInput
-          .replace(/[€$£¥₹₽CHF]/gi, '')
-          .replace(/\s+/g, '')
-          .replace(/EUR|USD|GBP/gi, '')
-          .trim();
-        
-        // Handle European format with space as thousand separator (1 234,56)
-        if (/^\d{1,3}(\s\d{3})*,\d{2}$/.test(cleanPrice.replace(/\s/g, ' '))) {
-          cleanPrice = cleanPrice.replace(/\s/g, '').replace(',', '.');
-        }
-        // Handle European format (1.234,56 or 1234,56)
-        else if (cleanPrice.includes(',') && !cleanPrice.includes('.')) {
-          // Simple comma as decimal separator: 598,99 -> 598.99
-          cleanPrice = cleanPrice.replace(',', '.');
-        } else if (cleanPrice.includes(',') && cleanPrice.includes('.')) {
-          // European thousand separator: 1.234,56 -> 1234.56
-          cleanPrice = cleanPrice.replace(/\./g, '').replace(',', '.');
-        }
-        
-        const parsed = parseFloat(cleanPrice);
-        return isNaN(parsed) ? 0 : parsed;
+      const products = payload.products || []
+      const debugMode = payload.debug === true
+      
+      console.log(`[${requestId}] Importing ${products.length} products (debug: ${debugMode})`)
+      
+      const importResults: any[] = []
+      const errors: any[] = []
+      const debugLogs: string[] = []
+      
+      const log = (msg: string) => {
+        console.log(`[${requestId}] ${msg}`)
+        if (debugMode) debugLogs.push(`${new Date().toISOString()} - ${msg}`)
       }
 
-      // Helper to clean product title (Cdiscount, Fnac, etc.)
-      const cleanTitle = (title: unknown): string => {
-        if (!title || typeof title !== 'string') return 'Produit importé';
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i]
+        const productIndex = i + 1
         
-        // Remove unwanted patterns (keyboard shortcuts, promo badges, etc.)
-        let cleaned = title
-          .replace(/Raccourci clavier[\s\S]*$/i, '')
-          .replace(/shift\s*\+[\s\S]*$/i, '')
-          .replace(/alt\s*\+[\s\S]*$/i, '')
-          .replace(/Ajouter au panier[\s\S]*/i, '')
-          .replace(/Livraison gratuite[\s\S]*/i, '')
-          .replace(/En stock[\s\S]*/i, '')
-          .replace(/\b(Promo|Soldes|Nouveau|New)\b/gi, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        
-        // If title is too short or empty after cleaning, use fallback
-        if (cleaned.length < 5) {
-          return 'Produit importé';
-        }
-        
-        // Limit title length
-        return cleaned.substring(0, 500);
-      }
-
-      // Helper to validate image URL (enhanced for French marketplaces)
-      const validateImageUrl = (url: unknown): string => {
-        if (!url || typeof url !== 'string') return '';
-        
-        // Skip invalid patterns
-        const invalidPatterns = ['sprite', 'pixel', 'grey', 'transparent', 'placeholder', 'loader', 'loading', 'spacer', '1x1'];
-        if (invalidPatterns.some(p => url.toLowerCase().includes(p)) || url.length < 20) {
-          return '';
-        }
-        
-        // Clean up URL - remove size transforms for higher quality
-        let cleanUrl = url
-          .replace(/_\d+x\d+\./, '.')        // AliExpress/Cdiscount size
-          .replace(/\/[a-z]_\d+_\d+\//, '/')  // Cdiscount CDN size
-          .replace(/&w=\d+&h=\d+/, '')        // Query param sizes
-          .replace(/\?.*$/, '');              // Remove query params for cleaner URL
-        
-        // Basic URL validation
         try {
-          new URL(cleanUrl);
-          return cleanUrl;
-        } catch {
-          // If cleaned URL is invalid, try original
-          try {
-            new URL(url);
-            return url;
-          } catch {
-            return '';
-          }
-        }
-      }
-
-      for (const product of productList) {
-        try {
-          const productTitle = cleanTitle(product.title || product.name);
-          const productPrice = parsePrice(product.price);
-          const productImage = validateImageUrl(product.image || product.imageUrl);
+          log(`--- Product ${productIndex}/${products.length} ---`)
+          log(`Raw title: ${String(product.title || product.name || '').substring(0, 50)}`)
+          log(`Raw price: ${product.price}`)
+          log(`URL: ${product.url || 'none'}`)
           
-          // Process ALL images from multiple sources
-          const allImages: string[] = [];
-          const seenUrls = new Set<string>();
+          // Extract all data
+          const productTitle = cleanTitle(product.title || product.name)
+          const productPrice = parsePrice(product.price)
+          const allImages = extractAllImages(product)
+          const allVideos = extractAllVideos(product)
+          const reviews = processReviews(product.reviews)
           
-          const addImage = (img: unknown) => {
-            const validImg = validateImageUrl(img);
-            if (validImg && !seenUrls.has(validImg)) {
-              seenUrls.add(validImg);
-              allImages.push(validImg);
-            }
-          };
+          log(`Cleaned title: ${productTitle.substring(0, 50)}`)
+          log(`Parsed price: ${productPrice}`)
+          log(`Images found: ${allImages.length}`)
+          log(`Videos found: ${allVideos.length}`)
+          log(`Reviews found: ${reviews.length}`)
           
-          // 1. Primary image
-          if (productImage) addImage(productImage);
-          
-          // 2. Images array (most common)
-          if (Array.isArray(product.images)) {
-            for (const img of product.images) {
-              addImage(img);
-            }
+          if (allImages.length > 0) {
+            log(`First image: ${allImages[0].substring(0, 80)}...`)
           }
           
-          // 3. Image URLs array (alternative field name)
-          if (Array.isArray(product.imageUrls)) {
-            for (const img of product.imageUrls) {
-              addImage(img);
-            }
+          // Validate minimum data
+          if (!productTitle || productTitle === 'Produit importé' && allImages.length === 0) {
+            throw new Error('Insufficient product data: no title and no images')
           }
           
-          // 4. Additional images (some scrapers use this)
-          if (Array.isArray(product.additionalImages)) {
-            for (const img of product.additionalImages) {
-              addImage(img);
-            }
-          }
-          
-          // 5. Gallery images
-          if (Array.isArray(product.gallery)) {
-            for (const img of product.gallery) {
-              addImage(typeof img === 'string' ? img : img?.url || img?.src);
-            }
-          }
-          
-          console.log('[extension-sync-realtime] Image sources:', {
-            primary: productImage ? 1 : 0,
-            imagesArray: Array.isArray(product.images) ? product.images.length : 0,
-            imageUrlsArray: Array.isArray(product.imageUrls) ? product.imageUrls.length : 0,
-            additionalImages: Array.isArray(product.additionalImages) ? product.additionalImages.length : 0,
-            gallery: Array.isArray(product.gallery) ? product.gallery.length : 0,
-            totalUnique: allImages.length
-          });
-          
-          // Process videos
-          const videos: string[] = [];
-          if (Array.isArray(product.videos)) {
-            for (const vid of product.videos) {
-              if (vid && typeof vid === 'string' && vid.includes('http')) {
-                videos.push(vid);
-              }
-            }
-          }
-          
-          // Process reviews
-          const reviews: any[] = [];
-          if (Array.isArray(product.reviews)) {
-            for (const review of product.reviews.slice(0, 50)) {
-              if (review && review.text) {
-                reviews.push({
-                  rating: review.rating || null,
-                  text: (review.text || '').substring(0, 2000),
-                  author: (review.author || '').substring(0, 100),
-                  date: review.date || null,
-                  images: Array.isArray(review.images) ? review.images.slice(0, 5) : []
-                });
-              }
-            }
-          }
-          
-          console.log('[extension-sync-realtime] Processing product:', {
-            originalTitle: (product.title || product.name || '').substring(0, 50),
-            cleanedTitle: productTitle.substring(0, 50),
-            originalPrice: product.price,
-            cleanedPrice: productPrice,
-            imagesCount: allImages.length,
-            videosCount: videos.length,
-            descriptionLength: (product.description || '').length,
-            reviewsCount: reviews.length
-          });
-
-          // Create import job
-          const { data: importJob, error: jobError } = await supabase
+          // Log to extension_data first
+          const { data: extData, error: extError } = await supabase
             .from('extension_data')
             .insert({
               user_id: authData.user_id,
-              data_type: 'product_scrape',
-              data: product,
+              data_type: 'product_import',
+              data: {
+                raw: product,
+                processed: {
+                  title: productTitle,
+                  price: productPrice,
+                  images: allImages.length,
+                  videos: allVideos.length,
+                  reviews: reviews.length
+                }
+              },
               source_url: product.url || '',
-              status: 'pending'
+              status: 'processing'
             })
-            .select()
+            .select('id')
             .single()
-
-          if (jobError) {
-            console.error('[extension-sync-realtime] extension_data insert error:', jobError)
-            throw jobError
+          
+          if (extError) {
+            log(`extension_data insert error: ${extError.message}`)
           }
-
-           // Insert into imported_products table with ALL data including brand, stock, shipping
+          
+          // Insert into imported_products
           const { data: newProduct, error: productError } = await supabase
             .from('imported_products')
             .insert({
@@ -319,307 +401,235 @@ serve(async (req) => {
               name: productTitle,
               price: productPrice,
               cost_price: productPrice,
-              description: (product.description || '').substring(0, 10000),
+              description: String(product.description || '').substring(0, 10000),
               image_urls: allImages,
-               video_urls: videos,
+              video_urls: allVideos,
               source_url: product.url || '',
               source_platform: product.platform || 'extension',
-              stock_quantity: product.stockQuantity || 100,
+              stock_quantity: product.stockQuantity || product.stock || 100,
               status: 'imported',
               category: product.category || null,
               currency: product.currency || 'EUR',
               sync_status: 'synced',
-               brand: product.brand || null,
+              brand: product.brand || null,
               sku: product.sku || product.mpn || null,
-               variants: Array.isArray(product.variants) ? product.variants : null,
-               specifications: product.specifications || null,
-               shipping_info: product.shippingInfo || null,
+              variants: Array.isArray(product.variants) ? product.variants : null,
+              specifications: product.specifications || null,
+              shipping_info: product.shippingInfo || null,
               metadata: {
-                // Basic info
                 rating: product.rating,
-                orders: product.orders,
-                original_price: product.originalPrice,
-                // Brand info
-                 brand: product.brand || null,
+                orders: product.orders || product.sold,
+                original_price: product.originalPrice || product.comparePrice,
+                brand: product.brand || null,
                 gtin: product.gtin || null,
                 mpn: product.mpn || null,
-                // Stock info
-                stock_status: product.stockStatus || 'unknown',
-                in_stock: product.inStock ?? true,
-                // Shipping info
-                shipping_cost: product.shippingCost || null,
+                stock_status: product.stockStatus || 'in_stock',
+                in_stock: product.inStock !== false,
+                shipping_cost: product.shippingCost,
                 free_shipping: product.freeShipping || false,
-                delivery_time: product.deliveryTime || null,
-                // Specifications
+                delivery_time: product.deliveryTime,
                 specifications: product.specifications || {},
-                // Import metadata
                 imported_at: new Date().toISOString(),
-                source: product.source || 'chrome_extension',
+                source: 'chrome_extension_v4',
+                request_id: requestId,
                 reviews_count: reviews.length,
                 images_count: allImages.length,
-                videos_count: videos.length,
-                 variants_count: Array.isArray(product.variants) ? product.variants.length : 0,
-                 primary_image: allImages[0] || null
+                videos_count: allVideos.length,
+                variants_count: Array.isArray(product.variants) ? product.variants.length : 0
               }
             })
             .select()
             .single()
 
-           if (productError) {
-            console.error('[extension-sync-realtime] imported_products insert error:', productError)
-             errors.push({
-               product: productTitle,
-               error: `${productError.code || 'DB_ERROR'}: ${productError.message}${productError.hint ? ` (${productError.hint})` : ''}`,
-             })
+          if (productError) {
+            log(`❌ imported_products insert FAILED: ${productError.code} - ${productError.message}`)
+            if (productError.hint) log(`Hint: ${productError.hint}`)
+            if (productError.details) log(`Details: ${productError.details}`)
+            
+            errors.push({
+              product: productTitle.substring(0, 50),
+              error: `${productError.code || 'DB_ERROR'}: ${productError.message}`,
+              hint: productError.hint || null
+            })
+            
+            // Update extension_data status
+            if (extData?.id) {
+              await supabase
+                .from('extension_data')
+                .update({ status: 'failed', error_message: productError.message })
+                .eq('id', extData.id)
+            }
           } else {
-            // Store reviews if any
+            log(`✅ Product imported: ${newProduct.id}`)
+            
+            // Import reviews if any
             if (reviews.length > 0) {
               try {
                 const reviewInserts = reviews.map(r => ({
                   user_id: authData.user_id,
                   product_id: newProduct.id,
-                  reviewer_name: r.author || 'Anonymous',
-                  rating: r.rating || 5,
+                  reviewer_name: r.author,
+                  rating: r.rating,
                   comment: r.text,
                   review_date: r.date || new Date().toISOString(),
                   images: r.images,
                   source_platform: product.platform || 'extension',
-                  is_verified: true
-                }));
+                  is_verified: r.verified
+                }))
                 
-                await supabase
-                  .from('product_reviews')
-                  .insert(reviewInserts);
-                  
-                console.log('[extension-sync-realtime] Imported', reviews.length, 'reviews for product:', newProduct.id);
-              } catch (reviewError) {
-                console.warn('[extension-sync-realtime] Reviews import warning:', reviewError);
+                await supabase.from('product_reviews').insert(reviewInserts)
+                log(`Imported ${reviews.length} reviews`)
+              } catch (reviewError: any) {
+                log(`Reviews import warning: ${reviewError.message}`)
               }
             }
             
-            importResults.push(newProduct)
-            console.log('[extension-sync-realtime] Product imported:', newProduct.id, productTitle.substring(0, 50), {
+            importResults.push({
+              id: newProduct.id,
+              name: newProduct.name,
+              price: newProduct.price,
               images: allImages.length,
-              videos: videos.length,
+              videos: allVideos.length,
               reviews: reviews.length
             })
             
-            // Update extension_data status
-            await supabase
-              .from('extension_data')
-              .update({ status: 'imported', imported_product_id: newProduct.id })
-              .eq('id', importJob.id)
+            // Update extension_data
+            if (extData?.id) {
+              await supabase
+                .from('extension_data')
+                .update({ status: 'imported', imported_product_id: newProduct.id })
+                .eq('id', extData.id)
+            }
           }
-        } catch (error) {
-          console.error('[extension-sync-realtime] Product import error:', error)
-          errors.push({ product: product.title || product.name || 'Unknown', error: error.message })
+        } catch (error: any) {
+          log(`❌ Exception: ${error.message}`)
+          errors.push({
+            product: String(product.title || product.name || 'Unknown').substring(0, 50),
+            error: error.message
+          })
         }
       }
 
       // Log analytics
-      await supabase.from('extension_analytics').insert({
-        user_id: authData.user_id,
-        event_type: 'bulk_import',
-        event_data: {
-          total: productList.length,
-          successful: importResults.length,
-          failed: errors.length
-        },
-        source_url: productList[0]?.url || ''
-      })
-
-      console.log('[extension-sync-realtime] Import complete:', { imported: importResults.length, failed: errors.length })
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          imported: importResults.length,
-          failed: errors.length,
-          results: importResults,
-          errors: errors
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    if (action === 'bulk_import') {
-      // Handle bulk import from pending items
-      const { items } = payload
-      const importResults = []
-      const errors = []
-
-      const itemList = items || []
-      console.log('[extension-sync-realtime] Bulk import:', itemList.length, 'items')
-
-      // Reuse helpers from import_products
-      const parsePrice = (priceInput: unknown): number => {
-        if (typeof priceInput === 'number') return priceInput;
-        if (!priceInput || typeof priceInput !== 'string') return 0;
-        const cleanPrice = priceInput.replace(/[€$£¥₹₽]/g, '').replace(/\s+/g, '').trim();
-        if (cleanPrice.includes(',') && !cleanPrice.includes('.')) {
-          return parseFloat(cleanPrice.replace(',', '.')) || 0;
-        } else if (cleanPrice.includes(',') && cleanPrice.includes('.')) {
-          return parseFloat(cleanPrice.replace(/\./g, '').replace(',', '.')) || 0;
-        }
-        return parseFloat(cleanPrice) || 0;
-      };
-
-      const cleanTitle = (title: unknown): string => {
-        if (!title || typeof title !== 'string') return 'Produit importé';
-        let cleaned = title
-          .replace(/Raccourci clavier[\s\S]*$/i, '')
-          .replace(/shift\s*\+[\s\S]*$/i, '')
-          .replace(/alt\s*\+[\s\S]*$/i, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (cleaned.length < 5) return 'Produit importé';
-        return cleaned.substring(0, 500);
-      };
-
-      const validateImageUrl = (url: unknown): string => {
-        if (!url || typeof url !== 'string') return '';
-        if (url.includes('sprite') || url.includes('pixel') || url.includes('grey') || url.includes('transparent') || url.length < 20) return '';
-        try { new URL(url); return url; } catch { return ''; }
-      };
-
-      for (const item of itemList) {
-        try {
-          const productTitle = cleanTitle(item.title || item.name);
-          const productPrice = parsePrice(item.price);
-          const productImage = validateImageUrl(item.image || item.imageUrl);
-
-          const { data: importJob, error: jobError } = await supabase
-            .from('extension_data')
-            .insert({
-              user_id: authData.user_id,
-              data_type: item.type || 'product_scrape',
-              data: item,
-              source_url: item.url || '',
-              status: 'pending'
-            })
-            .select()
-            .single()
-
-          if (jobError) throw jobError
-
-          if (item.type === 'product' || !item.type) {
-            // Keep bulk imports consistent with 1-click imports: store in imported_products
-            // so they appear in /products via ProductsUnifiedService.
-            const imageUrls = productImage ? [productImage] : []
-
-            const { data: newProduct, error: productError } = await supabase
-              .from('imported_products')
-              .insert({
-                user_id: authData.user_id,
-                name: productTitle,
-                price: productPrice,
-                cost_price: productPrice,
-                description: (item.description || '').substring(0, 10000),
-                image_urls: imageUrls,
-                video_urls: Array.isArray(item.videos) ? item.videos : [],
-                source_url: item.url || '',
-                source_platform: item.platform || 'extension',
-                stock_quantity: 100,
-                status: 'imported',
-                category: item.category || null,
-                currency: item.currency || 'EUR',
-                sync_status: 'synced',
-                metadata: {
-                  imported_at: new Date().toISOString(),
-                  source: 'chrome_extension_bulk',
-                  primary_image: imageUrls[0] || null,
-                },
-              })
-              .select()
-              .single()
-
-            if (productError) {
-              console.error('[extension-sync-realtime] bulk_import product error:', productError)
-              errors.push({
-                item: productTitle,
-                error: `${productError.code || 'DB_ERROR'}: ${productError.message}${productError.hint ? ` (${productError.hint})` : ''}`,
-              })
-            } else {
-              importResults.push(newProduct)
-              await supabase
-                .from('extension_data')
-                .update({ status: 'imported', imported_product_id: newProduct.id })
-                .eq('id', importJob.id)
-            }
-          }
-        } catch (error) {
-          console.error('[extension-sync-realtime] bulk_import item error:', error)
-          errors.push({ item: item.title || item.name || 'Unknown', error: error.message })
-        }
+      try {
+        await supabase.from('extension_analytics').insert({
+          user_id: authData.user_id,
+          event_type: 'import_products',
+          event_data: {
+            total: products.length,
+            successful: importResults.length,
+            failed: errors.length,
+            request_id: requestId
+          },
+          source_url: products[0]?.url || ''
+        })
+      } catch (e) {
+        console.warn(`[${requestId}] Analytics insert warning:`, e)
       }
 
-      await supabase.from('extension_analytics').insert({
-        user_id: authData.user_id,
-        event_type: 'bulk_import',
-        event_data: {
-          total: itemList.length,
-          successful: importResults.length,
-          failed: errors.length
-        }
-      })
+      console.log(`[${requestId}] ========== IMPORT COMPLETE ==========`)
+      console.log(`[${requestId}] Success: ${importResults.length}, Failed: ${errors.length}`)
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           imported: importResults.length,
           failed: errors.length,
           results: importResults,
-          errors: errors
+          errors: errors,
+          requestId,
+          debug: debugMode ? debugLogs : undefined
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    // ========================================================================
+    // ACTION: sync_status
+    // ========================================================================
     if (action === 'sync_status') {
-      // Get user's import status
-      const { data: recentImports } = await supabase
+      const today = new Date().toISOString().split('T')[0]
+      
+      const { data: todayImports } = await supabase
+        .from('imported_products')
+        .select('id', { count: 'exact' })
+        .eq('user_id', authData.user_id)
+        .gte('created_at', today)
+      
+      const { data: totalProducts } = await supabase
+        .from('imported_products')
+        .select('id', { count: 'exact' })
+        .eq('user_id', authData.user_id)
+      
+      const { data: recentErrors } = await supabase
         .from('extension_data')
-        .select('*')
+        .select('error_message, created_at')
         .eq('user_id', authData.user_id)
+        .eq('status', 'failed')
         .order('created_at', { ascending: false })
-        .limit(10)
-
-      const { data: analytics } = await supabase
-        .from('extension_analytics')
-        .select('*')
-        .eq('user_id', authData.user_id)
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-
-      // Get user plan - use correct column name
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_plan')
-        .eq('id', authData.user_id)
-        .single()
+        .limit(5)
 
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           success: true,
-          recentImports,
-          userPlan: profile?.subscription_plan || 'standard',
           todayStats: {
-            imports: analytics?.length || 0,
-            successful: analytics?.filter(a => a.event_type === 'bulk_import').reduce((sum, a) => sum + (a.event_data?.successful || 0), 0) || 0
-          }
+            imports: todayImports?.length || 0,
+            total: totalProducts?.length || 0
+          },
+          recentErrors: recentErrors || [],
+          serverTime: new Date().toISOString()
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    // ========================================================================
+    // ACTION: debug_test
+    // ========================================================================
+    if (action === 'debug_test') {
+      const testProduct = payload.product || {}
+      
+      const result = {
+        raw: {
+          title: testProduct.title,
+          name: testProduct.name,
+          price: testProduct.price,
+          hasImages: Boolean(testProduct.images || testProduct.imageUrls),
+          imagesCount: (testProduct.images?.length || 0) + (testProduct.imageUrls?.length || 0)
+        },
+        processed: {
+          title: cleanTitle(testProduct.title || testProduct.name),
+          price: parsePrice(testProduct.price),
+          images: extractAllImages(testProduct),
+          videos: extractAllVideos(testProduct),
+          reviews: processReviews(testProduct.reviews).length
+        },
+        validation: {
+          titleValid: cleanTitle(testProduct.title || testProduct.name).length > 3,
+          priceValid: parsePrice(testProduct.price) > 0,
+          hasImages: extractAllImages(testProduct).length > 0
+        }
+      }
+      
+      return new Response(
+        JSON.stringify({ success: true, result, requestId }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Unknown action
     return new Response(
-      JSON.stringify({ error: 'Invalid action' }),
+      JSON.stringify({ error: `Unknown action: ${action}`, requestId }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
-  } catch (error) {
-    console.error('Extension sync error:', error)
+  } catch (error: any) {
+    console.error('[extension-sync-realtime] Critical error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        stack: error.stack?.split('\n').slice(0, 3)
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

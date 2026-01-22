@@ -233,6 +233,12 @@
     importOverlayScript.onload = function() { this.remove(); };
     (document.head || document.documentElement).appendChild(importOverlayScript);
     
+    // Inject debug panel for troubleshooting (Ctrl+Shift+D to toggle)
+    const debugPanelScript = document.createElement('script');
+    debugPanelScript.src = chrome.runtime.getURL('debug-panel.js');
+    debugPanelScript.onload = function() { this.remove(); };
+    (document.head || document.documentElement).appendChild(debugPanelScript);
+    
     // Inject platform-specific extractors
     this.injectPlatformExtractors();
   }
