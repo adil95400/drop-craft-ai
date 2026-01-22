@@ -1,13 +1,14 @@
-// Drop Craft AI Chrome Extension - Background Service Worker v4.3.5
+// Drop Craft AI Chrome Extension - Background Service Worker
 // Handles all network requests to bypass CSP restrictions
 
 const CONFIG = {
   API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
   APP_URL: 'https://drop-craft-ai.lovable.app',
-  VERSION: '4.3.5'
+  // Always align with manifest.json to avoid stale version redirects
+  VERSION: chrome.runtime.getManifest().version
 };
 
-console.log('[DropCraft BG] Background service worker v4.3.5 starting...');
+console.log(`[DropCraft BG] Background service worker v${CONFIG.VERSION} starting...`);
 
 // ============================================
 // MESSAGE HANDLERS
@@ -235,9 +236,14 @@ chrome.runtime.onInstalled.addListener((details) => {
       stats: { products: 0, reviews: 0, monitored: 0 }
     });
 
-    // Open setup page on first install
-    chrome.tabs.create({
-      url: `${CONFIG.APP_URL}/extensions/chrome?installed=true&v=${CONFIG.VERSION}`
+    // Open setup page only once (reloading unpacked extensions can retrigger "install")
+    chrome.storage.local.get(['hasOpenedInstallPage']).then(({ hasOpenedInstallPage }) => {
+      if (hasOpenedInstallPage) return;
+      chrome.storage.local.set({ hasOpenedInstallPage: true });
+
+      chrome.tabs.create({
+        url: `${CONFIG.APP_URL}/auth?redirect=/extensions/chrome&installed=true&v=${encodeURIComponent(CONFIG.VERSION)}`
+      });
     });
   }
 
@@ -293,4 +299,4 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
-console.log('[DropCraft BG] Background service worker v4.3.5 ready');
+console.log(`[DropCraft BG] Background service worker v${CONFIG.VERSION} ready`);
