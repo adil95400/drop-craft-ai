@@ -1,25 +1,22 @@
-import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
 import { 
   FileSpreadsheet, Link as LinkIcon, Database, Code, Settings, Globe,
-  Upload, Zap, History, Calendar, CheckCircle, ArrowRight, Sparkles,
-  Clock, TrendingUp, Shield, ChevronRight, Package, RefreshCw
+  Upload, Zap, History, Calendar, ArrowRight, Sparkles,
+  TrendingUp, Shield, ChevronRight, Package, RefreshCw, Loader2,
+  RotateCcw
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
-
-// Hook pour préférences réduites
-const useReducedMotion = () => {
-  if (typeof window === 'undefined') return false
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
+import { useImportConfig } from '@/hooks/useImportConfig'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 
 const importMethods = [
   {
@@ -102,47 +99,58 @@ const importMethods = [
 
 const configOptions = [
   {
-    id: 'auto_optimize',
+    id: 'auto_optimize' as const,
     label: 'Optimisation automatique',
     description: 'IA optimise les titres et descriptions',
-    enabled: true,
     icon: Sparkles,
   },
   {
-    id: 'auto_translate',
+    id: 'auto_translate' as const,
     label: 'Traduction automatique',
     description: 'Traduit automatiquement en français',
-    enabled: true,
     icon: Globe,
   },
   {
-    id: 'price_rules',
+    id: 'price_rules' as const,
     label: 'Règles de prix',
     description: 'Appliquer les marges configurées',
-    enabled: true,
     icon: TrendingUp,
   },
   {
-    id: 'duplicate_check',
+    id: 'duplicate_check' as const,
     label: 'Détection doublons',
     description: 'Éviter les produits en double',
-    enabled: true,
     icon: Shield,
+  },
+  {
+    id: 'auto_publish' as const,
+    label: 'Publication automatique',
+    description: 'Publier immédiatement après import',
+    icon: Upload,
+  },
+  {
+    id: 'round_prices' as const,
+    label: 'Arrondir les prix',
+    description: 'Arrondir aux .99 ou .00',
+    icon: TrendingUp,
   },
 ]
 
 export default function ImportConfigPage() {
   const navigate = useNavigate()
-  const reducedMotion = useReducedMotion()
-  const [configs, setConfigs] = useState(
-    configOptions.reduce((acc, opt) => ({ ...acc, [opt.id]: opt.enabled }), {} as Record<string, boolean>)
-  )
+  const prefersReducedMotion = useReducedMotion()
+  
+  // Use real persistence hook
+  const { 
+    config, 
+    isLoading, 
+    toggleOption, 
+    updateOption,
+    resetToDefaults, 
+    isSaving 
+  } = useImportConfig()
 
-  const toggleConfig = (id: string) => {
-    setConfigs(prev => ({ ...prev, [id]: !prev[id] }))
-  }
-
-  const containerVariants = reducedMotion ? {} : {
+  const containerVariants = prefersReducedMotion ? {} : {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -150,9 +158,17 @@ export default function ImportConfigPage() {
     }
   }
 
-  const itemVariants = reducedMotion ? {} : {
+  const itemVariants = prefersReducedMotion ? {} : {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -171,7 +187,7 @@ export default function ImportConfigPage() {
         title="Configurez vos imports"
         subtitle="Personnalisez vos sources et automatisez vos flux de produits avec des règles intelligentes"
         variant="compact"
-        showHexagons={!reducedMotion}
+        showHexagons={!prefersReducedMotion}
         stats={[
           { label: 'Sources', value: '6', icon: Package },
           { label: 'Auto-sync', value: 'Actif', icon: RefreshCw },
@@ -190,34 +206,51 @@ export default function ImportConfigPage() {
       {/* Configuration Options */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-primary" />
-            Configuration globale
-          </CardTitle>
-          <CardDescription>
-            Paramètres appliqués à tous les imports
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-primary" />
+                Configuration globale
+              </CardTitle>
+              <CardDescription>
+                Paramètres appliqués à tous les imports (sauvegarde automatique)
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              {isSaving && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Sauvegarde...
+                </Badge>
+              )}
+              <Button variant="outline" size="sm" onClick={resetToDefaults}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Réinitialiser
+              </Button>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          {/* Toggle Options */}
           <div className="grid sm:grid-cols-2 gap-4">
             {configOptions.map((option) => (
               <div
                 key={option.id}
                 className={cn(
                   "flex items-center justify-between p-4 rounded-xl border transition-all",
-                  configs[option.id] 
+                  config[option.id] 
                     ? "bg-primary/5 border-primary/20" 
                     : "bg-muted/30 border-border/50"
                 )}
                 role="switch"
-                aria-checked={configs[option.id]}
+                aria-checked={!!config[option.id]}
                 tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && toggleConfig(option.id)}
+                onKeyDown={(e) => e.key === 'Enter' && toggleOption(option.id)}
               >
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "p-2 rounded-lg",
-                    configs[option.id] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                    config[option.id] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                   )}>
                     <option.icon className="w-4 h-4" />
                   </div>
@@ -230,12 +263,50 @@ export default function ImportConfigPage() {
                 </div>
                 <Switch
                   id={option.id}
-                  checked={configs[option.id]}
-                  onCheckedChange={() => toggleConfig(option.id)}
+                  checked={!!config[option.id]}
+                  onCheckedChange={() => toggleOption(option.id)}
                   aria-label={option.label}
+                  disabled={isSaving}
                 />
               </div>
             ))}
+          </div>
+
+          {/* Margin Slider */}
+          <div className="p-4 rounded-xl border bg-muted/30">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <Label className="font-medium">Marge par défaut</Label>
+                <p className="text-xs text-muted-foreground">Appliquée automatiquement aux nouveaux produits</p>
+              </div>
+              <Badge variant="secondary" className="text-lg font-bold">{config.default_margin}%</Badge>
+            </div>
+            <Slider
+              value={[config.default_margin]}
+              onValueChange={([value]) => updateOption('default_margin', value)}
+              min={0}
+              max={100}
+              step={5}
+              disabled={isSaving}
+            />
+          </div>
+
+          {/* Currency Selection */}
+          <div className="p-4 rounded-xl border bg-muted/30">
+            <Label className="font-medium mb-2 block">Devise par défaut</Label>
+            <div className="flex gap-2">
+              {['EUR', 'USD', 'GBP', 'CAD'].map((currency) => (
+                <Button
+                  key={currency}
+                  variant={config.currency === currency ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateOption('currency', currency)}
+                  disabled={isSaving}
+                >
+                  {currency}
+                </Button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
