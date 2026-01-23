@@ -211,6 +211,51 @@ class ShopOptiBackground {
           sendResponse({ success: true });
           break;
 
+        case 'ADD_TO_MONITORING':
+          await this.addToMonitoring(message.url, message.productData);
+          sendResponse({ success: true });
+          break;
+
+        case 'REMOVE_FROM_MONITORING':
+          await this.removeFromMonitoring(message.url, message.productId);
+          sendResponse({ success: true });
+          break;
+
+        case 'CHECK_PRICES':
+          await this.checkPriceChanges();
+          sendResponse({ success: true });
+          break;
+
+        case 'CHECK_STOCK':
+          await this.checkStockChanges();
+          sendResponse({ success: true });
+          break;
+
+        case 'GET_MONITORED_PRODUCTS':
+          const monitored = await this.getMonitoredProducts();
+          sendResponse({ success: true, products: monitored });
+          break;
+
+        case 'GET_PRICE_HISTORY':
+          const history = await this.getPriceHistory(message.productId);
+          sendResponse({ success: true, history });
+          break;
+
+        case 'GET_MONITORING_STATUS':
+          const { monitoredUrls, lastPriceCheck, lastStockCheck, priceHistory, stockHistory } = 
+            await chrome.storage.local.get(['monitoredUrls', 'lastPriceCheck', 'lastStockCheck', 'priceHistory', 'stockHistory']);
+          sendResponse({
+            success: true,
+            status: {
+              monitoredCount: monitoredUrls?.length || 0,
+              lastPriceCheck,
+              lastStockCheck,
+              recentPriceChanges: priceHistory?.slice(0, 5) || [],
+              recentStockChanges: stockHistory?.slice(0, 5) || []
+            }
+          });
+          break;
+
         default:
           console.warn('[ShopOpti+] Unknown message type:', message.type);
           sendResponse({ error: 'Unknown message type' });
@@ -709,13 +754,87 @@ class ShopOptiBackground {
     }
   }
 
-  async addToMonitoring(url) {
-    const { monitoredUrls, stats } = await chrome.storage.local.get(['monitoredUrls', 'stats']);
-    const urls = monitoredUrls || [];
-
-    if (!urls.includes(url)) {
-      urls.push(url);
+  async addToMonitoring(url, productData = null) {
+    try {
+      const { extensionToken, monitoredUrls, stats } = await chrome.storage.local.get([
+        'extensionToken', 'monitoredUrls', 'stats'
+      ]);
       
+      const urls = monitoredUrls || [];
+
+      // Add to local list
+      if (!urls.includes(url)) {
+        urls.push(url);
+        
+        await chrome.storage.local.set({
+          monitoredUrls: urls,
+          stats: {
+            ...stats,
+            monitored: urls.length
+          }
+        });
+      }
+
+      // If we have a token and product data, register with backend
+      if (extensionToken && productData?.productId) {
+        const response = await fetch(`${API_URL}/price-stock-monitor`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': extensionToken
+          },
+          body: JSON.stringify({
+            action: 'add_monitoring',
+            products: [{
+              productId: productData.productId,
+              price: productData.price,
+              stock: productData.stock,
+              threshold: productData.threshold || 5
+            }]
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          console.log('[ShopOpti+] Product added to monitoring:', productData.productId);
+          this.showNotification(
+            '📈 Surveillance activée',
+            `${productData.title || 'Produit'} est maintenant surveillé`
+          );
+        } else {
+          console.error('[ShopOpti+] Failed to add to monitoring:', result.error);
+          this.showNotification('Surveillance activée (local)', 'Vous serez notifié des changements de prix');
+        }
+      } else {
+        this.showNotification('Surveillance activée', 'Vous serez notifié des changements de prix');
+      }
+
+      // Log activity
+      const { activities } = await chrome.storage.local.get(['activities']);
+      const newActivity = {
+        title: `Surveillance: ${productData?.title || url.substring(0, 50)}`,
+        icon: 'trending-up',
+        timestamp: new Date().toISOString()
+      };
+      await chrome.storage.local.set({
+        activities: [newActivity, ...(activities || [])].slice(0, 20)
+      });
+
+    } catch (error) {
+      console.error('[ShopOpti+] Error adding to monitoring:', error);
+      this.showNotification('Erreur', 'Impossible d\'ajouter à la surveillance');
+    }
+  }
+
+  async removeFromMonitoring(url, productId = null) {
+    try {
+      const { extensionToken, monitoredUrls, stats } = await chrome.storage.local.get([
+        'extensionToken', 'monitoredUrls', 'stats'
+      ]);
+
+      // Remove from local list
+      const urls = (monitoredUrls || []).filter(u => u !== url);
       await chrome.storage.local.set({
         monitoredUrls: urls,
         stats: {
@@ -724,16 +843,228 @@ class ShopOptiBackground {
         }
       });
 
-      this.showNotification('Surveillance activée', 'Vous serez notifié des changements de prix');
+      // Remove from backend if we have a token and product ID
+      if (extensionToken && productId) {
+        await fetch(`${API_URL}/price-stock-monitor`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': extensionToken
+          },
+          body: JSON.stringify({
+            action: 'remove_monitoring',
+            productId
+          })
+        });
+      }
+
+      this.showNotification('Surveillance désactivée', 'Le produit n\'est plus surveillé');
+    } catch (error) {
+      console.error('[ShopOpti+] Error removing from monitoring:', error);
     }
   }
 
   async checkPriceChanges() {
     console.log('[ShopOpti+] Checking price changes...');
+    
+    try {
+      const { extensionToken, monitoredUrls, priceHistory } = await chrome.storage.local.get([
+        'extensionToken', 'monitoredUrls', 'priceHistory'
+      ]);
+      
+      if (!extensionToken) {
+        console.log('[ShopOpti+] No token, skipping price check');
+        return;
+      }
+      
+      const urls = monitoredUrls || [];
+      if (urls.length === 0) {
+        console.log('[ShopOpti+] No monitored URLs');
+        return;
+      }
+
+      // Call edge function to check all monitored products
+      const response = await fetch(`${API_URL}/price-stock-monitor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'check_all'
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log(`[ShopOpti+] Price check complete: ${result.checked} products, ${result.changes} changes`);
+        
+        // Update local history
+        const history = priceHistory || [];
+        const newEntry = {
+          timestamp: new Date().toISOString(),
+          checked: result.checked,
+          changes: result.changes,
+          alerts: result.alerts
+        };
+        
+        const updatedHistory = [newEntry, ...history].slice(0, 100);
+        await chrome.storage.local.set({ 
+          priceHistory: updatedHistory,
+          lastPriceCheck: new Date().toISOString()
+        });
+
+        // Show notification if there are alerts
+        if (result.alerts > 0) {
+          this.showNotification(
+            '📊 Alertes prix détectées',
+            `${result.alerts} changement(s) de prix significatif(s)`
+          );
+        }
+
+        // Update stats
+        const { stats } = await chrome.storage.local.get(['stats']);
+        await chrome.storage.local.set({
+          stats: {
+            ...stats,
+            lastPriceCheck: result.checked,
+            priceAlerts: (stats?.priceAlerts || 0) + result.alerts
+          }
+        });
+      } else {
+        console.error('[ShopOpti+] Price check failed:', result.error);
+      }
+    } catch (error) {
+      console.error('[ShopOpti+] Error checking price changes:', error);
+    }
   }
 
   async checkStockChanges() {
     console.log('[ShopOpti+] Checking stock changes...');
+    
+    try {
+      const { extensionToken, monitoredUrls, stockHistory } = await chrome.storage.local.get([
+        'extensionToken', 'monitoredUrls', 'stockHistory'
+      ]);
+      
+      if (!extensionToken) {
+        console.log('[ShopOpti+] No token, skipping stock check');
+        return;
+      }
+      
+      const urls = monitoredUrls || [];
+      if (urls.length === 0) {
+        console.log('[ShopOpti+] No monitored URLs for stock check');
+        return;
+      }
+
+      // Call edge function with stock focus
+      const response = await fetch(`${API_URL}/price-stock-monitor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'check_all'
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log(`[ShopOpti+] Stock check complete: ${result.checked} products`);
+        
+        // Update local stock history
+        const history = stockHistory || [];
+        const newEntry = {
+          timestamp: new Date().toISOString(),
+          checked: result.checked,
+          stockChanges: result.details?.stock_changes || 0
+        };
+        
+        const updatedHistory = [newEntry, ...history].slice(0, 100);
+        await chrome.storage.local.set({ 
+          stockHistory: updatedHistory,
+          lastStockCheck: new Date().toISOString()
+        });
+
+        // Show notification for stock alerts
+        const stockAlerts = result.details?.stock_changes || 0;
+        if (stockAlerts > 0) {
+          this.showNotification(
+            '📦 Alertes stock détectées',
+            `${stockAlerts} changement(s) de stock`
+          );
+        }
+
+        // Update stats
+        const { stats } = await chrome.storage.local.get(['stats']);
+        await chrome.storage.local.set({
+          stats: {
+            ...stats,
+            lastStockCheck: result.checked,
+            stockAlerts: (stats?.stockAlerts || 0) + stockAlerts
+          }
+        });
+      } else {
+        console.error('[ShopOpti+] Stock check failed:', result.error);
+      }
+    } catch (error) {
+      console.error('[ShopOpti+] Error checking stock changes:', error);
+    }
+  }
+
+  async getMonitoredProducts() {
+    try {
+      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+      
+      if (!extensionToken) return [];
+
+      const response = await fetch(`${API_URL}/price-stock-monitor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'get_monitored'
+        })
+      });
+
+      const result = await response.json();
+      return result.success ? result.monitored : [];
+    } catch (error) {
+      console.error('[ShopOpti+] Error getting monitored products:', error);
+      return [];
+    }
+  }
+
+  async getPriceHistory(productId = null) {
+    try {
+      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+      
+      if (!extensionToken) return [];
+
+      const response = await fetch(`${API_URL}/price-stock-monitor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'get_history',
+          productId
+        })
+      });
+
+      const result = await response.json();
+      return result.success ? result.history : [];
+    } catch (error) {
+      console.error('[ShopOpti+] Error getting price history:', error);
+      return [];
+    }
   }
 
   showNotification(title, message) {

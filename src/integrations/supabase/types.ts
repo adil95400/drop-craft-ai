@@ -7276,6 +7276,53 @@ export type Database = {
         }
         Relationships: []
       }
+      price_stock_history: {
+        Row: {
+          change_percent: number | null
+          change_type: string
+          created_at: string
+          detected_at: string
+          id: string
+          metadata: Json | null
+          new_value: number | null
+          old_value: number | null
+          product_id: string | null
+          user_id: string
+        }
+        Insert: {
+          change_percent?: number | null
+          change_type: string
+          created_at?: string
+          detected_at?: string
+          id?: string
+          metadata?: Json | null
+          new_value?: number | null
+          old_value?: number | null
+          product_id?: string | null
+          user_id: string
+        }
+        Update: {
+          change_percent?: number | null
+          change_type?: string
+          created_at?: string
+          detected_at?: string
+          id?: string
+          metadata?: Json | null
+          new_value?: number | null
+          old_value?: number | null
+          product_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_stock_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_stock_monitoring: {
         Row: {
           alert_threshold: number | null
