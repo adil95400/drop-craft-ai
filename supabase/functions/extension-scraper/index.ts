@@ -382,18 +382,26 @@ serve(async (req) => {
       .update({ last_used_at: new Date().toISOString() })
       .eq('id', authData.id)
 
-    // Log analytics
-    await supabase.from('extension_analytics').insert({
-      user_id: authData.user_id,
-      event_type: 'product_import',
-      event_data: {
-        product_id: insertedProduct.id,
-        title: productData.title.substring(0, 100),
-        platform,
-        price: productData.price
-      },
-      source_url: url
-    }).catch(() => {})
+    // Log analytics (never fail the import if analytics insert fails)
+    try {
+      const { error: analyticsError } = await supabase.from('extension_analytics').insert({
+        user_id: authData.user_id,
+        event_type: 'product_import',
+        event_data: {
+          product_id: insertedProduct.id,
+          title: productData.title.substring(0, 100),
+          platform,
+          price: productData.price,
+        },
+        source_url: url,
+      })
+
+      if (analyticsError) {
+        console.warn(`[${requestId}] Analytics insert warning:`, analyticsError.message)
+      }
+    } catch (e) {
+      console.warn(`[${requestId}] Analytics insert exception:`, e)
+    }
 
     console.log(`[${requestId}] ✅ Product imported: ${insertedProduct.id}`)
 
