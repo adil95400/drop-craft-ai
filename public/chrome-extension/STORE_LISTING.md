@@ -102,13 +102,13 @@ Rejoignez des milliers d'entrepreneurs qui utilisent déjà ShopOpti+ pour déve
 dropshipping, import produits, aliexpress, amazon, ecommerce, shopify, woocommerce, prix, surveillance, avis, reviews, automation
 
 ## Website
-https://drop-craft-ai.lovable.app
+https://shopopti.io
 
 ## Support Email
 support@shopopti.com
 
 ## Privacy Policy URL
-https://drop-craft-ai.lovable.app/privacy
+https://shopopti.io/privacy
 
 ---
 

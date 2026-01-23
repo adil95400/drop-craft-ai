@@ -52,7 +52,7 @@ L'extension se connecte à l'API ShopOpti+ :
 
 ```javascript
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
-const APP_URL = 'https://drop-craft-ai.lovable.app';
+const APP_URL = 'https://shopopti.io';
 ```
 
 ### Endpoints Utilisés
@@ -200,6 +200,6 @@ Propriétaire - ShopOpti+ © 2025
 
 ## 📞 Support
 
-- **Website:** https://drop-craft-ai.lovable.app
-- **Support:** https://drop-craft-ai.lovable.app/support
+- **Website:** https://shopopti.io
+- **Support:** https://shopopti.io/support
 - **Email:** support@shopopti.com

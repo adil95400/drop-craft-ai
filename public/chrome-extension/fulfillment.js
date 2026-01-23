@@ -9,7 +9,7 @@
 
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
-    APP_URL: 'https://drop-craft-ai.lovable.app',
+    APP_URL: 'https://shopopti.io',
     CARRIERS: {
       '17track': { name: '17TRACK', url: 'https://t.17track.net/en#nums=' },
       'aftership': { name: 'AfterShip', url: 'https://track.aftership.com/' },
