@@ -26,7 +26,6 @@ import heroExtensions from '@/assets/images/hero-extensions.png';
 import heroResearch from '@/assets/images/hero-research.png';
 import heroImport from '@/assets/images/hero-import.png';
 import heroNotifications from '@/assets/images/hero-notifications.png';
-
 export const heroImages = {
   dashboard: heroDashboard,
   stock: heroStock,
@@ -44,11 +43,9 @@ export const heroImages = {
   extensions: heroExtensions,
   research: heroResearch,
   import: heroImport,
-  notifications: heroNotifications,
+  notifications: heroNotifications
 } as const;
-
 export type HeroImageKey = keyof typeof heroImages;
-
 interface ChannablePageWrapperProps {
   children: ReactNode;
   title: string;
@@ -63,7 +60,6 @@ interface ChannablePageWrapperProps {
   actions?: ReactNode;
   className?: string;
 }
-
 export function ChannablePageWrapper({
   children,
   title,
@@ -72,24 +68,24 @@ export function ChannablePageWrapper({
   heroImage = 'dashboard',
   badge,
   actions,
-  className,
+  className
 }: ChannablePageWrapperProps) {
   const backgroundImage = heroImages[heroImage];
-
-  return (
-    <div className={cn("space-y-6", className)}>
+  return <div className={cn("space-y-6", className)}>
       {/* Hero Section avec image de fond */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-2xl"
-      >
+      <motion.div initial={{
+      opacity: 0,
+      y: -20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      duration: 0.5
+    }} className="relative overflow-hidden rounded-2xl">
         {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${backgroundImage})` }}
-        />
+        <div className="absolute inset-0 bg-cover bg-center" style={{
+        backgroundImage: `url(${backgroundImage})`
+      }} />
         
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
@@ -99,13 +95,7 @@ export function ChannablePageWrapper({
           <svg width="100%" height="100%" className="absolute inset-0">
             <defs>
               <pattern id="hexagons-wrapper" width="50" height="43.4" patternUnits="userSpaceOnUse" patternTransform="scale(2)">
-                <polygon 
-                  points="25,0 50,12.5 50,37.5 25,50 0,37.5 0,12.5" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="0.5"
-                  className="text-primary"
-                />
+                <polygon points="25,0 50,12.5 50,37.5 25,50 0,37.5 0,12.5" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-primary" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#hexagons-wrapper)" />
@@ -116,69 +106,59 @@ export function ChannablePageWrapper({
         <div className="relative z-10 p-6 md:p-8 lg:p-10">
           <div className="max-w-3xl">
             {/* Badge */}
-            {badge && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <Badge 
-                  variant={badge.variant || 'secondary'}
-                  className="mb-4 bg-primary/20 text-primary border-primary/30"
-                >
-                  {badge.icon && <badge.icon className="h-3 w-3 mr-1" />}
-                  {badge.label}
-                </Badge>
-              </motion.div>
-            )}
+            {badge && <motion.div initial={{
+            opacity: 0,
+            x: -20
+          }} animate={{
+            opacity: 1,
+            x: 0
+          }} transition={{
+            delay: 0.1
+          }}>
+                
+              </motion.div>}
             
             {/* Subtitle */}
-            {subtitle && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.15 }}
-                className="text-sm font-medium text-primary mb-2"
-              >
-                {subtitle}
-              </motion.p>
-            )}
+            {subtitle}
             
             {/* Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4"
-            >
+            <motion.h1 initial={{
+            opacity: 0,
+            y: 10
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            delay: 0.2
+          }} className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
               <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
                 {title}
               </span>
             </motion.h1>
             
             {/* Description */}
-            {description && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.25 }}
-                className="text-muted-foreground text-base md:text-lg max-w-2xl leading-relaxed"
-              >
+            {description && <motion.p initial={{
+            opacity: 0
+          }} animate={{
+            opacity: 1
+          }} transition={{
+            delay: 0.25
+          }} className="text-muted-foreground text-base md:text-lg max-w-2xl leading-relaxed">
                 {description}
-              </motion.p>
-            )}
+              </motion.p>}
             
             {/* Actions */}
-            {actions && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="mt-6 flex flex-wrap gap-3"
-              >
+            {actions && <motion.div initial={{
+            opacity: 0,
+            y: 10
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            delay: 0.3
+          }} className="mt-6 flex flex-wrap gap-3">
                 {actions}
-              </motion.div>
-            )}
+              </motion.div>}
           </div>
         </div>
         
@@ -187,13 +167,17 @@ export function ChannablePageWrapper({
       </motion.div>
       
       {/* Main Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35, duration: 0.4 }}
-      >
+      <motion.div initial={{
+      opacity: 0,
+      y: 20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      delay: 0.35,
+      duration: 0.4
+    }}>
         {children}
       </motion.div>
-    </div>
-  );
+    </div>;
 }
