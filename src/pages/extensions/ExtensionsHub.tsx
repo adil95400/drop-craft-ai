@@ -139,6 +139,46 @@ const extensions = [
     icon: MessageSquare,
     route: '/extensions/faq',
     badge: 'Support'
+  },
+  {
+    id: 'marketplace',
+    title: 'Marketplace',
+    description: 'Découvrez et installez des extensions',
+    icon: Store,
+    route: '/extensions/marketplace',
+    badge: 'Nouveau'
+  },
+  {
+    id: 'cli',
+    title: 'CLI Tools',
+    description: 'Gérez vos extensions en ligne de commande',
+    icon: Terminal,
+    route: '/extensions/cli',
+    badge: 'Pro'
+  },
+  {
+    id: 'developer',
+    title: 'Developpeur',
+    description: 'Outils et ressources pour développeurs',
+    icon: Settings,
+    route: '/extensions/developer',
+    badge: 'Dev'
+  },
+  {
+    id: 'white-label',
+    title: 'White-Label',
+    description: 'Personnalisez l\'interface à vos couleurs',
+    icon: Palette,
+    route: '/extensions/white-label',
+    badge: 'Ultra Pro'
+  },
+  {
+    id: 'sso',
+    title: 'Enterprise SSO',
+    description: 'Authentification unique pour votre équipe',
+    icon: Shield,
+    route: '/extensions/sso',
+    badge: 'Ultra Pro'
   }
 ]
 
