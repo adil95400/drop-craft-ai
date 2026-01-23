@@ -1,13 +1,12 @@
-// Drop Craft AI Chrome Extension - Authentication v4.0
-// Professional authentication with enhanced UX
+// ShopOpti+ Chrome Extension - Authentication v4.3.9
 
 const CONFIG = {
   API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
   APP_URL: 'https://shopopti.io',
-  VERSION: '4.0.0'
+  VERSION: '4.3.9'
 };
 
-class DropCraftAuth {
+class ShopOptiAuth {
   constructor() {
     this.elements = {};
     this.isConnected = false;
@@ -47,28 +46,22 @@ class DropCraftAuth {
   }
 
   bindEvents() {
-    // Connect button
     this.elements.connectBtn?.addEventListener('click', () => this.connect());
     
-    // Enter key on input
     this.elements.tokenInput?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') this.connect();
     });
     
-    // Dashboard button
     this.elements.dashboardBtn?.addEventListener('click', () => {
       chrome.tabs.create({ url: `${CONFIG.APP_URL}/dashboard` });
     });
     
-    // Settings button
     this.elements.settingsBtn?.addEventListener('click', () => {
       chrome.runtime.openOptionsPage();
     });
     
-    // Disconnect button
     this.elements.disconnectBtn?.addEventListener('click', () => this.disconnect());
     
-    // Real-time validation
     this.elements.tokenInput?.addEventListener('input', (e) => {
       this.validateTokenFormat(e.target.value);
     });
@@ -90,7 +83,7 @@ class DropCraftAuth {
         await this.verifyConnection();
       }
     } catch (error) {
-      console.error('Error loading stored data:', error);
+      console.error('[ShopOpti+] Error loading stored data:', error);
     }
   }
 
@@ -125,7 +118,6 @@ class DropCraftAuth {
       if (response.ok) {
         const data = await response.json();
         
-        // Save token and data
         await chrome.storage.local.set({
           extensionToken: token,
           connectedAt: new Date().toISOString(),
@@ -139,11 +131,8 @@ class DropCraftAuth {
         
         this.showMessage('✓ Connexion réussie!', 'success');
         this.updateUI(true, data.todayStats);
-        
-        // Animate success
         this.celebrateConnection();
         
-        // Auto close after success
         setTimeout(() => window.close(), 2000);
       } else {
         const error = await response.json().catch(() => ({ error: 'Erreur serveur' }));
@@ -173,7 +162,6 @@ class DropCraftAuth {
       if (response.ok) {
         const data = await response.json();
         
-        // Update stored data
         await chrome.storage.local.set({
           lastSync: new Date().toISOString(),
           userPlan: data.userPlan || 'free',
@@ -186,7 +174,7 @@ class DropCraftAuth {
         throw new Error('Token expired');
       }
     } catch (error) {
-      console.error('Verification failed:', error);
+      console.error('[ShopOpti+] Verification failed:', error);
       this.updateUI(false);
     }
   }
@@ -267,7 +255,6 @@ class DropCraftAuth {
     messageToast.textContent = text;
     messageToast.className = `message-toast show ${type}`;
     
-    // Auto-hide after 5 seconds (except for errors)
     if (type !== 'error') {
       setTimeout(() => {
         messageToast.classList.remove('show');
@@ -289,17 +276,10 @@ class DropCraftAuth {
 
   isValidToken(token) {
     if (!token || token.length < 20) return false;
-    
-    // ext_ prefix
     if (token.startsWith('ext_')) return true;
-    
-    // UUID pattern
     const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     if (uuidPattern.test(token)) return true;
-    
-    // Alphanumeric token (32+ chars)
     if (/^[a-zA-Z0-9_-]{32,}$/.test(token)) return true;
-    
     return false;
   }
 
@@ -312,9 +292,9 @@ class DropCraftAuth {
     }
     
     if (this.isValidToken(token)) {
-      input.style.borderColor = 'var(--dc-success)';
+      input.style.borderColor = 'var(--so-success)';
     } else if (token.length > 10) {
-      input.style.borderColor = 'var(--dc-error)';
+      input.style.borderColor = 'var(--so-error)';
     } else {
       input.style.borderColor = '';
     }
@@ -329,7 +309,6 @@ class DropCraftAuth {
   }
 
   celebrateConnection() {
-    // Add confetti or celebration effect
     const celebration = document.createElement('div');
     celebration.innerHTML = '🎉';
     celebration.style.cssText = `
@@ -366,5 +345,4 @@ class DropCraftAuth {
   }
 }
 
-// Initialize
-new DropCraftAuth();
+new ShopOptiAuth();
