@@ -8,7 +8,7 @@ import {
   Activity, History, TrendingUp, Clock, AlertCircle, Save, Loader2
 } from 'lucide-react';
 import { generateExtensionZip } from '@/utils/extensionZipGenerator';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { ExtensionAuthManager } from '@/components/extensions/ExtensionAuthManager';
+import { ExtensionInstallWelcomeModal } from '@/components/extensions/ExtensionInstallWelcomeModal';
+import { ExtensionActivityFeed } from '@/components/extensions/ExtensionActivityFeed';
+import { QuickConnectTokenModal } from '@/components/extensions/QuickConnectTokenModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
@@ -56,6 +59,7 @@ const defaultSettings: ExtensionSettings = {
 export default function ChromeExtensionPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('overview');
   const [settings, setSettings] = useState<ExtensionSettings>(() => {
     const saved = localStorage.getItem('extension-settings');
@@ -63,6 +67,21 @@ export default function ChromeExtensionPage() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  
+  // Handle extension install callback
+  const isInstalled = searchParams.get('installed') === 'true';
+  const extensionVersion = searchParams.get('v') || '4.3.10';
+  const [showWelcomeModal, setShowWelcomeModal] = useState(isInstalled);
+
+  // Clear URL params after showing modal
+  useEffect(() => {
+    if (isInstalled) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('installed');
+      newParams.delete('v');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [isInstalled, searchParams, setSearchParams]);
 
   // Download extension ZIP
   const handleDownloadExtension = async () => {
@@ -421,7 +440,7 @@ export default function ChromeExtensionPage() {
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-lg grid-cols-4">
+        <TabsList className="grid w-full max-w-2xl grid-cols-5">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <Chrome className="h-4 w-4" />
             <span className="hidden sm:inline">Aperçu</span>
@@ -433,6 +452,10 @@ export default function ChromeExtensionPage() {
           <TabsTrigger value="auth" className="flex items-center gap-1">
             <Key className="h-4 w-4" />
             <span className="hidden sm:inline">Tokens</span>
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex items-center gap-1">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Activité</span>
           </TabsTrigger>
           <TabsTrigger value="history" className="flex items-center gap-1">
             <History className="h-4 w-4" />
@@ -734,7 +757,19 @@ export default function ChromeExtensionPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Activity Tab */}
+        <TabsContent value="activity" className="space-y-6">
+          <ExtensionActivityFeed />
+        </TabsContent>
       </Tabs>
+
+      {/* Welcome Modal for Extension Install */}
+      <ExtensionInstallWelcomeModal 
+        open={showWelcomeModal} 
+        onOpenChange={setShowWelcomeModal}
+        version={extensionVersion}
+      />
     </div>
   );
 }
