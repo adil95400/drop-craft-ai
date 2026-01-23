@@ -1,8 +1,8 @@
-// ShopOpti+ Chrome Extension - Background Service Worker v4.3.9
+// ShopOpti+ Chrome Extension - Background Service Worker v4.3.10
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '4.3.9';
+const VERSION = '4.3.10';
 
 class ShopOptiBackground {
   constructor() {
@@ -59,7 +59,7 @@ class ShopOptiBackground {
     console.log('[ShopOpti+] Extension installed');
     
     await chrome.storage.local.set({
-      extensionVersion: '4.3.9',
+      extensionVersion: '4.3.10',
       installDate: new Date().toISOString(),
       settings: {
         autoInjectButtons: true,
@@ -79,15 +79,15 @@ class ShopOptiBackground {
 
     // Open welcome page
     chrome.tabs.create({
-      url: `${APP_URL}/extensions/chrome?installed=true&v=4.3.9`
+      url: `${APP_URL}/extensions/chrome?installed=true&v=4.3.10`
     });
   }
 
   async onUpdate(previousVersion) {
-    console.log(`[ShopOpti+] Extension updated from ${previousVersion} to 4.3.9`);
+    console.log(`[ShopOpti+] Extension updated from ${previousVersion} to 4.3.10`);
     
     await chrome.storage.local.set({
-      extensionVersion: '4.3.9',
+      extensionVersion: '4.3.10',
       lastUpdate: new Date().toISOString()
     });
   }
@@ -240,7 +240,7 @@ class ShopOptiBackground {
         data: data
       };
     } catch (error) {
-      console.error('[DropCraft] Fetch API error:', error);
+      console.error('[ShopOpti+] Fetch API error:', error);
       return {
         success: false,
         error: error.message
@@ -250,7 +250,7 @@ class ShopOptiBackground {
 
   async scrapeAndImport(url) {
     try {
-      console.log('[DropCraft] Scraping and importing from URL:', url);
+      console.log('[ShopOpti+] Scraping and importing from URL:', url);
       
       const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
       
@@ -286,11 +286,11 @@ class ShopOptiBackground {
         this.showNotification('Produit importé', data.product?.title || 'Import réussi');
         return { success: true, data };
       } else {
-        console.error('[DropCraft] Scrape and import failed:', data.error);
+        console.error('[ShopOpti+] Scrape and import failed:', data.error);
         return { success: false, error: data.error || 'Échec de l\'import' };
       }
     } catch (error) {
-      console.error('[DropCraft] Scrape and import error:', error);
+      console.error('[ShopOpti+] Scrape and import error:', error);
       return { success: false, error: error.message };
     }
   }
@@ -424,10 +424,10 @@ class ShopOptiBackground {
           files: ['content.css']
         });
         
-        console.log('[DropCraft] Content script injected for:', url);
+        console.log('[ShopOpti+] Content script injected for:', url);
       } catch (error) {
         // Content script might already be injected
-        console.log('[DropCraft] Script injection skipped:', error.message);
+        console.log('[ShopOpti+] Script injection skipped:', error.message);
       }
     }
   }
@@ -518,7 +518,7 @@ class ShopOptiBackground {
         }
       }
     } catch (error) {
-      console.error('[DropCraft] Sync error:', error);
+      console.error('[ShopOpti+] Sync error:', error);
     }
   }
 
@@ -573,14 +573,14 @@ class ShopOptiBackground {
           })
         });
       } catch (error) {
-        console.error('[DropCraft] Error sending products to API:', error);
+        console.error('[ShopOpti+] Error sending products to API:', error);
       }
     }
 
     // Show notification
     this.showNotification(
       `${products.length} produit(s) importé(s)`,
-      'Import réussi via Drop Craft AI'
+      'Import réussi via ShopOpti+'
     );
   }
 
@@ -729,11 +729,11 @@ class ShopOptiBackground {
   }
 
   async checkPriceChanges() {
-    console.log('[DropCraft] Checking price changes...');
+    console.log('[ShopOpti+] Checking price changes...');
   }
 
   async checkStockChanges() {
-    console.log('[DropCraft] Checking stock changes...');
+    console.log('[ShopOpti+] Checking stock changes...');
   }
 
   showNotification(title, message) {
@@ -805,7 +805,7 @@ function extractReviewsFromPage(config) {
 
 // Initialize the background service worker
 try {
-  new DropCraftBackground();
+  new ShopOptiBackground();
 } catch (error) {
-  console.error('[DropCraft] Failed to initialize:', error);
+  console.error('[ShopOpti+] Failed to initialize:', error);
 }
