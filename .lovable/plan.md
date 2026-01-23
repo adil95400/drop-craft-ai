@@ -1,203 +1,215 @@
 
-# Plan d'Optimisation de l'Extension ShopOpti+ v4.3.12
 
-## Analyse des Problemes Identifies
+# Plan de Correction Extension ShopOpti+ v4.3.13
 
-### 1. Pages/Modales Manquantes pour la Progression d'Import
+## Problemes Identifies
 
-**Constat actuel:**
-- Il existe des composants de progression (`BulkImportProgress.tsx`, `EnhancedImportProgress.tsx`, `ImportProgress.tsx`) mais ils sont embarques dans d'autres pages
-- Aucune modale dediee pour afficher la progression en temps reel dans le popup de l'extension
-- Pas de vue detaillee des produits importes avec tous les details (variantes, images, avis)
+### 1. Boutons d'import non visibles sur les plateformes
 
-**Elements manquants:**
-- Modale de progression d'import dans l'extension Chrome
-- Page/modale de details des produits importes
-- Notification en temps reel du statut d'import
+**Causes identifiees:**
+- La fonction `isProductPage()` a des patterns regex incomplets pour Cdiscount, eBay, Temu, etc.
+- La fonction `isListingPage()` ne couvre pas toutes les plateformes (manque Cdiscount, Shein, Walmart, etc.)
+- Les selectors dans `createListingButtons()` ne couvrent que Amazon, AliExpress, Temu et eBay (incomplet)
+- L'opacite des boutons listing est a 0 par defaut (visible seulement au hover) ce qui cause confusion
 
-### 2. Import des Avis - Fonctionnalites Manquantes
+### 2. Design du popup non optimal
 
-**Constat actuel:**
-- L'extension a un bouton "Importer Avis" qui importe UNIQUEMENT les avis
-- L'import produit et l'import avis sont deux actions separees
-- Pas d'option pour importer produit + avis simultanement
-
-**Elements manquants:**
-- Bouton "Import Complet" (produit + avis + variantes)
-- Option dans le popup pour choisir ce qu'on importe
+**Problemes identifies:**
+- La modale de progression a un design basique avec texte simple
+- Le badge de version est parfois desynchronise
+- Manque de polish professionnel sur certains elements
+- L'interface de progression n'a pas d'animations fluides
 
 ---
 
 ## Plan d'Implementation
 
-### Phase 1: Modale de Progression d'Import dans l'Extension
+### Phase 1: Correction Detection des Pages (content.js)
 
-**Fichiers a creer/modifier:**
-- `public/chrome-extension/popup.html` - Ajouter une section modale de progression
-- `public/chrome-extension/popup.css` - Styles pour la modale
-- `public/chrome-extension/popup.js` - Logique de gestion de la progression
+**Modifications de `isProductPage()`:**
+- Ajouter pattern Cdiscount: `/\/f-\d+|\/v-\d+|mpid/i`
+- Ajouter pattern eBay complet: `/\/itm\/\d+|\/p\/\d+/i`
+- Ajouter pattern Temu complet: `/\/[a-z0-9_-]+-g-\d+\.html|goods\.html/i`
+- Ajouter pattern Shein: `/-p-\d+\.html|\?goods_id=/i`
+- Ajouter pattern Walmart: `/\/ip\/\d+|\/product\//i`
+- Ajouter pattern Fnac: `/\/a\d+\//i`
+- Ajouter pattern Rakuten: `/\/offer\/|\/product\//i`
 
-**Fonctionnalites:**
+**Modifications de `isListingPage()`:**
+- Ajouter patterns pour Cdiscount, eBay, Shein, Walmart, Fnac, Rakuten
+
+### Phase 2: Selectors Etendus pour Boutons Listing (content.js)
+
+**Ajouter selectors pour:**
+- Cdiscount: `'.prdtBloc', '.c-productCard', '[data-product-id]'`
+- eBay: `'.s-item', '.srp-results li', '[data-testid="item-card"]'`
+- Temu: `'.goods-item', '[class*="GoodsItem"]', '[data-goods-id]'`
+- Shein: `'.product-list__item', '.goods-item', '[data-expose-id]'`
+- Fnac: `'.Article-item', '.ProductCard'`
+- Walmart: `'.search-result-gridview-item', '[data-item-id]'`
+- Etsy: `'.listing-link', '.v2-listing-card'`
+
+### Phase 3: Visibilite Amelioree des Boutons
+
+**Modifications CSS et JS:**
+- Opacite par defaut a 0.85 (au lieu de 0)
+- Animation d'apparition plus visible
+- Augmenter le z-index pour eviter les conflits
+- Ajouter un badge ShopOpti+ plus visible sur les cartes produits
+
+**Nouveau design des boutons listing:**
 ```text
-+------------------------------------------+
-|        Import en cours...                |
-+------------------------------------------+
-| [=========>-----------] 45%              |
-|                                          |
-| Produit: T-Shirt Coton Bio               |
-| Variantes: 3/8 importees                 |
-| Avis: 12/50 importes                     |
-|                                          |
-| [Annuler]                                |
-+------------------------------------------+
++----------------------------------+
+| [Logo ShopOpti+] Importer        |
++----------------------------------+
 ```
 
-### Phase 2: Import Combine (Produit + Avis)
+### Phase 4: Amelioration Design Popup
 
-**Modifications dans l'extension:**
-1. Ajouter un nouveau bouton "Import Complet" dans popup.html
-2. Creer un message `IMPORT_PRODUCT_WITH_REVIEWS` dans background.js
-3. Enchainer: scrape produit -> import produit -> scrape avis -> import avis
+**Nouveaux elements visuels:**
+1. Modale de progression professionnelle avec:
+   - Progress ring circulaire anime
+   - Gradient de fond dynamique
+   - Icones animees pour chaque etape
+   - Affichage du nom/image du produit en cours
 
-**Nouveau workflow:**
-```text
-popup.js
-   |
-   v
-IMPORT_PRODUCT_WITH_REVIEWS
-   |
-   v
-background.js
-   |---> scrapeAndImport(url)
-   |---> importReviews({ productId: newProductId })
-   |
-   v
-Retour avec resultat combine
-```
+2. Header ameliore:
+   - Badge Pro avec effet glow
+   - Animation subtile sur le logo
 
-### Phase 3: Page de Details des Produits Importes
+3. Cards d'action avec:
+   - Hover effects plus marques
+   - Micro-animations sur les icones
+   - Indicateurs de statut en temps reel
 
-**Fichiers a creer/modifier:**
-- `src/components/import/ImportedProductDetailModal.tsx` - Modale de details
-- Integration dans `AdvancedImportResults.tsx`
+4. Section imports recents:
+   - Thumbnails des produits
+   - Statuts colores (succes/erreur/pending)
+   - Actions rapides (voir, supprimer)
 
-**Structure de la modale:**
-- Onglet "Infos" - Titre, description, prix, SKU
-- Onglet "Medias" - Images et videos importees
-- Onglet "Variantes" - Liste des variantes avec options
-- Onglet "Avis" - Avis importes avec filtres
+---
 
-### Phase 4: Ameliorations de l'Interface Extension
+## Fichiers a Modifier
 
-**Modifications popup.html:**
-1. Ajouter dropdown sur le bouton principal:
-   - "Import Produit seul"
-   - "Import Avis seuls"
-   - "Import Complet (Produit + Avis)"
-
-2. Ajouter section "Imports Recents" avec mini-liste
-
-3. Ajouter compteur de progression visible
-
-**Modifications popup.js:**
-1. Fonction `importProductWithReviews()`
-2. Gestion de l'etat de progression
-3. Mise a jour en temps reel via messages Chrome
+| Fichier | Action | Description |
+|---------|--------|-------------|
+| `content.js` | Modifier | Patterns detection + selectors listing + visibilite boutons |
+| `content.css` | Modifier | Styles boutons visibles + nouveau design overlays |
+| `popup.css` | Modifier | Modale progression pro + animations + polish general |
+| `popup.html` | Modifier | Structure modale amelioree |
+| `popup.js` | Modifier | Logique affichage progression + animations |
+| `manifest.json` | Modifier | Version bump a 4.3.13 |
 
 ---
 
 ## Details Techniques
 
-### Nouveau Message Handler dans background.js
+### Nouveaux Patterns de Detection (content.js)
 
 ```javascript
-case 'IMPORT_PRODUCT_WITH_REVIEWS':
-  const productResult = await this.scrapeAndImport(message.url);
-  if (productResult.success && productResult.data?.product?.id) {
-    const reviewsResult = await this.importReviews({
-      productId: productResult.data.product.id,
-      limit: message.reviewLimit || 50
-    });
-    sendResponse({
-      success: true,
-      product: productResult.data.product,
-      reviews: reviewsResult
-    });
-  } else {
-    sendResponse(productResult);
-  }
-  break;
+const patterns = {
+  amazon: /\/(dp|gp\/product|product)\/[A-Z0-9]+/i,
+  aliexpress: /\/item\/|\/i\/|\/_p\//i,
+  alibaba: /\/product-detail\//i,
+  temu: /\/[a-z0-9_-]+-g-\d+\.html|goods\.html\?/i,
+  shein: /\/-p-\d+\.html|\?goods_id=/i,
+  ebay: /\/itm\/\d+|\/p\/\d+/i,
+  etsy: /\/listing\//i,
+  walmart: /\/ip\/\d+|\/product\//i,
+  shopify: /\/products\//i,
+  cdiscount: /\/f-\d+|\/v-\d+|mpid=|fp\//i,
+  fnac: /\/a\d+\//i,
+  rakuten: /\/product\/|\/offer\//i
+};
 ```
 
-### Interface de Progression dans le Popup
+### Selectors Complets Listing
 
-```html
-<div id="importProgressModal" class="progress-modal hidden">
-  <div class="progress-header">
-    <span class="progress-title">Import en cours</span>
-    <button class="progress-close">x</button>
-  </div>
-  <div class="progress-body">
-    <div class="progress-bar-container">
-      <div class="progress-bar" id="importProgressBar"></div>
-    </div>
-    <div class="progress-details">
-      <div class="progress-item" id="productProgress">
-        <span class="icon">📦</span>
-        <span class="label">Produit</span>
-        <span class="status">En attente</span>
-      </div>
-      <div class="progress-item" id="variantsProgress">
-        <span class="icon">🎨</span>
-        <span class="label">Variantes</span>
-        <span class="status">-</span>
-      </div>
-      <div class="progress-item" id="reviewsProgress">
-        <span class="icon">⭐</span>
-        <span class="label">Avis</span>
-        <span class="status">-</span>
-      </div>
-    </div>
-  </div>
-  <div class="progress-footer">
-    <button id="cancelImportBtn" class="btn-cancel">Annuler</button>
-  </div>
-</div>
+```javascript
+const selectors = {
+  amazon: ['[data-component-type="s-search-result"]', '[data-asin]', '.s-result-item'],
+  aliexpress: ['.list-item', '.search-item-card-wrapper-gallery', '[class*="product-card"]'],
+  temu: ['[class*="GoodsItem"]', '.goods-item', '[data-goods-id]'],
+  ebay: ['.s-item', '.srp-results .s-item', '[data-testid="item-card"]'],
+  cdiscount: ['.prdtBloc', '.c-productCard', '[data-product-id]', '.prdtBImg'],
+  shein: ['.product-list__item', '.S-product-item', '[data-expose-id]'],
+  walmart: ['.search-result-gridview-item', '[data-item-id]', '.product-card'],
+  etsy: ['.v2-listing-card', '.listing-link', '[data-listing-id]'],
+  fnac: ['.Article-item', '.ProductCard', '.product-item'],
+  rakuten: ['.product-card', '.search-product-card']
+};
 ```
 
-### Modale de Details Produit Importe
+### Nouveau Style Bouton Import Visible
 
-Composant React avec:
-- Query vers `imported_products` avec jointures sur `product_variants` et `product_reviews`
-- Tabs pour navigation entre sections
-- Actions: Editer, Supprimer, Publier, Re-synchroniser
+```css
+.shopopti-listing-btn {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 999999 !important;
+  padding: 8px 14px !important;
+  background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4) !important;
+  opacity: 0.9 !important; /* Visible par defaut */
+  transition: all 0.2s ease !important;
+}
+
+.shopopti-listing-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5) !important;
+}
+```
+
+### Modale Progression Professionnelle
+
+```css
+.progress-modal-content {
+  background: linear-gradient(135deg, #0c0f1a 0%, #1a1f35 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6),
+              0 0 40px rgba(139, 92, 246, 0.2);
+}
+
+.progress-ring {
+  width: 80px;
+  height: 80px;
+  /* Animation SVG circle */
+}
+
+.progress-item.complete .progress-icon {
+  animation: bounceIn 0.5s ease;
+}
+```
 
 ---
 
-## Resume des Fichiers a Modifier
+## Resultat Attendu
 
-| Fichier | Action | Description |
-|---------|--------|-------------|
-| `popup.html` | Modifier | Ajouter modale progression + dropdown import |
-| `popup.css` | Modifier | Styles modale + dropdown |
-| `popup.js` | Modifier | Logique import combine + progression |
-| `background.js` | Modifier | Handler IMPORT_PRODUCT_WITH_REVIEWS |
-| `content.js` | Modifier | Ameliorer extraction avis |
-| `ImportedProductDetailModal.tsx` | Creer | Modale details produit |
-| `AdvancedImportResults.tsx` | Modifier | Integrer modale details |
+### Sur Pages Produit:
+- Bouton "Importer dans ShopOpti+" visible en bas a droite
+- Design moderne avec gradient et shadow
+- Animation au hover et pendant l'import
 
----
+### Sur Pages Listing/Categories:
+- Bouton "Import" visible sur chaque carte produit (opacity 0.9)
+- Bouton "Import en masse" en bas a droite avec compteur
+- Boutons visibles sans avoir besoin de hover
 
-## Fonctionnalites Finales
+### Interface Popup:
+- Modale de progression avec ring circulaire anime
+- Affichage du produit en cours (titre + miniature)
+- Etapes visuelles (Produit -> Variantes -> Images -> Avis)
+- Design premium avec animations fluides
 
-### Dans l'Extension (Popup):
-1. **Import 1-Click** - Import produit seul (actuel)
-2. **Import Complet** - Produit + Variantes + Avis (nouveau)
-3. **Import Avis** - Avis seuls (actuel, ameliore)
-4. **Modale de Progression** - Suivi en temps reel (nouveau)
-5. **Historique Recent** - 5 derniers imports (nouveau)
-
-### Dans l'Application Web:
-1. **RealTimeImportMonitor** - Deja existant, a integrer plus visiblement
-2. **ImportedProductDetailModal** - Vue detaillee d'un produit (nouveau)
-3. **Lien extension -> app** - Ouverture directe sur le produit importe
