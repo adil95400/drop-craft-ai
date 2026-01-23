@@ -647,13 +647,11 @@
       console.log('[DropCraft] Extracted product:', productData.title, '| Images:', productData.images?.length || 0);
       updateButtonState('loading', 'Import en cours...');
 
-      // Send to background script for API call using safe sender
+      // Delegate the heavy lifting to the background worker which calls the backend scraper.
+      // This yields much more complete Amazon imports (images/variants/etc.) than DOM-only extraction.
       const response = await safeSendMessage({
-        type: 'DC_IMPORT_PRODUCT',
-        payload: {
-          url: productData.source_url,
-          productData: productData
-        }
+        type: 'IMPORT_FROM_URL',
+        url: productData.source_url
       });
 
       console.log('[DropCraft] Import response:', response);
@@ -864,9 +862,10 @@
         element.style.position = 'relative';
       }
       
-      // Create individual import button
+       // Create individual import button
       const btn = document.createElement('button');
       btn.className = 'dropcraft-listing-btn';
+       btn.dataset.url = url;
       btn.innerHTML = `
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -963,12 +962,93 @@
       <span class="dropcraft-bulk-counter">0</span>
     `;
     
-    button.addEventListener('click', () => {
-      // Open Shopopti+ import page
-      if (isChromeRuntimeAvailable()) {
-        chrome.runtime.sendMessage({ type: 'OPEN_BULK_IMPORT' });
+    const setBulkState = (state, label) => {
+      if (state === 'loading') {
+        button.classList.add('loading');
+        button.disabled = true;
+        button.innerHTML = `
+          <span style="width:14px;height:14px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:dcSpin 1s linear infinite;"></span>
+          <span>${label || 'Import en cours...'}</span>
+          <span class="dropcraft-bulk-counter">${document.querySelectorAll('.dropcraft-listing-btn').length}</span>
+        `;
+        return;
       }
-    });
+
+      button.classList.remove('loading');
+      button.disabled = false;
+      button.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span>${label || 'Import en masse'}</span>
+        <span class="dropcraft-bulk-counter">${document.querySelectorAll('.dropcraft-listing-btn').length}</span>
+      `;
+    };
+
+    const bulkImportVisible = async () => {
+      if (!isChromeRuntimeAvailable()) {
+        setBulkState('idle', 'Rechargez la page (F5)');
+        return;
+      }
+
+      const buttons = Array.from(document.querySelectorAll('.dropcraft-listing-btn'))
+        .filter((el) => el instanceof HTMLButtonElement)
+        .map((el) => el);
+
+      const urls = Array.from(
+        new Set(
+          buttons
+            .map((b) => (b instanceof HTMLButtonElement ? b.dataset.url : undefined))
+            .filter((u) => typeof u === 'string' && u.startsWith('http'))
+        )
+      );
+
+      if (urls.length === 0) {
+        setBulkState('idle', 'Aucun produit détecté');
+        return;
+      }
+
+      // Safety limit to avoid hammering the backend from a single click.
+      const MAX = 20;
+      const batch = urls.slice(0, MAX);
+      const ignored = urls.length - batch.length;
+
+      setBulkState('loading', `Import (0/${batch.length})...`);
+
+      let ok = 0;
+      let failed = 0;
+      const errors = [];
+
+      for (let i = 0; i < batch.length; i++) {
+        const url = batch[i];
+        setBulkState('loading', `Import (${i + 1}/${batch.length})...`);
+
+        try {
+          const res = await safeSendMessage({ type: 'IMPORT_FROM_URL', url });
+          if (res?.success) {
+            ok++;
+          } else {
+            failed++;
+            errors.push(res?.error || `Échec import: ${url}`);
+          }
+        } catch (e) {
+          failed++;
+          errors.push(e?.message || `Erreur import: ${url}`);
+        }
+      }
+
+      if (failed === 0) {
+        setBulkState('idle', ignored > 0 ? `OK (${ok}) +${ignored} non traités` : `OK (${ok})`);
+      } else {
+        console.error('[DropCraft] Bulk import errors:', errors);
+        setBulkState('idle', `Terminé: OK ${ok} / Erreurs ${failed}`);
+      }
+    };
+
+    button.addEventListener('click', bulkImportVisible);
     
     document.body.appendChild(button);
     console.log('[DropCraft] Bulk import button created');
