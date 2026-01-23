@@ -319,9 +319,20 @@ class ShopOptiPopup {
   updateProgress(percentage, statuses = {}) {
     const bar = document.getElementById('importProgressBar');
     const percentEl = document.getElementById('progressPercentage');
+    const ring = document.getElementById('importProgressRing');
     
     if (bar) bar.style.width = `${percentage}%`;
     if (percentEl) percentEl.textContent = `${Math.round(percentage)}%`;
+
+    // Circular ring (PRO)
+    if (ring) {
+      const r = 38;
+      const circumference = 2 * Math.PI * r;
+      const clamped = Math.max(0, Math.min(100, percentage));
+      const offset = circumference - (clamped / 100) * circumference;
+      ring.style.strokeDasharray = `${circumference}`;
+      ring.style.strokeDashoffset = `${offset}`;
+    }
     
     // Update individual statuses
     const statusMap = {

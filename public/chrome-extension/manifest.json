@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "4.3.13",
-  "description": "Extension professionnelle de dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes",
+  "version": "4.3.14",
+  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes - OPTIMISÉ",
   "permissions": [
     "activeTab",
     "storage",
@@ -180,13 +180,13 @@
       ],
       "js": ["content.js"],
       "css": ["content.css"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": ["*://*/products/*"],
       "js": ["content.js"],
       "css": ["content.css"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     }
   ]
 }

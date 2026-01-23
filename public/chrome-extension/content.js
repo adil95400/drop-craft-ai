@@ -13,9 +13,20 @@
 
   // Prevent multiple injections
   if (window.__shopOptiCSVersion === '4.3.13') return;
-  window.__shopOptiCSVersion = '4.3.13';
+  window.__shopOptiCSVersion = '4.3.14';
 
-  console.log('[ShopOpti+] Content script v4.3.13 initializing (CSP-SAFE mode)...');
+  console.log('[ShopOpti+] Content script v4.3.14 initializing (CSP-SAFE mode)...');
+
+  // ============================================
+  // PERF: debounce helper for MutationObserver
+  // ============================================
+  function debounce(fn, wait = 350) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), wait);
+    };
+  }
 
   // ============================================
   // CHROME API SAFETY CHECK
@@ -54,7 +65,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.13',
+    VERSION: '4.3.14',
     BRAND: 'ShopOpti+',
     SUPPORTED_PLATFORMS: [
       'amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 
@@ -1887,7 +1898,7 @@
   // ============================================
   function init() {
     const platform = detectPlatform();
-    console.log('[ShopOpti+] v4.3.13 - Detected platform:', platform);
+    console.log('[ShopOpti+] v4.3.14 - Detected platform:', platform);
 
     if (!CONFIG.SUPPORTED_PLATFORMS.includes(platform) && platform !== 'unknown') {
       console.log('[ShopOpti+] Platform not supported');
@@ -1905,9 +1916,11 @@
       createListingButtons();
       
       // Watch for dynamically loaded products
-      const observer = new MutationObserver(() => {
-        createListingButtons();
-      });
+      const observer = new MutationObserver(
+        debounce(() => {
+          createListingButtons();
+        }, 500)
+      );
       observer.observe(document.body, { childList: true, subtree: true });
     } else {
       console.log('[ShopOpti+] Page type not detected, checking for product cards...');
