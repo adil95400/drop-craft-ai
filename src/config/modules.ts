@@ -190,10 +190,6 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     subModules: [
       { id: 'extensions-hub', name: 'Hub Extensions', route: '/extensions', icon: 'LayoutDashboard', description: 'Vue d\'ensemble des extensions', features: ['overview'], order: 1 },
       { id: 'extensions-chrome', name: 'Chrome Extension', route: '/extensions/chrome', icon: 'Chrome', description: 'Extension navigateur Chrome', features: ['chrome-extension'], order: 2 },
-      { id: 'extensions-marketplace', name: 'Marketplace', route: '/extensions/marketplace', icon: 'Store', description: 'Découvrir des extensions', features: ['marketplace'], order: 3 },
-      { id: 'extensions-api', name: 'API & Tokens', route: '/extensions/api', icon: 'Key', description: 'Gestion des tokens API', features: ['api-tokens'], order: 4 },
-      { id: 'extensions-cli', name: 'CLI Tools', route: '/extensions/cli', icon: 'Terminal', description: 'Outils en ligne de commande', features: ['cli'], order: 5 },
-      { id: 'extensions-developer', name: 'Développeur', route: '/extensions/developer', icon: 'Code', description: 'Documentation développeur', features: ['developer'], order: 6 },
     ]
   },
 
