@@ -825,7 +825,7 @@ export default function ImportHub() {
                                 Voir détails
                               </DropdownMenuItem>
                               {imp.status === 'failed' && <DropdownMenuItem onClick={() => handleRetryImport(imp.id)}>
-                                  <RotateCcw className="w-4 h-4 mr-2 border-8" />
+                                  <RotateCcw className="w-4 h-4 mr-2 border-0" />
                                   Relancer
                                 </DropdownMenuItem>}
                               {imp.status === 'processing' && <DropdownMenuItem onClick={() => handleCancelImport(imp.id)}>
