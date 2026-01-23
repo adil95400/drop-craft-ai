@@ -9,10 +9,10 @@
   'use strict';
 
   // Prevent multiple injections
-  if (window.__dropCraftCSVersion === '4.3.6') return;
-  window.__dropCraftCSVersion = '4.3.6';
+  if (window.__dropCraftCSVersion === '4.3.7') return;
+  window.__dropCraftCSVersion = '4.3.7';
 
-  console.log('[DropCraft] Content script v4.3.6 initializing (CSP-SAFE mode)...');
+  console.log('[DropCraft] Content script v4.3.7 initializing (CSP-SAFE mode)...');
 
   // ============================================
   // CHROME API SAFETY CHECK
@@ -107,6 +107,21 @@
     };
     
     return patterns[platform]?.test(url) || false;
+  }
+
+  function isListingPage() {
+    const url = window.location.href;
+    const platform = detectPlatform();
+    
+    const listingPatterns = {
+      amazon: /\/gp\/bestsellers|\/gp\/new-releases|\/gp\/movers-and-shakers|\/gp\/most-wished-for|\/s\?|\/s\/|\/b\?|\/b\/|\?k=/i,
+      aliexpress: /\/category\/|\/wholesale|\/w\/|\/af\//i,
+      temu: /\/channel\/|\/search_result/i,
+      shein: /\/category\/|\/[a-z]+-c-\d+/i,
+      ebay: /\/b\/|\/sch\//i
+    };
+    
+    return listingPatterns[platform]?.test(url) || false;
   }
 
   // ============================================
@@ -450,6 +465,79 @@
       #dropcraft-import-btn:disabled {
         pointer-events: none !important;
       }
+      
+      /* Bulk import button for listing pages */
+      #dropcraft-bulk-btn {
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        z-index: 2147483647 !important;
+        padding: 14px 22px !important;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 50px !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4) !important;
+        transition: all 0.2s ease !important;
+      }
+      #dropcraft-bulk-btn:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5) !important;
+      }
+      .dropcraft-bulk-counter {
+        background: white !important;
+        color: #059669 !important;
+        padding: 2px 10px !important;
+        border-radius: 12px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        min-width: 24px !important;
+        text-align: center !important;
+      }
+      
+      /* Individual product buttons on listing pages */
+      .dropcraft-listing-btn {
+        position: absolute !important;
+        top: 8px !important;
+        right: 8px !important;
+        z-index: 10000 !important;
+        padding: 6px 10px !important;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4) !important;
+        transition: all 0.2s ease !important;
+        opacity: 0 !important;
+      }
+      .dropcraft-listing-btn:hover {
+        transform: scale(1.05) !important;
+        opacity: 1 !important;
+      }
+      *:hover > .dropcraft-listing-btn {
+        opacity: 1 !important;
+      }
+      .dropcraft-listing-btn.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+      }
+      .dropcraft-listing-btn.loading {
+        opacity: 0.8 !important;
+        cursor: wait !important;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -640,6 +728,153 @@
   window.addEventListener('popstate', () => setTimeout(checkUrlChange, 100));
 
   // ============================================
+  // LISTING PAGE BUTTONS
+  // ============================================
+  let selectedProducts = [];
+
+  function createListingButtons() {
+    const platform = detectPlatform();
+    
+    // Platform-specific selectors for product items
+    const selectors = {
+      amazon: [
+        '.zg-grid-general-faceout',           // Best sellers
+        '[data-component-type="s-search-result"]', // Search results
+        '.p13n-sc-uncoverable-faceout',       // Recommendations
+        '.octopus-pc-item-v3',                // Category items
+        '.a-carousel-card',                   // Carousel items
+        '.s-result-item[data-asin]',          // Search results alt
+        '[data-testid="product-card"]'        // Product cards
+      ],
+      aliexpress: [
+        '.list-item',
+        '.product-item', 
+        '.search-item-card-wrapper-gallery',
+        '.multi--outWrapper--SeJ8bEF'
+      ],
+      temu: [
+        '[data-testid="goods-item"]',
+        '.goods-item'
+      ]
+    };
+    
+    const platformSelectors = selectors[platform];
+    if (!platformSelectors) return;
+    
+    const productElements = document.querySelectorAll(platformSelectors.join(', '));
+    console.log(`[DropCraft] Found ${productElements.length} products on listing page`);
+    
+    productElements.forEach((element) => {
+      if (element.querySelector('.dropcraft-listing-btn')) return;
+      
+      // Get product URL
+      const link = element.querySelector('a[href*="/dp/"], a[href*="/item/"], a[href*="/product"]');
+      const url = link?.href;
+      if (!url) return;
+      
+      // Make container relative for positioning
+      element.style.position = 'relative';
+      
+      // Create individual import button
+      const btn = document.createElement('button');
+      btn.className = 'dropcraft-listing-btn';
+      btn.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7,10 12,15 17,10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Import</span>
+      `;
+      
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        btn.classList.add('loading');
+        btn.innerHTML = `
+          <span style="width:10px;height:10px;border:2px solid white;border-top-color:transparent;border-radius:50%;animation:dcSpin 1s linear infinite;"></span>
+        `;
+        
+        try {
+          if (!isChromeRuntimeAvailable()) {
+            throw new Error('Extension déconnectée. Rechargez la page.');
+          }
+          
+          const response = await safeSendMessage({
+            type: 'IMPORT_FROM_URL',
+            url: url
+          });
+          
+          if (response?.success) {
+            btn.classList.remove('loading');
+            btn.classList.add('success');
+            btn.innerHTML = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20,6 9,17 4,12"/>
+              </svg>
+              <span>OK!</span>
+            `;
+          } else {
+            throw new Error(response?.error || 'Échec de l\'import');
+          }
+        } catch (error) {
+          console.error('[DropCraft] Import error:', error);
+          btn.classList.remove('loading');
+          btn.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            <span>Erreur</span>
+          `;
+          
+          setTimeout(() => {
+            btn.innerHTML = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Import</span>
+            `;
+          }, 2000);
+        }
+      });
+      
+      element.appendChild(btn);
+    });
+  }
+
+  function createBulkImportButton() {
+    if (document.getElementById('dropcraft-bulk-btn')) return;
+    
+    const button = document.createElement('button');
+    button.id = 'dropcraft-bulk-btn';
+    button.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      <span>Import en masse</span>
+      <span class="dropcraft-bulk-counter">0</span>
+    `;
+    
+    button.addEventListener('click', () => {
+      // Open Shopopti+ import page
+      if (isChromeRuntimeAvailable()) {
+        chrome.runtime.sendMessage({ type: 'OPEN_BULK_IMPORT' });
+      }
+    });
+    
+    document.body.appendChild(button);
+    console.log('[DropCraft] Bulk import button created');
+  }
+
+  // ============================================
   // INITIALIZATION
   // ============================================
   function init() {
@@ -648,10 +883,26 @@
     if (isProductPage()) {
       console.log('[DropCraft] Product page detected');
       createImportButton();
-    } else {
-      console.log('[DropCraft] Not a product page');
+      // Remove listing buttons on product pages
+      const bulkBtn = document.getElementById('dropcraft-bulk-btn');
+      if (bulkBtn) bulkBtn.remove();
+    } else if (isListingPage()) {
+      console.log('[DropCraft] Listing page detected');
+      // Remove single import button
       const existing = document.getElementById('dropcraft-import-btn');
       if (existing) existing.remove();
+      // Add listing buttons
+      createBulkImportButton();
+      createListingButtons();
+      // Re-check for new products periodically (for infinite scroll)
+      setTimeout(() => createListingButtons(), 2000);
+      setTimeout(() => createListingButtons(), 5000);
+    } else {
+      console.log('[DropCraft] Not a product or listing page');
+      const existing = document.getElementById('dropcraft-import-btn');
+      if (existing) existing.remove();
+      const bulkBtn = document.getElementById('dropcraft-bulk-btn');
+      if (bulkBtn) bulkBtn.remove();
     }
   }
 
@@ -662,5 +913,16 @@
     init();
   }
 
-  console.log('[DropCraft] Content script v4.3.6 initialized');
+  // Also listen for scroll to inject buttons on lazy-loaded products
+  let scrollTimeout;
+  window.addEventListener('scroll', () => {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      if (isListingPage()) {
+        createListingButtons();
+      }
+    }, 500);
+  });
+
+  console.log('[DropCraft] Content script v4.3.7 initialized');
 })();
