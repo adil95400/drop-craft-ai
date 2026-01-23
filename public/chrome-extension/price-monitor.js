@@ -1,9 +1,9 @@
 /**
- * DropCraft Price Monitor
+ * ShopOpti+ Price Monitor v4.3.10
  * Real-time price tracking and alerts
  */
 
-class DropCraftPriceMonitor {
+class ShopOptiPriceMonitor {
   constructor() {
     this.config = null;
     this.checkInterval = null;
@@ -19,9 +19,9 @@ class DropCraftPriceMonitor {
 
   async loadConfig() {
     return new Promise(resolve => {
-      chrome.storage.local.get(['dropcraft_config', 'dropcraft_auth'], result => {
-        this.config = result.dropcraft_config || {};
-        this.auth = result.dropcraft_auth || {};
+      chrome.storage.local.get(['shopopti_config', 'extensionToken'], result => {
+        this.config = result.shopopti_config || {};
+        this.token = result.extensionToken || '';
         resolve();
       });
     });
@@ -54,18 +54,18 @@ class DropCraftPriceMonitor {
       this.checkAllPrices();
     }, interval);
 
-    console.log('[DropCraft] Price monitoring started');
+    console.log('[ShopOpti+] Price monitoring started');
   }
 
   async checkAllPrices() {
-    if (!this.auth?.token) return;
+    if (!this.token) return;
 
     try {
       const response = await fetch(`${this.getApiUrl()}/price-check`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.auth.token}`
+          'x-extension-token': this.token
         },
         body: JSON.stringify({
           products: this.trackedProducts.map(p => ({
@@ -81,7 +81,7 @@ class DropCraftPriceMonitor {
         await this.processResults(results);
       }
     } catch (error) {
-      console.error('[DropCraft] Price check failed:', error);
+      console.error('[ShopOpti+] Price check failed:', error);
     }
   }
 
@@ -174,18 +174,18 @@ class DropCraftPriceMonitor {
     }
 
     // Send to backend for email/SMS alerts
-    if (this.auth?.token) {
+    if (this.token) {
       try {
         await fetch(`${this.getApiUrl()}/price-alerts`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.auth.token}`
+            'x-extension-token': this.token
           },
           body: JSON.stringify({ alerts })
         });
       } catch (error) {
-        console.error('[DropCraft] Failed to send alerts to backend:', error);
+        console.error('[ShopOpti+] Failed to send alerts to backend:', error);
       }
     }
   }
@@ -248,14 +248,14 @@ class DropCraftPriceMonitor {
   }
 
   injectUI() {
-    if (document.getElementById('dc-price-monitor-btn')) return;
+    if (document.getElementById('shopopti-price-monitor-btn')) return;
 
     // Create floating button for price tracking
     const btn = document.createElement('button');
-    btn.id = 'dc-price-monitor-btn';
+    btn.id = 'shopopti-price-monitor-btn';
     btn.innerHTML = `
-      <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">
-        <path d=\"M22 12h-4l-3 9L9 3l-3 9H2\"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
       </svg>
     `;
     btn.style.cssText = `
@@ -290,7 +290,7 @@ class DropCraftPriceMonitor {
   }
 
   togglePanel() {
-    let panel = document.getElementById('dc-price-monitor-panel');
+    let panel = document.getElementById('shopopti-price-monitor-panel');
     
     if (panel) {
       panel.remove();
@@ -298,7 +298,7 @@ class DropCraftPriceMonitor {
     }
 
     panel = document.createElement('div');
-    panel.id = 'dc-price-monitor-panel';
+    panel.id = 'shopopti-price-monitor-panel';
     panel.innerHTML = this.renderPanel();
     panel.style.cssText = `
       position: fixed;
@@ -323,33 +323,33 @@ class DropCraftPriceMonitor {
     const isTracked = this.trackedProducts.some(p => p.url === currentUrl);
 
     return `
-      <div style=\"padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: white;\">
-        <div style=\"display: flex; align-items: center; justify-content: space-between;\">
-          <div style=\"display: flex; align-items: center; gap: 8px;\">
-            <svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">
-              <path d=\"M22 12h-4l-3 9L9 3l-3 9H2\"/>
+      <div style="padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: white;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
             </svg>
-            <span style=\"font-weight: 600; font-size: 16px;\">Suivi des Prix</span>
+            <span style="font-weight: 600; font-size: 16px;">Suivi des Prix</span>
           </div>
-          <button id=\"dc-close-monitor\" style=\"background: none; border: none; color: white; cursor: pointer; padding: 4px;\">
-            <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">
-              <path d=\"M18 6L6 18M6 6l12 12\"/>
+          <button id="shopopti-close-monitor" style="background: none; border: none; color: white; cursor: pointer; padding: 4px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
         </div>
       </div>
 
-      <div style=\"padding: 16px;\">
+      <div style="padding: 16px;">
         ${isTracked ? `
-          <div style=\"background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 12px; margin-bottom: 16px;\">
-            <div style=\"display: flex; align-items: center; gap: 8px; color: #166534;\">
-              <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">
-                <path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"/>
-                <polyline points=\"22 4 12 14.01 9 11.01\"/>
+          <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #166534;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
               </svg>
-              <span style=\"font-weight: 500;\">Ce produit est suivi</span>
+              <span style="font-weight: 500;">Ce produit est suivi</span>
             </div>
-            <button id=\"dc-untrack-btn\" style=\"
+            <button id="shopopti-untrack-btn" style="
               width: 100%;
               margin-top: 8px;
               padding: 8px;
@@ -359,10 +359,10 @@ class DropCraftPriceMonitor {
               border-radius: 6px;
               cursor: pointer;
               font-size: 14px;
-            \">Arrêter le suivi</button>
+            ">Arrêter le suivi</button>
           </div>
         ` : `
-          <button id=\"dc-track-btn\" style=\"
+          <button id="shopopti-track-btn" style="
             width: 100%;
             padding: 12px;
             background: linear-gradient(135deg, #10b981, #059669);
@@ -373,46 +373,46 @@ class DropCraftPriceMonitor {
             font-weight: 500;
             font-size: 14px;
             margin-bottom: 16px;
-          \">📊 Suivre ce produit</button>
+          ">📊 Suivre ce produit</button>
         `}
 
-        <div style=\"border-top: 1px solid #e5e7eb; padding-top: 16px;\">
-          <div style=\"font-weight: 600; margin-bottom: 12px; color: #374151;\">
+        <div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
+          <div style="font-weight: 600; margin-bottom: 12px; color: #374151;">
             Produits suivis (${this.trackedProducts.length})
           </div>
-          <div style=\"max-height: 250px; overflow-y: auto;\">
+          <div style="max-height: 250px; overflow-y: auto;">
             ${this.trackedProducts.length === 0 ? `
-              <div style=\"text-align: center; color: #9ca3af; padding: 20px;\">
+              <div style="text-align: center; color: #9ca3af; padding: 20px;">
                 Aucun produit suivi
               </div>
             ` : this.trackedProducts.slice(0, 10).map(p => `
-              <div style=\"
+              <div style="
                 display: flex;
                 gap: 10px;
                 padding: 10px;
                 border: 1px solid #e5e7eb;
                 border-radius: 8px;
                 margin-bottom: 8px;
-              \">
-                <img src=\"${p.image || 'https://via.placeholder.com/50'}\" 
-                     style=\"width: 50px; height: 50px; object-fit: cover; border-radius: 6px;\"
-                     onerror=\"this.src='https://via.placeholder.com/50'\">
-                <div style=\"flex: 1; min-width: 0;\">
-                  <div style=\"font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;\">
+              ">
+                <img src="${p.image || 'https://via.placeholder.com/50'}" 
+                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;"
+                     onerror="this.src='https://via.placeholder.com/50'">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     ${p.title}
                   </div>
-                  <div style=\"display: flex; align-items: center; gap: 8px; margin-top: 4px;\">
-                    <span style=\"font-weight: 600; color: #059669;\">${p.currentPrice?.toFixed(2) || '?'}€</span>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                    <span style="font-weight: 600; color: #059669;">${p.currentPrice?.toFixed(2) || '?'}€</span>
                     ${p.originalPrice && p.currentPrice < p.originalPrice ? `
-                      <span style=\"text-decoration: line-through; color: #9ca3af; font-size: 12px;\">
+                      <span style="text-decoration: line-through; color: #9ca3af; font-size: 12px;">
                         ${p.originalPrice.toFixed(2)}€
                       </span>
-                      <span style=\"background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 11px;\">
+                      <span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 11px;">
                         -${(((p.originalPrice - p.currentPrice) / p.originalPrice) * 100).toFixed(0)}%
                       </span>
                     ` : ''}
                   </div>
-                  <div style=\"font-size: 11px; color: #9ca3af; margin-top: 2px;\">
+                  <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">
                     ${p.platform} • ${this.formatDate(p.lastChecked)}
                   </div>
                 </div>
@@ -425,24 +425,27 @@ class DropCraftPriceMonitor {
   }
 
   attachPanelEvents(panel) {
-    panel.querySelector('#dc-close-monitor')?.addEventListener('click', () => {
+    panel.querySelector('#shopopti-close-monitor')?.addEventListener('click', () => {
       panel.remove();
     });
 
-    panel.querySelector('#dc-track-btn')?.addEventListener('click', async () => {
-      // Extract current page product
-      if (window.DropCraftGrabber) {
-        const grabber = new window.DropCraftGrabber();
+    panel.querySelector('#shopopti-track-btn')?.addEventListener('click', async () => {
+      // Extract current page product using grabber
+      if (window.ShopOptiGrabber) {
+        const grabber = new window.ShopOptiGrabber();
         const product = await grabber.extractSingleProductData();
         if (product) {
           await this.trackProduct(product);
           this.togglePanel(); // Refresh panel
           this.togglePanel();
         }
+      } else {
+        // Fallback: send message to background
+        chrome.runtime.sendMessage({ type: 'TRACK_CURRENT_PAGE' });
       }
     });
 
-    panel.querySelector('#dc-untrack-btn')?.addEventListener('click', async () => {
+    panel.querySelector('#shopopti-untrack-btn')?.addEventListener('click', async () => {
       await this.untrackProduct(window.location.href);
       this.togglePanel(); // Refresh panel
       this.togglePanel();
@@ -478,17 +481,20 @@ class DropCraftPriceMonitor {
 }
 
 // Initialize and expose
-window.DropCraftPriceMonitor = DropCraftPriceMonitor;
+window.ShopOptiPriceMonitor = ShopOptiPriceMonitor;
+
+// Legacy compatibility
+window.DropCraftPriceMonitor = ShopOptiPriceMonitor;
 
 // Auto-init if on product page
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    const monitor = new DropCraftPriceMonitor();
+    const monitor = new ShopOptiPriceMonitor();
     monitor.init();
   });
 } else {
-  const monitor = new DropCraftPriceMonitor();
+  const monitor = new ShopOptiPriceMonitor();
   monitor.init();
 }
 
-console.log('[DropCraft] Price monitor loaded');
+console.log('[ShopOpti+] Price monitor v4.3.10 loaded');

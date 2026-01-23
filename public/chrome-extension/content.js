@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v4.3.9
+// ShopOpti+ Chrome Extension - Content Script v4.3.10
 // Professional Dropshipping Extension - 100% CSP-SAFE
 // NO SCRIPT INJECTION - Pure Content Script Mode
 // Works on Amazon, AliExpress, and all strict CSP sites
@@ -9,10 +9,10 @@
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '4.3.9') return;
-  window.__shopOptiCSVersion = '4.3.9';
+  if (window.__shopOptiCSVersion === '4.3.10') return;
+  window.__shopOptiCSVersion = '4.3.10';
 
-  console.log('[ShopOpti+] Content script v4.3.9 initializing (CSP-SAFE mode)...');
+  console.log('[ShopOpti+] Content script v4.3.10 initializing (CSP-SAFE mode)...');
 
   // ============================================
   // CHROME API SAFETY CHECK
@@ -51,7 +51,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.9',
+    VERSION: '4.3.10',
     BRAND: 'ShopOpti+',
     SUPPORTED_PLATFORMS: ['amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 'wish', 'cdiscount', 'fnac', 'rakuten']
   };

@@ -1,11 +1,11 @@
-// Drop Craft AI - Post-Import Automation v4.0
+// ShopOpti+ - Post-Import Automation v4.3.10
 // Auto-apply rules, pricing, categories, and publishing
 
 (function() {
   'use strict';
 
-  if (window.__dropCraftAutomationLoaded) return;
-  window.__dropCraftAutomationLoaded = true;
+  if (window.__shopOptiAutomationLoaded) return;
+  window.__shopOptiAutomationLoaded = true;
 
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
@@ -21,7 +21,7 @@
     }
   };
 
-  class DropCraftAutomation {
+  class ShopOptiAutomation {
     constructor() {
       this.rules = { ...CONFIG.DEFAULT_RULES };
       this.isProcessing = false;
@@ -95,7 +95,7 @@
     async processProduct(product) {
       if (!product) return product;
       
-      console.log('[DropCraft Automation] Processing product:', product.title);
+      console.log('[ShopOpti+ Automation] Processing product:', product.title);
       
       const processed = { ...product };
       
@@ -288,13 +288,16 @@
   }
 
   // Initialize automation engine
-  window.__dropCraftAutomation = new DropCraftAutomation();
+  window.__shopOptiAutomation = new ShopOptiAutomation();
   
   // Expose API for external use
-  window.DropCraftAutomation = {
-    getRules: () => window.__dropCraftAutomation.getRules(),
-    setRules: (rules) => window.__dropCraftAutomation.setRules(rules),
-    previewPricing: (price) => window.__dropCraftAutomation.previewPricing(price),
-    processProduct: (product) => window.__dropCraftAutomation.processProduct(product)
+  window.ShopOptiAutomation = {
+    getRules: () => window.__shopOptiAutomation.getRules(),
+    setRules: (rules) => window.__shopOptiAutomation.setRules(rules),
+    previewPricing: (price) => window.__shopOptiAutomation.previewPricing(price),
+    processProduct: (product) => window.__shopOptiAutomation.processProduct(product)
   };
+  
+  // Legacy compatibility
+  window.DropCraftAutomation = window.ShopOptiAutomation;
 })();
