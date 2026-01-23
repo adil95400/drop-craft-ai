@@ -85,7 +85,7 @@ We may update this policy and will notify users through the extension.
 ## Contact
 
 For privacy concerns, contact us at:
-- **Website:** https://drop-craft-ai.lovable.app/support
+- **Website:** https://shopopti.io/support
 - **Email:** support@shopopti.com
 
 ## Compliance

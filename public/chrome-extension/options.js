@@ -1,7 +1,7 @@
 // Drop Craft AI Chrome Extension - Options Script v4.0
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
-const APP_URL = 'https://drop-craft-ai.lovable.app';
+const APP_URL = 'https://shopopti.io';
 
 const DEFAULT_SETTINGS = {
   apiUrl: API_URL,
