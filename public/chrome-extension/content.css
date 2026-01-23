@@ -1,7 +1,41 @@
-/* ShopOpti+ Chrome Extension v4.3.9 - Content Styles */
+/* ShopOpti+ Chrome Extension v4.3.15 - Content Styles */
+/* ULTRA PRO - Buttons always visible */
 
 /* ============================================
-   IMPORT BUTTONS
+   ANIMATIONS
+   ============================================ */
+
+@keyframes shopoptiSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shopoptiPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes shopoptiSlideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes shopoptiFadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shopoptiGlow {
+  0%, 100% { box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4); }
+  50% { box-shadow: 0 4px 25px rgba(124, 58, 237, 0.5); }
+}
+
+@keyframes shopoptiBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ============================================
+   MAIN IMPORT BUTTON - Product Pages
    ============================================ */
 
 .shopopti-import-btn {
@@ -59,40 +93,187 @@
 }
 
 /* ============================================
-   PRODUCT CARD OVERLAY
+   PRODUCT CARD OVERLAY - ALWAYS VISIBLE v4.3.15
    ============================================ */
 
 .shopopti-card-btn {
   position: absolute !important;
   top: 8px !important;
   right: 8px !important;
-  background: rgba(0, 0, 0, 0.75) !important;
+  background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
   backdrop-filter: blur(10px) !important;
   color: white !important;
   border: none !important;
   padding: 8px 14px !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   font-size: 11px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   cursor: pointer !important;
-  z-index: 99999 !important;
+  z-index: 999999 !important;
   transition: all 0.2s ease !important;
   display: flex !important;
   align-items: center !important;
-  gap: 4px !important;
-  opacity: 0.9 !important;
+  gap: 5px !important;
+  opacity: 1 !important; /* ALWAYS VISIBLE */
+  visibility: visible !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-}
-
-/* Always visible to avoid confusion on marketplaces */
-.shopopti-product-wrapper:hover .shopopti-card-btn,
-[data-shopopti-product]:hover .shopopti-card-btn {
-  opacity: 1 !important;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.5) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
 }
 
 .shopopti-card-btn:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6) !important;
+}
+
+.shopopti-card-btn.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.shopopti-card-btn.loading {
+  opacity: 0.85 !important;
+  cursor: wait !important;
+}
+
+/* ============================================
+   LISTING BUTTONS - ULTRA VISIBLE v4.3.15
+   ============================================ */
+
+.shopopti-listing-btn {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 2147483646 !important;
+  padding: 10px 16px !important;
   background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
-  transform: scale(1.05) !important;
+  color: white !important;
+  border: 2px solid rgba(255,255,255,0.3) !important;
+  border-radius: 12px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.5), 0 2px 8px rgba(0,0,0,0.3) !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important; /* ALWAYS VISIBLE */
+  visibility: visible !important;
+  animation: shopoptiFadeIn 0.3s ease !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+  letter-spacing: 0.3px !important;
+}
+
+.shopopti-listing-btn:hover {
+  transform: scale(1.1) translateY(-2px) !important;
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.6), 0 4px 12px rgba(0,0,0,0.4) !important;
+  border-color: rgba(255,255,255,0.5) !important;
+}
+
+.shopopti-listing-btn.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  animation: shopoptiBounce 0.3s ease !important;
+}
+
+.shopopti-listing-btn.loading {
+  opacity: 0.9 !important;
+  cursor: wait !important;
+}
+
+/* ============================================
+   BULK IMPORT BUTTON
+   ============================================ */
+
+#shopopti-bulk-btn {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 2147483647 !important;
+  padding: 16px 28px !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  border: 2px solid rgba(255,255,255,0.2) !important;
+  border-radius: 50px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  box-shadow: 0 8px 35px rgba(16, 185, 129, 0.5), 0 4px 15px rgba(0,0,0,0.3) !important;
+  transition: all 0.2s ease !important;
+  animation: shopoptiFadeIn 0.3s ease !important;
+}
+
+#shopopti-bulk-btn:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 12px 45px rgba(16, 185, 129, 0.6), 0 6px 20px rgba(0,0,0,0.4) !important;
+}
+
+.shopopti-bulk-counter {
+  background: white !important;
+  color: #059669 !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  min-width: 28px !important;
+  text-align: center !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+}
+
+/* ============================================
+   MAIN FLOATING IMPORT BUTTON
+   ============================================ */
+
+#shopopti-import-btn {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 2147483647 !important;
+  padding: 16px 28px !important;
+  background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
+  color: white !important;
+  border: 2px solid rgba(255,255,255,0.2) !important;
+  border-radius: 50px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  box-shadow: 0 8px 35px rgba(0, 212, 255, 0.5), 0 4px 15px rgba(0,0,0,0.3) !important;
+  transition: all 0.2s ease !important;
+  animation: shopoptiFadeIn 0.3s ease, shopoptiGlow 3s ease-in-out infinite !important;
+}
+
+#shopopti-import-btn:hover {
+  transform: translateY(-4px) scale(1.03) !important;
+  box-shadow: 0 14px 50px rgba(0, 212, 255, 0.6), 0 6px 20px rgba(0,0,0,0.4) !important;
+}
+
+#shopopti-import-btn.loading {
+  opacity: 0.9 !important;
+  cursor: wait !important;
+  animation: shopoptiPulse 1.5s ease-in-out infinite !important;
+}
+
+#shopopti-import-btn.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  animation: none !important;
+}
+
+#shopopti-import-btn.error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  animation: none !important;
+}
+
+#shopopti-import-btn:disabled {
+  pointer-events: none !important;
 }
 
 /* ============================================
@@ -104,9 +285,9 @@
   top: 20px !important;
   right: 20px !important;
   padding: 16px 24px !important;
-  border-radius: 12px !important;
+  border-radius: 14px !important;
   font-size: 14px !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   color: white !important;
   z-index: 2147483647 !important;
   animation: shopoptiSlideIn 0.3s ease !important;
@@ -115,7 +296,8 @@
   align-items: center !important;
   gap: 12px !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 4px 15px rgba(0,0,0,0.2) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 .shopopti-toast.loading {
@@ -134,17 +316,6 @@
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
 }
 
-@keyframes shopoptiSlideIn {
-  from {
-    transform: translateX(120%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
 /* ============================================
    FLOATING ACTION BUTTON
    ============================================ */
@@ -153,41 +324,41 @@
   position: fixed !important;
   bottom: 24px !important;
   right: 24px !important;
-  width: 60px !important;
-  height: 60px !important;
+  width: 64px !important;
+  height: 64px !important;
   border-radius: 50% !important;
   background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
-  border: none !important;
+  border: 2px solid rgba(255,255,255,0.2) !important;
   cursor: pointer !important;
   z-index: 2147483646 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 26px !important;
+  font-size: 28px !important;
   color: white !important;
-  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 8px 35px rgba(0, 212, 255, 0.5) !important;
   transition: all 0.3s ease !important;
 }
 
 .shopopti-fab:hover {
-  transform: scale(1.1) rotate(5deg) !important;
-  box-shadow: 0 12px 40px rgba(0, 212, 255, 0.5) !important;
+  transform: scale(1.12) rotate(5deg) !important;
+  box-shadow: 0 14px 50px rgba(0, 212, 255, 0.6) !important;
 }
 
 .shopopti-fab-menu {
   position: fixed !important;
-  bottom: 96px !important;
+  bottom: 100px !important;
   right: 24px !important;
   background: #0f172a !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 16px !important;
-  padding: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 18px !important;
+  padding: 10px !important;
   z-index: 2147483645 !important;
   display: none !important;
   flex-direction: column !important;
-  gap: 4px !important;
-  min-width: 220px !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+  gap: 6px !important;
+  min-width: 240px !important;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5) !important;
 }
 
 .shopopti-fab-menu.open {
@@ -197,13 +368,14 @@
 .shopopti-fab-item {
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
-  padding: 14px 16px !important;
+  gap: 14px !important;
+  padding: 16px 18px !important;
   background: transparent !important;
   border: none !important;
-  border-radius: 12px !important;
+  border-radius: 14px !important;
   color: white !important;
   font-size: 14px !important;
+  font-weight: 500 !important;
   cursor: pointer !important;
   transition: background 0.2s !important;
   text-align: left !important;
@@ -211,7 +383,7 @@
 }
 
 .shopopti-fab-item:hover {
-  background: rgba(0, 212, 255, 0.1) !important;
+  background: rgba(0, 212, 255, 0.12) !important;
 }
 
 /* ============================================
@@ -221,26 +393,26 @@
 .shopopti-price-badge {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 4px !important;
+  gap: 5px !important;
   background: rgba(16, 185, 129, 0.15) !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
   color: #10b981 !important;
-  padding: 4px 10px !important;
-  border-radius: 6px !important;
+  padding: 5px 12px !important;
+  border-radius: 8px !important;
   font-size: 11px !important;
-  font-weight: 600 !important;
-  margin-left: 8px !important;
+  font-weight: 700 !important;
+  margin-left: 10px !important;
 }
 
 .shopopti-price-badge.drop {
   background: rgba(34, 197, 94, 0.15) !important;
-  border-color: rgba(34, 197, 94, 0.3) !important;
+  border-color: rgba(34, 197, 94, 0.35) !important;
   color: #22c55e !important;
 }
 
 .shopopti-price-badge.rise {
   background: rgba(239, 68, 68, 0.15) !important;
-  border-color: rgba(239, 68, 68, 0.3) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
   color: #ef4444 !important;
 }
 
@@ -249,32 +421,26 @@
    ============================================ */
 
 .shopopti-spinner {
-  width: 16px !important;
-  height: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
   border: 2px solid rgba(255, 255, 255, 0.3) !important;
   border-top-color: white !important;
   border-radius: 50% !important;
   animation: shopoptiSpin 0.8s linear infinite !important;
 }
 
-@keyframes shopoptiSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .shopopti-progress {
-  height: 4px !important;
+  height: 6px !important;
   background: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 2px !important;
+  border-radius: 3px !important;
   overflow: hidden !important;
-  margin-top: 8px !important;
+  margin-top: 10px !important;
 }
 
 .shopopti-progress-bar {
   height: 100% !important;
   background: linear-gradient(90deg, #00d4ff, #7c3aed) !important;
-  border-radius: 2px !important;
+  border-radius: 3px !important;
   transition: width 0.3s ease !important;
 }
 
@@ -284,9 +450,9 @@
 
 .shopopti-highlight {
   outline: 3px solid #00d4ff !important;
-  outline-offset: 3px !important;
+  outline-offset: 4px !important;
   position: relative !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
 }
 
 /* ============================================
@@ -299,28 +465,28 @@
   right: 0 !important;
   transform: translateY(-50%) !important;
   background: #0f172a !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-right: none !important;
-  border-radius: 16px 0 0 16px !important;
-  padding: 12px 10px !important;
+  border-radius: 18px 0 0 18px !important;
+  padding: 14px 12px !important;
   z-index: 2147483644 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 8px !important;
-  box-shadow: -4px 0 30px rgba(0, 0, 0, 0.3) !important;
+  gap: 10px !important;
+  box-shadow: -6px 0 35px rgba(0, 0, 0, 0.4) !important;
 }
 
 .shopopti-quick-btn {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 12px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 20px !important;
+  font-size: 22px !important;
   color: white !important;
   transition: all 0.2s !important;
 }
@@ -346,8 +512,8 @@
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  background: rgba(0, 0, 0, 0.8) !important;
-  backdrop-filter: blur(5px) !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(8px) !important;
   z-index: 2147483640 !important;
   display: flex !important;
   align-items: center !important;
@@ -356,34 +522,34 @@
 
 .shopopti-modal {
   background: #0f172a !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 24px !important;
-  padding: 32px !important;
-  max-width: 500px !important;
-  width: 90% !important;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5) !important;
+  padding: 36px !important;
+  max-width: 520px !important;
+  width: 92% !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6) !important;
 }
 
 .shopopti-modal-header {
   display: flex !important;
   align-items: center !important;
-  gap: 16px !important;
-  margin-bottom: 24px !important;
+  gap: 18px !important;
+  margin-bottom: 28px !important;
 }
 
 .shopopti-modal-icon {
-  width: 56px !important;
-  height: 56px !important;
+  width: 60px !important;
+  height: 60px !important;
   background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%) !important;
-  border-radius: 16px !important;
+  border-radius: 18px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 28px !important;
+  font-size: 30px !important;
 }
 
 .shopopti-modal-title {
-  font-size: 22px !important;
+  font-size: 24px !important;
   font-weight: 700 !important;
   color: white !important;
   margin: 0 !important;
@@ -392,5 +558,5 @@
 .shopopti-modal-subtitle {
   font-size: 14px !important;
   color: rgba(255, 255, 255, 0.5) !important;
-  margin-top: 4px !important;
+  margin-top: 5px !important;
 }

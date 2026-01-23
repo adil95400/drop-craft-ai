@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "4.3.14",
-  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes - OPTIMISÉ",
+  "version": "4.3.15",
+  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes - v4.3.15 ULTRA PRO",
   "permissions": [
     "activeTab",
     "storage",
@@ -176,7 +176,14 @@
         "*://*.boulanger.com/*",
         "*://*.manomano.fr/*",
         "*://*.leroymerlin.fr/*",
-        "*://*.myshopify.com/*"
+        "*://*.myshopify.com/*",
+        "*://*.target.com/*",
+        "*://*.bestbuy.com/*",
+        "*://*.wayfair.com/*",
+        "*://*.overstock.com/*",
+        "*://*.newegg.com/*",
+        "*://*.zalando.fr/*",
+        "*://*.asos.com/*"
       ],
       "js": ["content.js"],
       "css": ["content.css"],

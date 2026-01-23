@@ -1,21 +1,22 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v4.3.13
-// Professional Dropshipping Extension - 100% CSP-SAFE
+// ShopOpti+ Chrome Extension - Content Script v4.3.15
+// ULTRA PRO Dropshipping Extension - 100% CSP-SAFE
 // NO SCRIPT INJECTION - Pure Content Script Mode
 // Works on Amazon, AliExpress, and all strict CSP sites
 // ADVANCED EXTRACTION: Images, Videos, Prices, Stock, 
 // Descriptions, Tracking, Brands, Specs, Shipping, Variants
-// FIXED: Button visibility on all platforms
+// FIXED: Button visibility on ALL platforms - ULTRA VISIBLE
+// FIXED: Image deduplication + variant extraction
 // ============================================
 
 (function () {
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '4.3.13') return;
-  window.__shopOptiCSVersion = '4.3.14';
+  if (window.__shopOptiCSVersion === '4.3.15') return;
+  window.__shopOptiCSVersion = '4.3.15';
 
-  console.log('[ShopOpti+] Content script v4.3.14 initializing (CSP-SAFE mode)...');
+  console.log('[ShopOpti+] Content script v4.3.15 initializing (ULTRA PRO mode)...');
 
   // ============================================
   // PERF: debounce helper for MutationObserver
@@ -62,16 +63,17 @@
   }
 
   // ============================================
-  // CONFIGURATION
+  // CONFIGURATION v4.3.15
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.14',
+    VERSION: '4.3.15',
     BRAND: 'ShopOpti+',
     SUPPORTED_PLATFORMS: [
       'amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 
       'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 
       'wish', 'cdiscount', 'fnac', 'rakuten', 'costco', 'homedepot', 
-      'lowes', 'target', 'bestbuy', 'wayfair', 'overstock'
+      'lowes', 'target', 'bestbuy', 'wayfair', 'overstock', 'newegg',
+      'zalando', 'asos', 'manomano', 'darty', 'boulanger', 'leroymerlin'
     ]
   };
 
@@ -312,21 +314,42 @@
     }
     data.description = descParts.join('\n\n').slice(0, 5000) || '';
 
-    // Images - Enhanced high-res extraction
-    const imageElements = document.querySelectorAll('#altImages img, #imageBlock img, .imgTagWrapper img, .a-dynamic-image, #landingImage, #imgBlkFront, [data-old-hires], li.image img');
+    // Images - Enhanced high-res extraction with DEDUPLICATION
+    const imageElements = document.querySelectorAll('#altImages img, #imageBlock img, .imgTagWrapper img, .a-dynamic-image, #landingImage, #imgBlkFront, [data-old-hires], li.image img, #main-image-container img, .image-wrapper img');
     const imageSet = new Set();
+    const seenHashes = new Set();
+    
+    function normalizeAmazonImage(src) {
+      if (!src) return null;
+      // Remove size transforms to get original high-res
+      let normalized = src
+        .replace(/\._[A-Z]{2}\d+_\./, '._SL1500_.')
+        .replace(/\._S[XY]\d+_\./, '._SL1500_.')
+        .replace(/_AC_US\d+_/, '_AC_SL1500_')
+        .replace(/_AC_S[XY]\d+_/, '_AC_SL1500_')
+        .replace(/_SS\d+_/, '_SL1500_')
+        .replace(/_SR\d+,\d+_/, '_SL1500_')
+        .replace(/_CR\d+,\d+,\d+,\d+_/, '')
+        .replace(/\?.*$/, '');
+      return normalized;
+    }
+    
+    function getImageHash(src) {
+      // Extract unique image identifier to detect duplicates
+      const match = src.match(/\/([A-Z0-9]+)\._/i) || src.match(/\/I\/([^.]+)/);
+      return match ? match[1] : src.substring(src.lastIndexOf('/'), src.lastIndexOf('.'));
+    }
     
     imageElements.forEach(img => {
       let src = img.dataset?.oldHires || img.dataset?.aHires || img.src || '';
-      if (src && !src.includes('sprite') && !src.includes('transparent') && !src.includes('grey-pixel') && !src.includes('blank')) {
-        // Convert to high-res
-        src = src.replace(/\._[A-Z]{2}\d+_\./, '._SL1500_.');
-        src = src.replace(/\._S[XY]\d+_\./, '._SL1500_.');
-        src = src.replace(/_AC_US\d+_/, '_AC_SL1500_');
-        src = src.replace(/_AC_S[XY]\d+_/, '_AC_SL1500_');
-        src = src.replace(/_SS\d+_/, '_SL1500_');
-        if ((src.includes('images/I/') || src.includes('images-amazon.com')) && src.includes('http')) {
-          imageSet.add(src);
+      if (src && !src.includes('sprite') && !src.includes('transparent') && !src.includes('grey-pixel') && !src.includes('blank') && !src.includes('icon') && !src.includes('logo')) {
+        const normalized = normalizeAmazonImage(src);
+        const hash = getImageHash(normalized);
+        
+        // Deduplicate by hash
+        if (!seenHashes.has(hash) && (normalized.includes('images/I/') || normalized.includes('images-amazon.com')) && normalized.includes('http')) {
+          seenHashes.add(hash);
+          imageSet.add(normalized);
         }
       }
     });
@@ -335,11 +358,16 @@
     document.querySelectorAll('[data-zoom-image]').forEach(el => {
       const zoomSrc = el.getAttribute('data-zoom-image');
       if (zoomSrc && zoomSrc.includes('http')) {
-        imageSet.add(zoomSrc);
+        const normalized = normalizeAmazonImage(zoomSrc);
+        const hash = getImageHash(normalized);
+        if (!seenHashes.has(hash)) {
+          seenHashes.add(hash);
+          imageSet.add(normalized);
+        }
       }
     });
     
-    data.images = Array.from(imageSet).slice(0, 20);
+    data.images = Array.from(imageSet).filter(url => url && url.length > 20).slice(0, 20);
 
     // Rating
     const ratingEl = document.querySelector('#acrPopover .a-icon-alt, .a-icon-star .a-icon-alt, [data-action="a-popover"] .a-icon-alt');
@@ -445,33 +473,52 @@
                      window.location.href.match(/item\/(\d+)/);
     data.sku = skuMatch?.[1] || '';
 
-    // Images - Enhanced extraction
+    // Images - Enhanced extraction with DEDUPLICATION for AliExpress
     const imageElements = document.querySelectorAll(
       '.images-view-item img, ' +
       '.slider--img--item img, ' +
       '[class*="gallery"] img, ' +
       '.product-img img, ' +
       '.image-view--previewBox--SyecEnE img, ' +
-      '[class*="slider"] img'
+      '[class*="slider"] img, ' +
+      '[class*="magnifier"] img, ' +
+      '.pdp-info-left img'
     );
     const imageSet = new Set();
+    const seenHashes = new Set();
+    
+    function normalizeAliImage(src) {
+      if (!src) return null;
+      let normalized = src
+        .replace(/_\d+x\d+\./g, '.')
+        .replace(/\.jpg_\d+x\d+\.jpg/g, '.jpg')
+        .replace(/_\d+x\d+\.jpg/g, '.jpg')
+        .replace(/_\d+x\d+\.png/g, '.png')
+        .replace(/\?.*$/, '')
+        .replace(/_Q\d+\.jpg/, '.jpg');
+      if (normalized.startsWith('//')) normalized = 'https:' + normalized;
+      return normalized;
+    }
+    
+    function getAliImageHash(src) {
+      const match = src.match(/\/([^/]+)\.(jpg|png|webp)/i);
+      return match ? match[1] : src.substring(src.lastIndexOf('/'));
+    }
     
     imageElements.forEach(img => {
       let src = img.src || img.dataset?.src || img.getAttribute('data-src');
-      if (src) {
-        src = src.replace(/_\d+x\d+\./g, '.');
-        src = src.replace(/\.jpg_\d+x\d+\.jpg/g, '.jpg');
-        src = src.replace(/_\d+x\d+\.jpg/g, '.jpg');
-        src = src.replace(/_\d+x\d+\.png/g, '.png');
-        src = src.replace(/\?.*$/, '');
-        if (src.startsWith('//')) src = 'https:' + src;
-        if ((src.includes('alicdn.com') || src.includes('cbu01.alicdn')) && src.includes('http')) {
-          imageSet.add(src);
+      if (src && !src.includes('placeholder') && !src.includes('icon') && !src.includes('logo') && !src.includes('sprite')) {
+        const normalized = normalizeAliImage(src);
+        const hash = getAliImageHash(normalized);
+        
+        if (!seenHashes.has(hash) && (normalized.includes('alicdn.com') || normalized.includes('cbu01.alicdn')) && normalized.includes('http')) {
+          seenHashes.add(hash);
+          imageSet.add(normalized);
         }
       }
     });
     
-    data.images = Array.from(imageSet).slice(0, 20);
+    data.images = Array.from(imageSet).filter(url => url && url.length > 20).slice(0, 20);
 
     // Rating
     const ratingEl = document.querySelector('[class*="rating"] strong, .overview-rating-average, [class*="star"] span');
@@ -1625,12 +1672,12 @@
   window.addEventListener('popstate', () => setTimeout(checkUrlChange, 100));
 
   // ============================================
-  // LISTING PAGE BUTTONS - EXTENDED SELECTORS v4.3.13
+  // LISTING PAGE BUTTONS - EXTENDED SELECTORS v4.3.15 ULTRA
   // ============================================
   function createListingButtons() {
     const platform = detectPlatform();
     
-    // Extended selectors for all platforms
+    // ULTRA Extended selectors for ALL 25+ platforms
     const selectors = {
       amazon: [
         '.zg-grid-general-faceout',
@@ -1644,7 +1691,9 @@
         '.octopus-pc-item',
         '.a-carousel-card',
         '[data-asin]:not([data-asin=""])',
-        '.s-main-slot .s-result-item'
+        '.s-main-slot .s-result-item',
+        '.AdHolder',
+        '[data-index]'
       ],
       aliexpress: [
         '.list-item',
@@ -1653,21 +1702,28 @@
         '[data-widget-cid*="product"]',
         '.product-snippet',
         '[class*="product-card"]',
-        '[class*="ProductCard"]'
+        '[class*="ProductCard"]',
+        '[class*="SearchResultList"] > div',
+        '[class*="manhattan--container"]',
+        '.JIIxO'
       ],
       temu: [
         '[data-testid="goods-item"]',
         '.goods-item',
         '[class*="GoodsItem"]',
         '[data-goods-id]',
-        '[class*="productCard"]'
+        '[class*="productCard"]',
+        '[class*="_2BPmm"]',
+        '.ProductList__item'
       ],
       ebay: [
         '.s-item',
         '.srp-river-result',
         '[data-testid="listing-card"]',
         '.srp-results .s-item',
-        '[data-testid="item-card"]'
+        '[data-testid="item-card"]',
+        '.b-list__items_nofooter li',
+        '[data-viewport]'
       ],
       cdiscount: [
         '.prdtBloc',
@@ -1675,45 +1731,86 @@
         '[data-product-id]',
         '.prdtBImg',
         '.c-product',
-        '.product-item'
+        '.product-item',
+        '.lpProduct',
+        '[class*="ProductCard"]'
       ],
       shein: [
         '.product-list__item',
         '.S-product-item',
         '[data-expose-id]',
         '.goods-item',
-        '[class*="productCard"]'
+        '[class*="productCard"]',
+        '.product-item',
+        '[class*="productItem"]'
       ],
       walmart: [
         '.search-result-gridview-item',
         '[data-item-id]',
         '.product-card',
-        '[data-testid="list-view"]'
+        '[data-testid="list-view"]',
+        '[data-automation-id="product"]',
+        '.mb1.ph1'
       ],
       etsy: [
         '.v2-listing-card',
         '.listing-link',
         '[data-listing-id]',
-        '.js-merch-stash-check-listing'
+        '.js-merch-stash-check-listing',
+        '.wt-grid__item-xs-6'
       ],
       fnac: [
         '.Article-item',
         '.ProductCard',
         '.product-item',
-        '[data-product]'
+        '[data-product]',
+        '.Carousel-item',
+        '.f-nCarousel__item'
       ],
       rakuten: [
         '.product-card',
         '.search-product-card',
-        '[data-product-id]'
+        '[data-product-id]',
+        '.dls-product-card'
       ],
       target: [
         '[data-test="product-grid"] div',
-        '.ProductCardWrapper'
+        '.ProductCardWrapper',
+        '[data-test="product-card"]'
       ],
       bestbuy: [
         '.sku-item',
-        '[data-sku-id]'
+        '[data-sku-id]',
+        '.product-item'
+      ],
+      wayfair: [
+        '[data-enzyme-id="ProductCard"]',
+        '.ProductCard',
+        '.browse-product'
+      ],
+      newegg: [
+        '.item-cell',
+        '.item-container'
+      ],
+      zalando: [
+        '[data-testid="productTile"]',
+        '.cat_articleContain'
+      ],
+      asos: [
+        '.productTile',
+        '[data-auto-id="productTile"]'
+      ],
+      manomano: [
+        '.ProductCard',
+        '[data-product-id]'
+      ],
+      darty: [
+        '.product-tile',
+        '.product-item'
+      ],
+      boulanger: [
+        '.product-item',
+        '[data-product-code]'
       ]
     };
     
@@ -1894,11 +1991,11 @@
   }
 
   // ============================================
-  // INITIALIZATION
+  // INITIALIZATION v4.3.15 - ULTRA ROBUST
   // ============================================
   function init() {
     const platform = detectPlatform();
-    console.log('[ShopOpti+] v4.3.14 - Detected platform:', platform);
+    console.log('[ShopOpti+] v4.3.15 ULTRA PRO - Detected platform:', platform);
 
     if (!CONFIG.SUPPORTED_PLATFORMS.includes(platform) && platform !== 'unknown') {
       console.log('[ShopOpti+] Platform not supported');
@@ -1915,33 +2012,47 @@
       createBulkImportButton();
       createListingButtons();
       
-      // Watch for dynamically loaded products
+      // Watch for dynamically loaded products with faster detection
       const observer = new MutationObserver(
         debounce(() => {
           createListingButtons();
-        }, 500)
+        }, 300) // Faster response
       );
       observer.observe(document.body, { childList: true, subtree: true });
     } else {
       console.log('[ShopOpti+] Page type not detected, checking for product cards...');
-      // Try to detect listing page by product cards
-      setTimeout(() => {
+      // Try to detect listing page by product cards with multiple retries
+      const checkInterval = setInterval(() => {
         if (isListingPage()) {
+          console.log('[ShopOpti+] Listing page detected on retry');
+          clearInterval(checkInterval);
           createBulkImportButton();
           createListingButtons();
+          
+          const observer = new MutationObserver(
+            debounce(() => createListingButtons(), 300)
+          );
+          observer.observe(document.body, { childList: true, subtree: true });
+        } else if (isProductPage()) {
+          console.log('[ShopOpti+] Product page detected on retry');
+          clearInterval(checkInterval);
+          createImportButton();
         }
-      }, 2000);
+      }, 1000);
+      
+      // Stop checking after 10 seconds
+      setTimeout(() => clearInterval(checkInterval), 10000);
     }
   }
 
-  // Wait for DOM
+  // Wait for DOM - immediate init with backup
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 500));
+    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 200));
   } else {
-    setTimeout(init, 500);
+    setTimeout(init, 200); // Faster init
   }
 
-  // Reinit on page load
-  window.addEventListener('load', () => setTimeout(init, 1000));
+  // Reinit on page load for dynamic content
+  window.addEventListener('load', () => setTimeout(init, 500));
 
 })();

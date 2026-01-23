@@ -1,4 +1,5 @@
-// ShopOpti+ Chrome Extension - Popup Script v4.3.13
+// ShopOpti+ Chrome Extension - Popup Script v4.3.15
+// ULTRA PRO - Fixed button visibility + improved imports
 // Professional Dropshipping Extension
 // FIXED: Button visibility on all platforms
 
