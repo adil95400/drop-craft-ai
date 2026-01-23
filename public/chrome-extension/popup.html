@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Drop Craft AI | Dropshipping Pro</title>
+  <title>ShopOpti+ | Dropshipping Pro</title>
   <link rel="stylesheet" href="popup.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,9 +32,9 @@
           <div class="logo-ring"></div>
         </div>
         <div class="header-info">
-          <h1>Drop Craft <span class="ai">AI</span></h1>
+          <h1>ShopOpti<span class="ai">+</span></h1>
           <div class="header-meta">
-            <span class="version-badge">v4.2</span>
+            <span class="version-badge">v4.3.9</span>
             <span id="planBadge" class="plan-badge">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
@@ -391,101 +391,28 @@
         <div class="mapping-templates">
           <h4>Templates prédéfinis</h4>
           <div class="template-grid">
-            <button class="template-btn" data-template="sizes-eu">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 3H3v7h18V3z"/>
-                <path d="M21 14H3v7h18v-7z"/>
-              </svg>
-              Tailles EU
-            </button>
-            <button class="template-btn" data-template="sizes-us">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 3H3v7h18V3z"/>
-                <path d="M21 14H3v7h18v-7z"/>
-              </svg>
-              Tailles US
-            </button>
-            <button class="template-btn" data-template="colors-fr">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="13.5" cy="6.5" r="4.5"/>
-                <circle cx="6.5" cy="17.5" r="4.5"/>
-                <circle cx="17.5" cy="17.5" r="4.5"/>
-              </svg>
-              Couleurs FR
-            </button>
-            <button class="template-btn" data-template="colors-en">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="13.5" cy="6.5" r="4.5"/>
-                <circle cx="6.5" cy="17.5" r="4.5"/>
-                <circle cx="17.5" cy="17.5" r="4.5"/>
-              </svg>
-              Colors EN
-            </button>
+            <button class="template-btn" data-template="sizes-eu">🇪🇺 Tailles EU</button>
+            <button class="template-btn" data-template="sizes-us">🇺🇸 Tailles US</button>
+            <button class="template-btn" data-template="colors">🎨 Couleurs</button>
+            <button class="template-btn" data-template="custom">⚙️ Personnalisé</button>
           </div>
         </div>
         
-        <div class="mapping-type">
-          <button class="type-btn active" data-type="size">Tailles</button>
-          <button class="type-btn" data-type="color">Couleurs</button>
-          <button class="type-btn" data-type="custom">Custom</button>
-        </div>
-        
-        <div id="mappingRules" class="mapping-rules">
-          <div class="mapping-rule">
-            <input type="text" placeholder="Source (ex: XL)" class="source-input" />
-            <span class="arrow">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="5" y1="12" x2="19" y2="12"/>
-                <polyline points="12 5 19 12 12 19"/>
-              </svg>
-            </span>
-            <input type="text" placeholder="Cible (ex: Extra Large)" class="target-input" />
-            <button class="remove-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
+        <div class="mapping-rules" id="mappingRules">
+          <div class="mapping-empty">
+            <span>Aucune règle de mapping définie</span>
+            <button id="addRuleBtn" class="btn-small">+ Ajouter une règle</button>
           </div>
         </div>
-        
-        <button id="addRuleBtn" class="add-rule-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Ajouter règle
-        </button>
         
         <div class="mapping-actions">
-          <button id="saveMappingBtn" class="action-btn primary">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-              <polyline points="17 21 17 13 7 13 7 21"/>
-              <polyline points="7 3 7 8 15 8"/>
-            </svg>
-            Sauvegarder
-          </button>
-          <button id="autoMapBtn" class="action-btn ai">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
-              <circle cx="8.5" cy="14.5" r="1.5"/>
-              <circle cx="15.5" cy="14.5" r="1.5"/>
-            </svg>
-            IA Mapping
-          </button>
-        </div>
-        
-        <div class="saved-mappings">
-          <h4>Mappings sauvegardés</h4>
-          <div id="savedMappingsList" class="mappings-list">
-            <span class="empty-msg">Aucun mapping</span>
-          </div>
+          <button id="autoMapBtn" class="btn-secondary">🔄 Auto-mapper</button>
+          <button id="saveMappingBtn" class="btn-primary">💾 Sauvegarder</button>
         </div>
       </div>
     </section>
 
-    <!-- Store Sync Tab -->
+    <!-- Sync Tab -->
     <section id="syncTab" class="tab-panel hidden">
       <div class="tab-header">
         <h3>
@@ -493,127 +420,61 @@
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
           </svg>
-          Synchronisation Boutiques
+          Synchronisation
         </h3>
       </div>
       
       <div class="sync-container">
-        <div class="stores-section">
-          <h4>Boutiques connectées</h4>
-          <div id="storesList" class="stores-list">
-            <span class="loading-msg">
-              <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-              </svg>
-              Chargement...
-            </span>
+        <div class="sync-status">
+          <div class="sync-indicator" id="syncIndicator">
+            <span class="sync-dot"></span>
+            <span class="sync-text">Prêt à synchroniser</span>
           </div>
-          <button id="addStoreBtn" class="add-store-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Connecter boutique
-          </button>
-        </div>
-        
-        <div class="sync-options">
-          <h4>Options de synchronisation</h4>
-          <label class="sync-toggle">
-            <input type="checkbox" id="syncStock" checked />
-            <span class="toggle-switch"></span>
-            <span class="toggle-label">Sync automatique du stock</span>
-          </label>
-          <label class="sync-toggle">
-            <input type="checkbox" id="syncPrices" checked />
-            <span class="toggle-switch"></span>
-            <span class="toggle-label">Sync automatique des prix</span>
-          </label>
-          <label class="sync-toggle">
-            <input type="checkbox" id="syncOrders" />
-            <span class="toggle-switch"></span>
-            <span class="toggle-label">Sync des commandes</span>
-          </label>
-          <label class="sync-toggle">
-            <input type="checkbox" id="autoOrderEnabled" />
-            <span class="toggle-switch"></span>
-            <span class="toggle-label">Auto-commande fournisseur</span>
-          </label>
+          <span class="sync-time" id="lastSyncTime">Jamais synchronisé</span>
         </div>
         
         <div class="sync-actions">
-          <button id="syncAllBtn" class="sync-btn primary">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          <button id="syncAllBtn" class="sync-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
             </svg>
             Tout synchroniser
           </button>
           <button id="syncStockBtn" class="sync-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="m7.5 4.27 9 5.15"/>
-              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 7h-3a2 2 0 0 1-2-2V2"/>
+              <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/>
+              <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"/>
             </svg>
-            Stock
+            Sync Stock
           </button>
           <button id="syncPricesBtn" class="sync-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="1" x2="12" y2="23"/>
               <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
             </svg>
-            Prix
+            Sync Prix
           </button>
         </div>
         
-        <div class="sync-status">
-          <h4>Statut</h4>
-          <div class="status-row">
-            <span>Dernière sync:</span>
-            <span id="lastSyncTime" class="status-value">Jamais</span>
-          </div>
-          <div class="status-row">
-            <span>Produits synchronisés:</span>
-            <span id="syncedCount" class="status-value">0</span>
-          </div>
-          <div class="status-row">
-            <span>Erreurs:</span>
-            <span id="syncErrors" class="status-value error">0</span>
+        <div class="connected-stores">
+          <h4>Boutiques connectées</h4>
+          <div class="stores-list" id="storesList">
+            <div class="store-empty">
+              <span>Aucune boutique connectée</span>
+              <button id="addStoreBtn" class="btn-small">+ Ajouter une boutique</button>
+            </div>
           </div>
         </div>
         
-        <div class="push-section">
-          <h4>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            Envoyer vers boutique
-          </h4>
-          <select id="targetStore" class="store-select">
-            <option value="">Sélectionner une boutique</option>
-          </select>
-          <div class="push-options">
-            <label class="push-option">
-              <input type="checkbox" id="pushImages" checked />
-              <span>Images</span>
-            </label>
-            <label class="push-option">
-              <input type="checkbox" id="pushVariants" checked />
-              <span>Variantes</span>
-            </label>
-            <label class="push-option">
-              <input type="checkbox" id="pushAsDraft" />
-              <span>Brouillon</span>
-            </label>
-          </div>
-          <button id="pushProductBtn" class="push-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            Envoyer le produit actuel
-          </button>
-        </div>
+        <button id="pushProductBtn" class="push-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14"/>
+            <path d="m19 12-7-7-7 7"/>
+          </svg>
+          Pousser vers boutique
+        </button>
       </div>
     </section>
 
@@ -621,77 +482,55 @@
     <section class="features-section">
       <h3 class="section-title">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="12 2 19 21 12 17 5 21 12 2"/>
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
         </svg>
-        Outils Avancés
+        Fonctionnalités Pro
       </h3>
       <div class="features-grid">
-        <button id="autoOrderBtn" class="feature-btn">
-          <div class="feature-icon-bg blue">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
-            </svg>
-          </div>
-          <span>Auto-Order</span>
+        <button id="autoOrderBtn" class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <span class="feature-title">Auto-Order</span>
+          <span class="feature-badge pro">PRO</span>
         </button>
-        <button id="competitorBtn" class="feature-btn">
-          <div class="feature-icon-bg purple">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-          </div>
-          <span>Spy Compét.</span>
+        <button id="competitorBtn" class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <span class="feature-title">Spy Concurrent</span>
+          <span class="feature-badge">BETA</span>
         </button>
-        <button id="bulkImportBtn" class="feature-btn">
-          <div class="feature-icon-bg green">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
-          </div>
-          <span>Import CSV</span>
+        <button id="bulkImportBtn" class="feature-card">
+          <div class="feature-icon">📁</div>
+          <span class="feature-title">Import CSV</span>
         </button>
-        <button id="aiOptimizeBtn" class="feature-btn premium">
-          <div class="feature-icon-bg gradient">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-              <path d="M19 3v4"/>
-              <path d="M21 5h-4"/>
-            </svg>
-          </div>
-          <span>IA Optimize</span>
-          <span class="premium-badge">PRO</span>
+        <button id="aiOptimizeBtn" class="feature-card">
+          <div class="feature-icon">✨</div>
+          <span class="feature-title">IA Optimize</span>
+          <span class="feature-badge pro">PRO</span>
         </button>
       </div>
     </section>
 
-    <!-- Recent Activity -->
+    <!-- Activity Feed -->
     <section class="activity-section">
-      <div class="section-header">
+      <div class="activity-header">
         <h3 class="section-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
           </svg>
-          Activité Récente
+          Activité récente
         </h3>
-        <button id="clearActivityBtn" class="text-btn">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        <button id="clearActivityBtn" class="clear-btn" title="Effacer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
           </svg>
-          Effacer
         </button>
       </div>
       <div id="activityList" class="activity-list">
         <div class="empty-state">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
+          <span class="empty-icon">📭</span>
           <span class="empty-text">Aucune activité récente</span>
         </div>
       </div>
@@ -699,32 +538,22 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <button id="sendToAppBtn" class="primary-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <span>Envoyer à Drop Craft AI</span>
+      <button id="sendToAppBtn" class="send-btn">
+        <span class="send-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2 11 13"/>
+            <path d="m22 2-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </span>
+        <span>Ouvrir ShopOpti</span>
         <span id="pendingCount" class="pending-badge hidden">0</span>
       </button>
+      <div class="footer-meta">
+        <span class="version">ShopOpti+ v4.3.9</span>
+        <a href="https://shopopti.io/support" target="_blank" class="support-link">Support</a>
+      </div>
     </footer>
   </div>
-
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="loading-overlay hidden">
-    <div class="loader-content">
-      <div class="loader-spinner">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-        </svg>
-      </div>
-      <span id="loadingText" class="loader-text">Chargement...</span>
-    </div>
-  </div>
-
-  <!-- Toast Container -->
-  <div id="toastContainer" class="toast-container"></div>
 
   <script src="popup.js"></script>
 </body>

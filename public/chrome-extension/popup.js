@@ -1,7 +1,7 @@
-// Drop Craft AI Chrome Extension - Popup Script v4.1
-// Professional Dropshipping Extension - Fixed version
+// ShopOpti+ Chrome Extension - Popup Script v4.3.9
+// Professional Dropshipping Extension
 
-class DropCraftPopup {
+class ShopOptiPopup {
   constructor() {
     this.isConnected = false;
     this.extensionToken = null;
@@ -41,12 +41,12 @@ class DropCraftPopup {
       this.userPlan = result.userPlan || 'free';
       this.importHistory = result.importHistory || [];
       
-      console.log('[Popup] Loaded data:', { 
+      console.log('[ShopOpti+] Loaded data:', { 
         hasToken: !!this.extensionToken, 
         tokenPrefix: this.extensionToken ? this.extensionToken.slice(0, 10) : null 
       });
     } catch (error) {
-      console.error('[Popup] Error loading data:', error);
+      console.error('[ShopOpti+] Error loading data:', error);
     }
   }
 
@@ -57,14 +57,14 @@ class DropCraftPopup {
         activities: this.activities,
         pendingItems: this.pendingItems
       });
-      console.log('[Popup] Data saved');
+      console.log('[ShopOpti+] Data saved');
     } catch (error) {
-      console.error('[Popup] Error saving data:', error);
+      console.error('[ShopOpti+] Error saving data:', error);
     }
   }
 
   async checkConnection() {
-    console.log('[Popup] Checking connection, token:', this.extensionToken ? 'present' : 'missing');
+    console.log('[ShopOpti+] Checking connection, token:', this.extensionToken ? 'present' : 'missing');
     
     if (!this.extensionToken) {
       this.isConnected = false;
@@ -81,12 +81,12 @@ class DropCraftPopup {
         body: JSON.stringify({ action: 'sync_status' })
       });
 
-      console.log('[Popup] Connection response status:', response.status);
+      console.log('[ShopOpti+] Connection response status:', response.status);
       this.isConnected = response.ok;
       
       if (response.ok) {
         const data = await response.json();
-        console.log('[Popup] Sync data:', data);
+        console.log('[ShopOpti+] Sync data:', data);
         
         if (data.todayStats) {
           this.stats = {
@@ -101,9 +101,8 @@ class DropCraftPopup {
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('[Popup] Connection failed:', errorData);
+        console.error('[ShopOpti+] Connection failed:', errorData);
         
-        // If token is invalid, clear it
         if (response.status === 401) {
           this.extensionToken = null;
           await chrome.storage.local.remove(['extensionToken']);
@@ -111,7 +110,7 @@ class DropCraftPopup {
         }
       }
     } catch (error) {
-      console.error('[Popup] Connection check failed:', error);
+      console.error('[ShopOpti+] Connection check failed:', error);
       this.isConnected = false;
     }
   }
@@ -137,7 +136,11 @@ class DropCraftPopup {
         'cjdropshipping': { name: 'CJ Dropshipping', icon: '📦', color: '#1a73e8' },
         'shein': { name: 'Shein', icon: '👗', color: '#000' },
         '1688': { name: '1688', icon: '🏭', color: '#ff6600' },
-        'taobao': { name: 'Taobao', icon: '🛍️', color: '#ff4400' }
+        'taobao': { name: 'Taobao', icon: '🛍️', color: '#ff4400' },
+        'cdiscount': { name: 'Cdiscount', icon: '🛒', color: '#e31837' },
+        'fnac': { name: 'Fnac', icon: '📚', color: '#e4a600' },
+        'shopify': { name: 'Shopify', icon: '🛍️', color: '#96bf48' },
+        'myshopify': { name: 'Shopify', icon: '🛍️', color: '#96bf48' }
       };
 
       for (const [key, platform] of Object.entries(platforms)) {
@@ -146,8 +149,13 @@ class DropCraftPopup {
           break;
         }
       }
+      
+      // Check for Shopify stores via /products/ path
+      if (!this.currentPlatform && tab.url.includes('/products/')) {
+        this.currentPlatform = { name: 'Shopify Store', icon: '🛍️', color: '#96bf48', url: tab.url, hostname };
+      }
     } catch (error) {
-      console.error('[Popup] Error detecting page:', error);
+      console.error('[ShopOpti+] Error detecting page:', error);
     }
   }
 
@@ -209,14 +217,6 @@ class DropCraftPopup {
     // Template buttons
     document.querySelectorAll('.template-btn').forEach(btn => {
       btn.addEventListener('click', () => this.loadTemplate(btn.dataset.template));
-    });
-
-    // Mapping type buttons
-    document.querySelectorAll('.type-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-      });
     });
 
     // Price suggestion buttons
@@ -356,17 +356,19 @@ class DropCraftPopup {
       statusBar.className = `status-bar ${this.isConnected ? 'connected' : 'disconnected'}`;
     }
     if (statusText) {
-      statusText.textContent = this.isConnected ? 'Connecté à Drop Craft AI' : 'Non connecté';
+      statusText.textContent = this.isConnected ? 'Connecté à ShopOpti' : 'Non connecté';
     }
     if (connectBtn) {
-      connectBtn.textContent = this.isConnected ? 'Déconnecter' : 'Connecter';
+      connectBtn.innerHTML = this.isConnected 
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Déconnecter</span>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg><span>Connecter</span>';
     }
 
     // Update plan badge
     const planBadge = document.getElementById('planBadge');
     if (planBadge) {
       const planNames = { 'free': 'Free', 'starter': 'Starter', 'pro': 'Pro', 'ultra_pro': 'Ultra Pro', 'standard': 'Standard' };
-      planBadge.textContent = planNames[this.userPlan] || 'Standard';
+      planBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>${planNames[this.userPlan] || 'Standard'}`;
       planBadge.className = `plan-badge ${this.userPlan === 'pro' || this.userPlan === 'ultra_pro' ? 'pro' : ''}`;
     }
 
@@ -474,151 +476,139 @@ class DropCraftPopup {
     this.activities = [];
     this.saveData();
     this.renderActivities();
-    this.showToast('Historique effacé', 'success');
+  }
+
+  showToast(message, type = 'info') {
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) existingToast.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+      <span class="toast-message">${message}</span>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 10);
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
   }
 
   async importCurrentPage() {
     if (!this.isConnected) {
-      this.showToast('Veuillez vous connecter d\'abord', 'warning');
-      this.openAuth();
+      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
       return;
     }
 
-    this.showLoading('Import en cours...');
-
+    const btn = document.getElementById('importPageBtn');
+    const originalContent = btn?.innerHTML;
+    
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      // Method 1: Try content script first
-      try {
-        const response = await chrome.tabs.sendMessage(tab.id, { type: 'SCRAPE_PAGE' });
-        
-        if (response?.success && response?.count > 0) {
-          // Send scraped products to backend
-          await this.sendProductsToBackend(response.products || []);
-          
-          this.stats.products += response.count || 1;
-          this.addActivity(`${response.count || 1} produit(s) importé(s)`, '📦', this.currentPlatform?.name);
-          this.showToast(`${response.count || 1} produit(s) importé(s)!`, 'success');
-          await this.saveData();
-          this.updateUI();
-          return;
-        }
-      } catch (e) {
-        console.log('[Popup] Content script not ready, trying URL scraping');
+      if (btn) {
+        btn.innerHTML = '<div class="action-icon-wrapper"><span class="spinner"></span></div><div class="action-content"><span class="action-title">Import en cours...</span><span class="action-desc">Patientez</span></div>';
+        btn.disabled = true;
       }
-      
-      // Method 2: Fallback to URL scraping via edge function
-      console.log('[Popup] Attempting URL scrape for:', tab.url);
-      const result = await this.scrapeByUrl(tab.url);
-      
-      if (result.success && result.product) {
-        // Send the scraped product to backend
-        await this.sendProductsToBackend([result.product]);
-        
-        this.stats.products += 1;
-        this.addActivity('Produit importé via URL', '📦', this.currentPlatform?.name);
-        this.showToast('Produit importé!', 'success');
+
+      // Get current tab URL
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.url) {
+        throw new Error('Impossible de récupérer l\'URL');
+      }
+
+      // Send import request to background
+      const response = await chrome.runtime.sendMessage({
+        type: 'IMPORT_FROM_URL',
+        url: tab.url
+      });
+
+      if (response?.success) {
+        this.stats.products++;
+        this.addActivity(`Produit importé: ${response.data?.product?.name || 'Nouveau produit'}`, '✅');
+        this.showToast('Produit importé avec succès!', 'success');
         await this.saveData();
         this.updateUI();
       } else {
-        throw new Error(result.error || 'Impossible d\'importer ce produit');
+        throw new Error(response?.error || 'Échec de l\'import');
       }
     } catch (error) {
-      console.error('[Popup] Import error:', error);
-      this.showToast('Erreur: ' + error.message, 'error');
+      console.error('[ShopOpti+] Import error:', error);
+      this.showToast(`Erreur: ${error.message}`, 'error');
+      this.addActivity(`Échec import: ${error.message}`, '❌');
     } finally {
-      this.hideLoading();
-    }
-  }
-
-  async sendProductsToBackend(products) {
-    if (!products || products.length === 0 || !this.extensionToken) {
-      console.log('[Popup] No products to send or no token');
-      return;
-    }
-
-    try {
-      console.log('[Popup] Sending', products.length, 'products to backend');
-      
-      const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': this.extensionToken
-        },
-        body: JSON.stringify({
-          action: 'import_products',
-          products: products.map(p => ({
-            title: p.name || p.title || 'Produit importé',
-            name: p.name || p.title || 'Produit importé',
-            price: p.price,
-            description: p.description || '',
-            image: p.image || p.imageUrl || '',
-            url: p.url || '',
-            source: 'chrome_extension',
-            platform: p.platform || p.domain || this.currentPlatform?.name || 'unknown'
-          }))
-        })
-      });
-
-      const data = await response.json();
-      console.log('[Popup] Backend response:', data);
-      
-      if (!response.ok) {
-        console.error('[Popup] Backend error:', data);
+      if (btn) {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
       }
-      
-      return data;
-    } catch (error) {
-      console.error('[Popup] Error sending to backend:', error);
     }
   }
 
   async importAllProducts() {
     if (!this.isConnected) {
-      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
       return;
     }
 
-    this.showLoading('Scan des produits...');
-
+    this.showToast('Recherche des produits sur la page...', 'info');
+    
     try {
+      // Send message to content script to get all product URLs
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
-      // First inject buttons, then start scraping
-      try {
-        await chrome.tabs.sendMessage(tab.id, { type: 'INJECT_ONE_CLICK_BUTTONS' });
-      } catch (e) {
-        console.log('[Popup] Could not inject buttons');
-      }
-      
-      try {
-        await chrome.tabs.sendMessage(tab.id, { type: 'AUTO_SCRAPE' });
-      } catch (e) {
-        console.log('[Popup] Could not start auto scrape');
-      }
+      const response = await chrome.tabs.sendMessage(tab.id, {
+        type: 'GET_ALL_PRODUCT_URLS'
+      });
 
-      this.showToast('Scan lancé! Vérifiez la page', 'info');
-      this.addActivity('Scan multiple lancé', '📥', this.currentPlatform?.name);
+      if (response?.urls?.length > 0) {
+        this.showToast(`${response.urls.length} produits trouvés. Import en cours...`, 'info');
+        
+        let successCount = 0;
+        for (const url of response.urls.slice(0, 20)) { // Limit to 20
+          try {
+            const importResult = await chrome.runtime.sendMessage({
+              type: 'IMPORT_FROM_URL',
+              url: url
+            });
+            if (importResult?.success) successCount++;
+          } catch (e) {
+            console.error('[ShopOpti+] Bulk import error:', e);
+          }
+        }
+        
+        this.stats.products += successCount;
+        this.addActivity(`Import en masse: ${successCount} produits`, '📦');
+        this.showToast(`${successCount} produits importés!`, 'success');
+        await this.saveData();
+        this.updateUI();
+      } else {
+        this.showToast('Aucun produit trouvé sur cette page', 'warning');
+      }
     } catch (error) {
-      this.showToast('Erreur lors du scan', 'error');
-    } finally {
-      this.hideLoading();
+      console.error('[ShopOpti+] Bulk import error:', error);
+      this.showToast('Erreur lors de la recherche des produits', 'error');
     }
   }
 
   async importReviews() {
     if (!this.isConnected) {
-      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
       return;
     }
 
-    this.showLoading('Import des avis...');
-
+    this.showToast('Import des avis en cours...', 'info');
+    
     try {
-      const response = await chrome.runtime.sendMessage({ type: 'IMPORT_REVIEWS' });
-      
+      const response = await chrome.runtime.sendMessage({
+        type: 'IMPORT_REVIEWS',
+        config: { limit: 50 }
+      });
+
       if (response?.success) {
         this.stats.reviews += response.count || 0;
         this.addActivity(`${response.count || 0} avis importés`, '⭐');
@@ -626,100 +616,41 @@ class DropCraftPopup {
         await this.saveData();
         this.updateUI();
       } else {
-        this.showToast('Aucun avis trouvé', 'info');
+        this.showToast('Aucun avis trouvé ou erreur', 'warning');
       }
     } catch (error) {
-      console.error('[Popup] Review import error:', error);
+      console.error('[ShopOpti+] Review import error:', error);
       this.showToast('Erreur lors de l\'import des avis', 'error');
-    } finally {
-      this.hideLoading();
     }
   }
 
   async startPriceMonitor() {
     if (!this.isConnected) {
-      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
       return;
     }
 
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      const result = await chrome.storage.local.get(['monitoredUrls']);
-      const urls = result.monitoredUrls || [];
-      
-      if (!urls.includes(tab.url)) {
-        urls.push(tab.url);
-        await chrome.storage.local.set({ monitoredUrls: urls });
-        
-        this.stats.monitored = urls.length;
-        this.addActivity('Prix surveillé', '📊', this.currentPlatform?.name);
-        this.showToast('Surveillance activée!', 'success');
-        await this.saveData();
-        this.updateUI();
-      } else {
-        this.showToast('Déjà surveillé', 'info');
-      }
-    } catch (error) {
-      this.showToast('Erreur', 'error');
-    }
-  }
-
-  async scrapeByUrl(url) {
-    try {
-      console.log('[Popup] Scraping URL:', url);
-      
-      const response = await fetch(`${this.API_URL}/product-url-scraper`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': this.extensionToken || ''
-        },
-        body: JSON.stringify({ url })
-      });
-
-      const result = await response.json();
-      console.log('[Popup] Scrape result:', result);
-      return result;
-    } catch (error) {
-      console.error('[Popup] Scrape error:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async sendToApp() {
-    if (!this.isConnected) {
-      this.showToast('Veuillez vous connecter d\'abord', 'warning');
-      return;
-    }
-
-    chrome.tabs.create({ url: `${this.APP_URL}/products` });
-    this.addActivity('Ouverture du dashboard', '📊');
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    this.stats.monitored++;
+    this.addActivity(`Surveillance prix activée`, '📊');
+    this.showToast('Surveillance des prix activée!', 'success');
+    await this.saveData();
+    this.updateUI();
   }
 
   async syncData() {
-    this.showLoading('Synchronisation...');
-    await this.checkConnection();
-    this.updateUI();
-    this.hideLoading();
-    
-    if (this.isConnected) {
-      this.showToast('Données synchronisées', 'success');
-    } else {
-      this.showToast('Échec de synchronisation', 'error');
+    const btn = document.getElementById('syncBtn');
+    if (btn) btn.classList.add('spinning');
+
+    try {
+      await this.checkConnection();
+      this.showToast('Synchronisation réussie!', 'success');
+    } catch (error) {
+      this.showToast('Erreur de synchronisation', 'error');
+    } finally {
+      if (btn) btn.classList.remove('spinning');
     }
-  }
-
-  async disconnect() {
-    await chrome.storage.local.remove(['extensionToken']);
-    this.extensionToken = null;
-    this.isConnected = false;
-    this.updateUI();
-    this.showToast('Déconnecté', 'info');
-  }
-
-  openAuth() {
-    chrome.tabs.create({ url: `${this.APP_URL}/extensions/chrome` });
   }
 
   openSettings() {
@@ -730,22 +661,34 @@ class DropCraftPopup {
     chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
   }
 
+  openAuth() {
+    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
+  }
+
+  async disconnect() {
+    await chrome.storage.local.remove(['extensionToken']);
+    this.extensionToken = null;
+    this.isConnected = false;
+    this.updateUI();
+    this.showToast('Déconnecté de ShopOpti', 'info');
+  }
+
+  showFeature(featureName) {
+    this.showToast(`${featureName} - Fonctionnalité Pro`, 'info');
+    chrome.tabs.create({ url: `${this.APP_URL}/pricing` });
+  }
+
+  showPremiumFeature() {
+    this.showToast('Fonctionnalité réservée aux membres Pro', 'info');
+    chrome.tabs.create({ url: `${this.APP_URL}/pricing` });
+  }
+
   openBulkImport() {
     chrome.tabs.create({ url: `${this.APP_URL}/products/import` });
   }
 
-  showFeature(name) {
-    this.showToast(`${name} - Disponible dans l'app!`, 'info');
+  sendToApp() {
     chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
-  }
-
-  showPremiumFeature() {
-    if (this.userPlan === 'pro' || this.userPlan === 'ultra_pro') {
-      chrome.tabs.create({ url: `${this.APP_URL}/ai-tools` });
-    } else {
-      this.showToast('Fonctionnalité Pro - Upgrade requis', 'warning');
-      chrome.tabs.create({ url: `${this.APP_URL}/pricing` });
-    }
   }
 
   handleStatClick(action) {
@@ -757,26 +700,17 @@ class DropCraftPopup {
         chrome.tabs.create({ url: `${this.APP_URL}/reviews` });
         break;
       case 'monitoring':
-        chrome.tabs.create({ url: `${this.APP_URL}/monitoring` });
+        chrome.tabs.create({ url: `${this.APP_URL}/price-monitoring` });
         break;
     }
   }
 
-  // Mapping functions
+  loadTemplate(template) {
+    this.showToast(`Template ${template} chargé`, 'success');
+  }
+
   addMappingRule() {
-    const container = document.getElementById('mappingRules');
-    if (!container) return;
-    
-    const rule = document.createElement('div');
-    rule.className = 'mapping-rule';
-    rule.innerHTML = `
-      <input type="text" placeholder="Source (ex: XL)" class="source-input" />
-      <span class="arrow">→</span>
-      <input type="text" placeholder="Cible (ex: Extra Large)" class="target-input" />
-      <button class="remove-btn">×</button>
-    `;
-    rule.querySelector('.remove-btn').addEventListener('click', () => rule.remove());
-    container.appendChild(rule);
+    this.showToast('Fonctionnalité en développement', 'info');
   }
 
   saveMapping() {
@@ -784,32 +718,19 @@ class DropCraftPopup {
   }
 
   autoMapVariants() {
-    this.showToast('Mapping IA en cours...', 'info');
-    setTimeout(() => {
-      this.showToast('Variantes mappées automatiquement!', 'success');
-    }, 1500);
+    this.showToast('Auto-mapping en cours...', 'info');
   }
 
-  loadTemplate(template) {
-    this.showToast(`Template ${template} chargé`, 'success');
-  }
-
-  // Sync functions
   syncAll() {
-    this.showToast('Synchronisation en cours...', 'info');
-    setTimeout(() => {
-      const lastSyncTime = document.getElementById('lastSyncTime');
-      if (lastSyncTime) lastSyncTime.textContent = 'À l\'instant';
-      this.showToast('Synchronisation terminée!', 'success');
-    }, 2000);
+    this.syncData();
   }
 
   syncStock() {
-    this.showToast('Sync stock en cours...', 'info');
+    this.showToast('Synchronisation du stock...', 'info');
   }
 
   syncPrices() {
-    this.showToast('Sync prix en cours...', 'info');
+    this.showToast('Synchronisation des prix...', 'info');
   }
 
   addStore() {
@@ -817,52 +738,58 @@ class DropCraftPopup {
   }
 
   pushProduct() {
-    const targetStore = document.getElementById('targetStore')?.value;
-    if (!targetStore) {
-      this.showToast('Sélectionnez une boutique', 'warning');
+    if (!this.isConnected) {
+      this.showToast('Connectez-vous d\'abord', 'warning');
       return;
     }
-    this.showToast('Envoi en cours...', 'info');
-  }
-
-  // UI Helpers
-  showLoading(text = 'Chargement...') {
-    const overlay = document.getElementById('loadingOverlay');
-    const loadingText = document.getElementById('loadingText');
-    if (overlay) overlay.classList.remove('hidden');
-    if (loadingText) loadingText.textContent = text;
-  }
-
-  hideLoading() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) overlay.classList.add('hidden');
-  }
-
-  showToast(message, type = 'info') {
-    const container = document.getElementById('toastContainer');
-    if (!container) return;
-
-    const icons = {
-      success: '✅',
-      error: '❌',
-      warning: '⚠️',
-      info: 'ℹ️'
-    };
-
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
-    container.appendChild(toast);
-
-    setTimeout(() => {
-      toast.style.animation = 'slideIn 0.3s ease reverse';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    this.showToast('Sélectionnez une boutique cible', 'info');
   }
 }
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', () => {
-  const popup = new DropCraftPopup();
+  const popup = new ShopOptiPopup();
   popup.init();
 });
+
+// Add toast styles
+const toastStyles = document.createElement('style');
+toastStyles.textContent = `
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--dc-bg-elevated, #334155);
+    border: 1px solid var(--dc-border, #475569);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast.success { border-color: var(--dc-success, #10b981); }
+  .toast.error { border-color: var(--dc-error, #ef4444); }
+  .toast.warning { border-color: var(--dc-warning, #f59e0b); }
+  .toast-icon { font-size: 16px; }
+  .toast-message { font-size: 13px; font-weight: 500; color: var(--dc-text, #f8fafc); }
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinning svg { animation: spin 1s linear infinite; }
+`;
+document.head.appendChild(toastStyles);

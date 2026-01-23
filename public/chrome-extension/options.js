@@ -1,4 +1,4 @@
-// Drop Craft AI Chrome Extension - Options Script v4.0
+// ShopOpti+ Chrome Extension - Options Script v4.3.9
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
@@ -22,7 +22,6 @@ const DEFAULT_SETTINGS = {
   powerSaveMode: false
 };
 
-// Safe element getter
 function getElement(id) {
   return document.getElementById(id);
 }
@@ -50,7 +49,6 @@ function getElementValue(id, defaultValue = '') {
   return el.value || defaultValue;
 }
 
-// Promisified Chrome APIs (more reliable across MV3 environments)
 function storageGet(defaults) {
   return new Promise((resolve, reject) => {
     try {
@@ -134,7 +132,6 @@ function alarmsClear(name) {
   });
 }
 
-// Load settings on page load
 document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   await loadStats();
@@ -148,7 +145,6 @@ async function loadSettings() {
       extensionToken: ''
     });
 
-    // Populate form fields safely
     setElementValue('apiUrl', settings.apiUrl || DEFAULT_SETTINGS.apiUrl);
     setElementValue('extensionToken', settings.extensionToken || '');
     setElementValue('autoPriceMonitoring', settings.autoPriceMonitoring);
@@ -166,12 +162,11 @@ async function loadSettings() {
     setElementValue('debugMode', settings.debugMode);
     setElementValue('powerSaveMode', settings.powerSaveMode);
 
-    // Update connection status
     updateConnectionStatus(!!settings.extensionToken);
 
-    console.log('[DropCraft] Settings loaded');
+    console.log('[ShopOpti+] Settings loaded');
   } catch (error) {
-    console.error('[DropCraft] Error loading settings:', error);
+    console.error('[ShopOpti+] Error loading settings:', error);
     showNotification(`Erreur chargement: ${error?.message || String(error)}`, 'error');
   }
 }
@@ -189,7 +184,7 @@ async function loadStats() {
     if (statReviews) statReviews.textContent = stats?.reviews || 0;
     if (statMonitored) statMonitored.textContent = stats?.monitored || 0;
   } catch (error) {
-    console.error('[DropCraft] Error loading stats:', error);
+    console.error('[ShopOpti+] Error loading stats:', error);
   }
 }
 
@@ -215,7 +210,6 @@ function updateConnectionStatus(isConnected) {
 }
 
 function setupEventListeners() {
-  // Safe event listener attachment
   const saveBtn = getElement('saveSettings');
   const resetBtn = getElement('resetSettings');
   const exportBtn = getElement('exportSettings');
@@ -230,7 +224,6 @@ function setupEventListeners() {
   if (clearBtn) clearBtn.addEventListener('click', clearAllData);
   if (connectBtn) connectBtn.addEventListener('click', toggleConnection);
   
-  // Auto-save on toggle change
   document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
     checkbox.addEventListener('change', saveSettings);
   });
@@ -241,13 +234,11 @@ async function toggleConnection() {
   const extensionToken = data.extensionToken;
 
   if (extensionToken) {
-    // Disconnect
     await storageRemove(['extensionToken']);
     setElementValue('extensionToken', '');
     updateConnectionStatus(false);
     showNotification('Déconnecté', 'info');
   } else {
-    // Open app to connect
     chrome.tabs.create({ url: `${APP_URL}/extensions/chrome` });
   }
 }
@@ -275,7 +266,6 @@ async function saveSettings() {
 
     await storageSet(settings);
 
-    // Update alarms based on settings (ignore errors to not block saving)
     try {
       if (settings.autoPriceMonitoring) {
         await alarmsCreate('priceMonitoring', { periodInMinutes: 30 });
@@ -289,16 +279,15 @@ async function saveSettings() {
         await alarmsClear('stockAlerts');
       }
     } catch (alarmError) {
-      console.warn('[DropCraft] Alarm update warning:', alarmError);
+      console.warn('[ShopOpti+] Alarm update warning:', alarmError);
     }
 
-    // Update connection status
     updateConnectionStatus(!!settings.extensionToken);
 
     showNotification('Configuration sauvegardée!', 'success');
-    console.log('[DropCraft] Settings saved:', settings);
+    console.log('[ShopOpti+] Settings saved:', settings);
   } catch (error) {
-    console.error('[DropCraft] Error saving settings:', error);
+    console.error('[ShopOpti+] Error saving settings:', error);
     showNotification(`Erreur sauvegarde: ${error?.message || String(error)}`, 'error');
   }
 }
@@ -310,7 +299,7 @@ async function resetSettings() {
       await loadSettings();
       showNotification('Configuration réinitialisée', 'info');
     } catch (error) {
-      console.error('[DropCraft] Error resetting settings:', error);
+      console.error('[ShopOpti+] Error resetting settings:', error);
       showNotification(`Erreur réinit: ${error?.message || String(error)}`, 'error');
     }
   }
@@ -325,7 +314,7 @@ async function clearAllData() {
       await loadStats();
       showNotification('Toutes les données effacées', 'info');
     } catch (error) {
-      console.error('[DropCraft] Error clearing data:', error);
+      console.error('[ShopOpti+] Error clearing data:', error);
       showNotification(`Erreur suppression: ${error?.message || String(error)}`, 'error');
     }
   }
@@ -334,8 +323,6 @@ async function clearAllData() {
 async function exportSettings() {
   try {
     const settings = await storageGet(null);
-
-    // Remove sensitive data
     const exportData = { ...settings };
     delete exportData.extensionToken;
 
@@ -345,13 +332,13 @@ async function exportSettings() {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `dropcraft-settings-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `shopopti-settings-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
 
     showNotification('Configuration exportée', 'success');
   } catch (error) {
-    console.error('[DropCraft] Error exporting settings:', error);
+    console.error('[ShopOpti+] Error exporting settings:', error);
     showNotification(`Erreur export: ${error?.message || String(error)}`, 'error');
   }
 }
@@ -389,7 +376,7 @@ async function testConnection() {
       throw new Error(error.error || `Erreur HTTP: ${response.status}`);
     }
   } catch (error) {
-    console.error('[DropCraft] Connection test error:', error);
+    console.error('[ShopOpti+] Connection test error:', error);
     showNotification(`Échec: ${error.message}`, 'error');
   } finally {
     btn.innerHTML = originalContent;
@@ -398,7 +385,6 @@ async function testConnection() {
 }
 
 function showNotification(message, type = 'info') {
-  // Remove existing notifications
   document.querySelectorAll('.notification').forEach(n => n.remove());
 
   const icons = {
@@ -413,7 +399,6 @@ function showNotification(message, type = 'info') {
 
   document.body.appendChild(notification);
 
-  // Keep errors a bit longer
   const ttl = type === 'error' ? 6000 : 3000;
 
   setTimeout(() => {
@@ -422,7 +407,6 @@ function showNotification(message, type = 'info') {
   }, ttl);
 }
 
-// Add spinner animation
 const style = document.createElement('style');
 style.textContent = `
   @keyframes spin {
@@ -440,4 +424,4 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-console.log('[DropCraft] Options page loaded');
+console.log('[ShopOpti+] Options page loaded');
