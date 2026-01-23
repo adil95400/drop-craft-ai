@@ -109,7 +109,7 @@ export default function SyncConfigPage() {
   return (
     <>
       <Helmet>
-        <title>Configuration de Synchronisation - DropCraft AI</title>
+        <title>Configuration de Synchronisation - ShopOpti</title>
         <meta name="description" content="Configurez les paramètres avancés de synchronisation" />
       </Helmet>
 

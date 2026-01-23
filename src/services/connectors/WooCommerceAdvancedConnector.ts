@@ -16,7 +16,7 @@ export class WooCommerceAdvancedConnector extends AdvancedBaseConnector {
   protected getAuthHeaders(): Record<string, string> {
     return {
       'Content-Type': 'application/json',
-      'User-Agent': 'DropCraftAI/1.0',
+      'User-Agent': 'ShopOpti/1.0',
     };
   }
 
@@ -277,7 +277,7 @@ export class WooCommerceAdvancedConnector extends AdvancedBaseConnector {
     for (const event of events) {
       try {
         const webhook = {
-          name: `DropCraftAI ${event}`,
+          name: `ShopOpti ${event}`,
           status: 'active',
           topic: event,
           delivery_url: `${baseUrl}/api/webhooks/woocommerce/${event}`,

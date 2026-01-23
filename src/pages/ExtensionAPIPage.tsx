@@ -345,7 +345,7 @@ export default function ExtensionAPIPage() {
             </CardHeader>
             <CardContent>
               <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-sm">
-{`curl -X GET "https://api.dropcraft.ai/v1/products" \\
+{`curl -X GET "https://api.shopopti.io/v1/products" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}
               </pre>

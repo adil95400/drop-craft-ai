@@ -424,7 +424,7 @@ export const CreateIntegrationForm = () => {
               <div className="space-y-4">
                 <Button variant="outline" asChild>
                   <a 
-                    href={`https://docs.dropcraft.ai/integrations/${formData.platform_name?.toLowerCase()}`} 
+                    href={`https://docs.shopopti.io/integrations/${formData.platform_name?.toLowerCase()}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                   >

@@ -84,7 +84,7 @@ export const useFavorites = create<FavoritesState>()(
       }
     }),
     {
-      name: 'dropcraft-favorites',
+      name: 'shopopti-favorites',
       version: 1
     }
   )

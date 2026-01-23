@@ -176,7 +176,7 @@ export abstract class AdvancedBaseConnector {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'DropCraft-AI/1.0',
+          'User-Agent': 'ShopOpti/1.0',
           ...this.getAuthHeaders(),
           ...options.headers,
         },

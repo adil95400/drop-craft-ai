@@ -159,7 +159,7 @@ class MobileIntegrationService {
 
     try {
       // Configurer le cache pour les données critiques
-      const cache = await caches.open('dropcraft-mobile-v1');
+      const cache = await caches.open('shopopti-mobile-v1');
       
       // Cache des pages importantes
       await cache.addAll([

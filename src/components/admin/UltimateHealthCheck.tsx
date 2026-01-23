@@ -142,9 +142,9 @@ export function UltimateHealthCheck() {
       name: 'Cache & Storage',
       check: async () => {
         const cacheKeys = [
-          'dropcraft_user_preferences',
-          'dropcraft_dashboard_data',
-          'dropcraft_extensions_cache'
+          'shopopti_user_preferences',
+          'shopopti_dashboard_data',
+          'shopopti_extensions_cache'
         ];
         
         let cachedItems = 0;

@@ -82,7 +82,7 @@ export default function APIDeveloperPage() {
                 <div className="p-4 bg-muted rounded-lg">
                   <pre className="text-sm">
                     <code>{`// Example API Request with Authentication
-const response = await fetch('https://api.dropcraft.ai/v1/products', {
+const response = await fetch('https://api.shopopti.io/v1/products', {
   method: 'GET',
   headers: {
     'x-api-key': 'YOUR_API_KEY',
