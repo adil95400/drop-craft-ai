@@ -1,9 +1,9 @@
 // ============================================================================
-// DROP CRAFT AI - EXTENSION DEBUG PANEL v4.3
+// SHOPOPTI+ - EXTENSION DEBUG PANEL v4.3.10
 // Professional debugging interface for extension troubleshooting
 // ============================================================================
 
-class DropCraftDebugPanel {
+class ShopOptiDebugPanel {
   constructor() {
     this.logs = [];
     this.maxLogs = 500;
@@ -14,7 +14,7 @@ class DropCraftDebugPanel {
 
   // Initialize debug panel
   init() {
-    console.log('[DropCraft Debug] Initializing debug panel...');
+    console.log('[ShopOpti+ Debug] Initializing debug panel...');
     this.createPanel();
     this.setupKeyboardShortcut();
     this.interceptConsole();
@@ -322,8 +322,8 @@ class DropCraftDebugPanel {
       <div class="dc-debug-header">
         <div class="dc-debug-title">
           <span class="dc-status-indicator"></span>
-          Drop Craft Debug
-          <span class="dc-debug-badge">v4.3</span>
+          ShopOpti+ Debug
+          <span class="dc-debug-badge">v4.3.10</span>
         </div>
         <button class="dc-close-btn" id="dc-close-debug">×</button>
       </div>
@@ -397,15 +397,16 @@ class DropCraftDebugPanel {
 
     console.log = (...args) => {
       const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
-      if (msg.includes('[DropCraft]') || msg.includes('[DC]')) {
+      if (msg.includes('[ShopOpti]') || msg.includes('[ShopOpti+]') || msg.includes('[DC]')) {
         this.log('info', msg);
+      }
       }
       originalLog.apply(console, args);
     };
 
     console.warn = (...args) => {
       const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
-      if (msg.includes('[DropCraft]') || msg.includes('[DC]')) {
+      if (msg.includes('[ShopOpti]') || msg.includes('[ShopOpti+]') || msg.includes('[DC]')) {
         this.log('warn', msg);
       }
       originalWarn.apply(console, args);
@@ -413,7 +414,7 @@ class DropCraftDebugPanel {
 
     console.error = (...args) => {
       const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
-      if (msg.includes('[DropCraft]') || msg.includes('[DC]')) {
+      if (msg.includes('[ShopOpti]') || msg.includes('[ShopOpti+]') || msg.includes('[DC]')) {
         this.log('error', msg);
       }
       originalError.apply(console, args);
@@ -682,14 +683,14 @@ User ID: ${result.userId || 'N/A'}
 
     try {
       // Try to use the global scraper if available
-      if (window.DropCraftScraper) {
-        const data = await window.DropCraftScraper.scrape();
+      if (window.ShopOptiScraper) {
+        const data = await window.ShopOptiScraper.scrape();
         this.setExtractedData(data);
         this.renderTab('data');
         document.querySelectorAll('.dc-debug-tab').forEach(t => t.classList.remove('active'));
         document.querySelector('.dc-debug-tab[data-tab="data"]')?.classList.add('active');
       } else {
-        this.log('warn', 'DropCraftScraper not available - running basic extraction');
+        this.log('warn', 'ShopOptiScraper not available - running basic extraction');
         const basicData = this.basicExtraction();
         this.setExtractedData(basicData);
         this.renderTab('data');
@@ -793,7 +794,10 @@ User ID: ${result.userId || 'N/A'}
 }
 
 // Initialize debug panel
-window.DropCraftDebug = new DropCraftDebugPanel();
-window.DropCraftDebug.init();
+window.ShopOptiDebug = new ShopOptiDebugPanel();
+window.ShopOptiDebug.init();
 
+// Legacy compatibility
+window.DropCraftDebug = window.ShopOptiDebug;
+window.DropCraftDebugPanel = ShopOptiDebugPanel;
 console.log('[DropCraft] Debug panel loaded - Press Ctrl+Shift+D to toggle');

@@ -1,7 +1,8 @@
-// ShopOpti+ Chrome Extension - Options Script v4.3.9
+// ShopOpti+ Chrome Extension - Options Script v4.3.10
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
+const VERSION = '4.3.10';
 
 const DEFAULT_SETTINGS = {
   apiUrl: API_URL,
@@ -136,7 +137,86 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   await loadStats();
   setupEventListeners();
+  setupTabs();
+  setupDashboardButton();
+  setupClearCacheButton();
+  setupResetAllButton();
 });
+
+// Tab switching functionality
+function setupTabs() {
+  const tabs = document.querySelectorAll('.tab');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetTab = tab.dataset.tab;
+      
+      // Remove active class from all tabs and contents
+      tabs.forEach(t => t.classList.remove('active'));
+      tabContents.forEach(tc => tc.classList.remove('active'));
+      
+      // Add active class to clicked tab and corresponding content
+      tab.classList.add('active');
+      const targetContent = document.getElementById(`tab-${targetTab}`);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+      
+      console.log('[ShopOpti+] Switched to tab:', targetTab);
+    });
+  });
+}
+
+// Open Dashboard button
+function setupDashboardButton() {
+  const openDashboardBtn = getElement('openDashboard');
+  if (openDashboardBtn) {
+    openDashboardBtn.addEventListener('click', () => {
+      chrome.tabs.create({ url: APP_URL });
+    });
+  }
+}
+
+// Clear cache button
+function setupClearCacheButton() {
+  const clearCacheBtn = getElement('clearCache');
+  if (clearCacheBtn) {
+    clearCacheBtn.addEventListener('click', async () => {
+      try {
+        // Clear only cache data, not settings
+        const settings = await storageGet(DEFAULT_SETTINGS);
+        await storageClear();
+        await storageSet(settings);
+        showNotification('Cache vidé avec succès', 'success');
+      } catch (error) {
+        console.error('[ShopOpti+] Error clearing cache:', error);
+        showNotification('Erreur lors du vidage du cache', 'error');
+      }
+    });
+  }
+}
+
+// Reset all button
+function setupResetAllButton() {
+  const resetAllBtn = getElement('resetAll');
+  if (resetAllBtn) {
+    resetAllBtn.addEventListener('click', async () => {
+      if (confirm('⚠️ Êtes-vous sûr de vouloir réinitialiser TOUS les paramètres? Cette action est irréversible.')) {
+        try {
+          await storageClear();
+          await storageSet(DEFAULT_SETTINGS);
+          await loadSettings();
+          await loadStats();
+          showNotification('Tous les paramètres réinitialisés', 'info');
+        } catch (error) {
+          console.error('[ShopOpti+] Error resetting all:', error);
+          showNotification('Erreur lors de la réinitialisation', 'error');
+        }
+      }
+    });
+  }
+}
 
 async function loadSettings() {
   try {
