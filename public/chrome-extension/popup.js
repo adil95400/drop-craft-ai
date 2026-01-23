@@ -1,4 +1,4 @@
-// ShopOpti+ Chrome Extension - Popup Script v4.3.9
+// ShopOpti+ Chrome Extension - Popup Script v4.3.10
 // Professional Dropshipping Extension
 
 class ShopOptiPopup {
