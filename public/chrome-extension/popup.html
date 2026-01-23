@@ -169,24 +169,40 @@
         Actions Rapides
       </h3>
       <div class="actions-grid">
-        <button id="importPageBtn" class="action-card primary">
-          <div class="action-icon-wrapper">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
-              <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
-            </svg>
+        <!-- Import Dropdown -->
+        <div class="action-dropdown-container">
+          <button id="importPageBtn" class="action-card primary">
+            <div class="action-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+              </svg>
+            </div>
+            <div class="action-content">
+              <span class="action-title">Import 1-Click</span>
+              <span class="action-desc">Produit seul</span>
+            </div>
+            <div class="action-arrow dropdown-toggle" id="importDropdownToggle">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </button>
+          <div class="action-dropdown-menu hidden" id="importDropdownMenu">
+            <button class="dropdown-item" id="importProductOnlyBtn">
+              <span class="dropdown-icon">📦</span>
+              <span>Import Produit seul</span>
+            </button>
+            <button class="dropdown-item" id="importReviewsOnlyBtn">
+              <span class="dropdown-icon">⭐</span>
+              <span>Import Avis seuls</span>
+            </button>
+            <button class="dropdown-item highlight" id="importCompleteBtn">
+              <span class="dropdown-icon">🚀</span>
+              <span>Import Complet (Produit + Avis)</span>
+            </button>
           </div>
-          <div class="action-content">
-            <span class="action-title">Import 1-Click</span>
-            <span class="action-desc">Importer cette page</span>
-          </div>
-          <div class="action-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </div>
-        </button>
+        </div>
         
         <button id="importAllBtn" class="action-card">
           <div class="action-icon-wrapper blue">
@@ -246,6 +262,66 @@
         </button>
       </div>
     </section>
+
+    <!-- Recent Imports Section -->
+    <section class="recent-imports-section" id="recentImportsSection">
+      <h3 class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Imports Récents
+      </h3>
+      <div class="recent-imports-list" id="recentImportsList">
+        <div class="empty-state small">
+          <span class="empty-icon">📦</span>
+          <span class="empty-text">Aucun import récent</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Import Progress Modal -->
+    <div id="importProgressModal" class="progress-modal hidden">
+      <div class="progress-modal-content">
+        <div class="progress-header">
+          <span class="progress-title">Import en cours...</span>
+          <button class="progress-close" id="closeProgressBtn">×</button>
+        </div>
+        <div class="progress-body">
+          <div class="progress-product-name" id="progressProductName">Chargement...</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="importProgressBar" style="width: 0%"></div>
+          </div>
+          <div class="progress-percentage" id="progressPercentage">0%</div>
+          <div class="progress-details">
+            <div class="progress-item" id="productProgress">
+              <span class="progress-icon">📦</span>
+              <span class="progress-label">Produit</span>
+              <span class="progress-status waiting">En attente</span>
+            </div>
+            <div class="progress-item" id="variantsProgress">
+              <span class="progress-icon">🎨</span>
+              <span class="progress-label">Variantes</span>
+              <span class="progress-status">-</span>
+            </div>
+            <div class="progress-item" id="imagesProgress">
+              <span class="progress-icon">🖼️</span>
+              <span class="progress-label">Images</span>
+              <span class="progress-status">-</span>
+            </div>
+            <div class="progress-item" id="reviewsProgress">
+              <span class="progress-icon">⭐</span>
+              <span class="progress-label">Avis</span>
+              <span class="progress-status">-</span>
+            </div>
+          </div>
+        </div>
+        <div class="progress-footer">
+          <button id="cancelImportBtn" class="btn-cancel">Annuler</button>
+          <button id="viewProductBtn" class="btn-primary hidden">Voir le produit</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Tab Navigation -->
     <nav class="tab-nav">

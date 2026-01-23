@@ -192,6 +192,36 @@ class ShopOptiPopup {
     document.getElementById('importReviewsBtn')?.addEventListener('click', () => this.importReviews());
     document.getElementById('priceMonitorBtn')?.addEventListener('click', () => this.startPriceMonitor());
 
+    // Import dropdown
+    document.getElementById('importDropdownToggle')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleImportDropdown();
+    });
+    document.getElementById('importProductOnlyBtn')?.addEventListener('click', () => {
+      this.hideImportDropdown();
+      this.importCurrentPage();
+    });
+    document.getElementById('importReviewsOnlyBtn')?.addEventListener('click', () => {
+      this.hideImportDropdown();
+      this.importReviews();
+    });
+    document.getElementById('importCompleteBtn')?.addEventListener('click', () => {
+      this.hideImportDropdown();
+      this.importProductWithReviews();
+    });
+
+    // Progress modal
+    document.getElementById('closeProgressBtn')?.addEventListener('click', () => this.hideProgressModal());
+    document.getElementById('cancelImportBtn')?.addEventListener('click', () => this.cancelImport());
+    document.getElementById('viewProductBtn')?.addEventListener('click', () => this.viewImportedProduct());
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.action-dropdown-container')) {
+        this.hideImportDropdown();
+      }
+    });
+
     // Advanced features
     document.getElementById('autoOrderBtn')?.addEventListener('click', () => this.showFeature('Auto-Order'));
     document.getElementById('competitorBtn')?.addEventListener('click', () => this.showFeature('Spy Competitor'));
@@ -235,6 +265,252 @@ class ShopOptiPopup {
     document.querySelectorAll('.price-btn').forEach(btn => {
       btn.addEventListener('click', () => this.applySuggestedMargin(parseInt(btn.dataset.margin)));
     });
+
+    // Load recent imports
+    this.loadRecentImports();
+  }
+
+  // === DROPDOWN MANAGEMENT ===
+  toggleImportDropdown() {
+    const menu = document.getElementById('importDropdownMenu');
+    const toggle = document.getElementById('importDropdownToggle');
+    if (menu) {
+      menu.classList.toggle('hidden');
+      toggle?.classList.toggle('open', !menu.classList.contains('hidden'));
+    }
+  }
+
+  hideImportDropdown() {
+    const menu = document.getElementById('importDropdownMenu');
+    const toggle = document.getElementById('importDropdownToggle');
+    if (menu) {
+      menu.classList.add('hidden');
+      toggle?.classList.remove('open');
+    }
+  }
+
+  // === PROGRESS MODAL ===
+  showProgressModal(productName = 'Chargement...') {
+    const modal = document.getElementById('importProgressModal');
+    const productNameEl = document.getElementById('progressProductName');
+    const viewBtn = document.getElementById('viewProductBtn');
+    
+    if (modal) modal.classList.remove('hidden');
+    if (productNameEl) productNameEl.textContent = productName;
+    if (viewBtn) viewBtn.classList.add('hidden');
+    
+    this.updateProgress(0, {
+      product: 'waiting',
+      variants: '-',
+      images: '-',
+      reviews: '-'
+    });
+    
+    this.importCancelled = false;
+    this.lastImportedProduct = null;
+  }
+
+  hideProgressModal() {
+    const modal = document.getElementById('importProgressModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  updateProgress(percentage, statuses = {}) {
+    const bar = document.getElementById('importProgressBar');
+    const percentEl = document.getElementById('progressPercentage');
+    
+    if (bar) bar.style.width = `${percentage}%`;
+    if (percentEl) percentEl.textContent = `${Math.round(percentage)}%`;
+    
+    // Update individual statuses
+    const statusMap = {
+      'product': 'productProgress',
+      'variants': 'variantsProgress',
+      'images': 'imagesProgress',
+      'reviews': 'reviewsProgress'
+    };
+    
+    for (const [key, elementId] of Object.entries(statusMap)) {
+      const el = document.getElementById(elementId);
+      if (el && statuses[key] !== undefined) {
+        const statusEl = el.querySelector('.progress-status');
+        if (statusEl) {
+          statusEl.textContent = statuses[key];
+          statusEl.className = 'progress-status';
+          
+          if (statuses[key] === 'waiting' || statuses[key] === 'En attente') {
+            statusEl.classList.add('waiting');
+          } else if (statuses[key] === 'processing' || statuses[key].includes('...')) {
+            statusEl.classList.add('processing');
+          } else if (statuses[key] === 'done' || statuses[key].includes('✓')) {
+            statusEl.classList.add('done');
+          } else if (statuses[key] === 'error' || statuses[key].includes('✗')) {
+            statusEl.classList.add('error');
+          }
+        }
+      }
+    }
+  }
+
+  showImportComplete(product) {
+    this.lastImportedProduct = product;
+    this.updateProgress(100, {
+      product: '✓ Importé',
+      variants: product.variantCount ? `✓ ${product.variantCount} variantes` : '✓',
+      images: product.imageCount ? `✓ ${product.imageCount} images` : '✓',
+      reviews: product.reviewCount ? `✓ ${product.reviewCount} avis` : '-'
+    });
+    
+    const viewBtn = document.getElementById('viewProductBtn');
+    const cancelBtn = document.getElementById('cancelImportBtn');
+    if (viewBtn) {
+      viewBtn.classList.remove('hidden');
+      viewBtn.textContent = 'Voir le produit';
+    }
+    if (cancelBtn) cancelBtn.textContent = 'Fermer';
+    
+    const titleEl = document.querySelector('.progress-title');
+    if (titleEl) titleEl.textContent = 'Import terminé!';
+  }
+
+  cancelImport() {
+    this.importCancelled = true;
+    this.hideProgressModal();
+    this.showToast('Import annulé', 'info');
+  }
+
+  viewImportedProduct() {
+    this.hideProgressModal();
+    if (this.lastImportedProduct?.id) {
+      chrome.tabs.create({ url: `${this.APP_URL}/products/${this.lastImportedProduct.id}` });
+    } else {
+      chrome.tabs.create({ url: `${this.APP_URL}/products` });
+    }
+  }
+
+  // === COMBINED IMPORT ===
+  async importProductWithReviews() {
+    if (!this.isConnected) {
+      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
+      return;
+    }
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.url) {
+      this.showToast('Impossible de récupérer l\'URL', 'error');
+      return;
+    }
+
+    this.showProgressModal('Import complet en cours...');
+    
+    try {
+      // Update progress - Starting product import
+      this.updateProgress(10, { product: 'Import...', variants: 'En attente', images: 'En attente', reviews: 'En attente' });
+      
+      const response = await chrome.runtime.sendMessage({
+        type: 'IMPORT_PRODUCT_WITH_REVIEWS',
+        url: tab.url,
+        reviewLimit: 50
+      });
+
+      if (this.importCancelled) return;
+
+      if (response?.success) {
+        const product = response.product || {};
+        const reviewCount = response.reviews?.count || 0;
+        
+        this.stats.products++;
+        this.stats.reviews += reviewCount;
+        
+        this.showImportComplete({
+          id: product.id,
+          title: product.title || product.name,
+          variantCount: product.variantCount || response.variantCount,
+          imageCount: product.imageCount || response.imageCount,
+          reviewCount: reviewCount
+        });
+        
+        // Update product name
+        const productNameEl = document.getElementById('progressProductName');
+        if (productNameEl) productNameEl.textContent = product.title || product.name || 'Produit importé';
+        
+        this.addActivity(`Import complet: ${product.title || 'Nouveau produit'} + ${reviewCount} avis`, '🚀');
+        this.showToast('Import complet réussi!', 'success');
+        
+        // Save to recent imports
+        await this.saveRecentImport({
+          id: product.id,
+          title: product.title || product.name,
+          image: product.image,
+          status: 'success',
+          timestamp: new Date().toISOString()
+        });
+        
+        await this.saveData();
+        this.updateUI();
+        this.loadRecentImports();
+      } else {
+        throw new Error(response?.error || 'Échec de l\'import complet');
+      }
+    } catch (error) {
+      console.error('[ShopOpti+] Complete import error:', error);
+      this.updateProgress(100, { product: '✗ Erreur', variants: '-', images: '-', reviews: '-' });
+      this.showToast(`Erreur: ${error.message}`, 'error');
+      
+      setTimeout(() => this.hideProgressModal(), 2000);
+    }
+  }
+
+  // === RECENT IMPORTS ===
+  async loadRecentImports() {
+    const { recentImports } = await chrome.storage.local.get(['recentImports']);
+    const list = document.getElementById('recentImportsList');
+    
+    if (!list) return;
+    
+    const imports = recentImports || [];
+    
+    if (imports.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state small">
+          <span class="empty-icon">📦</span>
+          <span class="empty-text">Aucun import récent</span>
+        </div>
+      `;
+      return;
+    }
+    
+    list.innerHTML = imports.slice(0, 5).map(item => `
+      <div class="recent-import-item" data-id="${item.id || ''}" onclick="window.popup?.openProduct('${item.id || ''}')">
+        <img src="${item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIGZpbGw9IiMxZTI0MzgiLz48dGV4dCB4PSIxOCIgeT0iMjIiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2NDc0OGIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjwvdGV4dD48L3N2Zz4='}" 
+             class="recent-import-thumb" 
+             alt="${item.title}" 
+             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIGZpbGw9IiMxZTI0MzgiLz48dGV4dCB4PSIxOCIgeT0iMjIiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2NDc0OGIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjwvdGV4dD48L3N2Zz4='" />
+        <div class="recent-import-info">
+          <span class="recent-import-title">${item.title || 'Produit sans nom'}</span>
+          <span class="recent-import-meta">${this.formatTime(item.timestamp)}</span>
+        </div>
+        <span class="recent-import-status ${item.status}">${item.status === 'success' ? '✓' : item.status === 'pending' ? '⏳' : '!'}</span>
+      </div>
+    `).join('');
+  }
+
+  async saveRecentImport(importData) {
+    const { recentImports } = await chrome.storage.local.get(['recentImports']);
+    const imports = recentImports || [];
+    
+    imports.unshift(importData);
+    
+    // Keep only last 10
+    const trimmed = imports.slice(0, 10);
+    
+    await chrome.storage.local.set({ recentImports: trimmed });
+  }
+
+  openProduct(productId) {
+    if (productId) {
+      chrome.tabs.create({ url: `${this.APP_URL}/products/${productId}` });
+    }
   }
 
   initTabs() {
