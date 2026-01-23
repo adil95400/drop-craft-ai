@@ -1,18 +1,19 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v4.3.11
+// ShopOpti+ Chrome Extension - Content Script v4.3.12
 // Professional Dropshipping Extension - 100% CSP-SAFE
 // NO SCRIPT INJECTION - Pure Content Script Mode
 // Works on Amazon, AliExpress, and all strict CSP sites
+// Enhanced Review Extraction for 9+ Platforms
 // ============================================
 
 (function () {
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '4.3.11') return;
-  window.__shopOptiCSVersion = '4.3.11';
+  if (window.__shopOptiCSVersion === '4.3.12') return;
+  window.__shopOptiCSVersion = '4.3.12';
 
-  console.log('[ShopOpti+] Content script v4.3.11 initializing (CSP-SAFE mode)...');
+  console.log('[ShopOpti+] Content script v4.3.12 initializing (CSP-SAFE mode)...');
 
   // ============================================
   // CHROME API SAFETY CHECK
@@ -51,7 +52,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.11',
+    VERSION: '4.3.12',
     BRAND: 'ShopOpti+',
     SUPPORTED_PLATFORMS: ['amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 'wish', 'cdiscount', 'fnac', 'rakuten']
   };
@@ -964,6 +965,19 @@
           sendResponse({ success: true, reviews, count: reviews.length });
           break;
           
+        case 'EXTRACT_PRODUCT_AND_REVIEWS':
+          // Combined extraction for full import
+          const productData = extractProductData();
+          const productReviews = extractReviewsFromDOM({ maxReviews: message.maxReviews || 50 });
+          sendResponse({ 
+            success: true, 
+            product: productData, 
+            reviews: productReviews,
+            productCount: 1,
+            reviewCount: productReviews.length 
+          });
+          break;
+          
         default:
           sendResponse({ success: false, error: 'Unknown message type' });
       }
@@ -1112,7 +1126,7 @@
     }, 1000);
   }
   
-  // DOM-based review extraction
+  // DOM-based review extraction - Enhanced for all platforms v4.3.12
   function extractReviewsFromDOM(config) {
     const reviews = [];
     const maxReviews = config?.maxReviews || 50;
@@ -1121,74 +1135,267 @@
     console.log('[ShopOpti+] Extracting reviews for platform:', platform);
     
     if (platform === 'amazon') {
-      const reviewElements = document.querySelectorAll('[data-hook="review"], .review, .a-section.review');
+      const reviewElements = document.querySelectorAll('[data-hook="review"], .review, .a-section.review, #cm_cr-review_list .review');
       
       reviewElements.forEach((element, index) => {
         if (index >= maxReviews) return;
         
         let rating = 5;
-        const ratingEl = element.querySelector('[data-hook="review-star-rating"] .a-icon-alt, .a-icon-star .a-icon-alt');
+        const ratingEl = element.querySelector('[data-hook="review-star-rating"] .a-icon-alt, .a-icon-star .a-icon-alt, .review-rating .a-icon-alt');
         if (ratingEl) {
-          const match = ratingEl.textContent?.match(/(\\d[.,]?\\d?)/);
+          const match = ratingEl.textContent?.match(/(\d[.,]?\d?)/);
           if (match) rating = parseFloat(match[1].replace(',', '.'));
         }
         
-        const contentEl = element.querySelector('[data-hook="review-body"] span, .review-text-content span');
+        const contentEl = element.querySelector('[data-hook="review-body"] span, .review-text-content span, .review-text span');
         const content = contentEl?.textContent?.trim() || '';
         
         const authorEl = element.querySelector('[data-hook="review-author"], .a-profile-name');
         const author = authorEl?.textContent?.trim() || 'Amazon Customer';
         
         const dateEl = element.querySelector('[data-hook="review-date"]');
-        const date = dateEl?.textContent?.trim() || '';
+        const dateText = dateEl?.textContent?.trim() || '';
+        let date = null;
+        const dateMatch = dateText.match(/(\d{1,2})\s+(\w+)\s+(\d{4})/);
+        if (dateMatch) {
+          date = new Date(`${dateMatch[2]} ${dateMatch[1]}, ${dateMatch[3]}`).toISOString();
+        }
         
-        const verified = !!element.querySelector('[data-hook="avp-badge"]');
+        const titleEl = element.querySelector('[data-hook="review-title"] span:not(.a-icon-alt), .review-title span');
+        const title = titleEl?.textContent?.trim() || '';
+        
+        const verified = !!element.querySelector('[data-hook="avp-badge"], .avp-badge');
         
         const images = [];
-        element.querySelectorAll('[data-hook="review-image-tile"] img').forEach(img => {
-          if (img.src && !img.src.includes('sprite')) {
-            images.push(img.src.replace(/\\._[A-Z]{2}\\d+_\\./, '._SL500_.'));
+        element.querySelectorAll('[data-hook="review-image-tile"] img, .review-image-tile img').forEach(img => {
+          if (img.src && !img.src.includes('sprite') && !img.src.includes('transparent')) {
+            images.push(img.src.replace(/\._[A-Z]{2}\d+_\./, '._SL500_.'));
           }
         });
         
+        // Helpful votes
+        const helpfulEl = element.querySelector('[data-hook="helpful-vote-statement"]');
+        let helpfulVotes = 0;
+        if (helpfulEl) {
+          const helpfulMatch = helpfulEl.textContent?.match(/(\d+)/);
+          if (helpfulMatch) helpfulVotes = parseInt(helpfulMatch[1]);
+        }
+        
         if (content.length > 10) {
-          reviews.push({ rating, content, author, date, verified, images, platform: 'amazon' });
+          reviews.push({ 
+            rating, 
+            content, 
+            title,
+            author, 
+            date, 
+            verified, 
+            images, 
+            helpful_votes: helpfulVotes,
+            platform: 'amazon' 
+          });
         }
       });
       
     } else if (platform === 'aliexpress') {
-      const reviewElements = document.querySelectorAll('.feedback-item, [class*="review-item"], [class*="feedback"]');
+      const reviewElements = document.querySelectorAll('.feedback-item, [class*="review-item"], [class*="feedback"], .buyer-review');
       
       reviewElements.forEach((element, index) => {
         if (index >= maxReviews) return;
         
         let rating = 5;
-        const stars = element.querySelectorAll('[class*="star-view"] span[class*="full"], .star-view span.star-active');
-        if (stars.length > 0) rating = Math.min(5, stars.length);
+        const starContainer = element.querySelector('[class*="star-view"], .star-view');
+        if (starContainer) {
+          const fullStars = starContainer.querySelectorAll('span[class*="full"], .star-active, [class*="starFull"]');
+          if (fullStars.length > 0) rating = Math.min(5, fullStars.length);
+        }
         
-        const contentEl = element.querySelector('[class*="buyer-feedback"], [class*="review-content"]');
+        const contentEl = element.querySelector('[class*="buyer-feedback"], [class*="review-content"], .feedback-text');
         const content = contentEl?.textContent?.trim() || '';
         
-        const authorEl = element.querySelector('[class*="user-name"]');
+        const authorEl = element.querySelector('[class*="user-name"], [class*="buyer-name"]');
         const author = authorEl?.textContent?.trim() || 'AliExpress Buyer';
         
+        const dateEl = element.querySelector('[class*="feedback-time"], [class*="review-date"]');
+        const date = dateEl?.textContent?.trim() || null;
+        
+        // Country/Location
+        const countryEl = element.querySelector('[class*="user-country"], [class*="country"]');
+        const country = countryEl?.textContent?.trim() || null;
+        
+        // Variant info (color, size purchased)
+        const variantEl = element.querySelector('[class*="sku-info"], [class*="specs"]');
+        const variant = variantEl?.textContent?.trim() || null;
+        
         const images = [];
-        element.querySelectorAll('img[class*="pic"], img[src*="feedback"]').forEach(img => {
-          if (img.src && !img.src.includes('placeholder')) {
+        element.querySelectorAll('img[class*="pic"], img[src*="feedback"], [class*="review-image"] img').forEach(img => {
+          if (img.src && !img.src.includes('placeholder') && !img.src.includes('icon')) {
             let src = img.src;
             if (src.startsWith('//')) src = 'https:' + src;
-            images.push(src.replace(/_\\d+x\\d+\\./g, '.'));
+            images.push(src.replace(/_\d+x\d+\./g, '.'));
           }
         });
         
         if (content.length > 5) {
-          reviews.push({ rating, content, author, images, platform: 'aliexpress' });
+          reviews.push({ 
+            rating, 
+            content, 
+            author, 
+            date,
+            country,
+            variant,
+            images, 
+            platform: 'aliexpress' 
+          });
+        }
+      });
+      
+    } else if (platform === 'shopify') {
+      // Shopify stores use various review apps (Judge.me, Loox, Yotpo, etc.)
+      const reviewSelectors = [
+        '.jdgm-rev',
+        '.loox-review',
+        '.yotpo-review',
+        '.spr-review',
+        '.stamped-review',
+        '.product-review',
+        '[data-review-id]'
+      ];
+      
+      let reviewElements = [];
+      for (const selector of reviewSelectors) {
+        const els = document.querySelectorAll(selector);
+        if (els.length > 0) {
+          reviewElements = els;
+          break;
+        }
+      }
+      
+      reviewElements.forEach((element, index) => {
+        if (index >= maxReviews) return;
+        
+        let rating = 5;
+        const starCount = element.querySelectorAll('.jdgm-star.jdgm--on, [class*="filled-star"], .star-on, [class*="star"][class*="full"]').length;
+        if (starCount > 0) rating = Math.min(5, starCount);
+        
+        const contentEl = element.querySelector('.jdgm-rev__body, .loox-review-body, .yotpo-review-content, .spr-review-content-body, [class*="review-text"], [class*="review-body"]');
+        const content = contentEl?.textContent?.trim() || '';
+        
+        const authorEl = element.querySelector('.jdgm-rev__author, .loox-review-author, .yotpo-user-name, .spr-review-header-byline, [class*="author"]');
+        const author = authorEl?.textContent?.trim() || 'Customer';
+        
+        const dateEl = element.querySelector('.jdgm-rev__timestamp, .loox-review-date, .yotpo-review-date, .spr-review-header-date, [class*="date"]');
+        const date = dateEl?.textContent?.trim() || null;
+        
+        const images = [];
+        element.querySelectorAll('.jdgm-rev__media img, .loox-review-image img, [class*="review-image"] img').forEach(img => {
+          if (img.src && !img.src.includes('placeholder')) {
+            images.push(img.src);
+          }
+        });
+        
+        if (content.length > 10) {
+          reviews.push({ 
+            rating, 
+            content, 
+            author,
+            date, 
+            images, 
+            platform: 'shopify' 
+          });
+        }
+      });
+      
+    } else if (platform === 'temu') {
+      const reviewElements = document.querySelectorAll('[class*="review-item"], [class*="ReviewItem"], [class*="comment-item"]');
+      
+      reviewElements.forEach((element, index) => {
+        if (index >= maxReviews) return;
+        
+        let rating = 5;
+        const ratingText = element.querySelector('[class*="rating"], [class*="star"]')?.textContent;
+        if (ratingText) {
+          const match = ratingText.match(/(\d)/);
+          if (match) rating = parseInt(match[1]);
+        }
+        
+        const contentEl = element.querySelector('[class*="content"], [class*="text"]');
+        const content = contentEl?.textContent?.trim() || '';
+        
+        const authorEl = element.querySelector('[class*="user"], [class*="name"]');
+        const author = authorEl?.textContent?.trim() || 'Temu Buyer';
+        
+        const images = [];
+        element.querySelectorAll('img[src*="img.kwcdn"]').forEach(img => {
+          images.push(img.src);
+        });
+        
+        if (content.length > 5) {
+          reviews.push({ rating, content, author, images, platform: 'temu' });
+        }
+      });
+      
+    } else if (platform === 'ebay') {
+      const reviewElements = document.querySelectorAll('.review-item, [data-testid="review"]');
+      
+      reviewElements.forEach((element, index) => {
+        if (index >= maxReviews) return;
+        
+        let rating = 5;
+        const starsEl = element.querySelector('[class*="star"]');
+        if (starsEl) {
+          const fullStars = starsEl.querySelectorAll('[class*="full"]').length;
+          if (fullStars > 0) rating = fullStars;
+        }
+        
+        const contentEl = element.querySelector('[class*="review-text"], [class*="content"]');
+        const content = contentEl?.textContent?.trim() || '';
+        
+        const authorEl = element.querySelector('[class*="reviewer"], [class*="author"]');
+        const author = authorEl?.textContent?.trim() || 'eBay Buyer';
+        
+        if (content.length > 10) {
+          reviews.push({ rating, content, author, platform: 'ebay' });
+        }
+      });
+      
+    } else if (platform === 'etsy') {
+      const reviewElements = document.querySelectorAll('.review-item, [data-review-id]');
+      
+      reviewElements.forEach((element, index) => {
+        if (index >= maxReviews) return;
+        
+        let rating = 5;
+        const starsInput = element.querySelector('input[name="rating"]');
+        if (starsInput) rating = parseInt(starsInput.value) || 5;
+        
+        const contentEl = element.querySelector('[class*="review-content"], p');
+        const content = contentEl?.textContent?.trim() || '';
+        
+        const authorEl = element.querySelector('[class*="reviewer-name"], a[href*="/people/"]');
+        const author = authorEl?.textContent?.trim() || 'Etsy Buyer';
+        
+        const images = [];
+        element.querySelectorAll('img[src*="etsystatic"]').forEach(img => {
+          if (!img.src.includes('icon')) images.push(img.src);
+        });
+        
+        if (content.length > 10) {
+          reviews.push({ rating, content, author, images, platform: 'etsy' });
         }
       });
       
     } else {
-      // Generic extraction
-      const selectors = ['[data-hook="review"]', '.review-item', '.review', '.customer-review', '[class*="review-card"]'];
+      // Generic extraction for unknown platforms
+      const selectors = [
+        '[data-hook="review"]', 
+        '.review-item', 
+        '.review', 
+        '.customer-review', 
+        '[class*="review-card"]',
+        '[class*="ReviewCard"]',
+        '.feedback-item',
+        '[class*="testimonial"]'
+      ];
       let reviewElements = [];
       
       for (const selector of selectors) {
@@ -1199,21 +1406,25 @@
       reviewElements.forEach((element, index) => {
         if (index >= maxReviews) return;
         
-        const contentEl = element.querySelector('[class*="content"], [class*="text"], p');
+        const contentEl = element.querySelector('[class*="content"], [class*="text"], [class*="body"], p');
         const content = contentEl?.textContent?.trim() || '';
+        
+        let rating = 5;
+        const starEls = element.querySelectorAll('[class*="star"][class*="full"], [class*="star"][class*="active"], .star-filled');
+        if (starEls.length > 0) rating = Math.min(5, starEls.length);
         
         if (content.length > 10) {
           reviews.push({
-            rating: 5,
+            rating,
             content,
-            author: element.querySelector('[class*="author"], [class*="name"]')?.textContent?.trim() || 'Anonymous',
+            author: element.querySelector('[class*="author"], [class*="name"], [class*="user"]')?.textContent?.trim() || 'Anonymous',
             platform: platform
           });
         }
       });
     }
     
-    console.log(\`[ShopOpti+] Extracted \${reviews.length} reviews\`);
+    console.log(`[ShopOpti+] Extracted ${reviews.length} reviews`);
     return reviews;
   }
 
