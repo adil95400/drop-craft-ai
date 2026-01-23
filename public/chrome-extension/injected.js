@@ -777,12 +777,31 @@ class AmazonDetector extends BaseDetector {
   }
 
   injectListingButtons() {
-    const productElements = document.querySelectorAll('[data-component-type="s-search-result"]');
+    // Support for search results, best sellers, category pages, and deals
+    const selectors = [
+      '[data-component-type="s-search-result"]',           // Search results
+      '.zg-grid-general-faceout',                          // Best sellers grid items
+      '[data-testid="zg-carousel-general-faceout"]',       // Best sellers carousel items
+      '.p13n-sc-uncoverable-faceout',                      // Top picks / recommendations
+      '.octopus-pc-item-v3',                               // Category browse items
+      '.a-carousel-card',                                   // Carousel items
+      '[data-component-type="s-impression-logger"]',       // Sponsored products
+      '.s-result-item[data-asin]',                         // Alternative search results
+      '.deal-card',                                         // Deal cards
+      '[data-testid="product-card"]',                      // Product cards
+      '.sbv-product',                                       // Subscribe & Save items
+      '[data-component-type="sp-ads"]'                     // Sponsored ads
+    ];
+    
+    const productElements = document.querySelectorAll(selectors.join(', '));
     
     productElements.forEach((element) => {
       if (element.querySelector('.dropcraft-import-btn')) return;
       
+      // Get product link from the element
       const link = this.getLinkFromElement(element);
+      if (!link || !link.includes('/dp/')) return; // Skip if no valid product link
+      
       const button = this.createImportButton('Import', () => {
         this.importProductFromURL(link);
       }, true);
@@ -790,6 +809,68 @@ class AmazonDetector extends BaseDetector {
       element.style.position = 'relative';
       element.appendChild(button);
     });
+    
+    // Also inject a bulk selection floating button on listing pages
+    this.injectBulkSelectionButton();
+  }
+  
+  injectBulkSelectionButton() {
+    if (document.querySelector('.dropcraft-bulk-btn')) return;
+    
+    const isCategoryPage = window.location.pathname.includes('/gp/bestsellers') ||
+                           window.location.pathname.includes('/gp/new-releases') ||
+                           window.location.pathname.includes('/gp/most-wished-for') ||
+                           window.location.pathname.includes('/s?') ||
+                           document.querySelector('.zg-grid-general-faceout');
+    
+    if (!isCategoryPage) return;
+    
+    const bulkBtn = document.createElement('div');
+    bulkBtn.className = 'dropcraft-bulk-btn';
+    bulkBtn.innerHTML = `
+      <div style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10000;
+        transition: all 0.3s ease;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span>Import en masse</span>
+        <span id="dropcraft-selected-count" style="
+          background: white;
+          color: #059669;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          min-width: 20px;
+          text-align: center;
+        ">0</span>
+      </div>
+    `;
+    
+    bulkBtn.addEventListener('click', () => {
+      window.postMessage({ type: 'DROPCRAFT_OPEN_BULK_SELECTOR' }, '*');
+    });
+    
+    document.body.appendChild(bulkBtn);
   }
 }
 

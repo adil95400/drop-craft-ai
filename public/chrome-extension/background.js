@@ -198,6 +198,18 @@ class DropCraftBackground {
           sendResponse(fetchResult);
           break;
 
+        case 'IMPORT_FROM_URL':
+          // Import product from URL (for listing page buttons)
+          const urlImportResult = await this.scrapeAndImport(message.url);
+          sendResponse(urlImportResult);
+          break;
+
+        case 'OPEN_BULK_IMPORT':
+          // Open bulk import page in Shopopti+
+          chrome.tabs.create({ url: `${APP_URL}/products/import` });
+          sendResponse({ success: true });
+          break;
+
         default:
           console.warn('[DropCraft] Unknown message type:', message.type);
           sendResponse({ error: 'Unknown message type' });
@@ -232,6 +244,53 @@ class DropCraftBackground {
         success: false,
         error: error.message
       };
+    }
+  }
+
+  async scrapeAndImport(url) {
+    try {
+      console.log('[DropCraft] Scraping and importing from URL:', url);
+      
+      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+      
+      if (!extensionToken) {
+        return { success: false, error: 'Non connecté. Connectez-vous via l\'extension.' };
+      }
+      
+      // Use the extension-scraper edge function
+      const response = await fetch(`${API_URL}/extension-scraper`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'scrape_and_import',
+          url: url
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Update local stats
+        const { stats } = await chrome.storage.local.get(['stats']);
+        await chrome.storage.local.set({
+          stats: {
+            ...stats,
+            products: (stats?.products || 0) + 1
+          }
+        });
+        
+        this.showNotification('Produit importé', data.product?.title || 'Import réussi');
+        return { success: true, data };
+      } else {
+        console.error('[DropCraft] Scrape and import failed:', data.error);
+        return { success: false, error: data.error || 'Échec de l\'import' };
+      }
+    } catch (error) {
+      console.error('[DropCraft] Scrape and import error:', error);
+      return { success: false, error: error.message };
     }
   }
   
