@@ -176,7 +176,7 @@ export class MultiTenantService {
     // Update document title and favicon
     const tenant = this.getCurrentTenant();
     if (tenant) {
-      document.title = `${tenant.name} - Drop Craft AI`;
+      document.title = `${tenant.name} - ShopOpti`;
       
       if (branding.favicon_url) {
         const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;

@@ -50,7 +50,7 @@ export default function CompetitiveComparisonPage() {
   return (
     <>
       <Helmet>
-        <title>Comparaison Concurrentielle | Drop Craft AI</title>
+        <title>Comparaison Concurrentielle | ShopOpti</title>
         <meta 
           name="description" 
           content="Comparez votre application avec vos concurrents et identifiez les opportunités" 

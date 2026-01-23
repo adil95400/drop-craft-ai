@@ -1,4 +1,4 @@
-// Service de notifications pour Drop Craft AI
+// Service de notifications pour ShopOpti
 import { pwaService } from '@/services/pwa/PWAService';
 
 export interface NotificationConfig {

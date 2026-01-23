@@ -1,5 +1,5 @@
 // ============================================
-// Drop Craft AI Chrome Extension - Content Script v4.3.6
+// ShopOpti+ Chrome Extension - Content Script v4.3.8
 // Professional Dropshipping Extension - 100% CSP-SAFE
 // NO SCRIPT INJECTION - Pure Content Script Mode
 // Works on Amazon, AliExpress, and all strict CSP sites
@@ -9,10 +9,10 @@
   'use strict';
 
   // Prevent multiple injections
-  if (window.__dropCraftCSVersion === '4.3.7') return;
-  window.__dropCraftCSVersion = '4.3.7';
+  if (window.__shopOptiCSVersion === '4.3.8') return;
+  window.__shopOptiCSVersion = '4.3.8';
 
-  console.log('[DropCraft] Content script v4.3.7 initializing (CSP-SAFE mode)...');
+  console.log('[ShopOpti+] Content script v4.3.8 initializing (CSP-SAFE mode)...');
 
   // ============================================
   // CHROME API SAFETY CHECK
@@ -29,7 +29,7 @@
   // Safe message sender with fallback
   async function safeSendMessage(message) {
     if (!isChromeRuntimeAvailable()) {
-      console.warn('[DropCraft] Extension context invalidated - please reload the page');
+      console.warn('[ShopOpti+] Extension context invalidated - please reload the page');
       throw new Error('Extension déconnectée. Rechargez la page (F5).');
     }
     
@@ -37,7 +37,7 @@
       try {
         chrome.runtime.sendMessage(message, (response) => {
           if (chrome.runtime.lastError) {
-            console.error('[DropCraft] Runtime error:', chrome.runtime.lastError);
+            console.error('[ShopOpti+] Runtime error:', chrome.runtime.lastError);
             reject(new Error('Extension déconnectée. Rechargez la page.'));
           } else {
             resolve(response);

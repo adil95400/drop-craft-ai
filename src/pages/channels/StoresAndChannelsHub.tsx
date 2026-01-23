@@ -423,7 +423,7 @@ export default function StoresAndChannelsHub() {
   return (
     <>
       <Helmet>
-        <title>Boutiques & Canaux - DropCraft</title>
+        <title>Boutiques & Canaux - ShopOpti</title>
       </Helmet>
 
       <ChannablePageWrapper

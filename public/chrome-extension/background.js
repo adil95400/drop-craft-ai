@@ -1,11 +1,11 @@
-// Drop Craft AI Chrome Extension - Background Service Worker v4.0
+// ShopOpti+ Chrome Extension - Background Service Worker v4.3.8
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
 
-class DropCraftBackground {
+class ShopOptiBackground {
   constructor() {
-    console.log('[DropCraft] Background service worker initializing...');
+    console.log('[ShopOpti+] Background service worker initializing...');
     this.init();
   }
 
@@ -13,7 +13,7 @@ class DropCraftBackground {
     this.setupEventListeners();
     this.setupContextMenus();
     this.setupAlarms();
-    console.log('[DropCraft] Background service worker initialized');
+    console.log('[ShopOpti+] Background service worker initialized');
   }
 
   setupEventListeners() {
@@ -55,10 +55,10 @@ class DropCraftBackground {
   }
 
   async onInstall() {
-    console.log('[DropCraft] Extension installed');
+    console.log('[ShopOpti+] Extension installed');
     
     await chrome.storage.local.set({
-      extensionVersion: '4.0.0',
+      extensionVersion: '4.3.9',
       installDate: new Date().toISOString(),
       settings: {
         autoInjectButtons: true,
@@ -78,15 +78,15 @@ class DropCraftBackground {
 
     // Open welcome page
     chrome.tabs.create({
-      url: `${APP_URL}/extensions/chrome?installed=true&v=4.0`
+      url: `${APP_URL}/extensions/chrome?installed=true&v=4.3.9`
     });
   }
 
   async onUpdate(previousVersion) {
-    console.log(`[DropCraft] Extension updated from ${previousVersion} to 4.0.0`);
+    console.log(`[ShopOpti+] Extension updated from ${previousVersion} to 4.3.9`);
     
     await chrome.storage.local.set({
-      extensionVersion: '4.0.0',
+      extensionVersion: '4.3.9',
       lastUpdate: new Date().toISOString()
     });
   }
@@ -94,19 +94,19 @@ class DropCraftBackground {
   setupContextMenus() {
     chrome.contextMenus.removeAll(() => {
       chrome.contextMenus.create({
-        id: 'dropcraft-import-product',
-        title: 'Importer dans Drop Craft AI',
+        id: 'shopopti-import-product',
+        title: 'Importer dans ShopOpti',
         contexts: ['page', 'link']
       });
 
       chrome.contextMenus.create({
-        id: 'dropcraft-import-reviews',
+        id: 'shopopti-import-reviews',
         title: 'Importer les avis',
         contexts: ['page']
       });
 
       chrome.contextMenus.create({
-        id: 'dropcraft-monitor-price',
+        id: 'shopopti-monitor-price',
         title: 'Surveiller le prix',
         contexts: ['page']
       });
@@ -118,8 +118,8 @@ class DropCraftBackground {
       });
 
       chrome.contextMenus.create({
-        id: 'dropcraft-open-dashboard',
-        title: 'Ouvrir Drop Craft AI',
+        id: 'shopopti-open-dashboard',
+        title: 'Ouvrir ShopOpti',
         contexts: ['page']
       });
     });
@@ -148,7 +148,7 @@ class DropCraftBackground {
   }
 
   async handleMessage(message, sender, sendResponse) {
-    console.log('[DropCraft] Message received:', message.type);
+    console.log('[ShopOpti+] Message received:', message.type);
     
     try {
       switch (message.type) {
@@ -205,17 +205,17 @@ class DropCraftBackground {
           break;
 
         case 'OPEN_BULK_IMPORT':
-          // Open bulk import page in Shopopti+
+          // Open bulk import page in ShopOpti
           chrome.tabs.create({ url: `${APP_URL}/products/import` });
           sendResponse({ success: true });
           break;
 
         default:
-          console.warn('[DropCraft] Unknown message type:', message.type);
+          console.warn('[ShopOpti+] Unknown message type:', message.type);
           sendResponse({ error: 'Unknown message type' });
       }
     } catch (error) {
-      console.error('[DropCraft] Error handling message:', error);
+      console.error('[ShopOpti+] Error handling message:', error);
       sendResponse({ error: error.message });
     }
   }
@@ -332,26 +332,26 @@ class DropCraftBackground {
         return { success: false, error: data.error || 'Erreur import' };
       }
     } catch (error) {
-      console.error('[DropCraft] Import product error:', error);
+      console.error('[ShopOpti+] Import product error:', error);
       return { success: false, error: error.message };
     }
   }
 
   async handleContextMenuClick(info, tab) {
     switch (info.menuItemId) {
-      case 'dropcraft-import-product':
+      case 'shopopti-import-product':
         await this.importFromContextMenu(info.linkUrl || tab.url);
         break;
 
-      case 'dropcraft-import-reviews':
+      case 'shopopti-import-reviews':
         await this.importReviews({});
         break;
 
-      case 'dropcraft-monitor-price':
+      case 'shopopti-monitor-price':
         await this.addToMonitoring(tab.url);
         break;
 
-      case 'dropcraft-open-dashboard':
+      case 'shopopti-open-dashboard':
         chrome.tabs.create({ url: `${APP_URL}/dashboard` });
         break;
     }

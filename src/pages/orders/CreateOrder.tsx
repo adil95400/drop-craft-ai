@@ -340,7 +340,7 @@ export default function CreateOrder() {
   return (
     <>
       <Helmet>
-        <title>Créer une Commande - DropCraft</title>
+        <title>Créer une Commande - ShopOpti</title>
         <meta name="description" content="Créez une nouvelle commande manuelle avec calculs automatiques" />
       </Helmet>
 

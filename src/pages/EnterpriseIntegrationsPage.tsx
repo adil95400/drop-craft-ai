@@ -84,7 +84,7 @@ export default function EnterpriseIntegrationsPage() {
   return (
     <>
       <Helmet>
-        <title>Intégrations Entreprise | Drop Craft AI</title>
+        <title>Intégrations Entreprise | ShopOpti</title>
         <meta name="description" content="Gérez vos intégrations ERP, CRM et systèmes d'entreprise" />
       </Helmet>
 

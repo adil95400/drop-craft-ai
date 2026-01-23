@@ -96,7 +96,7 @@ export default function ExtensionAPIPage() {
   return (
     <ChannablePageWrapper
       title="API & Tokens"
-      description="Gérez vos clés API et intégrez Drop Craft AI à vos applications"
+      description="Gérez vos clés API et intégrez ShopOpti à vos applications"
       heroImage="extensions"
       badge={{ label: "API", icon: Key }}
       actions={
@@ -113,7 +113,7 @@ export default function ExtensionAPIPage() {
               <DialogDescription>
                 {generatedKey 
                   ? "Copiez cette clé maintenant. Elle ne sera plus visible après."
-                  : "Créez une clé API pour accéder à l'API Drop Craft AI."
+                  : "Créez une clé API pour accéder à l'API ShopOpti."
                 }
               </DialogDescription>
             </DialogHeader>

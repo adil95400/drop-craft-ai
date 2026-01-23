@@ -1,4 +1,4 @@
-// Service d'intégration mobile pour Drop Craft AI
+// Service d'intégration mobile pour ShopOpti
 import { pwaService } from '@/services/pwa/PWAService';
 import { notificationService } from '@/services/notifications/NotificationService';
 

@@ -21,7 +21,7 @@ export default function AcademyPage() {
   return (
     <>
       <Helmet>
-        <title>Academy - Formation Dropshipping | Drop Craft AI</title>
+        <title>Academy - Formation Dropshipping | ShopOpti</title>
         <meta name="description" content="Formations complètes en dropshipping, e-commerce et automatisation. Cours vidéo, guides pratiques et webinars exclusifs." />
       </Helmet>
 
