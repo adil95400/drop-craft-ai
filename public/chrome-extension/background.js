@@ -1,7 +1,8 @@
-// ShopOpti+ Chrome Extension - Background Service Worker v4.3.8
+// ShopOpti+ Chrome Extension - Background Service Worker v4.3.9
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
+const VERSION = '4.3.9';
 
 class ShopOptiBackground {
   constructor() {
@@ -586,10 +587,27 @@ class ShopOptiBackground {
   async importReviews(config) {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const { extensionToken, stats } = await chrome.storage.local.get(['extensionToken', 'stats']);
 
-      // MV3 scripting args must be structured-cloneable.
-      // Some callers were passing complex objects (e.g. functions, DOM refs), which
-      // causes: "Value is unserializable".
+      if (!extensionToken) {
+        console.error('[ShopOpti+] No extension token for review import');
+        return [];
+      }
+
+      // First, try to open the reviews panel in the content script
+      try {
+        await chrome.tabs.sendMessage(tab.id, { 
+          type: 'SHOW_REVIEWS_PANEL',
+          autoExtract: config?.autoExtract || false
+        });
+        
+        console.log('[ShopOpti+] Reviews panel opened in content script');
+        return { success: true, message: 'Reviews panel opened' };
+      } catch (e) {
+        console.log('[ShopOpti+] Content script not available, using direct extraction');
+      }
+
+      // Fallback: direct extraction via scripting API
       const safeConfig = {
         maxReviews: Number(config?.maxReviews || 50) || 50,
       };
@@ -603,8 +621,6 @@ class ShopOptiBackground {
       const reviews = results[0]?.result || [];
 
       if (reviews.length > 0) {
-        const { extensionToken, stats } = await chrome.storage.local.get(['extensionToken', 'stats']);
-
         await chrome.storage.local.set({
           stats: {
             ...stats,
@@ -612,32 +628,52 @@ class ShopOptiBackground {
           }
         });
 
-        // Send to API
-        if (extensionToken) {
-          await fetch(`${API_URL}/extension-sync-realtime`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-extension-token': extensionToken
-            },
-            body: JSON.stringify({
-              action: 'import_reviews',
-              reviews
-            })
-          });
-        }
+        // Send to import-reviews edge function
+        const response = await fetch(`${API_URL}/import-reviews`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': extensionToken
+          },
+          body: JSON.stringify({
+            reviews,
+            options: {
+              translate: config?.translate ?? true,
+              targetLanguage: 'fr',
+              platform: this.detectPlatform(tab.url),
+              productUrl: tab.url
+            }
+          })
+        });
 
-        this.showNotification(
-          `${reviews.length} avis importés`,
-          'Import des avis réussi'
-        );
+        const result = await response.json();
+        
+        if (result.success) {
+          this.showNotification(
+            `${result.imported} avis importés`,
+            'Import des avis réussi'
+          );
+        }
       }
 
       return reviews;
     } catch (error) {
-      console.error('[DropCraft] Error importing reviews:', error);
+      console.error('[ShopOpti+] Error importing reviews:', error);
       return [];
     }
+  }
+
+  detectPlatform(url) {
+    if (!url) return 'unknown';
+    const hostname = new URL(url).hostname.toLowerCase();
+    
+    const platforms = ['aliexpress', 'amazon', 'ebay', 'temu', 'walmart', 'etsy', 'shein', 'cdiscount', 'shopify'];
+    for (const p of platforms) {
+      if (hostname.includes(p)) return p;
+    }
+    
+    if (hostname.includes('myshopify')) return 'shopify';
+    return 'other';
   }
 
   async importFromContextMenu(url) {
@@ -706,7 +742,7 @@ class ShopOptiBackground {
         chrome.notifications.create({
           type: 'basic',
           iconUrl: 'icons/icon48.png',
-          title: `Drop Craft AI - ${title}`,
+          title: `ShopOpti+ - ${title}`,
           message
         });
       }

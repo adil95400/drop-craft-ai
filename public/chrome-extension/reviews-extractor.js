@@ -1,49 +1,61 @@
-// Drop Craft AI - Reviews Extractor v4.1
-// Extract and filter customer reviews from product pages with auto-scroll support
+// ShopOpti+ - Reviews Extractor v4.3.9
+// Professional multi-platform review extraction with auto-scroll, filtering, and AI translation support
 
 (function() {
   'use strict';
 
-  if (window.__dropCraftReviewsLoaded) return;
-  window.__dropCraftReviewsLoaded = true;
+  if (window.__shopOptiReviewsLoaded) return;
+  window.__shopOptiReviewsLoaded = true;
 
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     MAX_REVIEWS: 200,
-    SCROLL_DELAY_MS: 800,
-    MAX_SCROLL_ATTEMPTS: 10,
+    SCROLL_DELAY_MS: 600,
+    MAX_SCROLL_ATTEMPTS: 15,
+    LOAD_MORE_DELAY: 800,
+    VERSION: '4.3.9',
     PLATFORMS: {
       'aliexpress': {
-        reviewsContainer: '.feedback-list, .product-evaluation, [class*="review"], .comet-v2-modal-body, .feedback--wrap--bDEEKp5, [class*="feedback-list"]',
+        reviewsContainer: '.feedback-list, .product-evaluation, [class*="review"], .comet-v2-modal-body, .feedback--wrap--bDEEKp5, [class*="feedback-list"], .feedback--list--dJsbH8z',
         reviewItem: '.feedback-item, .buyer-feedback, [data-pl="feedback-item"], .feedback--list--dJsbH8z .feedback--item--dj2j9tN, [class*="feedback-item"], .feedback--item, .review-item',
         author: '.user-name, .buyer-name, .feedback-author, .feedback--userName--QsU0Wf0, [class*="user-name"], [class*="userName"]',
         rating: '.star-view, .star-score, [class*="rating"], .feedback--stars--t9_W6T4, [class*="stars"], .stars',
         content: '.buyer-feedback, .feedback-content, .review-content, .feedback--content--UWfgMTD, [class*="feedback-content"], [class*="review-text"]',
         date: '.feedback-time, .review-date, .feedback--time--c_Tn30j, [class*="feedback-time"], [class*="date"]',
         images: '.feedback-images img, .review-images img, .feedback--photos--K3Gn6C1 img, [class*="feedback-photo"] img, [class*="review-image"] img',
+        videos: '.feedback-video video, [class*="video"] video',
         verified: '.buyer-verified, .verified-purchase, [class*="verified"]',
+        helpful: '.feedback-helpful, [class*="helpful"]',
+        country: '.feedback-country, [class*="country"], .user-country',
+        loadMore: '.next-btn, .comet-btn, [class*="load-more"], [class*="view-more"]',
         scrollTarget: '.feedback-list, [class*="feedback"], [class*="review"]'
       },
       'amazon': {
-        reviewsContainer: '#cm_cr-review_list, #reviewsMedley, .reviews-content, #customer-reviews',
+        reviewsContainer: '#cm_cr-review_list, #reviewsMedley, .reviews-content, #customer-reviews, [data-hook="reviews-medley"]',
         reviewItem: '[data-hook="review"], .review, .a-section.review, .review-views .review',
         author: '.a-profile-name, [data-hook="genome-widget"] span, .review-byline a',
         rating: '.review-rating span, [data-hook="review-star-rating"] span, .a-icon-star span, [class*="star-rating"]',
         content: '[data-hook="review-body"] span, .review-text span, .review-text-content span, .reviewText',
+        title: '[data-hook="review-title"] span, .review-title span',
         date: '[data-hook="review-date"], .review-date, .review-date-submissionDate',
         images: '.review-image-tile img, .review-image img, [data-hook="review-image-tile"] img, .cr-lightbox-image-thumbnail img',
-        verified: '.avp-badge, [data-hook="avp-badge"], .a-size-mini, [class*="verified"]',
+        videos: '.review-video video, [data-hook="review-video"] video',
+        verified: '.avp-badge, [data-hook="avp-badge"], .a-size-mini:contains("Verified"), [class*="verified"]',
+        helpful: '[data-hook="helpful-vote-statement"], .helpful-votes',
+        country: '.a-profile-descriptor, [data-hook="review-date"]',
+        loadMore: '#cm-cr-see-all-link, [data-hook="see-all-reviews-link"], .a-pagination-next a',
         scrollTarget: '#cm_cr-review_list, #reviewsMedley'
       },
       'ebay': {
-        reviewsContainer: '.reviews-content, .product-reviews, #rwid, [class*="review-list"]',
-        reviewItem: '.review-item, .ebay-review-section, .rvw-card, [class*="review-item"]',
-        author: '.review-item-author, .reviewer-name, .rvw-card__author, [class*="author"]',
-        rating: '.star-rating, .review-stars, .rvw-card__rating, [class*="star"]',
-        content: '.review-item-content, .rvw-card__body, [class*="review-text"], [class*="content"]',
-        date: '.review-item-date, .rvw-card__date, [class*="date"]',
-        images: '.review-images img, .rvw-card__image img',
+        reviewsContainer: '.reviews-content, .product-reviews, #rwid, [class*="review-list"], .rvw-l',
+        reviewItem: '.review-item, .ebay-review-section, .rvw-card, [class*="review-item"], .rvw',
+        author: '.review-item-author, .reviewer-name, .rvw-card__author, [class*="author"], .rvw__auth',
+        rating: '.star-rating, .review-stars, .rvw-card__rating, [class*="star"], .rvw__rat',
+        content: '.review-item-content, .rvw-card__body, [class*="review-text"], [class*="content"], .rvw__txt',
+        date: '.review-item-date, .rvw-card__date, [class*="date"], .rvw__date',
+        images: '.review-images img, .rvw-card__image img, .rvw__img img',
         verified: '.verified-purchase, [class*="verified"]',
+        loadMore: '.pagination__next, [class*="load-more"]',
         scrollTarget: '.reviews-content, #rwid'
       },
       'temu': {
@@ -54,66 +66,92 @@
         content: '[class*="review-content"], [class*="comment-content"], [class*="Content"], [class*="text"]',
         date: '[class*="date"], [class*="time"], [class*="Date"]',
         images: '[class*="review"] img, [class*="ReviewImage"] img, [class*="photo"] img',
+        videos: '[class*="video"] video',
         verified: '[class*="verified"]',
+        country: '[class*="country"], [class*="location"]',
+        loadMore: '[class*="load-more"], [class*="view-more"], button[class*="more"]',
         scrollTarget: '[class*="reviews"], [class*="comment"]'
       },
       'walmart': {
-        reviewsContainer: '[data-testid="reviews-list"], .reviews-list, #reviews-list',
-        reviewItem: '[data-testid="review-card"], .review-card, [class*="review-item"]',
+        reviewsContainer: '[data-testid="reviews-list"], .reviews-list, #reviews-list, [class*="review-list"]',
+        reviewItem: '[data-testid="review-card"], .review-card, [class*="review-item"], .review',
         author: '[data-testid="reviewer-name"], .reviewer-name, [class*="author"]',
-        rating: '[data-testid="star-rating"], .star-rating, [class*="rating"]',
-        content: '[data-testid="review-text"], .review-text, [class*="content"]',
+        rating: '[data-testid="star-rating"], .star-rating, [class*="rating"], [class*="stars"]',
+        content: '[data-testid="review-text"], .review-text, [class*="content"], .review-body',
         date: '[data-testid="review-date"], .review-date, [class*="date"]',
         images: '[data-testid="review-image"] img, .review-image img',
         verified: '[data-testid="verified-purchase"], [class*="verified"]',
+        helpful: '[data-testid="helpful-count"]',
+        loadMore: '[data-testid="load-more"], .load-more-btn',
         scrollTarget: '[data-testid="reviews-list"], .reviews-list'
       },
       'etsy': {
-        reviewsContainer: '.reviews-list, [data-region="reviews"], [class*="reviews"]',
-        reviewItem: '.review-item, [data-region="review"], [class*="review-item"]',
+        reviewsContainer: '.reviews-list, [data-region="reviews"], [class*="reviews"], .wt-grid__item-xs-12',
+        reviewItem: '.review-item, [data-region="review"], [class*="review-item"], .wt-display-flex-xs',
         author: '.shop2-review-attribution a, .reviewer-name, [class*="author"]',
-        rating: '.stars-svg, .review-stars, [class*="star"]',
-        content: '.prose, .review-text, [class*="content"]',
+        rating: '.stars-svg, .review-stars, [class*="star"], input[name="rating"]',
+        content: '.prose, .review-text, [class*="content"], .wt-text-body-01',
         date: '.review-date, [data-date], [class*="date"]',
-        images: '.listing-page-image img, .review-image img',
+        images: '.listing-page-image img, .review-image img, .wt-max-width-full',
         verified: '.verified-buyer, [class*="verified"]',
+        loadMore: '.wt-btn--small, [data-load-more]',
         scrollTarget: '.reviews-list, [data-region="reviews"]'
       },
       'shein': {
-        reviewsContainer: '[class*="reviews"], [class*="comment"], .goods-review',
-        reviewItem: '[class*="review-item"], [class*="comment-item"], .review-item',
-        author: '[class*="user-name"], [class*="nickname"]',
-        rating: '[class*="star"], [class*="rating"]',
-        content: '[class*="review-content"], [class*="text"]',
-        date: '[class*="date"], [class*="time"]',
-        images: '[class*="review"] img, [class*="photo"] img',
+        reviewsContainer: '[class*="reviews"], [class*="comment"], .goods-review, .j-expose__common-reviews',
+        reviewItem: '[class*="review-item"], [class*="comment-item"], .review-item, .j-expose__review-item',
+        author: '[class*="user-name"], [class*="nickname"], .review-user-name',
+        rating: '[class*="star"], [class*="rating"], .rate-star',
+        content: '[class*="review-content"], [class*="text"], .review-content',
+        date: '[class*="date"], [class*="time"], .review-time',
+        images: '[class*="review"] img, [class*="photo"] img, .review-img',
         verified: '[class*="verified"]',
+        country: '[class*="country"], .review-country',
+        loadMore: '[class*="load-more"], .view-more-btn',
         scrollTarget: '[class*="reviews"]'
       },
       'cdiscount': {
-        reviewsContainer: '.reviews, #product-reviews, [class*="review"]',
-        reviewItem: '.review, [class*="review-item"], .avis',
-        author: '.author, [class*="author"], .reviewer',
-        rating: '.rating, [class*="star"], .note',
-        content: '.review-text, [class*="content"], .comment',
-        date: '.date, [class*="date"]',
-        images: '.review img',
-        verified: '.verified, [class*="verified"]',
+        reviewsContainer: '.reviews, #product-reviews, [class*="review"], .avis-list',
+        reviewItem: '.review, [class*="review-item"], .avis, .avis-item',
+        author: '.author, [class*="author"], .reviewer, .avis-author',
+        rating: '.rating, [class*="star"], .note, .avis-rating',
+        content: '.review-text, [class*="content"], .comment, .avis-text',
+        date: '.date, [class*="date"], .avis-date',
+        images: '.review img, .avis-img img',
+        verified: '.verified, [class*="verified"], .achat-verifie',
+        loadMore: '.voir-plus, [class*="load-more"]',
         scrollTarget: '.reviews, #product-reviews'
+      },
+      'shopify': {
+        reviewsContainer: '.spr-reviews, .jdgm-rev__container, [class*="reviews"], .reviews-container, #shopify-product-reviews',
+        reviewItem: '.spr-review, .jdgm-rev, [class*="review-item"], .review',
+        author: '.spr-review-header-byline-author, .jdgm-rev__author, [class*="author"]',
+        rating: '.spr-starrating, .jdgm-rev__rating, [class*="star"], [class*="rating"]',
+        content: '.spr-review-content-body, .jdgm-rev__body, [class*="content"], .review-body',
+        date: '.spr-review-header-byline-date, .jdgm-rev__timestamp, [class*="date"]',
+        images: '.spr-review-image img, .jdgm-rev__media img',
+        verified: '.spr-badge-verified, .jdgm-verified, [class*="verified"]',
+        loadMore: '.spr-pagination-next, .jdgm-paginate__next, [class*="load-more"]',
+        scrollTarget: '.spr-reviews, .jdgm-rev__container'
       }
     }
   };
 
-  class DropCraftReviewsExtractor {
+  class ShopOptiReviewsExtractor {
     constructor() {
       this.platform = null;
       this.selectors = null;
       this.extractedReviews = [];
+      this.selectedReviews = new Set();
+      this.isExtracting = false;
+      this.scrollAttempts = 0;
+      this.lastReviewCount = 0;
       
       this.detectPlatform();
       if (this.platform) {
         this.injectUI();
         this.bindEvents();
+        console.log(`[ShopOpti+] Reviews Extractor v${CONFIG.VERSION} initialized for ${this.platform}`);
       }
     }
 
@@ -127,866 +165,1156 @@
           return;
         }
       }
+
+      // Check for Shopify stores
+      if (window.Shopify || document.querySelector('[data-shopify]') || hostname.includes('myshopify')) {
+        this.platform = 'shopify';
+        this.selectors = CONFIG.PLATFORMS.shopify;
+      }
     }
 
     injectUI() {
-      // Inject styles
+      // Remove existing UI
+      document.getElementById('shopopti-reviews-styles')?.remove();
+      document.getElementById('shopopti-reviews-panel')?.remove();
+
       const style = document.createElement('style');
-      style.id = 'dc-reviews-styles';
+      style.id = 'shopopti-reviews-styles';
       style.textContent = `
-        .dc-reviews-panel {
+        .shopopti-reviews-panel {
           position: fixed;
-          top: 70px;
+          top: 80px;
           right: 20px;
-          width: 380px;
-          max-height: calc(100vh - 100px);
-          background: linear-gradient(135deg, #1e1e2e 0%, #2d2d3d 100%);
-          border: 1px solid rgba(102, 126, 234, 0.3);
+          width: 400px;
+          max-height: calc(100vh - 120px);
+          background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+          border: 1px solid rgba(59, 130, 246, 0.3);
           border-radius: 16px;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-          z-index: 10001;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.1);
+          z-index: 2147483646;
           display: none;
           overflow: hidden;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
-        .dc-reviews-panel.active {
+        .shopopti-reviews-panel.active {
           display: flex;
           flex-direction: column;
+          animation: shopoptiSlideIn 0.3s ease-out;
+        }
+
+        @keyframes shopoptiSlideIn {
+          from { opacity: 0; transform: translateX(20px); }
+          to { opacity: 1; transform: translateX(0); }
         }
         
-        .dc-reviews-header {
+        .shopopti-reviews-header {
           padding: 16px 20px;
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15));
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
           align-items: center;
           justify-content: space-between;
         }
         
-        .dc-reviews-title {
+        .shopopti-reviews-title {
           color: white;
-          font-size: 16px;
-          font-weight: 600;
+          font-size: 15px;
+          font-weight: 700;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
+        }
+
+        .shopopti-reviews-title img {
+          width: 24px;
+          height: 24px;
+          border-radius: 6px;
+        }
+
+        .shopopti-reviews-badge {
+          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          color: white;
+          font-size: 10px;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-weight: 600;
         }
         
-        .dc-reviews-close {
-          background: none;
+        .shopopti-reviews-close {
+          background: rgba(255, 255, 255, 0.1);
           border: none;
-          color: #64748b;
+          color: #94a3b8;
           cursor: pointer;
-          font-size: 18px;
-          padding: 4px;
+          font-size: 16px;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
         }
         
-        .dc-reviews-close:hover {
+        .shopopti-reviews-close:hover {
+          background: rgba(239, 68, 68, 0.2);
           color: #ef4444;
         }
         
-        .dc-reviews-filters {
-          padding: 12px 20px;
-          background: rgba(0, 0, 0, 0.2);
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
+        .shopopti-reviews-filters {
+          padding: 14px 20px;
+          background: rgba(0, 0, 0, 0.3);
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
         }
         
-        .dc-reviews-filter {
+        .shopopti-reviews-filter {
           display: flex;
           align-items: center;
           gap: 6px;
           background: rgba(255, 255, 255, 0.05);
-          padding: 6px 12px;
-          border-radius: 8px;
+          padding: 8px 12px;
+          border-radius: 10px;
           color: #94a3b8;
-          font-size: 12px;
+          font-size: 11px;
+          border: 1px solid transparent;
+          transition: all 0.2s;
+        }
+
+        .shopopti-reviews-filter:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .shopopti-reviews-filter.active {
+          background: rgba(59, 130, 246, 0.15);
+          border-color: rgba(59, 130, 246, 0.5);
+          color: #60a5fa;
         }
         
-        .dc-reviews-filter input,
-        .dc-reviews-filter select {
-          background: transparent;
+        .shopopti-reviews-filter input[type="checkbox"] {
+          width: 14px;
+          height: 14px;
+          accent-color: #3b82f6;
+          cursor: pointer;
+        }
+
+        .shopopti-reviews-filter select {
+          background: rgba(15, 23, 42, 0.8);
           border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 4px;
+          border-radius: 6px;
           color: white;
           padding: 4px 8px;
-          font-size: 12px;
-          max-width: 80px;
+          font-size: 11px;
+          cursor: pointer;
+          max-width: 70px;
         }
         
-        .dc-reviews-filter select {
-          max-width: 100px;
+        .shopopti-reviews-stats {
+          padding: 14px 20px;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
         
-        .dc-reviews-filter input:focus,
-        .dc-reviews-filter select:focus {
-          outline: none;
-          border-color: #667eea;
+        .shopopti-reviews-stat {
+          text-align: center;
+          padding: 10px;
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 10px;
+          transition: all 0.2s;
+        }
+
+        .shopopti-reviews-stat:hover {
+          background: rgba(255, 255, 255, 0.06);
         }
         
-        .dc-reviews-stats {
-          padding: 12px 20px;
-          display: flex;
-          gap: 16px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .shopopti-reviews-stat-value {
+          color: white;
+          font-size: 20px;
+          font-weight: 700;
+          line-height: 1.2;
         }
+
+        .shopopti-reviews-stat-value.positive { color: #10b981; }
+        .shopopti-reviews-stat-value.warning { color: #f59e0b; }
         
-        .dc-reviews-stat {
+        .shopopti-reviews-stat-label {
+          color: #64748b;
+          font-size: 10px;
+          margin-top: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .shopopti-reviews-progress {
+          padding: 0 20px;
+          display: none;
+        }
+
+        .shopopti-reviews-progress.active {
+          display: block;
+          padding: 14px 20px;
+        }
+
+        .shopopti-reviews-progress-bar {
+          height: 6px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .shopopti-reviews-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+          border-radius: 3px;
+          transition: width 0.3s ease;
+          width: 0%;
+        }
+
+        .shopopti-reviews-progress-text {
+          color: #94a3b8;
+          font-size: 11px;
+          margin-top: 8px;
           text-align: center;
         }
         
-        .dc-reviews-stat-value {
-          color: white;
-          font-size: 18px;
-          font-weight: 700;
-        }
-        
-        .dc-reviews-stat-label {
-          color: #64748b;
-          font-size: 10px;
-          margin-top: 2px;
-        }
-        
-        .dc-reviews-list {
+        .shopopti-reviews-list {
           flex: 1;
           overflow-y: auto;
-          max-height: 400px;
-          padding: 12px 20px;
+          max-height: 350px;
+          padding: 14px 20px;
+        }
+
+        .shopopti-reviews-list::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .shopopti-reviews-list::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 3px;
+        }
+
+        .shopopti-reviews-list::-webkit-scrollbar-thumb {
+          background: rgba(59, 130, 246, 0.5);
+          border-radius: 3px;
         }
         
-        .dc-review-item {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 10px;
-          padding: 12px;
+        .shopopti-review-item {
+          background: rgba(255, 255, 255, 0.04);
+          border-radius: 12px;
+          padding: 14px;
           margin-bottom: 10px;
           cursor: pointer;
           transition: all 0.2s ease;
           border: 2px solid transparent;
+          position: relative;
         }
         
-        .dc-review-item:hover {
+        .shopopti-review-item:hover {
           background: rgba(255, 255, 255, 0.08);
+          transform: translateX(2px);
         }
         
-        .dc-review-item.selected {
-          border-color: #667eea;
-          background: rgba(102, 126, 234, 0.1);
+        .shopopti-review-item.selected {
+          border-color: #3b82f6;
+          background: rgba(59, 130, 246, 0.1);
         }
-        
-        .dc-review-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 8px;
-        }
-        
-        .dc-review-author {
-          color: white;
-          font-weight: 500;
-          font-size: 13px;
-        }
-        
-        .dc-review-rating {
-          color: #fbbf24;
-          font-size: 12px;
-        }
-        
-        .dc-review-content {
-          color: #94a3b8;
-          font-size: 12px;
-          line-height: 1.5;
-          overflow: hidden;
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-        }
-        
-        .dc-review-badges {
-          display: flex;
-          gap: 6px;
-          margin-top: 8px;
-          flex-wrap: wrap;
-        }
-        
-        .dc-review-badge {
-          background: rgba(102, 126, 234, 0.2);
-          color: #818cf8;
-          font-size: 10px;
-          padding: 2px 8px;
-          border-radius: 4px;
-        }
-        
-        .dc-review-badge.verified {
-          background: rgba(16, 185, 129, 0.2);
-          color: #10b981;
-        }
-        
-        .dc-review-badge.photos {
-          background: rgba(245, 158, 11, 0.2);
-          color: #f59e0b;
-        }
-        
-        .dc-reviews-actions {
-          padding: 16px 20px;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-          display: flex;
-          gap: 10px;
-        }
-        
-        .dc-reviews-btn {
-          flex: 1;
-          padding: 10px 16px;
-          border-radius: 8px;
-          border: none;
-          font-weight: 600;
-          font-size: 13px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        
-        .dc-reviews-btn-primary {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-        }
-        
-        .dc-reviews-btn-primary:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .dc-reviews-btn-secondary {
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-        }
-        
-        .dc-reviews-btn-secondary:hover {
-          background: rgba(255, 255, 255, 0.15);
-        }
-        
-        .dc-reviews-empty {
-          text-align: center;
-          padding: 40px 20px;
-          color: #64748b;
-        }
-        
-        .dc-reviews-checkbox {
+
+        .shopopti-review-checkbox {
           position: absolute;
-          top: 8px;
-          right: 8px;
-          width: 20px;
-          height: 20px;
-          background: rgba(30, 30, 46, 0.9);
-          border: 2px solid rgba(102, 126, 234, 0.5);
-          border-radius: 4px;
+          top: 10px;
+          right: 10px;
+          width: 22px;
+          height: 22px;
+          background: rgba(15, 23, 42, 0.9);
+          border: 2px solid rgba(59, 130, 246, 0.4);
+          border-radius: 6px;
           display: flex;
           align-items: center;
           justify-content: center;
           color: transparent;
           font-size: 12px;
+          transition: all 0.2s;
+        }
+
+        .shopopti-review-item.selected .shopopti-review-checkbox {
+          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          border-color: transparent;
+          color: white;
         }
         
-        .dc-review-item.selected .dc-reviews-checkbox {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .shopopti-review-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          padding-right: 30px;
+        }
+        
+        .shopopti-review-author {
           color: white;
+          font-weight: 600;
+          font-size: 13px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .shopopti-review-country {
+          font-size: 11px;
+          color: #64748b;
+        }
+        
+        .shopopti-review-rating {
+          color: #fbbf24;
+          font-size: 13px;
+          display: flex;
+          gap: 1px;
+        }
+        
+        .shopopti-review-content {
+          color: #cbd5e1;
+          font-size: 12px;
+          line-height: 1.6;
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          margin-bottom: 10px;
+        }
+
+        .shopopti-review-images {
+          display: flex;
+          gap: 6px;
+          margin-bottom: 10px;
+          flex-wrap: wrap;
+        }
+
+        .shopopti-review-images img {
+          width: 48px;
+          height: 48px;
+          object-fit: cover;
+          border-radius: 6px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .shopopti-review-badges {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        
+        .shopopti-review-badge {
+          background: rgba(59, 130, 246, 0.15);
+          color: #60a5fa;
+          font-size: 10px;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-weight: 500;
+        }
+        
+        .shopopti-review-badge.verified {
+          background: rgba(16, 185, 129, 0.15);
+          color: #34d399;
+        }
+        
+        .shopopti-review-badge.photos {
+          background: rgba(245, 158, 11, 0.15);
+          color: #fbbf24;
+        }
+
+        .shopopti-review-badge.helpful {
+          background: rgba(168, 85, 247, 0.15);
+          color: #c084fc;
+        }
+        
+        .shopopti-reviews-actions {
+          padding: 16px 20px;
+          background: rgba(0, 0, 0, 0.3);
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+
+        .shopopti-reviews-actions-row {
+          grid-column: 1 / -1;
+          display: flex;
+          gap: 10px;
+        }
+        
+        .shopopti-reviews-btn {
+          flex: 1;
+          padding: 12px 16px;
+          border-radius: 10px;
+          border: none;
+          font-weight: 600;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+        
+        .shopopti-reviews-btn-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          color: white;
+        }
+        
+        .shopopti-reviews-btn-primary:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .shopopti-reviews-btn-primary:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .shopopti-reviews-btn-secondary {
+          background: rgba(255, 255, 255, 0.08);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .shopopti-reviews-btn-secondary:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .shopopti-reviews-empty {
+          text-align: center;
+          padding: 50px 20px;
+          color: #64748b;
+        }
+
+        .shopopti-reviews-empty-icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+          opacity: 0.5;
+        }
+
+        .shopopti-reviews-empty-text {
+          font-size: 14px;
+          margin-bottom: 8px;
+        }
+
+        .shopopti-reviews-empty-hint {
+          font-size: 12px;
+          color: #475569;
+        }
+
+        .shopopti-reviews-options {
+          padding: 10px 20px;
+          background: rgba(0, 0, 0, 0.2);
+          display: flex;
+          gap: 16px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .shopopti-reviews-option {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #94a3b8;
+          font-size: 11px;
+        }
+
+        .shopopti-reviews-option input[type="checkbox"] {
+          accent-color: #3b82f6;
+        }
+
+        .shopopti-spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: shopoptiSpin 0.8s linear infinite;
+        }
+
+        @keyframes shopoptiSpin {
+          to { transform: rotate(360deg); }
+        }
+
+        .shopopti-toast {
+          position: fixed;
+          bottom: 100px;
+          right: 30px;
+          background: linear-gradient(145deg, #1e293b, #0f172a);
+          border: 1px solid rgba(59, 130, 246, 0.3);
+          border-radius: 12px;
+          padding: 14px 20px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+          z-index: 2147483647;
+          animation: shopoptiToastIn 0.3s ease-out;
+        }
+
+        .shopopti-toast.success { border-color: rgba(16, 185, 129, 0.5); }
+        .shopopti-toast.error { border-color: rgba(239, 68, 68, 0.5); }
+
+        .shopopti-toast-icon { font-size: 18px; }
+        .shopopti-toast-text { color: #e2e8f0; font-size: 13px; }
+
+        @keyframes shopoptiToastIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `;
       document.head.appendChild(style);
 
-      // Create panel
       const panel = document.createElement('div');
-      panel.className = 'dc-reviews-panel';
-      panel.id = 'dc-reviews-panel';
+      panel.className = 'shopopti-reviews-panel';
+      panel.id = 'shopopti-reviews-panel';
       panel.innerHTML = `
-        <div class="dc-reviews-header">
-          <div class="dc-reviews-title">
-            ⭐ Import Avis
+        <div class="shopopti-reviews-header">
+          <div class="shopopti-reviews-title">
+            <span>⭐</span>
+            <span>Import Avis</span>
+            <span class="shopopti-reviews-badge">${this.platform.toUpperCase()}</span>
           </div>
-          <button class="dc-reviews-close" id="dc-reviews-close">✕</button>
+          <button class="shopopti-reviews-close" id="shopopti-reviews-close">✕</button>
         </div>
         
-        <div class="dc-reviews-filters">
-          <div class="dc-reviews-filter">
-            <span>Note min:</span>
-            <select id="dc-reviews-min-rating">
+        <div class="shopopti-reviews-filters">
+          <div class="shopopti-reviews-filter">
+            <span>Note:</span>
+            <select id="shopopti-reviews-min-rating">
               <option value="1">1+</option>
               <option value="2">2+</option>
               <option value="3">3+</option>
               <option value="4" selected>4+</option>
-              <option value="5">5</option>
+              <option value="5">5 ⭐</option>
             </select>
           </div>
-          <div class="dc-reviews-filter">
-            <label>
-              <input type="checkbox" id="dc-reviews-photos-only">
-              Avec photos
-            </label>
+          <div class="shopopti-reviews-filter" id="shopopti-filter-photos">
+            <input type="checkbox" id="shopopti-reviews-photos-only">
+            <label for="shopopti-reviews-photos-only">📷 Photos</label>
           </div>
-          <div class="dc-reviews-filter">
-            <label>
-              <input type="checkbox" id="dc-reviews-verified-only">
-              Vérifiés
-            </label>
+          <div class="shopopti-reviews-filter" id="shopopti-filter-verified">
+            <input type="checkbox" id="shopopti-reviews-verified-only">
+            <label for="shopopti-reviews-verified-only">✓ Vérifiés</label>
+          </div>
+        </div>
+
+        <div class="shopopti-reviews-options">
+          <label class="shopopti-reviews-option">
+            <input type="checkbox" id="shopopti-reviews-translate" checked>
+            <span>🌐 Traduire en français</span>
+          </label>
+          <label class="shopopti-reviews-option">
+            <input type="checkbox" id="shopopti-reviews-auto-scroll" checked>
+            <span>📜 Auto-scroll</span>
+          </label>
+        </div>
+        
+        <div class="shopopti-reviews-stats">
+          <div class="shopopti-reviews-stat">
+            <div class="shopopti-reviews-stat-value" id="shopopti-reviews-total">0</div>
+            <div class="shopopti-reviews-stat-label">Total</div>
+          </div>
+          <div class="shopopti-reviews-stat">
+            <div class="shopopti-reviews-stat-value" id="shopopti-reviews-selected">0</div>
+            <div class="shopopti-reviews-stat-label">Sélect.</div>
+          </div>
+          <div class="shopopti-reviews-stat">
+            <div class="shopopti-reviews-stat-value" id="shopopti-reviews-avg">-</div>
+            <div class="shopopti-reviews-stat-label">Moy.</div>
+          </div>
+          <div class="shopopti-reviews-stat">
+            <div class="shopopti-reviews-stat-value" id="shopopti-reviews-photos">0</div>
+            <div class="shopopti-reviews-stat-label">Photos</div>
+          </div>
+        </div>
+
+        <div class="shopopti-reviews-progress" id="shopopti-reviews-progress">
+          <div class="shopopti-reviews-progress-bar">
+            <div class="shopopti-reviews-progress-fill" id="shopopti-reviews-progress-fill"></div>
+          </div>
+          <div class="shopopti-reviews-progress-text" id="shopopti-reviews-progress-text">Extraction en cours...</div>
+        </div>
+        
+        <div class="shopopti-reviews-list" id="shopopti-reviews-list">
+          <div class="shopopti-reviews-empty">
+            <div class="shopopti-reviews-empty-icon">🔍</div>
+            <div class="shopopti-reviews-empty-text">Prêt à extraire les avis</div>
+            <div class="shopopti-reviews-empty-hint">Cliquez sur "Extraire" pour détecter les avis de cette page</div>
           </div>
         </div>
         
-        <div class="dc-reviews-stats">
-          <div class="dc-reviews-stat">
-            <div class="dc-reviews-stat-value" id="dc-reviews-total">0</div>
-            <div class="dc-reviews-stat-label">Total</div>
-          </div>
-          <div class="dc-reviews-stat">
-            <div class="dc-reviews-stat-value" id="dc-reviews-selected">0</div>
-            <div class="dc-reviews-stat-label">Sélectionnés</div>
-          </div>
-          <div class="dc-reviews-stat">
-            <div class="dc-reviews-stat-value" id="dc-reviews-avg">-</div>
-            <div class="dc-reviews-stat-label">Note moy.</div>
-          </div>
-          <div class="dc-reviews-stat">
-            <div class="dc-reviews-stat-value" id="dc-reviews-photos">0</div>
-            <div class="dc-reviews-stat-label">Photos</div>
-          </div>
-        </div>
-        
-        <div class="dc-reviews-list" id="dc-reviews-list">
-          <div class="dc-reviews-empty">
-            Cliquez sur "Extraire" pour détecter les avis de cette page
-          </div>
-        </div>
-        
-        <div class="dc-reviews-actions">
-          <button class="dc-reviews-btn dc-reviews-btn-secondary" id="dc-reviews-extract">
+        <div class="shopopti-reviews-actions">
+          <button class="shopopti-reviews-btn shopopti-reviews-btn-secondary" id="shopopti-reviews-extract">
             🔍 Extraire
           </button>
-          <button class="dc-reviews-btn dc-reviews-btn-primary" id="dc-reviews-import">
-            📥 Importer (<span id="dc-reviews-import-count">0</span>)
+          <button class="shopopti-reviews-btn shopopti-reviews-btn-secondary" id="shopopti-reviews-select-all">
+            ☑️ Tout sélect.
           </button>
+          <div class="shopopti-reviews-actions-row">
+            <button class="shopopti-reviews-btn shopopti-reviews-btn-primary" id="shopopti-reviews-import" disabled>
+              📥 Importer (<span id="shopopti-reviews-import-count">0</span>)
+            </button>
+          </div>
         </div>
       `;
       document.body.appendChild(panel);
     }
 
     bindEvents() {
-      document.getElementById('dc-reviews-close')?.addEventListener('click', () => this.hide());
-      document.getElementById('dc-reviews-extract')?.addEventListener('click', () => this.extractReviews());
-      document.getElementById('dc-reviews-import')?.addEventListener('click', () => this.importReviews());
+      document.getElementById('shopopti-reviews-close')?.addEventListener('click', () => this.hide());
+      document.getElementById('shopopti-reviews-extract')?.addEventListener('click', () => this.startExtraction());
+      document.getElementById('shopopti-reviews-import')?.addEventListener('click', () => this.importReviews());
+      document.getElementById('shopopti-reviews-select-all')?.addEventListener('click', () => this.toggleSelectAll());
       
-      // Filter change events
-      document.getElementById('dc-reviews-min-rating')?.addEventListener('change', () => this.applyFilters());
-      document.getElementById('dc-reviews-photos-only')?.addEventListener('change', () => this.applyFilters());
-      document.getElementById('dc-reviews-verified-only')?.addEventListener('change', () => this.applyFilters());
+      // Filter changes
+      ['shopopti-reviews-min-rating', 'shopopti-reviews-photos-only', 'shopopti-reviews-verified-only'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', () => this.applyFilters());
+      });
 
-      // Listen for show command from popup/sidebar
+      // Listen for show command
       window.addEventListener('message', (event) => {
-        if (event.data.type === 'SHOW_REVIEWS_PANEL') {
+        if (event.data.type === 'SHOW_REVIEWS_PANEL' || event.data.type === 'SHOPOPTI_SHOW_REVIEWS') {
           this.show();
         }
       });
+
+      // Chrome runtime messages
+      if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+          if (message.type === 'SHOW_REVIEWS_PANEL' || message.type === 'EXTRACT_REVIEWS') {
+            this.show();
+            if (message.autoExtract) {
+              setTimeout(() => this.startExtraction(), 500);
+            }
+            sendResponse({ success: true });
+          }
+          return true;
+        });
+      }
     }
 
     show() {
-      const panel = document.getElementById('dc-reviews-panel');
-      if (panel) panel.classList.add('active');
+      const panel = document.getElementById('shopopti-reviews-panel');
+      if (panel) {
+        panel.classList.add('active');
+      }
     }
 
     hide() {
-      const panel = document.getElementById('dc-reviews-panel');
-      if (panel) panel.classList.remove('active');
+      const panel = document.getElementById('shopopti-reviews-panel');
+      if (panel) {
+        panel.classList.remove('active');
+      }
     }
 
-    extractReviews() {
-      if (!this.selectors) {
-        this.showToast('Plateforme non supportée pour l\'extraction d\'avis', 'error');
-        return;
-      }
+    async startExtraction() {
+      if (this.isExtracting) return;
+      
+      this.isExtracting = true;
+      this.extractedReviews = [];
+      this.selectedReviews.clear();
+      this.scrollAttempts = 0;
+      this.lastReviewCount = 0;
 
-      // Show loading state
-      const extractBtn = document.getElementById('dc-reviews-extract');
+      const extractBtn = document.getElementById('shopopti-reviews-extract');
       if (extractBtn) {
-        extractBtn.textContent = '⏳ Extraction...';
+        extractBtn.innerHTML = '<span class="shopopti-spinner"></span> Extraction...';
         extractBtn.disabled = true;
       }
 
-      // Start extraction with auto-scroll
-      this.extractWithAutoScroll().then(reviews => {
-        this.extractedReviews = reviews;
-        this.applyFilters();
-        
-        if (extractBtn) {
-          extractBtn.textContent = '🔍 Extraire';
-          extractBtn.disabled = false;
-        }
-        
-        if (reviews.length > 0) {
-          this.showToast(`${reviews.length} avis détectés`, 'success');
-        } else {
-          this.showToast('Aucun avis trouvé - faites défiler jusqu\'à la section avis', 'warning');
-        }
-      });
-    }
+      this.showProgress(true);
+      this.updateProgress(0, 'Initialisation...');
 
-    async extractWithAutoScroll() {
-      const reviews = [];
-      let scrollAttempts = 0;
-      let lastReviewCount = 0;
-      
-      // Try to find and scroll to reviews section first
-      const reviewsSection = document.querySelector(this.selectors.scrollTarget || this.selectors.reviewsContainer);
-      if (reviewsSection) {
-        reviewsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        await this.sleep(500);
+      const autoScroll = document.getElementById('shopopti-reviews-auto-scroll')?.checked ?? true;
+
+      try {
+        if (autoScroll) {
+          await this.autoScrollAndExtract();
+        } else {
+          this.extractVisibleReviews();
+        }
+      } catch (error) {
+        console.error('[ShopOpti+] Extraction error:', error);
+        this.showToast('Erreur lors de l\'extraction', 'error');
       }
 
-      // Extract with progressive scrolling
-      while (scrollAttempts < CONFIG.MAX_SCROLL_ATTEMPTS) {
+      this.isExtracting = false;
+      this.showProgress(false);
+
+      if (extractBtn) {
+        extractBtn.innerHTML = '🔍 Extraire';
+        extractBtn.disabled = false;
+      }
+
+      this.applyFilters();
+      this.showToast(`${this.extractedReviews.length} avis extraits`, 'success');
+    }
+
+    async autoScrollAndExtract() {
+      const scrollTarget = document.querySelector(this.selectors.scrollTarget) || window;
+      const maxScrollAttempts = CONFIG.MAX_SCROLL_ATTEMPTS;
+      
+      while (this.scrollAttempts < maxScrollAttempts && this.extractedReviews.length < CONFIG.MAX_REVIEWS) {
         // Extract current visible reviews
-        const currentReviews = this.extractVisibleReviews();
+        this.extractVisibleReviews();
         
-        // Merge new reviews (deduplicate by content hash)
-        for (const review of currentReviews) {
-          const hash = this.hashReview(review);
-          if (!reviews.find(r => this.hashReview(r) === hash)) {
-            reviews.push(review);
-          }
-        }
+        const progress = Math.min((this.extractedReviews.length / CONFIG.MAX_REVIEWS) * 100, 95);
+        this.updateProgress(progress, `${this.extractedReviews.length} avis trouvés...`);
 
         // Check if we got new reviews
-        if (reviews.length === lastReviewCount) {
-          // No new reviews, try clicking "load more" button
-          const loadMoreClicked = await this.tryClickLoadMore();
-          if (!loadMoreClicked) {
-            break; // No more reviews to load
+        if (this.extractedReviews.length === this.lastReviewCount) {
+          // Try clicking "Load More" button
+          const loadMoreBtn = document.querySelector(this.selectors.loadMore);
+          if (loadMoreBtn && !loadMoreBtn.disabled) {
+            loadMoreBtn.click();
+            await this.sleep(CONFIG.LOAD_MORE_DELAY);
           }
         }
-        
-        lastReviewCount = reviews.length;
-        
-        // Scroll down to load more
-        const scrollContainer = document.querySelector(this.selectors.scrollTarget) || window;
-        if (scrollContainer === window) {
-          window.scrollBy({ top: 500, behavior: 'smooth' });
+
+        this.lastReviewCount = this.extractedReviews.length;
+
+        // Scroll down
+        if (scrollTarget === window) {
+          window.scrollBy({ top: 600, behavior: 'smooth' });
         } else {
-          scrollContainer.scrollBy({ top: 300, behavior: 'smooth' });
+          scrollTarget.scrollTop += 400;
         }
-        
+
         await this.sleep(CONFIG.SCROLL_DELAY_MS);
-        scrollAttempts++;
-        
-        // Stop if we have enough reviews
-        if (reviews.length >= CONFIG.MAX_REVIEWS) break;
+        this.scrollAttempts++;
       }
 
-      return reviews.slice(0, CONFIG.MAX_REVIEWS);
-    }
-
-    async tryClickLoadMore() {
-      const loadMoreSelectors = [
-        '[class*="load-more"]', '[class*="show-more"]', '[class*="voir-plus"]',
-        'button[class*="more"]', 'a[class*="more"]', '.pagination-next',
-        '[data-action="load-more"]', '.see-more', '.btn-load-more'
-      ];
-
-      for (const sel of loadMoreSelectors) {
-        const btn = document.querySelector(sel);
-        if (btn && btn.offsetParent !== null) { // Check if visible
-          btn.click();
-          await this.sleep(CONFIG.SCROLL_DELAY_MS * 2);
-          return true;
-        }
-      }
-      return false;
-    }
-
-    hashReview(review) {
-      return (review.content || '').substring(0, 50) + (review.author || '');
-    }
-
-    sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+      this.updateProgress(100, 'Extraction terminée!');
     }
 
     extractVisibleReviews() {
-      const reviews = [];
-
-      // Special handling for AliExpress - reviews are often in a modal or lazy-loaded
-      if (this.platform === 'aliexpress') {
-        // Try to find reviews in the feedback section
-        const feedbackSelectors = [
-          '.feedback--list--dJsbH8z .feedback--item--dj2j9tN',
-          '.feedback--wrap--bDEEKp5 .feedback-item',
-          '.comet-v2-modal-body .feedback-item',
-          '.product-evaluation .buyer-feedback',
-          '[data-pl="feedback-list"] > div',
-          '.feedback-list-wrap .feedback-item',
-          '.review-list .review-item',
-          '[class*="feedback-item"]',
-          '[class*="review-item"]'
-        ];
-        
-        for (const selector of feedbackSelectors) {
-          const items = document.querySelectorAll(selector);
-          if (items.length > 0) {
-            console.log('[Reviews] Found AliExpress reviews with selector:', selector, items.length);
-            items.forEach((item, index) => {
-              if (reviews.length >= CONFIG.MAX_REVIEWS) return;
-              const review = this.parseAliExpressReview(item, index);
-              if (review && review.content && review.content.length > 5) {
-                reviews.push(review);
-              }
-            });
-            break;
-          }
-        }
-        
-        // If no reviews found in DOM, show hint
-        if (reviews.length === 0) {
-          console.log('[Reviews] No AliExpress reviews found in DOM - user may need to scroll to reviews section');
-        }
-      } else {
-        // Generic extraction for other platforms
-        const reviewItems = document.querySelectorAll(this.selectors.reviewItem);
-        console.log('[Reviews] Found', reviewItems.length, 'review items with selector:', this.selectors.reviewItem);
-
-        reviewItems.forEach((item, index) => {
-          if (reviews.length >= CONFIG.MAX_REVIEWS) return;
-          const review = this.parseReviewItem(item, index);
-          if (review && review.content && review.content.length > 5) {
-            reviews.push(review);
-          }
-        });
-      }
-
-      return reviews;
-    }
-
-    parseAliExpressReview(item, index) {
-      const getText = (selector) => {
-        const el = item.querySelector(selector);
-        return el ? el.textContent.trim() : '';
-      };
-
-      const getImages = () => {
-        const imgs = item.querySelectorAll('img[src*="feedback"], img[src*="review"], .feedback--photos--K3Gn6C1 img');
-        return Array.from(imgs).map(img => img.src || img.dataset.src).filter(Boolean);
-      };
-
-      const parseRating = () => {
-        // AliExpress uses star elements
-        const starContainer = item.querySelector('.feedback--stars--t9_W6T4, .star-view, [class*="stars"]');
-        if (starContainer) {
-          const fullStars = starContainer.querySelectorAll('.comet-icon-starreviewfilled, [class*="full"], .star-on');
-          return fullStars.length || 5;
-        }
-        return 5;
-      };
-
-      // Try multiple selectors for content
-      const contentSelectors = [
-        '.feedback--content--UWfgMTD',
-        '.buyer-feedback span',
-        '.feedback-content',
-        '.review-content'
-      ];
+      const reviewElements = document.querySelectorAll(this.selectors.reviewItem);
       
-      let contentText = '';
-      for (const sel of contentSelectors) {
-        const el = item.querySelector(sel);
-        if (el) {
-          contentText = el.textContent.trim();
-          if (contentText.length > 5) break;
+      reviewElements.forEach((element, index) => {
+        const reviewId = `review_${this.platform}_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Skip if already extracted (check by content hash)
+        const contentEl = element.querySelector(this.selectors.content);
+        const content = contentEl?.textContent?.trim() || '';
+        if (!content || this.extractedReviews.some(r => r.content === content)) {
+          return;
         }
-      }
 
-      // Author
-      const authorSelectors = ['.feedback--userName--QsU0Wf0', '.user-name', '.buyer-name'];
-      let authorText = '';
-      for (const sel of authorSelectors) {
-        authorText = getText(sel);
-        if (authorText) break;
-      }
+        // Extract rating
+        const ratingEl = element.querySelector(this.selectors.rating);
+        let rating = this.extractRating(ratingEl);
 
-      // Date
-      const dateSelectors = ['.feedback--time--c_Tn30j', '.feedback-time', '.review-date'];
-      let dateText = '';
-      for (const sel of dateSelectors) {
-        dateText = getText(sel);
-        if (dateText) break;
-      }
+        // Extract author
+        const authorEl = element.querySelector(this.selectors.author);
+        const author = authorEl?.textContent?.trim() || 'Anonymous';
 
-      const images = getImages();
+        // Extract date
+        const dateEl = element.querySelector(this.selectors.date);
+        const dateText = dateEl?.textContent?.trim() || '';
+        const date = this.parseDate(dateText);
 
-      return {
-        id: `review_${index}_${Date.now()}`,
-        author: authorText || 'Client AliExpress',
-        rating: parseRating(),
-        content: contentText,
-        date: dateText,
-        images: images,
-        verified: true,
-        selected: true,
-        platform: this.platform
-      };
+        // Extract images
+        const imageEls = element.querySelectorAll(this.selectors.images);
+        const images = Array.from(imageEls).map(img => {
+          const src = img.getAttribute('src') || img.getAttribute('data-src');
+          return this.normalizeImageUrl(src);
+        }).filter(Boolean);
+
+        // Extract videos
+        const videoEls = element.querySelectorAll(this.selectors.videos || 'video');
+        const videos = Array.from(videoEls).map(vid => vid.getAttribute('src')).filter(Boolean);
+
+        // Check verified
+        const verifiedEl = element.querySelector(this.selectors.verified);
+        const verified = !!verifiedEl;
+
+        // Extract helpful count
+        const helpfulEl = element.querySelector(this.selectors.helpful);
+        const helpfulText = helpfulEl?.textContent?.trim() || '';
+        const helpfulMatch = helpfulText.match(/(\d+)/);
+        const helpfulCount = helpfulMatch ? parseInt(helpfulMatch[1]) : 0;
+
+        // Extract country
+        const countryEl = element.querySelector(this.selectors.country);
+        const country = this.extractCountry(countryEl?.textContent || dateText);
+
+        // Extract title (Amazon specific)
+        const titleEl = element.querySelector(this.selectors.title);
+        const title = titleEl?.textContent?.trim() || '';
+
+        const review = {
+          id: reviewId,
+          platform: this.platform,
+          author,
+          rating,
+          title,
+          content,
+          date,
+          dateRaw: dateText,
+          images,
+          videos,
+          verified,
+          helpfulCount,
+          country,
+          url: window.location.href,
+          extractedAt: new Date().toISOString()
+        };
+
+        this.extractedReviews.push(review);
+      });
     }
 
-    parseReviewItem(item, index) {
-      const getText = (selector) => {
-        const el = item.querySelector(selector);
-        return el ? el.textContent.trim() : '';
-      };
+    extractRating(element) {
+      if (!element) return null;
 
-      const getImages = (selector) => {
-        const imgs = item.querySelectorAll(selector);
-        return Array.from(imgs).map(img => img.src || img.dataset.src).filter(Boolean);
-      };
+      // Try aria-label first
+      const ariaLabel = element.getAttribute('aria-label');
+      if (ariaLabel) {
+        const match = ariaLabel.match(/(\d+(?:\.\d+)?)/);
+        if (match) return parseFloat(match[1]);
+      }
 
-      const parseRating = (text) => {
-        if (!text) return 5;
-        const match = text.match(/[\d.]+/);
-        if (match) {
-          const rating = parseFloat(match[0]);
-          return rating > 5 ? rating / 20 : rating; // Handle percentage ratings
+      // Try data attributes
+      const dataRating = element.getAttribute('data-rating') || element.getAttribute('data-value');
+      if (dataRating) return parseFloat(dataRating);
+
+      // Try text content
+      const text = element.textContent || '';
+      const textMatch = text.match(/(\d+(?:\.\d+)?)/);
+      if (textMatch) return parseFloat(textMatch[1]);
+
+      // Count star icons
+      const starIcons = element.querySelectorAll('[class*="star"][class*="full"], [class*="filled"], .a-icon-star');
+      if (starIcons.length > 0) return starIcons.length;
+
+      // Try style width (for progress bar style ratings)
+      const style = element.getAttribute('style');
+      if (style) {
+        const widthMatch = style.match(/width:\s*(\d+(?:\.\d+)?)/);
+        if (widthMatch) return Math.round(parseFloat(widthMatch[1]) / 20);
+      }
+
+      return null;
+    }
+
+    parseDate(dateText) {
+      if (!dateText) return new Date().toISOString();
+
+      // Common date patterns
+      const patterns = [
+        /(\d{1,2})\s*(jan|fev|mar|avr|mai|jun|jul|aou|sep|oct|nov|dec)/i,
+        /(\d{4})-(\d{2})-(\d{2})/,
+        /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/,
+        /(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2}),?\s*(\d{4})?/i
+      ];
+
+      try {
+        const parsed = new Date(dateText);
+        if (!isNaN(parsed.getTime())) {
+          return parsed.toISOString();
         }
-        // Count stars
-        const stars = text.match(/★|⭐/g);
-        return stars ? stars.length : 5;
+      } catch (e) {}
+
+      return new Date().toISOString();
+    }
+
+    extractCountry(text) {
+      const countries = {
+        'france': '🇫🇷 France',
+        'united states': '🇺🇸 USA',
+        'germany': '🇩🇪 Allemagne',
+        'spain': '🇪🇸 Espagne',
+        'italy': '🇮🇹 Italie',
+        'uk': '🇬🇧 UK',
+        'united kingdom': '🇬🇧 UK',
+        'canada': '🇨🇦 Canada',
+        'australia': '🇦🇺 Australie',
+        'china': '🇨🇳 Chine',
+        'japan': '🇯🇵 Japon',
+        'brazil': '🇧🇷 Brésil'
       };
 
-      const authorText = getText(this.selectors.author);
-      const ratingText = getText(this.selectors.rating);
-      const contentText = getText(this.selectors.content);
-      const dateText = getText(this.selectors.date);
-      const images = getImages(this.selectors.images);
-      const isVerified = !!item.querySelector(this.selectors.verified);
+      const textLower = (text || '').toLowerCase();
+      for (const [key, value] of Object.entries(countries)) {
+        if (textLower.includes(key)) return value;
+      }
 
-      return {
-        id: `review_${index}_${Date.now()}`,
-        author: authorText || 'Client',
-        rating: parseRating(ratingText),
-        content: contentText,
-        date: dateText,
-        images: images,
-        verified: isVerified,
-        selected: true,
-        platform: this.platform
-      };
+      return null;
+    }
+
+    normalizeImageUrl(url) {
+      if (!url) return null;
+
+      // Remove size transforms for high-res
+      url = url.replace(/_\d+x\d+\./g, '.')
+               .replace(/\._[A-Z]+_\d+/g, '')
+               .replace(/\?.*$/, '');
+
+      // Ensure https
+      if (url.startsWith('//')) {
+        url = 'https:' + url;
+      }
+
+      return url;
     }
 
     applyFilters() {
-      const minRating = parseInt(document.getElementById('dc-reviews-min-rating')?.value || '1');
-      const photosOnly = document.getElementById('dc-reviews-photos-only')?.checked || false;
-      const verifiedOnly = document.getElementById('dc-reviews-verified-only')?.checked || false;
+      const minRating = parseInt(document.getElementById('shopopti-reviews-min-rating')?.value) || 1;
+      const photosOnly = document.getElementById('shopopti-reviews-photos-only')?.checked || false;
+      const verifiedOnly = document.getElementById('shopopti-reviews-verified-only')?.checked || false;
 
-      const filtered = this.extractedReviews.filter(review => {
-        if (review.rating < minRating) return false;
+      // Update filter button states
+      document.getElementById('shopopti-filter-photos')?.classList.toggle('active', photosOnly);
+      document.getElementById('shopopti-filter-verified')?.classList.toggle('active', verifiedOnly);
+
+      const filteredReviews = this.extractedReviews.filter(review => {
+        if (review.rating !== null && review.rating < minRating) return false;
         if (photosOnly && (!review.images || review.images.length === 0)) return false;
         if (verifiedOnly && !review.verified) return false;
         return true;
       });
 
-      this.renderReviews(filtered);
-      this.updateStats(filtered);
+      this.renderReviews(filteredReviews);
+      this.updateStats(filteredReviews);
     }
 
     renderReviews(reviews) {
-      const list = document.getElementById('dc-reviews-list');
+      const list = document.getElementById('shopopti-reviews-list');
       if (!list) return;
 
       if (reviews.length === 0) {
-        list.innerHTML = '<div class="dc-reviews-empty">Aucun avis correspondant aux filtres</div>';
+        list.innerHTML = `
+          <div class="shopopti-reviews-empty">
+            <div class="shopopti-reviews-empty-icon">${this.extractedReviews.length > 0 ? '🔍' : '📭'}</div>
+            <div class="shopopti-reviews-empty-text">${this.extractedReviews.length > 0 ? 'Aucun avis ne correspond aux filtres' : 'Aucun avis extrait'}</div>
+            <div class="shopopti-reviews-empty-hint">${this.extractedReviews.length > 0 ? 'Modifiez les filtres pour voir plus d\'avis' : 'Cliquez sur "Extraire" pour commencer'}</div>
+          </div>
+        `;
         return;
       }
 
-      list.innerHTML = reviews.map((review, idx) => `
-        <div class="dc-review-item ${review.selected ? 'selected' : ''}" data-id="${review.id}">
-          <div class="dc-reviews-checkbox">✓</div>
-          <div class="dc-review-header">
-            <span class="dc-review-author">${this.escapeHtml(review.author)}</span>
-            <span class="dc-review-rating">${'★'.repeat(Math.floor(review.rating))}${'☆'.repeat(5 - Math.floor(review.rating))}</span>
+      list.innerHTML = reviews.slice(0, 50).map(review => `
+        <div class="shopopti-review-item ${this.selectedReviews.has(review.id) ? 'selected' : ''}" data-id="${review.id}">
+          <div class="shopopti-review-checkbox">✓</div>
+          <div class="shopopti-review-header">
+            <div class="shopopti-review-author">
+              ${review.author}
+              ${review.country ? `<span class="shopopti-review-country">${review.country}</span>` : ''}
+            </div>
+            <div class="shopopti-review-rating">
+              ${'★'.repeat(Math.floor(review.rating || 0))}${'☆'.repeat(5 - Math.floor(review.rating || 0))}
+            </div>
           </div>
-          <div class="dc-review-content">${this.escapeHtml(review.content.substring(0, 200))}${review.content.length > 200 ? '...' : ''}</div>
-          <div class="dc-review-badges">
-            ${review.verified ? '<span class="dc-review-badge verified">✓ Vérifié</span>' : ''}
-            ${review.images?.length > 0 ? `<span class="dc-review-badge photos">📷 ${review.images.length} photos</span>` : ''}
-            ${review.date ? `<span class="dc-review-badge">${review.date}</span>` : ''}
+          ${review.title ? `<div style="color: #e2e8f0; font-weight: 600; font-size: 12px; margin-bottom: 6px;">${review.title}</div>` : ''}
+          <div class="shopopti-review-content">${review.content}</div>
+          ${review.images?.length > 0 ? `
+            <div class="shopopti-review-images">
+              ${review.images.slice(0, 4).map(img => `<img src="${img}" alt="Review image" loading="lazy">`).join('')}
+              ${review.images.length > 4 ? `<span style="color: #64748b; font-size: 11px; align-self: center;">+${review.images.length - 4}</span>` : ''}
+            </div>
+          ` : ''}
+          <div class="shopopti-review-badges">
+            ${review.verified ? '<span class="shopopti-review-badge verified">✓ Vérifié</span>' : ''}
+            ${review.images?.length > 0 ? `<span class="shopopti-review-badge photos">📷 ${review.images.length}</span>` : ''}
+            ${review.helpfulCount > 0 ? `<span class="shopopti-review-badge helpful">👍 ${review.helpfulCount}</span>` : ''}
+            ${review.dateRaw ? `<span class="shopopti-review-badge">${review.dateRaw.slice(0, 20)}</span>` : ''}
           </div>
         </div>
       `).join('');
 
       // Bind click events
-      list.querySelectorAll('.dc-review-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const id = item.dataset.id;
-          const review = this.extractedReviews.find(r => r.id === id);
-          if (review) {
-            review.selected = !review.selected;
-            item.classList.toggle('selected', review.selected);
-            this.updateStats(reviews);
-          }
-        });
+      list.querySelectorAll('.shopopti-review-item').forEach(item => {
+        item.addEventListener('click', () => this.toggleReviewSelection(item.dataset.id));
       });
+    }
+
+    toggleReviewSelection(reviewId) {
+      if (this.selectedReviews.has(reviewId)) {
+        this.selectedReviews.delete(reviewId);
+      } else {
+        this.selectedReviews.add(reviewId);
+      }
+
+      // Update UI
+      const item = document.querySelector(`.shopopti-review-item[data-id="${reviewId}"]`);
+      item?.classList.toggle('selected', this.selectedReviews.has(reviewId));
+
+      this.updateSelectionCount();
+    }
+
+    toggleSelectAll() {
+      const btn = document.getElementById('shopopti-reviews-select-all');
+      const allSelected = this.selectedReviews.size === this.extractedReviews.length;
+
+      if (allSelected) {
+        this.selectedReviews.clear();
+        if (btn) btn.innerHTML = '☑️ Tout sélect.';
+      } else {
+        this.extractedReviews.forEach(r => this.selectedReviews.add(r.id));
+        if (btn) btn.innerHTML = '☐ Désélect.';
+      }
+
+      document.querySelectorAll('.shopopti-review-item').forEach(item => {
+        item.classList.toggle('selected', this.selectedReviews.has(item.dataset.id));
+      });
+
+      this.updateSelectionCount();
+    }
+
+    updateSelectionCount() {
+      const count = this.selectedReviews.size;
+      document.getElementById('shopopti-reviews-selected').textContent = count;
+      document.getElementById('shopopti-reviews-import-count').textContent = count;
+      
+      const importBtn = document.getElementById('shopopti-reviews-import');
+      if (importBtn) {
+        importBtn.disabled = count === 0;
+      }
     }
 
     updateStats(reviews) {
-      const selected = reviews.filter(r => r.selected);
-      const withPhotos = reviews.filter(r => r.images?.length > 0);
-      const avgRating = reviews.length > 0 
-        ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+      const total = reviews.length;
+      const avgRating = total > 0 
+        ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / total).toFixed(1)
         : '-';
+      const photosCount = reviews.filter(r => r.images?.length > 0).length;
 
-      document.getElementById('dc-reviews-total').textContent = reviews.length;
-      document.getElementById('dc-reviews-selected').textContent = selected.length;
-      document.getElementById('dc-reviews-avg').textContent = avgRating;
-      document.getElementById('dc-reviews-photos').textContent = withPhotos.length;
-      document.getElementById('dc-reviews-import-count').textContent = selected.length;
+      document.getElementById('shopopti-reviews-total').textContent = total;
+      document.getElementById('shopopti-reviews-avg').textContent = avgRating;
+      document.getElementById('shopopti-reviews-photos').textContent = photosCount;
+
+      // Color coding for average
+      const avgEl = document.getElementById('shopopti-reviews-avg');
+      if (avgEl) {
+        avgEl.classList.remove('positive', 'warning');
+        if (avgRating >= 4) avgEl.classList.add('positive');
+        else if (avgRating >= 3 && avgRating < 4) avgEl.classList.add('warning');
+      }
+
+      this.updateSelectionCount();
+    }
+
+    showProgress(show) {
+      const progress = document.getElementById('shopopti-reviews-progress');
+      if (progress) {
+        progress.classList.toggle('active', show);
+      }
+    }
+
+    updateProgress(percent, text) {
+      const fill = document.getElementById('shopopti-reviews-progress-fill');
+      const textEl = document.getElementById('shopopti-reviews-progress-text');
+      
+      if (fill) fill.style.width = `${percent}%`;
+      if (textEl) textEl.textContent = text;
     }
 
     async importReviews() {
-      const selectedReviews = this.extractedReviews.filter(r => r.selected);
-      
-      if (selectedReviews.length === 0) {
-        this.showToast('Aucun avis sélectionné', 'warning');
+      if (this.selectedReviews.size === 0) {
+        this.showToast('Sélectionnez des avis à importer', 'error');
         return;
       }
 
-      // First, we need to extract reviews if not already done
-      if (this.extractedReviews.length === 0) {
-        this.extractReviews();
-        if (this.extractedReviews.length === 0) {
-          this.showToast('Aucun avis détecté - essayez d\'abord le bouton Extraire', 'warning');
-          return;
-        }
+      const importBtn = document.getElementById('shopopti-reviews-import');
+      if (importBtn) {
+        importBtn.innerHTML = '<span class="shopopti-spinner"></span> Import...';
+        importBtn.disabled = true;
       }
-
-      this.showToast('Import en cours...', 'info');
 
       try {
-        const result = await this.sendReviewsToAPI(selectedReviews);
-        if (result.success) {
-          this.showToast(`✓ ${result.imported || selectedReviews.length} avis importés!`, 'success');
-          this.hide();
-        } else if (result.upgrade_required) {
-          this.showToast(`⚠️ Upgrade requis: ${result.error}`, 'warning');
-        } else {
-          throw new Error(result.error || 'Erreur inconnue');
+        const reviewsToImport = this.extractedReviews.filter(r => this.selectedReviews.has(r.id));
+        const translate = document.getElementById('shopopti-reviews-translate')?.checked ?? true;
+
+        // Get extension token
+        const storage = await chrome.storage.local.get(['extensionToken']);
+        const token = storage.extensionToken;
+
+        if (!token) {
+          this.showToast('Connectez-vous à ShopOpti+ d\'abord', 'error');
+          return;
         }
-      } catch (error) {
-        console.error('[Reviews] Import error:', error);
-        this.showToast(`Erreur: ${error.message || 'Erreur lors de l\'import'}`, 'error');
-      }
-    }
 
-    async sendReviewsToAPI(reviews) {
-      return new Promise((resolve, reject) => {
-        if (typeof chrome !== 'undefined' && chrome.storage) {
-          chrome.storage.local.get(['extensionToken'], async (result) => {
-            if (!result.extensionToken) {
-              reject(new Error('Non connecté - veuillez vous reconnecter via la sidebar'));
-              return;
+        const response = await fetch(`${CONFIG.API_URL}/import-reviews`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': token
+          },
+          body: JSON.stringify({
+            reviews: reviewsToImport,
+            options: {
+              translate,
+              targetLanguage: 'fr',
+              platform: this.platform,
+              productUrl: window.location.href
             }
+          })
+        });
 
-            try {
-              // Get current product URL to associate reviews
-              const currentUrl = window.location.href;
-              const productIdMatch = currentUrl.match(/\/item\/(\d+)|\/dp\/([A-Z0-9]+)|\/product\/(\d+)|\/i\/(\d+)/i);
-              const externalProductId = productIdMatch ? (productIdMatch[1] || productIdMatch[2] || productIdMatch[3] || productIdMatch[4]) : null;
+        const result = await response.json();
 
-              // Use extension-sync-realtime with reviews action since extension-import-reviews requires productId
-              const response = await fetch(`${CONFIG.API_URL}/extension-sync-realtime`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'x-extension-token': result.extensionToken
-                },
-                body: JSON.stringify({
-                  action: 'import_products',
-                  products: [{
-                    title: document.title || 'Produit avec avis',
-                    name: document.title || 'Produit avec avis',
-                    price: 0,
-                    url: currentUrl,
-                    source: 'reviews_import',
-                    platform: this.platform || 'unknown',
-                    externalProductId: externalProductId,
-                    reviews: reviews.map(r => ({
-                      author: r.author,
-                      rating: r.rating,
-                      text: r.content,
-                      date: r.date,
-                      images: r.images || [],
-                      verified: r.verified
-                    }))
-                  }]
-                })
-              });
-
-              if (response.ok) {
-                const data = await response.json();
-                if (data.success || data.imported > 0) {
-                  resolve({ 
-                    success: true, 
-                    imported: reviews.length,
-                    message: `${reviews.length} avis importés avec le produit`
-                  });
-                } else {
-                  reject(new Error(data.error || data.errors?.[0]?.error || 'Erreur d\'import'));
-                }
-              } else {
-                const errorData = await response.json().catch(() => ({}));
-                reject(new Error(errorData.error || `Erreur HTTP ${response.status}`));
-              }
-            } catch (error) {
-              console.error('[Reviews] API call error:', error);
-              reject(error);
+        if (response.ok && result.success) {
+          this.showToast(`${result.imported || reviewsToImport.length} avis importés!`, 'success');
+          
+          // Update stats in extension storage
+          const stats = (await chrome.storage.local.get(['stats'])).stats || {};
+          await chrome.storage.local.set({
+            stats: {
+              ...stats,
+              reviews: (stats.reviews || 0) + reviewsToImport.length
             }
           });
-        } else {
-          reject(new Error('Chrome API not available - extension context error'));
-        }
-      });
-    }
 
-    escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+          // Clear selection
+          this.selectedReviews.clear();
+          this.updateSelectionCount();
+          
+          // Close panel after success
+          setTimeout(() => this.hide(), 1500);
+        } else {
+          throw new Error(result.error || 'Échec de l\'import');
+        }
+      } catch (error) {
+        console.error('[ShopOpti+] Import error:', error);
+        this.showToast(`Erreur: ${error.message}`, 'error');
+      } finally {
+        if (importBtn) {
+          importBtn.innerHTML = `📥 Importer (<span id="shopopti-reviews-import-count">${this.selectedReviews.size}</span>)`;
+          importBtn.disabled = this.selectedReviews.size === 0;
+        }
+      }
     }
 
     showToast(message, type = 'info') {
-      const colors = {
-        success: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        error: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-        warning: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-        info: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      };
+      // Remove existing
+      document.querySelectorAll('.shopopti-toast').forEach(t => t.remove());
 
       const toast = document.createElement('div');
-      toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${colors[type]};
-        color: white;
-        padding: 12px 24px;
-        border-radius: 10px;
-        font-weight: 500;
-        font-size: 14px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        z-index: 100002;
-        animation: dc-toast-in 0.3s ease;
+      toast.className = `shopopti-toast ${type}`;
+      toast.innerHTML = `
+        <span class="shopopti-toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+        <span class="shopopti-toast-text">${message}</span>
       `;
-      toast.textContent = message;
-
       document.body.appendChild(toast);
 
-      setTimeout(() => {
-        toast.style.animation = 'dc-toast-in 0.3s ease reverse';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
   }
 
   // Initialize
-  new DropCraftReviewsExtractor();
+  const extractor = new ShopOptiReviewsExtractor();
+
+  // Expose for external access
+  window.ShopOptiReviewsExtractor = extractor;
 })();
