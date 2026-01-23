@@ -15,6 +15,39 @@ class ShopOptiPopup {
     this.APP_URL = 'https://shopopti.io';
   }
 
+  // Ensure the content script is available on the active tab (fixes: "Receiving end does not exist")
+  async ensureContentScript(tabId) {
+    // 1) Try ping
+    try {
+      const ping = await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+      if (ping?.success) return true;
+    } catch (_e) {
+      // continue to inject
+    }
+
+    // 2) Inject packaged content script + css (requires permissions: scripting)
+    try {
+      await chrome.scripting.insertCSS({ target: { tabId }, files: ['content.css'] });
+    } catch (_e) {
+      // ignore (may already be injected)
+    }
+
+    try {
+      await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
+    } catch (e) {
+      console.error('[ShopOpti+] Failed to inject content script:', e);
+      return false;
+    }
+
+    // 3) Re-ping
+    try {
+      const ping = await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+      return !!ping?.success;
+    } catch (_e) {
+      return false;
+    }
+  }
+
   async init() {
     await this.loadStoredData();
     await this.checkConnection();
@@ -861,6 +894,17 @@ class ShopOptiPopup {
     try {
       // Send message to content script to get all product URLs
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      if (!tab?.id) {
+        this.showToast('Impossible de détecter l’onglet actif', 'error');
+        return;
+      }
+
+      const ok = await this.ensureContentScript(tab.id);
+      if (!ok) {
+        this.showToast('Impossible de charger le module d’import sur cette page (rechargez la page puis réessayez).', 'error');
+        return;
+      }
       
       const response = await chrome.tabs.sendMessage(tab.id, {
         type: 'GET_ALL_PRODUCT_URLS'
@@ -892,7 +936,12 @@ class ShopOptiPopup {
       }
     } catch (error) {
       console.error('[ShopOpti+] Bulk import error:', error);
-      this.showToast('Erreur lors de la recherche des produits', 'error');
+      const msg = error?.message || String(error);
+      if (msg.includes('Receiving end does not exist')) {
+        this.showToast('Page non prête: rechargez la page puis réessayez (le script d’import n’est pas encore chargé).', 'error');
+      } else {
+        this.showToast(`Erreur: ${msg}`, 'error');
+      }
     }
   }
 
