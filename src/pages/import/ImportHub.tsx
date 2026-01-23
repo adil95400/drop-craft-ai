@@ -468,9 +468,12 @@ export default function ImportHub() {
             
             {/* Supported Platforms */}
             <div className="flex flex-wrap items-center gap-2 mt-4">
-              
-              {supportedPlatforms.slice(0, 6).map(platform => {})}
-              
+              {supportedPlatforms.slice(0, 6).map(platform => (
+                <Badge key={platform.name} variant="secondary" className="flex items-center gap-1 cursor-pointer hover:bg-secondary/80" onClick={() => navigate(platform.path)}>
+                  <img src={platform.logo} alt={platform.name} className="w-4 h-4" />
+                  <span>{platform.name}</span>
+                </Badge>
+              ))}
             </div>
           </CardContent>
         </Card>

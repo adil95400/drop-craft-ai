@@ -93,7 +93,7 @@ const CategoryPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{category} - Drop Craft AI Marketplace</title>
+        <title>{category} - ShopOpti Marketplace</title>
         <meta name="description" content={`Découvrez notre sélection de produits ${category} avec les meilleurs prix et fournisseurs.`} />
       </Helmet>
 

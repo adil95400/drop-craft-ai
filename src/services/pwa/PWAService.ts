@@ -1,4 +1,4 @@
-// Service PWA pour Drop Craft AI
+// Service PWA pour ShopOpti
 class PWAService {
   private static instance: PWAService;
   private registration: ServiceWorkerRegistration | null = null;
@@ -192,7 +192,7 @@ class PWAService {
     
     // Ici on pourrait utiliser un toast service
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Drop Craft AI', {
+      new Notification('ShopOpti', {
         body: 'Une mise à jour est disponible',
         icon: '/icons/icon-192x192.png',
         tag: 'app-update'

@@ -17,7 +17,7 @@ export default function ProductResearchPage() {
   return (
     <>
       <Helmet>
-        <title>Recherche Produits Gagnants - Drop Craft AI</title>
+        <title>Recherche Produits Gagnants - ShopOpti</title>
         <meta name="description" content="Découvrez les produits gagnants avec notre AI de recherche" />
       </Helmet>
 

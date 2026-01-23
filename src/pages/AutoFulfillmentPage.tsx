@@ -10,7 +10,7 @@ export default function AutoFulfillmentPage() {
   return (
     <>
       <Helmet>
-        <title>Auto-Fulfillment System - Drop Craft AI</title>
+        <title>Auto-Fulfillment System - ShopOpti</title>
         <meta name="description" content="Automatisez vos commandes fournisseurs avec notre système intelligent de fulfillment. Routing automatique, suivi en temps réel et gestion multi-fournisseurs." />
       </Helmet>
       

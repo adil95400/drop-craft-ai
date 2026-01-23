@@ -68,7 +68,7 @@ export default function AutoOrderSystem() {
   return (
     <>
       <Helmet>
-        <title>Système de Commande Automatique - Drop Craft AI</title>
+        <title>Système de Commande Automatique - ShopOpti</title>
         <meta name="description" content="Automatisez vos commandes fournisseurs et gagnez du temps" />
       </Helmet>
 

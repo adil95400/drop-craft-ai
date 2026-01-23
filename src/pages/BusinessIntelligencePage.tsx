@@ -74,7 +74,7 @@ const BusinessIntelligencePage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Business Intelligence | Drop Craft AI</title>
+        <title>Business Intelligence | ShopOpti</title>
         <meta name="description" content="Analyses avancées et insights pour votre business" />
       </Helmet>
 
