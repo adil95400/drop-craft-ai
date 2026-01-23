@@ -1,8 +1,8 @@
-// ShopOpti+ Chrome Extension - Options Script v4.3.11
+// ShopOpti+ Chrome Extension - Options Script v4.3.15
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '4.3.11';
+const VERSION = '4.3.15';
 
 const DEFAULT_SETTINGS = {
   apiUrl: API_URL,
@@ -215,8 +215,9 @@ function setupResetAllButton() {
           console.error('[ShopOpti+] Error resetting all:', error);
           showNotification('Erreur lors de la réinitialisation', 'error');
         }
-    }
-  });
+      }
+    });
+  }
 }
 
 // Platform toggle setup
@@ -261,7 +262,7 @@ function setupSelectInputs() {
     }
   });
 }
-}
+
 
 async function loadSettings() {
   try {

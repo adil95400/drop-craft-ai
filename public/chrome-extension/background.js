@@ -1,8 +1,8 @@
-// ShopOpti+ Chrome Extension - Background Service Worker v4.3.12
+// ShopOpti+ Chrome Extension - Background Service Worker v4.3.15
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '4.3.12';
+const VERSION = '4.3.15';
 
 class ShopOptiBackground {
   constructor() {
@@ -56,7 +56,7 @@ class ShopOptiBackground {
   }
 
   async onInstall() {
-    console.log('[ShopOpti+] Extension installed v4.3.11');
+    console.log(`[ShopOpti+] Extension installed v${VERSION}`);
     
     await chrome.storage.local.set({
       extensionVersion: VERSION,
