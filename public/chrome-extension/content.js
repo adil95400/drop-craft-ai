@@ -1,19 +1,20 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v4.3.12
+// ShopOpti+ Chrome Extension - Content Script v5.0
 // Professional Dropshipping Extension - 100% CSP-SAFE
 // NO SCRIPT INJECTION - Pure Content Script Mode
 // Works on Amazon, AliExpress, and all strict CSP sites
-// Enhanced Review Extraction for 9+ Platforms
+// ADVANCED EXTRACTION: Images, Videos, Prices, Stock, 
+// Descriptions, Tracking, Brands, Specs, Shipping, Variants
 // ============================================
 
 (function () {
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '4.3.12') return;
-  window.__shopOptiCSVersion = '4.3.12';
+  if (window.__shopOptiCSVersion === '5.0') return;
+  window.__shopOptiCSVersion = '5.0';
 
-  console.log('[ShopOpti+] Content script v4.3.12 initializing (CSP-SAFE mode)...');
+  console.log('[ShopOpti+] Content script v5.0 initializing (CSP-SAFE mode)...');
 
   // ============================================
   // CHROME API SAFETY CHECK
@@ -52,9 +53,14 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.12',
+    VERSION: '5.0',
     BRAND: 'ShopOpti+',
-    SUPPORTED_PLATFORMS: ['amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 'wish', 'cdiscount', 'fnac', 'rakuten']
+    SUPPORTED_PLATFORMS: [
+      'amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 
+      'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 
+      'wish', 'cdiscount', 'fnac', 'rakuten', 'costco', 'homedepot', 
+      'lowes', 'target', 'bestbuy', 'wayfair', 'overstock'
+    ]
   };
 
   // ============================================
