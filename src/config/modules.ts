@@ -186,10 +186,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Extensions navigateur et outils',
     category: 'integrations',
     order: 4,
-    groupId: 'sources',
-    subModules: [
-      { id: 'extensions-hub', name: 'Hub Extensions', route: '/extensions', icon: 'LayoutDashboard', description: 'Vue d\'ensemble des extensions', features: ['overview'], order: 1 },
-    ]
+    groupId: 'sources'
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
