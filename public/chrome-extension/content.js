@@ -1,20 +1,21 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v5.0
+// ShopOpti+ Chrome Extension - Content Script v4.3.13
 // Professional Dropshipping Extension - 100% CSP-SAFE
 // NO SCRIPT INJECTION - Pure Content Script Mode
 // Works on Amazon, AliExpress, and all strict CSP sites
 // ADVANCED EXTRACTION: Images, Videos, Prices, Stock, 
 // Descriptions, Tracking, Brands, Specs, Shipping, Variants
+// FIXED: Button visibility on all platforms
 // ============================================
 
 (function () {
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '5.0') return;
-  window.__shopOptiCSVersion = '5.0';
+  if (window.__shopOptiCSVersion === '4.3.13') return;
+  window.__shopOptiCSVersion = '4.3.13';
 
-  console.log('[ShopOpti+] Content script v5.0 initializing (CSP-SAFE mode)...');
+  console.log('[ShopOpti+] Content script v4.3.13 initializing (CSP-SAFE mode)...');
 
   // ============================================
   // CHROME API SAFETY CHECK
@@ -53,7 +54,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '5.0',
+    VERSION: '4.3.13',
     BRAND: 'ShopOpti+',
     SUPPORTED_PLATFORMS: [
       'amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 
@@ -64,7 +65,7 @@
   };
 
   // ============================================
-  // PLATFORM DETECTION
+  // PLATFORM DETECTION - ENHANCED v4.3.13
   // ============================================
   function detectPlatform() {
     const hostname = window.location.hostname.toLowerCase();
@@ -84,6 +85,12 @@
     if (hostname.includes('cdiscount')) return 'cdiscount';
     if (hostname.includes('fnac')) return 'fnac';
     if (hostname.includes('rakuten')) return 'rakuten';
+    if (hostname.includes('costco')) return 'costco';
+    if (hostname.includes('homedepot')) return 'homedepot';
+    if (hostname.includes('lowes')) return 'lowes';
+    if (hostname.includes('target')) return 'target';
+    if (hostname.includes('bestbuy')) return 'bestbuy';
+    if (hostname.includes('wayfair')) return 'wayfair';
     
     // Shopify detection
     if (document.querySelector('meta[name="shopify-checkout-api-token"]') ||
@@ -96,6 +103,9 @@
     return 'unknown';
   }
 
+  // ============================================
+  // PRODUCT PAGE DETECTION - ENHANCED v4.3.13
+  // ============================================
   function isProductPage() {
     const url = window.location.href;
     const platform = detectPlatform();
@@ -104,38 +114,84 @@
       amazon: /\/(dp|gp\/product|product)\/[A-Z0-9]+/i,
       aliexpress: /\/item\/|\/i\/|\/_p\//i,
       alibaba: /\/product-detail\//i,
-      temu: /\/[a-z0-9-]+-g-\d+\.html/i,
-      shein: /\/-p-\d+\.html/i,
-      ebay: /\/itm\//i,
+      temu: /\/[a-z0-9_-]+-g-\d+\.html|goods\.html\?|\/goods\.html/i,
+      shein: /\/-p-\d+\.html|\?goods_id=|\/product-p-/i,
+      ebay: /\/itm\/\d+|\/p\/\d+|\/itm\//i,
       etsy: /\/listing\//i,
-      walmart: /\/ip\//i,
+      walmart: /\/ip\/\d+|\/product\//i,
       shopify: /\/products\//i,
-      cdiscount: /\/f-\d+|\/fp\/\d+/i,
+      cdiscount: /\/f-\d+|\/v-\d+|mpid=|\/fp\/|\/dp\//i,
       fnac: /\/a\d+\//i,
-      rakuten: /\/product\//i
+      rakuten: /\/product\/|\/offer\/|\/ss_\d+/i,
+      costco: /\.product\.\d+\.html/i,
+      homedepot: /\/p\/\d+/i,
+      lowes: /\/pd\//i,
+      target: /\/-\/A-\d+/i,
+      bestbuy: /\/skuId=/i,
+      wayfair: /\.html\?piid=/i,
+      banggood: /\/-p-\d+\.html/i,
+      dhgate: /\/product\/\d+\.html/i,
+      wish: /\/product\//i,
+      cjdropshipping: /\/product-detail\//i
     };
     
-    return patterns[platform]?.test(url) || false;
+    // Check specific platform pattern
+    if (patterns[platform]?.test(url)) return true;
+    
+    // Generic product page detection
+    if (url.includes('/product') || url.includes('/products/') || url.includes('/item/')) {
+      return true;
+    }
+    
+    return false;
   }
 
+  // ============================================
+  // LISTING PAGE DETECTION - ENHANCED v4.3.13
+  // ============================================
   function isListingPage() {
     const url = window.location.href;
     const platform = detectPlatform();
     
     const listingPatterns = {
-      amazon: /\/gp\/bestsellers|\/gp\/new-releases|\/gp\/movers-and-shakers|\/gp\/most-wished-for|\/gp\/top-|\/s\?|\/s\/|\/b\?|\/b\/|\?k=|\/zgbs\/|\/stores\/|\/slp\/|\/browse\//i,
-      aliexpress: /\/category\/|\/wholesale|\/w\/|\/af\/|\/gcp\//i,
-      temu: /\/channel\/|\/search_result|\/goods/i,
-      shein: /\/category\/|\/[a-z]+-c-\d+|pdsearch/i,
-      ebay: /\/b\/|\/sch\/|\/e\//i
+      amazon: /\/gp\/bestsellers|\/gp\/new-releases|\/gp\/movers-and-shakers|\/gp\/most-wished-for|\/gp\/top-|\/s\?|\/s\/|\/b\?|\/b\/|\?k=|\/zgbs\/|\/stores\/|\/slp\/|\/browse\/|\/new-releases\//i,
+      aliexpress: /\/category\/|\/wholesale|\/w\/|\/af\/|\/gcp\/|\/store\/|\/mall\//i,
+      temu: /\/channel\/|\/search_result|\/goods|\/mall\/|[?&]filter_/i,
+      shein: /\/category\/|\/[a-z]+-c-\d+|pdsearch|\/pdsearch\//i,
+      ebay: /\/b\/|\/sch\/|\/e\/|\/str\//i,
+      walmart: /\/search\/|\/browse\/|\/shop\//i,
+      etsy: /\/search\?|\/c\/|\/shop\//i,
+      cdiscount: /\/search\/|\/browse\/|\/lp\/|\/mpid\/|[?&]keyword=/i,
+      fnac: /\/[a-z]+-\d+\/|\/recherche\/|\/c\d+\//i,
+      rakuten: /\/search\/|\/category\/|\/s\//i,
+      costco: /\/search/i,
+      homedepot: /\/b\/|\/s\//i,
+      lowes: /\/search|\/pl\//i,
+      target: /\/s\?|\/c\//i,
+      bestbuy: /\/site\/searchpage|\/site\/.*\/pcmcat/i,
+      wayfair: /\/sb\d|\/keyword=/i
     };
     
-    if (platform === 'amazon') {
-      const productCards = document.querySelectorAll('[data-asin], .s-result-item, .zg-grid-general-faceout, .a-carousel-card');
-      if (productCards.length >= 3) return true;
+    // Check specific platform listing pattern
+    if (listingPatterns[platform]?.test(url)) return true;
+    
+    // Count product cards to determine if listing page
+    const productCardSelectors = [
+      '[data-asin]', '.s-result-item', '.product-card', '.product-item',
+      '.goods-item', '[class*="GoodsItem"]', '.s-item', '.list-item',
+      '[data-component-type="s-search-result"]', '.prdtBloc', '.c-productCard',
+      '.product-list__item', '.v2-listing-card', '[data-product-id]'
+    ];
+    
+    for (const selector of productCardSelectors) {
+      const cards = document.querySelectorAll(selector);
+      if (cards.length >= 4) {
+        console.log(`[ShopOpti+] Detected listing page with ${cards.length} product cards (${selector})`);
+        return true;
+      }
     }
     
-    return listingPatterns[platform]?.test(url) || false;
+    return false;
   }
 
   // ============================================
@@ -152,7 +208,10 @@
       temu: extractTemuData,
       ebay: extractEbayData,
       shein: extractSheinData,
-      etsy: extractEtsyData
+      etsy: extractEtsyData,
+      cdiscount: extractCdiscountData,
+      walmart: extractWalmartData,
+      fnac: extractFnacData
     };
 
     const extractor = extractors[platform] || extractGenericData;
@@ -286,7 +345,6 @@
     }
 
     // Variants - Enhanced extraction
-    // Size variants
     const sizeVariants = document.querySelectorAll('#variation_size_name li:not(.swatchUnavailable), #twister-plus-inline-twister-card li');
     sizeVariants.forEach(v => {
       const text = v.querySelector('.a-button-text, .a-size-base')?.textContent?.trim();
@@ -295,7 +353,6 @@
       }
     });
     
-    // Color variants
     const colorVariants = document.querySelectorAll('#variation_color_name li, #variation-color li');
     colorVariants.forEach(v => {
       const text = v.querySelector('.a-button-text, img')?.getAttribute('alt') || v.querySelector('.a-button-text')?.textContent?.trim();
@@ -310,7 +367,6 @@
       }
     });
 
-    // Style variants
     const styleVariants = document.querySelectorAll('#variation_style_name li');
     styleVariants.forEach(v => {
       const text = v.querySelector('.a-button-text, img')?.getAttribute('alt') || v.querySelector('.a-button-text')?.textContent?.trim();
@@ -392,12 +448,11 @@
     imageElements.forEach(img => {
       let src = img.src || img.dataset?.src || img.getAttribute('data-src');
       if (src) {
-        // Convert to high-res
         src = src.replace(/_\d+x\d+\./g, '.');
         src = src.replace(/\.jpg_\d+x\d+\.jpg/g, '.jpg');
         src = src.replace(/_\d+x\d+\.jpg/g, '.jpg');
         src = src.replace(/_\d+x\d+\.png/g, '.png');
-        src = src.replace(/\?.*$/, ''); // Remove query params
+        src = src.replace(/\?.*$/, '');
         if (src.startsWith('//')) src = 'https:' + src;
         if ((src.includes('alicdn.com') || src.includes('cbu01.alicdn')) && src.includes('http')) {
           imageSet.add(src);
@@ -428,7 +483,7 @@
       data.orders_count = ordersMatch ? parseInt(ordersMatch[1]) : 0;
     }
 
-    // Variants - Color/Size options
+    // Variants
     const skuContainers = document.querySelectorAll('[class*="sku-property"], [class*="sku-item"], .sku-property-item');
     skuContainers.forEach(container => {
       const propertyName = container.querySelector('[class*="sku-title"], .sku-property-text')?.textContent?.trim() || 'Option';
@@ -565,6 +620,88 @@
     return data;
   }
 
+  function extractCdiscountData() {
+    const data = {
+      title: '',
+      price: 0,
+      currency: 'EUR',
+      images: [],
+      variants: [],
+      description: ''
+    };
+
+    data.title = document.querySelector('h1.fpDesCol, .fpTMain h1, [itemprop="name"]')?.textContent?.trim() || '';
+    
+    const priceEl = document.querySelector('.fpPrice, .prdtPrSt, [itemprop="price"]');
+    if (priceEl) {
+      const priceMatch = priceEl.textContent?.match(/[\d,.]+/);
+      data.price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
+      const content = priceEl.getAttribute('content');
+      if (content) data.price = parseFloat(content);
+    }
+
+    document.querySelectorAll('.fpGal img, .fpViImg img, [itemprop="image"]').forEach(img => {
+      const src = img.src || img.getAttribute('data-src');
+      if (src && !src.includes('placeholder')) {
+        data.images.push(src);
+      }
+    });
+
+    return data;
+  }
+
+  function extractWalmartData() {
+    const data = {
+      title: '',
+      price: 0,
+      currency: 'USD',
+      images: [],
+      variants: []
+    };
+
+    data.title = document.querySelector('h1[itemprop="name"], h1')?.textContent?.trim() || '';
+    
+    const priceEl = document.querySelector('[itemprop="price"], [data-testid="price"]');
+    if (priceEl) {
+      const priceMatch = priceEl.textContent?.match(/[\d,.]+/);
+      data.price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
+    }
+
+    document.querySelectorAll('[data-testid="media-thumbnail"] img, .prod-hero-image img').forEach(img => {
+      if (img.src && !img.src.includes('placeholder')) {
+        data.images.push(img.src);
+      }
+    });
+
+    return data;
+  }
+
+  function extractFnacData() {
+    const data = {
+      title: '',
+      price: 0,
+      currency: 'EUR',
+      images: [],
+      variants: []
+    };
+
+    data.title = document.querySelector('h1.f-productHeader-Title, .Product-title')?.textContent?.trim() || '';
+    
+    const priceEl = document.querySelector('.f-priceBox-price, .userPrice, [itemprop="price"]');
+    if (priceEl) {
+      const priceMatch = priceEl.textContent?.match(/[\d,.]+/);
+      data.price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
+    }
+
+    document.querySelectorAll('.f-productVisuals-mainMedia img, .f-productGallery img').forEach(img => {
+      if (img.src && !img.src.includes('placeholder')) {
+        data.images.push(img.src);
+      }
+    });
+
+    return data;
+  }
+
   function extractShopifyData() {
     const data = {
       title: '',
@@ -624,7 +761,6 @@
     const ogDescription = document.querySelector('meta[property="og:description"]');
     if (ogDescription) data.description = ogDescription.content;
 
-    // Try to find price
     const priceElements = document.querySelectorAll('[class*="price"]');
     for (const el of priceElements) {
       const priceMatch = el.textContent?.match(/[\d,.]+/);
@@ -638,7 +774,7 @@
   }
 
   // ============================================
-  // UI CREATION (Pure DOM - CSP Safe)
+  // UI CREATION - ENHANCED v4.3.13 (Visible Buttons)
   // ============================================
   function addStyles() {
     if (document.getElementById('shopopti-styles')) return;
@@ -658,7 +794,16 @@
         from { transform: translateX(120%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
       }
+      @keyframes shopoptiFadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      @keyframes shopoptiGlow {
+        0%, 100% { box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4); }
+        50% { box-shadow: 0 4px 25px rgba(124, 58, 237, 0.5); }
+      }
       
+      /* Main Import Button - Product Pages */
       #shopopti-import-btn {
         position: fixed !important;
         bottom: 24px !important;
@@ -679,6 +824,7 @@
         gap: 8px !important;
         box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4) !important;
         transition: all 0.2s ease !important;
+        animation: shopoptiFadeIn 0.3s ease, shopoptiGlow 3s ease-in-out infinite !important;
       }
       #shopopti-import-btn:hover {
         transform: translateY(-3px) scale(1.02) !important;
@@ -691,15 +837,17 @@
       }
       #shopopti-import-btn.success {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        animation: none !important;
       }
       #shopopti-import-btn.error {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        animation: none !important;
       }
       #shopopti-import-btn:disabled {
         pointer-events: none !important;
       }
       
-      /* Bulk import button */
+      /* Bulk Import Button - Listing Pages */
       #shopopti-bulk-btn {
         position: fixed !important;
         bottom: 24px !important;
@@ -719,6 +867,7 @@
         gap: 10px !important;
         box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4) !important;
         transition: all 0.2s ease !important;
+        animation: shopoptiFadeIn 0.3s ease !important;
       }
       #shopopti-bulk-btn:hover {
         transform: translateY(-3px) !important;
@@ -735,37 +884,37 @@
         text-align: center !important;
       }
       
-      /* Individual product buttons on listing pages */
+      /* LISTING PAGE BUTTONS - VISIBLE BY DEFAULT v4.3.13 */
       .shopopti-listing-btn {
         position: absolute !important;
         top: 8px !important;
         right: 8px !important;
-        z-index: 10000 !important;
-        padding: 6px 12px !important;
+        z-index: 999999 !important;
+        padding: 8px 14px !important;
         background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
         color: white !important;
         border: none !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-        font-size: 11px !important;
+        font-size: 12px !important;
         font-weight: 600 !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
-        gap: 4px !important;
-        box-shadow: 0 2px 8px rgba(0, 212, 255, 0.4) !important;
+        gap: 6px !important;
+        box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4) !important;
         transition: all 0.2s ease !important;
-        opacity: 0 !important;
+        opacity: 0.9 !important; /* VISIBLE BY DEFAULT */
+        animation: shopoptiFadeIn 0.3s ease !important;
       }
       .shopopti-listing-btn:hover {
-        transform: scale(1.05) !important;
         opacity: 1 !important;
-      }
-      *:hover > .shopopti-listing-btn {
-        opacity: 1 !important;
+        transform: scale(1.08) !important;
+        box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5) !important;
       }
       .shopopti-listing-btn.success {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        opacity: 1 !important;
       }
       .shopopti-listing-btn.loading {
         opacity: 0.8 !important;
@@ -935,7 +1084,7 @@
   }
 
   // ============================================
-  // MESSAGE LISTENER - Enhanced for Reviews & URLs
+  // MESSAGE LISTENER
   // ============================================
   if (isChromeRuntimeAvailable()) {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -972,7 +1121,6 @@
           break;
           
         case 'EXTRACT_PRODUCT_AND_REVIEWS':
-          // Combined extraction for full import
           const productData = extractProductData();
           const productReviews = extractReviewsFromDOM({ maxReviews: message.maxReviews || 50 });
           sendResponse({ 
@@ -1003,7 +1151,11 @@
       ebay: ['a[href*="/itm/"]'],
       temu: ['a[href*="-g-"]'],
       shopify: ['a[href*="/products/"]'],
-      etsy: ['a[href*="/listing/"]']
+      etsy: ['a[href*="/listing/"]'],
+      cdiscount: ['a[href*="/f-"]', 'a[href*="/fp/"]'],
+      fnac: ['a[href*="/a"]'],
+      walmart: ['a[href*="/ip/"]'],
+      shein: ['a[href*="-p-"]']
     };
     
     const selectors = linkSelectors[platform] || [];
@@ -1049,7 +1201,7 @@
       overflow: hidden;
     `;
     
-    panel.innerHTML = \`
+    panel.innerHTML = `
       <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -1075,7 +1227,7 @@
           </button>
         </div>
       </div>
-    \`;
+    `;
     
     document.body.appendChild(panel);
     
@@ -1101,15 +1253,15 @@
         return;
       }
       
-      listEl.innerHTML = reviews.slice(0, 10).map((r, i) => \`
+      listEl.innerHTML = reviews.slice(0, 10).map((r, i) => `
         <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span style="font-weight: 500; font-size: 13px;">\${r.author || 'Anonymous'}</span>
-            <span style="color: #fbbf24; font-size: 12px;">\${'⭐'.repeat(r.rating || 5)}</span>
+            <span style="font-weight: 500; font-size: 13px;">${r.author || 'Anonymous'}</span>
+            <span style="color: #fbbf24; font-size: 12px;">${'⭐'.repeat(r.rating || 5)}</span>
           </div>
-          <p style="font-size: 12px; color: #94a3b8; line-height: 1.4;">\${(r.content || '').substring(0, 120)}...</p>
+          <p style="font-size: 12px; color: #94a3b8; line-height: 1.4;">${(r.content || '').substring(0, 120)}...</p>
         </div>
-      \`).join('') + \`<p style="text-align: center; color: #10b981; margin-top: 12px;">✅ \${reviews.length} avis détectés</p>\`;
+      `).join('') + `<p style="text-align: center; color: #10b981; margin-top: 12px;">✅ ${reviews.length} avis détectés</p>`;
       
       actionsEl.style.display = 'block';
       window.__shopoptiExtractedReviews = reviews;
@@ -1132,7 +1284,7 @@
     }, 1000);
   }
   
-  // DOM-based review extraction - Enhanced for all platforms v4.3.12
+  // DOM-based review extraction - Enhanced for all platforms v4.3.13
   function extractReviewsFromDOM(config) {
     const reviews = [];
     const maxReviews = config?.maxReviews || 50;
@@ -1179,9 +1331,8 @@
           }
         });
         
-        // Helpful votes
-        const helpfulEl = element.querySelector('[data-hook="helpful-vote-statement"]');
         let helpfulVotes = 0;
+        const helpfulEl = element.querySelector('[data-hook="helpful-vote-statement"]');
         if (helpfulEl) {
           const helpfulMatch = helpfulEl.textContent?.match(/(\d+)/);
           if (helpfulMatch) helpfulVotes = parseInt(helpfulMatch[1]);
@@ -1224,11 +1375,9 @@
         const dateEl = element.querySelector('[class*="feedback-time"], [class*="review-date"]');
         const date = dateEl?.textContent?.trim() || null;
         
-        // Country/Location
         const countryEl = element.querySelector('[class*="user-country"], [class*="country"]');
         const country = countryEl?.textContent?.trim() || null;
         
-        // Variant info (color, size purchased)
         const variantEl = element.querySelector('[class*="sku-info"], [class*="specs"]');
         const variant = variantEl?.textContent?.trim() || null;
         
@@ -1256,7 +1405,6 @@
       });
       
     } else if (platform === 'shopify') {
-      // Shopify stores use various review apps (Judge.me, Loox, Yotpo, etc.)
       const reviewSelectors = [
         '.jdgm-rev',
         '.loox-review',
@@ -1466,11 +1614,12 @@
   window.addEventListener('popstate', () => setTimeout(checkUrlChange, 100));
 
   // ============================================
-  // LISTING PAGE BUTTONS
+  // LISTING PAGE BUTTONS - EXTENDED SELECTORS v4.3.13
   // ============================================
   function createListingButtons() {
     const platform = detectPlatform();
     
+    // Extended selectors for all platforms
     const selectors = {
       amazon: [
         '.zg-grid-general-faceout',
@@ -1483,24 +1632,77 @@
         '.sg-col-inner .s-result-item',
         '.octopus-pc-item',
         '.a-carousel-card',
-        '[data-asin]:not([data-asin=""])'
+        '[data-asin]:not([data-asin=""])',
+        '.s-main-slot .s-result-item'
       ],
       aliexpress: [
         '.list-item',
         '.product-item',
         '.search-item-card-wrapper-gallery',
         '[data-widget-cid*="product"]',
-        '.product-snippet'
+        '.product-snippet',
+        '[class*="product-card"]',
+        '[class*="ProductCard"]'
       ],
       temu: [
         '[data-testid="goods-item"]',
         '.goods-item',
-        '[class*="GoodsItem"]'
+        '[class*="GoodsItem"]',
+        '[data-goods-id]',
+        '[class*="productCard"]'
       ],
       ebay: [
         '.s-item',
         '.srp-river-result',
-        '[data-testid="listing-card"]'
+        '[data-testid="listing-card"]',
+        '.srp-results .s-item',
+        '[data-testid="item-card"]'
+      ],
+      cdiscount: [
+        '.prdtBloc',
+        '.c-productCard',
+        '[data-product-id]',
+        '.prdtBImg',
+        '.c-product',
+        '.product-item'
+      ],
+      shein: [
+        '.product-list__item',
+        '.S-product-item',
+        '[data-expose-id]',
+        '.goods-item',
+        '[class*="productCard"]'
+      ],
+      walmart: [
+        '.search-result-gridview-item',
+        '[data-item-id]',
+        '.product-card',
+        '[data-testid="list-view"]'
+      ],
+      etsy: [
+        '.v2-listing-card',
+        '.listing-link',
+        '[data-listing-id]',
+        '.js-merch-stash-check-listing'
+      ],
+      fnac: [
+        '.Article-item',
+        '.ProductCard',
+        '.product-item',
+        '[data-product]'
+      ],
+      rakuten: [
+        '.product-card',
+        '.search-product-card',
+        '[data-product-id]'
+      ],
+      target: [
+        '[data-test="product-grid"] div',
+        '.ProductCardWrapper'
+      ],
+      bestbuy: [
+        '.sku-item',
+        '[data-sku-id]'
       ]
     };
     
@@ -1508,7 +1710,7 @@
     if (!platformSelectors) return;
     
     const productElements = document.querySelectorAll(platformSelectors.join(', '));
-    console.log(`[ShopOpti+] Found ${productElements.length} products on listing page`);
+    console.log(`[ShopOpti+] Found ${productElements.length} products on listing page (${platform})`);
     
     let addedCount = 0;
     productElements.forEach((element) => {
@@ -1516,6 +1718,7 @@
       
       let url = null;
       
+      // Platform-specific URL extraction
       if (platform === 'amazon') {
         const linkSelectors = [
           'a.a-link-normal[href*="/dp/"]',
@@ -1538,6 +1741,24 @@
             url = `https://www.amazon.${window.location.hostname.split('.').pop()}/dp/${asin}`;
           }
         }
+      } else if (platform === 'cdiscount') {
+        const link = element.querySelector('a[href*="/f-"], a[href*="/fp/"], a[href*="/dp/"]');
+        url = link?.href;
+      } else if (platform === 'ebay') {
+        const link = element.querySelector('a[href*="/itm/"]');
+        url = link?.href;
+      } else if (platform === 'etsy') {
+        const link = element.querySelector('a[href*="/listing/"]');
+        url = link?.href;
+      } else if (platform === 'shein') {
+        const link = element.querySelector('a[href*="-p-"]');
+        url = link?.href;
+      } else if (platform === 'walmart') {
+        const link = element.querySelector('a[href*="/ip/"]');
+        url = link?.href;
+      } else if (platform === 'fnac') {
+        const link = element.querySelector('a[href*="/a"]');
+        url = link?.href;
       } else {
         const link = element.querySelector('a[href*="/item/"], a[href*="/product"], a[href]');
         url = link?.href;
@@ -1554,7 +1775,7 @@
       btn.className = 'shopopti-listing-btn';
       btn.dataset.url = url;
       btn.innerHTML = `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7,10 12,15 17,10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
@@ -1583,7 +1804,7 @@
             btn.classList.remove('loading');
             btn.classList.add('success');
             btn.innerHTML = `
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20,6 9,17 4,12"/>
               </svg>
               <span>OK!</span>
@@ -1598,7 +1819,7 @@
           
           setTimeout(() => {
             btn.innerHTML = `
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7,10 12,15 17,10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
@@ -1666,7 +1887,7 @@
   // ============================================
   function init() {
     const platform = detectPlatform();
-    console.log('[ShopOpti+] Detected platform:', platform);
+    console.log('[ShopOpti+] v4.3.13 - Detected platform:', platform);
 
     if (!CONFIG.SUPPORTED_PLATFORMS.includes(platform) && platform !== 'unknown') {
       console.log('[ShopOpti+] Platform not supported');
@@ -1676,10 +1897,10 @@
     addStyles();
 
     if (isProductPage()) {
-      console.log('[ShopOpti+] Product page detected');
+      console.log('[ShopOpti+] Product page detected - Creating import button');
       createImportButton();
     } else if (isListingPage()) {
-      console.log('[ShopOpti+] Listing page detected');
+      console.log('[ShopOpti+] Listing page detected - Creating listing buttons');
       createBulkImportButton();
       createListingButtons();
       
@@ -1688,6 +1909,15 @@
         createListingButtons();
       });
       observer.observe(document.body, { childList: true, subtree: true });
+    } else {
+      console.log('[ShopOpti+] Page type not detected, checking for product cards...');
+      // Try to detect listing page by product cards
+      setTimeout(() => {
+        if (isListingPage()) {
+          createBulkImportButton();
+          createListingButtons();
+        }
+      }, 2000);
     }
   }
 

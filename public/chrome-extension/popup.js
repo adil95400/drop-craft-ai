@@ -1,5 +1,6 @@
-// ShopOpti+ Chrome Extension - Popup Script v4.3.11
+// ShopOpti+ Chrome Extension - Popup Script v4.3.13
 // Professional Dropshipping Extension
+// FIXED: Button visibility on all platforms
 
 class ShopOptiPopup {
   constructor() {
