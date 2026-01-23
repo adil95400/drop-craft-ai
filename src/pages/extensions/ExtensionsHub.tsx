@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { 
   Chrome, Download, Zap, Star, CheckCircle, ArrowRight, Store, Terminal, Palette, Shield,
   Globe, Package, TrendingUp, Clock, Users, Play, X, Sparkles, Target, BarChart3,
-  RefreshCw, ShoppingCart, Eye, Bell, FileText, Settings, Rocket, Award, ThumbsUp, MessageSquare
+  RefreshCw, ShoppingCart, Eye, Bell, FileText, Settings, Rocket, Award, ThumbsUp, MessageSquare, Key
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
@@ -179,6 +179,14 @@ const extensions = [
     icon: Shield,
     route: '/extensions/sso',
     badge: 'Ultra Pro'
+  },
+  {
+    id: 'api',
+    title: 'API & Tokens',
+    description: 'Gérez vos clés API et tokens d\'accès',
+    icon: Key,
+    route: '/extensions/api',
+    badge: 'API'
   }
 ]
 
