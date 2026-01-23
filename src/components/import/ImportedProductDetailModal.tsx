@@ -104,25 +104,38 @@ export function ImportedProductDetailModal({
     enabled: !!productId && isOpen
   });
 
-  // Fetch reviews - using products table reference if product_reviews doesn't exist
+  // Fetch reviews - simplified approach
   const { data: reviews = [] } = useQuery({
     queryKey: ['product-reviews-detail', productId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Review[]> => {
       if (!productId) return [];
       
       try {
-        // Try to fetch from product_reviews table
-        const { data, error } = await supabase
-          .from('products')
-          .select('id')
-          .eq('id', productId)
-          .limit(1);
+        // Fetch reviews from product_reviews table using raw query approach
+        const { data: reviewsData, error } = await supabase
+          .from('product_reviews' as any)
+          .select('id, author_name, rating, content, review_date, is_verified, images')
+          .eq('product_id', productId)
+          .order('review_date', { ascending: false })
+          .limit(50);
         
-        // For now, return empty array if reviews table doesn't exist
-        // The actual reviews would need proper table setup
-        return [] as Review[];
-      } catch {
-        return [] as Review[];
+        if (error || !reviewsData) {
+          console.log('No reviews found or table does not exist:', error?.message);
+          return [];
+        }
+        
+        return (reviewsData as any[]).map(r => ({
+          id: r.id,
+          author_name: r.author_name || 'Anonymous',
+          rating: r.rating || 5,
+          content: r.content || '',
+          review_date: r.review_date,
+          is_verified: r.is_verified,
+          images: r.images as string[] | null
+        }));
+      } catch (e) {
+        console.log('Error fetching reviews:', e);
+        return [];
       }
     },
     enabled: !!productId && isOpen

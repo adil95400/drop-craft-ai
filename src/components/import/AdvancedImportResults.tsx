@@ -41,6 +41,7 @@ import { ProductQuickEdit } from './ProductQuickEdit';
 import { ProductActions } from './ProductActions';
 import { ImportFilters } from './ImportFilters';
 import { ImportPublishOptions } from './ImportPublishOptions';
+import { ImportedProductDetailModal } from './ImportedProductDetailModal';
 
 export const AdvancedImportResults = () => {
   const { importedProducts, isLoadingProducts } = useImportUltraPro();
@@ -56,6 +57,7 @@ export const AdvancedImportResults = () => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [editingProduct, setEditingProduct] = useState<ImportedProduct | null>(null);
   const [publishProduct, setPublishProduct] = useState<ImportedProduct | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<ImportedProduct | null>(null);
 
   // Filtered and sorted products
   const filteredAndSortedProducts = useMemo(() => {
@@ -396,12 +398,22 @@ export const AdvancedImportResults = () => {
                     {product.created_at && new Date(product.created_at).toLocaleDateString('fr-FR')}
                   </TableCell>
                    <TableCell>
-                     <ProductActions
-                       product={product}
-                       onEdit={setEditingProduct}
-                       onPublish={setPublishProduct}
-                       onRefresh={() => window.location.reload()}
-                     />
+                     <div className="flex items-center gap-1">
+                       <Button
+                         variant="ghost"
+                         size="icon"
+                         onClick={() => setViewingProduct(product)}
+                         title="Voir détails"
+                       >
+                         <Eye className="h-4 w-4" />
+                       </Button>
+                       <ProductActions
+                         product={product}
+                         onEdit={setEditingProduct}
+                         onPublish={setPublishProduct}
+                         onRefresh={() => window.location.reload()}
+                       />
+                     </div>
                    </TableCell>
                 </TableRow>
                ))
@@ -470,6 +482,15 @@ export const AdvancedImportResults = () => {
           product={publishProduct}
           isOpen={!!publishProduct}
           onClose={() => setPublishProduct(null)}
+        />
+      )}
+
+      {/* Product Detail Modal */}
+      {viewingProduct && (
+        <ImportedProductDetailModal
+          productId={viewingProduct.id!}
+          isOpen={!!viewingProduct}
+          onClose={() => setViewingProduct(null)}
         />
       )}
     </div>
