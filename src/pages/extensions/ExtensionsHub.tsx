@@ -109,36 +109,36 @@ const testimonials = [
 
 const extensions = [
   {
-    id: 'marketplace',
-    title: 'Marketplace',
-    description: 'Découvrez et installez des extensions',
-    icon: Store,
-    route: '/extensions/marketplace',
-    badge: 'Nouveau'
+    id: 'download',
+    title: 'Télécharger',
+    description: 'Téléchargez l\'extension Chrome',
+    icon: Download,
+    route: '/extensions/download',
+    badge: 'Gratuit'
   },
   {
-    id: 'cli',
-    title: 'Outils CLI',
-    description: 'Gérez vos extensions en ligne de commande',
-    icon: Terminal,
-    route: '/extensions/cli',
-    badge: 'Pro'
+    id: 'tutorials',
+    title: 'Tutoriels',
+    description: 'Apprenez à utiliser l\'extension',
+    icon: Play,
+    route: '/extensions/tutorials',
+    badge: 'Guide'
   },
   {
-    id: 'white-label',
-    title: 'White-Label',
-    description: 'Personnalisez l\'interface à vos couleurs',
-    icon: Palette,
-    route: '/extensions/white-label',
-    badge: 'Ultra Pro'
+    id: 'documentation',
+    title: 'Documentation',
+    description: 'Guide complet et référence',
+    icon: FileText,
+    route: '/extensions/documentation',
+    badge: 'Docs'
   },
   {
-    id: 'sso',
-    title: 'Enterprise SSO',
-    description: 'Authentification unique pour votre équipe',
-    icon: Shield,
-    route: '/extensions/sso',
-    badge: 'Ultra Pro'
+    id: 'faq',
+    title: 'FAQ',
+    description: 'Questions fréquemment posées',
+    icon: MessageSquare,
+    route: '/extensions/faq',
+    badge: 'Support'
   }
 ]
 

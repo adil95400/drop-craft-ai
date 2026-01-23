@@ -1,15 +1,12 @@
 /**
- * Routes Extensions - Hub, Marketplace, CLI, White-Label, SSO, Download, Documentation, Reviews, Chrome
- * Consolidé - Suppression des pages dupliquées
+ * Routes Extensions - Hub, Download, Documentation, Tutorials, FAQ, Reviews, Chrome
+ * Consolidé - Pages Marketplace, CLI, Developer supprimées
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Extensions Hub - Pages principales conservées
 const ExtensionsHub = lazy(() => import('@/pages/extensions/ExtensionsHub'));
-const ExtensionsMarketplace = lazy(() => import('@/pages/extensions/ExtensionsMarketplace'));
-const ExtensionsCLI = lazy(() => import('@/pages/extensions/ExtensionsCLI'));
-const ExtensionDeveloperPage = lazy(() => import('@/pages/extensions/ExtensionDeveloperPage'));
 const ExtensionDownloadPage = lazy(() => import('@/pages/extensions/ExtensionDownloadPage'));
 const ExtensionInstallationPage = lazy(() => import('@/pages/extensions/ExtensionInstallationPage'));
 const ExtensionDocumentationPage = lazy(() => import('@/pages/extensions/ExtensionDocumentationPage'));
@@ -23,9 +20,6 @@ export function ExtensionRoutes() {
   return (
     <Routes>
       <Route index element={<ExtensionsHub />} />
-      <Route path="marketplace" element={<ExtensionsMarketplace />} />
-      <Route path="cli" element={<ExtensionsCLI />} />
-      <Route path="developer" element={<ExtensionDeveloperPage />} />
       <Route path="download" element={<ExtensionDownloadPage />} />
       <Route path="installation" element={<ExtensionInstallationPage />} />
       <Route path="documentation" element={<ExtensionDocumentationPage />} />
@@ -36,8 +30,11 @@ export function ExtensionRoutes() {
       <Route path="api" element={<ExtensionAPIPage />} />
       
       {/* Legacy redirects - pages supprimées */}
-      <Route path="white-label" element={<Navigate to="/extensions/developer" replace />} />
-      <Route path="sso" element={<Navigate to="/extensions/developer" replace />} />
+      <Route path="marketplace" element={<Navigate to="/extensions" replace />} />
+      <Route path="cli" element={<Navigate to="/extensions" replace />} />
+      <Route path="developer" element={<Navigate to="/extensions" replace />} />
+      <Route path="white-label" element={<Navigate to="/extensions" replace />} />
+      <Route path="sso" element={<Navigate to="/extensions" replace />} />
     </Routes>
   );
 }
