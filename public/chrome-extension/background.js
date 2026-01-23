@@ -56,10 +56,10 @@ class ShopOptiBackground {
   }
 
   async onInstall() {
-    console.log('[ShopOpti+] Extension installed');
+    console.log('[ShopOpti+] Extension installed v4.3.11');
     
     await chrome.storage.local.set({
-      extensionVersion: '4.3.10',
+      extensionVersion: VERSION,
       installDate: new Date().toISOString(),
       settings: {
         autoInjectButtons: true,
@@ -79,15 +79,15 @@ class ShopOptiBackground {
 
     // Open welcome page
     chrome.tabs.create({
-      url: `${APP_URL}/extensions/chrome?installed=true&v=4.3.10`
+      url: `${APP_URL}/extensions/chrome?installed=true&v=${VERSION}`
     });
   }
 
   async onUpdate(previousVersion) {
-    console.log(`[ShopOpti+] Extension updated from ${previousVersion} to 4.3.10`);
+    console.log(`[ShopOpti+] Extension updated from ${previousVersion} to ${VERSION}`);
     
     await chrome.storage.local.set({
-      extensionVersion: '4.3.10',
+      extensionVersion: VERSION,
       lastUpdate: new Date().toISOString()
     });
   }
@@ -636,75 +636,85 @@ class ShopOptiBackground {
 
       if (!extensionToken) {
         console.error('[ShopOpti+] No extension token for review import');
-        return [];
+        return { success: false, error: 'Non connecté' };
       }
 
-      // First, try to open the reviews panel in the content script
-      try {
-        await chrome.tabs.sendMessage(tab.id, { 
-          type: 'SHOW_REVIEWS_PANEL',
-          autoExtract: config?.autoExtract || false
-        });
-        
-        console.log('[ShopOpti+] Reviews panel opened in content script');
-        return { success: true, message: 'Reviews panel opened' };
-      } catch (e) {
-        console.log('[ShopOpti+] Content script not available, using direct extraction');
-      }
-
-      // Fallback: direct extraction via scripting API
-      const safeConfig = {
-        maxReviews: Number(config?.maxReviews || 50) || 50,
-      };
+      // Check if reviews are passed directly in config
+      let reviews = config?.reviews || [];
       
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: extractReviewsFromPage,
-        args: [safeConfig]
-      });
+      if (reviews.length === 0) {
+        // Try to extract reviews from page via scripting API
+        try {
+          const results = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: extractReviewsFromPage,
+            args: [{ maxReviews: config?.maxReviews || config?.limit || 50 }]
+          });
 
-      const reviews = results[0]?.result || [];
-
-      if (reviews.length > 0) {
-        await chrome.storage.local.set({
-          stats: {
-            ...stats,
-            reviews: (stats?.reviews || 0) + reviews.length
-          }
-        });
-
-        // Send to import-reviews edge function
-        const response = await fetch(`${API_URL}/import-reviews`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-extension-token': extensionToken
-          },
-          body: JSON.stringify({
-            reviews,
-            options: {
-              translate: config?.translate ?? true,
-              targetLanguage: 'fr',
-              platform: this.detectPlatform(tab.url),
-              productUrl: tab.url
-            }
-          })
-        });
-
-        const result = await response.json();
-        
-        if (result.success) {
-          this.showNotification(
-            `${result.imported} avis importés`,
-            'Import des avis réussi'
-          );
+          reviews = results[0]?.result || [];
+        } catch (scriptError) {
+          console.error('[ShopOpti+] Script execution error:', scriptError);
+          return { success: false, error: 'Impossible d\'extraire les avis' };
         }
       }
 
-      return reviews;
+      if (reviews.length === 0) {
+        return { success: false, count: 0, error: 'Aucun avis trouvé' };
+      }
+
+      console.log(`[ShopOpti+] Importing ${reviews.length} reviews...`);
+
+      // Send to import-reviews edge function with correct action
+      const response = await fetch(`${API_URL}/import-reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'import',
+          reviews: reviews.map(r => ({
+            author: r.author || 'Anonymous',
+            rating: r.rating || 5,
+            content: r.content || r.text || '',
+            date: r.date || new Date().toISOString(),
+            images: r.images || [],
+            verified: r.verified || false,
+            helpful_count: r.helpful_count || 0,
+            country: r.country
+          })),
+          productId: config?.productId || null,
+          options: {
+            translate: config?.translate ?? true,
+            targetLanguage: config?.targetLanguage || 'fr'
+          }
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Update local stats
+        await chrome.storage.local.set({
+          stats: {
+            ...stats,
+            reviews: (stats?.reviews || 0) + (result.imported || reviews.length)
+          }
+        });
+
+        this.showNotification(
+          `${result.imported || reviews.length} avis importés`,
+          'Import des avis réussi'
+        );
+
+        return { success: true, count: result.imported || reviews.length };
+      } else {
+        console.error('[ShopOpti+] Review import failed:', result.error);
+        return { success: false, error: result.error || 'Erreur lors de l\'import' };
+      }
     } catch (error) {
       console.error('[ShopOpti+] Error importing reviews:', error);
-      return [];
+      return { success: false, error: error.message };
     }
   }
 
