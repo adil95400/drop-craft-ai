@@ -205,6 +205,12 @@ class ShopOptiBackground {
           sendResponse(urlImportResult);
           break;
 
+        case 'IMPORT_PRODUCT_WITH_REVIEWS':
+          // Combined import: Product + Variants + Reviews
+          const combinedResult = await this.importProductWithReviews(message.url, message.reviewLimit);
+          sendResponse(combinedResult);
+          break;
+
         case 'OPEN_BULK_IMPORT':
           // Open bulk import page in ShopOpti
           chrome.tabs.create({ url: `${APP_URL}/products/import` });
@@ -263,6 +269,131 @@ class ShopOptiBackground {
     } catch (error) {
       console.error('[ShopOpti+] Error handling message:', error);
       sendResponse({ error: error.message });
+    }
+  }
+
+  // === COMBINED PRODUCT + REVIEWS IMPORT ===
+  async importProductWithReviews(url, reviewLimit = 50) {
+    try {
+      console.log('[ShopOpti+] Starting combined import for:', url);
+      
+      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+      
+      if (!extensionToken) {
+        return { success: false, error: 'Non connecté. Connectez-vous via l\'extension.' };
+      }
+      
+      // Step 1: Import product via extension-scraper
+      const productResponse = await fetch(`${API_URL}/extension-scraper`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'scrape_and_import',
+          url: url
+        })
+      });
+      
+      const productData = await productResponse.json();
+      
+      if (!productResponse.ok || !productData.success) {
+        console.error('[ShopOpti+] Product import failed:', productData.error);
+        return { success: false, error: productData.error || 'Échec de l\'import produit' };
+      }
+      
+      const product = productData.product || productData.data?.product;
+      const productId = product?.id;
+      
+      console.log('[ShopOpti+] Product imported:', product?.title, 'ID:', productId);
+      
+      // Step 2: Extract reviews from page
+      let reviews = [];
+      let reviewCount = 0;
+      
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        const reviewResults = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: extractReviewsFromPage,
+          args: [{ maxReviews: reviewLimit }]
+        });
+        
+        reviews = reviewResults[0]?.result || [];
+        console.log('[ShopOpti+] Extracted', reviews.length, 'reviews from page');
+        
+        if (reviews.length > 0 && productId) {
+          // Step 3: Import reviews
+          const reviewsResponse = await fetch(`${API_URL}/import-reviews`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-extension-token': extensionToken
+            },
+            body: JSON.stringify({
+              action: 'import',
+              productId: productId,
+              reviews: reviews.map(r => ({
+                author: r.author || 'Anonymous',
+                rating: r.rating || 5,
+                content: r.content || r.text || '',
+                date: r.date || new Date().toISOString(),
+                images: r.images || [],
+                verified: r.verified || false,
+                helpful_count: r.helpful_count || 0,
+                country: r.country
+              })),
+              options: {
+                translate: true,
+                targetLanguage: 'fr'
+              }
+            })
+          });
+          
+          const reviewsData = await reviewsResponse.json();
+          reviewCount = reviewsData.imported || reviews.length;
+          console.log('[ShopOpti+] Reviews imported:', reviewCount);
+        }
+      } catch (reviewError) {
+        console.warn('[ShopOpti+] Review extraction/import failed:', reviewError);
+        // Continue without reviews - product was already imported
+      }
+      
+      // Update local stats
+      const { stats } = await chrome.storage.local.get(['stats']);
+      await chrome.storage.local.set({
+        stats: {
+          ...stats,
+          products: (stats?.products || 0) + 1,
+          reviews: (stats?.reviews || 0) + reviewCount
+        }
+      });
+      
+      this.showNotification(
+        `Import complet réussi`,
+        `${product?.title || 'Produit'} + ${reviewCount} avis`
+      );
+      
+      return {
+        success: true,
+        product: {
+          id: productId,
+          title: product?.title || product?.name,
+          image: product?.image || product?.images?.[0],
+          variantCount: product?.variants?.length || productData.variantCount || 0,
+          imageCount: product?.images?.length || productData.imageCount || 0
+        },
+        reviews: {
+          count: reviewCount
+        },
+        variantCount: product?.variants?.length || productData.variantCount || 0,
+        imageCount: product?.images?.length || productData.imageCount || 0
+      };
+    } catch (error) {
+      console.error('[ShopOpti+] Combined import error:', error);
+      return { success: false, error: error.message };
     }
   }
   
