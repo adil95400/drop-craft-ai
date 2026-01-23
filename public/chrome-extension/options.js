@@ -141,6 +141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupDashboardButton();
   setupClearCacheButton();
   setupResetAllButton();
+  setupPlatformToggles();
+  setupSelectInputs();
 });
 
 // Tab switching functionality
@@ -213,37 +215,114 @@ function setupResetAllButton() {
           console.error('[ShopOpti+] Error resetting all:', error);
           showNotification('Erreur lors de la réinitialisation', 'error');
         }
+    }
+  });
+}
+
+// Platform toggle setup
+function setupPlatformToggles() {
+  const platformItems = document.querySelectorAll('.platform-item');
+  platformItems.forEach(item => {
+    item.addEventListener('click', async () => {
+      item.classList.toggle('active');
+      
+      const platform = item.dataset.platform;
+      const isActive = item.classList.contains('active');
+      
+      // Save platform state
+      const data = await storageGet({ enabledPlatforms: {} });
+      const platforms = data.enabledPlatforms || {};
+      platforms[platform] = isActive;
+      await storageSet({ enabledPlatforms: platforms });
+      
+      console.log(`[ShopOpti+] Platform ${platform} ${isActive ? 'enabled' : 'disabled'}`);
+    });
+  });
+  
+  // Load saved platform states
+  storageGet({ enabledPlatforms: {} }).then(data => {
+    const platforms = data.enabledPlatforms || {};
+    platformItems.forEach(item => {
+      const platform = item.dataset.platform;
+      if (platforms[platform] === false) {
+        item.classList.remove('active');
       }
     });
-  }
+  });
+}
+
+// Select input handlers
+function setupSelectInputs() {
+  const selects = ['defaultCurrency', 'productStatus', 'priceCheckInterval', 'stockCheckInterval'];
+  selects.forEach(id => {
+    const el = getElement(id);
+    if (el) {
+      el.addEventListener('change', saveSettings);
+    }
+  });
+}
 }
 
 async function loadSettings() {
   try {
     const settings = await storageGet({
       ...DEFAULT_SETTINGS,
-      extensionToken: ''
+      extensionToken: '',
+      // Import settings
+      marginMin: 30,
+      marginMax: 100,
+      defaultCurrency: 'EUR',
+      productStatus: 'draft',
+      autoImages: true,
+      autoVariants: true,
+      cleanTitles: true,
+      // Automation settings
+      autoImportBtn: true,
+      priceMonitoring: true,
+      stockAlerts: true,
+      autoOrder: false,
+      aiOptimization: false,
+      priceCheckInterval: '30',
+      stockCheckInterval: '60',
+      // Advanced settings
+      showExtraction: false
     });
 
+    // Connection tab
     setElementValue('apiUrl', settings.apiUrl || DEFAULT_SETTINGS.apiUrl);
     setElementValue('extensionToken', settings.extensionToken || '');
-    setElementValue('autoPriceMonitoring', settings.autoPriceMonitoring);
-    setElementValue('autoStockAlerts', settings.autoStockAlerts);
-    setElementValue('autoInjectButtons', settings.autoInjectButtons !== false);
-    setElementValue('autoShowSidebar', settings.autoShowSidebar);
+    
+    // Import tab
+    setElementValue('marginMin', settings.marginMin || 30);
+    setElementValue('marginMax', settings.marginMax || 100);
+    setElementValue('defaultCurrency', settings.defaultCurrency || 'EUR');
+    setElementValue('productStatus', settings.productStatus || 'draft');
+    setElementValue('autoImages', settings.autoImages !== false);
+    setElementValue('autoVariants', settings.autoVariants !== false);
+    setElementValue('cleanTitles', settings.cleanTitles !== false);
+    
+    // Automation tab
+    setElementValue('autoImportBtn', settings.autoImportBtn !== false);
+    setElementValue('priceMonitoring', settings.priceMonitoring !== false);
+    setElementValue('stockAlerts', settings.stockAlerts !== false);
     setElementValue('pushNotifications', settings.pushNotifications !== false);
-    setElementValue('minMargin', settings.minMargin || 30);
-    setElementValue('maxPrice', settings.maxPrice || 100);
-    setElementValue('minRating', settings.minRating || 4);
-    setElementValue('excludeKeywords', settings.excludeKeywords || '');
-    setElementValue('includeCategories', settings.includeCategories || '');
-    setElementValue('importDelay', settings.importDelay || 2);
-    setElementValue('maxConcurrent', settings.maxConcurrent || 5);
+    setElementValue('autoOrder', settings.autoOrder);
+    setElementValue('aiOptimization', settings.aiOptimization);
+    setElementValue('priceCheckInterval', settings.priceCheckInterval || '30');
+    setElementValue('stockCheckInterval', settings.stockCheckInterval || '60');
+    
+    // Advanced tab
     setElementValue('debugMode', settings.debugMode);
-    setElementValue('powerSaveMode', settings.powerSaveMode);
+    setElementValue('showExtraction', settings.showExtraction);
+    
+    // Legacy support
+    setElementValue('autoPriceMonitoring', settings.autoPriceMonitoring || settings.priceMonitoring);
+    setElementValue('autoStockAlerts', settings.autoStockAlerts || settings.stockAlerts);
+    setElementValue('autoInjectButtons', settings.autoInjectButtons !== false);
+    setElementValue('minMargin', settings.minMargin || settings.marginMin || 30);
+    setElementValue('maxPrice', settings.maxPrice || settings.marginMax || 100);
 
     updateConnectionStatus(!!settings.extensionToken);
-
     console.log('[ShopOpti+] Settings loaded');
   } catch (error) {
     console.error('[ShopOpti+] Error loading settings:', error);
@@ -259,10 +338,12 @@ async function loadStats() {
     const statProducts = getElement('statProducts');
     const statReviews = getElement('statReviews');
     const statMonitored = getElement('statMonitored');
+    const statOrders = getElement('statOrders');
 
     if (statProducts) statProducts.textContent = stats?.products || 0;
     if (statReviews) statReviews.textContent = stats?.reviews || 0;
     if (statMonitored) statMonitored.textContent = stats?.monitored || 0;
+    if (statOrders) statOrders.textContent = stats?.autoOrders || 0;
   } catch (error) {
     console.error('[ShopOpti+] Error loading stats:', error);
   }
@@ -328,33 +409,51 @@ async function saveSettings() {
     const settings = {
       apiUrl: getElementValue('apiUrl', DEFAULT_SETTINGS.apiUrl),
       extensionToken: getElementValue('extensionToken', ''),
-      autoPriceMonitoring: getElementValue('autoPriceMonitoring', false),
-      autoStockAlerts: getElementValue('autoStockAlerts', false),
-      autoInjectButtons: getElementValue('autoInjectButtons', true),
-      autoShowSidebar: getElementValue('autoShowSidebar', false),
+      
+      // Import tab settings
+      marginMin: Number(getElementValue('marginMin', 30)) || 30,
+      marginMax: Number(getElementValue('marginMax', 100)) || 100,
+      defaultCurrency: getElementValue('defaultCurrency', 'EUR'),
+      productStatus: getElementValue('productStatus', 'draft'),
+      autoImages: getElementValue('autoImages', true),
+      autoVariants: getElementValue('autoVariants', true),
+      cleanTitles: getElementValue('cleanTitles', true),
+      
+      // Automation tab settings
+      autoImportBtn: getElementValue('autoImportBtn', true),
+      priceMonitoring: getElementValue('priceMonitoring', true),
+      stockAlerts: getElementValue('stockAlerts', true),
       pushNotifications: getElementValue('pushNotifications', true),
-      minMargin: Number(getElementValue('minMargin', 30)) || 30,
-      maxPrice: Number(getElementValue('maxPrice', 100)) || 100,
-      minRating: Number(getElementValue('minRating', 4)) || 4,
-      excludeKeywords: getElementValue('excludeKeywords', ''),
-      includeCategories: getElementValue('includeCategories', ''),
-      importDelay: parseInt(String(getElementValue('importDelay', 2)), 10) || 2,
-      maxConcurrent: parseInt(String(getElementValue('maxConcurrent', 5)), 10) || 5,
+      autoOrder: getElementValue('autoOrder', false),
+      aiOptimization: getElementValue('aiOptimization', false),
+      priceCheckInterval: getElementValue('priceCheckInterval', '30'),
+      stockCheckInterval: getElementValue('stockCheckInterval', '60'),
+      
+      // Advanced tab settings
       debugMode: getElementValue('debugMode', false),
-      powerSaveMode: getElementValue('powerSaveMode', false)
+      showExtraction: getElementValue('showExtraction', false),
+      
+      // Legacy support (map to new names)
+      autoPriceMonitoring: getElementValue('priceMonitoring', true),
+      autoStockAlerts: getElementValue('stockAlerts', true),
+      autoInjectButtons: getElementValue('autoImportBtn', true),
+      minMargin: Number(getElementValue('marginMin', 30)) || 30,
+      maxPrice: Number(getElementValue('marginMax', 100)) || 100
     };
 
     await storageSet(settings);
 
     try {
-      if (settings.autoPriceMonitoring) {
-        await alarmsCreate('priceMonitoring', { periodInMinutes: 30 });
+      if (settings.priceMonitoring) {
+        const interval = parseInt(settings.priceCheckInterval) || 30;
+        await alarmsCreate('priceMonitoring', { periodInMinutes: interval });
       } else {
         await alarmsClear('priceMonitoring');
       }
 
-      if (settings.autoStockAlerts) {
-        await alarmsCreate('stockAlerts', { periodInMinutes: 15 });
+      if (settings.stockAlerts) {
+        const interval = parseInt(settings.stockCheckInterval) || 60;
+        await alarmsCreate('stockAlerts', { periodInMinutes: interval });
       } else {
         await alarmsClear('stockAlerts');
       }

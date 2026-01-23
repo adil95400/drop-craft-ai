@@ -325,7 +325,7 @@ export default function ChromeExtensionPage() {
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-2">
               <Badge className="bg-cyan-500">Extension Chrome</Badge>
-              <Badge variant="outline">v4.0.0</Badge>
+              <Badge variant="outline">v4.3.11</Badge>
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold">
