@@ -189,7 +189,6 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'sources',
     subModules: [
       { id: 'extensions-hub', name: 'Hub Extensions', route: '/extensions', icon: 'LayoutDashboard', description: 'Vue d\'ensemble des extensions', features: ['overview'], order: 1 },
-      { id: 'extensions-chrome', name: 'Chrome Extension', route: '/extensions/chrome', icon: 'Chrome', description: 'Extension navigateur Chrome', features: ['chrome-extension'], order: 2 },
     ]
   },
 
