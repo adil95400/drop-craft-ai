@@ -84,7 +84,7 @@ export default function ChromeExtensionConfigPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = result.filename || 'dropcraft-extension.zip';
+      a.download = result.filename || 'shopopti-extension.zip';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

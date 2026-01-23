@@ -296,7 +296,7 @@ export const SEOPageOptimizationModal = ({
                       {optimizedTitle}
                     </div>
                     <div className="text-green-700 text-sm">
-                      https://dropcraft.ai{page.url}
+                      https://shopopti.io{page.url}
                     </div>
                     <div className="text-gray-600 text-sm leading-relaxed">
                       {optimizedDescription}

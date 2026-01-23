@@ -255,7 +255,7 @@ export function ArticleSchema({
       "name": "ShopOpti+",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://drop-craft-ai.lovable.app/logo.png"
+        "url": "https://shopopti.io/logo.png"
       }
     },
     "datePublished": datePublished,
@@ -297,7 +297,7 @@ export function LocalBusinessSchema({
     "@type": "SoftwareCompany",
     "name": name,
     "description": description,
-    "url": "https://drop-craft-ai.lovable.app"
+    "url": "https://shopopti.io"
   };
 
   if (address) {

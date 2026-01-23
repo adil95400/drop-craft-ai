@@ -39,7 +39,7 @@ const DEPLOYMENT_ENVIRONMENTS: Environment[] = [
     id: 'dev',
     name: 'Développement',
     type: 'development',
-    url: 'https://dev-ext.dropcraft.ai',
+    url: 'https://dev-ext.shopopti.io',
     status: 'active',
     version: '1.2.0-dev',
     lastDeploy: '2024-01-18T10:30:00Z'
@@ -48,7 +48,7 @@ const DEPLOYMENT_ENVIRONMENTS: Environment[] = [
     id: 'staging',
     name: 'Pré-production',
     type: 'staging', 
-    url: 'https://staging-ext.dropcraft.ai',
+    url: 'https://staging-ext.shopopti.io',
     status: 'active',
     version: '1.1.8',
     lastDeploy: '2024-01-17T15:45:00Z'
@@ -57,7 +57,7 @@ const DEPLOYMENT_ENVIRONMENTS: Environment[] = [
     id: 'prod',
     name: 'Production',
     type: 'production',
-    url: 'https://marketplace.dropcraft.ai',
+    url: 'https://marketplace.shopopti.io',
     status: 'active',
     version: '1.1.7',
     lastDeploy: '2024-01-15T09:15:00Z'

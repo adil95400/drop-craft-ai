@@ -45,7 +45,7 @@ export const ExtensionDownloadPage = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = data.filename || 'dropcraft-extension.zip';
+      link.download = data.filename || 'shopopti-extension.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -78,7 +78,7 @@ export const ExtensionDownloadPage = () => {
     },
     {
       title: "Extraire le fichier ZIP",
-      description: "Décompressez le fichier dropcraft-extension.zip dans un dossier",
+      description: "Décompressez le fichier shopopti-extension.zip dans un dossier",
       completed: downloadStep >= 2
     },
     {

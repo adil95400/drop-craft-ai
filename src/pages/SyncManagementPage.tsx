@@ -111,7 +111,7 @@ export default function SyncManagementPage() {
   return (
     <>
       <Helmet>
-        <title>Gestion des Synchronisations - DropCraft AI</title>
+        <title>Gestion des Synchronisations - ShopOpti</title>
         <meta 
           name="description" 
           content="Gérez la synchronisation automatique de vos marketplaces"
