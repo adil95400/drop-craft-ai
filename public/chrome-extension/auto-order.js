@@ -1,28 +1,40 @@
 /**
- * DropCraft Auto-Order System
+ * ShopOpti+ Auto-Order System v4.3.10
  * Automated order placement for dropshipping
+ * Supports: AliExpress, Amazon, Temu, CJ Dropshipping
  */
 
-class DropCraftAutoOrder {
+class ShopOptiAutoOrder {
   constructor() {
     this.config = null;
     this.auth = null;
     this.pendingOrders = [];
     this.processingQueue = [];
+    this.orderHistory = [];
+    this.retryAttempts = {};
+    this.MAX_RETRIES = 3;
   }
 
   async init() {
     await this.loadConfig();
     await this.loadPendingOrders();
+    await this.loadOrderHistory();
     this.injectUI();
     this.setupMessageListener();
+    this.checkForProcessingOrder();
+    console.log('[ShopOpti+] Auto-order system initialized');
   }
 
   async loadConfig() {
     return new Promise(resolve => {
-      chrome.storage.local.get(['dropcraft_config', 'dropcraft_auth'], result => {
-        this.config = result.dropcraft_config || {};
-        this.auth = result.dropcraft_auth || {};
+      chrome.storage.local.get(['shopopti_config', 'shopopti_auth'], result => {
+        this.config = result.shopopti_config || {
+          autoConfirmOrders: false,
+          defaultShippingMethod: 'standard',
+          notifyOnComplete: true,
+          retryOnFailure: true
+        };
+        this.auth = result.shopopti_auth || {};
         resolve();
       });
     });
@@ -43,8 +55,66 @@ class DropCraftAutoOrder {
         this.pendingOrders = data.orders || [];
       }
     } catch (error) {
-      console.error('[DropCraft] Failed to load pending orders:', error);
+      console.error('[ShopOpti+] Failed to load pending orders:', error);
     }
+  }
+
+  async loadOrderHistory() {
+    return new Promise(resolve => {
+      chrome.storage.local.get(['shopopti_order_history'], result => {
+        this.orderHistory = result.shopopti_order_history || [];
+        resolve();
+      });
+    });
+  }
+
+  async saveOrderHistory() {
+    // Keep last 100 orders
+    const historyToSave = this.orderHistory.slice(-100);
+    return new Promise(resolve => {
+      chrome.storage.local.set({ shopopti_order_history: historyToSave }, resolve);
+    });
+  }
+
+  async checkForProcessingOrder() {
+    return new Promise(resolve => {
+      chrome.storage.local.get(['processing_order'], async result => {
+        if (result.processing_order) {
+          const order = result.processing_order;
+          const platform = this.detectPlatform(window.location.href);
+          
+          if (platform && window.location.href.includes(order.supplierUrl?.split('/')[2])) {
+            console.log('[ShopOpti+] Resuming order processing:', order);
+            await chrome.storage.local.remove(['processing_order']);
+            await this.continueOrderProcessing(order, platform);
+          }
+        }
+        resolve();
+      });
+    });
+  }
+
+  async continueOrderProcessing(order, platform) {
+    let result;
+    switch (platform) {
+      case 'aliexpress':
+        result = await this.placeAliExpressOrder(order);
+        break;
+      case 'amazon':
+        result = await this.placeAmazonOrder(order);
+        break;
+      case 'temu':
+        result = await this.placeTemuOrder(order);
+        break;
+      case 'cjdropshipping':
+        result = await this.placeCJOrder(order);
+        break;
+      default:
+        result = { success: false, error: 'Plateforme non supportée' };
+    }
+
+    await this.recordOrderResult(order, result);
+    return result;
   }
 
   setupMessageListener() {
@@ -55,6 +125,14 @@ class DropCraftAutoOrder {
       }
       if (message.type === 'CHECK_ORDER_STATUS') {
         this.checkOrderStatus(message.orderId).then(sendResponse);
+        return true;
+      }
+      if (message.type === 'GET_ORDER_HISTORY') {
+        sendResponse({ orders: this.orderHistory });
+        return true;
+      }
+      if (message.type === 'RETRY_ORDER') {
+        this.retryOrder(message.orderId).then(sendResponse);
         return true;
       }
     });
@@ -68,32 +146,78 @@ class DropCraftAutoOrder {
     }
 
     try {
-      // Navigate to product page
-      if (window.location.href !== order.supplierUrl) {
-        window.location.href = order.supplierUrl;
-        // Store order in local storage for processing after navigation
+      // Check if we're on the right page
+      if (!window.location.href.includes(order.supplierUrl?.split('/')[2])) {
+        // Store order and navigate
         await this.storeProcessingOrder(order);
+        window.location.href = order.supplierUrl;
         return { success: true, status: 'navigating' };
       }
 
       // Platform-specific order placement
+      let result;
       switch (platform) {
         case 'aliexpress':
-          return await this.placeAliExpressOrder(order);
+          result = await this.placeAliExpressOrder(order);
+          break;
         case 'amazon':
-          return await this.placeAmazonOrder(order);
+          result = await this.placeAmazonOrder(order);
+          break;
+        case 'temu':
+          result = await this.placeTemuOrder(order);
+          break;
         case 'cjdropshipping':
-          return await this.placeCJOrder(order);
+          result = await this.placeCJOrder(order);
+          break;
         default:
-          return { success: false, error: 'Plateforme non implémentée' };
+          result = { success: false, error: 'Plateforme non implémentée' };
       }
+
+      await this.recordOrderResult(order, result);
+      return result;
     } catch (error) {
-      console.error('[DropCraft] Order processing failed:', error);
-      return { success: false, error: error.message };
+      console.error('[ShopOpti+] Order processing failed:', error);
+      const errorResult = { success: false, error: error.message };
+      await this.recordOrderResult(order, errorResult);
+      return errorResult;
+    }
+  }
+
+  async recordOrderResult(order, result) {
+    const historyEntry = {
+      id: order.id || `order_${Date.now()}`,
+      orderId: order.id,
+      orderNumber: result.orderNumber || order.orderNumber,
+      supplierOrderNumber: result.supplierOrderNumber,
+      platform: this.detectPlatform(order.supplierUrl),
+      status: result.success ? 'completed' : 'failed',
+      error: result.error,
+      steps: result.steps,
+      processedAt: new Date().toISOString(),
+      order: order
+    };
+
+    this.orderHistory.push(historyEntry);
+    await this.saveOrderHistory();
+
+    // Notify background
+    chrome.runtime.sendMessage({
+      type: 'ORDER_PROCESSED',
+      result: historyEntry
+    });
+
+    // Show notification
+    if (this.config.notifyOnComplete) {
+      this.showNotification(result.success ? 'success' : 'error', 
+        result.success 
+          ? `Commande passée avec succès${result.supplierOrderNumber ? ` - #${result.supplierOrderNumber}` : ''}`
+          : `Échec: ${result.error}`
+      );
     }
   }
 
   detectPlatform(url) {
+    if (!url) return null;
     if (url.includes('aliexpress.')) return 'aliexpress';
     if (url.includes('amazon.')) return 'amazon';
     if (url.includes('cjdropshipping.')) return 'cjdropshipping';
@@ -101,8 +225,9 @@ class DropCraftAutoOrder {
     return null;
   }
 
+  // ============= ALIEXPRESS AUTO-ORDER =============
   async placeAliExpressOrder(order) {
-    const result = { success: false, steps: [] };
+    const result = { success: false, steps: [], platform: 'aliexpress' };
 
     try {
       // Step 1: Select variant if specified
@@ -127,7 +252,7 @@ class DropCraftAutoOrder {
       }
 
       // Wait for checkout page
-      await this.waitForNavigation();
+      await this.waitForPageLoad();
 
       // Step 4: Fill shipping address
       if (order.shippingAddress) {
@@ -153,14 +278,14 @@ class DropCraftAutoOrder {
         result.steps.push({ step: 'confirm', success: orderPlaced });
         
         if (orderPlaced) {
-          // Extract order number
           const orderNumber = await this.extractOrderNumber();
-          result.orderNumber = orderNumber;
+          result.supplierOrderNumber = orderNumber;
           result.success = true;
         }
       } else {
         result.status = 'pending_confirmation';
         result.success = true;
+        result.message = 'Commande prête - confirmation manuelle requise';
       }
 
       return result;
@@ -173,7 +298,9 @@ class DropCraftAutoOrder {
     try {
       // Color selection
       if (variant.color) {
-        const colorOptions = document.querySelectorAll('[class*="sku-property"] img, [class*="color"] img');
+        const colorOptions = document.querySelectorAll(
+          '[class*="sku-property"] img, [class*="color"] img, [data-sku-prop-key*="color"] img'
+        );
         for (const opt of colorOptions) {
           const alt = opt.alt?.toLowerCase() || '';
           const title = opt.title?.toLowerCase() || '';
@@ -187,7 +314,9 @@ class DropCraftAutoOrder {
 
       // Size selection
       if (variant.size) {
-        const sizeOptions = document.querySelectorAll('[class*="sku-property"] span, [class*="size"] span');
+        const sizeOptions = document.querySelectorAll(
+          '[class*="sku-property"] span, [class*="size"] span, [data-sku-prop-key*="size"] span'
+        );
         for (const opt of sizeOptions) {
           if (opt.textContent.toLowerCase().includes(variant.size.toLowerCase())) {
             opt.click();
@@ -199,14 +328,962 @@ class DropCraftAutoOrder {
 
       return true;
     } catch (error) {
-      console.error('[DropCraft] Variant selection failed:', error);
+      console.error('[ShopOpti+] Variant selection failed:', error);
       return false;
     }
   }
 
+  // ============= AMAZON AUTO-ORDER =============
+  async placeAmazonOrder(order) {
+    const result = { success: false, steps: [], platform: 'amazon' };
+
+    try {
+      console.log('[ShopOpti+] Starting Amazon order process...');
+
+      // Step 1: Check if on product page
+      const isProductPage = this.isAmazonProductPage();
+      result.steps.push({ step: 'page_detection', success: isProductPage, page: window.location.href });
+      
+      if (!isProductPage) {
+        return { ...result, error: 'Page produit Amazon non détectée' };
+      }
+
+      // Step 2: Select variant if specified
+      if (order.variant) {
+        const variantSelected = await this.selectAmazonVariant(order.variant);
+        result.steps.push({ step: 'variant_selection', success: variantSelected });
+        await this.delay(800);
+      }
+
+      // Step 3: Set quantity
+      if (order.quantity && order.quantity > 1) {
+        const quantitySet = await this.setAmazonQuantity(order.quantity);
+        result.steps.push({ step: 'quantity', success: quantitySet });
+        await this.delay(500);
+      }
+
+      // Step 4: Check availability
+      const availability = await this.checkAmazonAvailability();
+      result.steps.push({ step: 'availability_check', success: availability.inStock, details: availability });
+      
+      if (!availability.inStock) {
+        return { ...result, error: 'Produit indisponible sur Amazon' };
+      }
+
+      // Step 5: Click Buy Now or Add to Cart
+      const addedToCart = await this.addToAmazonCart();
+      result.steps.push({ step: 'add_to_cart', success: addedToCart });
+
+      if (!addedToCart) {
+        // Try Buy Now button instead
+        const buyNowClicked = await this.clickAmazonBuyNow();
+        result.steps.push({ step: 'buy_now', success: buyNowClicked });
+        
+        if (!buyNowClicked) {
+          return { ...result, error: 'Impossible d\'ajouter au panier ou cliquer Acheter' };
+        }
+      }
+
+      // Wait for cart/checkout page
+      await this.waitForPageLoad();
+      await this.delay(2000);
+
+      // Step 6: Navigate to checkout if needed
+      if (window.location.href.includes('/cart') || window.location.href.includes('/gp/cart')) {
+        const proceedToCheckout = await this.proceedToAmazonCheckout();
+        result.steps.push({ step: 'proceed_to_checkout', success: proceedToCheckout });
+        
+        if (!proceedToCheckout) {
+          return { ...result, error: 'Impossible de procéder au paiement' };
+        }
+        
+        await this.waitForPageLoad();
+        await this.delay(2000);
+      }
+
+      // Step 7: Select/confirm delivery address
+      if (order.shippingAddress) {
+        const addressSelected = await this.selectAmazonAddress(order.shippingAddress);
+        result.steps.push({ step: 'address_selection', success: addressSelected });
+        await this.delay(1000);
+      }
+
+      // Step 8: Select shipping speed
+      const shippingSelected = await this.selectAmazonShipping(order.shippingMethod || 'standard');
+      result.steps.push({ step: 'shipping_selection', success: shippingSelected });
+      await this.delay(1000);
+
+      // Step 9: Continue to payment
+      const continueClicked = await this.clickAmazonContinue();
+      result.steps.push({ step: 'continue_to_payment', success: continueClicked });
+      await this.delay(1500);
+
+      // Step 10: Apply gift card or promo code
+      if (order.promoCode) {
+        const promoApplied = await this.applyAmazonPromoCode(order.promoCode);
+        result.steps.push({ step: 'promo_code', success: promoApplied });
+      }
+
+      // Step 11: Place order (if auto-confirm enabled)
+      if (this.config.autoConfirmOrders) {
+        const orderPlaced = await this.placeAmazonOrderFinal();
+        result.steps.push({ step: 'place_order', success: orderPlaced });
+        
+        if (orderPlaced) {
+          await this.delay(3000);
+          const orderNumber = await this.extractAmazonOrderNumber();
+          result.supplierOrderNumber = orderNumber;
+          result.success = true;
+          result.message = `Commande Amazon passée${orderNumber ? ` - #${orderNumber}` : ''}`;
+        }
+      } else {
+        result.status = 'pending_confirmation';
+        result.success = true;
+        result.message = 'Commande Amazon prête - confirmation manuelle requise';
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[ShopOpti+] Amazon order error:', error);
+      return { ...result, error: error.message };
+    }
+  }
+
+  isAmazonProductPage() {
+    return !!(
+      document.getElementById('productTitle') ||
+      document.getElementById('title') ||
+      document.querySelector('[data-feature-name="title"]') ||
+      document.getElementById('dp-container')
+    );
+  }
+
+  async selectAmazonVariant(variant) {
+    try {
+      // Select size
+      if (variant.size) {
+        const sizeDropdown = document.getElementById('native_dropdown_selected_size_name') ||
+                            document.querySelector('#variation_size_name select');
+        if (sizeDropdown) {
+          const options = sizeDropdown.querySelectorAll('option');
+          for (const option of options) {
+            if (option.textContent.toLowerCase().includes(variant.size.toLowerCase())) {
+              sizeDropdown.value = option.value;
+              sizeDropdown.dispatchEvent(new Event('change', { bubbles: true }));
+              await this.delay(500);
+              break;
+            }
+          }
+        }
+        
+        // Alternative: button-based size selection
+        const sizeButtons = document.querySelectorAll('#variation_size_name li, [id*="size"] li');
+        for (const btn of sizeButtons) {
+          if (btn.textContent.toLowerCase().includes(variant.size.toLowerCase())) {
+            btn.click();
+            await this.delay(500);
+            break;
+          }
+        }
+      }
+
+      // Select color
+      if (variant.color) {
+        const colorOptions = document.querySelectorAll(
+          '#variation_color_name img, [id*="color"] img, .imgSwatch'
+        );
+        for (const img of colorOptions) {
+          const alt = img.alt?.toLowerCase() || '';
+          const title = img.title?.toLowerCase() || '';
+          if (alt.includes(variant.color.toLowerCase()) || title.includes(variant.color.toLowerCase())) {
+            img.click();
+            await this.delay(800);
+            break;
+          }
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error('[ShopOpti+] Amazon variant selection error:', error);
+      return false;
+    }
+  }
+
+  async setAmazonQuantity(quantity) {
+    try {
+      const quantitySelect = document.getElementById('quantity') ||
+                            document.querySelector('select[name="quantity"]');
+      if (quantitySelect) {
+        const value = Math.min(quantity, 30).toString();
+        quantitySelect.value = value;
+        quantitySelect.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
+
+      // Input-based quantity
+      const quantityInput = document.querySelector('input[name="quantity"]');
+      if (quantityInput) {
+        quantityInput.value = quantity;
+        quantityInput.dispatchEvent(new Event('input', { bubbles: true }));
+        quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async checkAmazonAvailability() {
+    const availability = {
+      inStock: true,
+      message: '',
+      price: null,
+      deliveryDate: null
+    };
+
+    // Check for out of stock indicators
+    const outOfStockIndicators = [
+      '#outOfStock',
+      '#availability span.a-color-error',
+      '[data-feature-name="availability"] .a-color-error',
+      '#availability .a-color-price'
+    ];
+
+    for (const selector of outOfStockIndicators) {
+      const el = document.querySelector(selector);
+      if (el && el.textContent.toLowerCase().includes('indisponible') || 
+          el?.textContent.toLowerCase().includes('out of stock') ||
+          el?.textContent.toLowerCase().includes('unavailable')) {
+        availability.inStock = false;
+        availability.message = el.textContent.trim();
+        break;
+      }
+    }
+
+    // Get price
+    const priceEl = document.querySelector(
+      '#priceblock_ourprice, #priceblock_dealprice, .a-price .a-offscreen, #corePrice_feature_div .a-offscreen'
+    );
+    if (priceEl) {
+      availability.price = priceEl.textContent.trim();
+    }
+
+    // Get delivery date
+    const deliveryEl = document.querySelector('#delivery-message, #mir-layout-DELIVERY_BLOCK');
+    if (deliveryEl) {
+      availability.deliveryDate = deliveryEl.textContent.trim().substring(0, 100);
+    }
+
+    return availability;
+  }
+
+  async addToAmazonCart() {
+    const addToCartSelectors = [
+      '#add-to-cart-button',
+      '#add-to-cart-button-ubb',
+      'input[name="submit.add-to-cart"]',
+      '#addToCart input[type="submit"]',
+      '[data-action="add-to-cart"]'
+    ];
+
+    for (const selector of addToCartSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn && !btn.disabled) {
+        btn.click();
+        await this.delay(1500);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async clickAmazonBuyNow() {
+    const buyNowSelectors = [
+      '#buy-now-button',
+      '#submit.buy-now-button',
+      'input[name="submit.buy-now"]',
+      '#buyNow input[type="submit"]'
+    ];
+
+    for (const selector of buyNowSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn && !btn.disabled) {
+        btn.click();
+        await this.delay(2000);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async proceedToAmazonCheckout() {
+    const checkoutSelectors = [
+      '#sc-buy-box-ptc-button input',
+      '#sc-buy-box-ptc-button',
+      'input[name="proceedToRetailCheckout"]',
+      '[data-feature-id="proceed-to-checkout-action"] input',
+      '.sc-proceed-to-checkout input',
+      '#hlb-ptc-btn-native'
+    ];
+
+    for (const selector of checkoutSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn) {
+        btn.click();
+        await this.delay(2000);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async selectAmazonAddress(address) {
+    try {
+      // Check if address selection page
+      const addressCards = document.querySelectorAll(
+        '.address-book-entry, [data-addressid], .ship-to-this-address'
+      );
+
+      if (addressCards.length > 0) {
+        // Try to find matching address
+        for (const card of addressCards) {
+          const cardText = card.textContent.toLowerCase();
+          if (address.name && cardText.includes(address.name.toLowerCase()) ||
+              address.zip && cardText.includes(address.zip)) {
+            const selectBtn = card.querySelector('input[type="radio"], a[id*="address"]');
+            if (selectBtn) {
+              selectBtn.click();
+              await this.delay(1000);
+              return true;
+            }
+          }
+        }
+
+        // Select first address as fallback
+        const firstSelect = addressCards[0].querySelector('input[type="radio"], a[id*="address"]');
+        if (firstSelect) {
+          firstSelect.click();
+          await this.delay(1000);
+          return true;
+        }
+      }
+
+      // Click "Deliver to this address" if present
+      const deliverBtn = document.querySelector(
+        '.ship-to-this-address a, [data-action="select-address"], input[value*="Deliver to this address"]'
+      );
+      if (deliverBtn) {
+        deliverBtn.click();
+        await this.delay(1000);
+        return true;
+      }
+
+      return true; // Address may already be selected
+    } catch (error) {
+      console.error('[ShopOpti+] Address selection error:', error);
+      return false;
+    }
+  }
+
+  async selectAmazonShipping(method) {
+    try {
+      const shippingOptions = document.querySelectorAll(
+        '.shipping-speed input[type="radio"], #shippingOptionFormId input[type="radio"]'
+      );
+
+      const methodLower = method.toLowerCase();
+      
+      for (const option of shippingOptions) {
+        const label = option.closest('label, .a-row, tr');
+        if (label) {
+          const text = label.textContent.toLowerCase();
+          
+          // Match shipping method
+          if ((methodLower === 'express' && (text.includes('express') || text.includes('fast') || text.includes('rapid'))) ||
+              (methodLower === 'standard' && (text.includes('standard') || text.includes('gratuit') || text.includes('free'))) ||
+              (methodLower === 'priority' && text.includes('priorit'))) {
+            option.click();
+            await this.delay(500);
+            return true;
+          }
+        }
+      }
+
+      // Select first available option as fallback
+      if (shippingOptions.length > 0) {
+        shippingOptions[0].click();
+        return true;
+      }
+
+      return true; // Shipping may already be selected
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async clickAmazonContinue() {
+    const continueSelectors = [
+      '#shipToThisAddressButton input',
+      'input[name="placeYourOrder"]',
+      '.continue-button input',
+      '#continue-top input',
+      '#continue-button input',
+      '.a-button-primary input[type="submit"]'
+    ];
+
+    for (const selector of continueSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn) {
+        btn.click();
+        await this.delay(1500);
+        return true;
+      }
+    }
+
+    return true; // May not be needed on some pages
+  }
+
+  async applyAmazonPromoCode(code) {
+    try {
+      const promoInput = document.querySelector(
+        '#spc-gcpromoinput, input[name="claimCode"], #gc-redemption-input'
+      );
+      const applyBtn = document.querySelector(
+        '#gcApplyButtonId, input[name="apply"], #gc-redemption-apply'
+      );
+
+      if (promoInput && applyBtn) {
+        promoInput.value = code;
+        promoInput.dispatchEvent(new Event('input', { bubbles: true }));
+        await this.delay(300);
+        applyBtn.click();
+        await this.delay(1500);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async placeAmazonOrderFinal() {
+    const placeOrderSelectors = [
+      '#placeYourOrder input',
+      '#submitOrderButtonId input',
+      'input[name="placeYourOrder1"]',
+      '#bottomSubmitOrderButtonId input',
+      '.place-your-order-button input'
+    ];
+
+    for (const selector of placeOrderSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn && !btn.disabled) {
+        btn.click();
+        await this.delay(3000);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async extractAmazonOrderNumber() {
+    try {
+      await this.delay(2000);
+      
+      // Look for order confirmation
+      const orderEl = document.querySelector(
+        '[data-component="orderIdComponent"], .a-box .a-color-base b, #orderDetails b'
+      );
+      
+      if (orderEl) {
+        const match = orderEl.textContent.match(/\d{3}-\d{7}-\d{7}/);
+        if (match) return match[0];
+      }
+
+      // Alternative: parse from page
+      const pageText = document.body.innerText;
+      const orderMatch = pageText.match(/(?:order|commande)[^\d]*(\d{3}-\d{7}-\d{7})/i);
+      if (orderMatch) return orderMatch[1];
+
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // ============= TEMU AUTO-ORDER =============
+  async placeTemuOrder(order) {
+    const result = { success: false, steps: [], platform: 'temu' };
+
+    try {
+      console.log('[ShopOpti+] Starting Temu order process...');
+
+      // Step 1: Check if on product page
+      const isProductPage = this.isTemuProductPage();
+      result.steps.push({ step: 'page_detection', success: isProductPage });
+      
+      if (!isProductPage) {
+        return { ...result, error: 'Page produit Temu non détectée' };
+      }
+
+      // Step 2: Select variant if specified
+      if (order.variant) {
+        const variantSelected = await this.selectTemuVariant(order.variant);
+        result.steps.push({ step: 'variant_selection', success: variantSelected });
+        await this.delay(800);
+      }
+
+      // Step 3: Set quantity
+      if (order.quantity && order.quantity > 1) {
+        const quantitySet = await this.setTemuQuantity(order.quantity);
+        result.steps.push({ step: 'quantity', success: quantitySet });
+        await this.delay(500);
+      }
+
+      // Step 4: Check availability and price
+      const availability = await this.checkTemuAvailability();
+      result.steps.push({ step: 'availability_check', success: availability.inStock, details: availability });
+      
+      if (!availability.inStock) {
+        return { ...result, error: 'Produit indisponible sur Temu' };
+      }
+
+      // Step 5: Click Buy Now or Add to Cart
+      const buyNowClicked = await this.clickTemuBuyNow();
+      result.steps.push({ step: 'buy_now', success: buyNowClicked });
+
+      if (!buyNowClicked) {
+        const addedToCart = await this.addToTemuCart();
+        result.steps.push({ step: 'add_to_cart', success: addedToCart });
+        
+        if (!addedToCart) {
+          return { ...result, error: 'Impossible d\'ajouter au panier Temu' };
+        }
+      }
+
+      // Wait for checkout
+      await this.waitForPageLoad();
+      await this.delay(2000);
+
+      // Step 6: Handle checkout page
+      if (window.location.href.includes('cart') || window.location.href.includes('checkout')) {
+        
+        // Step 7: Select/confirm shipping address
+        if (order.shippingAddress) {
+          const addressSelected = await this.selectTemuAddress(order.shippingAddress);
+          result.steps.push({ step: 'address_selection', success: addressSelected });
+          await this.delay(1000);
+        }
+
+        // Step 8: Select shipping method
+        const shippingSelected = await this.selectTemuShipping(order.shippingMethod || 'standard');
+        result.steps.push({ step: 'shipping_selection', success: shippingSelected });
+        await this.delay(800);
+
+        // Step 9: Apply coupon if available
+        if (order.couponCode) {
+          const couponApplied = await this.applyTemuCoupon(order.couponCode);
+          result.steps.push({ step: 'coupon', success: couponApplied });
+        }
+
+        // Step 10: Click checkout/proceed
+        const checkoutClicked = await this.proceedTemuCheckout();
+        result.steps.push({ step: 'proceed_checkout', success: checkoutClicked });
+        await this.delay(1500);
+
+        // Step 11: Place order (if auto-confirm enabled)
+        if (this.config.autoConfirmOrders) {
+          const orderPlaced = await this.placeTemuOrderFinal();
+          result.steps.push({ step: 'place_order', success: orderPlaced });
+          
+          if (orderPlaced) {
+            await this.delay(3000);
+            const orderNumber = await this.extractTemuOrderNumber();
+            result.supplierOrderNumber = orderNumber;
+            result.success = true;
+            result.message = `Commande Temu passée${orderNumber ? ` - #${orderNumber}` : ''}`;
+          }
+        } else {
+          result.status = 'pending_confirmation';
+          result.success = true;
+          result.message = 'Commande Temu prête - confirmation manuelle requise';
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[ShopOpti+] Temu order error:', error);
+      return { ...result, error: error.message };
+    }
+  }
+
+  isTemuProductPage() {
+    return !!(
+      document.querySelector('[class*="ProductTitle"], [class*="product-title"]') ||
+      document.querySelector('[class*="goods-price"]') ||
+      document.querySelector('[data-testid="pdp-price"]') ||
+      window.location.href.includes('/goods.html') ||
+      window.location.href.includes('/product/')
+    );
+  }
+
+  async selectTemuVariant(variant) {
+    try {
+      // Select size
+      if (variant.size) {
+        const sizeOptions = document.querySelectorAll(
+          '[class*="sku-item"], [class*="size-item"], [data-testid*="sku"]'
+        );
+        for (const opt of sizeOptions) {
+          const text = opt.textContent.toLowerCase();
+          if (text.includes(variant.size.toLowerCase())) {
+            opt.click();
+            await this.delay(600);
+            break;
+          }
+        }
+      }
+
+      // Select color
+      if (variant.color) {
+        const colorOptions = document.querySelectorAll(
+          '[class*="color-item"] img, [class*="sku-color"] img, [data-testid*="color"]'
+        );
+        for (const img of colorOptions) {
+          const alt = img.alt?.toLowerCase() || '';
+          const title = img.title?.toLowerCase() || '';
+          const parentText = img.closest('[class*="item"]')?.textContent.toLowerCase() || '';
+          
+          if (alt.includes(variant.color.toLowerCase()) || 
+              title.includes(variant.color.toLowerCase()) ||
+              parentText.includes(variant.color.toLowerCase())) {
+            img.click();
+            await this.delay(600);
+            break;
+          }
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error('[ShopOpti+] Temu variant selection error:', error);
+      return false;
+    }
+  }
+
+  async setTemuQuantity(quantity) {
+    try {
+      // Find quantity controls
+      const increaseBtn = document.querySelector(
+        '[class*="quantity-plus"], [class*="qty-increase"], [data-testid="qty-plus"]'
+      );
+      
+      if (increaseBtn) {
+        for (let i = 1; i < quantity; i++) {
+          increaseBtn.click();
+          await this.delay(200);
+        }
+        return true;
+      }
+
+      // Input-based quantity
+      const quantityInput = document.querySelector(
+        'input[class*="quantity"], input[data-testid="quantity-input"]'
+      );
+      if (quantityInput) {
+        quantityInput.value = quantity;
+        quantityInput.dispatchEvent(new Event('input', { bubbles: true }));
+        quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async checkTemuAvailability() {
+    const availability = {
+      inStock: true,
+      message: '',
+      price: null
+    };
+
+    // Check for sold out indicators
+    const soldOutEl = document.querySelector(
+      '[class*="sold-out"], [class*="out-of-stock"], [data-testid="sold-out"]'
+    );
+    if (soldOutEl) {
+      availability.inStock = false;
+      availability.message = 'Produit épuisé';
+    }
+
+    // Get price
+    const priceEl = document.querySelector(
+      '[class*="goods-price"], [class*="sale-price"], [data-testid="pdp-price"]'
+    );
+    if (priceEl) {
+      availability.price = priceEl.textContent.trim();
+    }
+
+    return availability;
+  }
+
+  async clickTemuBuyNow() {
+    const buyNowSelectors = [
+      '[class*="buy-now"]',
+      '[data-testid="buy-now-btn"]',
+      'button[class*="BuyNow"]',
+      '[class*="instant-buy"]'
+    ];
+
+    for (const selector of buyNowSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn && !btn.disabled) {
+        btn.click();
+        await this.delay(1500);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async addToTemuCart() {
+    const addToCartSelectors = [
+      '[class*="add-to-cart"]',
+      '[data-testid="add-to-cart-btn"]',
+      'button[class*="AddToCart"]',
+      '[class*="cart-btn"]'
+    ];
+
+    for (const selector of addToCartSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn && !btn.disabled) {
+        btn.click();
+        await this.delay(1500);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async selectTemuAddress(address) {
+    try {
+      const addressCards = document.querySelectorAll(
+        '[class*="address-item"], [class*="address-card"], [data-testid*="address"]'
+      );
+
+      for (const card of addressCards) {
+        const cardText = card.textContent.toLowerCase();
+        if ((address.name && cardText.includes(address.name.toLowerCase())) ||
+            (address.zip && cardText.includes(address.zip))) {
+          const selectEl = card.querySelector('input[type="radio"], [class*="select"]');
+          if (selectEl) {
+            selectEl.click();
+            await this.delay(500);
+            return true;
+          }
+          card.click();
+          await this.delay(500);
+          return true;
+        }
+      }
+
+      // Select first address as fallback
+      if (addressCards.length > 0) {
+        addressCards[0].click();
+        return true;
+      }
+
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async selectTemuShipping(method) {
+    try {
+      const shippingOptions = document.querySelectorAll(
+        '[class*="shipping-option"], [class*="delivery-option"], [data-testid*="shipping"]'
+      );
+
+      const methodLower = method.toLowerCase();
+
+      for (const option of shippingOptions) {
+        const text = option.textContent.toLowerCase();
+        
+        if ((methodLower === 'express' && (text.includes('express') || text.includes('rapid'))) ||
+            (methodLower === 'standard' && (text.includes('standard') || text.includes('gratuit') || text.includes('free')))) {
+          const radio = option.querySelector('input[type="radio"]');
+          if (radio) {
+            radio.click();
+          } else {
+            option.click();
+          }
+          await this.delay(500);
+          return true;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async applyTemuCoupon(code) {
+    try {
+      const couponInput = document.querySelector(
+        '[class*="coupon-input"], input[placeholder*="coupon"], input[placeholder*="code"]'
+      );
+      const applyBtn = document.querySelector(
+        '[class*="apply-coupon"], [class*="coupon-apply"], button[class*="apply"]'
+      );
+
+      if (couponInput) {
+        couponInput.value = code;
+        couponInput.dispatchEvent(new Event('input', { bubbles: true }));
+        await this.delay(300);
+        
+        if (applyBtn) {
+          applyBtn.click();
+          await this.delay(1000);
+        }
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async proceedTemuCheckout() {
+    const checkoutSelectors = [
+      '[class*="checkout-btn"]',
+      '[data-testid="checkout-button"]',
+      'button[class*="Checkout"]',
+      '[class*="proceed-checkout"]',
+      '[class*="place-order-btn"]'
+    ];
+
+    for (const selector of checkoutSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn && !btn.disabled) {
+        btn.click();
+        await this.delay(2000);
+        return true;
+      }
+    }
+
+    return true;
+  }
+
+  async placeTemuOrderFinal() {
+    const placeOrderSelectors = [
+      '[class*="submit-order"]',
+      '[data-testid="place-order-btn"]',
+      'button[class*="PlaceOrder"]',
+      '[class*="confirm-order"]',
+      '[class*="pay-now"]'
+    ];
+
+    for (const selector of placeOrderSelectors) {
+      const btn = document.querySelector(selector);
+      if (btn && !btn.disabled) {
+        btn.click();
+        await this.delay(3000);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async extractTemuOrderNumber() {
+    try {
+      await this.delay(2000);
+      
+      const orderEl = document.querySelector(
+        '[class*="order-number"], [class*="order-id"], [data-testid="order-number"]'
+      );
+      
+      if (orderEl) {
+        const match = orderEl.textContent.match(/\d{10,}/);
+        if (match) return match[0];
+        return orderEl.textContent.trim();
+      }
+
+      // Parse from URL
+      const urlMatch = window.location.href.match(/order[_-]?id=(\d+)/i);
+      if (urlMatch) return urlMatch[1];
+
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // ============= CJ DROPSHIPPING API ORDER =============
+  async placeCJOrder(order) {
+    if (!this.auth?.token) {
+      return { success: false, error: 'Non authentifié' };
+    }
+
+    try {
+      const response = await fetch(`${this.getApiUrl()}/auto-order-queue`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.auth.token}`
+        },
+        body: JSON.stringify({
+          action: 'place_order',
+          supplierType: 'cjdropshipping',
+          orderId: order.id,
+          payload: {
+            productId: order.productId,
+            variantId: order.variantId,
+            quantity: order.quantity,
+            shippingAddress: order.shippingAddress
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return {
+          success: true,
+          supplierOrderNumber: data.supplierOrderId,
+          trackingNumber: data.trackingNumber,
+          platform: 'cjdropshipping'
+        };
+      } else {
+        return { success: false, error: data.error || 'Erreur CJ Dropshipping' };
+      }
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // ============= UTILITY FUNCTIONS =============
   async setQuantity(quantity) {
     try {
-      const quantityInput = document.querySelector('input[type="number"][class*="quantity"], .quantity-input input');
+      const quantityInput = document.querySelector(
+        'input[type="number"][class*="quantity"], .quantity-input input, input[name="quantity"]'
+      );
       if (quantityInput) {
         quantityInput.value = quantity;
         quantityInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -235,13 +1312,8 @@ class DropCraftAutoOrder {
   }
 
   async fillAliExpressAddress(address) {
-    try {
-      // This would need to be implemented based on AliExpress checkout page structure
-      // For now, return true assuming address is pre-saved in AliExpress account
-      return true;
-    } catch (error) {
-      return false;
-    }
+    // AliExpress typically uses saved addresses
+    return true;
   }
 
   async selectShippingMethod(method) {
@@ -301,7 +1373,6 @@ class DropCraftAutoOrder {
 
   async extractOrderNumber() {
     try {
-      // Wait for order confirmation page
       await this.delay(2000);
       
       const orderNumEl = document.querySelector(
@@ -315,39 +1386,6 @@ class DropCraftAutoOrder {
       return null;
     } catch (error) {
       return null;
-    }
-  }
-
-  async placeAmazonOrder(order) {
-    // Similar implementation for Amazon
-    return { success: false, error: 'Amazon auto-order en développement' };
-  }
-
-  async placeCJOrder(order) {
-    // CJ Dropshipping has an API - use that instead
-    if (!this.auth?.token) {
-      return { success: false, error: 'Non authentifié' };
-    }
-
-    try {
-      const response = await fetch(`${this.getApiUrl()}/cj-place-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.auth.token}`
-        },
-        body: JSON.stringify({
-          productId: order.productId,
-          variantId: order.variantId,
-          quantity: order.quantity,
-          shippingAddress: order.shippingAddress
-        })
-      });
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      return { success: false, error: error.message };
     }
   }
 
@@ -381,20 +1419,32 @@ class DropCraftAutoOrder {
     }
   }
 
-  async waitForNavigation() {
+  async retryOrder(orderId) {
+    const orderEntry = this.orderHistory.find(o => o.id === orderId);
+    if (!orderEntry || !orderEntry.order) {
+      return { success: false, error: 'Commande non trouvée dans l\'historique' };
+    }
+
+    const attempts = this.retryAttempts[orderId] || 0;
+    if (attempts >= this.MAX_RETRIES) {
+      return { success: false, error: 'Nombre maximum de tentatives atteint' };
+    }
+
+    this.retryAttempts[orderId] = attempts + 1;
+    return await this.processOrder(orderEntry.order);
+  }
+
+  async waitForPageLoad() {
     return new Promise(resolve => {
-      const observer = new MutationObserver(() => {
-        observer.disconnect();
+      if (document.readyState === 'complete') {
         resolve();
-      });
+        return;
+      }
       
-      observer.observe(document.body, { childList: true, subtree: true });
+      window.addEventListener('load', () => resolve(), { once: true });
       
-      // Timeout fallback
-      setTimeout(() => {
-        observer.disconnect();
-        resolve();
-      }, 5000);
+      // Fallback timeout
+      setTimeout(resolve, 5000);
     });
   }
 
@@ -402,12 +1452,65 @@ class DropCraftAutoOrder {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  showNotification(type, message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)'};
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 999999;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    `;
+    
+    notification.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        ${type === 'success' 
+          ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
+          : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'
+        }
+      </svg>
+      <span>${message}</span>
+    `;
+
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease forwards';
+      setTimeout(() => notification.remove(), 300);
+    }, 5000);
+  }
+
   injectUI() {
-    if (document.getElementById('dc-auto-order-btn')) return;
+    if (document.getElementById('shopopti-auto-order-btn')) return;
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
 
     // Create floating button for auto-order
     const btn = document.createElement('button');
-    btn.id = 'dc-auto-order-btn';
+    btn.id = 'shopopti-auto-order-btn';
     btn.innerHTML = `
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
@@ -451,7 +1554,7 @@ class DropCraftAutoOrder {
   }
 
   togglePanel() {
-    let panel = document.getElementById('dc-auto-order-panel');
+    let panel = document.getElementById('shopopti-auto-order-panel');
     
     if (panel) {
       panel.remove();
@@ -459,16 +1562,16 @@ class DropCraftAutoOrder {
     }
 
     panel = document.createElement('div');
-    panel.id = 'dc-auto-order-panel';
+    panel.id = 'shopopti-auto-order-panel';
     panel.innerHTML = this.renderPanel();
     panel.style.cssText = `
       position: fixed;
       bottom: 300px;
       right: 20px;
-      width: 350px;
-      max-height: 450px;
+      width: 380px;
+      max-height: 500px;
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.2);
       z-index: 999999;
       overflow: hidden;
@@ -480,18 +1583,29 @@ class DropCraftAutoOrder {
   }
 
   renderPanel() {
+    const platform = this.detectPlatform(window.location.href);
+    const platformNames = {
+      aliexpress: 'AliExpress',
+      amazon: 'Amazon',
+      temu: 'Temu',
+      cjdropshipping: 'CJ Dropshipping'
+    };
+
     return `
       <div style="padding: 16px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
               <line x1="3" y1="6" x2="21" y2="6"/>
               <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
-            <span style="font-weight: 600; font-size: 16px;">Auto-Commande</span>
+            <div>
+              <span style="font-weight: 600; font-size: 16px;">ShopOpti+ Auto-Order</span>
+              <div style="font-size: 12px; opacity: 0.9;">${platform ? platformNames[platform] : 'Multi-plateforme'}</div>
+            </div>
           </div>
-          <button id="dc-close-order" style="background: none; border: none; color: white; cursor: pointer; padding: 4px;">
+          <button id="shopopti-close-order" style="background: none; border: none; color: white; cursor: pointer; padding: 4px;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
@@ -501,70 +1615,115 @@ class DropCraftAutoOrder {
 
       <div style="padding: 16px;">
         <div style="
-          background: #fef3c7;
+          background: linear-gradient(135deg, #fef3c7, #fde68a);
           border: 1px solid #fcd34d;
-          border-radius: 8px;
-          padding: 12px;
+          border-radius: 10px;
+          padding: 14px;
           margin-bottom: 16px;
           display: flex;
           align-items: flex-start;
-          gap: 10px;
+          gap: 12px;
         ">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;">
             <circle cx="12" cy="12" r="10"/>
             <line x1="12" y1="8" x2="12" y2="12"/>
             <line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
-          <div style="font-size: 13px; color: #92400e;">
-            L'auto-commande automatise le processus d'achat. Assurez-vous d'être connecté à votre compte fournisseur.
+          <div style="font-size: 13px; color: #92400e; line-height: 1.5;">
+            Automatise le processus d'achat sur ${platform ? platformNames[platform] : 'toutes les plateformes'}. 
+            Connectez-vous à votre compte fournisseur avant de continuer.
           </div>
         </div>
 
-        <div style="margin-bottom: 16px;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="dc-auto-confirm" ${this.config.autoConfirmOrders ? 'checked' : ''} style="width: 18px; height: 18px;">
-            <span style="font-size: 14px; color: #374151;">Confirmer automatiquement les commandes</span>
+        <div style="margin-bottom: 16px; padding: 12px; background: #f9fafb; border-radius: 10px;">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="shopopti-auto-confirm" ${this.config.autoConfirmOrders ? 'checked' : ''} 
+              style="width: 18px; height: 18px; accent-color: #f59e0b;">
+            <div>
+              <span style="font-size: 14px; color: #374151; font-weight: 500;">Confirmation automatique</span>
+              <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">Passer la commande sans confirmation manuelle</div>
+            </div>
           </label>
         </div>
 
+        ${platform ? `
+          <button id="shopopti-quick-order" style="
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+          ">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Commander ce produit maintenant
+          </button>
+        ` : ''}
+
         <div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
-          <div style="font-weight: 600; margin-bottom: 12px; color: #374151;">
-            Commandes en attente (${this.pendingOrders.length})
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-weight: 600; color: #374151;">Commandes en attente</span>
+            <span style="
+              background: #fef3c7;
+              color: #92400e;
+              padding: 4px 10px;
+              border-radius: 20px;
+              font-size: 12px;
+              font-weight: 600;
+            ">${this.pendingOrders.length}</span>
           </div>
           <div style="max-height: 200px; overflow-y: auto;">
             ${this.pendingOrders.length === 0 ? `
-              <div style="text-align: center; color: #9ca3af; padding: 20px;">
-                Aucune commande en attente
+              <div style="text-align: center; color: #9ca3af; padding: 24px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 10px;">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                </svg>
+                <div style="font-size: 14px;">Aucune commande en attente</div>
               </div>
             ` : this.pendingOrders.slice(0, 5).map(order => `
               <div style="
                 display: flex;
-                gap: 10px;
-                padding: 10px;
+                gap: 12px;
+                padding: 12px;
                 border: 1px solid #e5e7eb;
-                border-radius: 8px;
-                margin-bottom: 8px;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                background: #fafafa;
               ">
                 <div style="flex: 1;">
-                  <div style="font-size: 13px; font-weight: 500;">
-                    Commande #${order.orderNumber || order.id.slice(0, 8)}
+                  <div style="font-size: 13px; font-weight: 600; color: #374151;">
+                    #${order.orderNumber || order.id?.slice(0, 8)}
                   </div>
-                  <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">
+                  <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
                     ${order.items?.length || 1} article(s) • ${order.total?.toFixed(2) || '?'}€
                   </div>
-                  <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">
+                  <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">
                     ${this.formatDate(order.createdAt)}
                   </div>
                 </div>
-                <button data-order-id="${order.id}" class="dc-process-order-btn" style="
-                  padding: 6px 12px;
+                <button data-order-id="${order.id}" class="shopopti-process-order-btn" style="
+                  padding: 8px 16px;
                   background: linear-gradient(135deg, #f59e0b, #d97706);
                   border: none;
                   color: white;
-                  border-radius: 6px;
+                  border-radius: 8px;
                   cursor: pointer;
                   font-size: 12px;
-                  font-weight: 500;
+                  font-weight: 600;
+                  align-self: center;
+                  transition: transform 0.2s;
                 ">Traiter</button>
               </div>
             `).join('')}
@@ -575,16 +1734,39 @@ class DropCraftAutoOrder {
   }
 
   attachPanelEvents(panel) {
-    panel.querySelector('#dc-close-order')?.addEventListener('click', () => {
+    panel.querySelector('#shopopti-close-order')?.addEventListener('click', () => {
       panel.remove();
     });
 
-    panel.querySelector('#dc-auto-confirm')?.addEventListener('change', async (e) => {
+    panel.querySelector('#shopopti-auto-confirm')?.addEventListener('change', async (e) => {
       this.config.autoConfirmOrders = e.target.checked;
       await this.saveConfig();
     });
 
-    panel.querySelectorAll('.dc-process-order-btn').forEach(btn => {
+    panel.querySelector('#shopopti-quick-order')?.addEventListener('click', async () => {
+      const btn = panel.querySelector('#shopopti-quick-order');
+      btn.innerHTML = '<span style="display: flex; align-items: center; gap: 8px;"><span class="spinner"></span> Traitement en cours...</span>';
+      btn.disabled = true;
+
+      // Create a quick order from current page
+      const quickOrder = {
+        id: `quick_${Date.now()}`,
+        supplierUrl: window.location.href,
+        quantity: 1
+      };
+
+      const result = await this.processOrder(quickOrder);
+      
+      if (result.success) {
+        btn.innerHTML = '✓ Commande traitée';
+        btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      } else {
+        btn.innerHTML = `✗ ${result.error || 'Échec'}`;
+        btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+      }
+    });
+
+    panel.querySelectorAll('.shopopti-process-order-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const orderId = btn.dataset.orderId;
         const order = this.pendingOrders.find(o => o.id === orderId);
@@ -594,10 +1776,10 @@ class DropCraftAutoOrder {
           const result = await this.processOrder(order);
           if (result.success) {
             btn.textContent = '✓ Traité';
-            btn.style.background = '#10b981';
+            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
           } else {
             btn.textContent = '✗ Échec';
-            btn.style.background = '#ef4444';
+            btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
           }
         }
       });
@@ -606,7 +1788,7 @@ class DropCraftAutoOrder {
 
   async saveConfig() {
     return new Promise(resolve => {
-      chrome.storage.local.set({ dropcraft_config: this.config }, resolve);
+      chrome.storage.local.set({ shopopti_config: this.config }, resolve);
     });
   }
 
@@ -627,17 +1809,17 @@ class DropCraftAutoOrder {
 }
 
 // Initialize and expose
-window.DropCraftAutoOrder = DropCraftAutoOrder;
+window.ShopOptiAutoOrder = ShopOptiAutoOrder;
 
 // Auto-init
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    const autoOrder = new DropCraftAutoOrder();
+    const autoOrder = new ShopOptiAutoOrder();
     autoOrder.init();
   });
 } else {
-  const autoOrder = new DropCraftAutoOrder();
+  const autoOrder = new ShopOptiAutoOrder();
   autoOrder.init();
 }
 
-console.log('[DropCraft] Auto-order system loaded');
+console.log('[ShopOpti+] Auto-order system v4.3.10 loaded');
