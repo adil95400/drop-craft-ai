@@ -53,7 +53,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.6',
+    VERSION: '4.3.8',
     SUPPORTED_PLATFORMS: ['amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 'wish', 'cdiscount', 'fnac']
   };
 
@@ -113,13 +113,21 @@
     const url = window.location.href;
     const platform = detectPlatform();
     
+    // Check URL patterns for listing pages
     const listingPatterns = {
-      amazon: /\/gp\/bestsellers|\/gp\/new-releases|\/gp\/movers-and-shakers|\/gp\/most-wished-for|\/s\?|\/s\/|\/b\?|\/b\/|\?k=/i,
-      aliexpress: /\/category\/|\/wholesale|\/w\/|\/af\//i,
-      temu: /\/channel\/|\/search_result/i,
-      shein: /\/category\/|\/[a-z]+-c-\d+/i,
-      ebay: /\/b\/|\/sch\//i
+      amazon: /\/gp\/bestsellers|\/gp\/new-releases|\/gp\/movers-and-shakers|\/gp\/most-wished-for|\/gp\/top-|\/s\?|\/s\/|\/b\?|\/b\/|\?k=|\/zgbs\/|\/stores\/|\/slp\/|\/browse\//i,
+      aliexpress: /\/category\/|\/wholesale|\/w\/|\/af\/|\/gcp\//i,
+      temu: /\/channel\/|\/search_result|\/goods/i,
+      shein: /\/category\/|\/[a-z]+-c-\d+|pdsearch/i,
+      ebay: /\/b\/|\/sch\/|\/e\//i
     };
+    
+    // Also check DOM for listing indicators
+    if (platform === 'amazon') {
+      // Check for multiple product cards on page
+      const productCards = document.querySelectorAll('[data-asin], .s-result-item, .zg-grid-general-faceout, .a-carousel-card');
+      if (productCards.length >= 3) return true;
+    }
     
     return listingPatterns[platform]?.test(url) || false;
   }
@@ -735,26 +743,56 @@
   function createListingButtons() {
     const platform = detectPlatform();
     
-    // Platform-specific selectors for product items
+    // Platform-specific selectors for product items - COMPREHENSIVE for Amazon
     const selectors = {
       amazon: [
-        '.zg-grid-general-faceout',           // Best sellers
-        '[data-component-type="s-search-result"]', // Search results
-        '.p13n-sc-uncoverable-faceout',       // Recommendations
-        '.octopus-pc-item-v3',                // Category items
-        '.a-carousel-card',                   // Carousel items
-        '.s-result-item[data-asin]',          // Search results alt
-        '[data-testid="product-card"]'        // Product cards
+        // Best sellers & Rankings
+        '.zg-grid-general-faceout',
+        '.zg-item-immersion',
+        'div[id^="gridItemRoot"]',
+        '.p13n-sc-uncoverable-faceout',
+        '.p13n-asin',
+        // Search results
+        '[data-component-type="s-search-result"]',
+        '.s-result-item[data-asin]',
+        '.sg-col-inner .s-result-item',
+        // Category browsing
+        '.octopus-pc-item',
+        '.octopus-pc-item-v3',
+        '.rush-component',
+        '.a-section[data-asin]',
+        // Carousels
+        '.a-carousel-card',
+        '.carouselItem',
+        '[data-testid="product-card"]',
+        // Deals & Lightning deals
+        '.dealContainer',
+        '[data-testid="deal-card"]',
+        // Sponsored products
+        '.AdHolder',
+        // Generic product containers
+        '[data-asin]:not([data-asin=""])'
       ],
       aliexpress: [
         '.list-item',
-        '.product-item', 
+        '.product-item',
         '.search-item-card-wrapper-gallery',
-        '.multi--outWrapper--SeJ8bEF'
+        '.multi--outWrapper--SeJ8bEF',
+        '[data-widget-cid*="product"]',
+        '.product-snippet',
+        '.JIIxO',  // Search result cards
+        '.manhattan--container--1lP57Ag'
       ],
       temu: [
         '[data-testid="goods-item"]',
-        '.goods-item'
+        '.goods-item',
+        '._2eA_GRcy',
+        '[class*="GoodsItem"]'
+      ],
+      ebay: [
+        '.s-item',
+        '.srp-river-result',
+        '[data-testid="listing-card"]'
       ]
     };
     
@@ -764,16 +802,67 @@
     const productElements = document.querySelectorAll(platformSelectors.join(', '));
     console.log(`[DropCraft] Found ${productElements.length} products on listing page`);
     
+    let addedCount = 0;
     productElements.forEach((element) => {
       if (element.querySelector('.dropcraft-listing-btn')) return;
       
-      // Get product URL
-      const link = element.querySelector('a[href*="/dp/"], a[href*="/item/"], a[href*="/product"]');
-      const url = link?.href;
-      if (!url) return;
+      // Get product URL - COMPREHENSIVE selectors for Amazon
+      let url = null;
+      const platform = detectPlatform();
+      
+      if (platform === 'amazon') {
+        // Try multiple selectors for Amazon product links
+        const linkSelectors = [
+          'a.a-link-normal[href*="/dp/"]',
+          'a[href*="/dp/"]',
+          'a[href*="/gp/product/"]',
+          '.a-link-normal[href*="/dp/"]',
+          '[data-asin] a[href*="/dp/"]',
+          'a.s-access-detail-page',
+          '.zg-item a',
+          'h2 a', 
+          '.p13n-sc-truncate-desktop-type2'
+        ];
+        
+        for (const selector of linkSelectors) {
+          const link = element.querySelector(selector);
+          if (link?.href && (link.href.includes('/dp/') || link.href.includes('/gp/product/'))) {
+            url = link.href;
+            break;
+          }
+        }
+        
+        // Fallback: look for any link with ASIN in the element
+        if (!url) {
+          const anyLink = element.querySelector('a[href]');
+          if (anyLink?.href && anyLink.href.includes('amazon') && anyLink.href.includes('/dp/')) {
+            url = anyLink.href;
+          }
+        }
+        
+        // Last fallback: construct URL from data-asin
+        if (!url) {
+          const asin = element.getAttribute('data-asin') || element.querySelector('[data-asin]')?.getAttribute('data-asin');
+          if (asin) {
+            url = `https://www.amazon.${window.location.hostname.split('.').pop()}/dp/${asin}`;
+          }
+        }
+      } else {
+        // For other platforms
+        const link = element.querySelector('a[href*="/item/"], a[href*="/product"], a[href]');
+        url = link?.href;
+      }
+      
+      if (!url) {
+        console.log('[DropCraft] No URL found for product element:', element);
+        return;
+      }
       
       // Make container relative for positioning
-      element.style.position = 'relative';
+      const computedStyle = window.getComputedStyle(element);
+      if (computedStyle.position === 'static') {
+        element.style.position = 'relative';
+      }
       
       // Create individual import button
       const btn = document.createElement('button');
@@ -844,7 +933,18 @@
       });
       
       element.appendChild(btn);
+      addedCount++;
     });
+    
+    if (addedCount > 0) {
+      console.log(`[DropCraft] Added ${addedCount} import buttons`);
+      // Update bulk counter
+      const counter = document.querySelector('.dropcraft-bulk-counter');
+      if (counter) {
+        const allButtons = document.querySelectorAll('.dropcraft-listing-btn');
+        counter.textContent = allButtons.length;
+      }
+    }
   }
 
   function createBulkImportButton() {
@@ -924,5 +1024,38 @@
     }, 500);
   });
 
-  console.log('[DropCraft] Content script v4.3.7 initialized');
+  // MutationObserver for dynamically loaded products (infinite scroll, AJAX)
+  const productObserver = new MutationObserver((mutations) => {
+    if (!isListingPage()) return;
+    
+    let shouldCheck = false;
+    for (const mutation of mutations) {
+      if (mutation.addedNodes.length > 0) {
+        shouldCheck = true;
+        break;
+      }
+    }
+    
+    if (shouldCheck) {
+      // Debounce to avoid too many calls
+      clearTimeout(window.__dcObserverTimeout);
+      window.__dcObserverTimeout = setTimeout(() => {
+        createListingButtons();
+      }, 300);
+    }
+  });
+
+  // Start observing after a delay to let the page load
+  setTimeout(() => {
+    const mainContent = document.querySelector('#search, #zg, #spc-pc-main, .s-main-slot, [role="main"], main, body');
+    if (mainContent) {
+      productObserver.observe(mainContent, { 
+        childList: true, 
+        subtree: true 
+      });
+      console.log('[DropCraft] Product observer started');
+    }
+  }, 1000);
+
+  console.log('[DropCraft] Content script v4.3.8 initialized');
 })();
