@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v4.3.10
+// ShopOpti+ Chrome Extension - Content Script v4.3.11
 // Professional Dropshipping Extension - 100% CSP-SAFE
 // NO SCRIPT INJECTION - Pure Content Script Mode
 // Works on Amazon, AliExpress, and all strict CSP sites
