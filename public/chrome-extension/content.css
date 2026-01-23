@@ -80,10 +80,11 @@
   display: flex !important;
   align-items: center !important;
   gap: 4px !important;
-  opacity: 0 !important;
+  opacity: 0.9 !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
+/* Always visible to avoid confusion on marketplaces */
 .shopopti-product-wrapper:hover .shopopti-card-btn,
 [data-shopopti-product]:hover .shopopti-card-btn {
   opacity: 1 !important;
