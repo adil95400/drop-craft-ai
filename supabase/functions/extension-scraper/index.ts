@@ -352,7 +352,7 @@ serve(async (req) => {
         description: productData.description || '',
         price: productData.price || 0,
         cost_price: productData.price ? productData.price * 0.7 : 0,
-        currency: 'EUR',
+        currency: productData.currency || 'EUR',
         sku: productData.sku || `IMP-${Date.now()}`,
         image_urls: productData.images || [],
         source_url: url,
@@ -362,7 +362,11 @@ serve(async (req) => {
         stock_quantity: 100,
         metadata: {
           imported_via: 'chrome_extension',
-          imported_at: new Date().toISOString()
+          imported_at: new Date().toISOString(),
+          brand: productData.brand || null,
+          rating: productData.rating || null,
+          reviews_count: productData.reviews_count || 0,
+          variants_count: productData.variants?.length || 0
         }
       })
       .select()
@@ -374,6 +378,36 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: `Erreur base de données: ${insertError.message}` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
+    }
+
+    // Insert variants if present
+    let variantsInserted = 0
+    if (productData.variants && productData.variants.length > 0) {
+      const variantsToInsert = productData.variants.map((variant: any, idx: number) => ({
+        product_id: insertedProduct.id,
+        name: variant.name || `Variant ${idx + 1}`,
+        sku: `${insertedProduct.sku}-V${idx + 1}`,
+        price: productData.price || 0,
+        stock_quantity: 100,
+        attributes: {
+          type: variant.type || 'option',
+          image: variant.image || null,
+          available: variant.available !== false
+        },
+        is_active: true
+      }))
+
+      const { data: insertedVariants, error: variantsError } = await supabase
+        .from('product_variants')
+        .insert(variantsToInsert)
+        .select('id')
+
+      if (variantsError) {
+        console.warn(`[${requestId}] Variants insert warning:`, variantsError.message)
+      } else {
+        variantsInserted = insertedVariants?.length || 0
+        console.log(`[${requestId}] ✅ ${variantsInserted} variants inserted`)
+      }
     }
 
     // Update token usage
@@ -403,7 +437,7 @@ serve(async (req) => {
       console.warn(`[${requestId}] Analytics insert exception:`, e)
     }
 
-    console.log(`[${requestId}] ✅ Product imported: ${insertedProduct.id}`)
+    console.log(`[${requestId}] ✅ Product imported: ${insertedProduct.id} | Variants: ${variantsInserted}`)
 
     return new Response(
       JSON.stringify({
@@ -412,7 +446,9 @@ serve(async (req) => {
           id: insertedProduct.id,
           name: insertedProduct.name,
           price: insertedProduct.price,
-          status: insertedProduct.status
+          status: insertedProduct.status,
+          variants_count: variantsInserted,
+          images_count: productData.images?.length || 0
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
