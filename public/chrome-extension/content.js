@@ -66,7 +66,7 @@
   // CONFIGURATION v4.3.15
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.15',
+    VERSION: '4.3.16',
     BRAND: 'ShopOpti+',
     SUPPORTED_PLATFORMS: [
       'amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 
