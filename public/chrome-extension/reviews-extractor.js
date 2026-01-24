@@ -1,4 +1,4 @@
-// ShopOpti+ - Reviews Extractor v4.3.9
+// ShopOpti+ - Reviews Extractor v4.3.16
 // Professional multi-platform review extraction with auto-scroll, filtering, and AI translation support
 
 (function() {

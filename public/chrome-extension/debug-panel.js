@@ -1,5 +1,5 @@
 // ============================================================================
-// SHOPOPTI+ - EXTENSION DEBUG PANEL v4.3.10
+// SHOPOPTI+ - EXTENSION DEBUG PANEL v4.3.16
 // Professional debugging interface for extension troubleshooting
 // ============================================================================
 
@@ -323,7 +323,7 @@ class ShopOptiDebugPanel {
         <div class="dc-debug-title">
           <span class="dc-status-indicator"></span>
           ShopOpti+ Debug
-          <span class="dc-debug-badge">v4.3.10</span>
+          <span class="dc-debug-badge">v4.3.16</span>
         </div>
         <button class="dc-close-btn" id="dc-close-debug">×</button>
       </div>

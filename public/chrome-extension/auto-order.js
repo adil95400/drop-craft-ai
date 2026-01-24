@@ -1,5 +1,5 @@
 /**
- * ShopOpti+ Auto-Order System v4.3.10
+ * ShopOpti+ Auto-Order System v4.3.16
  * Automated order placement for dropshipping
  * Supports: AliExpress, Amazon, Temu, CJ Dropshipping
  */
@@ -1822,4 +1822,4 @@ if (document.readyState === 'loading') {
   autoOrder.init();
 }
 
-console.log('[ShopOpti+] Auto-order system v4.3.10 loaded');
+console.log('[ShopOpti+] Auto-order system v4.3.16 loaded');

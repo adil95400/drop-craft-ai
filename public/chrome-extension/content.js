@@ -63,7 +63,7 @@
   }
 
   // ============================================
-  // CONFIGURATION v4.3.15
+  // CONFIGURATION v4.3.16
   // ============================================
   const CONFIG = {
     VERSION: '4.3.16',
@@ -78,7 +78,7 @@
   };
 
   // ============================================
-  // PLATFORM DETECTION - ENHANCED v4.3.13
+  // PLATFORM DETECTION - ENHANCED v4.3.16
   // ============================================
   function detectPlatform() {
     const hostname = window.location.hostname.toLowerCase();
@@ -117,7 +117,7 @@
   }
 
   // ============================================
-  // PRODUCT PAGE DETECTION - ENHANCED v4.3.13
+  // PRODUCT PAGE DETECTION - ENHANCED v4.3.16
   // ============================================
   function isProductPage() {
     const url = window.location.href;
@@ -160,7 +160,7 @@
   }
 
   // ============================================
-  // LISTING PAGE DETECTION - ENHANCED v4.3.13
+  // LISTING PAGE DETECTION - ENHANCED v4.3.16
   // ============================================
   function isListingPage() {
     const url = window.location.href;
@@ -1395,7 +1395,7 @@
     }, 1000);
   }
   
-  // DOM-based review extraction - Enhanced for all platforms v4.3.13
+  // DOM-based review extraction - Enhanced for all platforms v4.3.16
   function extractReviewsFromDOM(config) {
     const reviews = [];
     const maxReviews = config?.maxReviews || 50;
@@ -1725,7 +1725,7 @@
   window.addEventListener('popstate', () => setTimeout(checkUrlChange, 100));
 
   // ============================================
-  // LISTING PAGE BUTTONS - EXTENDED SELECTORS v4.3.15 ULTRA
+  // LISTING PAGE BUTTONS - EXTENDED SELECTORS v4.3.16 ULTRA
   // ============================================
   function createListingButtons() {
     const platform = detectPlatform();

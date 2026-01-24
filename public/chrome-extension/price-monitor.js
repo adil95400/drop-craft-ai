@@ -1,5 +1,5 @@
 /**
- * ShopOpti+ Price Monitor v4.3.10
+ * ShopOpti+ Price Monitor v4.3.16
  * Real-time price tracking and alerts
  */
 
@@ -497,4 +497,4 @@ if (document.readyState === 'loading') {
   monitor.init();
 }
 
-console.log('[ShopOpti+] Price monitor v4.3.10 loaded');
+console.log('[ShopOpti+] Price monitor v4.3.16 loaded');
