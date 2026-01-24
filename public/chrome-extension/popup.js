@@ -1,7 +1,7 @@
-// ShopOpti+ Chrome Extension - Popup Script v4.3.15
-// ULTRA PRO - Fixed button visibility + improved imports
+// ShopOpti+ Chrome Extension - Popup Script v4.3.16
+// PROFESSIONAL UI - Inspired by Fnac, Cdiscount, eBay
 // Professional Dropshipping Extension
-// FIXED: Button visibility on all platforms
+// FIXED: Import buttons with states + bulk counter
 
 class ShopOptiPopup {
   constructor() {

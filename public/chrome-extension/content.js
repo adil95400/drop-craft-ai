@@ -1,22 +1,22 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v4.3.15
-// ULTRA PRO Dropshipping Extension - 100% CSP-SAFE
-// NO SCRIPT INJECTION - Pure Content Script Mode
-// Works on Amazon, AliExpress, and all strict CSP sites
+// ShopOpti+ Chrome Extension - Content Script v4.3.16
+// PROFESSIONAL UI - Inspired by Fnac, Cdiscount, eBay
+// 100% CSP-SAFE - Pure Content Script Mode
+// Works on Amazon, AliExpress, and all 25+ platforms
 // ADVANCED EXTRACTION: Images, Videos, Prices, Stock, 
 // Descriptions, Tracking, Brands, Specs, Shipping, Variants
-// FIXED: Button visibility on ALL platforms - ULTRA VISIBLE
-// FIXED: Image deduplication + variant extraction
+// FIXED: Professional buttons with states (success/error/loading)
+// FIXED: Bulk import with counter + progress tracking
 // ============================================
 
 (function () {
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '4.3.15') return;
-  window.__shopOptiCSVersion = '4.3.15';
+  if (window.__shopOptiCSVersion === '4.3.16') return;
+  window.__shopOptiCSVersion = '4.3.16';
 
-  console.log('[ShopOpti+] Content script v4.3.15 initializing (ULTRA PRO mode)...');
+  console.log('[ShopOpti+] Content script v4.3.16 initializing (Professional UI)...');
 
   // ============================================
   // PERF: debounce helper for MutationObserver
@@ -66,7 +66,7 @@
   // CONFIGURATION v4.3.15
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.15',
+    VERSION: '4.3.16',
     BRAND: 'ShopOpti+',
     SUPPORTED_PLATFORMS: [
       'amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 
@@ -832,7 +832,8 @@
   }
 
   // ============================================
-  // UI CREATION - ENHANCED v4.3.13 (Visible Buttons)
+  // UI CREATION - PROFESSIONAL v4.3.16
+  // Inspired by Fnac, Cdiscount, eBay, AliExpress
   // ============================================
   function addStyles() {
     if (document.getElementById('shopopti-styles')) return;
@@ -845,48 +846,70 @@
         to { transform: rotate(360deg); }
       }
       @keyframes shopoptiPulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.85; transform: scale(0.98); }
       }
       @keyframes shopoptiSlideIn {
         from { transform: translateX(120%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
       }
       @keyframes shopoptiFadeIn {
-        from { opacity: 0; transform: scale(0.9); }
-        to { opacity: 1; transform: scale(1); }
+        from { opacity: 0; transform: scale(0.95) translateY(8px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
       }
-      @keyframes shopoptiGlow {
-        0%, 100% { box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4); }
-        50% { box-shadow: 0 4px 25px rgba(124, 58, 237, 0.5); }
+      @keyframes shopoptiShake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-4px); }
+        40%, 80% { transform: translateX(4px); }
+      }
+      @keyframes shopoptiBounce {
+        0%, 100% { transform: scale(1); }
+        30% { transform: scale(1.08); }
+        60% { transform: scale(0.98); }
+      }
+      @keyframes shopoptiCounterPop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.25); }
+        100% { transform: scale(1); }
       }
       
-      /* Main Import Button - Product Pages */
+      /* ==========================================
+         MAIN IMPORT BUTTON - Cdiscount Style
+         ========================================== */
       #shopopti-import-btn {
         position: fixed !important;
         bottom: 24px !important;
         right: 24px !important;
         z-index: 2147483647 !important;
         padding: 14px 24px !important;
-        background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%) !important;
+        background-size: 200% 200% !important;
         color: white !important;
         border: none !important;
         border-radius: 50px !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif !important;
         font-size: 14px !important;
         font-weight: 600 !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 8px !important;
-        box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4) !important;
-        transition: all 0.2s ease !important;
-        animation: shopoptiFadeIn 0.3s ease, shopoptiGlow 3s ease-in-out infinite !important;
+        gap: 10px !important;
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45), 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        animation: shopoptiFadeIn 0.4s ease !important;
+        letter-spacing: 0.3px !important;
+        min-width: 220px !important;
+        white-space: nowrap !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.12) !important;
       }
       #shopopti-import-btn:hover {
         transform: translateY(-3px) scale(1.02) !important;
-        box-shadow: 0 12px 40px rgba(0, 212, 255, 0.5) !important;
+        box-shadow: 0 8px 30px rgba(124, 58, 237, 0.55), 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+        background-position: 100% 0 !important;
+      }
+      #shopopti-import-btn:active {
+        transform: scale(0.98) !important;
       }
       #shopopti-import-btn.loading {
         opacity: 0.9 !important;
@@ -894,92 +917,117 @@
         animation: shopoptiPulse 1.5s ease-in-out infinite !important;
       }
       #shopopti-import-btn.success {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        animation: none !important;
+        background: linear-gradient(135deg, #10b981 0%, #34d399 50%, #10b981 100%) !important;
+        animation: shopoptiBounce 0.5s ease !important;
       }
       #shopopti-import-btn.error {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-        animation: none !important;
+        background: linear-gradient(135deg, #ef4444 0%, #f87171 50%, #ef4444 100%) !important;
+        animation: shopoptiShake 0.4s ease !important;
       }
       #shopopti-import-btn:disabled {
         pointer-events: none !important;
       }
       
-      /* Bulk Import Button - Listing Pages */
+      /* ==========================================
+         BULK IMPORT BUTTON - Fnac/eBay Style
+         ========================================== */
       #shopopti-bulk-btn {
         position: fixed !important;
         bottom: 24px !important;
         right: 24px !important;
         z-index: 2147483647 !important;
-        padding: 14px 24px !important;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        padding: 12px 20px 12px 18px !important;
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
         color: white !important;
         border: none !important;
         border-radius: 50px !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif !important;
         font-size: 14px !important;
         font-weight: 600 !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
         gap: 10px !important;
-        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4) !important;
-        transition: all 0.2s ease !important;
-        animation: shopoptiFadeIn 0.3s ease !important;
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.45), 0 2px 8px rgba(0,0,0,0.12) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        animation: shopoptiFadeIn 0.4s ease !important;
+        white-space: nowrap !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
       }
       #shopopti-bulk-btn:hover {
-        transform: translateY(-3px) !important;
-        box-shadow: 0 12px 40px rgba(16, 185, 129, 0.5) !important;
+        transform: translateY(-3px) scale(1.03) !important;
+        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.55), 0 4px 12px rgba(0,0,0,0.15) !important;
+      }
+      #shopopti-bulk-btn.loading {
+        opacity: 0.85 !important;
+        cursor: wait !important;
+      }
+      #shopopti-bulk-btn.success {
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important;
       }
       .shopopti-bulk-counter {
         background: white !important;
         color: #059669 !important;
-        padding: 2px 10px !important;
-        border-radius: 12px !important;
+        padding: 4px 10px !important;
+        border-radius: 20px !important;
         font-size: 13px !important;
         font-weight: 700 !important;
         min-width: 24px !important;
         text-align: center !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        transition: transform 0.2s ease !important;
+      }
+      .shopopti-bulk-counter.updated {
+        animation: shopoptiCounterPop 0.3s ease !important;
       }
       
-      /* LISTING PAGE BUTTONS - VISIBLE BY DEFAULT v4.3.13 */
+      /* ==========================================
+         LISTING BUTTONS - Compact Cards
+         ========================================== */
       .shopopti-listing-btn {
         position: absolute !important;
         top: 8px !important;
         right: 8px !important;
         z-index: 999999 !important;
         padding: 8px 14px !important;
-        background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important;
         color: white !important;
-        border: none !important;
-        border-radius: 10px !important;
+        border: 2px solid rgba(255,255,255,0.9) !important;
+        border-radius: 8px !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
         font-weight: 600 !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
-        gap: 6px !important;
-        box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4) !important;
+        gap: 5px !important;
+        box-shadow: 0 2px 10px rgba(124, 58, 237, 0.45), 0 1px 4px rgba(0,0,0,0.15) !important;
         transition: all 0.2s ease !important;
-        opacity: 0.9 !important; /* VISIBLE BY DEFAULT */
+        opacity: 1 !important;
+        visibility: visible !important;
         animation: shopoptiFadeIn 0.3s ease !important;
+        text-shadow: 0 1px 1px rgba(0,0,0,0.12) !important;
+        white-space: nowrap !important;
       }
       .shopopti-listing-btn:hover {
-        opacity: 1 !important;
-        transform: scale(1.08) !important;
-        box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5) !important;
+        transform: scale(1.08) translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5), 0 2px 8px rgba(0,0,0,0.2) !important;
       }
       .shopopti-listing-btn.success {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        opacity: 1 !important;
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
+        animation: shopoptiBounce 0.4s ease !important;
       }
       .shopopti-listing-btn.loading {
-        opacity: 0.8 !important;
+        opacity: 0.85 !important;
         cursor: wait !important;
       }
+      .shopopti-listing-btn.selected {
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
+      }
       
-      /* Toast notifications */
+      /* ==========================================
+         TOAST NOTIFICATIONS - Professional
+         ========================================== */
       .shopopti-toast {
         position: fixed !important;
         top: 20px !important;
@@ -990,22 +1038,27 @@
         font-weight: 500 !important;
         color: white !important;
         z-index: 2147483647 !important;
-        animation: shopoptiSlideIn 0.3s ease !important;
-        max-width: 350px !important;
+        animation: shopoptiSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        max-width: 360px !important;
         display: flex !important;
         align-items: center !important;
-        gap: 10px !important;
+        gap: 12px !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.15) !important;
+        backdrop-filter: blur(8px) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
       }
       .shopopti-toast.success {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
       }
       .shopopti-toast.error {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        background: linear-gradient(135deg, #ef4444 0%, #f87171 100%) !important;
       }
       .shopopti-toast.loading {
-        background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important;
+      }
+      .shopopti-toast.warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
       }
     `;
     document.head.appendChild(style);
@@ -1018,7 +1071,7 @@
     const button = document.createElement('button');
     button.id = 'shopopti-import-btn';
     button.innerHTML = `
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7,10 12,15 17,10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
@@ -1028,7 +1081,7 @@
 
     button.addEventListener('click', handleImportClick);
     document.body.appendChild(button);
-    console.log('[ShopOpti+] Import button created');
+    console.log('[ShopOpti+] Import button created (v4.3.16 Pro)');
   }
 
   function updateButtonState(state, message) {
@@ -1952,42 +2005,109 @@
     }
   }
 
+  // ============================================
+  // BULK IMPORT BUTTON - Fnac/eBay Professional Style
+  // ============================================
   function createBulkImportButton() {
     if (document.getElementById('shopopti-bulk-btn')) return;
     
     const button = document.createElement('button');
     button.id = 'shopopti-bulk-btn';
     button.innerHTML = `
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7"/>
-        <rect x="14" y="3" width="7" height="7"/>
-        <rect x="14" y="14" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
       </svg>
       <span>Import en masse</span>
       <span class="shopopti-bulk-counter">0</span>
     `;
     
+    // Update counter when products are found
+    function updateCounter() {
+      const allButtons = document.querySelectorAll('.shopopti-listing-btn');
+      const counter = button.querySelector('.shopopti-bulk-counter');
+      const newCount = allButtons.length;
+      const oldCount = parseInt(counter.textContent) || 0;
+      
+      if (newCount !== oldCount) {
+        counter.textContent = newCount;
+        counter.classList.add('updated');
+        setTimeout(() => counter.classList.remove('updated'), 300);
+      }
+    }
+    
+    // Observe DOM changes to update counter
+    const counterObserver = new MutationObserver(() => updateCounter());
+    setTimeout(() => {
+      counterObserver.observe(document.body, { childList: true, subtree: true });
+      updateCounter();
+    }, 500);
+    
     button.addEventListener('click', async () => {
       const allButtons = document.querySelectorAll('.shopopti-listing-btn:not(.success)');
-      if (allButtons.length === 0) {
-        showToast('Aucun produit à importer', 'error');
+      const totalCount = allButtons.length;
+      
+      if (totalCount === 0) {
+        showToast('Aucun produit à importer', 'warning');
         return;
       }
       
-      showToast(`Import de ${allButtons.length} produits...`, 'loading');
-      
-      let successCount = 0;
-      for (const btn of allButtons) {
-        btn.click();
-        await new Promise(r => setTimeout(r, 1500));
-        if (btn.classList.contains('success')) successCount++;
+      // Confirm for large imports
+      if (totalCount > 10) {
+        if (!confirm(`Importer ${totalCount} produits ? Cette opération peut prendre quelques minutes.`)) {
+          return;
+        }
       }
       
-      showToast(`${successCount}/${allButtons.length} produits importés`, successCount > 0 ? 'success' : 'error');
+      button.classList.add('loading');
+      button.querySelector('span:not(.shopopti-bulk-counter)').textContent = 'Import en cours...';
+      
+      showToast(`Import de ${totalCount} produits en cours...`, 'loading');
+      
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (let i = 0; i < allButtons.length; i++) {
+        const btn = allButtons[i];
+        btn.click();
+        
+        // Wait for import to complete
+        await new Promise(r => setTimeout(r, 1800));
+        
+        if (btn.classList.contains('success')) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+        
+        // Update counter during import
+        const counter = button.querySelector('.shopopti-bulk-counter');
+        counter.textContent = `${successCount}/${totalCount}`;
+      }
+      
+      button.classList.remove('loading');
+      button.querySelector('span:not(.shopopti-bulk-counter)').textContent = 'Import en masse';
+      
+      if (successCount === totalCount) {
+        button.classList.add('success');
+        showToast(`✅ ${successCount} produits importés avec succès !`, 'success');
+      } else if (successCount > 0) {
+        showToast(`${successCount}/${totalCount} produits importés (${errorCount} erreurs)`, 'warning');
+      } else {
+        showToast(`❌ Échec de l'import (${errorCount} erreurs)`, 'error');
+      }
+      
+      // Reset button after delay
+      setTimeout(() => {
+        button.classList.remove('success');
+        updateCounter();
+      }, 3000);
     });
     
     document.body.appendChild(button);
+    console.log('[ShopOpti+] Bulk import button created (v4.3.16 Pro - Fnac/eBay style)');
   }
 
   // ============================================
