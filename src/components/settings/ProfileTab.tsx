@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,12 +5,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Save, Shield, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import AvatarUpload from '@/components/common/AvatarUpload';
 import { RefreshProfileButton } from '@/components/auth/RefreshProfileButton';
+import { ProfileCompletionCard } from './ProfileCompletionCard';
+import { DangerZoneCard } from './DangerZoneCard';
 
 interface ProfileData {
   name: string;
@@ -30,11 +30,41 @@ interface ProfileTabProps {
 
 export function ProfileTab({ profileData, setProfileData, onSave }: ProfileTabProps) {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { isAdmin, role } = useEnhancedAuth();
+
+  const handleCompletionAction = (action: string) => {
+    switch (action) {
+      case 'avatar':
+        // Scroll to avatar section
+        document.getElementById('avatar-section')?.scrollIntoView({ behavior: 'smooth' });
+        break;
+      case '2fa':
+        navigate('/settings?tab=security');
+        break;
+      case 'company':
+        document.getElementById('company')?.focus();
+        break;
+      case 'website':
+        document.getElementById('website')?.focus();
+        break;
+    }
+  };
 
   return (
     <div className="space-y-6">
+      {/* Profile Completion Card */}
+      <ProfileCompletionCard
+        hasAvatar={!!profile?.avatar_url}
+        isEmailVerified={!!user?.email_confirmed_at}
+        has2FA={false} // TODO: Connect to actual 2FA status
+        hasCompany={!!profileData.company}
+        hasWebsite={!!profileData.website}
+        hasBio={!!profileData.bio}
+        onAction={handleCompletionAction}
+      />
+
+      {/* Personal Info Card */}
       <Card className="border-border bg-card shadow-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -46,12 +76,14 @@ export function ProfileTab({ profileData, setProfileData, onSave }: ProfileTabPr
           <CardDescription>Gérez vos informations de profil et votre identité</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <AvatarUpload 
-            currentAvatarUrl={profile?.avatar_url}
-            userName={profileData.name}
-            size="lg"
-            showUploadButton={true}
-          />
+          <div id="avatar-section">
+            <AvatarUpload 
+              currentAvatarUrl={profile?.avatar_url}
+              userName={profileData.name}
+              size="lg"
+              showUploadButton={true}
+            />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -196,6 +228,9 @@ export function ProfileTab({ profileData, setProfileData, onSave }: ProfileTabPr
           </CardContent>
         </Card>
       )}
+
+      {/* Danger Zone */}
+      <DangerZoneCard />
     </div>
   );
 }

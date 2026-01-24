@@ -5,3 +5,6 @@ export { ApiTab } from './ApiTab';
 export { BillingTab } from './BillingTab';
 export { AppearanceTab } from './AppearanceTab';
 export { CurrenciesTab } from './CurrenciesTab';
+export { ProfileCompletionCard } from './ProfileCompletionCard';
+export { DangerZoneCard } from './DangerZoneCard';
+export { UsageCard } from './UsageCard';

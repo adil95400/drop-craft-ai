@@ -1,16 +1,24 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Check, Crown, Download, Receipt } from "lucide-react";
+import { CreditCard, Check, Crown, Download, Receipt, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
+import { useNavigate } from "react-router-dom";
+import { UsageCard } from "./UsageCard";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const plans = [
   {
     name: "Starter",
     price: 29,
     features: ["1000 produits", "Suivi basique", "Support email"],
-    icon: "🚀"
+    icon: "🚀",
+    productLimit: 1000,
+    apiLimit: 5000,
+    storageMB: 500
   },
   {
     name: "Professional", 
@@ -18,13 +26,19 @@ const plans = [
     features: ["Produits illimités", "IA avancée", "Support prioritaire", "API"],
     current: true,
     popular: true,
-    icon: "⭐"
+    icon: "⭐",
+    productLimit: 10000,
+    apiLimit: 50000,
+    storageMB: 5000
   },
   {
     name: "Enterprise",
     price: 199,
     features: ["Tout inclus", "White-label", "Support dédié", "Multi-utilisateurs"],
-    icon: "👑"
+    icon: "👑",
+    productLimit: -1, // Unlimited
+    apiLimit: -1,
+    storageMB: 50000
   }
 ];
 
@@ -36,6 +50,35 @@ const invoices = [
 
 export function BillingTab() {
   const { isAdmin } = useEnhancedAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const [productCount, setProductCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch real usage data
+  useEffect(() => {
+    const fetchUsageData = async () => {
+      if (!user) return;
+      
+      try {
+        const { count } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        
+        setProductCount(count || 0);
+      } catch (error) {
+        console.error('Error fetching usage data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsageData();
+  }, [user]);
+
+  const currentPlan = plans.find(p => p.current) || plans[1];
 
   const handleUpgrade = (planName: string, price: number) => {
     if (!isAdmin) {
@@ -55,6 +98,19 @@ export function BillingTab() {
 
   return (
     <div className="space-y-6">
+      {/* Usage Card */}
+      <UsageCard
+        planName={currentPlan.name}
+        trialDaysLeft={7}
+        renewalDate="15 février 2024"
+        productCount={productCount}
+        productLimit={currentPlan.productLimit}
+        apiCallsCount={2456}
+        apiCallsLimit={currentPlan.apiLimit}
+        storageUsedMB={1240}
+        storageLimitMB={currentPlan.storageMB}
+      />
+
       {/* Current Plan Overview */}
       <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
         <CardHeader>
@@ -64,24 +120,34 @@ export function BillingTab() {
                 <Crown className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <CardTitle>Plan Professional</CardTitle>
+                <CardTitle>Plan {currentPlan.name}</CardTitle>
                 <CardDescription>Votre abonnement actuel</CardDescription>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold">79€</div>
+              <div className="text-3xl font-bold">{currentPlan.price}€</div>
               <div className="text-sm text-muted-foreground">/mois</div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {plans.find(p => p.current)?.features.map((feature, idx) => (
+            {currentPlan.features.map((feature, idx) => (
               <Badge key={idx} variant="secondary" className="text-xs">
                 <Check className="h-3 w-3 mr-1" />
                 {feature}
               </Badge>
             ))}
+          </div>
+          <div className="mt-4 flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate('/pricing')}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Voir tous les plans
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -117,7 +183,7 @@ export function BillingTab() {
                 <div className="text-center mb-4">
                   <div className="text-3xl mb-2">{plan.icon}</div>
                   <h5 className="font-semibold text-lg">{plan.name}</h5>
-                  {plan.current && <Badge variant="secondary" className="mt-1">Actuel</Badge>}
+                  {plan.current && <Badge variant="secondary" className="mt-1">Votre plan</Badge>}
                 </div>
                 
                 <div className="text-center mb-4">
@@ -136,11 +202,11 @@ export function BillingTab() {
                 
                 {!plan.current && (
                   <Button 
-                    variant="outline" 
+                    variant={plan.name === 'Enterprise' ? 'outline' : 'default'}
                     className="w-full"
                     onClick={() => handleUpgrade(plan.name, plan.price)}
                   >
-                    Choisir ce plan
+                    {plan.name === 'Enterprise' ? 'Nous contacter' : 'Choisir ce plan'}
                   </Button>
                 )}
               </div>
