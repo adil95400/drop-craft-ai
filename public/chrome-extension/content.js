@@ -1164,33 +1164,50 @@
       return;
     }
     
-    updateButtonState('loading', 'Extraction...');
+    // Only allow on product pages for the “full import” flow
+    if (!isProductPage()) {
+      updateButtonState('error', 'Ouvrez une page produit (pas une liste)');
+      return;
+    }
+
+    updateButtonState('loading', 'Import complet...');
 
     try {
-      const productData = extractProductData();
+      // Local extraction is best-effort only (some sites block/obfuscate DOM).
+      // We always rely on backend scraping for the real import.
+      const productData = (() => {
+        try {
+          return extractProductData();
+        } catch (e) {
+          return { source_url: window.location.href };
+        }
+      })();
 
-      if (!productData.title) {
-        throw new Error('Impossible d\'extraire les données du produit');
-      }
+      const url = productData?.source_url || window.location.href;
 
-      console.log('[ShopOpti+] Extracted product:', productData.title, '| Images:', productData.images?.length || 0);
-      updateButtonState('loading', 'Import en cours...');
-
+      // Full import: Product + Variants (server-side) + Reviews (page context)
       const response = await safeSendMessage({
-        type: 'IMPORT_FROM_URL',
-        url: productData.source_url
+        type: 'IMPORT_PRODUCT_WITH_REVIEWS',
+        url,
+        reviewLimit: 80
       });
 
       console.log('[ShopOpti+] Import response:', response);
 
       if (response?.success) {
-        updateButtonState('success', 'Produit importé !');
+        const variantCount = response.variantCount ?? response.product?.variantCount ?? 0;
+        const reviewCount = response.reviews?.count ?? 0;
+        updateButtonState('success', `Importé (Var: ${variantCount} | Avis: ${reviewCount})`);
       } else {
         throw new Error(response?.error || 'Échec de l\'import');
       }
     } catch (error) {
       console.error('[ShopOpti+] Import error:', error);
-      updateButtonState('error', error.message || 'Erreur');
+      // Never fail silently: provide actionable context.
+      const msg = (error && typeof error.message === 'string' && error.message.trim())
+        ? error.message
+        : 'Erreur inconnue (ouvrez la console pour détails)';
+      updateButtonState('error', msg);
     }
   }
 
