@@ -2111,11 +2111,11 @@
   }
 
   // ============================================
-  // INITIALIZATION v4.3.15 - ULTRA ROBUST
+  // INITIALIZATION v4.3.16 - ULTRA ROBUST
   // ============================================
   function init() {
     const platform = detectPlatform();
-    console.log('[ShopOpti+] v4.3.15 ULTRA PRO - Detected platform:', platform);
+    console.log('[ShopOpti+] v4.3.16 ULTRA PRO - Detected platform:', platform);
 
     if (!CONFIG.SUPPORTED_PLATFORMS.includes(platform) && platform !== 'unknown') {
       console.log('[ShopOpti+] Platform not supported');
@@ -2142,9 +2142,14 @@
     } else {
       console.log('[ShopOpti+] Page type not detected, checking for product cards...');
       // Try to detect listing page by product cards with multiple retries
+      let retryCount = 0;
+      const maxRetries = 10;
+      
       const checkInterval = setInterval(() => {
+        retryCount++;
+        
         if (isListingPage()) {
-          console.log('[ShopOpti+] Listing page detected on retry');
+          console.log(`[ShopOpti+] Listing page detected on retry ${retryCount}`);
           clearInterval(checkInterval);
           createBulkImportButton();
           createListingButtons();
@@ -2154,14 +2159,14 @@
           );
           observer.observe(document.body, { childList: true, subtree: true });
         } else if (isProductPage()) {
-          console.log('[ShopOpti+] Product page detected on retry');
+          console.log(`[ShopOpti+] Product page detected on retry ${retryCount}`);
           clearInterval(checkInterval);
           createImportButton();
+        } else if (retryCount >= maxRetries) {
+          console.log('[ShopOpti+] Max retries reached, stopping detection');
+          clearInterval(checkInterval);
         }
       }, 1000);
-      
-      // Stop checking after 10 seconds
-      setTimeout(() => clearInterval(checkInterval), 10000);
     }
   }
 
