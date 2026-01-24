@@ -1370,6 +1370,81 @@ function extractReviewsFromPage(config) {
         });
       }
     });
+
+  } else if (hostname.includes('cdiscount')) {
+    // Cdiscount Reviews - Professional extraction
+    const reviewSelectors = [
+      '.js-rv-list .rv-list__item',
+      '.avis-list .avis-item',
+      '[data-qa="review"]',
+      '.customer-review',
+      '.reviews-list .review',
+      '[class*="review-item"]',
+      '.fpRv .fpRvList > div'
+    ];
+    
+    let reviewElements = [];
+    for (const sel of reviewSelectors) {
+      reviewElements = document.querySelectorAll(sel);
+      if (reviewElements.length > 0) break;
+    }
+    
+    reviewElements.forEach((element, index) => {
+      if (index >= maxReviews) return;
+      
+      // Rating - look for star count or numeric rating
+      let rating = 5;
+      const ratingEl = element.querySelector('[class*="rating"], [class*="star"], .note, [itemprop="ratingValue"]');
+      if (ratingEl) {
+        const ratingContent = ratingEl.getAttribute('content') || ratingEl.getAttribute('data-rating');
+        if (ratingContent) {
+          rating = parseFloat(ratingContent);
+        } else {
+          const starsFilled = element.querySelectorAll('.star-full, .star-filled, [class*="star"][class*="active"]').length;
+          if (starsFilled > 0) rating = starsFilled;
+          else {
+            const ratingMatch = ratingEl.textContent?.match(/(\d[,.]?\d?)/);
+            if (ratingMatch) rating = parseFloat(ratingMatch[1].replace(',', '.'));
+          }
+        }
+      }
+      
+      // Content
+      const contentEl = element.querySelector('.rv-text, .avis-text, [class*="review-text"], [class*="content"], .comment, p[class*="desc"]');
+      const content = contentEl?.textContent?.trim() || '';
+      
+      // Author
+      const authorEl = element.querySelector('.rv-author, .avis-author, [class*="author"], [class*="name"], .reviewer');
+      const author = authorEl?.textContent?.trim() || 'Client Cdiscount';
+      
+      // Date
+      const dateEl = element.querySelector('.rv-date, .avis-date, [class*="date"], time');
+      const date = dateEl?.textContent?.trim() || dateEl?.getAttribute('datetime') || '';
+      
+      // Verified purchase
+      const verified = !!element.querySelector('[class*="verified"], [class*="achat-verifi"], .purchase-verified');
+      
+      // Images
+      const images = [];
+      element.querySelectorAll('img[class*="review"], img[class*="avis"], .rv-photo img').forEach(img => {
+        if (img.src && !img.src.includes('placeholder') && !img.src.includes('avatar')) {
+          images.push(img.src);
+        }
+      });
+      
+      if (content.length > 5) {
+        reviews.push({
+          id: `cdiscount_${Date.now()}_${index}`,
+          rating: Math.min(5, Math.max(1, rating)),
+          content,
+          author,
+          date,
+          verified,
+          images,
+          platform: 'cdiscount'
+        });
+      }
+    });
     
   } else {
     // Generic review extraction

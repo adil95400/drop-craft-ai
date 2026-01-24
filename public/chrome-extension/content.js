@@ -133,7 +133,8 @@
       etsy: /\/listing\//i,
       walmart: /\/ip\/\d+|\/product\//i,
       shopify: /\/products\//i,
-      cdiscount: /\/f-\d+|\/v-\d+|mpid=|\/fp\/|\/dp\//i,
+      // Cdiscount: /f-NUMBERS-PRODUCT_ID.html OR /v-XXX OR .html with mpos/mpid
+      cdiscount: /\/f-\d+-[a-z0-9]+\.html|\/v-\d+|mpid=|\/fp\/|\/dp\/|[?#]mpos=/i,
       fnac: /\/a\d+\//i,
       rakuten: /\/product\/|\/offer\/|\/ss_\d+/i,
       costco: /\.product\.\d+\.html/i,
@@ -151,8 +152,16 @@
     // Check specific platform pattern
     if (patterns[platform]?.test(url)) return true;
     
-    // Generic product page detection
+    // Generic product page detection via URL structure
     if (url.includes('/product') || url.includes('/products/') || url.includes('/item/')) {
+      return true;
+    }
+    
+    // DOM-based fallback: if title and price selectors exist, it's likely a product page
+    const hasTitleSelector = !!document.querySelector('h1, [itemprop="name"], .product-title');
+    const hasPriceSelector = !!document.querySelector('[itemprop="price"], .fpPrice, .prdtPrSt, .a-price, .product-price');
+    if (hasTitleSelector && hasPriceSelector) {
+      console.log('[ShopOpti+] Product page detected via DOM fallback');
       return true;
     }
     
@@ -685,26 +694,129 @@
       currency: 'EUR',
       images: [],
       variants: [],
-      description: ''
+      description: '',
+      sku: '',
+      brand: ''
     };
 
-    data.title = document.querySelector('h1.fpDesCol, .fpTMain h1, [itemprop="name"]')?.textContent?.trim() || '';
-    
-    const priceEl = document.querySelector('.fpPrice, .prdtPrSt, [itemprop="price"]');
-    if (priceEl) {
-      const priceMatch = priceEl.textContent?.match(/[\d,.]+/);
-      data.price = priceMatch ? parseFloat(priceMatch[0].replace(',', '.')) : 0;
-      const content = priceEl.getAttribute('content');
-      if (content) data.price = parseFloat(content);
+    // Title - multiple selectors for different Cdiscount page layouts
+    const titleSelectors = [
+      'h1.fpDesCol',
+      '.fpTMain h1',
+      '[itemprop="name"]',
+      'h1[class*="Title"]',
+      '.product-title h1',
+      'h1'
+    ];
+    for (const sel of titleSelectors) {
+      const el = document.querySelector(sel);
+      if (el?.textContent?.trim()) {
+        data.title = el.textContent.trim();
+        break;
+      }
     }
 
-    document.querySelectorAll('.fpGal img, .fpViImg img, [itemprop="image"]').forEach(img => {
-      const src = img.src || img.getAttribute('data-src');
-      if (src && !src.includes('placeholder')) {
-        data.images.push(src);
+    // Brand extraction
+    const brandEl = document.querySelector('[itemprop="brand"] [itemprop="name"], .fpBrand, a[href*="marque-"]');
+    if (brandEl) {
+      data.brand = brandEl.textContent?.trim() || brandEl.getAttribute('content') || '';
+    }
+
+    // SKU from URL
+    const skuMatch = window.location.href.match(/\/f-(\d+-[a-z0-9]+)\.html/i) ||
+                     window.location.href.match(/mpid[=:]([a-z0-9]+)/i);
+    data.sku = skuMatch?.[1] || '';
+    
+    // Price - comprehensive selectors
+    const priceSelectors = [
+      '[itemprop="price"]',
+      '.fpPrice',
+      '.prdtPrSt',
+      '.priceContainer .price',
+      '[class*="Price"]:not([class*="old"]):not([class*="strike"])',
+      '.currentPrice',
+      '.fpPriceMain'
+    ];
+    for (const sel of priceSelectors) {
+      const priceEl = document.querySelector(sel);
+      if (priceEl) {
+        const content = priceEl.getAttribute('content');
+        if (content) {
+          data.price = parseFloat(content);
+          break;
+        }
+        const priceMatch = priceEl.textContent?.match(/(\d+)[,.](\d{2})/);
+        if (priceMatch) {
+          data.price = parseFloat(`${priceMatch[1]}.${priceMatch[2]}`);
+          break;
+        }
       }
+    }
+
+    // Images - comprehensive selectors with high-res normalization
+    const imageSelectors = [
+      '.fpGal img',
+      '.fpViImg img',
+      '[itemprop="image"]',
+      '.productMainPicture img',
+      '.fpImgz img',
+      '.carouselProduct img',
+      '.product-image img',
+      'img[data-large]',
+      '.fpMedia img'
+    ];
+    const seenImages = new Set();
+    for (const sel of imageSelectors) {
+      document.querySelectorAll(sel).forEach(img => {
+        let src = img.getAttribute('data-large') || 
+                  img.getAttribute('data-zoom') || 
+                  img.getAttribute('data-src') ||
+                  img.src;
+        if (src && !src.includes('placeholder') && !src.includes('transparent') && !src.includes('1x1')) {
+          // Normalize to high-res
+          src = src.replace(/_ML\d*\./, '_ML.').replace(/_\d+x\d+\./, '.');
+          if (src.startsWith('//')) src = 'https:' + src;
+          if (!seenImages.has(src) && src.includes('http')) {
+            seenImages.add(src);
+            data.images.push(src);
+          }
+        }
+      });
+    }
+
+    // Variants - color/size options
+    const variantContainers = document.querySelectorAll('[class*="variation"], [class*="Variation"], .fpVar, [data-variation]');
+    variantContainers.forEach(container => {
+      const items = container.querySelectorAll('li, button, a[data-value], span[data-value]');
+      items.forEach(item => {
+        const text = item.textContent?.trim() || item.getAttribute('data-value') || item.getAttribute('title');
+        if (text && text.length < 50 && !item.classList.contains('selected')) {
+          data.variants.push({ type: 'option', name: text });
+        }
+      });
     });
 
+    // Description
+    const descEl = document.querySelector('[itemprop="description"], .fpDescTxt, .productDescription, #fpDescContent');
+    if (descEl) {
+      data.description = descEl.textContent?.trim().slice(0, 3000) || '';
+    }
+
+    // Rating
+    const ratingEl = document.querySelector('[itemprop="ratingValue"], .fpRat, .rating-value');
+    if (ratingEl) {
+      const ratingMatch = ratingEl.textContent?.match(/[\d,.]+/) || [ratingEl.getAttribute('content')];
+      data.rating = ratingMatch?.[0] ? parseFloat(ratingMatch[0].replace(',', '.')) : null;
+    }
+
+    // Reviews count
+    const reviewsEl = document.querySelector('[itemprop="reviewCount"], .fpRatCount, .reviews-count');
+    if (reviewsEl) {
+      const countMatch = reviewsEl.textContent?.match(/\d+/) || [reviewsEl.getAttribute('content')];
+      data.reviews_count = countMatch?.[0] ? parseInt(countMatch[0]) : 0;
+    }
+
+    console.log('[ShopOpti+] Cdiscount data extracted:', data.title, '| Images:', data.images.length, '| Variants:', data.variants.length);
     return data;
   }
 

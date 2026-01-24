@@ -13,7 +13,7 @@
     SCROLL_DELAY_MS: 600,
     MAX_SCROLL_ATTEMPTS: 15,
     LOAD_MORE_DELAY: 800,
-    VERSION: '4.3.9',
+    VERSION: '4.3.16',
     PLATFORMS: {
       'aliexpress': {
         reviewsContainer: '.feedback-list, .product-evaluation, [class*="review"], .comet-v2-modal-body, .feedback--wrap--bDEEKp5, [class*="feedback-list"], .feedback--list--dJsbH8z',
@@ -111,16 +111,17 @@
         scrollTarget: '[class*="reviews"]'
       },
       'cdiscount': {
-        reviewsContainer: '.reviews, #product-reviews, [class*="review"], .avis-list',
-        reviewItem: '.review, [class*="review-item"], .avis, .avis-item',
-        author: '.author, [class*="author"], .reviewer, .avis-author',
-        rating: '.rating, [class*="star"], .note, .avis-rating',
-        content: '.review-text, [class*="content"], .comment, .avis-text',
-        date: '.date, [class*="date"], .avis-date',
-        images: '.review img, .avis-img img',
-        verified: '.verified, [class*="verified"], .achat-verifie',
-        loadMore: '.voir-plus, [class*="load-more"]',
-        scrollTarget: '.reviews, #product-reviews'
+        reviewsContainer: '.js-rv-list, .rv-list, .reviews, #product-reviews, [class*="review-list"], .avis-list, .fpRv',
+        reviewItem: '.rv-list__item, .rv-item, .review, [class*="review-item"], .avis, .avis-item',
+        author: '.rv-author, .author, [class*="author"], .reviewer, .avis-author, [class*="name"]',
+        rating: '.rv-rating, .rating, [class*="star"], .note, .avis-rating, [itemprop="ratingValue"]',
+        content: '.rv-text, .review-text, [class*="content"], .comment, .avis-text, p[class*="desc"]',
+        date: '.rv-date, .date, [class*="date"], .avis-date, time',
+        images: '.rv-photo img, .review img, .avis-img img, [class*="review-image"] img',
+        verified: '.verified, [class*="verified"], .achat-verifie, .purchase-verified',
+        helpful: '[class*="helpful"], .utile',
+        loadMore: '.voir-plus, [class*="load-more"], .rv-more, button[class*="more"]',
+        scrollTarget: '.js-rv-list, .reviews, #product-reviews, .fpRv'
       },
       'shopify': {
         reviewsContainer: '.spr-reviews, .jdgm-rev__container, [class*="reviews"], .reviews-container, #shopify-product-reviews',
