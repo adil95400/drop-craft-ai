@@ -1,9 +1,9 @@
-// ShopOpti+ Chrome Extension - Authentication v4.3.9
+// ShopOpti+ Chrome Extension - Authentication v4.3.16
 
 const CONFIG = {
   API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
   APP_URL: 'https://shopopti.io',
-  VERSION: '4.3.9'
+  VERSION: '4.3.16'
 };
 
 class ShopOptiAuth {

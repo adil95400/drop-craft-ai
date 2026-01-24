@@ -1,4 +1,4 @@
-// Injected script for advanced product detection v4.1
+// ShopOpti+ Injected script for advanced product detection v4.3.16
 // This script runs in the page context to access site-specific APIs
 
 class AdvancedProductDetector {
@@ -19,7 +19,7 @@ class AdvancedProductDetector {
   init() {
     this.setupMessageListener();
     this.injectOneClickButtons();
-    console.log('[DropCraft] Advanced detector initialized');
+    console.log('[ShopOpti+] Advanced detector initialized v4.3.16');
   }
 
   setupMessageListener() {
