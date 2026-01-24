@@ -46,6 +46,7 @@ class ShopOptiPopup {
     } catch (_e) {
       return false;
     }
+    this.currentSourcingProduct = null;
   }
 
   async init() {
@@ -58,6 +59,7 @@ class ShopOptiPopup {
     this.initProfitCalculator();
     this.loadConnectedStores();
     this.updateSyncStatus();
+    this.updateSourcingProductInfo();
   }
   
   async updateSyncStatus() {
@@ -1314,12 +1316,229 @@ class ShopOptiPopup {
       this.showToast('Erreur: ' + error.message, 'error');
     }
   }
+
+  // ============================================
+  // SUPPLIER SOURCING FUNCTIONALITY
+  // ============================================
+
+  async initSourcingTab() {
+    // Bind sourcing events
+    document.getElementById('findSupplierBtn')?.addEventListener('click', () => this.findSuppliers());
+    
+    // Platform toggles
+    document.querySelectorAll('.platform-chip').forEach(chip => {
+      chip.addEventListener('click', () => chip.classList.toggle('active'));
+    });
+  }
+
+  async updateSourcingProductInfo() {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.url) return;
+
+    const titleEl = document.getElementById('sourcingProductTitle');
+    const priceEl = document.getElementById('sourcingProductPrice');
+    const imageEl = document.getElementById('sourcingProductImage');
+    const findBtn = document.getElementById('findSupplierBtn');
+
+    try {
+      // Try to get product data from page
+      const injected = await this.ensureContentScript(tab.id);
+      
+      if (injected) {
+        const result = await chrome.tabs.sendMessage(tab.id, { type: 'GET_PRODUCT_DATA' });
+        
+        if (result?.product) {
+          this.currentSourcingProduct = result.product;
+          
+          if (titleEl) titleEl.textContent = result.product.title || 'Produit détecté';
+          if (priceEl) priceEl.textContent = result.product.price ? `${result.product.price} €` : '--';
+          
+          if (imageEl && result.product.image) {
+            imageEl.innerHTML = `<img src="${result.product.image}" alt="Product">`;
+          }
+          
+          if (findBtn) findBtn.disabled = false;
+          return;
+        }
+      }
+    } catch (e) {
+      console.log('[ShopOpti+] Could not get product data:', e);
+    }
+
+    // Fallback
+    if (titleEl) titleEl.textContent = 'Chargez une page produit';
+    if (priceEl) priceEl.textContent = '--';
+    if (findBtn) findBtn.disabled = true;
+  }
+
+  async findSuppliers() {
+    const findBtn = document.getElementById('findSupplierBtn');
+    const resultsContainer = document.getElementById('sourcingResults');
+    const bestDealCard = document.getElementById('bestDealCard');
+    
+    if (!this.currentSourcingProduct) {
+      this.showToast('Ouvrez une page produit d\'abord', 'warning');
+      return;
+    }
+
+    // Check search options
+    const searchByImage = document.getElementById('searchByImage')?.checked;
+    const searchByText = document.getElementById('searchByText')?.checked;
+    
+    let searchMethod = 'both';
+    if (searchByImage && !searchByText) searchMethod = 'image';
+    if (!searchByImage && searchByText) searchMethod = 'text';
+
+    // Show loading state
+    if (findBtn) {
+      findBtn.classList.add('loading');
+      findBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <span>Recherche en cours...</span>
+      `;
+    }
+
+    if (resultsContainer) {
+      resultsContainer.innerHTML = `
+        <div class="sourcing-loading">
+          <div class="spinner"></div>
+          <span class="loading-text">Recherche sur AliExpress, 1688, Alibaba...</span>
+        </div>
+      `;
+    }
+
+    if (bestDealCard) bestDealCard.classList.add('hidden');
+
+    try {
+      const response = await fetch(`${this.API_URL}/find-supplier`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          productTitle: this.currentSourcingProduct.title,
+          productImage: this.currentSourcingProduct.image,
+          productPrice: parseFloat(this.currentSourcingProduct.price) || 0,
+          productCurrency: 'EUR',
+          searchMethod
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Erreur lors de la recherche');
+      }
+
+      this.displaySupplierResults(data);
+      this.addActivity('Recherche fournisseurs', '🔍');
+      
+    } catch (error) {
+      console.error('[ShopOpti+] Supplier search error:', error);
+      
+      if (resultsContainer) {
+        resultsContainer.innerHTML = `
+          <div class="sourcing-empty">
+            <span class="empty-icon">❌</span>
+            <span class="empty-text">${error.message || 'Erreur lors de la recherche'}</span>
+          </div>
+        `;
+      }
+      
+      this.showToast('Erreur: ' + error.message, 'error');
+    } finally {
+      // Reset button
+      if (findBtn) {
+        findBtn.classList.remove('loading');
+        findBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <span>Trouver Fournisseurs</span>
+        `;
+      }
+    }
+  }
+
+  displaySupplierResults(data) {
+    const resultsContainer = document.getElementById('sourcingResults');
+    const bestDealCard = document.getElementById('bestDealCard');
+    
+    const suppliers = data.suppliers || [];
+    
+    if (suppliers.length === 0) {
+      if (resultsContainer) {
+        resultsContainer.innerHTML = `
+          <div class="sourcing-empty">
+            <span class="empty-icon">🔍</span>
+            <span class="empty-text">Aucun fournisseur trouvé. Essayez avec des mots-clés différents.</span>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    // Display results
+    if (resultsContainer) {
+      resultsContainer.innerHTML = suppliers.map(supplier => {
+        const marginClass = supplier.margin_percent > 0 ? 'positive' : 'negative';
+        const marginSign = supplier.margin_percent > 0 ? '+' : '';
+        
+        return `
+          <div class="supplier-result-card">
+            <div class="supplier-platform">
+              <span class="supplier-platform-icon">${supplier.platform_icon || '📦'}</span>
+              <span class="supplier-platform-name">${supplier.platform}</span>
+            </div>
+            <div class="supplier-details">
+              <span class="supplier-title">${supplier.title}</span>
+              <div class="supplier-meta">
+                <span class="rating">★ ${(supplier.seller_rating * 5).toFixed(1)}</span>
+                <span>${supplier.shipping_time}</span>
+                ${supplier.orders_count > 0 ? `<span>${supplier.orders_count} vendus</span>` : ''}
+              </div>
+            </div>
+            <div class="supplier-pricing">
+              <span class="supplier-price">${supplier.currency === 'CNY' ? '¥' : '$'}${supplier.price.toFixed(2)}</span>
+              ${supplier.margin_percent ? `<span class="supplier-margin ${marginClass}">${marginSign}${supplier.margin_percent.toFixed(0)}%</span>` : ''}
+            </div>
+            <a href="${supplier.url}" target="_blank" class="supplier-link" title="Voir chez le fournisseur">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Display best deal
+    if (data.best_deal && bestDealCard) {
+      const best = data.best_deal;
+      
+      document.getElementById('bestDealPlatform').textContent = `${best.platform_icon} ${best.platform}`;
+      document.getElementById('bestDealPrice').textContent = `${best.currency === 'CNY' ? '¥' : '$'}${best.price.toFixed(2)}`;
+      document.getElementById('bestDealMargin').textContent = `Marge: +${best.margin_percent?.toFixed(0) || 0}%`;
+      document.getElementById('bestDealLink').href = best.url;
+      
+      bestDealCard.classList.remove('hidden');
+    }
+
+    this.showToast(`${suppliers.length} fournisseurs trouvés!`, 'success');
+  }
 }
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', () => {
   const popup = new ShopOptiPopup();
   popup.init();
+  popup.initSourcingTab();
 });
 
 // Add toast styles
