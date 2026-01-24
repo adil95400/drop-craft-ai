@@ -13,10 +13,10 @@
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '4.3.16') return;
-  window.__shopOptiCSVersion = '4.3.16';
+  if (window.__shopOptiCSVersion === '4.3.17') return;
+  window.__shopOptiCSVersion = '4.3.17';
 
-  console.log('[ShopOpti+] Content script v4.3.16 initializing (Professional UI)...');
+  console.log('[ShopOpti+] Content script v4.3.17 initializing (Universal Catalog Detection)...');
 
   // ============================================
   // PERF: debounce helper for MutationObserver
@@ -66,7 +66,7 @@
   // CONFIGURATION v4.3.16
   // ============================================
   const CONFIG = {
-    VERSION: '4.3.16',
+    VERSION: '4.3.17',
     BRAND: 'ShopOpti+',
     SUPPORTED_PLATFORMS: [
       'amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 
@@ -169,48 +169,81 @@
   }
 
   // ============================================
-  // LISTING PAGE DETECTION - ENHANCED v4.3.16
+  // LISTING PAGE DETECTION - ENHANCED v4.3.17 UNIVERSAL
   // ============================================
   function isListingPage() {
     const url = window.location.href;
     const platform = detectPlatform();
     
+    // Expanded patterns to match ALL catalog/listing pages like Amazon
     const listingPatterns = {
-      amazon: /\/gp\/bestsellers|\/gp\/new-releases|\/gp\/movers-and-shakers|\/gp\/most-wished-for|\/gp\/top-|\/s\?|\/s\/|\/b\?|\/b\/|\?k=|\/zgbs\/|\/stores\/|\/slp\/|\/browse\/|\/new-releases\//i,
-      aliexpress: /\/category\/|\/wholesale|\/w\/|\/af\/|\/gcp\/|\/store\/|\/mall\//i,
-      temu: /\/channel\/|\/search_result|\/goods|\/mall\/|[?&]filter_/i,
-      shein: /\/category\/|\/[a-z]+-c-\d+|pdsearch|\/pdsearch\//i,
-      ebay: /\/b\/|\/sch\/|\/e\/|\/str\//i,
-      walmart: /\/search\/|\/browse\/|\/shop\//i,
-      etsy: /\/search\?|\/c\/|\/shop\//i,
-      cdiscount: /\/search\/|\/browse\/|\/lp\/|\/mpid\/|[?&]keyword=/i,
-      fnac: /\/[a-z]+-\d+\/|\/recherche\/|\/c\d+\//i,
-      rakuten: /\/search\/|\/category\/|\/s\//i,
-      costco: /\/search/i,
-      homedepot: /\/b\/|\/s\//i,
+      amazon: /\/gp\/bestsellers|\/gp\/new-releases|\/gp\/movers-and-shakers|\/gp\/most-wished-for|\/gp\/top-|\/s\?|\/s\/|\/b\?|\/b\/|\?k=|\/zgbs\/|\/stores\/|\/slp\/|\/browse\/|\/new-releases\/|ref=|node=|keywords=/i,
+      aliexpress: /\/category\/|\/wholesale|\/w\/|\/af\/|\/gcp\/|\/store\/|\/mall\/|SearchText=|\/item\/\d+\.html.*\?|catId=/i,
+      temu: /\/channel\/|\/search_result|\/goods|\/mall\/|[?&]filter_|search_key=|\/[a-z]+-c-\d+|bgSearch/i,
+      shein: /\/category\/|\/[a-z]+-c-\d+|pdsearch|\/pdsearch\/|\/[A-Za-z-]+-sc-\d+/i,
+      ebay: /\/b\/|\/sch\/|\/e\/|\/str\/|_nkw=|_dcat=/i,
+      walmart: /\/search\/|\/browse\/|\/shop\/|query=|\/cp\//i,
+      etsy: /\/search\?|\/c\/|\/shop\/|\/market\//i,
+      cdiscount: /\/search|\/browse|\/lp\/|[?&]keyword=|\/l-\d+|\/r-|\/clp\/|\.html#_|prd_lst|\/s-|produits/i,
+      fnac: /\/[a-z]+-\d+\/|\/recherche\/|\/c\d+\/|\/r\//i,
+      rakuten: /\/search\/|\/category\/|\/s\/|offer_list/i,
+      costco: /\/search|\.product-list/i,
+      homedepot: /\/b\/|\/s\/|\/N-/i,
       lowes: /\/search|\/pl\//i,
-      target: /\/s\?|\/c\//i,
-      bestbuy: /\/site\/searchpage|\/site\/.*\/pcmcat/i,
-      wayfair: /\/sb\d|\/keyword=/i
+      target: /\/s\?|\/c\/|searchTerm=/i,
+      bestbuy: /\/site\/searchpage|\/site\/.*\/pcmcat|\/computers\//i,
+      wayfair: /\/sb\d|\/keyword=|\/browse\//i,
+      zalando: /\/[a-z-]+\/?$/i,
+      asos: /\/[a-z-]+\/cat\/|cid=|\/search\//i,
+      manomano: /\/p\/|\/c\/|\/search/i,
+      darty: /\/nav\/|\/recherche\//i,
+      boulanger: /\/c\/|\/recherche\//i,
+      leroymerlin: /\/c\/|\/products\//i
     };
     
     // Check specific platform listing pattern
-    if (listingPatterns[platform]?.test(url)) return true;
+    if (listingPatterns[platform]?.test(url)) {
+      console.log(`[ShopOpti+] Listing page detected via URL pattern for ${platform}`);
+      return true;
+    }
     
-    // Count product cards to determine if listing page
+    // UNIVERSAL: Count product cards to determine if listing page (like Amazon)
     const productCardSelectors = [
-      '[data-asin]', '.s-result-item', '.product-card', '.product-item',
-      '.goods-item', '[class*="GoodsItem"]', '.s-item', '.list-item',
-      '[data-component-type="s-search-result"]', '.prdtBloc', '.c-productCard',
-      '.product-list__item', '.v2-listing-card', '[data-product-id]'
+      // Amazon
+      '[data-asin]:not([data-asin=""])', '.s-result-item', '[data-component-type="s-search-result"]',
+      '.s-main-slot .s-result-item', '.zg-grid-general-faceout', '.p13n-asin',
+      // AliExpress
+      '.list-item', '.search-item-card-wrapper-gallery', '[class*="product-card"]',
+      '[class*="ProductCard"]', '[class*="manhattan--container"]',
+      // Cdiscount - EXTENDED
+      '.prdtBloc', '.c-productCard', '[data-product-id]', '.lpProduct', 
+      '.prdtBImg', '.c-product', '.jsPrdtList > li', '.lpContent article',
+      '.jsPrdtItem', '[class*="productItem"]', '.lpLnkP',
+      // Fnac
+      '.Article-item', '.ProductCard', '.f-nCarousel__item',
+      // Temu
+      '[data-testid="goods-item"]', '.goods-item', '[class*="GoodsItem"]', '[data-goods-id]',
+      // eBay
+      '.s-item', '.srp-river-result', '[data-testid="listing-card"]',
+      // Shein  
+      '.product-list__item', '.S-product-item', '[data-expose-id]',
+      // Etsy
+      '.v2-listing-card', '[data-listing-id]',
+      // Walmart
+      '.search-result-gridview-item', '[data-item-id]',
+      // Generic
+      '.product-card', '.product-item', '.product-tile', '[data-product]',
+      '.ProductCard', '.goods-card', '[class*="productCard"]'
     ];
     
     for (const selector of productCardSelectors) {
-      const cards = document.querySelectorAll(selector);
-      if (cards.length >= 4) {
-        console.log(`[ShopOpti+] Detected listing page with ${cards.length} product cards (${selector})`);
-        return true;
-      }
+      try {
+        const cards = document.querySelectorAll(selector);
+        if (cards.length >= 3) {
+          console.log(`[ShopOpti+] Listing page detected with ${cards.length} product cards (${selector})`);
+          return true;
+        }
+      } catch (e) {}
     }
     
     return false;
@@ -1854,28 +1887,27 @@
   window.addEventListener('popstate', () => setTimeout(checkUrlChange, 100));
 
   // ============================================
-  // LISTING PAGE BUTTONS - EXTENDED SELECTORS v4.3.16 ULTRA
+  // LISTING PAGE BUTTONS - UNIVERSAL v4.3.17 (Amazon-style for ALL platforms)
   // ============================================
   function createListingButtons() {
     const platform = detectPlatform();
     
-    // ULTRA Extended selectors for ALL 25+ platforms
+    // UNIVERSAL Extended selectors for ALL 30+ platforms - Amazon style
     const selectors = {
       amazon: [
+        '[data-component-type="s-search-result"]',
+        '.s-result-item[data-asin]:not([data-asin=""])',
+        '[data-asin]:not([data-asin=""]):not(.s-main-slot)',
         '.zg-grid-general-faceout',
         '.zg-item-immersion',
         'div[id^="gridItemRoot"]',
         '.p13n-sc-uncoverable-faceout',
         '.p13n-asin',
-        '[data-component-type="s-search-result"]',
-        '.s-result-item[data-asin]',
         '.sg-col-inner .s-result-item',
         '.octopus-pc-item',
-        '.a-carousel-card',
-        '[data-asin]:not([data-asin=""])',
+        '.a-carousel-card[data-asin]',
         '.s-main-slot .s-result-item',
-        '.AdHolder',
-        '[data-index]'
+        '[data-index][data-asin]'
       ],
       aliexpress: [
         '.list-item',
@@ -1887,7 +1919,9 @@
         '[class*="ProductCard"]',
         '[class*="SearchResultList"] > div',
         '[class*="manhattan--container"]',
-        '.JIIxO'
+        '.JIIxO',
+        '[class*="multi--outContainer"]',
+        '[class*="multi--container"]'
       ],
       temu: [
         '[data-testid="goods-item"]',
@@ -1896,26 +1930,40 @@
         '[data-goods-id]',
         '[class*="productCard"]',
         '[class*="_2BPmm"]',
-        '.ProductList__item'
+        '.ProductList__item',
+        '[class*="goodsItem"]'
       ],
       ebay: [
-        '.s-item',
+        '.s-item:not(.s-item__pl-on-bottom)',
         '.srp-river-result',
         '[data-testid="listing-card"]',
         '.srp-results .s-item',
         '[data-testid="item-card"]',
         '.b-list__items_nofooter li',
-        '[data-viewport]'
+        '[data-viewport] .s-item'
       ],
+      // CDISCOUNT - FULLY EXTENDED for all catalog pages
       cdiscount: [
         '.prdtBloc',
         '.c-productCard',
         '[data-product-id]',
         '.prdtBImg',
         '.c-product',
-        '.product-item',
         '.lpProduct',
-        '[class*="ProductCard"]'
+        '[class*="ProductCard"]',
+        '.jsPrdtItem',
+        '.jsPrdtList > li',
+        '.lpContent article',
+        '.lpLnkP',
+        '[data-productid]',
+        '.c-productCard__wrapper',
+        '.prdtBlocV',
+        '.lpPrdContent',
+        'article.product',
+        '.c-productGridItem',
+        '[class*="productItem"]',
+        '.lpPrdList li',
+        '.search-results article'
       ],
       shein: [
         '.product-list__item',
@@ -1924,7 +1972,8 @@
         '.goods-item',
         '[class*="productCard"]',
         '.product-item',
-        '[class*="productItem"]'
+        '[class*="productItem"]',
+        '[class*="goods-item"]'
       ],
       walmart: [
         '.search-result-gridview-item',
@@ -1932,14 +1981,16 @@
         '.product-card',
         '[data-testid="list-view"]',
         '[data-automation-id="product"]',
-        '.mb1.ph1'
+        '.mb1.ph1',
+        '[data-testid="item-tile"]'
       ],
       etsy: [
         '.v2-listing-card',
         '.listing-link',
         '[data-listing-id]',
         '.js-merch-stash-check-listing',
-        '.wt-grid__item-xs-6'
+        '.wt-grid__item-xs-6',
+        '[data-listing-card-v2]'
       ],
       fnac: [
         '.Article-item',
@@ -1947,52 +1998,69 @@
         '.product-item',
         '[data-product]',
         '.Carousel-item',
-        '.f-nCarousel__item'
+        '.f-nCarousel__item',
+        '.SearchResult-item',
+        '.f-productCard'
       ],
       rakuten: [
         '.product-card',
         '.search-product-card',
         '[data-product-id]',
-        '.dls-product-card'
+        '.dls-product-card',
+        '.offer-card'
       ],
       target: [
-        '[data-test="product-grid"] div',
+        '[data-test="product-grid"] > div',
         '.ProductCardWrapper',
-        '[data-test="product-card"]'
+        '[data-test="product-card"]',
+        '[data-testid="product-card"]'
       ],
       bestbuy: [
         '.sku-item',
         '[data-sku-id]',
-        '.product-item'
+        '.product-item',
+        '.list-item'
       ],
       wayfair: [
         '[data-enzyme-id="ProductCard"]',
         '.ProductCard',
-        '.browse-product'
+        '.browse-product',
+        '[data-hb-id="ProductCard"]'
       ],
       newegg: [
         '.item-cell',
-        '.item-container'
+        '.item-container',
+        '.goods-container'
       ],
       zalando: [
         '[data-testid="productTile"]',
-        '.cat_articleContain'
+        '.cat_articleContain',
+        '[class*="DressingProductTile"]'
       ],
       asos: [
         '.productTile',
-        '[data-auto-id="productTile"]'
+        '[data-auto-id="productTile"]',
+        '.product-card'
       ],
       manomano: [
         '.ProductCard',
-        '[data-product-id]'
+        '[data-product-id]',
+        '.product-tile'
       ],
       darty: [
         '.product-tile',
-        '.product-item'
+        '.product-item',
+        '[data-product-id]'
       ],
       boulanger: [
         '.product-item',
-        '[data-product-code]'
+        '[data-product-code]',
+        '.product-card'
+      ],
+      leroymerlin: [
+        '.product-tile',
+        '[data-product-id]',
+        '.product-card'
       ]
     };
     
@@ -2032,8 +2100,29 @@
           }
         }
       } else if (platform === 'cdiscount') {
-        const link = element.querySelector('a[href*="/f-"], a[href*="/fp/"], a[href*="/dp/"]');
-        url = link?.href;
+        // Cdiscount - multiple URL patterns
+        const cdiscountSelectors = [
+          'a[href*="/f-"]',
+          'a[href*="/fp/"]',
+          'a[href*="/dp/"]',
+          'a.lpLnkP',
+          'a[href*=".html"]',
+          '.prdtBImg a',
+          '.c-productCard a',
+          'a[href*="cdiscount.com/"][href*=".html"]'
+        ];
+        for (const sel of cdiscountSelectors) {
+          const link = element.querySelector(sel);
+          if (link?.href && link.href.includes('cdiscount.com')) {
+            url = link.href;
+            break;
+          }
+        }
+        // Fallback: any first <a> with cdiscount URL
+        if (!url) {
+          const firstLink = element.querySelector('a[href*="cdiscount"]');
+          if (firstLink?.href) url = firstLink.href;
+        }
       } else if (platform === 'ebay') {
         const link = element.querySelector('a[href*="/itm/"]');
         url = link?.href;
@@ -2047,11 +2136,30 @@
         const link = element.querySelector('a[href*="/ip/"]');
         url = link?.href;
       } else if (platform === 'fnac') {
-        const link = element.querySelector('a[href*="/a"]');
+        const link = element.querySelector('a[href*="/a"], a[href*="/produit"]');
+        url = link?.href;
+      } else if (platform === 'aliexpress') {
+        const link = element.querySelector('a[href*="/item/"], a[href*="aliexpress."]');
+        url = link?.href;
+      } else if (platform === 'temu') {
+        const link = element.querySelector('a[href*="goods.html"], a[href*="-g-"]');
         url = link?.href;
       } else {
-        const link = element.querySelector('a[href*="/item/"], a[href*="/product"], a[href]');
-        url = link?.href;
+        // Generic: find first product link
+        const genericSelectors = [
+          'a[href*="/item/"]',
+          'a[href*="/product"]',
+          'a[href*="/dp/"]',
+          'a[href*=".html"]',
+          'a[href]'
+        ];
+        for (const sel of genericSelectors) {
+          const link = element.querySelector(sel);
+          if (link?.href && !link.href.includes('javascript:')) {
+            url = link.href;
+            break;
+          }
+        }
       }
       
       if (!url) return;
