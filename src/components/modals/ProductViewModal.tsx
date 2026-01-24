@@ -64,7 +64,12 @@ import {
   ExternalLink,
   Plus,
   Check,
+  MessageSquare,
+  ThumbsUp,
 } from 'lucide-react'
+import { ProductReviewsTab } from './product/ProductReviewsTab'
+import { ProductVideosTab } from './product/ProductVideosTab'
+import { ProductVariantsTab } from './product/ProductVariantsTab'
 import { ImageGalleryModal } from './ImageGalleryModal'
 import {
   AlertDialog,
@@ -1042,9 +1047,11 @@ export function ProductViewModal({
                   <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 px-6">
                     {[
                       { value: 'overview', label: 'Aperçu', icon: Eye },
-                      { value: 'media', label: 'Médias', icon: ImageIcon, badge: videos.length + variants.length > 0 ? videos.length + variants.length : undefined },
+                      { value: 'media', label: 'Médias', icon: ImageIcon, badge: images.length },
+                      { value: 'videos', label: 'Vidéos', icon: Video, badge: videos.length > 0 ? videos.length : undefined },
+                      { value: 'variants', label: 'Variantes', icon: Layers, badge: variants.length > 0 ? variants.length : undefined },
+                      { value: 'reviews', label: 'Avis', icon: MessageSquare },
                       { value: 'pricing', label: 'Prix & Stock', icon: DollarSign },
-                      { value: 'details', label: 'Détails', icon: FileText },
                       { value: 'seo', label: 'SEO', icon: Search },
                       { value: 'history', label: 'Historique', icon: History },
                     ].map((tab) => (
@@ -1430,6 +1437,33 @@ export function ProductViewModal({
                           )}
                         </CardContent>
                       </Card>
+                    </TabsContent>
+
+                    {/* Videos Tab */}
+                    <TabsContent value="videos" className="m-0">
+                      <ProductVideosTab 
+                        videos={videos}
+                        productName={product.name || 'Produit'}
+                        isEditing={isEditing}
+                      />
+                    </TabsContent>
+
+                    {/* Variants Tab */}
+                    <TabsContent value="variants" className="m-0">
+                      <ProductVariantsTab
+                        variants={variants}
+                        productName={product.name || 'Produit'}
+                        basePrice={product.price}
+                        isEditing={isEditing}
+                      />
+                    </TabsContent>
+
+                    {/* Reviews Tab */}
+                    <TabsContent value="reviews" className="m-0">
+                      <ProductReviewsTab
+                        productId={product.id}
+                        productName={product.name || 'Produit'}
+                      />
                     </TabsContent>
 
                     {/* Pricing Tab */}
