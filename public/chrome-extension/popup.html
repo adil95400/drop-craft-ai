@@ -349,21 +349,21 @@
         </svg>
         <span>Accueil</span>
       </button>
+      <button class="tab-btn" data-tab="sourcing">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+          <path d="M11 8v6"/>
+          <path d="M8 11h6"/>
+        </svg>
+        <span>Sourcing</span>
+      </button>
       <button class="tab-btn" data-tab="profit">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="1" x2="12" y2="23"/>
           <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
         </svg>
         <span>Profit</span>
-      </button>
-      <button class="tab-btn" data-tab="variants">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="17 1 21 5 17 9"/>
-          <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-          <polyline points="7 23 3 19 7 15"/>
-          <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-        </svg>
-        <span>Variantes</span>
       </button>
       <button class="tab-btn" data-tab="sync">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -373,6 +373,104 @@
         <span>Sync</span>
       </button>
     </nav>
+
+    <!-- Supplier Sourcing Tab -->
+    <section id="sourcingTab" class="tab-panel hidden">
+      <div class="tab-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          Trouver le Fournisseur
+        </h3>
+        <span class="beta-badge">NEW</span>
+      </div>
+      
+      <div class="sourcing-container">
+        <!-- Current Product Info -->
+        <div class="current-product-card" id="currentProductCard">
+          <div class="product-preview">
+            <div class="product-image-placeholder" id="sourcingProductImage">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <div class="product-info">
+              <span class="product-title-preview" id="sourcingProductTitle">Chargez une page produit</span>
+              <span class="product-price-preview" id="sourcingProductPrice">--</span>
+            </div>
+          </div>
+          <button id="findSupplierBtn" class="find-supplier-btn" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+            <span>Trouver Fournisseurs</span>
+          </button>
+        </div>
+
+        <!-- Search Options -->
+        <div class="search-options">
+          <label class="search-option">
+            <input type="checkbox" id="searchByImage" checked>
+            <span class="option-icon">🖼️</span>
+            <span>Image</span>
+          </label>
+          <label class="search-option">
+            <input type="checkbox" id="searchByText" checked>
+            <span class="option-icon">📝</span>
+            <span>Texte</span>
+          </label>
+        </div>
+
+        <!-- Platforms -->
+        <div class="platforms-grid">
+          <div class="platform-chip active" data-platform="aliexpress">
+            <span class="platform-icon">🛒</span>
+            <span>AliExpress</span>
+          </div>
+          <div class="platform-chip active" data-platform="1688">
+            <span class="platform-icon">🏭</span>
+            <span>1688</span>
+          </div>
+          <div class="platform-chip active" data-platform="alibaba">
+            <span class="platform-icon">🏪</span>
+            <span>Alibaba</span>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="sourcing-results" id="sourcingResults">
+          <div class="sourcing-empty">
+            <span class="empty-icon">🔍</span>
+            <span class="empty-text">Ouvrez une page produit et cliquez sur "Trouver Fournisseurs"</span>
+          </div>
+        </div>
+
+        <!-- Best Deal Card (appears after search) -->
+        <div class="best-deal-card hidden" id="bestDealCard">
+          <div class="best-deal-header">
+            <span class="best-deal-badge">🏆 Meilleur Prix</span>
+          </div>
+          <div class="best-deal-content">
+            <div class="best-deal-platform" id="bestDealPlatform">AliExpress</div>
+            <div class="best-deal-price" id="bestDealPrice">$0.00</div>
+            <div class="best-deal-margin" id="bestDealMargin">Marge: +0%</div>
+            <a href="#" id="bestDealLink" target="_blank" class="best-deal-link">
+              <span>Voir chez le fournisseur</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- Profit Calculator Tab -->
     <section id="profitTab" class="tab-panel hidden">

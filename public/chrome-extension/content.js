@@ -2299,6 +2299,47 @@
     }
   }
 
+  // ============================================
+  // MESSAGE LISTENER FOR POPUP COMMUNICATION
+  // ============================================
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'PING') {
+      sendResponse({ success: true, version: CONFIG.VERSION });
+      return true;
+    }
+    
+    if (message.type === 'GET_PRODUCT_DATA') {
+      try {
+        if (!isProductPage()) {
+          sendResponse({ success: false, error: 'Not a product page' });
+          return true;
+        }
+        
+        const productData = extractProductData();
+        sendResponse({ 
+          success: true, 
+          product: {
+            title: productData.title || productData.name,
+            price: productData.price,
+            image: productData.images?.[0] || productData.image,
+            images: productData.images,
+            description: productData.description,
+            sku: productData.sku,
+            variants: productData.variants,
+            platform: productData.platform,
+            url: window.location.href
+          }
+        });
+      } catch (error) {
+        console.error('[ShopOpti+] Error extracting product data:', error);
+        sendResponse({ success: false, error: error.message });
+      }
+      return true;
+    }
+    
+    return false;
+  });
+
   // Wait for DOM - immediate init with backup
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(init, 200));
