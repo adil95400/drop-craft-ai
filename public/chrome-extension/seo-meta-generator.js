@@ -1,5 +1,5 @@
 /**
- * Shopopti+ - SEO Meta Tags Generator v4.3.0
+ * ShopOpti+ - SEO Meta Tags Generator v4.3.16
  * Generates optimized meta titles, descriptions, OG tags, and structured data
  * Professional SEO module surpassing AutoDS & Cartifind
  */

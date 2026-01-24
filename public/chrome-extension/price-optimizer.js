@@ -1,5 +1,5 @@
 /**
- * Shopopti+ - AI Price Optimizer v4.3.0
+ * ShopOpti+ - AI Price Optimizer v4.3.16
  * Intelligent pricing suggestions based on market analysis
  * Professional feature surpassing AutoDS pricing tools
  */

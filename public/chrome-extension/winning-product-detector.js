@@ -1,5 +1,5 @@
 /**
- * Shopopti+ - Winning Product Detector v4.3.0
+ * ShopOpti+ - Winning Product Detector v4.3.16
  * AI-powered analysis to identify high-potential products
  * Unique feature not available in AutoDS or Cartifind
  */
