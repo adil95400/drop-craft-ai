@@ -1,13 +1,14 @@
 /**
- * ShopOpti+ Configuration Module v5.0
+ * ShopOpti+ Configuration Module v5.6.0
  * Centralized configuration for the extension
+ * Synced with shopopti.io backend
  */
 
 const Config = {
-  VERSION: '5.0.0',
+  VERSION: '5.6.0',
   BRAND: 'ShopOpti+',
   
-  // API Configuration
+  // API Configuration - Synced with shopopti.io
   API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
   APP_URL: 'https://shopopti.io',
   
