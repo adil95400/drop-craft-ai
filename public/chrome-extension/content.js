@@ -1,19 +1,18 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v5.2.0
+// ShopOpti+ Chrome Extension - Content Script v5.1.0
 // SECURITY HARDENED - XSS Prevention, Safe DOM
 // Modular Platform Detection for 30+ Platforms
 // Bulk Import V5 + Multi-Store Integration
-// Enhanced Collection Page Detection
 // ============================================
 
 (function () {
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '5.2.1') return;
-  window.__shopOptiCSVersion = '5.2.1';
+  if (window.__shopOptiCSVersion === '5.1.0') return;
+  window.__shopOptiCSVersion = '5.1.0';
 
-  console.log('[ShopOpti+] Content script v5.2.1 initializing...');
+  console.log('[ShopOpti+] Content script v5.1.0 initializing...');
 
   // ============================================
   // SECURITY MODULE (inline for content script)
@@ -91,115 +90,12 @@
     });
   }
 
-  function waitForOverlay(timeout = 8000) {
-    return new Promise((resolve, reject) => {
-      if (window.AdvancedImportOverlay) {
-        resolve(window.AdvancedImportOverlay);
-        return;
-      }
-      
-      const startTime = Date.now();
-      const checkInterval = setInterval(() => {
-        if (window.AdvancedImportOverlay) {
-          clearInterval(checkInterval);
-          resolve(window.AdvancedImportOverlay);
-        } else if (Date.now() - startTime > timeout) {
-          clearInterval(checkInterval);
-          // Try to inject it manually
-          injectOverlayScript().then(() => {
-            if (window.AdvancedImportOverlay) {
-              resolve(window.AdvancedImportOverlay);
-            } else {
-              reject(new Error('Module AdvancedImportOverlay failed to load'));
-            }
-          }).catch(reject);
-        }
-      }, 100);
-    });
+  function waitForOverlay(timeout = 5000) {
+    return waitForModule('AdvancedImportOverlay', timeout);
   }
 
-  function waitForBulkImport(timeout = 8000) {
-    return new Promise((resolve, reject) => {
-      if (window.ShopOptiBulkImportV5) {
-        resolve(window.ShopOptiBulkImportV5);
-        return;
-      }
-      
-      const startTime = Date.now();
-      const checkInterval = setInterval(() => {
-        if (window.ShopOptiBulkImportV5) {
-          clearInterval(checkInterval);
-          resolve(window.ShopOptiBulkImportV5);
-        } else if (Date.now() - startTime > timeout) {
-          clearInterval(checkInterval);
-          // Try to inject it manually  
-          injectBulkImportScript().then(() => {
-            if (window.ShopOptiBulkImportV5) {
-              resolve(window.ShopOptiBulkImportV5);
-            } else {
-              reject(new Error('Module ShopOptiBulkImportV5 failed to load'));
-            }
-          }).catch(reject);
-        }
-      }, 100);
-    });
-  }
-  
-  // Dynamic script injection helpers - simplified for content script context
-  async function injectOverlayScript() {
-    if (window.__shopoptiImportOverlayV2Loaded) return true;
-    
-    return new Promise((resolve, reject) => {
-      try {
-        // Request background to inject the script
-        chrome.runtime.sendMessage({ type: 'INJECT_OVERLAY_SCRIPT' }, (response) => {
-          if (chrome.runtime.lastError) {
-            // Fallback: try direct injection via web_accessible_resources
-            const scriptUrl = chrome.runtime.getURL('import-overlay-v2.js');
-            const script = document.createElement('script');
-            script.src = scriptUrl;
-            script.onload = () => {
-              console.log('[ShopOpti+] Import overlay V2 loaded via fallback');
-              resolve(true);
-            };
-            script.onerror = () => reject(new Error('Failed to load import-overlay-v2.js'));
-            document.head.appendChild(script);
-          } else {
-            resolve(response?.success || false);
-          }
-        });
-      } catch (e) {
-        reject(e);
-      }
-    });
-  }
-  
-  async function injectBulkImportScript() {
-    if (window.__shopopti_bulk_v5_loaded) return true;
-    
-    return new Promise((resolve, reject) => {
-      try {
-        // Request background to inject the script
-        chrome.runtime.sendMessage({ type: 'INJECT_BULK_SCRIPT' }, (response) => {
-          if (chrome.runtime.lastError) {
-            // Fallback: try direct injection via web_accessible_resources
-            const scriptUrl = chrome.runtime.getURL('bulk-import-v5.js');
-            const script = document.createElement('script');
-            script.src = scriptUrl;
-            script.onload = () => {
-              console.log('[ShopOpti+] Bulk import V5 loaded via fallback');
-              resolve(true);
-            };
-            script.onerror = () => reject(new Error('Failed to load bulk-import-v5.js'));
-            document.head.appendChild(script);
-          } else {
-            resolve(response?.success || false);
-          }
-        });
-      } catch (e) {
-        reject(e);
-      }
-    });
+  function waitForBulkImport(timeout = 5000) {
+    return waitForModule('ShopOptiBulkImportV5', timeout);
   }
 
   // ============================================
@@ -237,7 +133,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '5.2.1',
+    VERSION: '5.1.0',
     BRAND: 'ShopOpti+',
     MAX_BULK_IMPORT: 100,
     PLATFORMS: [
@@ -375,58 +271,30 @@
 
   function isListingPage() {
     const url = window.location.href;
-    const pathname = window.location.pathname;
     const platform = detectPlatform();
     
     const patterns = {
-      amazon: /\/gp\/bestsellers|\/s\?|\/s\/|\/b\?|\/b\/|keywords=|node=/i,
-      aliexpress: /\/category\/|\/wholesale|SearchText=|\/af\//i,
-      temu: /\/channel\/|\/search_result|\/category\//i,
-      shein: /\/category\/|pdsearch|\/Women\/|\/Men\/|\/Kids\//i,
-      ebay: /\/b\/|\/sch\/|_nkw=/i,
-      walmart: /\/search\/|\/browse\/|\/cp\//i,
-      etsy: /\/search\?|\/c\/|\/market\//i,
-      cdiscount: /\/search|\/browse|\/l-\d+|\/c-\d+/i,
-      fnac: /\/SearchResult|\/n\d+\//i,
-      shopify: /\/collections\/|\/search\?|\/search\/|type=|vendor=/i
+      amazon: /\/gp\/bestsellers|\/s\?|\/b\?|keywords=/i,
+      aliexpress: /\/category\/|\/wholesale|SearchText=/i,
+      temu: /\/channel\/|\/search_result/i,
+      shein: /\/category\/|pdsearch/i,
+      ebay: /\/b\/|\/sch\//i,
+      walmart: /\/search\/|\/browse\//i,
+      etsy: /\/search\?|\/c\//i,
+      cdiscount: /\/search|\/browse|\/l-\d+/i
     };
     
-    // Check URL patterns first
-    if (patterns[platform]?.test(url)) {
-      console.log('[ShopOpti+] Listing page detected via URL pattern for', platform);
-      return true;
-    }
+    if (patterns[platform]?.test(url)) return true;
     
-    // Shopify collections detection
-    if (platform === 'shopify') {
-      if (pathname.includes('/collections/') || 
-          pathname.includes('/search') ||
-          document.querySelector('.collection-products, .product-grid, [data-collection]')) {
-        console.log('[ShopOpti+] Shopify collection page detected');
-        return true;
-      }
-    }
-    
-    // Universal product card detection - extended selectors
+    // Universal product card detection
     const cardSelectors = [
-      // Amazon
-      '[data-asin]:not([data-asin=""])', '.s-result-item', '.a-section.a-spacing-base',
-      // AliExpress
-      '.search-item-card-wrapper-gallery', '[data-widget-type="search"]', '.product-snippet',
-      // Shopify
-      '.product-card', '.collection-product', '.grid__item.product', '[data-product-card]',
-      '.product-grid-item', '.product-list-item', '.collection__products .product',
-      // Generic
-      '[class*="product-card"]', '[data-product-id]', '[data-product]',
-      '.product-item', '.listing-card', '.goods-item', '.product-box'
+      '[data-asin]:not([data-asin=""])', '.s-result-item',
+      '[class*="product-card"]', '[data-product-id]',
+      '.product-item', '.listing-card'
     ];
     
     for (const sel of cardSelectors) {
-      const count = document.querySelectorAll(sel).length;
-      if (count >= 3) {
-        console.log('[ShopOpti+] Listing page detected via', sel, '(', count, 'items)');
-        return true;
-      }
+      if (document.querySelectorAll(sel).length >= 3) return true;
     }
     
     return false;
@@ -493,15 +361,6 @@
         // Extract product data first
         const productData = await extractProductData();
         
-        // Try to inject and use overlay directly
-        try {
-          await injectOverlayScript();
-          // Wait a bit for initialization
-          await new Promise(r => setTimeout(r, 200));
-        } catch (e) {
-          console.log('[ShopOpti+] Overlay script injection attempt:', e.message);
-        }
-        
         // Open Advanced Import Overlay V2
         if (window.AdvancedImportOverlay) {
           const overlay = new window.AdvancedImportOverlay();
@@ -518,23 +377,19 @@
           
           if (response?.success) {
             // Wait for overlay script to load then open
-            await waitForOverlay(5000);
-            if (window.AdvancedImportOverlay) {
-              const overlay = new window.AdvancedImportOverlay();
-              overlay.open(productData);
-            }
+            await waitForOverlay();
+            const overlay = new window.AdvancedImportOverlay();
+            overlay.open(productData);
             btn.textContent = originalText;
             btn.disabled = false;
           } else {
-            throw new Error(response?.error || 'Impossible d\'ouvrir l\'assistant d\'import');
+            throw new Error(response?.error || 'Failed to open import assistant');
           }
         }
       } catch (error) {
         console.error('[ShopOpti+] Import error:', error);
         btn.textContent = '✗ Erreur';
         btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-        
-        showToast(error.message || 'Erreur d\'import', 'error');
         
         setTimeout(() => {
           btn.textContent = originalText;
@@ -559,41 +414,17 @@
     injectBulkActionBar();
     
     const cardSelectors = {
-      amazon: '[data-asin]:not([data-asin=""]):not(.shopopti-processed), .s-result-item:not(.shopopti-processed)',
-      aliexpress: '.list-item:not(.shopopti-processed), [class*="product-card"]:not(.shopopti-processed), .product-snippet:not(.shopopti-processed), .search-item-card-wrapper-gallery:not(.shopopti-processed)',
-      cdiscount: '.prdtBloc:not(.shopopti-processed), .lpProduct:not(.shopopti-processed), [data-productid]:not(.shopopti-processed)',
-      temu: '[class*="goods-item"]:not(.shopopti-processed), [class*="ProductCard"]:not(.shopopti-processed)',
-      shein: '[class*="product-item"]:not(.shopopti-processed), .S-product-item:not(.shopopti-processed)',
-      ebay: '.s-item:not(.shopopti-processed):not(.s-item__pl-on-bottom)',
-      shopify: '.product-card:not(.shopopti-processed), .grid__item:not(.shopopti-processed):has(a[href*="/products/"]), .collection-product:not(.shopopti-processed), [data-product-card]:not(.shopopti-processed), .product-grid-item:not(.shopopti-processed), .product-item:not(.shopopti-processed):has(a[href*="/products/"])',
-      fnac: '.Article-item:not(.shopopti-processed), .product-list-item:not(.shopopti-processed)',
-      default: '[data-product-id]:not(.shopopti-processed), .product-card:not(.shopopti-processed), [data-product]:not(.shopopti-processed)'
+      amazon: '[data-asin]:not([data-asin=""]):not(.shopopti-processed)',
+      aliexpress: '.list-item:not(.shopopti-processed), [class*="product-card"]:not(.shopopti-processed)',
+      cdiscount: '.prdtBloc:not(.shopopti-processed), .lpProduct:not(.shopopti-processed)',
+      temu: '[class*="goods-item"]:not(.shopopti-processed)',
+      shein: '[class*="product-item"]:not(.shopopti-processed)',
+      ebay: '.s-item:not(.shopopti-processed)',
+      default: '[data-product-id]:not(.shopopti-processed), .product-card:not(.shopopti-processed)'
     };
     
     const selector = cardSelectors[platform] || cardSelectors.default;
-    let cards = [];
-    
-    // Try platform-specific selector first
-    try {
-      cards = Array.from(document.querySelectorAll(selector));
-    } catch (e) {
-      // Fallback for browsers that don't support :has()
-      cards = Array.from(document.querySelectorAll(cardSelectors.default));
-    }
-    
-    // If no cards found with specific selector, try alternative detection for Shopify
-    if (cards.length === 0 && platform === 'shopify') {
-      const allLinks = document.querySelectorAll('a[href*="/products/"]:not(.shopopti-processed)');
-      const processedParents = new Set();
-      
-      allLinks.forEach(link => {
-        const productCard = link.closest('.product, .card, [class*="product"], [class*="grid__item"], article');
-        if (productCard && !processedParents.has(productCard) && !productCard.classList.contains('shopopti-processed')) {
-          processedParents.add(productCard);
-          cards.push(productCard);
-        }
-      });
-    }
+    const cards = document.querySelectorAll(selector);
     
     let injectedCount = 0;
     

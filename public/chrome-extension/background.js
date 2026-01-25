@@ -1,17 +1,15 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Background Service Worker v5.3.0
+// ShopOpti+ Chrome Extension - Background Service Worker v5.1.0
 // SECURITY HARDENED - Message validation, URL whitelist, rate limiting
-// Sender origin verification, strict CSP compliance
 // Bulk Import V5 + Multi-Store Integration
 // ============================================
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.3.0';
-const EXTENSION_ID = chrome.runtime.id;
+const VERSION = '5.1.0';
 
 // ============================================
-// SECURITY MODULE - HARDENED
+// SECURITY MODULE
 // ============================================
 const Security = {
   ALLOWED_API_DOMAINS: ['supabase.co', 'shopopti.io'],
@@ -42,42 +40,13 @@ const Security = {
     'GET_PRICE_HISTORY', 'GET_MONITORING_STATUS', 'GET_PRODUCT_DATA',
     'FIND_SUPPLIERS', 'EXTRACT_COMPLETE', 'REQUEST_PERMISSIONS',
     'OPEN_IMPORT_OVERLAY', 'IMPORT_WITH_OPTIONS',
+    // Bulk Import V5 + Multi-Store + Sourcing messages
     'OPEN_BULK_IMPORT_UI', 'BULK_IMPORT_PRODUCTS', 'GET_USER_STORES',
     'IMPORT_TO_STORES', 'SYNC_PRODUCT_TO_STORES',
-    'SEARCH_ALL_SUPPLIERS', 'COMPARE_SUPPLIERS',
-    'INJECT_OVERLAY_SCRIPT', 'INJECT_BULK_SCRIPT'
+    'SEARCH_ALL_SUPPLIERS', 'COMPARE_SUPPLIERS'
   ],
 
   rateLimits: new Map(),
-
-  /**
-   * Validate sender origin - CRITICAL for security
-   * Only accept messages from our extension or whitelisted domains
-   */
-  validateSender(sender) {
-    // Messages from extension popup/options pages
-    if (sender.id === EXTENSION_ID) {
-      return { valid: true };
-    }
-    
-    // Messages from content scripts on allowed domains
-    if (sender.tab && sender.url) {
-      try {
-        const url = new URL(sender.url);
-        const hostname = url.hostname.toLowerCase();
-        const isAllowed = this.ALLOWED_SCRAPE_DOMAINS.some(d => 
-          hostname === d || hostname.endsWith('.' + d)
-        );
-        if (isAllowed) {
-          return { valid: true };
-        }
-      } catch (e) {
-        return { valid: false, error: 'Invalid sender URL' };
-      }
-    }
-    
-    return { valid: false, error: 'Unauthorized message sender' };
-  },
 
   isUrlAllowedForApi(url) {
     if (!url || typeof url !== 'string') return false;
@@ -219,15 +188,7 @@ class ShopOptiBackground {
   }
 
   async handleMessage(message, sender, sendResponse) {
-    // CRITICAL: Validate sender origin first
-    const senderValidation = Security.validateSender(sender);
-    if (!senderValidation.valid) {
-      console.error('[ShopOpti+] Sender validation failed:', senderValidation.error, sender);
-      sendResponse({ success: false, error: senderValidation.error });
-      return;
-    }
-
-    // Security validation for message content
+    // Security validation
     const validation = Security.validateMessage(message, sender);
     if (!validation.valid) {
       console.error('[ShopOpti+] Message validation failed:', validation.error);
@@ -241,7 +202,7 @@ class ShopOptiBackground {
       return;
     }
 
-    console.log('[ShopOpti+] Message:', message.type, 'from:', sender.id || sender.url?.substring(0, 50));
+    console.log('[ShopOpti+] Message:', message.type);
     
     try {
       switch (message.type) {
@@ -360,17 +321,6 @@ class ShopOptiBackground {
         case 'COMPARE_SUPPLIERS':
           const compareResults = await this.compareSuppliers(message.productId, message.suppliers);
           sendResponse(compareResults);
-          break;
-
-        // Script injection handlers
-        case 'INJECT_OVERLAY_SCRIPT':
-          const overlayInjResult = await this.injectScriptToActiveTab('import-overlay-v2.js');
-          sendResponse(overlayInjResult);
-          break;
-
-        case 'INJECT_BULK_SCRIPT':
-          const bulkInjResult = await this.injectScriptToActiveTab('bulk-import-v5.js');
-          sendResponse(bulkInjResult);
           break;
 
         default:
@@ -637,30 +587,6 @@ class ShopOptiBackground {
   }
 
   // ============================================
-  // SCRIPT INJECTION HELPER
-  // ============================================
-
-  async injectScriptToActiveTab(scriptFile) {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) {
-        return { success: false, error: 'No active tab' };
-      }
-
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: [scriptFile]
-      });
-
-      console.log(`[ShopOpti+] ${scriptFile} injected successfully`);
-      return { success: true };
-    } catch (error) {
-      console.error(`[ShopOpti+] Failed to inject ${scriptFile}:`, error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // ============================================
   // IMPORT OVERLAY V2 INTEGRATION
   // ============================================
 
@@ -670,27 +596,17 @@ class ShopOptiBackground {
     }
 
     try {
-      // First inject the overlay script using chrome.scripting.executeScript with files
-      // This is the correct MV3 way to inject web_accessible_resources
+      // Inject the overlay script dynamically
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         files: ['import-overlay-v2.js']
       });
 
-      console.log('[ShopOpti+] Overlay script injected via files');
-
-      // Wait a moment for script to initialize
-      await new Promise(resolve => setTimeout(resolve, 150));
-
       // Notify content script that overlay is ready
-      try {
-        await chrome.tabs.sendMessage(tab.id, {
-          type: 'OVERLAY_SCRIPT_INJECTED',
-          productData
-        });
-      } catch (msgError) {
-        console.warn('[ShopOpti+] Could not send message to tab:', msgError.message);
-      }
+      await chrome.tabs.sendMessage(tab.id, {
+        type: 'OVERLAY_SCRIPT_INJECTED',
+        productData
+      });
 
       return { success: true };
     } catch (error) {
@@ -814,26 +730,17 @@ class ShopOptiBackground {
     }
 
     try {
-      // Inject bulk import V5 script using chrome.scripting.executeScript with files
+      // Inject bulk import V5 script
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         files: ['bulk-import-v5.js']
       });
 
-      console.log('[ShopOpti+] Bulk import script injected via files');
-
-      // Wait a moment for script to initialize
-      await new Promise(resolve => setTimeout(resolve, 150));
-
-      // Send products data to the tab
-      try {
-        await chrome.tabs.sendMessage(tab.id, {
-          type: 'BULK_IMPORT_UI_READY',
-          products
-        });
-      } catch (msgError) {
-        console.warn('[ShopOpti+] Could not send bulk import message:', msgError.message);
-      }
+      // Also inject dependencies
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['lib/import-queue.js', 'lib/store-manager.js']
+      });
 
       return { success: true, productCount: products?.length || 0 };
     } catch (error) {

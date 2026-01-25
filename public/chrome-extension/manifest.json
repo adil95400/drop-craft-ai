@@ -1,54 +1,54 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.3.1",
-  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancee, detection winning products, 25+ plateformes, import en masse multi-boutiques",
+  "version": "5.1.0",
+  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes, import en masse multi-boutiques",
+  
   "permissions": [
     "activeTab",
     "storage",
-    "scripting"
-  ],
-  "optional_permissions": [
+    "scripting",
     "alarms",
     "notifications"
   ],
+  
   "host_permissions": [
     "*://*.shopopti.io/*",
-    "*://*.supabase.co/*",
+    "*://*.supabase.co/*"
+  ],
+  
+  "optional_host_permissions": [
     "*://*.aliexpress.com/*",
+    "*://*.aliexpress.fr/*",
+    "*://*.aliexpress.us/*",
     "*://*.amazon.com/*",
     "*://*.amazon.fr/*",
     "*://*.amazon.de/*",
     "*://*.amazon.co.uk/*",
-    "*://*.ebay.com/*",
-    "*://*.ebay.fr/*",
-    "*://*.temu.com/*",
-    "*://*.shein.com/*",
-    "*://*.walmart.com/*",
-    "*://*.etsy.com/*",
-    "*://*.cdiscount.com/*",
-    "*://*.fnac.com/*",
-    "*://*.rakuten.fr/*",
-    "*://*.banggood.com/*",
-    "*://*.dhgate.com/*",
-    "*://*.cjdropshipping.com/*",
-    "*://*.myshopify.com/*"
-  ],
-  "optional_host_permissions": [
-    "*://*.aliexpress.fr/*",
-    "*://*.aliexpress.us/*",
     "*://*.amazon.es/*",
     "*://*.amazon.it/*",
     "*://*.amazon.ca/*",
     "*://*.amazon.co.jp/*",
+    "*://*.ebay.com/*",
+    "*://*.ebay.fr/*",
     "*://*.ebay.de/*",
     "*://*.ebay.co.uk/*",
+    "*://*.walmart.com/*",
+    "*://*.etsy.com/*",
+    "*://*.temu.com/*",
     "*://*.wish.com/*",
+    "*://*.shein.com/*",
     "*://*.shein.fr/*",
+    "*://*.banggood.com/*",
+    "*://*.dhgate.com/*",
     "*://*.1688.com/*",
     "*://*.taobao.com/*",
+    "*://*.cjdropshipping.com/*",
     "*://*.lightinthebox.com/*",
     "*://*.made-in-china.com/*",
+    "*://*.cdiscount.com/*",
+    "*://*.fnac.com/*",
+    "*://*.rakuten.fr/*",
     "*://*.rakuten.com/*",
     "*://*.homedepot.com/*",
     "*://*.lowes.com/*",
@@ -63,15 +63,19 @@
     "*://*.overstock.com/*",
     "*://*.wayfair.com/*",
     "*://*.zalando.fr/*",
-    "*://*.asos.com/*"
+    "*://*.asos.com/*",
+    "*://*.myshopify.com/*"
   ],
+  
   "content_security_policy": {
     "extension_pages": "default-src 'self'; connect-src 'self' https://*.supabase.co https://shopopti.io https://*.shopopti.io; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
   },
+  
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
+  
   "action": {
     "default_popup": "popup.html",
     "default_title": "ShopOpti+ - Dropshipping Pro",
@@ -82,20 +86,35 @@
       "128": "icons/icon128.png"
     }
   },
+  
   "options_page": "options.html",
+  
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
+  
   "web_accessible_resources": [
     {
       "resources": [
         "content.css",
         "icons/*.png",
         "import-overlay-v2.js",
-        "bulk-import-v5.js"
+        "bulk-import-v5.js",
+        "extractors/amazon-extractor.js",
+        "extractors/aliexpress-extractor.js",
+        "extractors/temu-extractor.js",
+        "extractors/shein-extractor.js",
+        "extractors/ebay-extractor.js",
+        "extractors/core-extractor.js",
+        "supplier-search.js",
+        "extractors/core-extractor.js",
+        "lib/config.js",
+        "lib/security.js",
+        "lib/import-queue.js",
+        "lib/store-manager.js"
       ],
       "matches": ["<all_urls>"]
     }
