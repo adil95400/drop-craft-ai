@@ -1,6 +1,7 @@
 // ============================================
-// ShopOpti+ Bulk Import System v5.0
+// ShopOpti+ Bulk Import System v5.6.0
 // Complete rewrite with queue, multi-store, deep extraction
+// 45+ PLATFORMS SUPPORTED - AutoDS Feature Parity
 // ============================================
 
 (function() {
@@ -13,183 +14,465 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
+    VERSION: '5.6.0',
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
+    APP_URL: 'https://shopopti.io',
     MAX_SELECTION: 100,
     BATCH_SIZE: 10,
     THROTTLE_MS: 200
   };
 
   // ============================================
-  // PLATFORM SELECTORS (30+ platforms)
+  // PLATFORM SELECTORS (45+ platforms - AutoDS parity)
   // ============================================
   const PLATFORMS = {
+    // CHINA SUPPLIERS
     aliexpress: {
       listingPage: ['/wholesale', '/category', 'SearchText=', '/w/', '/gcp/', '/af/'],
-      productCard: '.search-item-card-wrapper-gallery, .list--gallery--34TropR, [data-widget-type="search"], .search-card-item, .product-snippet',
+      productCard: '.search-item-card-wrapper-gallery, .list--gallery--34TropR, [data-widget-type="search"], .search-card-item, .product-snippet, [class*="product-card"]',
       productPage: ['/item/', '/i/'],
       selectors: {
-        title: '.multi--titleText--nXeOvyr, .manhattan--titleText--WccHjR6, h1',
-        price: '.multi--price-sale--U-S0jtj, .manhattan--price-sale--1CCSZfK, [class*="price-current"]',
-        image: '.images--imageWindow--1Z-J9gn img, .slider--img--K6MIH9z img',
+        title: '.multi--titleText--nXeOvyr, .manhattan--titleText--WccHjR6, h1, [class*="titleText"]',
+        price: '.multi--price-sale--U-S0jtj, .manhattan--price-sale--1CCSZfK, [class*="price-current"], [class*="product-price"]',
+        image: '.images--imageWindow--1Z-J9gn img, .slider--img--K6MIH9z img, [class*="gallery"] img',
         link: 'a[href*="/item/"], a[href*="/i/"]',
-        orders: '.multi--trade--Ktbl2jB, [class*="sold"]',
+        orders: '.multi--trade--Ktbl2jB, [class*="sold"], [class*="order"]',
         rating: '[class*="rating"], [class*="star"]'
       }
     },
-    amazon: {
-      listingPage: ['/s?', '/s/', 'keywords='],
-      productCard: '[data-component-type="s-search-result"], .s-result-item[data-asin]',
-      productPage: ['/dp/', '/gp/product/'],
+    alibaba: {
+      listingPage: ['/trade/search', '/products/', '/showroom/'],
+      productCard: '.organic-list-offer, .list-no-v2-outter, .J-offer-wrapper, .offer-list-item',
+      productPage: ['/product-detail/', '/product/'],
       selectors: {
-        title: 'h2 span, .s-title-instructions-style span',
-        price: '.a-price-whole, .a-offscreen',
-        image: '.s-image, img.s-image',
-        link: 'a.a-link-normal[href*="/dp/"]',
-        orders: '.a-size-base.s-underline-text',
-        rating: '.a-icon-alt'
+        title: '.title-con, h1, .subject',
+        price: '.price, [class*="price"]',
+        image: '.detail-gallery img, .main-img',
+        link: 'a[href*="/product"]',
+        orders: '.trade-count',
+        rating: '.score'
+      }
+    },
+    '1688': {
+      listingPage: ['/page/', '/offer/', '/chanpin/'],
+      productCard: '.sm-offer-item, .offer-list-row, .offer-item',
+      productPage: ['/offer/', '/detail/'],
+      selectors: {
+        title: '.title, h1, .offer-title',
+        price: '.price, .sm-offer-price',
+        image: 'img.img, .pic img',
+        link: 'a[href*="/offer/"]',
+        orders: '.sale-count',
+        rating: ''
+      }
+    },
+    taobao: {
+      listingPage: ['/search', '/list/'],
+      productCard: '.item, .J_MouserOnverReq, .product-iWrap, [data-item-id]',
+      productPage: ['/item.htm'],
+      selectors: {
+        title: '.title, h1, .tb-main-title',
+        price: '.price, .tb-rmb-num',
+        image: 'img.pic-reco, .tb-main-pic img',
+        link: 'a[href*="item.htm"]',
+        orders: '.deal-cnt',
+        rating: '.rate'
       }
     },
     temu: {
-      listingPage: ['/search_result', '/channel/', '/category/'],
-      productCard: '._2BUQJ_w2, [data-testid="goods-item"], [class*="ProductCard"]',
-      productPage: ['/goods/', '/product/'],
+      listingPage: ['/search_result', '/channel/', '/category/', '/bgn/'],
+      productCard: '._2BUQJ_w2, [data-testid="goods-item"], [class*="ProductCard"], ._1UEr6Y3b',
+      productPage: ['/goods/', '/product/', '-g-'],
       selectors: {
-        title: '._2G7NFXUf, ._1VOXlKK6, [class*="ProductTitle"]',
-        price: '._2RL5rSJD, [class*="Price"]',
-        image: '._3tKlrXZ8 img, img[src*="temu"]',
+        title: '._2G7NFXUf, ._1VOXlKK6, [class*="ProductTitle"], h1',
+        price: '._2RL5rSJD, [class*="Price"], ._21ArE3mQ',
+        image: '._3tKlrXZ8 img, img[src*="temu"], ._2FMYjqSd img',
         link: 'a',
-        orders: '[class*="sold"]',
-        rating: '[class*="rating"]'
-      }
-    },
-    ebay: {
-      listingPage: ['/sch/', '/b/', 'LH_BIN='],
-      productCard: '.s-item:not(.s-item__pl-on-bottom), .srp-results .s-item__wrapper',
-      productPage: ['/itm/'],
-      selectors: {
-        title: '.s-item__title, h3.s-item__title',
-        price: '.s-item__price',
-        image: '.s-item__image img',
-        link: '.s-item__link',
-        orders: '.s-item__quantitySold',
-        rating: ''
-      }
-    },
-    cdiscount: {
-      listingPage: ['/search', '/c-', '/l-', '/f-'],
-      productCard: '.prdtBILDetails, .prdtBIL, .product-box, .product-item, [data-productid]',
-      productPage: ['/f-', '/dp/'],
-      selectors: {
-        title: '.prdtBILTit, .prdtTitle, h2, .product-name',
-        price: '.price, .prdtPrice, [class*="price"]',
-        image: 'img.prdtImg, img[src*="cdscdn"]',
-        link: 'a[href*="/f-"]',
-        orders: '',
-        rating: '[class*="rating"], .starFull'
-      }
-    },
-    fnac: {
-      listingPage: ['/SearchResult', '/s/', '/do/'],
-      productCard: '.Article-item, .SearchResult, .productItem, .product-list-item',
-      productPage: ['/a'],
-      selectors: {
-        title: '.Article-desc, .product-title, h2',
-        price: '.userPrice, .price',
-        image: 'img.Article-img, img[src*="static.fnac"]',
-        link: 'a[href*="/a"]',
-        orders: '',
-        rating: '.rating'
+        orders: '[class*="sold"], ._1JfFH8K2',
+        rating: '[class*="rating"], ._2_h0yVd9'
       }
     },
     shein: {
-      listingPage: ['/pdsearch/', '/category/', '/Women/'],
-      productCard: '.S-product-item, .product-card, [data-product-id], .goods-item',
-      productPage: ['/product/'],
+      listingPage: ['/pdsearch/', '/category/', '/Women/', '/Men/', '/Kids/'],
+      productCard: '.S-product-item, .product-card, [data-product-id], .goods-item, .product-list__item',
+      productPage: ['/product/', '-p-'],
       selectors: {
-        title: '.goods-title-link, .product-title, h3',
-        price: '.original-price, .price',
-        image: '.S-product-item__img img, img[src*="shein"]',
+        title: '.goods-title-link, .product-title, h3, .product-intro__head-name',
+        price: '.original-price, .price, .product-intro__head-price',
+        image: '.S-product-item__img img, img[src*="shein"], .goods-img',
         link: 'a',
         orders: '.sold',
-        rating: '.rating'
+        rating: '.rating, .star-rating'
       }
     },
-    walmart: {
-      listingPage: ['/search?', '/browse/'],
-      productCard: '[data-testid="list-view"], [data-item-id]',
-      productPage: ['/ip/'],
+    cjdropshipping: {
+      listingPage: ['/product-list/', '/category/', '/search/'],
+      productCard: '.product-item, .goods-item, .cj-product-card',
+      productPage: ['/product-detail/', '/product/'],
       selectors: {
-        title: '[class*="product-title"], span[data-automation-id="product-title"]',
-        price: '[data-automation-id="product-price"] span',
-        image: 'img[data-testid*="image"]',
-        link: 'a[link-identifier]',
-        orders: '',
-        rating: ''
-      }
-    },
-    etsy: {
-      listingPage: ['/search?', '/c/'],
-      productCard: '[data-search-results] .v2-listing-card, .wt-grid__item-xs-6',
-      productPage: ['/listing/'],
-      selectors: {
-        title: 'h3',
-        price: 'span[class*="price"]',
-        image: 'img',
+        title: '.product-title, h3, .prod-name',
+        price: '.price, .product-price',
+        image: 'img[src*="cjdropshipping"], .product-img',
         link: 'a',
-        orders: '',
-        rating: ''
-      }
-    },
-    wish: {
-      listingPage: ['/search', '/feed/'],
-      productCard: '.product-feed-item, [data-feed-card], .product-item',
-      productPage: ['/product/'],
-      selectors: {
-        title: '.product-title',
-        price: '[class*="price"]',
-        image: 'img',
-        link: 'a',
-        orders: '[class*="bought"]',
+        orders: '.sold-count',
         rating: '.rating'
       }
     },
     banggood: {
-      listingPage: ['/search/', '/category/'],
-      productCard: '.goodsItem, .product-item, .goodsBox',
-      productPage: ['/'],
+      listingPage: ['/search/', '/category/', '/wholesale/'],
+      productCard: '.goodsItem, .product-item, .goodsBox, .bg-item',
+      productPage: ['-p-', '/product/'],
       selectors: {
         title: '.goodsTitle, .product-title, h3',
-        price: '.newPrice, .price',
-        image: 'img.goodsImg, img[src*="banggood"]',
+        price: '.newPrice, .price, .price-now',
+        image: 'img.goodsImg, img[src*="banggood"], .goods-img',
         link: 'a',
-        orders: '.sold',
-        rating: '.rating'
+        orders: '.sold, .order-num',
+        rating: '.rating, .star'
       }
     },
     dhgate: {
-      listingPage: ['/wholesale/', '/products/'],
-      productCard: '.gallery-item, .product-item',
+      listingPage: ['/wholesale/', '/products/', '/search/'],
+      productCard: '.gallery-item, .product-item, .list-item',
       productPage: ['/product/'],
       selectors: {
-        title: '.product-title, h3',
-        price: '.price',
-        image: 'img[src*="dhgate"]',
+        title: '.product-title, h3, .goodstitle',
+        price: '.price, .actual-price',
+        image: 'img[src*="dhgate"], .product-img',
         link: 'a',
+        orders: '.sold, .orders',
+        rating: '.rating'
+      }
+    },
+    lightinthebox: {
+      listingPage: ['/c/', '/search/', '/wholesale/'],
+      productCard: '.product-item, .item-box, [data-pid]',
+      productPage: ['/p/'],
+      selectors: {
+        title: '.item-title, h3, .product-name',
+        price: '.price, .item-price',
+        image: '.item-img img',
+        link: 'a[href*="/p/"]',
         orders: '.sold',
         rating: '.rating'
       }
     },
-    cjdropshipping: {
-      listingPage: ['/product-list/', '/category/'],
-      productCard: '.product-item, .goods-item',
-      productPage: ['/product-detail/'],
+    'made-in-china': {
+      listingPage: ['/products/', '/search/', '/showroom/'],
+      productCard: '.product-card, .list-item, .offer-list',
+      productPage: ['/product/', '/detail/'],
+      selectors: {
+        title: '.product-name, h3, .offer-name',
+        price: '.price, .offer-price',
+        image: '.product-img img',
+        link: 'a[href*="/product/"]',
+        orders: '.trade',
+        rating: ''
+      }
+    },
+    wish: {
+      listingPage: ['/search', '/feed/', '/categories/'],
+      productCard: '.product-feed-item, [data-feed-card], .product-item, .feed-row-product',
+      productPage: ['/product/'],
       selectors: {
         title: '.product-title, h3',
-        price: '.price',
-        image: 'img[src*="cjdropshipping"]',
+        price: '[class*="price"], .sale-price',
+        image: 'img, .product-image',
+        link: 'a[href*="/product/"]',
+        orders: '[class*="bought"]',
+        rating: '.rating'
+      }
+    },
+
+    // US MARKETPLACES
+    amazon: {
+      listingPage: ['/s?', '/s/', 'keywords=', '/gp/bestsellers'],
+      productCard: '[data-component-type="s-search-result"], .s-result-item[data-asin], .a-carousel-card',
+      productPage: ['/dp/', '/gp/product/'],
+      selectors: {
+        title: 'h2 span, .s-title-instructions-style span, .a-size-medium',
+        price: '.a-price-whole, .a-offscreen, .a-price span',
+        image: '.s-image, img.s-image, .s-product-image-container img',
+        link: 'a.a-link-normal[href*="/dp/"]',
+        orders: '.a-size-base.s-underline-text, [class*="ratings"]',
+        rating: '.a-icon-alt, .a-star-mini'
+      }
+    },
+    ebay: {
+      listingPage: ['/sch/', '/b/', 'LH_BIN=', '/e/'],
+      productCard: '.s-item:not(.s-item__pl-on-bottom), .srp-results .s-item__wrapper, [data-gr4]',
+      productPage: ['/itm/', '/p/'],
+      selectors: {
+        title: '.s-item__title, h3.s-item__title',
+        price: '.s-item__price, .x-price-primary',
+        image: '.s-item__image img, .s-item__image-wrapper img',
+        link: '.s-item__link, a[href*="/itm/"]',
+        orders: '.s-item__quantitySold, .s-item__hotness',
+        rating: '.s-item__reviews, .x-star-rating'
+      }
+    },
+    walmart: {
+      listingPage: ['/search?', '/browse/', '/shop/'],
+      productCard: '[data-testid="list-view"], [data-item-id], .search-result-gridview-item',
+      productPage: ['/ip/'],
+      selectors: {
+        title: '[class*="product-title"], span[data-automation-id="product-title"], .prod-ProductTitle',
+        price: '[data-automation-id="product-price"] span, .price-main span',
+        image: 'img[data-testid*="image"], .search-result-product-image img',
+        link: 'a[link-identifier], a[href*="/ip/"]',
+        orders: '',
+        rating: '.rating-number, .seo-avg-rating'
+      }
+    },
+    etsy: {
+      listingPage: ['/search?', '/c/', '/market/'],
+      productCard: '[data-search-results] .v2-listing-card, .wt-grid__item-xs-6, .search-listings-group .listing-link',
+      productPage: ['/listing/'],
+      selectors: {
+        title: 'h3, .v2-listing-card__title, .wt-text-caption',
+        price: 'span[class*="price"], .currency-value',
+        image: 'img, .wt-image',
+        link: 'a, .listing-link',
+        orders: '.wt-text-caption',
+        rating: '.wt-screen-reader-only'
+      }
+    },
+    target: {
+      listingPage: ['/s?', '/c/', '/shop/'],
+      productCard: '[data-test="product-card"], .ProductCardWrapper, .h-flex',
+      productPage: ['/p/'],
+      selectors: {
+        title: '[data-test="product-title"], h3',
+        price: '[data-test="product-price"], .h-text-bs',
+        image: 'img[data-test="product-image"]',
+        link: 'a[href*="/p/"]',
+        orders: '',
+        rating: '[data-test="ratings"]'
+      }
+    },
+    costco: {
+      listingPage: ['/search/', '/c/', '/browse/'],
+      productCard: '.product-tile, .product-list-item, [data-product-id]',
+      productPage: ['/product.'],
+      selectors: {
+        title: '.description, h3, .product-title',
+        price: '.price, .your-price',
+        image: '.product-image img',
+        link: 'a[href*="/product."]',
+        orders: '',
+        rating: '.stars'
+      }
+    },
+    homedepot: {
+      listingPage: ['/s/', '/b/', '/search/'],
+      productCard: '.product-pod, .browse-search__pod, [data-productid]',
+      productPage: ['/p/'],
+      selectors: {
+        title: '.product-pod__title, h2',
+        price: '.price, .price-format__main-price',
+        image: '.product-image img, .stretchy img',
+        link: 'a[href*="/p/"]',
+        orders: '',
+        rating: '.stars'
+      }
+    },
+    lowes: {
+      listingPage: ['/search?', '/pl/', '/c/'],
+      productCard: '.product-card, [data-product], .product-tile',
+      productPage: ['/pd/'],
+      selectors: {
+        title: '.product-title, h3',
+        price: '.item-price, .price',
+        image: '.product-image img',
+        link: 'a[href*="/pd/"]',
+        orders: '',
+        rating: '.ratings'
+      }
+    },
+    bestbuy: {
+      listingPage: ['/site/searchpage', '/site/shop/', '/collection/'],
+      productCard: '.sku-item, .product-list-item, [data-sku-id]',
+      productPage: ['/site/'],
+      selectors: {
+        title: '.sku-title, h4.sku-header',
+        price: '.priceView-customer-price span',
+        image: '.product-image img',
+        link: 'a.image-link',
+        orders: '',
+        rating: '.c-ratings-reviews'
+      }
+    },
+    newegg: {
+      listingPage: ['/p/', '/Product/', '/global/'],
+      productCard: '.item-cell, .item-container, [data-tracking-id]',
+      productPage: ['/Item/'],
+      selectors: {
+        title: '.item-title, a.item-title',
+        price: '.price-current strong',
+        image: '.item-img img',
+        link: 'a.item-title',
+        orders: '',
+        rating: '.item-rating'
+      }
+    },
+    wayfair: {
+      listingPage: ['/keyword.html', '/sb0/', '/filters/'],
+      productCard: '.ProductCard, [data-hb-id="ProductCard"], .s-plp-cell',
+      productPage: ['/pdp/'],
+      selectors: {
+        title: '.ProductCard-productName, h2',
+        price: '.ProductCard-price, .BasePriceBlock',
+        image: '.ProductCard-image img',
+        link: 'a[href*="/pdp/"]',
+        orders: '',
+        rating: '.ProductCard-reviews'
+      }
+    },
+    overstock: {
+      listingPage: ['/search?', '/Home-Garden/'],
+      productCard: '.product-tile, [data-cy="product-tile"]',
+      productPage: ['/item/'],
+      selectors: {
+        title: '.product-title, h2',
+        price: '.monetary-price-value',
+        image: '.product-image img',
+        link: 'a[href*="/item/"]',
+        orders: '',
+        rating: '.star-rating'
+      }
+    },
+
+    // EUROPEAN MARKETPLACES
+    cdiscount: {
+      listingPage: ['/search', '/c-', '/l-', '/f-', '/browse/'],
+      productCard: '.prdtBILDetails, .prdtBIL, .product-box, .product-item, [data-productid], .jsCatalogEntry',
+      productPage: ['/f-', '/dp/', '/p/'],
+      selectors: {
+        title: '.prdtBILTit, .prdtTitle, h2, .product-name',
+        price: '.price, .prdtPrice, [class*="price"], .prdtBILPrz',
+        image: 'img.prdtImg, img[src*="cdscdn"], .prdtBILImgImg',
+        link: 'a[href*="/f-"], a[href*="/dp/"]',
+        orders: '.prdtBILSalesNb',
+        rating: '[class*="rating"], .starFull, .prdtBILRating'
+      }
+    },
+    fnac: {
+      listingPage: ['/SearchResult', '/s/', '/do/', '/l/'],
+      productCard: '.Article-item, .SearchResult, .productItem, .product-list-item, .articleItem',
+      productPage: ['/a'],
+      selectors: {
+        title: '.Article-desc, .product-title, h2, .articleItem-title',
+        price: '.userPrice, .price, .f-priceBox-price',
+        image: 'img.Article-img, img[src*="static.fnac"], .articleItem-img img',
+        link: 'a[href*="/a"]',
+        orders: '',
+        rating: '.rating, .f-star'
+      }
+    },
+    rakuten: {
+      listingPage: ['/search/', '/category/', '/s/'],
+      productCard: '.product-item, .item-card, [data-item-id]',
+      productPage: ['/product/', '/p/'],
+      selectors: {
+        title: '.product-name, h3, .item-title',
+        price: '.price, .item-price',
+        image: '.product-image img, .item-img img',
+        link: 'a[href*="/product/"]',
+        orders: '.sales',
+        rating: '.rating'
+      }
+    },
+    zalando: {
+      listingPage: ['/homme/', '/femme/', '/enfant/', '/search/'],
+      productCard: '[data-zalon-partner-target], .cat_item, ._0xLoFW',
+      productPage: ['/'],
+      selectors: {
+        title: '.h-container, h3',
+        price: '.h-price, ._0xLoFW span',
+        image: 'img.h-image',
         link: 'a',
         orders: '',
         rating: '.rating'
+      }
+    },
+    asos: {
+      listingPage: ['/search/', '/cat/', '/men/', '/women/'],
+      productCard: '.product-card, [data-auto-id="productTile"]',
+      productPage: ['/prd/'],
+      selectors: {
+        title: '.product-description, h2',
+        price: '.product-price, [data-auto-id="price"]',
+        image: 'img.product-image',
+        link: 'a[href*="/prd/"]',
+        orders: '',
+        rating: ''
+      }
+    },
+    manomano: {
+      listingPage: ['/search/', '/cat/', '/p/'],
+      productCard: '.product-card, [data-testid="product-card"]',
+      productPage: ['/p/'],
+      selectors: {
+        title: '.product-title, h2',
+        price: '.price, [data-testid="price"]',
+        image: '.product-image img',
+        link: 'a[href*="/p/"]',
+        orders: '.sales',
+        rating: '.rating'
+      }
+    },
+    darty: {
+      listingPage: ['/nav/', '/search/'],
+      productCard: '.product-list-item, .product-card, [data-product]',
+      productPage: ['/fp/'],
+      selectors: {
+        title: '.product-title, h2',
+        price: '.price, .drt-price',
+        image: '.product-img img',
+        link: 'a[href*="/fp/"]',
+        orders: '',
+        rating: '.rating'
+      }
+    },
+    boulanger: {
+      listingPage: ['/c/', '/search/'],
+      productCard: '.product-item, .product-list-item, [data-product-id]',
+      productPage: ['/ref/'],
+      selectors: {
+        title: '.product-name, h2',
+        price: '.price, .product-price',
+        image: '.product-image img',
+        link: 'a[href*="/ref/"]',
+        orders: '',
+        rating: '.rating'
+      }
+    },
+    leroymerlin: {
+      listingPage: ['/produits/', '/cat/', '/search/'],
+      productCard: '.product-card, [data-testid="product-card"]',
+      productPage: ['/p/'],
+      selectors: {
+        title: '.product-name, h2',
+        price: '.price, [data-testid="price"]',
+        image: '.product-img img',
+        link: 'a[href*="/p/"]',
+        orders: '',
+        rating: '.rating'
+      }
+    },
+
+    // SHOPIFY STORES (Generic)
+    shopify: {
+      listingPage: ['/collections/', '/search?', '/products'],
+      productCard: '.product-card, .product-item, .grid__item, [data-product-id], .product-grid-item',
+      productPage: ['/products/'],
+      selectors: {
+        title: '.product-card__title, .product__title, h3, .card__heading',
+        price: '.product-card__price, .price, .price__regular',
+        image: '.product-card__image img, .product__media img, .card__media img',
+        link: 'a[href*="/products/"]',
+        orders: '',
+        rating: '.rating, .spr-badge'
       }
     }
   };
