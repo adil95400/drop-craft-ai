@@ -1,11 +1,12 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Background Service Worker v5.0.0
+// ShopOpti+ Chrome Extension - Background Service Worker v5.1.0
 // SECURITY HARDENED - Message validation, URL whitelist, rate limiting
+// Bulk Import V5 + Multi-Store Integration
 // ============================================
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.0.0';
+const VERSION = '5.1.0';
 
 // ============================================
 // SECURITY MODULE
@@ -38,7 +39,10 @@ const Security = {
     'CHECK_PRICES', 'CHECK_STOCK', 'GET_MONITORED_PRODUCTS',
     'GET_PRICE_HISTORY', 'GET_MONITORING_STATUS', 'GET_PRODUCT_DATA',
     'FIND_SUPPLIERS', 'EXTRACT_COMPLETE', 'REQUEST_PERMISSIONS',
-    'OPEN_IMPORT_OVERLAY', 'IMPORT_WITH_OPTIONS'
+    'OPEN_IMPORT_OVERLAY', 'IMPORT_WITH_OPTIONS',
+    // Bulk Import V5 + Multi-Store messages
+    'OPEN_BULK_IMPORT_UI', 'BULK_IMPORT_PRODUCTS', 'GET_USER_STORES',
+    'IMPORT_TO_STORES', 'SYNC_PRODUCT_TO_STORES'
   ],
 
   rateLimits: new Map(),
@@ -273,6 +277,35 @@ class ShopOptiBackground {
         case 'IMPORT_WITH_OPTIONS':
           const importWithOptionsResult = await this.importWithOptions(message.importData);
           sendResponse(importWithOptionsResult);
+          break;
+
+        // ============================================
+        // BULK IMPORT V5 + MULTI-STORE HANDLERS
+        // ============================================
+        
+        case 'OPEN_BULK_IMPORT_UI':
+          const bulkUIResult = await this.openBulkImportUI(sender.tab, message.products);
+          sendResponse(bulkUIResult);
+          break;
+
+        case 'BULK_IMPORT_PRODUCTS':
+          const bulkResult = await this.bulkImportProducts(message.products, message.options);
+          sendResponse(bulkResult);
+          break;
+
+        case 'GET_USER_STORES':
+          const stores = await this.getUserStores();
+          sendResponse(stores);
+          break;
+
+        case 'IMPORT_TO_STORES':
+          const storeResult = await this.importToStores(message.products, message.storeIds, message.options);
+          sendResponse(storeResult);
+          break;
+
+        case 'SYNC_PRODUCT_TO_STORES':
+          const syncResult = await this.syncProductToStores(message.productId, message.storeIds);
+          sendResponse(syncResult);
           break;
 
         default:
@@ -670,6 +703,272 @@ class ShopOptiBackground {
       console.error('[ShopOpti+] Import with options error:', error);
       return { success: false, error: error.message };
     }
+  }
+
+  // ============================================
+  // BULK IMPORT V5 + MULTI-STORE METHODS
+  // ============================================
+
+  async openBulkImportUI(tab, products) {
+    if (!tab?.id) {
+      return { success: false, error: 'No active tab' };
+    }
+
+    try {
+      // Inject bulk import V5 script
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['bulk-import-v5.js']
+      });
+
+      // Also inject dependencies
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['lib/import-queue.js', 'lib/store-manager.js']
+      });
+
+      return { success: true, productCount: products?.length || 0 };
+    } catch (error) {
+      console.error('[ShopOpti+] Failed to inject bulk import UI:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async bulkImportProducts(products, options = {}) {
+    const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+    
+    if (!extensionToken) {
+      return { success: false, error: 'Non connecté. Connectez-vous via l\'extension.' };
+    }
+
+    const results = {
+      total: products.length,
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+
+    // Process in chunks with throttling (200ms delay between requests)
+    const CHUNK_SIZE = 10;
+    const DELAY_MS = 200;
+
+    for (let i = 0; i < products.length; i += CHUNK_SIZE) {
+      const chunk = products.slice(i, i + CHUNK_SIZE);
+      
+      try {
+        const response = await fetch(`${API_URL}/extension-scraper`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': extensionToken
+          },
+          body: JSON.stringify({
+            action: 'bulk_import',
+            products: chunk,
+            options: {
+              status: options.status || 'draft',
+              category: options.category,
+              aiOptimization: options.aiOptimization || false,
+              pricingRules: options.pricingRules
+            }
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          results.success += data.imported || chunk.length;
+        } else {
+          results.failed += chunk.length;
+          results.errors.push({ chunk: i / CHUNK_SIZE, error: data.error });
+        }
+      } catch (error) {
+        results.failed += chunk.length;
+        results.errors.push({ chunk: i / CHUNK_SIZE, error: error.message });
+      }
+
+      // Throttle between chunks
+      if (i + CHUNK_SIZE < products.length) {
+        await new Promise(resolve => setTimeout(resolve, DELAY_MS));
+      }
+    }
+
+    await this.updateStats({ products: results.success });
+    
+    if (results.success > 0) {
+      this.showNotification(
+        'Import en masse terminé',
+        `${results.success}/${results.total} produits importés`
+      );
+    }
+
+    return { success: true, results };
+  }
+
+  async getUserStores() {
+    const { extensionToken, cachedStores, storesCacheTime } = 
+      await chrome.storage.local.get(['extensionToken', 'cachedStores', 'storesCacheTime']);
+    
+    // Return cached if fresh (< 5 minutes)
+    if (cachedStores && storesCacheTime && (Date.now() - storesCacheTime < 5 * 60 * 1000)) {
+      return { success: true, stores: cachedStores };
+    }
+
+    if (!extensionToken) {
+      return { success: false, error: 'Non connecté', stores: [] };
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/list-user-stores`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({ action: 'list' })
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.stores) {
+        // Cache the stores
+        await chrome.storage.local.set({
+          cachedStores: data.stores,
+          storesCacheTime: Date.now()
+        });
+        return { success: true, stores: data.stores };
+      }
+
+      return { success: false, stores: [], error: data.error };
+    } catch (error) {
+      // Return cached stores as fallback
+      if (cachedStores) {
+        return { success: true, stores: cachedStores, fromCache: true };
+      }
+      return { success: false, stores: [], error: error.message };
+    }
+  }
+
+  async importToStores(products, storeIds, options = {}) {
+    const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+    
+    if (!extensionToken) {
+      return { success: false, error: 'Non connecté' };
+    }
+
+    const results = {
+      byStore: {},
+      totalSuccess: 0,
+      totalFailed: 0
+    };
+
+    // Parallel import to all selected stores
+    const storePromises = storeIds.map(async (storeId) => {
+      try {
+        const response = await fetch(`${API_URL}/import-to-store`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': extensionToken
+          },
+          body: JSON.stringify({
+            storeId,
+            products,
+            options: {
+              status: options.status || 'draft',
+              syncStock: options.syncStock || false,
+              syncPrices: options.syncPrices || false
+            }
+          })
+        });
+
+        const data = await response.json();
+        
+        results.byStore[storeId] = {
+          success: data.success,
+          imported: data.imported || 0,
+          failed: data.failed || 0,
+          error: data.error
+        };
+
+        if (data.success) {
+          results.totalSuccess += data.imported || products.length;
+        } else {
+          results.totalFailed += products.length;
+        }
+
+        return data;
+      } catch (error) {
+        results.byStore[storeId] = {
+          success: false,
+          imported: 0,
+          failed: products.length,
+          error: error.message
+        };
+        results.totalFailed += products.length;
+        return { success: false, error: error.message };
+      }
+    });
+
+    await Promise.all(storePromises);
+
+    // Update store sync timestamps
+    await this.updateStoresSyncTime(storeIds);
+
+    if (results.totalSuccess > 0) {
+      this.showNotification(
+        'Import multi-boutiques',
+        `${results.totalSuccess} produits vers ${storeIds.length} boutique(s)`
+      );
+    }
+
+    return { success: true, results };
+  }
+
+  async syncProductToStores(productId, storeIds) {
+    const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+    
+    if (!extensionToken) {
+      return { success: false, error: 'Non connecté' };
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/sync-product`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          productId,
+          storeIds,
+          syncFields: ['price', 'stock', 'status']
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        await this.updateStoresSyncTime(storeIds);
+      }
+
+      return data;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async updateStoresSyncTime(storeIds) {
+    const { cachedStores = [] } = await chrome.storage.local.get(['cachedStores']);
+    
+    const updatedStores = cachedStores.map(store => {
+      if (storeIds.includes(store.id)) {
+        return { ...store, last_sync_at: new Date().toISOString() };
+      }
+      return store;
+    });
+
+    await chrome.storage.local.set({ cachedStores: updatedStores });
   }
 
   async logActivity(activity) {
