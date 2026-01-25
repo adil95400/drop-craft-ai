@@ -1,11 +1,11 @@
 /**
- * ShopOpti+ Configuration Module v5.6.0
+ * ShopOpti+ Configuration Module v5.6.6
  * Centralized configuration for the extension
  * Synced with shopopti.io backend
  */
 
 const Config = {
-  VERSION: '5.6.0',
+  VERSION: '5.6.6',
   BRAND: 'ShopOpti+',
   
   // API Configuration - Synced with shopopti.io

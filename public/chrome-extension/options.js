@@ -1,8 +1,8 @@
-// ShopOpti+ Chrome Extension - Options Script v4.3.16
+// ShopOpti+ Chrome Extension - Options Script v5.6.6
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '4.3.16';
+const VERSION = '5.6.6';
 
 const DEFAULT_SETTINGS = {
   apiUrl: API_URL,

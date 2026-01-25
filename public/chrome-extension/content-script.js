@@ -1,12 +1,12 @@
 // ============================================
-// ShopOpti+ Content Injector v5.6.3
+// ShopOpti+ Content Injector v5.6.6
 // Injects import buttons on product and category pages
 // ============================================
 
 (function() {
   'use strict';
   
-  const VERSION = '5.6.3';
+  const VERSION = '5.6.6';
   const INJECTED_CLASS = 'shopopti-injected';
   
   // Platform detection
