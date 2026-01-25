@@ -39,6 +39,16 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
     },
+    // Extension-specific project
+    {
+      name: 'extension',
+      testDir: './tests/extension',
+      use: { 
+        ...devices['Desktop Chrome'],
+        // Extension tests may need headed mode
+        headless: false 
+      },
+    },
   ],
 
   webServer: {
