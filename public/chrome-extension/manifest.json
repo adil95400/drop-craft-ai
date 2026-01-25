@@ -103,6 +103,7 @@
         "icons/*.png",
         "import-overlay-v2.js",
         "bulk-import-v5.js",
+        "supplier-search.js",
         "extractors/core-extractor.js",
         "lib/config.js",
         "lib/security.js",

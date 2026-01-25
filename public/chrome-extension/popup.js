@@ -1,7 +1,8 @@
-// ShopOpti+ Chrome Extension - Popup Script v4.3.16
-// PROFESSIONAL UI - Inspired by Fnac, Cdiscount, eBay
-// Professional Dropshipping Extension
-// FIXED: Import buttons with states + bulk counter
+// ============================================
+// ShopOpti+ Chrome Extension - Popup Script v5.1.0
+// PROFESSIONAL UI - AutoDS Alternative
+// Bulk Import V5 + Multi-Store + Supplier Search
+// ============================================
 
 class ShopOptiPopup {
   constructor() {

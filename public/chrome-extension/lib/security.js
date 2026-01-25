@@ -1,10 +1,11 @@
 // ============================================
-// ShopOpti+ Security Module v4.4.0
+// ShopOpti+ Security Module v5.1.0
 // Message validation, URL whitelist, sanitization
+// Chrome Web Store Compliant - Manifest V3
 // ============================================
 
 const ShopOptiSecurity = {
-  VERSION: '4.4.0',
+  VERSION: '5.1.0',
 
   // ============================================
   // ALLOWED DOMAINS FOR API & SCRAPING
@@ -55,7 +56,15 @@ const ShopOptiSecurity = {
     'GET_PRICE_HISTORY',
     'GET_MONITORING_STATUS',
     'GET_PRODUCT_DATA',
-    'FIND_SUPPLIERS'
+    'FIND_SUPPLIERS',
+    'SEARCH_ALL_SUPPLIERS',
+    'COMPARE_SUPPLIERS',
+    'BULK_IMPORT_PRODUCTS',
+    'GET_USER_STORES',
+    'IMPORT_TO_STORES',
+    'SYNC_PRODUCT_STORES',
+    'OPEN_IMPORT_OVERLAY',
+    'OPEN_BULK_IMPORT_UI'
   ],
 
   // ============================================
