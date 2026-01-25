@@ -60,6 +60,23 @@ export async function generateExtensionZip(): Promise<void> {
           zip.file(filePath, blob);
         } else {
           const text = await response.text();
+          
+          // Validate that we got actual file content, not HTML error page
+          if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+            console.warn(`File ${filePath} returned HTML instead of expected content, skipping...`);
+            continue;
+          }
+          
+          // For JSON files, validate JSON structure
+          if (filePath.endsWith('.json')) {
+            try {
+              JSON.parse(text);
+            } catch (e) {
+              console.warn(`File ${filePath} is not valid JSON, skipping...`);
+              continue;
+            }
+          }
+          
           zip.file(filePath, text);
         }
         
