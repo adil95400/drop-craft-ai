@@ -5,6 +5,10 @@
 
 class ShopOptiPopup {
   constructor() {
+    // In web preview (outside Chrome Extension), `chrome.*` is undefined.
+    // We must not crash: instead we show a safe preview mode with clear guidance.
+    this.chrome = typeof chrome !== 'undefined' && chrome?.runtime?.id ? chrome : null;
+
     this.isConnected = false;
     this.extensionToken = null;
     this.stats = { products: 0, reviews: 0, monitored: 0 };
@@ -16,25 +20,116 @@ class ShopOptiPopup {
     this.APP_URL = 'https://shopopti.io';
   }
 
+  isExtensionRuntime() {
+    return !!this.chrome;
+  }
+
+  /**
+   * Browser preview mode (Lovable preview / normal tab):
+   * We cannot call chrome.* APIs, so we render a functional UI preview
+   * with disabled actions + explicit instructions (no mock success).
+   */
+  initBrowserPreviewMode() {
+    this.isConnected = false;
+    this.extensionToken = null;
+
+    // Basic UI state
+    const status = document.getElementById('connectionStatus');
+    status?.classList.remove('connected');
+    status?.classList.add('disconnected');
+    const statusText = status?.querySelector('.status-text');
+    if (statusText) statusText.textContent = 'Prévisualisation (extension non chargée)';
+
+    const connectBtn = document.getElementById('connectBtn');
+    if (connectBtn) {
+      connectBtn.addEventListener('click', () => {
+        this.showToast(
+          "Cette page est une prévisualisation. Pour utiliser les boutons, charge l'extension dans Chrome (mode développeur).",
+          'info'
+        );
+        window.open(this.APP_URL + '/extensions/chrome', '_blank');
+      });
+    }
+
+    // Disable action buttons but keep them clickable for explanation
+    const previewOnlyIds = [
+      'syncBtn',
+      'settingsBtn',
+      'dashboardBtn',
+      'importPageBtn',
+      'importAllBtn',
+      'importReviewsBtn',
+      'priceMonitorBtn',
+      'showAllPlatformsBtn',
+      'sendToAppBtn'
+    ];
+
+    previewOnlyIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.showToast(
+          "Action disponible uniquement dans l'extension Chrome. Ouvre /extensions/chrome pour l'installation.",
+          'warning'
+        );
+      });
+      // Mark as disabled for a11y + styling hooks
+      try {
+        el.setAttribute('aria-disabled', 'true');
+        el.classList.add('preview-disabled');
+      } catch (_e) {}
+    });
+
+    // Platform buttons in preview
+    document.querySelectorAll('.platform-btn, .platform-item, .stat-card, .tab-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.showToast(
+          "Prévisualisation: ces actions nécessitent l'API chrome.* (extension).",
+          'info'
+        );
+      });
+      btn.classList.add('preview-disabled');
+    });
+
+    // Keep dropdown UI usable (open/close) in preview
+    document.getElementById('importDropdownToggle')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleImportDropdown();
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.action-dropdown-container')) {
+        this.hideImportDropdown();
+      }
+    });
+
+    // Final UI update
+    this.updateUI?.();
+  }
+
   async ensureContentScript(tabId) {
+    if (!this.isExtensionRuntime()) return false;
     try {
-      const ping = await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+      const ping = await this.chrome.tabs.sendMessage(tabId, { type: 'PING' });
       if (ping?.success) return true;
     } catch (_e) {}
 
     try {
-      await chrome.scripting.insertCSS({ target: { tabId }, files: ['content.css'] });
+      await this.chrome.scripting.insertCSS({ target: { tabId }, files: ['content.css'] });
     } catch (_e) {}
 
     try {
-      await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
+      await this.chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
     } catch (e) {
       console.error('[ShopOpti+] Failed to inject content script:', e);
       return false;
     }
 
     try {
-      const ping = await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+      const ping = await this.chrome.tabs.sendMessage(tabId, { type: 'PING' });
       return !!ping?.success;
     } catch (_e) {
       return false;
@@ -42,6 +137,10 @@ class ShopOptiPopup {
   }
 
   async init() {
+    if (!this.isExtensionRuntime()) {
+      this.initBrowserPreviewMode();
+      return;
+    }
     await this.loadStoredData();
     await this.checkConnection();
     await this.detectCurrentPage();
@@ -57,7 +156,8 @@ class ShopOptiPopup {
 
   async updateSyncStatus() {
     const lastSyncTimeEl = document.getElementById('lastSyncTime');
-    const { lastSync } = await chrome.storage.local.get(['lastSync']);
+    if (!this.isExtensionRuntime()) return;
+    const { lastSync } = await this.chrome.storage.local.get(['lastSync']);
     
     if (lastSyncTimeEl && lastSync) {
       const date = new Date(lastSync);
@@ -67,7 +167,9 @@ class ShopOptiPopup {
 
   async loadStoredData() {
     try {
-      const result = await chrome.storage.local.get([
+      if (!this.isExtensionRuntime()) return;
+
+      const result = await this.chrome.storage.local.get([
         'extensionToken', 'stats', 'activities', 'pendingItems', 'userPlan', 'importHistory'
       ]);
       
@@ -84,7 +186,8 @@ class ShopOptiPopup {
 
   async saveData() {
     try {
-      await chrome.storage.local.set({
+      if (!this.isExtensionRuntime()) return;
+      await this.chrome.storage.local.set({
         stats: this.stats,
         activities: this.activities,
         pendingItems: this.pendingItems,
@@ -139,7 +242,8 @@ class ShopOptiPopup {
 
   async detectCurrentPage() {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!this.isExtensionRuntime()) return;
+      const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.url) return;
 
       const url = new URL(tab.url);
@@ -403,9 +507,17 @@ class ShopOptiPopup {
   viewImportedProduct() {
     this.hideProgressModal();
     if (this.lastImportedProduct?.id) {
-      chrome.tabs.create({ url: `${this.APP_URL}/products/${this.lastImportedProduct.id}` });
+      if (this.isExtensionRuntime()) {
+        this.chrome.tabs.create({ url: `${this.APP_URL}/products/${this.lastImportedProduct.id}` });
+      } else {
+        window.open(`${this.APP_URL}/products/${this.lastImportedProduct.id}`, '_blank');
+      }
     } else {
-      chrome.tabs.create({ url: `${this.APP_URL}/products` });
+      if (this.isExtensionRuntime()) {
+        this.chrome.tabs.create({ url: `${this.APP_URL}/products` });
+      } else {
+        window.open(`${this.APP_URL}/products`, '_blank');
+      }
     }
   }
 
