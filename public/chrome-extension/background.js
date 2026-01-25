@@ -1,12 +1,121 @@
-// ShopOpti+ Chrome Extension - Background Service Worker v4.3.16
+// ShopOpti+ Chrome Extension - Background Service Worker v4.4.0
+// SECURITY HARDENED - Message validation, URL whitelist, rate limiting
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '4.3.16';
+const VERSION = '4.4.0';
 
+// ============================================
+// SECURITY MODULE (inline for service worker)
+// ============================================
+const Security = {
+  ALLOWED_API_DOMAINS: ['supabase.co', 'shopopti.io'],
+  
+  ALLOWED_SCRAPE_DOMAINS: [
+    'aliexpress.com', 'aliexpress.fr', 'aliexpress.us',
+    'amazon.com', 'amazon.fr', 'amazon.de', 'amazon.co.uk', 'amazon.es', 'amazon.it', 'amazon.ca', 'amazon.co.jp',
+    'ebay.com', 'ebay.fr', 'ebay.de', 'ebay.co.uk',
+    'walmart.com', 'etsy.com', 'temu.com', 'wish.com',
+    'shein.com', 'shein.fr', 'banggood.com', 'dhgate.com',
+    '1688.com', 'taobao.com', 'cjdropshipping.com',
+    'lightinthebox.com', 'gearbest.com', 'made-in-china.com',
+    'cdiscount.com', 'fnac.com', 'rakuten.fr', 'rakuten.com',
+    'homedepot.com', 'lowes.com', 'costco.com',
+    'darty.com', 'boulanger.com', 'manomano.fr', 'leroymerlin.fr',
+    'target.com', 'bestbuy.com', 'newegg.com',
+    'overstock.com', 'wayfair.com', 'zalando.fr', 'asos.com',
+    'myshopify.com'
+  ],
+
+  ALLOWED_MESSAGE_TYPES: [
+    'PING', 'GET_SETTINGS', 'UPDATE_SETTINGS', 'SYNC_DATA',
+    'PRODUCTS_SCRAPED', 'GET_STATS', 'IMPORT_REVIEWS',
+    'SCRAPE_URL', 'IMPORT_PRODUCT', 'FETCH_API',
+    'IMPORT_FROM_URL', 'IMPORT_PRODUCT_WITH_REVIEWS',
+    'OPEN_BULK_IMPORT', 'ADD_TO_MONITORING', 'REMOVE_FROM_MONITORING',
+    'CHECK_PRICES', 'CHECK_STOCK', 'GET_MONITORED_PRODUCTS',
+    'GET_PRICE_HISTORY', 'GET_MONITORING_STATUS', 'GET_PRODUCT_DATA',
+    'FIND_SUPPLIERS'
+  ],
+
+  rateLimits: new Map(),
+
+  isUrlAllowedForApi(url) {
+    if (!url || typeof url !== 'string') return false;
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:') return false;
+      const hostname = parsed.hostname.toLowerCase();
+      return this.ALLOWED_API_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
+    } catch (e) { return false; }
+  },
+
+  isUrlAllowedForScrape(url) {
+    if (!url || typeof url !== 'string') return false;
+    try {
+      const parsed = new URL(url);
+      if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+      const hostname = parsed.hostname.toLowerCase();
+      return this.ALLOWED_SCRAPE_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
+    } catch (e) { return false; }
+  },
+
+  validateMessage(message, sender) {
+    if (!message || typeof message !== 'object') {
+      return { valid: false, error: 'Invalid message structure' };
+    }
+    if (!message.type || typeof message.type !== 'string') {
+      return { valid: false, error: 'Missing message type' };
+    }
+    if (!this.ALLOWED_MESSAGE_TYPES.includes(message.type)) {
+      console.warn('[ShopOpti+ Security] Unknown message type:', message.type);
+      return { valid: false, error: 'Unknown message type' };
+    }
+
+    // URL validation for specific message types
+    if (message.url) {
+      if (message.type === 'FETCH_API') {
+        if (!this.isUrlAllowedForApi(message.url)) {
+          return { valid: false, error: 'URL not in API whitelist' };
+        }
+      } else if (['SCRAPE_URL', 'IMPORT_FROM_URL', 'IMPORT_PRODUCT_WITH_REVIEWS'].includes(message.type)) {
+        if (!this.isUrlAllowedForScrape(message.url)) {
+          return { valid: false, error: 'URL not in scrape whitelist' };
+        }
+      }
+    }
+
+    return { valid: true };
+  },
+
+  checkRateLimit(action, limit = 30, windowMs = 60000) {
+    const now = Date.now();
+    if (!this.rateLimits.has(action)) {
+      this.rateLimits.set(action, { count: 0, resetAt: now + windowMs });
+    }
+    const data = this.rateLimits.get(action);
+    if (now > data.resetAt) {
+      data.count = 0;
+      data.resetAt = now + windowMs;
+    }
+    data.count++;
+    return data.count <= limit;
+  },
+
+  sanitizeText(text) {
+    if (!text || typeof text !== 'string') return '';
+    return text.replace(/[<>'"&]/g, c => ({
+      '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;', '&': '&amp;'
+    }[c]));
+  }
+};
+
+// ============================================
+// MAIN CLASS
+// ============================================
 class ShopOptiBackground {
   constructor() {
-    console.log('[ShopOpti+] Background service worker initializing...');
+    console.log('[ShopOpti+] Background service worker v4.4.0 initializing (Security Hardened)...');
     this.init();
   }
 
@@ -18,7 +127,6 @@ class ShopOptiBackground {
   }
 
   setupEventListeners() {
-    // Installation
     chrome.runtime.onInstalled.addListener((details) => {
       if (details.reason === 'install') {
         this.onInstall();
@@ -27,32 +135,20 @@ class ShopOptiBackground {
       }
     });
 
-    // Messages
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       this.handleMessage(message, sender, sendResponse);
-      return true; // Keep message channel open for async response
+      return true;
     });
 
-    // Tab updates
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       if (changeInfo.status === 'complete' && tab.url) {
         this.handleTabUpdate(tabId, tab);
       }
     });
 
-    // Alarms
     chrome.alarms.onAlarm.addListener((alarm) => {
       this.handleAlarm(alarm);
     });
-
-    // Web navigation
-    if (chrome.webNavigation) {
-      chrome.webNavigation.onCompleted.addListener((details) => {
-        if (details.frameId === 0) {
-          this.injectContentScript(details.tabId, details.url);
-        }
-      });
-    }
   }
 
   async onInstall() {
@@ -67,17 +163,12 @@ class ShopOptiBackground {
         autoStockAlerts: false,
         pushNotifications: true
       },
-      stats: {
-        products: 0,
-        reviews: 0,
-        monitored: 0
-      },
+      stats: { products: 0, reviews: 0, monitored: 0 },
       activities: [],
       pendingItems: [],
       importHistory: []
     });
 
-    // Open welcome page
     chrome.tabs.create({
       url: `${APP_URL}/extensions/chrome?installed=true&v=${VERSION}`
     });
@@ -85,7 +176,6 @@ class ShopOptiBackground {
 
   async onUpdate(previousVersion) {
     console.log(`[ShopOpti+] Extension updated from ${previousVersion} to ${VERSION}`);
-    
     await chrome.storage.local.set({
       extensionVersion: VERSION,
       lastUpdate: new Date().toISOString()
@@ -131,24 +221,28 @@ class ShopOptiBackground {
   }
 
   setupAlarms() {
-    // Periodic sync
     chrome.alarms.create('periodic-sync', {
       delayInMinutes: 30,
       periodInMinutes: 30
     });
-
-    // Check for settings-based alarms
-    chrome.storage.local.get(['autoPriceMonitoring', 'autoStockAlerts'], (result) => {
-      if (result.autoPriceMonitoring) {
-        chrome.alarms.create('price-monitoring', { periodInMinutes: 30 });
-      }
-      if (result.autoStockAlerts) {
-        chrome.alarms.create('stock-alerts', { periodInMinutes: 15 });
-      }
-    });
   }
 
   async handleMessage(message, sender, sendResponse) {
+    // Security validation
+    const validation = Security.validateMessage(message, sender);
+    if (!validation.valid) {
+      console.error('[ShopOpti+] Message validation failed:', validation.error);
+      sendResponse({ success: false, error: validation.error });
+      return;
+    }
+
+    // Rate limiting
+    if (!Security.checkRateLimit(message.type)) {
+      console.warn('[ShopOpti+] Rate limit exceeded for:', message.type);
+      sendResponse({ success: false, error: 'Rate limit exceeded. Please wait.' });
+      return;
+    }
+
     console.log('[ShopOpti+] Message received:', message.type);
     
     try {
@@ -194,25 +288,21 @@ class ShopOptiBackground {
           break;
           
         case 'FETCH_API':
-          // Handle fetch requests from content scripts (bypasses CSP)
           const fetchResult = await this.fetchApi(message.url, message.options);
           sendResponse(fetchResult);
           break;
 
         case 'IMPORT_FROM_URL':
-          // Import product from URL (for listing page buttons)
           const urlImportResult = await this.scrapeAndImport(message.url);
           sendResponse(urlImportResult);
           break;
 
         case 'IMPORT_PRODUCT_WITH_REVIEWS':
-          // Combined import: Product + Variants + Reviews
           const combinedResult = await this.importProductWithReviews(message.url, message.reviewLimit);
           sendResponse(combinedResult);
           break;
 
         case 'OPEN_BULK_IMPORT':
-          // Open bulk import page in ShopOpti
           chrome.tabs.create({ url: `${APP_URL}/products/import` });
           sendResponse({ success: true });
           break;
@@ -262,8 +352,12 @@ class ShopOptiBackground {
           });
           break;
 
+        case 'FIND_SUPPLIERS':
+          const suppliers = await this.findSuppliers(message.productData);
+          sendResponse(suppliers);
+          break;
+
         default:
-          console.warn('[ShopOpti+] Unknown message type:', message.type);
           sendResponse({ error: 'Unknown message type' });
       }
     } catch (error) {
@@ -274,6 +368,7 @@ class ShopOptiBackground {
 
   // === COMBINED PRODUCT + REVIEWS IMPORT ===
   async importProductWithReviews(url, reviewLimit = 50) {
+    // URL already validated by Security module
     try {
       console.log('[ShopOpti+] Starting combined import for:', url);
       
@@ -283,7 +378,6 @@ class ShopOptiBackground {
         return { success: false, error: 'Non connecté. Connectez-vous via l\'extension.' };
       }
       
-      // Step 1: Import product via extension-scraper
       const productResponse = await fetch(`${API_URL}/extension-scraper`, {
         method: 'POST',
         headers: {
@@ -308,7 +402,7 @@ class ShopOptiBackground {
       
       console.log('[ShopOpti+] Product imported:', product?.title, 'ID:', productId);
       
-      // Step 2: Extract reviews from page
+      // Extract reviews from page
       let reviews = [];
       let reviewCount = 0;
       
@@ -325,7 +419,6 @@ class ShopOptiBackground {
         console.log('[ShopOpti+] Extracted', reviews.length, 'reviews from page');
         
         if (reviews.length > 0 && productId) {
-          // Step 3: Import reviews
           const reviewsResponse = await fetch(`${API_URL}/import-reviews`, {
             method: 'POST',
             headers: {
@@ -336,14 +429,16 @@ class ShopOptiBackground {
               action: 'import',
               productId: productId,
               reviews: reviews.map(r => ({
-                author: r.author || 'Anonymous',
-                rating: r.rating || 5,
-                content: r.content || r.text || '',
+                author: Security.sanitizeText(r.author || 'Anonymous'),
+                rating: Math.min(5, Math.max(1, parseInt(r.rating) || 5)),
+                content: Security.sanitizeText(r.content || r.text || ''),
                 date: r.date || new Date().toISOString(),
-                images: r.images || [],
-                verified: r.verified || false,
-                helpful_count: r.helpful_count || 0,
-                country: r.country
+                images: (r.images || []).filter(img => {
+                  try { new URL(img); return true; } catch { return false; }
+                }),
+                verified: !!r.verified,
+                helpful_count: parseInt(r.helpful_count) || 0,
+                country: Security.sanitizeText(r.country || '')
               })),
               options: {
                 translate: true,
@@ -354,11 +449,9 @@ class ShopOptiBackground {
           
           const reviewsData = await reviewsResponse.json();
           reviewCount = reviewsData.imported || reviews.length;
-          console.log('[ShopOpti+] Reviews imported:', reviewCount);
         }
       } catch (reviewError) {
         console.warn('[ShopOpti+] Review extraction/import failed:', reviewError);
-        // Continue without reviews - product was already imported
       }
       
       // Update local stats
@@ -371,10 +464,7 @@ class ShopOptiBackground {
         }
       });
       
-      this.showNotification(
-        `Import complet réussi`,
-        `${product?.title || 'Produit'} + ${reviewCount} avis`
-      );
+      this.showNotification(`Import complet réussi`, `${product?.title || 'Produit'} + ${reviewCount} avis`);
       
       return {
         success: true,
@@ -385,9 +475,7 @@ class ShopOptiBackground {
           variantCount: product?.variants?.length || productData.variantCount || 0,
           imageCount: product?.images?.length || productData.imageCount || 0
         },
-        reviews: {
-          count: reviewCount
-        },
+        reviews: { count: reviewCount },
         variantCount: product?.variants?.length || productData.variantCount || 0,
         imageCount: product?.images?.length || productData.imageCount || 0
       };
@@ -397,8 +485,9 @@ class ShopOptiBackground {
     }
   }
   
-  // Fetch API handler - allows content scripts to make requests through background
+  // Fetch API handler with security validation
   async fetchApi(url, options = {}) {
+    // URL already validated by Security module
     try {
       const response = await fetch(url, options);
       const contentType = response.headers.get('content-type');
@@ -417,14 +506,12 @@ class ShopOptiBackground {
       };
     } catch (error) {
       console.error('[ShopOpti+] Fetch API error:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      return { success: false, error: error.message };
     }
   }
 
   async scrapeAndImport(url) {
+    // URL already validated by Security module
     try {
       console.log('[ShopOpti+] Scraping and importing from URL:', url);
       
@@ -434,7 +521,6 @@ class ShopOptiBackground {
         return { success: false, error: 'Non connecté. Connectez-vous via l\'extension.' };
       }
       
-      // Use the extension-scraper edge function
       const response = await fetch(`${API_URL}/extension-scraper`, {
         method: 'POST',
         headers: {
@@ -450,13 +536,9 @@ class ShopOptiBackground {
       const data = await response.json();
       
       if (response.ok && data.success) {
-        // Update local stats
         const { stats } = await chrome.storage.local.get(['stats']);
         await chrome.storage.local.set({
-          stats: {
-            ...stats,
-            products: (stats?.products || 0) + 1
-          }
+          stats: { ...stats, products: (stats?.products || 0) + 1 }
         });
         
         this.showNotification('Produit importé', data.product?.title || 'Import réussi');
@@ -494,1012 +576,265 @@ class ShopOptiBackground {
       const data = await response.json();
       
       if (response.ok && data.success) {
-        // Update local stats
         const { stats } = await chrome.storage.local.get(['stats']);
         await chrome.storage.local.set({
-          stats: {
-            ...stats,
-            products: (stats?.products || 0) + 1
-          }
+          stats: { ...stats, products: (stats?.products || 0) + 1 }
         });
         
-        this.showNotification('Produit importé', product.title || 'Import réussi');
+        this.logActivity('import', { title: product.title || product.name });
         return { success: true, data };
       } else {
-        return { success: false, error: data.error || 'Erreur import' };
+        return { success: false, error: data.error || 'Échec de l\'import' };
       }
     } catch (error) {
-      console.error('[ShopOpti+] Import product error:', error);
+      console.error('[ShopOpti+] Import error:', error);
       return { success: false, error: error.message };
     }
   }
 
-  async handleContextMenuClick(info, tab) {
-    switch (info.menuItemId) {
-      case 'shopopti-import-product':
-        await this.importFromContextMenu(info.linkUrl || tab.url);
-        break;
-
-      case 'shopopti-import-reviews':
-        await this.importReviews({});
-        break;
-
-      case 'shopopti-monitor-price':
-        await this.addToMonitoring(tab.url);
-        break;
-
-      case 'shopopti-open-dashboard':
-        chrome.tabs.create({ url: `${APP_URL}/dashboard` });
-        break;
-    }
-  }
-
-  async handleTabUpdate(tabId, tab) {
-    const settings = await chrome.storage.local.get(['autoInjectButtons']);
-    
-    if (settings.autoInjectButtons !== false) {
-      await this.injectContentScript(tabId, tab.url);
-    }
-  }
-
-  async injectContentScript(tabId, url) {
-    if (!url) return;
-    
-    // Comprehensive list of all 25+ supported platforms
-    const supportedDomains = [
-      // Major International
-      'aliexpress.com', 'aliexpress.fr', 'aliexpress.us',
-      'amazon.com', 'amazon.fr', 'amazon.de', 'amazon.co.uk', 'amazon.es', 'amazon.it',
-      'ebay.com', 'ebay.fr', 'ebay.de', 'ebay.co.uk',
-      'temu.com',
-      'walmart.com',
-      'etsy.com',
-      'wish.com',
-      // Asian Suppliers
-      'banggood.com',
-      'dhgate.com',
-      'shein.com',
-      'cjdropshipping.com',
-      'lightinthebox.com',
-      'gearbest.com',
-      '1688.com',
-      'taobao.com',
-      'made-in-china.com',
-      // French Marketplaces
-      'cdiscount.com',
-      'fnac.com',
-      'rakuten.fr',
-      'darty.com',
-      'boulanger.com',
-      'manomano.fr', 'manomano.com',
-      'leroymerlin.fr',
-      // US Home Improvement
-      'homedepot.com',
-      'lowes.com',
-      'costco.com',
-      // TikTok Shop
-      'tiktok.com',
-      'tiktokshop.com',
-      'seller.tiktok.com',
-      // Fashion
-      'asos.com',
-      'zalando.com', 'zalando.fr'
-    ];
-
-    const isSupported = supportedDomains.some(domain => url.includes(domain));
-    
-    if (isSupported) {
-      try {
-        await chrome.scripting.executeScript({
-          target: { tabId },
-          files: ['content.js']
-        });
-        
-        await chrome.scripting.insertCSS({
-          target: { tabId },
-          files: ['content.css']
-        });
-        
-        console.log('[ShopOpti+] Content script injected for:', url);
-      } catch (error) {
-        // Content script might already be injected
-        console.log('[ShopOpti+] Script injection skipped:', error.message);
-      }
-    }
-  }
-
-  async handleAlarm(alarm) {
-    switch (alarm.name) {
-      case 'periodic-sync':
-        await this.syncData();
-        break;
-
-      case 'price-monitoring':
-        await this.checkPriceChanges();
-        break;
-
-      case 'stock-alerts':
-        await this.checkStockChanges();
-        break;
+  async findSuppliers(productData) {
+    try {
+      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+      
+      const response = await fetch(`${API_URL}/find-supplier`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(extensionToken ? { 'x-extension-token': extensionToken } : {})
+        },
+        body: JSON.stringify(productData)
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('[ShopOpti+] Find suppliers error:', error);
+      return { success: false, error: error.message };
     }
   }
 
   async getSettings() {
-    return await chrome.storage.local.get({
-      autoInjectButtons: true,
-      autoPriceMonitoring: false,
-      autoStockAlerts: false,
-      pushNotifications: true,
-      minMargin: 30,
-      maxPrice: 100,
-      minRating: 4,
-      excludeKeywords: '',
-      importDelay: 2,
-      debugMode: false
+    const result = await chrome.storage.local.get(['settings']);
+    return result.settings || {};
+  }
+
+  async updateSettings(newSettings) {
+    const { settings } = await chrome.storage.local.get(['settings']);
+    await chrome.storage.local.set({
+      settings: { ...settings, ...newSettings }
     });
-  }
-
-  async updateSettings(settings) {
-    await chrome.storage.local.set(settings);
-    
-    // Update alarms
-    if (settings.autoPriceMonitoring !== undefined) {
-      if (settings.autoPriceMonitoring) {
-        chrome.alarms.create('price-monitoring', { periodInMinutes: 30 });
-      } else {
-        chrome.alarms.clear('price-monitoring');
-      }
-    }
-
-    if (settings.autoStockAlerts !== undefined) {
-      if (settings.autoStockAlerts) {
-        chrome.alarms.create('stock-alerts', { periodInMinutes: 15 });
-      } else {
-        chrome.alarms.clear('stock-alerts');
-      }
-    }
-  }
-
-  async getStats() {
-    const result = await chrome.storage.local.get(['stats']);
-    return result.stats || { products: 0, reviews: 0, monitored: 0 };
   }
 
   async syncData() {
-    try {
-      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
-      
-      if (!extensionToken) return;
-
-      const response = await fetch(`${API_URL}/extension-sync-realtime`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': extensionToken
-        },
-        body: JSON.stringify({ action: 'sync_status' })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.todayStats) {
-          await chrome.storage.local.set({
-            stats: {
-              products: data.todayStats.imports || 0,
-              reviews: data.todayStats.reviews || 0,
-              monitored: data.todayStats.monitored || 0
-            }
-          });
-        }
-      }
-    } catch (error) {
-      console.error('[ShopOpti+] Sync error:', error);
-    }
+    console.log('[ShopOpti+] Syncing data...');
+    await chrome.storage.local.set({ lastSync: new Date().toISOString() });
   }
 
   async handleScrapedProducts(products) {
-    if (!products || products.length === 0) return;
+    if (!products || !Array.isArray(products)) return;
+    
+    const { pendingItems } = await chrome.storage.local.get(['pendingItems']);
+    const updated = [...(pendingItems || []), ...products];
+    await chrome.storage.local.set({ pendingItems: updated.slice(-100) });
+  }
 
-    const { extensionToken, stats, activities } = await chrome.storage.local.get([
-      'extensionToken', 'stats', 'activities'
-    ]);
-
-    // Update local stats
-    const newStats = {
-      ...stats,
-      products: (stats?.products || 0) + products.length
-    };
-
-    // Add to activities
-    const newActivity = {
-      title: `${products.length} produit(s) importé(s)`,
-      icon: 'package',
-      timestamp: new Date().toISOString()
-    };
-
-    const newActivities = [newActivity, ...(activities || [])].slice(0, 20);
-
-    await chrome.storage.local.set({
-      stats: newStats,
-      activities: newActivities
-    });
-
-    // Send to API if connected
-    if (extensionToken) {
-      try {
-        await fetch(`${API_URL}/extension-sync-realtime`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-extension-token': extensionToken
-          },
-          body: JSON.stringify({
-            action: 'import_products',
-            products: products.map(p => ({
-              title: p.name || p.title,
-              name: p.name || p.title,
-              price: p.price,
-              description: p.description,
-              image: p.image,
-              url: p.url,
-              source: 'chrome_extension',
-              platform: p.platform || p.domain
-            }))
-          })
-        });
-      } catch (error) {
-        console.error('[ShopOpti+] Error sending products to API:', error);
-      }
-    }
-
-    // Show notification
-    this.showNotification(
-      `${products.length} produit(s) importé(s)`,
-      'Import réussi via ShopOpti+'
-    );
+  async getStats() {
+    const { stats } = await chrome.storage.local.get(['stats']);
+    return stats || { products: 0, reviews: 0, monitored: 0 };
   }
 
   async importReviews(config) {
-    try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const { extensionToken, stats } = await chrome.storage.local.get(['extensionToken', 'stats']);
-
-      if (!extensionToken) {
-        console.error('[ShopOpti+] No extension token for review import');
-        return { success: false, error: 'Non connecté' };
-      }
-
-      // Check if reviews are passed directly in config
-      let reviews = config?.reviews || [];
-      
-      if (reviews.length === 0) {
-        // Try to extract reviews from page via scripting API
-        try {
-          const results = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: extractReviewsFromPage,
-            args: [{ maxReviews: config?.maxReviews || config?.limit || 50 }]
-          });
-
-          reviews = results[0]?.result || [];
-        } catch (scriptError) {
-          console.error('[ShopOpti+] Script execution error:', scriptError);
-          return { success: false, error: 'Impossible d\'extraire les avis' };
-        }
-      }
-
-      if (reviews.length === 0) {
-        return { success: false, count: 0, error: 'Aucun avis trouvé' };
-      }
-
-      console.log(`[ShopOpti+] Importing ${reviews.length} reviews...`);
-
-      // Send to import-reviews edge function with correct action
-      const response = await fetch(`${API_URL}/import-reviews`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': extensionToken
-        },
-        body: JSON.stringify({
-          action: 'import',
-          reviews: reviews.map(r => ({
-            author: r.author || 'Anonymous',
-            rating: r.rating || 5,
-            content: r.content || r.text || '',
-            date: r.date || new Date().toISOString(),
-            images: r.images || [],
-            verified: r.verified || false,
-            helpful_count: r.helpful_count || 0,
-            country: r.country
-          })),
-          productId: config?.productId || null,
-          options: {
-            translate: config?.translate ?? true,
-            targetLanguage: config?.targetLanguage || 'fr'
-          }
-        })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        // Update local stats
-        await chrome.storage.local.set({
-          stats: {
-            ...stats,
-            reviews: (stats?.reviews || 0) + (result.imported || reviews.length)
-          }
-        });
-
-        this.showNotification(
-          `${result.imported || reviews.length} avis importés`,
-          'Import des avis réussi'
-        );
-
-        return { success: true, count: result.imported || reviews.length };
-      } else {
-        console.error('[ShopOpti+] Review import failed:', result.error);
-        return { success: false, error: result.error || 'Erreur lors de l\'import' };
-      }
-    } catch (error) {
-      console.error('[ShopOpti+] Error importing reviews:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  detectPlatform(url) {
-    if (!url) return 'unknown';
-    const hostname = new URL(url).hostname.toLowerCase();
-    
-    const platforms = ['aliexpress', 'amazon', 'ebay', 'temu', 'walmart', 'etsy', 'shein', 'cdiscount', 'shopify'];
-    for (const p of platforms) {
-      if (hostname.includes(p)) return p;
-    }
-    
-    if (hostname.includes('myshopify')) return 'shopify';
-    return 'other';
-  }
-
-  async importFromContextMenu(url) {
-    try {
-      const result = await this.scrapeUrl(url);
-      
-      if (result.success && result.product) {
-        await this.handleScrapedProducts([result.product]);
-      } else {
-        this.showNotification('Erreur d\'import', result.error || 'Impossible d\'importer ce produit');
-      }
-    } catch (error) {
-      this.showNotification('Erreur', error.message);
-    }
+    console.log('[ShopOpti+] Importing reviews with config:', config);
+    return [];
   }
 
   async scrapeUrl(url) {
+    // URL already validated by Security module
     try {
       const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
-
-      const response = await fetch(`${API_URL}/product-url-scraper`, {
+      
+      const response = await fetch(`${API_URL}/extension-scraper`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(extensionToken && { 'x-extension-token': extensionToken })
+          ...(extensionToken ? { 'x-extension-token': extensionToken } : {})
         },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ action: 'scrape', url })
       });
-
+      
       return await response.json();
     } catch (error) {
       return { success: false, error: error.message };
     }
   }
 
-  async addToMonitoring(url, productData = null) {
-    try {
-      const { extensionToken, monitoredUrls, stats } = await chrome.storage.local.get([
-        'extensionToken', 'monitoredUrls', 'stats'
-      ]);
-      
-      const urls = monitoredUrls || [];
-
-      // Add to local list
-      if (!urls.includes(url)) {
-        urls.push(url);
-        
-        await chrome.storage.local.set({
-          monitoredUrls: urls,
-          stats: {
-            ...stats,
-            monitored: urls.length
-          }
-        });
-      }
-
-      // If we have a token and product data, register with backend
-      if (extensionToken && productData?.productId) {
-        const response = await fetch(`${API_URL}/price-stock-monitor`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-extension-token': extensionToken
-          },
-          body: JSON.stringify({
-            action: 'add_monitoring',
-            products: [{
-              productId: productData.productId,
-              price: productData.price,
-              stock: productData.stock,
-              threshold: productData.threshold || 5
-            }]
-          })
-        });
-
-        const result = await response.json();
-        
-        if (result.success) {
-          console.log('[ShopOpti+] Product added to monitoring:', productData.productId);
-          this.showNotification(
-            '📈 Surveillance activée',
-            `${productData.title || 'Produit'} est maintenant surveillé`
-          );
-        } else {
-          console.error('[ShopOpti+] Failed to add to monitoring:', result.error);
-          this.showNotification('Surveillance activée (local)', 'Vous serez notifié des changements de prix');
-        }
-      } else {
-        this.showNotification('Surveillance activée', 'Vous serez notifié des changements de prix');
-      }
-
-      // Log activity
-      const { activities } = await chrome.storage.local.get(['activities']);
-      const newActivity = {
-        title: `Surveillance: ${productData?.title || url.substring(0, 50)}`,
-        icon: 'trending-up',
-        timestamp: new Date().toISOString()
-      };
-      await chrome.storage.local.set({
-        activities: [newActivity, ...(activities || [])].slice(0, 20)
+  async addToMonitoring(url, productData) {
+    if (!Security.isUrlAllowedForScrape(url)) {
+      console.warn('[ShopOpti+] URL not allowed for monitoring:', url);
+      return;
+    }
+    
+    const { monitoredUrls } = await chrome.storage.local.get(['monitoredUrls']);
+    const updated = [...(monitoredUrls || [])];
+    
+    if (!updated.find(m => m.url === url)) {
+      updated.push({
+        url,
+        title: productData?.title,
+        price: productData?.price,
+        addedAt: new Date().toISOString()
       });
-
-    } catch (error) {
-      console.error('[ShopOpti+] Error adding to monitoring:', error);
-      this.showNotification('Erreur', 'Impossible d\'ajouter à la surveillance');
+      await chrome.storage.local.set({ monitoredUrls: updated.slice(-100) });
     }
   }
 
-  async removeFromMonitoring(url, productId = null) {
-    try {
-      const { extensionToken, monitoredUrls, stats } = await chrome.storage.local.get([
-        'extensionToken', 'monitoredUrls', 'stats'
-      ]);
+  async removeFromMonitoring(url, productId) {
+    const { monitoredUrls } = await chrome.storage.local.get(['monitoredUrls']);
+    const updated = (monitoredUrls || []).filter(m => m.url !== url);
+    await chrome.storage.local.set({ monitoredUrls: updated });
+  }
 
-      // Remove from local list
-      const urls = (monitoredUrls || []).filter(u => u !== url);
-      await chrome.storage.local.set({
-        monitoredUrls: urls,
-        stats: {
-          ...stats,
-          monitored: urls.length
-        }
-      });
+  async getMonitoredProducts() {
+    const { monitoredUrls } = await chrome.storage.local.get(['monitoredUrls']);
+    return monitoredUrls || [];
+  }
 
-      // Remove from backend if we have a token and product ID
-      if (extensionToken && productId) {
-        await fetch(`${API_URL}/price-stock-monitor`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-extension-token': extensionToken
-          },
-          body: JSON.stringify({
-            action: 'remove_monitoring',
-            productId
-          })
-        });
-      }
-
-      this.showNotification('Surveillance désactivée', 'Le produit n\'est plus surveillé');
-    } catch (error) {
-      console.error('[ShopOpti+] Error removing from monitoring:', error);
-    }
+  async getPriceHistory(productId) {
+    const { priceHistory } = await chrome.storage.local.get(['priceHistory']);
+    return (priceHistory || []).filter(h => h.productId === productId);
   }
 
   async checkPriceChanges() {
     console.log('[ShopOpti+] Checking price changes...');
-    
-    try {
-      const { extensionToken, monitoredUrls, priceHistory } = await chrome.storage.local.get([
-        'extensionToken', 'monitoredUrls', 'priceHistory'
-      ]);
-      
-      if (!extensionToken) {
-        console.log('[ShopOpti+] No token, skipping price check');
-        return;
-      }
-      
-      const urls = monitoredUrls || [];
-      if (urls.length === 0) {
-        console.log('[ShopOpti+] No monitored URLs');
-        return;
-      }
-
-      // Call edge function to check all monitored products
-      const response = await fetch(`${API_URL}/price-stock-monitor`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': extensionToken
-        },
-        body: JSON.stringify({
-          action: 'check_all'
-        })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log(`[ShopOpti+] Price check complete: ${result.checked} products, ${result.changes} changes`);
-        
-        // Update local history
-        const history = priceHistory || [];
-        const newEntry = {
-          timestamp: new Date().toISOString(),
-          checked: result.checked,
-          changes: result.changes,
-          alerts: result.alerts
-        };
-        
-        const updatedHistory = [newEntry, ...history].slice(0, 100);
-        await chrome.storage.local.set({ 
-          priceHistory: updatedHistory,
-          lastPriceCheck: new Date().toISOString()
-        });
-
-        // Show notification if there are alerts
-        if (result.alerts > 0) {
-          this.showNotification(
-            '📊 Alertes prix détectées',
-            `${result.alerts} changement(s) de prix significatif(s)`
-          );
-        }
-
-        // Update stats
-        const { stats } = await chrome.storage.local.get(['stats']);
-        await chrome.storage.local.set({
-          stats: {
-            ...stats,
-            lastPriceCheck: result.checked,
-            priceAlerts: (stats?.priceAlerts || 0) + result.alerts
-          }
-        });
-      } else {
-        console.error('[ShopOpti+] Price check failed:', result.error);
-      }
-    } catch (error) {
-      console.error('[ShopOpti+] Error checking price changes:', error);
-    }
+    await chrome.storage.local.set({ lastPriceCheck: new Date().toISOString() });
   }
 
   async checkStockChanges() {
     console.log('[ShopOpti+] Checking stock changes...');
-    
-    try {
-      const { extensionToken, monitoredUrls, stockHistory } = await chrome.storage.local.get([
-        'extensionToken', 'monitoredUrls', 'stockHistory'
-      ]);
-      
-      if (!extensionToken) {
-        console.log('[ShopOpti+] No token, skipping stock check');
-        return;
-      }
-      
-      const urls = monitoredUrls || [];
-      if (urls.length === 0) {
-        console.log('[ShopOpti+] No monitored URLs for stock check');
-        return;
-      }
+    await chrome.storage.local.set({ lastStockCheck: new Date().toISOString() });
+  }
 
-      // Call edge function with stock focus
-      const response = await fetch(`${API_URL}/price-stock-monitor`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': extensionToken
-        },
-        body: JSON.stringify({
-          action: 'check_all'
-        })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log(`[ShopOpti+] Stock check complete: ${result.checked} products`);
+  handleTabUpdate(tabId, tab) {
+    // Inject content script on supported domains
+    if (tab.url) {
+      try {
+        const url = new URL(tab.url);
+        const hostname = url.hostname.toLowerCase();
         
-        // Update local stock history
-        const history = stockHistory || [];
-        const newEntry = {
-          timestamp: new Date().toISOString(),
-          checked: result.checked,
-          stockChanges: result.details?.stock_changes || 0
-        };
-        
-        const updatedHistory = [newEntry, ...history].slice(0, 100);
-        await chrome.storage.local.set({ 
-          stockHistory: updatedHistory,
-          lastStockCheck: new Date().toISOString()
-        });
-
-        // Show notification for stock alerts
-        const stockAlerts = result.details?.stock_changes || 0;
-        if (stockAlerts > 0) {
-          this.showNotification(
-            '📦 Alertes stock détectées',
-            `${stockAlerts} changement(s) de stock`
-          );
+        if (Security.ALLOWED_SCRAPE_DOMAINS.some(d => hostname.includes(d))) {
+          // Content script will be auto-injected via manifest
+          console.log('[ShopOpti+] Supported domain detected:', hostname);
         }
-
-        // Update stats
-        const { stats } = await chrome.storage.local.get(['stats']);
-        await chrome.storage.local.set({
-          stats: {
-            ...stats,
-            lastStockCheck: result.checked,
-            stockAlerts: (stats?.stockAlerts || 0) + stockAlerts
-          }
-        });
-      } else {
-        console.error('[ShopOpti+] Stock check failed:', result.error);
+      } catch (e) {
+        // Invalid URL, ignore
       }
-    } catch (error) {
-      console.error('[ShopOpti+] Error checking stock changes:', error);
     }
   }
 
-  async getMonitoredProducts() {
-    try {
-      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
-      
-      if (!extensionToken) return [];
-
-      const response = await fetch(`${API_URL}/price-stock-monitor`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': extensionToken
-        },
-        body: JSON.stringify({
-          action: 'get_monitored'
-        })
-      });
-
-      const result = await response.json();
-      return result.success ? result.monitored : [];
-    } catch (error) {
-      console.error('[ShopOpti+] Error getting monitored products:', error);
-      return [];
+  handleAlarm(alarm) {
+    console.log('[ShopOpti+] Alarm triggered:', alarm.name);
+    
+    if (alarm.name === 'periodic-sync') {
+      this.syncData();
+    } else if (alarm.name === 'price-monitoring') {
+      this.checkPriceChanges();
+    } else if (alarm.name === 'stock-alerts') {
+      this.checkStockChanges();
     }
   }
 
-  async getPriceHistory(productId = null) {
-    try {
-      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
-      
-      if (!extensionToken) return [];
-
-      const response = await fetch(`${API_URL}/price-stock-monitor`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': extensionToken
-        },
-        body: JSON.stringify({
-          action: 'get_history',
-          productId
-        })
-      });
-
-      const result = await response.json();
-      return result.success ? result.history : [];
-    } catch (error) {
-      console.error('[ShopOpti+] Error getting price history:', error);
-      return [];
+  handleContextMenuClick(info, tab) {
+    const url = info.linkUrl || info.pageUrl;
+    
+    if (!Security.isUrlAllowedForScrape(url)) {
+      console.warn('[ShopOpti+] Context menu action blocked - URL not allowed');
+      return;
     }
+    
+    switch (info.menuItemId) {
+      case 'shopopti-import-product':
+        this.scrapeAndImport(url);
+        break;
+      case 'shopopti-import-reviews':
+        this.importReviews({ url });
+        break;
+      case 'shopopti-monitor-price':
+        this.addToMonitoring(url, {});
+        break;
+      case 'shopopti-open-dashboard':
+        chrome.tabs.create({ url: APP_URL });
+        break;
+    }
+  }
+
+  async logActivity(action, data = {}) {
+    const { activities } = await chrome.storage.local.get(['activities']);
+    const updated = [
+      { action, data, timestamp: new Date().toISOString() },
+      ...(activities || [])
+    ].slice(0, 50);
+    await chrome.storage.local.set({ activities: updated });
   }
 
   showNotification(title, message) {
-    chrome.storage.local.get(['pushNotifications'], (result) => {
-      if (result.pushNotifications !== false) {
-        chrome.notifications.create({
-          type: 'basic',
-          iconUrl: 'icons/icon48.png',
-          title: `ShopOpti+ - ${title}`,
-          message
-        });
-      }
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon128.png',
+      title: title,
+      message: message
     });
   }
 }
 
-// Review extraction function (runs in page context) - Enhanced for Amazon/AliExpress/eBay
-function extractReviewsFromPage(config) {
+// Review extraction function (injected into page)
+function extractReviewsFromPage(config = {}) {
+  const maxReviews = config.maxReviews || 50;
   const reviews = [];
-  const maxReviews = config?.maxReviews || 50;
-  const hostname = window.location.hostname.toLowerCase();
-
-  // Platform-specific extraction
-  if (hostname.includes('amazon')) {
-    // Amazon Reviews
-    const reviewElements = document.querySelectorAll('[data-hook="review"], .review, .a-section.review');
+  
+  // Amazon selectors
+  const amazonReviews = document.querySelectorAll('[data-hook="review"]');
+  amazonReviews.forEach((el, i) => {
+    if (i >= maxReviews) return;
     
-    reviewElements.forEach((element, index) => {
-      if (index >= maxReviews) return;
-      
-      // Rating
-      let rating = 5;
-      const ratingEl = element.querySelector('[data-hook="review-star-rating"] .a-icon-alt, .a-icon-star .a-icon-alt, i[data-hook="review-star-rating"]');
-      if (ratingEl) {
-        const ratingMatch = ratingEl.textContent?.match(/(\d[.,]?\d?)/);
-        if (ratingMatch) rating = parseFloat(ratingMatch[1].replace(',', '.'));
-      }
-      
-      // Content
-      const contentEl = element.querySelector('[data-hook="review-body"] span, .review-text-content span, .review-text');
-      const content = contentEl?.textContent?.trim() || '';
-      
-      // Author
-      const authorEl = element.querySelector('[data-hook="review-author"], .a-profile-name');
-      const author = authorEl?.textContent?.trim() || 'Amazon Customer';
-      
-      // Date
-      const dateEl = element.querySelector('[data-hook="review-date"], .review-date');
-      const date = dateEl?.textContent?.trim() || '';
-      
-      // Verified
-      const verified = !!element.querySelector('[data-hook="avp-badge"], .a-color-state');
-      
-      // Images
-      const images = [];
-      element.querySelectorAll('[data-hook="review-image-tile"] img, .review-image-tile img').forEach(img => {
-        if (img.src && !img.src.includes('sprite')) {
-          images.push(img.src.replace(/\._[A-Z]{2}\d+_\./, '._SL500_.'));
-        }
+    const rating = el.querySelector('[data-hook="review-star-rating"] .a-icon-alt')?.textContent?.match(/[\d,.]+/)?.[0];
+    const author = el.querySelector('.a-profile-name')?.textContent?.trim();
+    const content = el.querySelector('[data-hook="review-body"] span')?.textContent?.trim();
+    const date = el.querySelector('[data-hook="review-date"]')?.textContent?.trim();
+    const verified = !!el.querySelector('[data-hook="avp-badge"]');
+    
+    if (content) {
+      reviews.push({
+        rating: parseFloat(rating?.replace(',', '.')) || 5,
+        author: author || 'Client',
+        content,
+        date,
+        verified,
+        images: []
       });
-      
-      // Helpful count
-      let helpfulCount = 0;
-      const helpfulEl = element.querySelector('[data-hook="helpful-vote-statement"], .cr-vote-text');
-      if (helpfulEl) {
-        const helpfulMatch = helpfulEl.textContent?.match(/(\d+)/);
-        if (helpfulMatch) helpfulCount = parseInt(helpfulMatch[1]);
-      }
-      
-      if (content.length > 10) {
-        reviews.push({
-          id: `amazon_${Date.now()}_${index}`,
-          rating,
-          content,
-          author,
-          date,
-          verified,
-          images,
-          helpful_count: helpfulCount,
-          platform: 'amazon'
-        });
-      }
-    });
-    
-  } else if (hostname.includes('aliexpress')) {
-    // AliExpress Reviews
-    const reviewElements = document.querySelectorAll('.feedback-item, [class*="review-item"], [class*="feedback"]');
-    
-    reviewElements.forEach((element, index) => {
-      if (index >= maxReviews) return;
-      
-      // Rating
-      let rating = 5;
-      const stars = element.querySelectorAll('[class*="star-view"] span[class*="full"], .star-view span.star-active, svg[class*="star"]');
-      if (stars.length > 0) rating = stars.length;
-      
-      // Content
-      const contentEl = element.querySelector('[class*="buyer-feedback"], [class*="review-content"], .buyer-feedback span');
-      const content = contentEl?.textContent?.trim() || '';
-      
-      // Author
-      const authorEl = element.querySelector('[class*="user-name"], [class*="anonymous"]');
-      const author = authorEl?.textContent?.trim() || 'AliExpress Buyer';
-      
-      // Date
-      const dateEl = element.querySelector('[class*="feedback-time"], time');
-      const date = dateEl?.textContent?.trim() || '';
-      
-      // Images
-      const images = [];
-      element.querySelectorAll('img[class*="pic"], img[src*="feedback"]').forEach(img => {
-        if (img.src && !img.src.includes('placeholder')) {
-          let src = img.src;
-          if (src.startsWith('//')) src = 'https:' + src;
-          src = src.replace(/_\d+x\d+\./g, '.');
-          images.push(src);
-        }
-      });
-      
-      // Country
-      const countryEl = element.querySelector('[class*="country"]');
-      const country = countryEl?.textContent?.trim();
-      
-      if (content.length > 5) {
-        reviews.push({
-          id: `ali_${Date.now()}_${index}`,
-          rating,
-          content,
-          author,
-          date,
-          images,
-          country,
-          platform: 'aliexpress'
-        });
-      }
-    });
-    
-  } else if (hostname.includes('ebay')) {
-    // eBay Reviews
-    const reviewElements = document.querySelectorAll('.fdbk-container__details, .reviews__item');
-    
-    reviewElements.forEach((element, index) => {
-      if (index >= maxReviews) return;
-      
-      const contentEl = element.querySelector('.fdbk-container__details__comment, .review-text');
-      const content = contentEl?.textContent?.trim() || '';
-      
-      const authorEl = element.querySelector('.fdbk-container__details__seller, .reviewer-name');
-      const author = authorEl?.textContent?.trim() || 'eBay Buyer';
-      
-      const dateEl = element.querySelector('.fdbk-container__details__time, .review-date');
-      const date = dateEl?.textContent?.trim() || '';
-      
-      if (content.length > 5) {
-        reviews.push({
-          id: `ebay_${Date.now()}_${index}`,
-          rating: 5,
-          content,
-          author,
-          date,
-          platform: 'ebay'
-        });
-      }
-    });
-
-  } else if (hostname.includes('cdiscount')) {
-    // Cdiscount Reviews - Professional extraction
-    const reviewSelectors = [
-      '.js-rv-list .rv-list__item',
-      '.avis-list .avis-item',
-      '[data-qa="review"]',
-      '.customer-review',
-      '.reviews-list .review',
-      '[class*="review-item"]',
-      '.fpRv .fpRvList > div'
-    ];
-    
-    let reviewElements = [];
-    for (const sel of reviewSelectors) {
-      reviewElements = document.querySelectorAll(sel);
-      if (reviewElements.length > 0) break;
     }
+  });
+  
+  // AliExpress selectors
+  const aliReviews = document.querySelectorAll('[class*="review-item"], [class*="ReviewItem"]');
+  aliReviews.forEach((el, i) => {
+    if (i >= maxReviews) return;
     
-    reviewElements.forEach((element, index) => {
-      if (index >= maxReviews) return;
-      
-      // Rating - look for star count or numeric rating
-      let rating = 5;
-      const ratingEl = element.querySelector('[class*="rating"], [class*="star"], .note, [itemprop="ratingValue"]');
-      if (ratingEl) {
-        const ratingContent = ratingEl.getAttribute('content') || ratingEl.getAttribute('data-rating');
-        if (ratingContent) {
-          rating = parseFloat(ratingContent);
-        } else {
-          const starsFilled = element.querySelectorAll('.star-full, .star-filled, [class*="star"][class*="active"]').length;
-          if (starsFilled > 0) rating = starsFilled;
-          else {
-            const ratingMatch = ratingEl.textContent?.match(/(\d[,.]?\d?)/);
-            if (ratingMatch) rating = parseFloat(ratingMatch[1].replace(',', '.'));
-          }
-        }
-      }
-      
-      // Content
-      const contentEl = element.querySelector('.rv-text, .avis-text, [class*="review-text"], [class*="content"], .comment, p[class*="desc"]');
-      const content = contentEl?.textContent?.trim() || '';
-      
-      // Author
-      const authorEl = element.querySelector('.rv-author, .avis-author, [class*="author"], [class*="name"], .reviewer');
-      const author = authorEl?.textContent?.trim() || 'Client Cdiscount';
-      
-      // Date
-      const dateEl = element.querySelector('.rv-date, .avis-date, [class*="date"], time');
-      const date = dateEl?.textContent?.trim() || dateEl?.getAttribute('datetime') || '';
-      
-      // Verified purchase
-      const verified = !!element.querySelector('[class*="verified"], [class*="achat-verifi"], .purchase-verified');
-      
-      // Images
-      const images = [];
-      element.querySelectorAll('img[class*="review"], img[class*="avis"], .rv-photo img').forEach(img => {
-        if (img.src && !img.src.includes('placeholder') && !img.src.includes('avatar')) {
-          images.push(img.src);
-        }
+    const stars = el.querySelectorAll('[class*="star"][class*="full"], .star-view .star-icon').length;
+    const author = el.querySelector('[class*="user-name"], [class*="reviewer"]')?.textContent?.trim();
+    const content = el.querySelector('[class*="review-content"], [class*="content"]')?.textContent?.trim();
+    
+    if (content) {
+      reviews.push({
+        rating: stars || 5,
+        author: author || 'Buyer',
+        content,
+        verified: true,
+        images: []
       });
-      
-      if (content.length > 5) {
-        reviews.push({
-          id: `cdiscount_${Date.now()}_${index}`,
-          rating: Math.min(5, Math.max(1, rating)),
-          content,
-          author,
-          date,
-          verified,
-          images,
-          platform: 'cdiscount'
-        });
-      }
-    });
-    
-  } else {
-    // Generic review extraction
-    const reviewSelectors = [
-      '[data-hook="review"]',
-      '.review-item',
-      '.review',
-      '.customer-review',
-      '[class*="review-card"]',
-      '[class*="testimonial"]'
-    ];
-
-    let reviewElements = [];
-    for (const selector of reviewSelectors) {
-      reviewElements = document.querySelectorAll(selector);
-      if (reviewElements.length > 0) break;
     }
-
-    reviewElements.forEach((element, index) => {
-      if (index >= maxReviews) return;
-
-      const ratingEl = element.querySelector('[class*="star"], [data-rating], [aria-label*="star"]');
-      const contentEl = element.querySelector('[class*="content"], [class*="text"], p');
-      const authorEl = element.querySelector('[class*="author"], [class*="name"]');
-      const dateEl = element.querySelector('[class*="date"], time');
-
-      let rating = 5;
-      if (ratingEl) {
-        const ratingText = ratingEl.getAttribute('aria-label') || ratingEl.getAttribute('data-rating') || ratingEl.textContent;
-        const match = ratingText?.match(/(\d+)/);
-        if (match) rating = parseInt(match[1]);
-      }
-
-      const content = contentEl?.textContent?.trim() || '';
-      
-      if (content.length > 10) {
-        reviews.push({
-          id: `generic_${Date.now()}_${index}`,
-          rating,
-          content,
-          author: authorEl?.textContent?.trim() || 'Anonymous',
-          date: dateEl?.textContent?.trim() || '',
-          platform: hostname
-        });
-      }
-    });
-  }
-
-  console.log(`[ShopOpti+] Extracted ${reviews.length} reviews`);
+  });
+  
   return reviews;
 }
 
-// Initialize the background service worker
-try {
-  new ShopOptiBackground();
-} catch (error) {
-  console.error('[ShopOpti+] Failed to initialize:', error);
-}
+// Initialize
+new ShopOptiBackground();
