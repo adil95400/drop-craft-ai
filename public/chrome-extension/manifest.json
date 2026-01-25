@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "4.3.16",
-  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes - v4.3.16 Professional UI",
+  "version": "4.4.0",
+  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes",
   "permissions": [
     "activeTab",
     "storage",
@@ -13,12 +13,11 @@
     "contextMenus"
   ],
   "host_permissions": [
-    "https://*/*",
-    "http://*/*",
     "*://shopopti.io/*",
     "*://*.shopopti.io/*",
-    "*://*.myshopify.com/*",
-    "*://*/products/*",
+    "*://*.supabase.co/*"
+  ],
+  "optional_host_permissions": [
     "*://*.aliexpress.com/*",
     "*://*.aliexpress.fr/*",
     "*://*.aliexpress.us/*",
@@ -65,8 +64,12 @@
     "*://*.overstock.com/*",
     "*://*.wayfair.com/*",
     "*://*.zalando.fr/*",
-    "*://*.asos.com/*"
+    "*://*.asos.com/*",
+    "*://*.myshopify.com/*"
   ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; connect-src https://*.supabase.co https://shopopti.io; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -90,46 +93,11 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "injected.js",
-        "sidebar.js", 
-        "sidebar.css",
-        "grabber.js",
-        "reviews-extractor.js",
-        "video-extractor.js",
-        "variants-extractor.js",
-        "fulfillment.js",
-        "automation.js",
-        "faq.js",
-        "support.js",
-        "image-optimizer.js",
-        "multi-store-manager.js",
-        "price-monitor.js",
-        "auto-order.js",
-        "trend-analyzer.js",
-        "bulk-selector.js",
-        "review-translator.js",
-        "advanced-scraper.js",
-        "import-overlay.js",
-        "ai-content-generator.js",
-        "supplier-compare.js",
-        "watermark-remover.js",
-        "multi-store.js",
-        "supplier-search.js",
-        "ads-spy.js",
-        "seo-meta-generator.js",
-        "winning-product-detector.js",
-        "price-optimizer.js",
-        "debug-panel.js",
-        "platforms/shopify-universal.js",
-        "platforms/tiktok-shop.js",
-        "platforms/cdiscount.js",
-        "platforms/fnac.js",
-        "platforms/rakuten.js",
-        "platforms/home-depot.js",
-        "platforms/lowes.js",
-        "platforms/costco.js",
         "content.css",
-        "icons/*"
+        "icons/icon16.png",
+        "icons/icon32.png",
+        "icons/icon48.png",
+        "icons/icon128.png"
       ],
       "matches": ["<all_urls>"]
     }
@@ -163,9 +131,6 @@
         "*://*.lightinthebox.com/*",
         "*://*.gearbest.com/*",
         "*://*.made-in-china.com/*",
-        "*://shop.tiktok.com/*",
-        "*://*.tiktokshop.com/*",
-        "*://seller.tiktok.com/*",
         "*://*.cdiscount.com/*",
         "*://*.fnac.com/*",
         "*://*.rakuten.fr/*",
@@ -185,12 +150,6 @@
         "*://*.zalando.fr/*",
         "*://*.asos.com/*"
       ],
-      "js": ["content.js"],
-      "css": ["content.css"],
-      "run_at": "document_end"
-    },
-    {
-      "matches": ["*://*/products/*"],
       "js": ["content.js"],
       "css": ["content.css"],
       "run_at": "document_end"
