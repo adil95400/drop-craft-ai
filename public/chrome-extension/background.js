@@ -309,6 +309,20 @@ class ShopOptiBackground {
           sendResponse(syncResult);
           break;
 
+        // ============================================
+        // SUPPLIER SOURCING HANDLERS
+        // ============================================
+        
+        case 'SEARCH_ALL_SUPPLIERS':
+          const supplierResults = await this.searchAllSuppliers(message.query, message.options);
+          sendResponse(supplierResults);
+          break;
+
+        case 'COMPARE_SUPPLIERS':
+          const compareResults = await this.compareSuppliers(message.productId, message.suppliers);
+          sendResponse(compareResults);
+          break;
+
         default:
           sendResponse({ error: 'Unknown message type' });
       }
@@ -1003,6 +1017,69 @@ class ShopOptiBackground {
   async handleAlarm(alarm) {
     if (alarm.name === 'periodic-sync') {
       await this.syncData();
+    }
+  }
+
+  // ============================================
+  // SUPPLIER SOURCING METHODS
+  // ============================================
+
+  async searchAllSuppliers(query, options = {}) {
+    const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+    
+    if (!extensionToken) {
+      return { success: false, error: 'Non connecté' };
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/find-supplier`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'search_all',
+          query: query,
+          platforms: options.platforms || ['aliexpress', '1688', 'alibaba'],
+          limit: options.limit || 20
+        })
+      });
+
+      const data = await response.json();
+      return { success: response.ok, ...data };
+    } catch (error) {
+      console.error('[ShopOpti+] Supplier search error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async compareSuppliers(productId, suppliers) {
+    const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+    
+    if (!extensionToken) {
+      return { success: false, error: 'Non connecté' };
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/find-supplier`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'compare',
+          productId,
+          suppliers
+        })
+      });
+
+      const data = await response.json();
+      return { success: response.ok, ...data };
+    } catch (error) {
+      console.error('[ShopOpti+] Compare suppliers error:', error);
+      return { success: false, error: error.message };
     }
   }
 }
