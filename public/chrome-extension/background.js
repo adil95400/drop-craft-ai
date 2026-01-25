@@ -1,13 +1,13 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Background Service Worker v5.6.1
+// ShopOpti+ Chrome Extension - Background Service Worker v5.6.2
 // 100% AutoDS Feature Parity - Complete Production Ready
 // Ads Spy, Auto-Order, Multi-Store, Real-Time Sync
-// BACKEND CONNECTED - Token management for content scripts
+// NOTIFICATIONS SYSTEM + DYNAMIC BADGE
 // ============================================
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.6.1';
+const VERSION = '5.6.2';
 
 // ============================================
 // SECURITY MODULE
@@ -48,8 +48,10 @@ const Security = {
     // Auto-Order + Ads Spy (AutoDS Parity)
     'PROCESS_AUTO_ORDER', 'GET_PENDING_ORDERS', 'TOGGLE_AUTO_ORDER',
     'SEARCH_ADS', 'GET_VIRAL_PRODUCTS', 'SAVE_AD_TO_COLLECTION',
-    // Auth + Backend Connection (NEW)
-    'GET_AUTH_TOKEN', 'PRODUCT_IMPORTED', 'CHECK_AUTH_STATUS'
+    // Auth + Backend Connection
+    'GET_AUTH_TOKEN', 'PRODUCT_IMPORTED', 'CHECK_AUTH_STATUS',
+    // Notifications System (NEW)
+    'UPDATE_BADGE', 'GET_NOTIFICATIONS', 'ADD_NOTIFICATION', 'CLEAR_NOTIFICATIONS'
   ],
 
   rateLimits: new Map(),
@@ -372,6 +374,30 @@ class ShopOptiBackground {
           sendResponse(viralProducts);
           break;
 
+        // ============================================
+        // NOTIFICATIONS HANDLERS (NEW)
+        // ============================================
+        
+        case 'UPDATE_BADGE':
+          await this.updateExtensionBadge(message.count);
+          sendResponse({ success: true });
+          break;
+
+        case 'GET_NOTIFICATIONS':
+          const notifications = await this.getNotifications();
+          sendResponse(notifications);
+          break;
+
+        case 'ADD_NOTIFICATION':
+          await this.addNotification(message.notification);
+          sendResponse({ success: true });
+          break;
+
+        case 'CLEAR_NOTIFICATIONS':
+          await this.clearNotifications();
+          sendResponse({ success: true });
+          break;
+
         default:
           sendResponse({ error: 'Unknown message type' });
       }
@@ -470,6 +496,91 @@ class ShopOptiBackground {
       });
     } catch (e) {
       console.error('[ShopOpti+] Activity log error:', e);
+    }
+  }
+
+  // ============================================
+  // NOTIFICATIONS METHODS
+  // ============================================
+  
+  async updateExtensionBadge(count) {
+    try {
+      if (count > 0) {
+        chrome.action.setBadgeText({ text: count > 99 ? '99+' : String(count) });
+        chrome.action.setBadgeBackgroundColor({ color: '#ff4757' });
+      } else {
+        chrome.action.setBadgeText({ text: '' });
+      }
+    } catch (e) {
+      console.error('[ShopOpti+] Badge update error:', e);
+    }
+  }
+
+  async getNotifications() {
+    try {
+      const { notifications = [], unreadCount = 0 } = await chrome.storage.local.get([
+        'notifications', 'unreadCount'
+      ]);
+      return { success: true, notifications, unreadCount };
+    } catch (e) {
+      console.error('[ShopOpti+] Get notifications error:', e);
+      return { success: false, notifications: [], unreadCount: 0 };
+    }
+  }
+
+  async addNotification(notification) {
+    try {
+      const { notifications = [] } = await chrome.storage.local.get(['notifications']);
+      
+      const newNotification = {
+        id: notification.id || `notif_${Date.now()}`,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type || 'info',
+        platform: notification.platform,
+        product_id: notification.productId,
+        action_url: notification.actionUrl,
+        read: false,
+        created_at: new Date().toISOString()
+      };
+      
+      notifications.unshift(newNotification);
+      const trimmed = notifications.slice(0, 50);
+      const unreadCount = trimmed.filter(n => !n.read).length;
+      
+      await chrome.storage.local.set({ 
+        notifications: trimmed,
+        unreadCount 
+      });
+      
+      // Update badge
+      await this.updateExtensionBadge(unreadCount);
+      
+      // Show chrome notification if permitted
+      if (notification.showSystemNotification) {
+        chrome.notifications.create({
+          type: 'basic',
+          iconUrl: 'icon128.png',
+          title: notification.title,
+          message: notification.message || '',
+          priority: 2
+        });
+      }
+      
+    } catch (e) {
+      console.error('[ShopOpti+] Add notification error:', e);
+    }
+  }
+
+  async clearNotifications() {
+    try {
+      await chrome.storage.local.set({ 
+        notifications: [],
+        unreadCount: 0 
+      });
+      await this.updateExtensionBadge(0);
+    } catch (e) {
+      console.error('[ShopOpti+] Clear notifications error:', e);
     }
   }
 
