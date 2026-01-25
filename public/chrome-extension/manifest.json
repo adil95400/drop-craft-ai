@@ -1,22 +1,21 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "4.4.0",
+  "version": "5.0.0",
   "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes",
+  
   "permissions": [
     "activeTab",
     "storage",
-    "tabs",
     "scripting",
-    "notifications",
-    "alarms",
-    "contextMenus"
+    "alarms"
   ],
+  
   "host_permissions": [
-    "*://shopopti.io/*",
     "*://*.shopopti.io/*",
     "*://*.supabase.co/*"
   ],
+  
   "optional_host_permissions": [
     "*://*.aliexpress.com/*",
     "*://*.aliexpress.fr/*",
@@ -45,7 +44,6 @@
     "*://*.taobao.com/*",
     "*://*.cjdropshipping.com/*",
     "*://*.lightinthebox.com/*",
-    "*://*.gearbest.com/*",
     "*://*.made-in-china.com/*",
     "*://*.cdiscount.com/*",
     "*://*.fnac.com/*",
@@ -67,12 +65,16 @@
     "*://*.asos.com/*",
     "*://*.myshopify.com/*"
   ],
+  
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; connect-src https://*.supabase.co https://shopopti.io; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'"
+    "extension_pages": "default-src 'self'; connect-src 'self' https://*.supabase.co https://shopopti.io https://*.shopopti.io; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'"
   },
+  
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
+  
   "action": {
     "default_popup": "popup.html",
     "default_title": "ShopOpti+ - Dropshipping Pro",
@@ -83,76 +85,20 @@
       "128": "icons/icon128.png"
     }
   },
+  
   "options_page": "options.html",
+  
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
+  
   "web_accessible_resources": [
     {
-      "resources": [
-        "content.css",
-        "icons/icon16.png",
-        "icons/icon32.png",
-        "icons/icon48.png",
-        "icons/icon128.png"
-      ],
+      "resources": ["content.css", "icons/*.png"],
       "matches": ["<all_urls>"]
-    }
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "*://*.aliexpress.com/*",
-        "*://*.aliexpress.fr/*",
-        "*://*.aliexpress.us/*",
-        "*://*.amazon.com/*",
-        "*://*.amazon.fr/*",
-        "*://*.amazon.de/*",
-        "*://*.amazon.co.uk/*",
-        "*://*.amazon.es/*",
-        "*://*.amazon.it/*",
-        "*://*.ebay.com/*",
-        "*://*.ebay.fr/*",
-        "*://*.ebay.de/*",
-        "*://*.ebay.co.uk/*",
-        "*://*.walmart.com/*",
-        "*://*.etsy.com/*",
-        "*://*.temu.com/*",
-        "*://*.wish.com/*",
-        "*://*.banggood.com/*",
-        "*://*.dhgate.com/*",
-        "*://*.1688.com/*",
-        "*://*.taobao.com/*",
-        "*://*.shein.com/*",
-        "*://*.cjdropshipping.com/*",
-        "*://*.lightinthebox.com/*",
-        "*://*.gearbest.com/*",
-        "*://*.made-in-china.com/*",
-        "*://*.cdiscount.com/*",
-        "*://*.fnac.com/*",
-        "*://*.rakuten.fr/*",
-        "*://*.homedepot.com/*",
-        "*://*.lowes.com/*",
-        "*://*.costco.com/*",
-        "*://*.darty.com/*",
-        "*://*.boulanger.com/*",
-        "*://*.manomano.fr/*",
-        "*://*.leroymerlin.fr/*",
-        "*://*.myshopify.com/*",
-        "*://*.target.com/*",
-        "*://*.bestbuy.com/*",
-        "*://*.wayfair.com/*",
-        "*://*.overstock.com/*",
-        "*://*.newegg.com/*",
-        "*://*.zalando.fr/*",
-        "*://*.asos.com/*"
-      ],
-      "js": ["content.js"],
-      "css": ["content.css"],
-      "run_at": "document_end"
     }
   ]
 }
