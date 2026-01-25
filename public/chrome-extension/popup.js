@@ -1,12 +1,13 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Popup Script v5.6.0
+// ShopOpti+ Chrome Extension - Popup Script v5.6.2
 // 100% AutoDS Feature Parity - Complete & Production Ready
 // Ads Spy, Auto-Order, Multi-Store, Real-Time Sync
+// NOTIFICATIONS SYSTEM + DYNAMIC BADGE
 // ============================================
 
 class ShopOptiPopup {
   constructor() {
-    this.VERSION = '5.6.0';  // 100% AutoDS Parity
+    this.VERSION = '5.6.2';  // Notifications + Badge
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
     this.APP_URL = 'https://shopopti.io';
     
@@ -35,6 +36,11 @@ class ShopOptiPopup {
     // Auto-Order state
     this.autoOrderEnabled = false;
     this.pendingOrders = [];
+    
+    // Notifications state (NEW)
+    this.notifications = [];
+    this.unreadCount = 0;
+    this.notificationsPanelOpen = false;
   }
 
   // ============================================
@@ -59,10 +65,13 @@ class ShopOptiPopup {
       await this.loadStoredData();
       await this.checkConnection();
       await this.detectCurrentPage();
+      await this.loadNotifications();
       this.bindAllEvents();
       this.updateUI();
+      this.updateNotificationBadge();
       this.initTabs();
       this.initProfitCalculator();
+      this.startNotificationPolling();
       console.log('[ShopOpti+] Popup initialized successfully');
     } catch (error) {
       console.error('[ShopOpti+] Init error:', error);
@@ -422,6 +431,23 @@ class ShopOptiPopup {
         }
       });
     });
+
+    // Notifications (NEW)
+    this.bindClick('notificationsBtn', () => this.toggleNotificationsPanel());
+    this.bindClick('closeNotificationsBtn', () => this.hideNotificationsPanel());
+    this.bindClick('markAllReadBtn', () => this.markAllNotificationsRead());
+    this.bindClick('viewAllNotificationsBtn', () => this.viewAllNotifications());
+    
+    // Close notifications on outside click
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('notificationsPanel');
+      const btn = document.getElementById('notificationsBtn');
+      if (panel && !panel.classList.contains('hidden') && 
+          !panel.contains(e.target) && !btn?.contains(e.target)) {
+        this.hideNotificationsPanel();
+      }
+    });
+  }
 
   bindClick(id, handler) {
     const el = document.getElementById(id);
@@ -1712,6 +1738,353 @@ class ShopOptiPopup {
         }
       });
     });
+  }
+  // ============================================
+  // NOTIFICATIONS SYSTEM
+  // ============================================
+  
+  async loadNotifications() {
+    if (!this.isExtensionRuntime()) return;
+    
+    try {
+      // Load from local storage first
+      const { notifications = [], unreadCount = 0 } = await this.chrome.storage.local.get([
+        'notifications', 'unreadCount'
+      ]);
+      
+      this.notifications = notifications;
+      this.unreadCount = unreadCount;
+      
+      // Fetch from backend if connected
+      if (this.extensionToken) {
+        await this.fetchNotificationsFromBackend();
+      }
+    } catch (error) {
+      console.error('[ShopOpti+] Error loading notifications:', error);
+    }
+  }
+  
+  async fetchNotificationsFromBackend() {
+    if (!this.extensionToken) return;
+    
+    try {
+      const response = await fetch(`${this.API_URL}/extension-notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': this.extensionToken
+        },
+        body: JSON.stringify({ action: 'get_unread' })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.notifications) {
+          // Merge with local notifications
+          const merged = this.mergeNotifications(data.notifications);
+          this.notifications = merged;
+          this.unreadCount = merged.filter(n => !n.read).length;
+          
+          // Save to local storage
+          await this.chrome.storage.local.set({
+            notifications: this.notifications,
+            unreadCount: this.unreadCount
+          });
+          
+          this.updateNotificationBadge();
+          this.renderNotifications();
+        }
+      }
+    } catch (error) {
+      console.error('[ShopOpti+] Error fetching notifications:', error);
+    }
+  }
+  
+  mergeNotifications(serverNotifications) {
+    const existingIds = new Set(this.notifications.map(n => n.id));
+    const newNotifications = serverNotifications.filter(n => !existingIds.has(n.id));
+    
+    return [...newNotifications, ...this.notifications]
+      .sort((a, b) => new Date(b.created_at || b.timestamp) - new Date(a.created_at || a.timestamp))
+      .slice(0, 50); // Keep last 50
+  }
+  
+  startNotificationPolling() {
+    if (!this.isExtensionRuntime()) return;
+    
+    // Poll every 30 seconds
+    this.notificationInterval = setInterval(() => {
+      if (this.extensionToken) {
+        this.fetchNotificationsFromBackend();
+      }
+    }, 30000);
+  }
+  
+  updateNotificationBadge() {
+    const badge = document.getElementById('notificationBadge');
+    const countEl = document.getElementById('notificationCount');
+    
+    if (badge) {
+      if (this.unreadCount > 0) {
+        badge.textContent = this.unreadCount > 99 ? '99+' : this.unreadCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+    
+    if (countEl) {
+      countEl.textContent = this.unreadCount;
+    }
+    
+    // Also update extension badge
+    if (this.isExtensionRuntime()) {
+      this.chrome.runtime.sendMessage({ 
+        type: 'UPDATE_BADGE', 
+        count: this.unreadCount 
+      }).catch(() => {});
+    }
+  }
+  
+  toggleNotificationsPanel() {
+    const panel = document.getElementById('notificationsPanel');
+    if (panel) {
+      if (panel.classList.contains('hidden')) {
+        this.showNotificationsPanel();
+      } else {
+        this.hideNotificationsPanel();
+      }
+    }
+  }
+  
+  showNotificationsPanel() {
+    const panel = document.getElementById('notificationsPanel');
+    if (panel) {
+      panel.classList.remove('hidden');
+      this.notificationsPanelOpen = true;
+      this.renderNotifications();
+    }
+  }
+  
+  hideNotificationsPanel() {
+    const panel = document.getElementById('notificationsPanel');
+    if (panel) {
+      panel.classList.add('hidden');
+      this.notificationsPanelOpen = false;
+    }
+  }
+  
+  renderNotifications() {
+    const list = document.getElementById('notificationsList');
+    if (!list) return;
+    
+    if (this.notifications.length === 0) {
+      list.innerHTML = `
+        <div class="notifications-empty">
+          <div class="notifications-empty-icon">🔔</div>
+          <p>Aucune notification</p>
+          <span>Les imports et alertes apparaîtront ici</span>
+        </div>
+      `;
+      return;
+    }
+    
+    list.innerHTML = this.notifications.map(n => this.renderNotificationItem(n)).join('');
+    
+    // Bind click handlers
+    list.querySelectorAll('.notification-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = item.dataset.id;
+        this.handleNotificationClick(id);
+      });
+    });
+  }
+  
+  renderNotificationItem(notification) {
+    const timeAgo = this.formatTimeAgo(notification.created_at || notification.timestamp);
+    const iconMap = {
+      'success': '✅',
+      'error': '❌',
+      'warning': '⚠️',
+      'info': '📦',
+      'import': '📦',
+      'stock': '📊',
+      'price': '💰',
+      'review': '⭐'
+    };
+    
+    const icon = iconMap[notification.type] || '📢';
+    const typeClass = notification.type || 'info';
+    const unreadClass = notification.read ? '' : 'unread';
+    
+    return `
+      <div class="notification-item ${unreadClass}" data-id="${notification.id}">
+        <div class="notification-icon ${typeClass}">${icon}</div>
+        <div class="notification-content">
+          <div class="notification-title">${this.escapeHtml(notification.title)}</div>
+          <div class="notification-message">${this.escapeHtml(notification.message || '')}</div>
+          <div class="notification-meta">
+            <span class="notification-time">${timeAgo}</span>
+            ${notification.platform ? `<span class="notification-platform">${notification.platform}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  formatTimeAgo(timestamp) {
+    if (!timestamp) return '';
+    
+    const now = new Date();
+    const date = new Date(timestamp);
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return 'À l\'instant';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}min`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}j`;
+    
+    return date.toLocaleDateString('fr-FR');
+  }
+  
+  async handleNotificationClick(notificationId) {
+    const notification = this.notifications.find(n => n.id === notificationId);
+    if (!notification) return;
+    
+    // Mark as read
+    await this.markNotificationRead(notificationId);
+    
+    // Handle action
+    if (notification.action_url) {
+      this.chrome?.tabs?.create({ url: notification.action_url });
+    } else if (notification.product_id) {
+      this.chrome?.tabs?.create({ url: `${this.APP_URL}/products/${notification.product_id}` });
+    }
+    
+    this.hideNotificationsPanel();
+  }
+  
+  async markNotificationRead(notificationId) {
+    // Update local state
+    this.notifications = this.notifications.map(n => 
+      n.id === notificationId ? { ...n, read: true } : n
+    );
+    this.unreadCount = this.notifications.filter(n => !n.read).length;
+    
+    // Update UI
+    this.updateNotificationBadge();
+    this.renderNotifications();
+    
+    // Save to storage
+    if (this.isExtensionRuntime()) {
+      await this.chrome.storage.local.set({
+        notifications: this.notifications,
+        unreadCount: this.unreadCount
+      });
+    }
+    
+    // Update backend
+    if (this.extensionToken) {
+      try {
+        await fetch(`${this.API_URL}/extension-notifications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': this.extensionToken
+          },
+          body: JSON.stringify({ 
+            action: 'mark_read', 
+            notification_id: notificationId 
+          })
+        });
+      } catch (error) {
+        console.error('[ShopOpti+] Error marking notification read:', error);
+      }
+    }
+  }
+  
+  async markAllNotificationsRead() {
+    // Update local state
+    this.notifications = this.notifications.map(n => ({ ...n, read: true }));
+    this.unreadCount = 0;
+    
+    // Update UI
+    this.updateNotificationBadge();
+    this.renderNotifications();
+    
+    // Save to storage
+    if (this.isExtensionRuntime()) {
+      await this.chrome.storage.local.set({
+        notifications: this.notifications,
+        unreadCount: 0
+      });
+    }
+    
+    // Update backend
+    if (this.extensionToken) {
+      try {
+        await fetch(`${this.API_URL}/extension-notifications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-extension-token': this.extensionToken
+          },
+          body: JSON.stringify({ action: 'mark_all_read' })
+        });
+      } catch (error) {
+        console.error('[ShopOpti+] Error marking all notifications read:', error);
+      }
+    }
+    
+    this.showToast('Toutes les notifications marquées comme lues', 'success');
+  }
+  
+  viewAllNotifications() {
+    this.chrome?.tabs?.create({ url: `${this.APP_URL}/notifications` });
+    this.hideNotificationsPanel();
+  }
+  
+  // Add a local notification (from imports, etc.)
+  addLocalNotification(notification) {
+    const newNotification = {
+      id: `local_${Date.now()}`,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type || 'info',
+      platform: notification.platform,
+      product_id: notification.productId,
+      action_url: notification.actionUrl,
+      read: false,
+      created_at: new Date().toISOString()
+    };
+    
+    this.notifications.unshift(newNotification);
+    this.notifications = this.notifications.slice(0, 50);
+    this.unreadCount++;
+    
+    // Update UI
+    this.updateNotificationBadge();
+    if (this.notificationsPanelOpen) {
+      this.renderNotifications();
+    }
+    
+    // Save to storage
+    if (this.isExtensionRuntime()) {
+      this.chrome.storage.local.set({
+        notifications: this.notifications,
+        unreadCount: this.unreadCount
+      });
+    }
+    
+    // Show toast
+    this.showToast(notification.title, notification.type || 'success');
   }
 }
 
