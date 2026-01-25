@@ -115,7 +115,14 @@
         "lib/import-queue.js",
         "lib/store-manager.js",
         "lib/auth.js",
-        "lib/api-client.js"
+        "lib/api-client.js",
+        "lib/price-rules.js",
+        "lib/tag-generator.js",
+        "lib/shipping-extractor.js",
+        "lib/stock-extractor.js",
+        "lib/csv-exporter.js",
+        "lib/history-manager.js",
+        "lib/pagination-handler.js"
       ],
       "matches": ["<all_urls>"]
     }
