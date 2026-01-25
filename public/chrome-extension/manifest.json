@@ -1,51 +1,54 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.2.2",
+  "version": "5.3.0",
   "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancee, detection winning products, 25+ plateformes, import en masse multi-boutiques",
   "permissions": [
     "activeTab",
     "storage",
-    "scripting",
+    "scripting"
+  ],
+  "optional_permissions": [
     "alarms",
     "notifications"
   ],
   "host_permissions": [
     "*://*.shopopti.io/*",
-    "*://*.supabase.co/*"
-  ],
-  "optional_host_permissions": [
+    "*://*.supabase.co/*",
     "*://*.aliexpress.com/*",
-    "*://*.aliexpress.fr/*",
-    "*://*.aliexpress.us/*",
     "*://*.amazon.com/*",
     "*://*.amazon.fr/*",
     "*://*.amazon.de/*",
     "*://*.amazon.co.uk/*",
+    "*://*.ebay.com/*",
+    "*://*.ebay.fr/*",
+    "*://*.temu.com/*",
+    "*://*.shein.com/*",
+    "*://*.walmart.com/*",
+    "*://*.etsy.com/*",
+    "*://*.cdiscount.com/*",
+    "*://*.fnac.com/*",
+    "*://*.rakuten.fr/*",
+    "*://*.banggood.com/*",
+    "*://*.dhgate.com/*",
+    "*://*.cjdropshipping.com/*",
+    "*://*.myshopify.com/*"
+  ],
+  "optional_host_permissions": [
+    "*://*.aliexpress.fr/*",
+    "*://*.aliexpress.us/*",
     "*://*.amazon.es/*",
     "*://*.amazon.it/*",
     "*://*.amazon.ca/*",
     "*://*.amazon.co.jp/*",
-    "*://*.ebay.com/*",
-    "*://*.ebay.fr/*",
     "*://*.ebay.de/*",
     "*://*.ebay.co.uk/*",
-    "*://*.walmart.com/*",
-    "*://*.etsy.com/*",
-    "*://*.temu.com/*",
     "*://*.wish.com/*",
-    "*://*.shein.com/*",
     "*://*.shein.fr/*",
-    "*://*.banggood.com/*",
-    "*://*.dhgate.com/*",
     "*://*.1688.com/*",
     "*://*.taobao.com/*",
-    "*://*.cjdropshipping.com/*",
     "*://*.lightinthebox.com/*",
     "*://*.made-in-china.com/*",
-    "*://*.cdiscount.com/*",
-    "*://*.fnac.com/*",
-    "*://*.rakuten.fr/*",
     "*://*.rakuten.com/*",
     "*://*.homedepot.com/*",
     "*://*.lowes.com/*",
@@ -60,8 +63,7 @@
     "*://*.overstock.com/*",
     "*://*.wayfair.com/*",
     "*://*.zalando.fr/*",
-    "*://*.asos.com/*",
-    "*://*.myshopify.com/*"
+    "*://*.asos.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "default-src 'self'; connect-src 'self' https://*.supabase.co https://shopopti.io https://*.shopopti.io; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
@@ -93,18 +95,7 @@
         "content.css",
         "icons/*.png",
         "import-overlay-v2.js",
-        "bulk-import-v5.js",
-        "extractors/amazon-extractor.js",
-        "extractors/aliexpress-extractor.js",
-        "extractors/temu-extractor.js",
-        "extractors/shein-extractor.js",
-        "extractors/ebay-extractor.js",
-        "extractors/core-extractor.js",
-        "supplier-search.js",
-        "lib/config.js",
-        "lib/security.js",
-        "lib/import-queue.js",
-        "lib/store-manager.js"
+        "bulk-import-v5.js"
       ],
       "matches": ["<all_urls>"]
     }

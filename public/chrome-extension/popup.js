@@ -1,6 +1,7 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Popup Script v5.2.1
-// PROFESSIONAL UI - All Buttons Fixed + Chrome API Safety
+// ShopOpti+ Chrome Extension - Popup Script v5.3.0
+// PROFESSIONAL UI - XSS Safe (no innerHTML with user data)
+// Chrome API Safety + Sender Validation
 // ============================================
 
 class ShopOptiPopup {
@@ -1193,9 +1194,28 @@ class ShopOptiPopup {
     if (statusBar) statusBar.className = `status-bar ${this.isConnected ? 'connected' : 'disconnected'}`;
     if (statusText) statusText.textContent = this.isConnected ? 'Connecté à ShopOpti' : 'Non connecté';
     if (connectBtn) {
-      connectBtn.innerHTML = this.isConnected 
-        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Déconnecter</span>'
-        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg><span>Connecter</span>';
+      // Use textContent instead of innerHTML (XSS safe)
+      connectBtn.textContent = '';
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', '14');
+      svg.setAttribute('height', '14');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', 'currentColor');
+      svg.setAttribute('stroke-width', '2');
+      
+      const span = document.createElement('span');
+      
+      if (this.isConnected) {
+        svg.innerHTML = '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>';
+        span.textContent = 'Deconnecter';
+      } else {
+        svg.innerHTML = '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>';
+        span.textContent = 'Connecter';
+      }
+      
+      connectBtn.appendChild(svg);
+      connectBtn.appendChild(span);
     }
 
     // Plan badge
@@ -1235,19 +1255,60 @@ class ShopOptiPopup {
     const list = document.getElementById('activityList');
     if (!list) return;
 
+    // Clear existing content safely
+    list.textContent = '';
+
     if (this.activities.length === 0) {
-      list.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span><span class="empty-text">Aucune activité</span></div>';
+      const emptyState = document.createElement('div');
+      emptyState.className = 'empty-state';
+      
+      const emptyIcon = document.createElement('span');
+      emptyIcon.className = 'empty-icon';
+      emptyIcon.textContent = '📭';
+      
+      const emptyText = document.createElement('span');
+      emptyText.className = 'empty-text';
+      emptyText.textContent = 'Aucune activite';
+      
+      emptyState.appendChild(emptyIcon);
+      emptyState.appendChild(emptyText);
+      list.appendChild(emptyState);
       return;
     }
 
-    list.innerHTML = this.activities.slice(0, 5).map((a, i) => `
-      <div class="activity-item">
-        <span class="activity-icon">${a.icon || '📦'}</span>
-        <div class="activity-content">
-          <div class="activity-title">${a.title}</div>
-          <div class="activity-meta">${this.formatTime(a.timestamp)}</div>
-        </div>
-        <button class="activity-action" data-index="${i}">×</button>
+    this.activities.slice(0, 5).forEach((a, i) => {
+      const item = document.createElement('div');
+      item.className = 'activity-item';
+      
+      const icon = document.createElement('span');
+      icon.className = 'activity-icon';
+      icon.textContent = a.icon || '📦';
+      
+      const content = document.createElement('div');
+      content.className = 'activity-content';
+      
+      const title = document.createElement('div');
+      title.className = 'activity-title';
+      title.textContent = a.title;
+      
+      const meta = document.createElement('div');
+      meta.className = 'activity-meta';
+      meta.textContent = this.formatTime(a.timestamp);
+      
+      content.appendChild(title);
+      content.appendChild(meta);
+      
+      const actionBtn = document.createElement('button');
+      actionBtn.className = 'activity-action';
+      actionBtn.dataset.index = i;
+      actionBtn.textContent = '×';
+      actionBtn.addEventListener('click', () => this.removeActivity(i));
+      
+      item.appendChild(icon);
+      item.appendChild(content);
+      item.appendChild(actionBtn);
+      list.appendChild(item);
+    });
       </div>
     `).join('');
 

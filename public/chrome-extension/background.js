@@ -1,16 +1,17 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Background Service Worker v5.2.0
+// ShopOpti+ Chrome Extension - Background Service Worker v5.3.0
 // SECURITY HARDENED - Message validation, URL whitelist, rate limiting
+// Sender origin verification, strict CSP compliance
 // Bulk Import V5 + Multi-Store Integration
-// Fixed script injection using web_accessible_resources
 // ============================================
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.2.1';
+const VERSION = '5.3.0';
+const EXTENSION_ID = chrome.runtime.id;
 
 // ============================================
-// SECURITY MODULE
+// SECURITY MODULE - HARDENED
 // ============================================
 const Security = {
   ALLOWED_API_DOMAINS: ['supabase.co', 'shopopti.io'],
@@ -41,15 +42,42 @@ const Security = {
     'GET_PRICE_HISTORY', 'GET_MONITORING_STATUS', 'GET_PRODUCT_DATA',
     'FIND_SUPPLIERS', 'EXTRACT_COMPLETE', 'REQUEST_PERMISSIONS',
     'OPEN_IMPORT_OVERLAY', 'IMPORT_WITH_OPTIONS',
-    // Bulk Import V5 + Multi-Store + Sourcing messages
     'OPEN_BULK_IMPORT_UI', 'BULK_IMPORT_PRODUCTS', 'GET_USER_STORES',
     'IMPORT_TO_STORES', 'SYNC_PRODUCT_TO_STORES',
     'SEARCH_ALL_SUPPLIERS', 'COMPARE_SUPPLIERS',
-    // Script injection requests from content script
     'INJECT_OVERLAY_SCRIPT', 'INJECT_BULK_SCRIPT'
   ],
 
   rateLimits: new Map(),
+
+  /**
+   * Validate sender origin - CRITICAL for security
+   * Only accept messages from our extension or whitelisted domains
+   */
+  validateSender(sender) {
+    // Messages from extension popup/options pages
+    if (sender.id === EXTENSION_ID) {
+      return { valid: true };
+    }
+    
+    // Messages from content scripts on allowed domains
+    if (sender.tab && sender.url) {
+      try {
+        const url = new URL(sender.url);
+        const hostname = url.hostname.toLowerCase();
+        const isAllowed = this.ALLOWED_SCRAPE_DOMAINS.some(d => 
+          hostname === d || hostname.endsWith('.' + d)
+        );
+        if (isAllowed) {
+          return { valid: true };
+        }
+      } catch (e) {
+        return { valid: false, error: 'Invalid sender URL' };
+      }
+    }
+    
+    return { valid: false, error: 'Unauthorized message sender' };
+  },
 
   isUrlAllowedForApi(url) {
     if (!url || typeof url !== 'string') return false;
@@ -191,7 +219,15 @@ class ShopOptiBackground {
   }
 
   async handleMessage(message, sender, sendResponse) {
-    // Security validation
+    // CRITICAL: Validate sender origin first
+    const senderValidation = Security.validateSender(sender);
+    if (!senderValidation.valid) {
+      console.error('[ShopOpti+] Sender validation failed:', senderValidation.error, sender);
+      sendResponse({ success: false, error: senderValidation.error });
+      return;
+    }
+
+    // Security validation for message content
     const validation = Security.validateMessage(message, sender);
     if (!validation.valid) {
       console.error('[ShopOpti+] Message validation failed:', validation.error);
@@ -205,7 +241,7 @@ class ShopOptiBackground {
       return;
     }
 
-    console.log('[ShopOpti+] Message:', message.type);
+    console.log('[ShopOpti+] Message:', message.type, 'from:', sender.id || sender.url?.substring(0, 50));
     
     try {
       switch (message.type) {
