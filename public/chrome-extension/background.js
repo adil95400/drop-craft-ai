@@ -1,12 +1,13 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Background Service Worker v5.1.0
+// ShopOpti+ Chrome Extension - Background Service Worker v5.2.0
 // SECURITY HARDENED - Message validation, URL whitelist, rate limiting
 // Bulk Import V5 + Multi-Store Integration
+// Fixed script injection using web_accessible_resources
 // ============================================
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.1.0';
+const VERSION = '5.2.0';
 
 // ============================================
 // SECURITY MODULE
@@ -596,11 +597,31 @@ class ShopOptiBackground {
     }
 
     try {
-      // Inject the overlay script dynamically
+      // Inject the overlay script dynamically using web_accessible_resources
+      const extensionUrl = chrome.runtime.getURL('import-overlay-v2.js');
+      
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        files: ['import-overlay-v2.js']
+        func: (scriptUrl) => {
+          return new Promise((resolve, reject) => {
+            // Check if already loaded
+            if (window.__shopoptiImportOverlayV2Loaded) {
+              resolve(true);
+              return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = scriptUrl;
+            script.onload = () => resolve(true);
+            script.onerror = () => reject(new Error('Failed to load overlay script'));
+            document.head.appendChild(script);
+          });
+        },
+        args: [extensionUrl]
       });
+
+      // Wait a moment for script to initialize
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Notify content script that overlay is ready
       await chrome.tabs.sendMessage(tab.id, {
@@ -730,17 +751,31 @@ class ShopOptiBackground {
     }
 
     try {
-      // Inject bulk import V5 script
+      // Inject bulk import V5 script using web_accessible_resources
+      const bulkScriptUrl = chrome.runtime.getURL('bulk-import-v5.js');
+      
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        files: ['bulk-import-v5.js']
+        func: (scriptUrl) => {
+          return new Promise((resolve, reject) => {
+            // Check if already loaded
+            if (window.__shopopti_bulk_v5_loaded) {
+              resolve(true);
+              return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = scriptUrl;
+            script.onload = () => resolve(true);
+            script.onerror = () => reject(new Error('Failed to load bulk import script'));
+            document.head.appendChild(script);
+          });
+        },
+        args: [bulkScriptUrl]
       });
 
-      // Also inject dependencies
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['lib/import-queue.js', 'lib/store-manager.js']
-      });
+      // Wait a moment for script to initialize
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       return { success: true, productCount: products?.length || 0 };
     } catch (error) {
