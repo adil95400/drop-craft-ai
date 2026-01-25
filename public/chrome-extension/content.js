@@ -10,10 +10,10 @@
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '5.2.0') return;
-  window.__shopOptiCSVersion = '5.2.0';
+  if (window.__shopOptiCSVersion === '5.2.1') return;
+  window.__shopOptiCSVersion = '5.2.1';
 
-  console.log('[ShopOpti+] Content script v5.2.0 initializing...');
+  console.log('[ShopOpti+] Content script v5.2.1 initializing...');
 
   // ============================================
   // SECURITY MODULE (inline for content script)
@@ -145,21 +145,29 @@
     });
   }
   
-  // Dynamic script injection helpers
+  // Dynamic script injection helpers - simplified for content script context
   async function injectOverlayScript() {
-    if (window.__shopoptiImportOverlayV2Loaded) return;
+    if (window.__shopoptiImportOverlayV2Loaded) return true;
     
     return new Promise((resolve, reject) => {
       try {
-        const scriptUrl = chrome.runtime.getURL('import-overlay-v2.js');
-        const script = document.createElement('script');
-        script.src = scriptUrl;
-        script.onload = () => {
-          console.log('[ShopOpti+] Import overlay V2 script loaded dynamically');
-          resolve();
-        };
-        script.onerror = () => reject(new Error('Failed to load import-overlay-v2.js'));
-        document.head.appendChild(script);
+        // Request background to inject the script
+        chrome.runtime.sendMessage({ type: 'INJECT_OVERLAY_SCRIPT' }, (response) => {
+          if (chrome.runtime.lastError) {
+            // Fallback: try direct injection via web_accessible_resources
+            const scriptUrl = chrome.runtime.getURL('import-overlay-v2.js');
+            const script = document.createElement('script');
+            script.src = scriptUrl;
+            script.onload = () => {
+              console.log('[ShopOpti+] Import overlay V2 loaded via fallback');
+              resolve(true);
+            };
+            script.onerror = () => reject(new Error('Failed to load import-overlay-v2.js'));
+            document.head.appendChild(script);
+          } else {
+            resolve(response?.success || false);
+          }
+        });
       } catch (e) {
         reject(e);
       }
@@ -167,19 +175,27 @@
   }
   
   async function injectBulkImportScript() {
-    if (window.__shopopti_bulk_v5_loaded) return;
+    if (window.__shopopti_bulk_v5_loaded) return true;
     
     return new Promise((resolve, reject) => {
       try {
-        const scriptUrl = chrome.runtime.getURL('bulk-import-v5.js');
-        const script = document.createElement('script');
-        script.src = scriptUrl;
-        script.onload = () => {
-          console.log('[ShopOpti+] Bulk import V5 script loaded dynamically');
-          resolve();
-        };
-        script.onerror = () => reject(new Error('Failed to load bulk-import-v5.js'));
-        document.head.appendChild(script);
+        // Request background to inject the script
+        chrome.runtime.sendMessage({ type: 'INJECT_BULK_SCRIPT' }, (response) => {
+          if (chrome.runtime.lastError) {
+            // Fallback: try direct injection via web_accessible_resources
+            const scriptUrl = chrome.runtime.getURL('bulk-import-v5.js');
+            const script = document.createElement('script');
+            script.src = scriptUrl;
+            script.onload = () => {
+              console.log('[ShopOpti+] Bulk import V5 loaded via fallback');
+              resolve(true);
+            };
+            script.onerror = () => reject(new Error('Failed to load bulk-import-v5.js'));
+            document.head.appendChild(script);
+          } else {
+            resolve(response?.success || false);
+          }
+        });
       } catch (e) {
         reject(e);
       }
@@ -221,7 +237,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '5.2.0',
+    VERSION: '5.2.1',
     BRAND: 'ShopOpti+',
     MAX_BULK_IMPORT: 100,
     PLATFORMS: [
