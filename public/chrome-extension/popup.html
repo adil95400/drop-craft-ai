@@ -4,9 +4,7 @@
   <meta charset="utf-8">
   <title>ShopOpti+ | Dropshipping Pro</title>
   <link rel="stylesheet" href="popup.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Fonts loaded via local CSS to avoid CSP issues -->
 </head>
 <body>
   <div class="popup-container">
@@ -263,7 +261,140 @@
       </div>
     </section>
 
-    <!-- Recent Imports Section -->
+    <!-- Bulk Import Platforms Section -->
+    <section class="platforms-section">
+      <h3 class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+        </svg>
+        Import en Masse - Plateformes
+      </h3>
+      <div class="platforms-grid">
+        <button class="platform-btn" data-platform="amazon" title="Amazon">
+          <span class="platform-icon">🛒</span>
+          <span class="platform-name">Amazon</span>
+          <span class="platform-badge">100+</span>
+        </button>
+        <button class="platform-btn" data-platform="aliexpress" title="AliExpress">
+          <span class="platform-icon">🏪</span>
+          <span class="platform-name">AliExpress</span>
+          <span class="platform-badge">100+</span>
+        </button>
+        <button class="platform-btn" data-platform="cdiscount" title="Cdiscount">
+          <span class="platform-icon">🔴</span>
+          <span class="platform-name">Cdiscount</span>
+          <span class="platform-badge">50+</span>
+        </button>
+        <button class="platform-btn" data-platform="ebay" title="eBay">
+          <span class="platform-icon">🏷️</span>
+          <span class="platform-name">eBay</span>
+          <span class="platform-badge">100+</span>
+        </button>
+        <button class="platform-btn" data-platform="temu" title="Temu">
+          <span class="platform-icon">🎯</span>
+          <span class="platform-name">Temu</span>
+          <span class="platform-badge">NEW</span>
+        </button>
+        <button class="platform-btn" data-platform="shein" title="Shein">
+          <span class="platform-icon">👗</span>
+          <span class="platform-name">Shein</span>
+          <span class="platform-badge">NEW</span>
+        </button>
+        <button class="platform-btn" data-platform="fnac" title="Fnac">
+          <span class="platform-icon">📚</span>
+          <span class="platform-name">Fnac</span>
+          <span class="platform-badge">50+</span>
+        </button>
+        <button class="platform-btn" data-platform="shopify" title="Shopify">
+          <span class="platform-icon">🛍️</span>
+          <span class="platform-name">Shopify</span>
+          <span class="platform-badge">∞</span>
+        </button>
+      </div>
+      <button id="showAllPlatformsBtn" class="show-all-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="19" cy="12" r="1"/>
+          <circle cx="5" cy="12" r="1"/>
+        </svg>
+        Voir les 45+ plateformes
+      </button>
+    </section>
+
+    <!-- All Platforms Modal -->
+    <div id="allPlatformsModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>🌐 Toutes les Plateformes Supportées</h3>
+          <button class="modal-close" id="closePlatformsModal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="platforms-category">
+            <h4>🛒 Marketplaces</h4>
+            <div class="platforms-list">
+              <button class="platform-item" data-platform="amazon">Amazon</button>
+              <button class="platform-item" data-platform="ebay">eBay</button>
+              <button class="platform-item" data-platform="cdiscount">Cdiscount</button>
+              <button class="platform-item" data-platform="fnac">Fnac</button>
+              <button class="platform-item" data-platform="rakuten">Rakuten</button>
+              <button class="platform-item" data-platform="walmart">Walmart</button>
+              <button class="platform-item" data-platform="target">Target</button>
+              <button class="platform-item" data-platform="costco">Costco</button>
+            </div>
+          </div>
+          <div class="platforms-category">
+            <h4>🏪 Sourcing Chine</h4>
+            <div class="platforms-list">
+              <button class="platform-item" data-platform="aliexpress">AliExpress</button>
+              <button class="platform-item" data-platform="alibaba">Alibaba</button>
+              <button class="platform-item" data-platform="1688">1688</button>
+              <button class="platform-item" data-platform="temu">Temu</button>
+              <button class="platform-item" data-platform="dhgate">DHgate</button>
+              <button class="platform-item" data-platform="banggood">Banggood</button>
+              <button class="platform-item" data-platform="cjdropshipping">CJ Dropshipping</button>
+              <button class="platform-item" data-platform="wish">Wish</button>
+            </div>
+          </div>
+          <div class="platforms-category">
+            <h4>👗 Mode & Lifestyle</h4>
+            <div class="platforms-list">
+              <button class="platform-item" data-platform="shein">Shein</button>
+              <button class="platform-item" data-platform="zalando">Zalando</button>
+              <button class="platform-item" data-platform="asos">ASOS</button>
+              <button class="platform-item" data-platform="etsy">Etsy</button>
+            </div>
+          </div>
+          <div class="platforms-category">
+            <h4>🏠 Maison & Bricolage</h4>
+            <div class="platforms-list">
+              <button class="platform-item" data-platform="manomano">ManoMano</button>
+              <button class="platform-item" data-platform="leroymerlin">Leroy Merlin</button>
+              <button class="platform-item" data-platform="homedepot">Home Depot</button>
+              <button class="platform-item" data-platform="wayfair">Wayfair</button>
+              <button class="platform-item" data-platform="darty">Darty</button>
+              <button class="platform-item" data-platform="boulanger">Boulanger</button>
+            </div>
+          </div>
+          <div class="platforms-category">
+            <h4>💻 Tech & Électronique</h4>
+            <div class="platforms-list">
+              <button class="platform-item" data-platform="bestbuy">Best Buy</button>
+              <button class="platform-item" data-platform="newegg">Newegg</button>
+              <button class="platform-item" data-platform="overstock">Overstock</button>
+            </div>
+          </div>
+          <div class="platforms-category">
+            <h4>🛍️ E-commerce Stores</h4>
+            <div class="platforms-list">
+              <button class="platform-item highlight" data-platform="shopify">Shopify (tous les stores)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <section class="recent-imports-section" id="recentImportsSection">
       <h3 class="section-title">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

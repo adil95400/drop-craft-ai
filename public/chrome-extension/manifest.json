@@ -68,7 +68,7 @@
   ],
   
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; connect-src 'self' https://*.supabase.co https://shopopti.io https://*.shopopti.io; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'"
+    "extension_pages": "default-src 'self'; connect-src 'self' https://*.supabase.co https://shopopti.io https://*.shopopti.io; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
   },
   
   "background": {

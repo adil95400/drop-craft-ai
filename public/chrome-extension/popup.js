@@ -304,6 +304,26 @@ class ShopOptiPopup {
       btn.addEventListener('click', () => this.applySuggestedMargin(parseInt(btn.dataset.margin)));
     });
 
+    // Platform bulk import buttons
+    document.querySelectorAll('.platform-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.handlePlatformBulkImport(btn.dataset.platform));
+    });
+
+    // Platform items in modal
+    document.querySelectorAll('.platform-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.handlePlatformBulkImport(btn.dataset.platform);
+        this.hideAllPlatformsModal();
+      });
+    });
+
+    // Show all platforms modal
+    document.getElementById('showAllPlatformsBtn')?.addEventListener('click', () => this.showAllPlatformsModal());
+    document.getElementById('closePlatformsModal')?.addEventListener('click', () => this.hideAllPlatformsModal());
+    document.getElementById('allPlatformsModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'allPlatformsModal') this.hideAllPlatformsModal();
+    });
+
     // Load recent imports
     this.loadRecentImports();
   }
@@ -1092,7 +1112,133 @@ class ShopOptiPopup {
     }
   }
 
-  loadTemplate(template) {
+  // ============================================
+  // PLATFORM BULK IMPORT
+  // ============================================
+
+  showAllPlatformsModal() {
+    const modal = document.getElementById('allPlatformsModal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  hideAllPlatformsModal() {
+    const modal = document.getElementById('allPlatformsModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  async handlePlatformBulkImport(platform) {
+    const platformUrls = {
+      amazon: 'https://www.amazon.fr',
+      aliexpress: 'https://www.aliexpress.com',
+      cdiscount: 'https://www.cdiscount.com',
+      ebay: 'https://www.ebay.fr',
+      temu: 'https://www.temu.com',
+      shein: 'https://fr.shein.com',
+      fnac: 'https://www.fnac.com',
+      shopify: 'https://www.myshopify.com',
+      alibaba: 'https://www.alibaba.com',
+      '1688': 'https://www.1688.com',
+      dhgate: 'https://www.dhgate.com',
+      banggood: 'https://www.banggood.com',
+      cjdropshipping: 'https://www.cjdropshipping.com',
+      wish: 'https://www.wish.com',
+      zalando: 'https://www.zalando.fr',
+      asos: 'https://www.asos.com',
+      etsy: 'https://www.etsy.com',
+      manomano: 'https://www.manomano.fr',
+      leroymerlin: 'https://www.leroymerlin.fr',
+      homedepot: 'https://www.homedepot.com',
+      wayfair: 'https://www.wayfair.com',
+      darty: 'https://www.darty.com',
+      boulanger: 'https://www.boulanger.com',
+      walmart: 'https://www.walmart.com',
+      target: 'https://www.target.com',
+      costco: 'https://www.costco.com',
+      rakuten: 'https://www.rakuten.fr',
+      bestbuy: 'https://www.bestbuy.com',
+      newegg: 'https://www.newegg.com',
+      overstock: 'https://www.overstock.com'
+    };
+
+    const platformNames = {
+      amazon: 'Amazon',
+      aliexpress: 'AliExpress',
+      cdiscount: 'Cdiscount',
+      ebay: 'eBay',
+      temu: 'Temu',
+      shein: 'Shein',
+      fnac: 'Fnac',
+      shopify: 'Shopify Stores',
+      alibaba: 'Alibaba',
+      '1688': '1688',
+      dhgate: 'DHgate',
+      banggood: 'Banggood',
+      cjdropshipping: 'CJ Dropshipping',
+      wish: 'Wish',
+      zalando: 'Zalando',
+      asos: 'ASOS',
+      etsy: 'Etsy',
+      manomano: 'ManoMano',
+      leroymerlin: 'Leroy Merlin',
+      homedepot: 'Home Depot',
+      wayfair: 'Wayfair',
+      darty: 'Darty',
+      boulanger: 'Boulanger',
+      walmart: 'Walmart',
+      target: 'Target',
+      costco: 'Costco',
+      rakuten: 'Rakuten',
+      bestbuy: 'Best Buy',
+      newegg: 'Newegg',
+      overstock: 'Overstock'
+    };
+
+    // Check if user is on the platform
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const currentUrl = tab?.url || '';
+    
+    if (currentUrl.includes(platform) || (platform === 'shopify' && currentUrl.includes('myshopify'))) {
+      // User is on the platform - trigger bulk import
+      if (!this.isConnected) {
+        this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
+        return;
+      }
+
+      this.showToast(`Import en masse ${platformNames[platform]} - Sélectionnez les produits sur la page`, 'info');
+      
+      try {
+        const ok = await this.ensureContentScript(tab.id);
+        if (!ok) {
+          this.showToast('Impossible de charger le module d'import', 'error');
+          return;
+        }
+
+        // Send message to activate bulk selection mode
+        await chrome.tabs.sendMessage(tab.id, {
+          type: 'ACTIVATE_BULK_MODE',
+          platform
+        });
+
+        this.addActivity(`Mode import masse activé: ${platformNames[platform]}`, '📦');
+        
+        // Close popup to let user interact with page
+        window.close();
+      } catch (error) {
+        console.error('[ShopOpti+] Bulk mode activation error:', error);
+        this.showToast('Erreur lors de l\'activation du mode import', 'error');
+      }
+    } else {
+      // User is not on the platform - open platform in new tab
+      const url = platformUrls[platform];
+      if (url) {
+        this.showToast(`Ouverture de ${platformNames[platform]}... Naviguez vers les produits puis cliquez à nouveau sur Import`, 'info');
+        chrome.tabs.create({ url });
+      } else {
+        this.showToast(`Plateforme ${platform} non supportée`, 'warning');
+      }
+    }
+  }
+
     const templates = {
       'sizes-eu': {
         rules: [
