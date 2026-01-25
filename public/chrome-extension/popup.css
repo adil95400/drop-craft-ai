@@ -1,5 +1,5 @@
-/* ShopOpti+ Chrome Extension - Popup Styles v5.6.3 */
-/* 100% AutoDS Feature Parity - Professional UI - Button Fix */
+/* ShopOpti+ Chrome Extension - Popup Styles v5.6.0 */
+/* 100% AutoDS Feature Parity - Professional UI */
 
 :root {
   --primary: #8b5cf6;
@@ -851,7 +851,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 .modal.hidden {
-  display: none !important;
+  display: none;
 }
 
 .modal-content {
