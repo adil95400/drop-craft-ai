@@ -16,6 +16,7 @@ class ShopOptiPopup {
     // State
     this.isConnected = false;
     this.extensionToken = null;
+    this.user = null;
     this.currentPlatform = null;
     this.currentTab = null;
     this.stats = { products: 0, reviews: 0, monitored: 0, autoOrders: 0 };
@@ -23,6 +24,7 @@ class ShopOptiPopup {
     this.importCancelled = false;
     this.lastImportedProduct = null;
     this.connectedStores = [];
+    this.isLoggingIn = false;
     
     // Ads Spy state
     this.currentAdPlatform = 'tiktok';
@@ -123,13 +125,22 @@ class ShopOptiPopup {
     
     try {
       const result = await this.chrome.storage.local.get([
-        'extensionToken', 'stats', 'userPlan', 'connectedStores'
+        'extensionToken', 'stats', 'userPlan', 'connectedStores', 'user', 'tokenExpiry'
       ]);
       
       this.extensionToken = result.extensionToken || null;
       this.stats = result.stats || { products: 0, reviews: 0, monitored: 0 };
       this.userPlan = result.userPlan || 'free';
       this.connectedStores = result.connectedStores || [];
+      this.user = result.user || null;
+      
+      // Check if token is expired
+      if (result.tokenExpiry && new Date(result.tokenExpiry) < new Date()) {
+        console.log('[ShopOpti+] Token expired, clearing');
+        this.extensionToken = null;
+        this.user = null;
+        await this.chrome.storage.local.remove(['extensionToken', 'user', 'tokenExpiry']);
+      }
     } catch (error) {
       console.error('[ShopOpti+] Error loading data:', error);
     }
@@ -253,8 +264,24 @@ class ShopOptiPopup {
       if (this.isConnected) {
         this.disconnect();
       } else {
-        this.openAuth();
+        this.showLoginModal();
       }
+    });
+
+    // Login form
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.handleLogin();
+      });
+    }
+    
+    this.bindClick('loginWithAppBtn', () => this.loginWithApp());
+    
+    // Close login modal on backdrop click
+    document.getElementById('loginModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'loginModal') this.hideModal('loginModal');
     });
 
     // Main import actions
@@ -411,6 +438,9 @@ class ShopOptiPopup {
     const statusBar = document.getElementById('connectionStatus');
     const statusText = statusBar?.querySelector('.status-text');
     const connectBtn = document.getElementById('connectBtn');
+    const userInfoEl = document.getElementById('userInfo');
+    const userEmailEl = document.getElementById('userEmail');
+    const userAvatarEl = document.getElementById('userAvatar');
     
     if (statusBar) {
       statusBar.classList.toggle('connected', this.isConnected);
@@ -419,6 +449,24 @@ class ShopOptiPopup {
     
     if (statusText) {
       statusText.textContent = this.isConnected ? 'Connecté' : 'Non connecté';
+    }
+    
+    // Show/hide user info
+    if (userInfoEl) {
+      if (this.isConnected && this.user) {
+        userInfoEl.classList.remove('hidden');
+        if (userEmailEl) userEmailEl.textContent = this.user.email || '';
+        if (userAvatarEl) {
+          if (this.user.avatarUrl) {
+            userAvatarEl.src = this.user.avatarUrl;
+            userAvatarEl.style.display = 'block';
+          } else {
+            userAvatarEl.style.display = 'none';
+          }
+        }
+      } else {
+        userInfoEl.classList.add('hidden');
+      }
     }
     
     if (connectBtn) {
@@ -438,7 +486,8 @@ class ShopOptiPopup {
     if (planBadge) {
       const planText = planBadge.querySelector('span') || planBadge;
       if (planText) {
-        planText.textContent = this.userPlan === 'pro' ? 'Pro' : 'Free';
+        const plan = this.user?.plan || this.userPlan || 'free';
+        planText.textContent = plan === 'pro' || plan === 'premium' ? 'Pro' : 'Free';
       }
       planBadge.classList.toggle('pro', this.userPlan === 'pro');
     }
@@ -545,6 +594,142 @@ class ShopOptiPopup {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // ============================================
+  // LOGIN METHODS
+  // ============================================
+  showLoginModal() {
+    this.showModal('loginModal');
+    document.getElementById('loginEmail')?.focus();
+  }
+
+  async handleLogin() {
+    if (this.isLoggingIn) return;
+    
+    const emailInput = document.getElementById('loginEmail');
+    const passwordInput = document.getElementById('loginPassword');
+    const errorEl = document.getElementById('loginError');
+    const submitBtn = document.getElementById('loginSubmitBtn');
+    
+    const email = emailInput?.value?.trim();
+    const password = passwordInput?.value;
+    
+    if (!email || !password) {
+      this.showLoginError('Veuillez remplir tous les champs');
+      return;
+    }
+    
+    this.isLoggingIn = true;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="15"/>
+        </svg>
+        <span>Connexion...</span>
+      `;
+    }
+    
+    try {
+      // Call extension login endpoint
+      const response = await fetch(`${this.API_URL}/extension-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Identifiants invalides');
+      }
+      
+      // Save to storage
+      await this.chrome.storage.local.set({
+        extensionToken: data.token,
+        tokenExpiry: data.expiresAt,
+        user: data.user,
+        userPlan: data.user?.plan || 'free'
+      });
+      
+      // Update state
+      this.extensionToken = data.token;
+      this.user = data.user;
+      this.userPlan = data.user?.plan || 'free';
+      this.isConnected = true;
+      
+      // Hide modal and update UI
+      this.hideModal('loginModal');
+      this.updateUI();
+      this.showToast(`Bienvenue ${data.user?.firstName || data.user?.email}!`, 'success');
+      
+      // Clear form
+      if (emailInput) emailInput.value = '';
+      if (passwordInput) passwordInput.value = '';
+      if (errorEl) errorEl.classList.add('hidden');
+      
+    } catch (error) {
+      console.error('[ShopOpti+] Login error:', error);
+      this.showLoginError(error.message || 'Erreur de connexion');
+    } finally {
+      this.isLoggingIn = false;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          <span>Se connecter</span>
+        `;
+      }
+    }
+  }
+  
+  showLoginError(message) {
+    const errorEl = document.getElementById('loginError');
+    if (errorEl) {
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+  }
+  
+  async loginWithApp() {
+    // Open login page on shopopti.io with extension callback
+    this.chrome?.tabs.create({
+      url: `${this.APP_URL}/auth?redirect=extension&source=chrome`
+    });
+    this.hideModal('loginModal');
+    this.showToast('Connectez-vous sur shopopti.io', 'info');
+  }
+  
+  async disconnect() {
+    try {
+      // Revoke token on server
+      if (this.extensionToken) {
+        await fetch(`${this.API_URL}/extension-auth`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'revoke_token',
+            data: { token: this.extensionToken }
+          })
+        }).catch(() => {});
+      }
+    } catch (e) {}
+    
+    // Clear local data
+    await this.chrome.storage.local.remove(['extensionToken', 'user', 'tokenExpiry', 'userPlan']);
+    
+    this.extensionToken = null;
+    this.user = null;
+    this.isConnected = false;
+    this.userPlan = 'free';
+    
+    this.updateUI();
+    this.showToast('Déconnecté', 'info');
   }
 
   // ============================================

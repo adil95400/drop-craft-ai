@@ -96,7 +96,7 @@
     "128": "icons/icon128.png"
   },
   
-  "web_accessible_resources": [
+"web_accessible_resources": [
     {
       "resources": [
         "content.css",
@@ -110,11 +110,12 @@
         "extractors/ebay-extractor.js",
         "extractors/core-extractor.js",
         "supplier-search.js",
-        "extractors/core-extractor.js",
         "lib/config.js",
         "lib/security.js",
         "lib/import-queue.js",
-        "lib/store-manager.js"
+        "lib/store-manager.js",
+        "lib/auth.js",
+        "lib/api-client.js"
       ],
       "matches": ["<all_urls>"]
     }
