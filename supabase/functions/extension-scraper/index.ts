@@ -648,7 +648,7 @@ serve(async (req) => {
         status: 'draft',
         sync_status: 'synced',
         stock_quantity: 100,
-        videos: productData.videos || [],
+        video_urls: productData.videos || [],
         metadata: {
           imported_via: 'chrome_extension',
           imported_at: new Date().toISOString(),
