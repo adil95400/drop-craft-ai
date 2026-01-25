@@ -2,26 +2,111 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
 
+const EXTENSION_VERSION = '5.6.4';
+
 const EXTENSION_FILES = [
+  // Core files
   'manifest.json',
+  'background.js',
   'popup.html',
   'popup.js',
   'popup.css',
-  'background.js',
-  'content.js',
-  'content.css',
-  'injected.js',
   'options.html',
   'options.js',
+  'content-script.js',
+  'content.css',
+  'content.js',
   'auth.html',
   'auth.js',
+  
+  // Import system
+  'import-overlay-v2.js',
+  'bulk-import-v5.js',
+  'bulk-selector.js',
+  'grabber.js',
+  'injected.js',
+  
+  // Automation & fulfillment
+  'auto-order.js',
+  'automation.js',
+  'fulfillment.js',
+  
+  // Multi-store
+  'multi-store.js',
+  'multi-store-manager.js',
+  
+  // Price & monitoring
+  'price-monitor.js',
+  'price-optimizer.js',
+  
+  // Suppliers
+  'supplier-search.js',
+  'supplier-compare.js',
+  
+  // Reviews & content
+  'reviews-extractor.js',
+  'review-translator.js',
+  'variants-extractor.js',
+  'video-extractor.js',
+  
+  // Image & SEO
+  'image-optimizer.js',
+  'watermark-remover.js',
+  'seo-meta-generator.js',
+  'ai-content-generator.js',
+  
+  // Ads & trends
+  'ads-spy.js',
+  'trend-analyzer.js',
+  'winning-product-detector.js',
+  'advanced-scraper.js',
+  
+  // UI components
+  'debug-panel.js',
+  'sidebar.js',
+  'sidebar.css',
+  'faq.js',
+  'support.js',
+  'index.html',
+  
+  // Documentation
+  'README.md',
+  'PRIVACY_POLICY.md',
+  
+  // Library files
+  'lib/api-client.js',
+  'lib/auth.js',
+  'lib/auto-order-helper.js',
+  'lib/config.js',
+  'lib/content-rewriter.js',
+  'lib/csv-exporter.js',
+  'lib/history-manager.js',
+  'lib/import-queue.js',
+  'lib/libretranslate-client.js',
+  'lib/pagination-handler.js',
+  'lib/price-rules.js',
+  'lib/retry-manager.js',
+  'lib/security.js',
+  'lib/shipping-extractor.js',
+  'lib/stock-extractor.js',
+  'lib/store-manager.js',
+  'lib/tag-generator.js',
+  'lib/tracking-sync.js',
+  
+  // Extractors
+  'extractors/advanced-extractor.js',
+  'extractors/aliexpress-extractor.js',
+  'extractors/amazon-extractor.js',
+  'extractors/core-extractor.js',
+  'extractors/ebay-extractor.js',
+  'extractors/shein-extractor.js',
+  'extractors/temu-extractor.js',
+  
+  // Icons
   'icons/icon16.png',
   'icons/icon32.png',
   'icons/icon48.png',
   'icons/icon128.png',
-  'README.md',
-  'PRIVACY_POLICY.md',
-  'STORE_LISTING.md'
 ];
 
 export async function generateExtensionZip(): Promise<void> {
@@ -35,6 +120,9 @@ export async function generateExtensionZip(): Promise<void> {
   ];
   
   let filesLoaded = 0;
+  let filesFailed = 0;
+  
+  toast.info(`Préparation de ${EXTENSION_FILES.length} fichiers...`);
   
   // Fetch all extension files
   for (const filePath of EXTENSION_FILES) {
@@ -53,7 +141,7 @@ export async function generateExtensionZip(): Promise<void> {
         }
         
         // Determine if binary or text
-        const isBinary = filePath.endsWith('.png') || filePath.endsWith('.ico');
+        const isBinary = filePath.endsWith('.png') || filePath.endsWith('.ico') || filePath.endsWith('.jpg');
         
         if (isBinary) {
           const blob = await response.blob();
@@ -73,23 +161,24 @@ export async function generateExtensionZip(): Promise<void> {
     
     if (!fileLoaded) {
       console.warn(`Could not load file: ${filePath}`);
+      filesFailed++;
     }
   }
   
-  // Check if we got any files
-  if (filesLoaded === 0) {
+  // Check if we got enough files
+  if (filesLoaded < 10) {
     toast.error('Erreur: Impossible de charger les fichiers de l\'extension');
-    throw new Error('No extension files could be loaded');
+    throw new Error('Not enough extension files could be loaded');
   }
   
-  console.log(`Loaded ${filesLoaded}/${EXTENSION_FILES.length} files`);
+  console.log(`Loaded ${filesLoaded}/${EXTENSION_FILES.length} files (${filesFailed} failed)`);
 
   // Add installation README
-  const readmeContent = `# ShopOpti Chrome Extension v4.0.0
+  const readmeContent = `# ShopOpti+ Chrome Extension v${EXTENSION_VERSION}
 
 ## Installation
 
-1. Téléchargez et décompressez ce fichier ZIP
+1. Décompressez ce fichier ZIP dans un dossier permanent
 2. Ouvrez Chrome et allez à chrome://extensions
 3. Activez le "Mode développeur" en haut à droite
 4. Cliquez sur "Charger l'extension non empaquetée"
@@ -97,23 +186,29 @@ export async function generateExtensionZip(): Promise<void> {
 
 ## Fonctionnalités
 
-- Import 1-clic depuis AliExpress, Amazon, eBay, Temu
-- Détection automatique des prix et informations produit
-- Synchronisation automatique avec ShopOpti
-- Import d'avis depuis Trustpilot, Google, Amazon
-- Surveillance des prix et alertes
+✅ Import 1-clic depuis 45+ plateformes (Amazon, AliExpress, Temu, Shein, eBay...)
+✅ Import en masse avec sélection par checkbox
+✅ Extraction haute fidélité (images HD, variantes, vidéos)
+✅ Import d'avis avec traduction automatique
+✅ Synchronisation multi-boutiques (Shopify, WooCommerce, PrestaShop)
+✅ Surveillance des prix et alertes stock
+✅ Auto-Order / Fulfillment automatique
+✅ Ads Spy TikTok/Facebook/Instagram
+✅ Traduction intégrée via LibreTranslate
 
 ## Configuration
 
-1. Cliquez sur l'icône de l'extension
-2. Entrez votre clé API disponible sur shopopti.io/extensions/chrome
-3. Configurez vos préférences dans les options
+1. Cliquez sur l'icône ShopOpti+ dans la barre d'outils Chrome
+2. Connectez-vous avec vos identifiants ShopOpti
+3. Configurez vos boutiques et préférences dans les options
 
 ## Support
 
-Pour toute question, contactez support@shopopti.io
+📧 support@shopopti.io
+🌐 https://shopopti.io/support
+📖 https://shopopti.io/extensions/documentation
 `;
-  zip.file('README.txt', readmeContent);
+  zip.file('INSTALL.txt', readmeContent);
 
   // Generate ZIP and trigger download
   const content = await zip.generateAsync({ 
@@ -123,7 +218,7 @@ Pour toute question, contactez support@shopopti.io
   });
   
   // Use saveAs to download
-  saveAs(content, 'shopopti-chrome-extension-v4.zip');
+  saveAs(content, `shopopti-extension-v${EXTENSION_VERSION}.zip`);
   
-  toast.success(`Extension téléchargée (${filesLoaded} fichiers)`);
+  toast.success(`Extension v${EXTENSION_VERSION} téléchargée (${filesLoaded} fichiers)`);
 }
