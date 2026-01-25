@@ -571,16 +571,30 @@
     }
   }
   
-  // Initialize
-  function init() {
-    console.log(`[ShopOpti+] Content Injector v${VERSION} initializing...`);
-    
-    const platform = detectPlatform();
-    if (!platform) {
-      console.log('[ShopOpti+] Unsupported platform, skipping injection');
-      return;
-    }
-    
+  // ============================================
+  // AUTHENTICATION CHECK
+  // ============================================
+  
+  async function checkAuthStatus() {
+    return new Promise((resolve) => {
+      try {
+        chrome.runtime.sendMessage({ type: 'CHECK_AUTH_STATUS' }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.log('[ShopOpti+] Auth check error:', chrome.runtime.lastError.message);
+            resolve(false);
+            return;
+          }
+          resolve(response?.authenticated === true);
+        });
+      } catch (error) {
+        console.log('[ShopOpti+] Auth check failed:', error);
+        resolve(false);
+      }
+    });
+  }
+  
+  // Perform injection after auth verification
+  function performInjection(platform) {
     console.log(`[ShopOpti+] Detected platform: ${platform}`);
     
     injectStyles();
@@ -624,6 +638,34 @@
     });
     
     console.log('[ShopOpti+] Content Injector ready');
+  }
+  
+  // Initialize with auth check
+  async function init() {
+    console.log(`[ShopOpti+] Content Injector v${VERSION} initializing...`);
+    
+    const platform = detectPlatform();
+    if (!platform) {
+      console.log('[ShopOpti+] Unsupported platform, skipping injection');
+      return;
+    }
+    
+    // Check authentication before injecting buttons
+    console.log('[ShopOpti+] Checking authentication status...');
+    const isAuthenticated = await checkAuthStatus();
+    
+    if (!isAuthenticated) {
+      console.log('[ShopOpti+] Not authenticated - buttons will not be injected');
+      console.log('[ShopOpti+] Please log in via the extension popup to enable import buttons');
+      
+      // Show subtle notification to user
+      injectStyles();
+      showNotification('ShopOpti+: Veuillez vous connecter pour activer l\'import', 'info');
+      return;
+    }
+    
+    console.log('[ShopOpti+] Authenticated - proceeding with injection');
+    performInjection(platform);
   }
   
   // Wait for DOM
