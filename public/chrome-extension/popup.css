@@ -87,6 +87,22 @@ body::-webkit-scrollbar-thumb:hover {
   background: var(--dc-border-light);
 }
 
+/* ============================================
+   PREVIEW (non-extension) SAFETY
+   ============================================ */
+
+.preview-disabled {
+  opacity: 0.75;
+}
+
+.preview-disabled:hover {
+  transform: none !important;
+}
+
+.preview-disabled[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
 .popup-container {
   position: relative;
   padding: 0;
