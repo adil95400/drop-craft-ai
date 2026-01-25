@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.1.0",
-  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, détection winning products, 25+ plateformes, import en masse multi-boutiques",
+  "version": "5.5.0",
+  "description": "Extension professionnelle dropshipping - Import 1-clic avec variantes et avis, IA SEO avancée, Ads Spy TikTok/Facebook, détection winning products, 25+ plateformes, import en masse multi-boutiques",
   
   "permissions": [
     "activeTab",
