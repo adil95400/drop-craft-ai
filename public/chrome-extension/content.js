@@ -1,18 +1,19 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v5.6.0
+// ShopOpti+ Chrome Extension - Content Script v5.6.1
 // SECURITY HARDENED - XSS Prevention, Safe DOM
 // AutoDS-Style Button Injection for 45+ Platforms
 // Bulk Import V5 + Multi-Store + Ads Spy Integration
+// BACKEND CONNECTED - Sends extracted data via auth token
 // ============================================
 
 (function () {
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '5.6.0') return;
-  window.__shopOptiCSVersion = '5.6.0';
+  if (window.__shopOptiCSVersion === '5.6.1') return;
+  window.__shopOptiCSVersion = '5.6.1';
 
-  console.log('[ShopOpti+] Content script v5.6.0 initializing...');
+  console.log('[ShopOpti+] Content script v5.6.1 initializing (backend-connected)...');
 
   // ============================================
   // SECURITY MODULE (inline for content script)
@@ -133,7 +134,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '5.6.0',
+    VERSION: '5.6.1',
     BRAND: 'ShopOpti+',
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     APP_URL: 'https://shopopti.io',
@@ -147,6 +148,70 @@
       '1688', 'taobao', 'lightinthebox', 'made-in-china'
     ]
   };
+
+  // ============================================
+  // BACKEND API CALLS (Direct from content script)
+  // ============================================
+  async function sendToBackend(action, data) {
+    // Get token from background script (which has access to chrome.storage)
+    const authData = await safeSendMessage({ type: 'GET_AUTH_TOKEN' });
+    
+    if (!authData?.token) {
+      throw new Error('Non connecté. Ouvrez l\'extension et connectez-vous.');
+    }
+
+    const response = await fetch(`${CONFIG.API_URL}/extension-scraper`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-extension-token': authData.token
+      },
+      body: JSON.stringify({
+        action,
+        ...data
+      })
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || `Erreur serveur: ${response.status}`);
+    }
+    
+    return result;
+  }
+
+  async function importProductToBackend(productData, options = {}) {
+    console.log('[ShopOpti+] Sending product to backend:', productData.title);
+    
+    return sendToBackend('scrape_and_import', {
+      url: productData.source_url || window.location.href,
+      extractedData: productData,
+      options: {
+        includeReviews: options.includeReviews || false,
+        includeVideos: options.includeVideos !== false,
+        includeVariants: options.includeVariants !== false,
+        targetStores: options.targetStores || [],
+        useFirecrawl: true // Force server-side Firecrawl for HD extraction
+      }
+    });
+  }
+
+  async function bulkImportToBackend(products, options = {}) {
+    console.log('[ShopOpti+] Bulk importing', products.length, 'products to backend');
+    
+    return sendToBackend('bulk_import', {
+      products: products.map(p => ({
+        url: p.url || p.source_url,
+        extractedData: p
+      })),
+      options: {
+        skipDuplicates: options.skipDuplicates !== false,
+        enrichWithAI: options.enrichWithAI || false,
+        targetStores: options.targetStores || []
+      }
+    });
+  }
   
   // Bulk selection state
   const BulkSelectionState = {
@@ -408,7 +473,7 @@
       importBtn.style.boxShadow = '0 4px 20px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(255,255,255,0.1) inset';
     });
 
-    // Click handler
+    // Click handler - NOW SENDS DIRECTLY TO BACKEND
     importBtn.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -422,35 +487,59 @@
       `;
       
       try {
+        // Step 1: Extract data locally (quick)
         const productData = await extractProductData();
+        console.log('[ShopOpti+] Local extraction complete:', productData.title);
         
-        if (window.AdvancedImportOverlay) {
-          const overlay = new window.AdvancedImportOverlay();
-          overlay.open(productData);
-        } else {
-          const response = await safeSendMessage({
-            type: 'OPEN_IMPORT_OVERLAY',
-            url: window.location.href,
-            productData
-          });
+        // Step 2: Update UI - sending to backend
+        importBtn.innerHTML = `
+          <svg class="shopopti-spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10" stroke-dasharray="62.83" stroke-dashoffset="15"/>
+          </svg>
+          <span>Import vers backend...</span>
+        `;
+        
+        // Step 3: Send to backend for Firecrawl HD extraction + database storage
+        const result = await importProductToBackend(productData, {
+          includeReviews: true,
+          includeVideos: true,
+          includeVariants: true
+        });
+        
+        if (result.success) {
+          // Success!
+          importBtn.innerHTML = `
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Importé avec succès!</span>
+          `;
+          importBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
           
-          if (response?.success) {
-            await waitForOverlay();
-            const overlay = new window.AdvancedImportOverlay();
-            overlay.open(productData);
-          } else {
-            throw new Error(response?.error || 'Failed to open import');
-          }
+          showToast(`✓ ${productData.title?.substring(0, 30)}... importé!`, 'success');
+          
+          // Notify background to update badge
+          safeSendMessage({ type: 'PRODUCT_IMPORTED', productId: result.productId || result.product?.id });
+          
+          setTimeout(() => {
+            importBtn.innerHTML = `
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span>Import to ShopOpti+</span>
+            `;
+            importBtn.style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)';
+          }, 3000);
+        } else {
+          throw new Error(result.error || 'Import échoué');
         }
         
-        importBtn.innerHTML = `
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-          <span>Import to ShopOpti+</span>
-        `;
       } catch (error) {
         console.error('[ShopOpti+] Import error:', error);
+        
+        const errorMessage = error.message || 'Erreur inconnue';
+        showToast(errorMessage, 'error');
+        
         importBtn.innerHTML = `
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
@@ -467,7 +556,7 @@
             <span>Import to ShopOpti+</span>
           `;
           importBtn.style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)';
-        }, 2500);
+        }, 3000);
       } finally {
         importBtn.disabled = false;
       }
@@ -483,24 +572,30 @@
       }
     });
 
-    // Quick Import (1-click, no overlay)
+    // Quick Import (1-click, no overlay) - DIRECT BACKEND CALL
     const quickImportBtn = createQuickActionButton('⚡', 'Import rapide', 'Importer directement', async () => {
       quickImportBtn.disabled = true;
       quickImportBtn.querySelector('span').textContent = '...';
       
       try {
-        const response = await safeSendMessage({
-          type: 'IMPORT_FROM_URL',
-          url: window.location.href
+        // Extract + send to backend in one flow
+        const productData = await extractProductData();
+        const result = await importProductToBackend(productData, {
+          includeReviews: false, // Quick import = no reviews
+          includeVideos: true,
+          includeVariants: true
         });
         
-        if (response?.success) {
+        if (result.success) {
           quickImportBtn.querySelector('span').textContent = '✓';
           quickImportBtn.style.background = 'rgba(16, 185, 129, 0.15)';
           quickImportBtn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
           showToast('Produit importé avec succès!', 'success');
+          
+          // Notify background
+          safeSendMessage({ type: 'PRODUCT_IMPORTED', productId: result.productId || result.product?.id });
         } else {
-          throw new Error(response?.error);
+          throw new Error(result.error || 'Import échoué');
         }
       } catch (error) {
         showToast(error.message || 'Erreur d\'import', 'error');
@@ -993,31 +1088,54 @@
       }
     }, '🚀 Import en masse');
     
+    // BULK IMPORT - DIRECT BACKEND CALL
     importBtn.addEventListener('click', async () => {
       const count = BulkSelectionState.count();
       if (count === 0) return;
       
       importBtn.disabled = true;
-      importBtn.textContent = '⏳ Préparation...';
+      importBtn.textContent = '⏳ Import en cours...';
       
       try {
-        const response = await safeSendMessage({
-          type: 'OPEN_BULK_IMPORT_UI',
-          products: BulkSelectionState.getAll()
+        const products = BulkSelectionState.getAll();
+        console.log('[ShopOpti+] Bulk importing', products.length, 'products');
+        
+        // Send directly to backend
+        const result = await bulkImportToBackend(products, {
+          skipDuplicates: true,
+          enrichWithAI: false
         });
         
-        if (response?.success) {
-          await waitForBulkImport();
-          const bulkUI = new window.ShopOptiBulkImportV5();
-          bulkUI.open(BulkSelectionState.getAll());
+        if (result.success) {
+          const imported = result.imported || products.length;
+          showToast(`✓ ${imported} produits importés avec succès!`, 'success');
+          
+          // Clear selection after successful import
+          BulkSelectionState.clear();
+          document.querySelectorAll('.shopopti-select-circle').forEach(checkbox => {
+            checkbox.textContent = '';
+            checkbox.style.background = 'rgba(99, 102, 241, 0.9)';
+          });
+          
+          // Notify background
+          safeSendMessage({ type: 'PRODUCT_IMPORTED', productId: 'bulk_import' });
+          
+          importBtn.textContent = '✓ Importé!';
+          importBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
         } else {
-          throw new Error(response?.error || 'Failed to open bulk import');
+          throw new Error(result.error || 'Import en masse échoué');
         }
       } catch (error) {
-        showToast(error.message || 'Erreur', 'error');
+        console.error('[ShopOpti+] Bulk import error:', error);
+        showToast(error.message || 'Erreur d\'import en masse', 'error');
+        importBtn.textContent = '✗ Erreur';
+        importBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
       } finally {
-        importBtn.disabled = false;
-        importBtn.textContent = '🚀 Import en masse';
+        setTimeout(() => {
+          importBtn.disabled = false;
+          importBtn.textContent = '🚀 Import en masse';
+          importBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        }, 3000);
       }
     });
     

@@ -836,7 +836,93 @@ serve(async (req) => {
     console.log(`[${requestId}] ✅ Authenticated user: ${authData.user_id}`)
     
     const body = await req.json()
-    const { action, url, productData: clientProductData } = body
+    const { action, url, extractedData, options = {}, products } = body
+    
+    // Handle bulk import
+    if (action === 'bulk_import' && Array.isArray(products)) {
+      console.log(`[${requestId}] 📦 Bulk import: ${products.length} products`)
+      
+      const results = []
+      let successCount = 0
+      let errorCount = 0
+      
+      for (const product of products.slice(0, 100)) { // Max 100 products
+        try {
+          const productUrl = product.url || product.extractedData?.source_url
+          if (!productUrl) {
+            results.push({ success: false, error: 'URL manquante' })
+            errorCount++
+            continue
+          }
+          
+          const productPlatform = detectPlatform(productUrl)
+          let productData = product.extractedData
+          
+          // If no extracted data or incomplete, scrape
+          if (!productData || !productData.title || !productData.images?.length) {
+            productData = await scrapeWithFirecrawl(productUrl, requestId, productPlatform)
+            if (!productData?.title) {
+              productData = await scrapeWithFetch(productUrl, requestId, productPlatform)
+            }
+          }
+          
+          if (!productData?.title) {
+            results.push({ success: false, error: 'Extraction échouée', url: productUrl })
+            errorCount++
+            continue
+          }
+          
+          // Insert product
+          const { data: inserted, error: insertErr } = await supabase
+            .from('imported_products')
+            .insert({
+              user_id: authData.user_id,
+              name: productData.title,
+              description: productData.description || '',
+              price: parsePrice(productData.price),
+              cost_price: parsePrice(productData.price) * 0.7,
+              currency: productData.currency || 'EUR',
+              sku: productData.sku || `IMP-${Date.now()}-${successCount}`,
+              image_urls: productData.images || [],
+              source_url: productUrl,
+              source_platform: productPlatform,
+              status: 'draft',
+              sync_status: 'synced',
+              stock_quantity: 100,
+              metadata: {
+                imported_via: 'chrome_extension_bulk',
+                imported_at: new Date().toISOString()
+              }
+            })
+            .select('id')
+            .single()
+          
+          if (insertErr) {
+            results.push({ success: false, error: insertErr.message, url: productUrl })
+            errorCount++
+          } else {
+            results.push({ success: true, productId: inserted.id, title: productData.title })
+            successCount++
+          }
+          
+        } catch (e) {
+          results.push({ success: false, error: (e as Error).message })
+          errorCount++
+        }
+      }
+      
+      console.log(`[${requestId}] ✅ Bulk import complete: ${successCount} success, ${errorCount} errors`)
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          imported: successCount, 
+          failed: errorCount,
+          results 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
     
     if (action !== 'scrape_and_import' || !url) {
       return new Response(
@@ -849,19 +935,45 @@ serve(async (req) => {
     
     const platform = detectPlatform(url)
     
-    // Use client-provided data if available and complete, otherwise scrape
-    let productData = clientProductData
+    // Use client-provided extractedData if available and complete, otherwise scrape with Firecrawl
+    let productData = extractedData
     
-    if (!productData || !productData.title || productData.images?.length === 0) {
-      // Try Firecrawl first, then fallback to direct fetch
-      productData = await scrapeWithFirecrawl(url, requestId, platform)
+    // Check if we should use Firecrawl for high-fidelity extraction
+    const shouldUseFirecrawl = options.useFirecrawl !== false || 
+                                !productData || 
+                                !productData.title || 
+                                (productData.images?.length || 0) < 3
+    
+    if (shouldUseFirecrawl) {
+      console.log(`[${requestId}] 🔥 Using Firecrawl for high-fidelity extraction`)
+      const firecrawlData = await scrapeWithFirecrawl(url, requestId, platform)
       
-      if (!productData || !productData.title) {
-        productData = await scrapeWithFetch(url, requestId, platform)
+      if (firecrawlData && firecrawlData.title) {
+        // Merge: prefer Firecrawl data but keep client data as fallback
+        productData = {
+          ...productData,
+          ...firecrawlData,
+          // Merge images (Firecrawl first, then client)
+          images: [
+            ...(firecrawlData.images || []),
+            ...(productData?.images || []).filter((img: string) => 
+              !(firecrawlData.images || []).includes(img)
+            )
+          ].slice(0, 50)
+        }
       }
-    } else {
-      console.log(`[${requestId}] 📦 Using client-provided product data`)
-      // Normalize client images
+    }
+    
+    // Fallback to direct fetch if still no data
+    if (!productData || !productData.title) {
+      console.log(`[${requestId}] 📄 Fallback to direct fetch`)
+      productData = await scrapeWithFetch(url, requestId, platform)
+    }
+    
+    // Final client data fallback
+    if (!productData?.title && extractedData?.title) {
+      console.log(`[${requestId}] 📦 Using client-provided data as last resort`)
+      productData = extractedData
       if (productData.images) {
         productData.images = productData.images.map((img: string) => normalizeToHighRes(img, platform))
       }

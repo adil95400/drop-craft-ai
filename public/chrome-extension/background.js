@@ -1,12 +1,13 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Background Service Worker v5.6.0
+// ShopOpti+ Chrome Extension - Background Service Worker v5.6.1
 // 100% AutoDS Feature Parity - Complete Production Ready
 // Ads Spy, Auto-Order, Multi-Store, Real-Time Sync
+// BACKEND CONNECTED - Token management for content scripts
 // ============================================
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.6.0';
+const VERSION = '5.6.1';
 
 // ============================================
 // SECURITY MODULE
@@ -46,7 +47,9 @@ const Security = {
     'SEARCH_ALL_SUPPLIERS', 'COMPARE_SUPPLIERS',
     // Auto-Order + Ads Spy (AutoDS Parity)
     'PROCESS_AUTO_ORDER', 'GET_PENDING_ORDERS', 'TOGGLE_AUTO_ORDER',
-    'SEARCH_ADS', 'GET_VIRAL_PRODUCTS', 'SAVE_AD_TO_COLLECTION'
+    'SEARCH_ADS', 'GET_VIRAL_PRODUCTS', 'SAVE_AD_TO_COLLECTION',
+    // Auth + Backend Connection (NEW)
+    'GET_AUTH_TOKEN', 'PRODUCT_IMPORTED', 'CHECK_AUTH_STATUS'
   ],
 
   rateLimits: new Map(),
@@ -233,6 +236,25 @@ class ShopOptiBackground {
           sendResponse(stats);
           break;
 
+        // ============================================
+        // AUTH TOKEN HANDLERS (NEW - for content script)
+        // ============================================
+        
+        case 'GET_AUTH_TOKEN':
+          const authResult = await this.getAuthToken();
+          sendResponse(authResult);
+          break;
+
+        case 'CHECK_AUTH_STATUS':
+          const authStatus = await this.checkAuthStatus();
+          sendResponse(authStatus);
+          break;
+
+        case 'PRODUCT_IMPORTED':
+          await this.onProductImported(message.productId);
+          sendResponse({ success: true });
+          break;
+
         case 'IMPORT_FROM_URL':
           const urlResult = await this.scrapeAndImport(message.url);
           sendResponse(urlResult);
@@ -356,6 +378,98 @@ class ShopOptiBackground {
     } catch (error) {
       console.error('[ShopOpti+] Error:', error);
       sendResponse({ success: false, error: error.message });
+    }
+  }
+
+  // ============================================
+  // AUTH TOKEN METHODS (for content scripts)
+  // ============================================
+  
+  async getAuthToken() {
+    try {
+      const { extensionToken, tokenExpiry, user } = await chrome.storage.local.get([
+        'extensionToken', 'tokenExpiry', 'user'
+      ]);
+      
+      if (!extensionToken) {
+        return { token: null, authenticated: false, error: 'Non connecté' };
+      }
+      
+      // Check expiry
+      if (tokenExpiry && new Date(tokenExpiry) < new Date()) {
+        return { token: null, authenticated: false, error: 'Session expirée' };
+      }
+      
+      return { 
+        token: extensionToken, 
+        authenticated: true, 
+        user: user || null 
+      };
+    } catch (error) {
+      console.error('[ShopOpti+] getAuthToken error:', error);
+      return { token: null, authenticated: false, error: error.message };
+    }
+  }
+
+  async checkAuthStatus() {
+    const { extensionToken, tokenExpiry, user } = await chrome.storage.local.get([
+      'extensionToken', 'tokenExpiry', 'user'
+    ]);
+    
+    const isExpired = tokenExpiry && new Date(tokenExpiry) < new Date();
+    
+    return {
+      authenticated: !!(extensionToken && !isExpired),
+      user: user || null,
+      expiresAt: tokenExpiry || null
+    };
+  }
+
+  async onProductImported(productId) {
+    console.log('[ShopOpti+] Product imported:', productId);
+    
+    // Update local stats
+    await this.updateStats({ products: 1 });
+    
+    // Update badge
+    await this.updateBadge();
+    
+    // Log activity
+    await this.logActivity('product_imported', { productId });
+  }
+
+  async updateBadge() {
+    try {
+      const { stats } = await chrome.storage.local.get(['stats']);
+      const count = stats?.products || 0;
+      
+      if (count > 0) {
+        chrome.action.setBadgeText({ text: count > 99 ? '99+' : String(count) });
+        chrome.action.setBadgeBackgroundColor({ color: '#10b981' });
+      } else {
+        chrome.action.setBadgeText({ text: '' });
+      }
+    } catch (e) {
+      console.error('[ShopOpti+] Badge update error:', e);
+    }
+  }
+
+  async logActivity(action, details = {}) {
+    try {
+      const { activities = [] } = await chrome.storage.local.get(['activities']);
+      
+      activities.unshift({
+        action,
+        details,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Keep only last 100 activities
+      await chrome.storage.local.set({ 
+        activities: activities.slice(0, 100) 
+      });
+    } catch (e) {
+      console.error('[ShopOpti+] Activity log error:', e);
     }
   }
 
