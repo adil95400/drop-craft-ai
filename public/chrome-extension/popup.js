@@ -1,6 +1,6 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Popup Script v5.2.0
-// PROFESSIONAL UI - Fixed All Buttons + Enhanced UX
+// ShopOpti+ Chrome Extension - Popup Script v5.2.1
+// PROFESSIONAL UI - All Buttons Fixed + Chrome API Safety
 // ============================================
 
 class ShopOptiPopup {
@@ -155,8 +155,8 @@ class ShopOptiPopup {
   }
 
   async updateSyncStatus() {
-    const lastSyncTimeEl = document.getElementById('lastSyncTime');
     if (!this.isExtensionRuntime()) return;
+    const lastSyncTimeEl = document.getElementById('lastSyncTime');
     const { lastSync } = await this.chrome.storage.local.get(['lastSync']);
     
     if (lastSyncTimeEl && lastSync) {
@@ -166,9 +166,8 @@ class ShopOptiPopup {
   }
 
   async loadStoredData() {
+    if (!this.isExtensionRuntime()) return;
     try {
-      if (!this.isExtensionRuntime()) return;
-
       const result = await this.chrome.storage.local.get([
         'extensionToken', 'stats', 'activities', 'pendingItems', 'userPlan', 'importHistory'
       ]);
@@ -185,8 +184,8 @@ class ShopOptiPopup {
   }
 
   async saveData() {
+    if (!this.isExtensionRuntime()) return;
     try {
-      if (!this.isExtensionRuntime()) return;
       await this.chrome.storage.local.set({
         stats: this.stats,
         activities: this.activities,
@@ -225,13 +224,15 @@ class ShopOptiPopup {
             monitored: data.todayStats.monitored || 0
           };
         }
-        if (data.userPlan) {
+        if (data.userPlan && this.isExtensionRuntime()) {
           this.userPlan = data.userPlan;
-          await chrome.storage.local.set({ userPlan: data.userPlan });
+          await this.chrome.storage.local.set({ userPlan: data.userPlan });
         }
       } else if (response.status === 401) {
         this.extensionToken = null;
-        await chrome.storage.local.remove(['extensionToken']);
+        if (this.isExtensionRuntime()) {
+          await this.chrome.storage.local.remove(['extensionToken']);
+        }
         this.showToast('Token expiré, reconnectez-vous', 'warning');
       }
     } catch (error) {
@@ -241,8 +242,8 @@ class ShopOptiPopup {
   }
 
   async detectCurrentPage() {
+    if (!this.isExtensionRuntime()) return;
     try {
-      if (!this.isExtensionRuntime()) return;
       const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.url) return;
 
@@ -523,6 +524,10 @@ class ShopOptiPopup {
 
   // === IMPORT FUNCTIONS ===
   async importCurrentPage() {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
     if (!this.isConnected) {
       this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
       this.openAuth();
@@ -538,10 +543,10 @@ class ShopOptiPopup {
         btn.disabled = true;
       }
 
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.url) throw new Error('URL non détectée');
 
-      const response = await chrome.runtime.sendMessage({
+      const response = await this.chrome.runtime.sendMessage({
         type: 'IMPORT_FROM_URL',
         url: tab.url
       });
@@ -568,6 +573,10 @@ class ShopOptiPopup {
   }
 
   async importAllProducts() {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
     if (!this.isConnected) {
       this.showToast('Connectez-vous d\'abord', 'warning');
       this.openAuth();
@@ -583,13 +592,13 @@ class ShopOptiPopup {
         btn.disabled = true;
       }
 
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab?.id) throw new Error('Onglet non détecté');
 
       const ok = await this.ensureContentScript(tab.id);
       if (!ok) throw new Error('Rechargez la page puis réessayez');
       
-      const response = await chrome.tabs.sendMessage(tab.id, { type: 'GET_ALL_PRODUCT_URLS' });
+      const response = await this.chrome.tabs.sendMessage(tab.id, { type: 'GET_ALL_PRODUCT_URLS' });
 
       if (response?.urls?.length > 0) {
         this.showToast(`${response.urls.length} produits trouvés. Import...`, 'info');
@@ -599,7 +608,7 @@ class ShopOptiPopup {
         
         for (let i = 0; i < limit; i++) {
           try {
-            const importResult = await chrome.runtime.sendMessage({
+            const importResult = await this.chrome.runtime.sendMessage({
               type: 'IMPORT_FROM_URL',
               url: response.urls[i]
             });
@@ -626,6 +635,10 @@ class ShopOptiPopup {
   }
 
   async importReviews() {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
     if (!this.isConnected) {
       this.showToast('Connectez-vous d\'abord', 'warning');
       return;
@@ -640,7 +653,7 @@ class ShopOptiPopup {
         btn.disabled = true;
       }
 
-      const response = await chrome.runtime.sendMessage({
+      const response = await this.chrome.runtime.sendMessage({
         type: 'IMPORT_REVIEWS',
         config: { limit: 50 }
       });
@@ -665,12 +678,16 @@ class ShopOptiPopup {
   }
 
   async importProductWithReviews() {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
     if (!this.isConnected) {
       this.showToast('Connectez-vous d\'abord', 'warning');
       return;
     }
 
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.url) return;
 
     this.showProgressModal('Import complet...');
@@ -678,7 +695,7 @@ class ShopOptiPopup {
     try {
       this.updateProgress(10, { product: 'Import...', variants: 'Attente', images: 'Attente', reviews: 'Attente' });
       
-      const response = await chrome.runtime.sendMessage({
+      const response = await this.chrome.runtime.sendMessage({
         type: 'IMPORT_PRODUCT_WITH_REVIEWS',
         url: tab.url,
         reviewLimit: 50
@@ -720,6 +737,10 @@ class ShopOptiPopup {
   }
 
   async startPriceMonitor() {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
     if (!this.isConnected) {
       this.showToast('Connectez-vous d\'abord', 'warning');
       return;
@@ -734,10 +755,10 @@ class ShopOptiPopup {
         btn.disabled = true;
       }
 
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
       
       // Send to backend
-      const response = await chrome.runtime.sendMessage({
+      const response = await this.chrome.runtime.sendMessage({
         type: 'START_PRICE_MONITOR',
         url: tab?.url
       });
@@ -759,6 +780,11 @@ class ShopOptiPopup {
 
   // === PLATFORM BULK IMPORT - FIXED ===
   async handlePlatformBulkImport(platform) {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
+
     const platformUrls = {
       amazon: 'https://www.amazon.fr',
       aliexpress: 'https://www.aliexpress.com',
@@ -804,7 +830,7 @@ class ShopOptiPopup {
       rakuten: 'Rakuten', bestbuy: 'Best Buy', newegg: 'Newegg', overstock: 'Overstock'
     };
 
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
     const currentUrl = tab?.url?.toLowerCase() || '';
     
     const isOnPlatform = currentUrl.includes(platform) || (platform === 'shopify' && currentUrl.includes('myshopify'));
@@ -825,7 +851,7 @@ class ShopOptiPopup {
           return;
         }
 
-        await chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_BULK_MODE', platform });
+        await this.chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_BULK_MODE', platform });
         this.addActivity(`Import masse: ${platformNames[platform]}`, '📦');
         window.close();
       } catch (error) {
@@ -835,7 +861,7 @@ class ShopOptiPopup {
       const url = platformUrls[platform];
       if (url) {
         this.showToast(`Ouverture ${platformNames[platform]}...`, 'info');
-        chrome.tabs.create({ url });
+        this.chrome.tabs.create({ url });
       }
     }
   }
@@ -867,19 +893,33 @@ class ShopOptiPopup {
   }
 
   openSettings() {
-    chrome.tabs.create({ url: `${this.APP_URL}/settings` });
+    if (this.isExtensionRuntime()) {
+      this.chrome.tabs.create({ url: `${this.APP_URL}/settings` });
+    } else {
+      window.open(`${this.APP_URL}/settings`, '_blank');
+    }
   }
 
   openDashboard() {
-    chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
+    if (this.isExtensionRuntime()) {
+      this.chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
+    } else {
+      window.open(`${this.APP_URL}/dashboard`, '_blank');
+    }
   }
 
   openAuth() {
-    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
+    if (this.isExtensionRuntime()) {
+      this.chrome.tabs.create({ url: this.chrome.runtime.getURL('auth.html') });
+    } else {
+      window.open(`${this.APP_URL}/extensions/chrome`, '_blank');
+    }
   }
 
   async disconnect() {
-    await chrome.storage.local.remove(['extensionToken']);
+    if (this.isExtensionRuntime()) {
+      await this.chrome.storage.local.remove(['extensionToken']);
+    }
     this.extensionToken = null;
     this.isConnected = false;
     this.updateUI();
@@ -887,12 +927,20 @@ class ShopOptiPopup {
   }
 
   sendToApp() {
-    chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
+    if (this.isExtensionRuntime()) {
+      this.chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
+    } else {
+      window.open(`${this.APP_URL}/dashboard`, '_blank');
+    }
   }
 
   handleStatClick(action) {
     const routes = { products: '/products', reviews: '/reviews', monitoring: '/price-monitoring' };
-    chrome.tabs.create({ url: `${this.APP_URL}${routes[action] || '/dashboard'}` });
+    if (this.isExtensionRuntime()) {
+      this.chrome.tabs.create({ url: `${this.APP_URL}${routes[action] || '/dashboard'}` });
+    } else {
+      window.open(`${this.APP_URL}${routes[action] || '/dashboard'}`, '_blank');
+    }
   }
 
   // === TABS & PROFIT ===
@@ -1017,6 +1065,7 @@ class ShopOptiPopup {
   }
 
   async saveMapping() {
+    if (!this.isExtensionRuntime()) return;
     const container = document.getElementById('mappingRules');
     if (!container) return;
     
@@ -1027,7 +1076,7 @@ class ShopOptiPopup {
       if (source && target) rules.push({ source, target });
     });
     
-    await chrome.storage.local.set({ variantMappingRules: rules });
+    await this.chrome.storage.local.set({ variantMappingRules: rules });
     this.showToast(`${rules.length} règles sauvegardées`, 'success');
   }
 
@@ -1049,9 +1098,13 @@ class ShopOptiPopup {
   }
 
   async syncStock() {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
     this.showToast('Sync stock...', 'info');
     try {
-      await chrome.runtime.sendMessage({ type: 'CHECK_STOCK' });
+      await this.chrome.runtime.sendMessage({ type: 'CHECK_STOCK' });
       this.showToast('Stock synchronisé!', 'success');
       this.addActivity('Sync stock', '📦');
     } catch (e) {
@@ -1060,9 +1113,13 @@ class ShopOptiPopup {
   }
 
   async syncPrices() {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
     this.showToast('Sync prix...', 'info');
     try {
-      await chrome.runtime.sendMessage({ type: 'CHECK_PRICES' });
+      await this.chrome.runtime.sendMessage({ type: 'CHECK_PRICES' });
       this.showToast('Prix synchronisés!', 'success');
       this.addActivity('Sync prix', '💰');
     } catch (e) {
@@ -1071,12 +1128,17 @@ class ShopOptiPopup {
   }
 
   addStore() {
-    chrome.tabs.create({ url: `${this.APP_URL}/stores/connect` });
+    if (this.isExtensionRuntime()) {
+      this.chrome.tabs.create({ url: `${this.APP_URL}/stores/connect` });
+    } else {
+      window.open(`${this.APP_URL}/stores/connect`, '_blank');
+    }
   }
 
   async loadConnectedStores() {
+    if (!this.isExtensionRuntime()) return;
     try {
-      const { connectedStores } = await chrome.storage.local.get(['connectedStores']);
+      const { connectedStores } = await this.chrome.storage.local.get(['connectedStores']);
       const list = document.getElementById('storesList');
       if (!list) return;
       
@@ -1096,16 +1158,20 @@ class ShopOptiPopup {
   }
 
   async pushProduct() {
+    if (!this.isExtensionRuntime()) {
+      this.showToast("Disponible uniquement dans l'extension Chrome", 'warning');
+      return;
+    }
     if (!this.isConnected) {
       this.showToast('Connectez-vous d\'abord', 'warning');
       return;
     }
     
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
     
     try {
       this.showToast('Publication...', 'info');
-      const response = await chrome.runtime.sendMessage({ type: 'IMPORT_FROM_URL', url: tab.url });
+      const response = await this.chrome.runtime.sendMessage({ type: 'IMPORT_FROM_URL', url: tab.url });
       
       if (response?.success) {
         this.showToast('Produit publié!', 'success');
@@ -1141,18 +1207,24 @@ class ShopOptiPopup {
     }
 
     // Stats
-    document.getElementById('todayProducts').textContent = this.stats.products || 0;
-    document.getElementById('todayReviews').textContent = this.stats.reviews || 0;
-    document.getElementById('monitoredCount').textContent = this.stats.monitored || 0;
+    const todayProducts = document.getElementById('todayProducts');
+    const todayReviews = document.getElementById('todayReviews');
+    const monitoredCount = document.getElementById('monitoredCount');
+    if (todayProducts) todayProducts.textContent = this.stats.products || 0;
+    if (todayReviews) todayReviews.textContent = this.stats.reviews || 0;
+    if (monitoredCount) monitoredCount.textContent = this.stats.monitored || 0;
 
     // Page info
     if (this.currentPlatform) {
       const pageInfo = document.getElementById('pageInfo');
       if (pageInfo) {
         pageInfo.classList.remove('hidden');
-        pageInfo.querySelector('.page-icon').textContent = this.currentPlatform.icon;
-        pageInfo.querySelector('.page-platform').textContent = this.currentPlatform.name;
-        pageInfo.querySelector('.page-url').textContent = this.currentPlatform.hostname;
+        const iconEl = pageInfo.querySelector('.page-icon');
+        const platformEl = pageInfo.querySelector('.page-platform');
+        const urlEl = pageInfo.querySelector('.page-url');
+        if (iconEl) iconEl.textContent = this.currentPlatform.icon;
+        if (platformEl) platformEl.textContent = this.currentPlatform.name;
+        if (urlEl) urlEl.textContent = this.currentPlatform.hostname;
       }
     }
 
@@ -1214,7 +1286,8 @@ class ShopOptiPopup {
 
   // === RECENT IMPORTS ===
   async loadRecentImports() {
-    const { recentImports } = await chrome.storage.local.get(['recentImports']);
+    if (!this.isExtensionRuntime()) return;
+    const { recentImports } = await this.chrome.storage.local.get(['recentImports']);
     const list = document.getElementById('recentImportsList');
     if (!list) return;
     
@@ -1246,25 +1319,31 @@ class ShopOptiPopup {
   }
 
   async updateSourcingProductInfo() {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!this.isExtensionRuntime()) return;
+    const [tab] = await this.chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.url) return;
 
     try {
       const injected = await this.ensureContentScript(tab.id);
       if (injected) {
-        const result = await chrome.tabs.sendMessage(tab.id, { type: 'GET_PRODUCT_DATA' });
+        const result = await this.chrome.tabs.sendMessage(tab.id, { type: 'GET_PRODUCT_DATA' });
         if (result?.product) {
           this.currentSourcingProduct = result.product;
-          document.getElementById('sourcingProductTitle').textContent = result.product.title || 'Produit';
-          document.getElementById('sourcingProductPrice').textContent = result.product.price ? `${result.product.price} €` : '--';
-          document.getElementById('findSupplierBtn').disabled = false;
+          const titleEl = document.getElementById('sourcingProductTitle');
+          const priceEl = document.getElementById('sourcingProductPrice');
+          const findBtn = document.getElementById('findSupplierBtn');
+          if (titleEl) titleEl.textContent = result.product.title || 'Produit';
+          if (priceEl) priceEl.textContent = result.product.price ? `${result.product.price} €` : '--';
+          if (findBtn) findBtn.disabled = false;
           return;
         }
       }
     } catch (e) {}
 
-    document.getElementById('sourcingProductTitle').textContent = 'Chargez une page produit';
-    document.getElementById('findSupplierBtn').disabled = true;
+    const titleEl = document.getElementById('sourcingProductTitle');
+    const findBtn = document.getElementById('findSupplierBtn');
+    if (titleEl) titleEl.textContent = 'Chargez une page produit';
+    if (findBtn) findBtn.disabled = true;
   }
 
   async findSuppliers() {
