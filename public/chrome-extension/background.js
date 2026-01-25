@@ -37,7 +37,8 @@ const Security = {
     'OPEN_BULK_IMPORT', 'ADD_TO_MONITORING', 'REMOVE_FROM_MONITORING',
     'CHECK_PRICES', 'CHECK_STOCK', 'GET_MONITORED_PRODUCTS',
     'GET_PRICE_HISTORY', 'GET_MONITORING_STATUS', 'GET_PRODUCT_DATA',
-    'FIND_SUPPLIERS', 'EXTRACT_COMPLETE', 'REQUEST_PERMISSIONS'
+    'FIND_SUPPLIERS', 'EXTRACT_COMPLETE', 'REQUEST_PERMISSIONS',
+    'OPEN_IMPORT_OVERLAY', 'IMPORT_WITH_OPTIONS'
   ],
 
   rateLimits: new Map(),
@@ -262,6 +263,16 @@ class ShopOptiBackground {
         case 'REQUEST_PERMISSIONS':
           await this.requestPermissions(message.origins);
           sendResponse({ success: true });
+          break;
+
+        case 'OPEN_IMPORT_OVERLAY':
+          const overlayResult = await this.openImportOverlay(sender.tab, message.productData);
+          sendResponse(overlayResult);
+          break;
+
+        case 'IMPORT_WITH_OPTIONS':
+          const importWithOptionsResult = await this.importWithOptions(message.importData);
+          sendResponse(importWithOptionsResult);
           break;
 
         default:
@@ -525,6 +536,148 @@ class ShopOptiBackground {
     } catch (error) {
       return { success: false, error: error.message };
     }
+  }
+
+  // ============================================
+  // IMPORT OVERLAY V2 INTEGRATION
+  // ============================================
+
+  async openImportOverlay(tab, productData) {
+    if (!tab?.id) {
+      return { success: false, error: 'No active tab' };
+    }
+
+    try {
+      // Inject the overlay script dynamically
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['import-overlay-v2.js']
+      });
+
+      // Notify content script that overlay is ready
+      await chrome.tabs.sendMessage(tab.id, {
+        type: 'OVERLAY_SCRIPT_INJECTED',
+        productData
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('[ShopOpti+] Failed to inject overlay:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async importWithOptions(importData) {
+    const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+    
+    if (!extensionToken) {
+      return { success: false, error: 'Non connecté. Connectez-vous via l\'extension.' };
+    }
+
+    try {
+      const {
+        product,
+        store,
+        options = {},
+        selectedVariants,
+        selectedImages,
+        pricingRules
+      } = importData;
+
+      // Apply pricing rules if provided
+      let finalProduct = { ...product };
+      
+      if (pricingRules?.enabled) {
+        const basePrice = product.price || 0;
+        let markup = 0;
+        
+        if (pricingRules.markupType === 'percentage') {
+          markup = basePrice * (pricingRules.markupValue / 100);
+        } else {
+          markup = pricingRules.markupValue;
+        }
+        
+        let finalPrice = basePrice + markup;
+        
+        // Apply tax if enabled
+        if (pricingRules.includeTax && pricingRules.taxRate) {
+          finalPrice = finalPrice * (1 + pricingRules.taxRate / 100);
+        }
+        
+        // Round to nearest
+        if (pricingRules.roundToNearest) {
+          const roundTo = pricingRules.roundToNearest;
+          finalPrice = Math.ceil(finalPrice) - (1 - roundTo);
+        }
+        
+        finalProduct.price = finalPrice;
+        finalProduct.costPrice = basePrice;
+        finalProduct.profit = finalPrice - basePrice;
+      }
+
+      // Filter variants if specified
+      if (selectedVariants && selectedVariants.length > 0 && product.variants) {
+        finalProduct.variants = product.variants.filter((_, index) => 
+          selectedVariants.includes(index)
+        );
+      }
+
+      // Filter images if specified
+      if (selectedImages && selectedImages.length > 0 && product.images) {
+        finalProduct.images = selectedImages.map(index => product.images[index]).filter(Boolean);
+      }
+
+      // Send to backend with all options
+      const response = await fetch(`${API_URL}/extension-scraper`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: 'import_product_with_options',
+          product: finalProduct,
+          storeId: store?.id,
+          options: {
+            ...options,
+            status: options.status || 'draft',
+            category: options.category,
+            tags: options.tags,
+            aiOptimization: options.aiOptimization || false,
+            translateReviews: options.translateReviews || false,
+            removeWatermark: options.removeWatermark || false
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        await this.updateStats({ products: 1 });
+        this.showNotification('Import réussi', finalProduct.title || 'Produit importé');
+        
+        // Log to activity
+        await this.logActivity({
+          type: 'import',
+          productTitle: finalProduct.title,
+          store: store?.name,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      return data;
+    } catch (error) {
+      console.error('[ShopOpti+] Import with options error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async logActivity(activity) {
+    const { activities = [] } = await chrome.storage.local.get(['activities']);
+    activities.unshift(activity);
+    await chrome.storage.local.set({ 
+      activities: activities.slice(0, 100) // Keep last 100 activities
+    });
   }
 
   async updateStats(increments) {

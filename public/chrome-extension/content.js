@@ -67,6 +67,29 @@
   }
 
   // ============================================
+  // WAIT FOR OVERLAY V2 TO LOAD
+  // ============================================
+  function waitForOverlay(timeout = 5000) {
+    return new Promise((resolve, reject) => {
+      if (window.AdvancedImportOverlay) {
+        resolve();
+        return;
+      }
+      
+      const startTime = Date.now();
+      const checkInterval = setInterval(() => {
+        if (window.AdvancedImportOverlay) {
+          clearInterval(checkInterval);
+          resolve();
+        } else if (Date.now() - startTime > timeout) {
+          clearInterval(checkInterval);
+          reject(new Error('Import overlay failed to load'));
+        }
+      }, 100);
+    });
+  }
+
+  // ============================================
   // CHROME RUNTIME SAFETY
   // ============================================
   function isChromeRuntimeAvailable() {
@@ -261,27 +284,36 @@
     btn.addEventListener('click', async () => {
       btn.disabled = true;
       const originalText = btn.textContent;
-      btn.textContent = '⏳ Import en cours...';
+      btn.textContent = '⏳ Chargement...';
       
       try {
+        // Extract product data first
         const productData = await extractProductData();
-        const response = await safeSendMessage({
-          type: 'IMPORT_PRODUCT_WITH_REVIEWS',
-          url: window.location.href,
-          productData
-        });
         
-        if (response?.success) {
-          btn.textContent = '✓ Importé!';
-          btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-          
-          setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)';
-            btn.disabled = false;
-          }, 3000);
+        // Open Advanced Import Overlay V2
+        if (window.AdvancedImportOverlay) {
+          const overlay = new window.AdvancedImportOverlay();
+          overlay.open(productData);
+          btn.textContent = originalText;
+          btn.disabled = false;
         } else {
-          throw new Error(response?.error || 'Import failed');
+          // Fallback: request background to inject overlay
+          const response = await safeSendMessage({
+            type: 'OPEN_IMPORT_OVERLAY',
+            url: window.location.href,
+            productData
+          });
+          
+          if (response?.success) {
+            // Wait for overlay script to load then open
+            await waitForOverlay();
+            const overlay = new window.AdvancedImportOverlay();
+            overlay.open(productData);
+            btn.textContent = originalText;
+            btn.disabled = false;
+          } else {
+            throw new Error(response?.error || 'Failed to open import assistant');
+          }
         }
       } catch (error) {
         console.error('[ShopOpti+] Import error:', error);
@@ -292,12 +324,14 @@
           btn.textContent = originalText;
           btn.style.background = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)';
           btn.disabled = false;
-        }, 3000);
+        }, 2000);
       }
     });
     
     container.appendChild(btn);
     document.body.appendChild(container);
+    
+    console.log('[ShopOpti+] Import button injected successfully');
   }
 
   function injectListingButtons() {
@@ -561,6 +595,25 @@
           sendResponse({ success: false, error: error.message });
         });
       }
+      return true;
+    }
+    
+    // Handle overlay script injection confirmation
+    if (message.type === 'OVERLAY_SCRIPT_INJECTED') {
+      console.log('[ShopOpti+] Import overlay V2 script injected');
+      sendResponse({ success: true });
+      return true;
+    }
+    
+    // Handle opening overlay with pre-extracted data
+    if (message.type === 'OPEN_OVERLAY_WITH_DATA') {
+      waitForOverlay().then(() => {
+        const overlay = new window.AdvancedImportOverlay();
+        overlay.open(message.productData);
+        sendResponse({ success: true });
+      }).catch(error => {
+        sendResponse({ success: false, error: error.message });
+      });
       return true;
     }
     
