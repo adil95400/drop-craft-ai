@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Extension Authentication Module v5.6.0
+// ShopOpti+ Extension Authentication Module v5.6.1
 // Handles login, token management, session persistence
 // ============================================
 
