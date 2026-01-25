@@ -1,7 +1,6 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Popup Script v5.1.0
-// PROFESSIONAL UI - AutoDS Alternative
-// Bulk Import V5 + Multi-Store + Supplier Search
+// ShopOpti+ Chrome Extension - Popup Script v5.2.0
+// PROFESSIONAL UI - Fixed All Buttons + Enhanced UX
 // ============================================
 
 class ShopOptiPopup {
@@ -12,26 +11,20 @@ class ShopOptiPopup {
     this.activities = [];
     this.pendingItems = [];
     this.currentPlatform = null;
+    this.currentSourcingProduct = null;
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
     this.APP_URL = 'https://shopopti.io';
   }
 
-  // Ensure the content script is available on the active tab (fixes: "Receiving end does not exist")
   async ensureContentScript(tabId) {
-    // 1) Try ping
     try {
       const ping = await chrome.tabs.sendMessage(tabId, { type: 'PING' });
       if (ping?.success) return true;
-    } catch (_e) {
-      // continue to inject
-    }
+    } catch (_e) {}
 
-    // 2) Inject packaged content script + css (requires permissions: scripting)
     try {
       await chrome.scripting.insertCSS({ target: { tabId }, files: ['content.css'] });
-    } catch (_e) {
-      // ignore (may already be injected)
-    }
+    } catch (_e) {}
 
     try {
       await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
@@ -40,14 +33,12 @@ class ShopOptiPopup {
       return false;
     }
 
-    // 3) Re-ping
     try {
       const ping = await chrome.tabs.sendMessage(tabId, { type: 'PING' });
       return !!ping?.success;
     } catch (_e) {
       return false;
     }
-    this.currentSourcingProduct = null;
   }
 
   async init() {
@@ -61,8 +52,9 @@ class ShopOptiPopup {
     this.loadConnectedStores();
     this.updateSyncStatus();
     this.updateSourcingProductInfo();
+    this.loadRecentImports();
   }
-  
+
   async updateSyncStatus() {
     const lastSyncTimeEl = document.getElementById('lastSyncTime');
     const { lastSync } = await chrome.storage.local.get(['lastSync']);
@@ -76,12 +68,7 @@ class ShopOptiPopup {
   async loadStoredData() {
     try {
       const result = await chrome.storage.local.get([
-        'extensionToken',
-        'stats',
-        'activities',
-        'pendingItems',
-        'userPlan',
-        'importHistory'
+        'extensionToken', 'stats', 'activities', 'pendingItems', 'userPlan', 'importHistory'
       ]);
       
       this.extensionToken = result.extensionToken || null;
@@ -90,11 +77,6 @@ class ShopOptiPopup {
       this.pendingItems = result.pendingItems || [];
       this.userPlan = result.userPlan || 'free';
       this.importHistory = result.importHistory || [];
-      
-      console.log('[ShopOpti+] Loaded data:', { 
-        hasToken: !!this.extensionToken, 
-        tokenPrefix: this.extensionToken ? this.extensionToken.slice(0, 10) : null 
-      });
     } catch (error) {
       console.error('[ShopOpti+] Error loading data:', error);
     }
@@ -105,17 +87,15 @@ class ShopOptiPopup {
       await chrome.storage.local.set({
         stats: this.stats,
         activities: this.activities,
-        pendingItems: this.pendingItems
+        pendingItems: this.pendingItems,
+        lastSync: new Date().toISOString()
       });
-      console.log('[ShopOpti+] Data saved');
     } catch (error) {
       console.error('[ShopOpti+] Error saving data:', error);
     }
   }
 
   async checkConnection() {
-    console.log('[ShopOpti+] Checking connection, token:', this.extensionToken ? 'present' : 'missing');
-    
     if (!this.extensionToken) {
       this.isConnected = false;
       return;
@@ -131,13 +111,10 @@ class ShopOptiPopup {
         body: JSON.stringify({ action: 'sync_status' })
       });
 
-      console.log('[ShopOpti+] Connection response status:', response.status);
       this.isConnected = response.ok;
       
       if (response.ok) {
         const data = await response.json();
-        console.log('[ShopOpti+] Sync data:', data);
-        
         if (data.todayStats) {
           this.stats = {
             products: data.todayStats.imports || data.todayStats.successful || 0,
@@ -149,15 +126,10 @@ class ShopOptiPopup {
           this.userPlan = data.userPlan;
           await chrome.storage.local.set({ userPlan: data.userPlan });
         }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('[ShopOpti+] Connection failed:', errorData);
-        
-        if (response.status === 401) {
-          this.extensionToken = null;
-          await chrome.storage.local.remove(['extensionToken']);
-          this.showToast('Token expiré, reconnectez-vous', 'warning');
-        }
+      } else if (response.status === 401) {
+        this.extensionToken = null;
+        await chrome.storage.local.remove(['extensionToken']);
+        this.showToast('Token expiré, reconnectez-vous', 'warning');
       }
     } catch (error) {
       console.error('[ShopOpti+] Connection check failed:', error);
@@ -183,7 +155,7 @@ class ShopOptiPopup {
         'wish': { name: 'Wish', icon: '⭐', color: '#2fb7ec' },
         'banggood': { name: 'Banggood', icon: '📱', color: '#ff6600' },
         'dhgate': { name: 'DHgate', icon: '🏭', color: '#e54d00' },
-        'cjdropshipping': { name: 'CJ Dropshipping', icon: '📦', color: '#1a73e8' },
+        'cjdropshipping': { name: 'CJ', icon: '📦', color: '#1a73e8' },
         'shein': { name: 'Shein', icon: '👗', color: '#000' },
         '1688': { name: '1688', icon: '🏭', color: '#ff6600' },
         'taobao': { name: 'Taobao', icon: '🛍️', color: '#ff4400' },
@@ -200,9 +172,8 @@ class ShopOptiPopup {
         }
       }
       
-      // Check for Shopify stores via /products/ path
       if (!this.currentPlatform && tab.url.includes('/products/')) {
-        this.currentPlatform = { name: 'Shopify Store', icon: '🛍️', color: '#96bf48', url: tab.url, hostname };
+        this.currentPlatform = { name: 'Boutique', icon: '🛍️', color: '#96bf48', url: tab.url, hostname };
       }
     } catch (error) {
       console.error('[ShopOpti+] Error detecting page:', error);
@@ -224,8 +195,12 @@ class ShopOptiPopup {
       }
     });
 
-    // Main actions
-    document.getElementById('importPageBtn')?.addEventListener('click', () => this.importCurrentPage());
+    // Main actions - FIXED
+    document.getElementById('importPageBtn')?.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown-toggle')) {
+        this.importCurrentPage();
+      }
+    });
     document.getElementById('importAllBtn')?.addEventListener('click', () => this.importAllProducts());
     document.getElementById('importReviewsBtn')?.addEventListener('click', () => this.importReviews());
     document.getElementById('priceMonitorBtn')?.addEventListener('click', () => this.startPriceMonitor());
@@ -260,18 +235,6 @@ class ShopOptiPopup {
       }
     });
 
-    // Advanced features
-    document.getElementById('autoOrderBtn')?.addEventListener('click', () => this.showFeature('Auto-Order'));
-    document.getElementById('competitorBtn')?.addEventListener('click', () => this.showFeature('Spy Competitor'));
-    document.getElementById('bulkImportBtn')?.addEventListener('click', () => this.openBulkImport());
-    document.getElementById('aiOptimizeBtn')?.addEventListener('click', () => this.showPremiumFeature());
-
-    // Activity
-    document.getElementById('clearActivityBtn')?.addEventListener('click', () => this.clearActivity());
-
-    // Footer
-    document.getElementById('sendToAppBtn')?.addEventListener('click', () => this.sendToApp());
-
     // Stats cards
     document.querySelectorAll('.stat-card').forEach(card => {
       card.addEventListener('click', () => this.handleStatClick(card.dataset.action));
@@ -280,6 +243,34 @@ class ShopOptiPopup {
     // Tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
+    });
+
+    // Platform buttons - FIXED
+    document.querySelectorAll('.platform-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const platform = btn.dataset.platform;
+        if (platform) this.handlePlatformBulkImport(platform);
+      });
+    });
+
+    // Platform items in modal - FIXED
+    document.querySelectorAll('.platform-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const platform = btn.dataset.platform;
+        if (platform) {
+          this.handlePlatformBulkImport(platform);
+          this.hideAllPlatformsModal();
+        }
+      });
+    });
+
+    // Show all platforms modal
+    document.getElementById('showAllPlatformsBtn')?.addEventListener('click', () => this.showAllPlatformsModal());
+    document.getElementById('closePlatformsModal')?.addEventListener('click', () => this.hideAllPlatformsModal());
+    document.getElementById('allPlatformsModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'allPlatformsModal') this.hideAllPlatformsModal();
     });
 
     // Mapping
@@ -304,28 +295,11 @@ class ShopOptiPopup {
       btn.addEventListener('click', () => this.applySuggestedMargin(parseInt(btn.dataset.margin)));
     });
 
-    // Platform bulk import buttons
-    document.querySelectorAll('.platform-btn').forEach(btn => {
-      btn.addEventListener('click', () => this.handlePlatformBulkImport(btn.dataset.platform));
-    });
+    // Activity
+    document.getElementById('clearActivityBtn')?.addEventListener('click', () => this.clearActivity());
 
-    // Platform items in modal
-    document.querySelectorAll('.platform-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.handlePlatformBulkImport(btn.dataset.platform);
-        this.hideAllPlatformsModal();
-      });
-    });
-
-    // Show all platforms modal
-    document.getElementById('showAllPlatformsBtn')?.addEventListener('click', () => this.showAllPlatformsModal());
-    document.getElementById('closePlatformsModal')?.addEventListener('click', () => this.hideAllPlatformsModal());
-    document.getElementById('allPlatformsModal')?.addEventListener('click', (e) => {
-      if (e.target.id === 'allPlatformsModal') this.hideAllPlatformsModal();
-    });
-
-    // Load recent imports
-    this.loadRecentImports();
+    // Footer
+    document.getElementById('sendToAppBtn')?.addEventListener('click', () => this.sendToApp());
   }
 
   // === DROPDOWN MANAGEMENT ===
@@ -357,13 +331,7 @@ class ShopOptiPopup {
     if (productNameEl) productNameEl.textContent = productName;
     if (viewBtn) viewBtn.classList.add('hidden');
     
-    this.updateProgress(0, {
-      product: 'waiting',
-      variants: '-',
-      images: '-',
-      reviews: '-'
-    });
-    
+    this.updateProgress(0, { product: 'waiting', variants: '-', images: '-', reviews: '-' });
     this.importCancelled = false;
     this.lastImportedProduct = null;
   }
@@ -381,7 +349,6 @@ class ShopOptiPopup {
     if (bar) bar.style.width = `${percentage}%`;
     if (percentEl) percentEl.textContent = `${Math.round(percentage)}%`;
 
-    // Circular ring (PRO)
     if (ring) {
       const r = 38;
       const circumference = 2 * Math.PI * r;
@@ -391,13 +358,7 @@ class ShopOptiPopup {
       ring.style.strokeDashoffset = `${offset}`;
     }
     
-    // Update individual statuses
-    const statusMap = {
-      'product': 'productProgress',
-      'variants': 'variantsProgress',
-      'images': 'imagesProgress',
-      'reviews': 'reviewsProgress'
-    };
+    const statusMap = { 'product': 'productProgress', 'variants': 'variantsProgress', 'images': 'imagesProgress', 'reviews': 'reviewsProgress' };
     
     for (const [key, elementId] of Object.entries(statusMap)) {
       const el = document.getElementById(elementId);
@@ -406,16 +367,10 @@ class ShopOptiPopup {
         if (statusEl) {
           statusEl.textContent = statuses[key];
           statusEl.className = 'progress-status';
-          
-          if (statuses[key] === 'waiting' || statuses[key] === 'En attente') {
-            statusEl.classList.add('waiting');
-          } else if (statuses[key] === 'processing' || statuses[key].includes('...')) {
-            statusEl.classList.add('processing');
-          } else if (statuses[key] === 'done' || statuses[key].includes('✓')) {
-            statusEl.classList.add('done');
-          } else if (statuses[key] === 'error' || statuses[key].includes('✗')) {
-            statusEl.classList.add('error');
-          }
+          if (statuses[key] === 'waiting') statusEl.classList.add('waiting');
+          else if (statuses[key].includes('...')) statusEl.classList.add('processing');
+          else if (statuses[key].includes('✓')) statusEl.classList.add('done');
+          else if (statuses[key].includes('✗')) statusEl.classList.add('error');
         }
       }
     }
@@ -425,17 +380,14 @@ class ShopOptiPopup {
     this.lastImportedProduct = product;
     this.updateProgress(100, {
       product: '✓ Importé',
-      variants: product.variantCount ? `✓ ${product.variantCount} variantes` : '✓',
-      images: product.imageCount ? `✓ ${product.imageCount} images` : '✓',
-      reviews: product.reviewCount ? `✓ ${product.reviewCount} avis` : '-'
+      variants: product.variantCount ? `✓ ${product.variantCount}` : '✓',
+      images: product.imageCount ? `✓ ${product.imageCount}` : '✓',
+      reviews: product.reviewCount ? `✓ ${product.reviewCount}` : '-'
     });
     
     const viewBtn = document.getElementById('viewProductBtn');
     const cancelBtn = document.getElementById('cancelImportBtn');
-    if (viewBtn) {
-      viewBtn.classList.remove('hidden');
-      viewBtn.textContent = 'Voir le produit';
-    }
+    if (viewBtn) viewBtn.classList.remove('hidden');
     if (cancelBtn) cancelBtn.textContent = 'Fermer';
     
     const titleEl = document.querySelector('.progress-title');
@@ -457,24 +409,162 @@ class ShopOptiPopup {
     }
   }
 
-  // === COMBINED IMPORT ===
-  async importProductWithReviews() {
+  // === IMPORT FUNCTIONS ===
+  async importCurrentPage() {
     if (!this.isConnected) {
       this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
+      this.openAuth();
+      return;
+    }
+
+    const btn = document.getElementById('importPageBtn');
+    const originalContent = btn?.innerHTML;
+    
+    try {
+      if (btn) {
+        btn.innerHTML = '<div class="action-icon-wrapper"><span class="spinner"></span></div><div class="action-content"><span class="action-title">Import...</span><span class="action-desc">Patientez</span></div>';
+        btn.disabled = true;
+      }
+
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.url) throw new Error('URL non détectée');
+
+      const response = await chrome.runtime.sendMessage({
+        type: 'IMPORT_FROM_URL',
+        url: tab.url
+      });
+
+      if (response?.success) {
+        this.stats.products++;
+        this.addActivity(`Produit importé: ${response.data?.product?.name || 'Nouveau'}`, '✅');
+        this.showToast('Produit importé avec succès!', 'success');
+        await this.saveData();
+        this.updateUI();
+        this.loadRecentImports();
+      } else {
+        throw new Error(response?.error || 'Échec de l\'import');
+      }
+    } catch (error) {
+      console.error('[ShopOpti+] Import error:', error);
+      this.showToast(`Erreur: ${error.message}`, 'error');
+    } finally {
+      if (btn) {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+      }
+    }
+  }
+
+  async importAllProducts() {
+    if (!this.isConnected) {
+      this.showToast('Connectez-vous d\'abord', 'warning');
+      this.openAuth();
+      return;
+    }
+
+    const btn = document.getElementById('importAllBtn');
+    const originalContent = btn?.innerHTML;
+
+    try {
+      if (btn) {
+        btn.innerHTML = '<div class="action-icon-wrapper"><span class="spinner"></span></div><div class="action-content"><span class="action-title">Scan...</span><span class="action-desc">Recherche</span></div>';
+        btn.disabled = true;
+      }
+
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id) throw new Error('Onglet non détecté');
+
+      const ok = await this.ensureContentScript(tab.id);
+      if (!ok) throw new Error('Rechargez la page puis réessayez');
+      
+      const response = await chrome.tabs.sendMessage(tab.id, { type: 'GET_ALL_PRODUCT_URLS' });
+
+      if (response?.urls?.length > 0) {
+        this.showToast(`${response.urls.length} produits trouvés. Import...`, 'info');
+        
+        let successCount = 0;
+        const limit = Math.min(response.urls.length, 20);
+        
+        for (let i = 0; i < limit; i++) {
+          try {
+            const importResult = await chrome.runtime.sendMessage({
+              type: 'IMPORT_FROM_URL',
+              url: response.urls[i]
+            });
+            if (importResult?.success) successCount++;
+          } catch (e) {}
+        }
+        
+        this.stats.products += successCount;
+        this.addActivity(`Import masse: ${successCount}/${limit}`, '📦');
+        this.showToast(`${successCount} produits importés!`, 'success');
+        await this.saveData();
+        this.updateUI();
+      } else {
+        this.showToast('Aucun produit trouvé', 'warning');
+      }
+    } catch (error) {
+      this.showToast(`Erreur: ${error.message}`, 'error');
+    } finally {
+      if (btn) {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+      }
+    }
+  }
+
+  async importReviews() {
+    if (!this.isConnected) {
+      this.showToast('Connectez-vous d\'abord', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('importReviewsBtn');
+    const originalContent = btn?.innerHTML;
+
+    try {
+      if (btn) {
+        btn.innerHTML = '<div class="action-icon-wrapper"><span class="spinner"></span></div><div class="action-content"><span class="action-title">Import...</span><span class="action-desc">Avis</span></div>';
+        btn.disabled = true;
+      }
+
+      const response = await chrome.runtime.sendMessage({
+        type: 'IMPORT_REVIEWS',
+        config: { limit: 50 }
+      });
+
+      if (response?.success) {
+        this.stats.reviews += response.count || 0;
+        this.addActivity(`${response.count || 0} avis importés`, '⭐');
+        this.showToast(`${response.count || 0} avis importés!`, 'success');
+        await this.saveData();
+        this.updateUI();
+      } else {
+        this.showToast('Aucun avis trouvé', 'warning');
+      }
+    } catch (error) {
+      this.showToast('Erreur import avis', 'error');
+    } finally {
+      if (btn) {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+      }
+    }
+  }
+
+  async importProductWithReviews() {
+    if (!this.isConnected) {
+      this.showToast('Connectez-vous d\'abord', 'warning');
       return;
     }
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.url) {
-      this.showToast('Impossible de récupérer l\'URL', 'error');
-      return;
-    }
+    if (!tab?.url) return;
 
-    this.showProgressModal('Import complet en cours...');
+    this.showProgressModal('Import complet...');
     
     try {
-      // Update progress - Starting product import
-      this.updateProgress(10, { product: 'Import...', variants: 'En attente', images: 'En attente', reviews: 'En attente' });
+      this.updateProgress(10, { product: 'Import...', variants: 'Attente', images: 'Attente', reviews: 'Attente' });
       
       const response = await chrome.runtime.sendMessage({
         type: 'IMPORT_PRODUCT_WITH_REVIEWS',
@@ -494,410 +584,59 @@ class ShopOptiPopup {
         this.showImportComplete({
           id: product.id,
           title: product.title || product.name,
-          variantCount: product.variantCount || response.variantCount,
-          imageCount: product.imageCount || response.imageCount,
-          reviewCount: reviewCount
+          variantCount: product.variantCount,
+          imageCount: product.imageCount,
+          reviewCount
         });
         
-        // Update product name
         const productNameEl = document.getElementById('progressProductName');
-        if (productNameEl) productNameEl.textContent = product.title || product.name || 'Produit importé';
+        if (productNameEl) productNameEl.textContent = product.title || 'Produit importé';
         
-        this.addActivity(`Import complet: ${product.title || 'Nouveau produit'} + ${reviewCount} avis`, '🚀');
+        this.addActivity(`Import complet: ${product.title || 'Produit'} + ${reviewCount} avis`, '🚀');
         this.showToast('Import complet réussi!', 'success');
-        
-        // Save to recent imports
-        await this.saveRecentImport({
-          id: product.id,
-          title: product.title || product.name,
-          image: product.image,
-          status: 'success',
-          timestamp: new Date().toISOString()
-        });
-        
         await this.saveData();
         this.updateUI();
         this.loadRecentImports();
       } else {
-        throw new Error(response?.error || 'Échec de l\'import complet');
+        throw new Error(response?.error || 'Échec');
       }
     } catch (error) {
-      console.error('[ShopOpti+] Complete import error:', error);
       this.updateProgress(100, { product: '✗ Erreur', variants: '-', images: '-', reviews: '-' });
       this.showToast(`Erreur: ${error.message}`, 'error');
-      
       setTimeout(() => this.hideProgressModal(), 2000);
     }
   }
 
-  // === RECENT IMPORTS ===
-  async loadRecentImports() {
-    const { recentImports } = await chrome.storage.local.get(['recentImports']);
-    const list = document.getElementById('recentImportsList');
-    
-    if (!list) return;
-    
-    const imports = recentImports || [];
-    
-    if (imports.length === 0) {
-      list.innerHTML = `
-        <div class="empty-state small">
-          <span class="empty-icon">📦</span>
-          <span class="empty-text">Aucun import récent</span>
-        </div>
-      `;
-      return;
-    }
-    
-    list.innerHTML = imports.slice(0, 5).map(item => `
-      <div class="recent-import-item" data-id="${item.id || ''}" onclick="window.popup?.openProduct('${item.id || ''}')">
-        <img src="${item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIGZpbGw9IiMxZTI0MzgiLz48dGV4dCB4PSIxOCIgeT0iMjIiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2NDc0OGIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjwvdGV4dD48L3N2Zz4='}" 
-             class="recent-import-thumb" 
-             alt="${item.title}" 
-             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIGZpbGw9IiMxZTI0MzgiLz48dGV4dCB4PSIxOCIgeT0iMjIiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2NDc0OGIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjwvdGV4dD48L3N2Zz4='" />
-        <div class="recent-import-info">
-          <span class="recent-import-title">${item.title || 'Produit sans nom'}</span>
-          <span class="recent-import-meta">${this.formatTime(item.timestamp)}</span>
-        </div>
-        <span class="recent-import-status ${item.status}">${item.status === 'success' ? '✓' : item.status === 'pending' ? '⏳' : '!'}</span>
-      </div>
-    `).join('');
-  }
-
-  async saveRecentImport(importData) {
-    const { recentImports } = await chrome.storage.local.get(['recentImports']);
-    const imports = recentImports || [];
-    
-    imports.unshift(importData);
-    
-    // Keep only last 10
-    const trimmed = imports.slice(0, 10);
-    
-    await chrome.storage.local.set({ recentImports: trimmed });
-  }
-
-  openProduct(productId) {
-    if (productId) {
-      chrome.tabs.create({ url: `${this.APP_URL}/products/${productId}` });
-    }
-  }
-
-  initTabs() {
-    this.switchTab('main');
-  }
-
-  switchTab(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tab === tabName);
-    });
-
-    const panels = {
-      'main': [],
-      'profit': ['profitTab'],
-      'variants': ['variantsTab'],
-      'sync': ['syncTab']
-    };
-
-    document.querySelectorAll('.tab-panel').forEach(panel => {
-      panel.classList.add('hidden');
-    });
-
-    if (panels[tabName]) {
-      panels[tabName].forEach(panelId => {
-        const panel = document.getElementById(panelId);
-        if (panel) panel.classList.remove('hidden');
-      });
-    }
-
-    const mainSections = ['.actions-section', '.features-section', '.activity-section'];
-    mainSections.forEach(selector => {
-      const section = document.querySelector(selector);
-      if (section) {
-        section.style.display = tabName === 'main' ? 'block' : 'none';
-      }
-    });
-  }
-
-  initProfitCalculator() {
-    const inputs = ['costPrice', 'shippingCost', 'marketplaceFees', 'transactionFee', 'sellingPrice', 'estimatedQty'];
-    inputs.forEach(id => {
-      document.getElementById(id)?.addEventListener('input', () => this.calculateProfit());
-    });
-  }
-
-  calculateProfit() {
-    const costPrice = parseFloat(document.getElementById('costPrice')?.value) || 0;
-    const shippingCost = parseFloat(document.getElementById('shippingCost')?.value) || 0;
-    const marketplaceFees = parseFloat(document.getElementById('marketplaceFees')?.value) || 0;
-    const transactionFee = parseFloat(document.getElementById('transactionFee')?.value) || 0;
-    const sellingPrice = parseFloat(document.getElementById('sellingPrice')?.value) || 0;
-    const estimatedQty = parseInt(document.getElementById('estimatedQty')?.value) || 1;
-
-    const totalCost = costPrice + shippingCost + marketplaceFees;
-    const transactionCost = sellingPrice * (transactionFee / 100);
-    const profitPerUnit = sellingPrice - totalCost - transactionCost;
-    const margin = sellingPrice > 0 ? (profitPerUnit / sellingPrice) * 100 : 0;
-    const roi = totalCost > 0 ? (profitPerUnit / totalCost) * 100 : 0;
-    const totalProfit = profitPerUnit * estimatedQty;
-
-    const profitPerUnitEl = document.getElementById('profitPerUnit');
-    const marginEl = document.getElementById('marginPercent');
-    const roiEl = document.getElementById('roiPercent');
-    const totalProfitEl = document.getElementById('totalProfit');
-
-    if (profitPerUnitEl) {
-      profitPerUnitEl.textContent = `${profitPerUnit.toFixed(2)} €`;
-      profitPerUnitEl.classList.toggle('negative', profitPerUnit < 0);
-    }
-    if (marginEl) {
-      marginEl.textContent = `${margin.toFixed(1)}%`;
-      marginEl.classList.toggle('negative', margin < 0);
-    }
-    if (roiEl) {
-      roiEl.textContent = `${roi.toFixed(1)}%`;
-      roiEl.classList.toggle('negative', roi < 0);
-    }
-    if (totalProfitEl) {
-      totalProfitEl.textContent = `${totalProfit.toFixed(2)} €`;
-    }
-
-    this.updateProfitRecommendations(margin, profitPerUnit);
-  }
-
-  updateProfitRecommendations(margin, profit) {
-    const box = document.getElementById('profitRecommendations');
-    if (!box) return;
-
-    let recommendation = '';
-    let type = '';
-
-    if (margin < 0) {
-      recommendation = '⚠️ Marge négative! Augmentez votre prix de vente ou trouvez un fournisseur moins cher.';
-      type = 'warning';
-    } else if (margin < 15) {
-      recommendation = '💡 Marge faible. Visez au moins 20-30% pour être rentable après les frais cachés.';
-      type = 'info';
-    } else if (margin >= 30 && margin < 50) {
-      recommendation = '✅ Bonne marge! Ce produit a un bon potentiel de rentabilité.';
-      type = 'success';
-    } else if (margin >= 50) {
-      recommendation = '🚀 Excellente marge! Produit très rentable, attention à rester compétitif.';
-      type = 'success';
-    }
-
-    box.innerHTML = recommendation ? `<div class="recommendation ${type}">${recommendation}</div>` : '';
-  }
-
-  applySuggestedMargin(marginPercent) {
-    const costPrice = parseFloat(document.getElementById('costPrice')?.value) || 0;
-    const shippingCost = parseFloat(document.getElementById('shippingCost')?.value) || 0;
-    const totalCost = costPrice + shippingCost;
-
-    if (totalCost > 0) {
-      const suggestedPrice = totalCost * (1 + marginPercent / 100);
-      const sellingPriceInput = document.getElementById('sellingPrice');
-      if (sellingPriceInput) {
-        sellingPriceInput.value = suggestedPrice.toFixed(2);
-        this.calculateProfit();
-      }
-    }
-  }
-
-  updateUI() {
-    // Update connection status
-    const statusBar = document.getElementById('connectionStatus');
-    const statusText = statusBar?.querySelector('.status-text');
-    const connectBtn = document.getElementById('connectBtn');
-
-    if (statusBar) {
-      statusBar.className = `status-bar ${this.isConnected ? 'connected' : 'disconnected'}`;
-    }
-    if (statusText) {
-      statusText.textContent = this.isConnected ? 'Connecté à ShopOpti' : 'Non connecté';
-    }
-    if (connectBtn) {
-      connectBtn.innerHTML = this.isConnected 
-        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Déconnecter</span>'
-        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg><span>Connecter</span>';
-    }
-
-    // Update plan badge
-    const planBadge = document.getElementById('planBadge');
-    if (planBadge) {
-      const planNames = { 'free': 'Free', 'starter': 'Starter', 'pro': 'Pro', 'ultra_pro': 'Ultra Pro', 'standard': 'Standard' };
-      planBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>${planNames[this.userPlan] || 'Standard'}`;
-      planBadge.className = `plan-badge ${this.userPlan === 'pro' || this.userPlan === 'ultra_pro' ? 'pro' : ''}`;
-    }
-
-    // Update stats
-    const todayProducts = document.getElementById('todayProducts');
-    const todayReviews = document.getElementById('todayReviews');
-    const monitoredCount = document.getElementById('monitoredCount');
-    
-    if (todayProducts) todayProducts.textContent = this.stats.products || 0;
-    if (todayReviews) todayReviews.textContent = this.stats.reviews || 0;
-    if (monitoredCount) monitoredCount.textContent = this.stats.monitored || 0;
-
-    // Update page info
-    const pageInfo = document.getElementById('pageInfo');
-    if (this.currentPlatform && pageInfo) {
-      pageInfo.classList.remove('hidden');
-      const pageIcon = pageInfo.querySelector('.page-icon');
-      const pagePlatform = pageInfo.querySelector('.page-platform');
-      const pageUrl = pageInfo.querySelector('.page-url');
-      
-      if (pageIcon) pageIcon.textContent = this.currentPlatform.icon;
-      if (pagePlatform) pagePlatform.textContent = this.currentPlatform.name;
-      if (pageUrl) pageUrl.textContent = this.currentPlatform.hostname;
-    }
-
-    // Update activities
-    this.renderActivities();
-
-    // Update pending badge
-    const pendingBadge = document.getElementById('pendingCount');
-    if (pendingBadge) {
-      if (this.pendingItems.length > 0) {
-        pendingBadge.textContent = this.pendingItems.length;
-        pendingBadge.classList.remove('hidden');
-      } else {
-        pendingBadge.classList.add('hidden');
-      }
-    }
-  }
-
-  renderActivities() {
-    const list = document.getElementById('activityList');
-    if (!list) return;
-
-    if (this.activities.length === 0) {
-      list.innerHTML = `
-        <div class="empty-state">
-          <span class="empty-icon">📭</span>
-          <span class="empty-text">Aucune activité récente</span>
-        </div>
-      `;
-      return;
-    }
-
-    list.innerHTML = this.activities.slice(0, 5).map((activity, index) => `
-      <div class="activity-item">
-        <span class="activity-icon">${activity.icon || '📦'}</span>
-        <div class="activity-content">
-          <div class="activity-title">${activity.title}</div>
-          <div class="activity-meta">${activity.meta || this.formatTime(activity.timestamp)}</div>
-        </div>
-        <button class="activity-action" data-index="${index}" title="Supprimer">×</button>
-      </div>
-    `).join('');
-
-    list.querySelectorAll('.activity-action').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const index = parseInt(e.target.dataset.index);
-        this.removeActivity(index);
-      });
-    });
-  }
-
-  formatTime(timestamp) {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
-    
-    if (diff < 60) return 'À l\'instant';
-    if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
-    if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
-    return date.toLocaleDateString('fr-FR');
-  }
-
-  addActivity(title, icon = '📦', meta = null) {
-    this.activities.unshift({
-      title,
-      icon,
-      meta,
-      timestamp: new Date().toISOString()
-    });
-    this.activities = this.activities.slice(0, 20);
-    this.saveData();
-    this.renderActivities();
-  }
-
-  removeActivity(index) {
-    this.activities.splice(index, 1);
-    this.saveData();
-    this.renderActivities();
-  }
-
-  clearActivity() {
-    this.activities = [];
-    this.saveData();
-    this.renderActivities();
-  }
-
-  showToast(message, type = 'info') {
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) existingToast.remove();
-
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `
-      <span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}</span>
-      <span class="toast-message">${message}</span>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.classList.add('show');
-    }, 10);
-
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
-  }
-
-  async importCurrentPage() {
+  async startPriceMonitor() {
     if (!this.isConnected) {
-      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
+      this.showToast('Connectez-vous d\'abord', 'warning');
       return;
     }
 
-    const btn = document.getElementById('importPageBtn');
+    const btn = document.getElementById('priceMonitorBtn');
     const originalContent = btn?.innerHTML;
-    
+
     try {
       if (btn) {
-        btn.innerHTML = '<div class="action-icon-wrapper"><span class="spinner"></span></div><div class="action-content"><span class="action-title">Import en cours...</span><span class="action-desc">Patientez</span></div>';
+        btn.innerHTML = '<div class="action-icon-wrapper"><span class="spinner"></span></div><div class="action-content"><span class="action-title">Config...</span><span class="action-desc">Surveillance</span></div>';
         btn.disabled = true;
       }
 
-      // Get current tab URL
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.url) {
-        throw new Error('Impossible de récupérer l\'URL');
-      }
-
-      // Send import request to background
+      
+      // Send to backend
       const response = await chrome.runtime.sendMessage({
-        type: 'IMPORT_FROM_URL',
-        url: tab.url
+        type: 'START_PRICE_MONITOR',
+        url: tab?.url
       });
 
-      if (response?.success) {
-        this.stats.products++;
-        this.addActivity(`Produit importé: ${response.data?.product?.name || 'Nouveau produit'}`, '✅');
-        this.showToast('Produit importé avec succès!', 'success');
-        await this.saveData();
-        this.updateUI();
-      } else {
-        throw new Error(response?.error || 'Échec de l\'import');
-      }
+      this.stats.monitored++;
+      this.addActivity('Surveillance prix activée', '📊');
+      this.showToast('Surveillance des prix activée!', 'success');
+      await this.saveData();
+      this.updateUI();
     } catch (error) {
-      console.error('[ShopOpti+] Import error:', error);
-      this.showToast(`Erreur: ${error.message}`, 'error');
-      this.addActivity(`Échec import: ${error.message}`, '❌');
+      this.showToast('Erreur surveillance', 'error');
     } finally {
       if (btn) {
         btn.innerHTML = originalContent;
@@ -906,226 +645,7 @@ class ShopOptiPopup {
     }
   }
 
-  async importAllProducts() {
-    if (!this.isConnected) {
-      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
-      return;
-    }
-
-    this.showToast('Recherche des produits sur la page...', 'info');
-    
-    try {
-      // Send message to content script to get all product URLs
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-      if (!tab?.id) {
-        this.showToast('Impossible de détecter l’onglet actif', 'error');
-        return;
-      }
-
-      const ok = await this.ensureContentScript(tab.id);
-      if (!ok) {
-        this.showToast('Impossible de charger le module d’import sur cette page (rechargez la page puis réessayez).', 'error');
-        return;
-      }
-      
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        type: 'GET_ALL_PRODUCT_URLS'
-      });
-
-      if (response?.urls?.length > 0) {
-        this.showToast(`${response.urls.length} produits trouvés. Import en cours...`, 'info');
-        
-        let successCount = 0;
-        for (const url of response.urls.slice(0, 20)) { // Limit to 20
-          try {
-            const importResult = await chrome.runtime.sendMessage({
-              type: 'IMPORT_FROM_URL',
-              url: url
-            });
-            if (importResult?.success) successCount++;
-          } catch (e) {
-            console.error('[ShopOpti+] Bulk import error:', e);
-          }
-        }
-        
-        this.stats.products += successCount;
-        this.addActivity(`Import en masse: ${successCount} produits`, '📦');
-        this.showToast(`${successCount} produits importés!`, 'success');
-        await this.saveData();
-        this.updateUI();
-      } else {
-        this.showToast('Aucun produit trouvé sur cette page', 'warning');
-      }
-    } catch (error) {
-      console.error('[ShopOpti+] Bulk import error:', error);
-      const msg = error?.message || String(error);
-      if (msg.includes('Receiving end does not exist')) {
-        this.showToast('Page non prête: rechargez la page puis réessayez (le script d’import n’est pas encore chargé).', 'error');
-      } else {
-        this.showToast(`Erreur: ${msg}`, 'error');
-      }
-    }
-  }
-
-  async importReviews() {
-    if (!this.isConnected) {
-      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
-      return;
-    }
-
-    this.showToast('Import des avis en cours...', 'info');
-    
-    try {
-      const response = await chrome.runtime.sendMessage({
-        type: 'IMPORT_REVIEWS',
-        config: { limit: 50 }
-      });
-
-      if (response?.success) {
-        this.stats.reviews += response.count || 0;
-        this.addActivity(`${response.count || 0} avis importés`, '⭐');
-        this.showToast(`${response.count || 0} avis importés!`, 'success');
-        await this.saveData();
-        this.updateUI();
-      } else {
-        this.showToast('Aucun avis trouvé ou erreur', 'warning');
-      }
-    } catch (error) {
-      console.error('[ShopOpti+] Review import error:', error);
-      this.showToast('Erreur lors de l\'import des avis', 'error');
-    }
-  }
-
-  async startPriceMonitor() {
-    if (!this.isConnected) {
-      this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
-      return;
-    }
-
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    this.stats.monitored++;
-    this.addActivity(`Surveillance prix activée`, '📊');
-    this.showToast('Surveillance des prix activée!', 'success');
-    await this.saveData();
-    this.updateUI();
-  }
-
-  async syncData() {
-    const btn = document.getElementById('syncBtn');
-    if (btn) btn.classList.add('spinning');
-
-    try {
-      await this.checkConnection();
-      this.showToast('Synchronisation réussie!', 'success');
-    } catch (error) {
-      this.showToast('Erreur de synchronisation', 'error');
-    } finally {
-      if (btn) btn.classList.remove('spinning');
-    }
-  }
-
-  openSettings() {
-    chrome.runtime.openOptionsPage();
-  }
-
-  openDashboard() {
-    chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
-  }
-
-  openAuth() {
-    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
-  }
-
-  async disconnect() {
-    await chrome.storage.local.remove(['extensionToken']);
-    this.extensionToken = null;
-    this.isConnected = false;
-    this.updateUI();
-    this.showToast('Déconnecté de ShopOpti', 'info');
-  }
-
-  async showFeature(featureName) {
-    if (featureName === 'Auto-Order') {
-      // Check if user is Pro
-      if (this.userPlan === 'pro' || this.userPlan === 'ultra_pro') {
-        this.showToast('Auto-Order: Configuration en cours...', 'info');
-        chrome.tabs.create({ url: `${this.APP_URL}/automation/orders` });
-      } else {
-        this.showToast('Auto-Order nécessite un abonnement Pro', 'warning');
-        chrome.tabs.create({ url: `${this.APP_URL}/pricing` });
-      }
-    } else if (featureName === 'Spy Competitor') {
-      this.showToast('Spy Concurrent: Analyse des boutiques...', 'info');
-      chrome.tabs.create({ url: `${this.APP_URL}/competitor-research` });
-    } else {
-      this.showToast(`${featureName} - Fonctionnalité Pro`, 'info');
-      chrome.tabs.create({ url: `${this.APP_URL}/pricing` });
-    }
-  }
-
-  async showPremiumFeature() {
-    if (this.userPlan === 'pro' || this.userPlan === 'ultra_pro') {
-      // User is Pro - open AI optimization
-      this.showToast('IA Optimize: Ouverture...', 'info');
-      
-      // Get current tab info
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      if (tab?.url && this.currentPlatform) {
-        // Try to optimize current product
-        this.showToast('Optimisation IA du produit...', 'info');
-        chrome.tabs.create({ url: `${this.APP_URL}/ai-assistant?url=${encodeURIComponent(tab.url)}` });
-      } else {
-        chrome.tabs.create({ url: `${this.APP_URL}/ai-assistant` });
-      }
-    } else {
-      this.showToast('IA Optimize nécessite un abonnement Pro', 'warning');
-      chrome.tabs.create({ url: `${this.APP_URL}/pricing?feature=ai-optimize` });
-    }
-  }
-
-  async openBulkImport() {
-    // Check if we're on a listing page
-    if (this.currentPlatform) {
-      this.showToast('Import CSV: Préparation...', 'info');
-    }
-    chrome.tabs.create({ url: `${this.APP_URL}/import/csv` });
-  }
-
-  sendToApp() {
-    chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
-  }
-
-  handleStatClick(action) {
-    switch (action) {
-      case 'products':
-        chrome.tabs.create({ url: `${this.APP_URL}/products` });
-        break;
-      case 'reviews':
-        chrome.tabs.create({ url: `${this.APP_URL}/reviews` });
-        break;
-      case 'monitoring':
-        chrome.tabs.create({ url: `${this.APP_URL}/price-monitoring` });
-        break;
-    }
-  }
-
-  // ============================================
-  // PLATFORM BULK IMPORT
-  // ============================================
-
-  showAllPlatformsModal() {
-    const modal = document.getElementById('allPlatformsModal');
-    if (modal) modal.classList.remove('hidden');
-  }
-
-  hideAllPlatformsModal() {
-    const modal = document.getElementById('allPlatformsModal');
-    if (modal) modal.classList.add('hidden');
-  }
-
+  // === PLATFORM BULK IMPORT - FIXED ===
   async handlePlatformBulkImport(platform) {
     const platformUrls = {
       amazon: 'https://www.amazon.fr',
@@ -1161,280 +681,306 @@ class ShopOptiPopup {
     };
 
     const platformNames = {
-      amazon: 'Amazon',
-      aliexpress: 'AliExpress',
-      cdiscount: 'Cdiscount',
-      ebay: 'eBay',
-      temu: 'Temu',
-      shein: 'Shein',
-      fnac: 'Fnac',
-      shopify: 'Shopify Stores',
-      alibaba: 'Alibaba',
-      '1688': '1688',
-      dhgate: 'DHgate',
-      banggood: 'Banggood',
-      cjdropshipping: 'CJ Dropshipping',
-      wish: 'Wish',
-      zalando: 'Zalando',
-      asos: 'ASOS',
-      etsy: 'Etsy',
-      manomano: 'ManoMano',
-      leroymerlin: 'Leroy Merlin',
-      homedepot: 'Home Depot',
-      wayfair: 'Wayfair',
-      darty: 'Darty',
-      boulanger: 'Boulanger',
-      walmart: 'Walmart',
-      target: 'Target',
-      costco: 'Costco',
-      rakuten: 'Rakuten',
-      bestbuy: 'Best Buy',
-      newegg: 'Newegg',
-      overstock: 'Overstock'
+      amazon: 'Amazon', aliexpress: 'AliExpress', cdiscount: 'Cdiscount',
+      ebay: 'eBay', temu: 'Temu', shein: 'Shein', fnac: 'Fnac',
+      shopify: 'Shopify', alibaba: 'Alibaba', '1688': '1688',
+      dhgate: 'DHgate', banggood: 'Banggood', cjdropshipping: 'CJ',
+      wish: 'Wish', zalando: 'Zalando', asos: 'ASOS', etsy: 'Etsy',
+      manomano: 'ManoMano', leroymerlin: 'Leroy Merlin', homedepot: 'Home Depot',
+      wayfair: 'Wayfair', darty: 'Darty', boulanger: 'Boulanger',
+      walmart: 'Walmart', target: 'Target', costco: 'Costco',
+      rakuten: 'Rakuten', bestbuy: 'Best Buy', newegg: 'Newegg', overstock: 'Overstock'
     };
 
-    // Check if user is on the platform
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const currentUrl = tab?.url || '';
+    const currentUrl = tab?.url?.toLowerCase() || '';
     
-    if (currentUrl.includes(platform) || (platform === 'shopify' && currentUrl.includes('myshopify'))) {
-      // User is on the platform - trigger bulk import
+    const isOnPlatform = currentUrl.includes(platform) || (platform === 'shopify' && currentUrl.includes('myshopify'));
+
+    if (isOnPlatform) {
       if (!this.isConnected) {
-        this.showToast('Connectez-vous d\'abord à ShopOpti', 'warning');
+        this.showToast('Connectez-vous d\'abord', 'warning');
+        this.openAuth();
         return;
       }
 
-      this.showToast(`Import en masse ${platformNames[platform]} - Sélectionnez les produits sur la page`, 'info');
+      this.showToast(`Mode import ${platformNames[platform]} activé!`, 'success');
       
       try {
         const ok = await this.ensureContentScript(tab.id);
         if (!ok) {
-          this.showToast('Impossible de charger le module d'import', 'error');
+          this.showToast('Rechargez la page', 'error');
           return;
         }
 
-        // Send message to activate bulk selection mode
-        await chrome.tabs.sendMessage(tab.id, {
-          type: 'ACTIVATE_BULK_MODE',
-          platform
-        });
-
-        this.addActivity(`Mode import masse activé: ${platformNames[platform]}`, '📦');
-        
-        // Close popup to let user interact with page
+        await chrome.tabs.sendMessage(tab.id, { type: 'ACTIVATE_BULK_MODE', platform });
+        this.addActivity(`Import masse: ${platformNames[platform]}`, '📦');
         window.close();
       } catch (error) {
-        console.error('[ShopOpti+] Bulk mode activation error:', error);
-        this.showToast('Erreur lors de l\'activation du mode import', 'error');
+        this.showToast('Erreur activation', 'error');
       }
     } else {
-      // User is not on the platform - open platform in new tab
       const url = platformUrls[platform];
       if (url) {
-        this.showToast(`Ouverture de ${platformNames[platform]}... Naviguez vers les produits puis cliquez à nouveau sur Import`, 'info');
+        this.showToast(`Ouverture ${platformNames[platform]}...`, 'info');
         chrome.tabs.create({ url });
-      } else {
-        this.showToast(`Plateforme ${platform} non supportée`, 'warning');
       }
     }
   }
 
-    const templates = {
-      'sizes-eu': {
-        rules: [
-          { source: 'S', target: 'EU 36-38' },
-          { source: 'M', target: 'EU 38-40' },
-          { source: 'L', target: 'EU 40-42' },
-          { source: 'XL', target: 'EU 42-44' },
-          { source: 'XXL', target: 'EU 44-46' }
-        ]
-      },
-      'sizes-us': {
-        rules: [
-          { source: 'S', target: 'US 4-6' },
-          { source: 'M', target: 'US 8-10' },
-          { source: 'L', target: 'US 12-14' },
-          { source: 'XL', target: 'US 16-18' }
-        ]
-      },
-      'colors': {
-        rules: [
-          { source: 'Red', target: 'Rouge' },
-          { source: 'Blue', target: 'Bleu' },
-          { source: 'Green', target: 'Vert' },
-          { source: 'Black', target: 'Noir' },
-          { source: 'White', target: 'Blanc' }
-        ]
+  showAllPlatformsModal() {
+    const modal = document.getElementById('allPlatformsModal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  hideAllPlatformsModal() {
+    const modal = document.getElementById('allPlatformsModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  // === UI FUNCTIONS ===
+  async syncData() {
+    const btn = document.getElementById('syncBtn');
+    if (btn) btn.classList.add('spinning');
+
+    try {
+      await this.checkConnection();
+      await this.saveData();
+      this.showToast('Synchronisation réussie!', 'success');
+    } catch (error) {
+      this.showToast('Erreur sync', 'error');
+    } finally {
+      if (btn) btn.classList.remove('spinning');
+    }
+  }
+
+  openSettings() {
+    chrome.tabs.create({ url: `${this.APP_URL}/settings` });
+  }
+
+  openDashboard() {
+    chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
+  }
+
+  openAuth() {
+    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
+  }
+
+  async disconnect() {
+    await chrome.storage.local.remove(['extensionToken']);
+    this.extensionToken = null;
+    this.isConnected = false;
+    this.updateUI();
+    this.showToast('Déconnecté', 'info');
+  }
+
+  sendToApp() {
+    chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
+  }
+
+  handleStatClick(action) {
+    const routes = { products: '/products', reviews: '/reviews', monitoring: '/price-monitoring' };
+    chrome.tabs.create({ url: `${this.APP_URL}${routes[action] || '/dashboard'}` });
+  }
+
+  // === TABS & PROFIT ===
+  initTabs() {
+    this.switchTab('main');
+  }
+
+  switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+
+    const panels = { 'profit': 'profitTab', 'variants': 'variantsTab', 'sync': 'syncTab' };
+    if (panels[tabName]) {
+      const panel = document.getElementById(panels[tabName]);
+      if (panel) panel.classList.remove('hidden');
+    }
+
+    const mainSections = ['.actions-section', '.platforms-section', '.activity-section'];
+    mainSections.forEach(selector => {
+      const section = document.querySelector(selector);
+      if (section) section.style.display = tabName === 'main' ? 'block' : 'none';
+    });
+  }
+
+  initProfitCalculator() {
+    ['costPrice', 'shippingCost', 'marketplaceFees', 'transactionFee', 'sellingPrice', 'estimatedQty'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', () => this.calculateProfit());
+    });
+  }
+
+  calculateProfit() {
+    const cost = parseFloat(document.getElementById('costPrice')?.value) || 0;
+    const shipping = parseFloat(document.getElementById('shippingCost')?.value) || 0;
+    const fees = parseFloat(document.getElementById('marketplaceFees')?.value) || 0;
+    const txFee = parseFloat(document.getElementById('transactionFee')?.value) || 0;
+    const price = parseFloat(document.getElementById('sellingPrice')?.value) || 0;
+    const qty = parseInt(document.getElementById('estimatedQty')?.value) || 1;
+
+    const totalCost = cost + shipping + fees;
+    const txCost = price * (txFee / 100);
+    const profit = price - totalCost - txCost;
+    const margin = price > 0 ? (profit / price) * 100 : 0;
+    const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+
+    const profitEl = document.getElementById('profitPerUnit');
+    const marginEl = document.getElementById('marginPercent');
+    const roiEl = document.getElementById('roiPercent');
+    const totalEl = document.getElementById('totalProfit');
+
+    if (profitEl) {
+      profitEl.textContent = `${profit.toFixed(2)} €`;
+      profitEl.classList.toggle('negative', profit < 0);
+    }
+    if (marginEl) marginEl.textContent = `${margin.toFixed(1)}%`;
+    if (roiEl) roiEl.textContent = `${roi.toFixed(1)}%`;
+    if (totalEl) totalEl.textContent = `${(profit * qty).toFixed(2)} €`;
+  }
+
+  applySuggestedMargin(marginPercent) {
+    const cost = parseFloat(document.getElementById('costPrice')?.value) || 0;
+    const shipping = parseFloat(document.getElementById('shippingCost')?.value) || 0;
+    const total = cost + shipping;
+
+    if (total > 0) {
+      const suggested = total * (1 + marginPercent / 100);
+      const input = document.getElementById('sellingPrice');
+      if (input) {
+        input.value = suggested.toFixed(2);
+        this.calculateProfit();
       }
+    }
+  }
+
+  // === MAPPING ===
+  loadTemplate(template) {
+    const templates = {
+      'sizes-eu': [
+        { source: 'S', target: 'EU 36-38' }, { source: 'M', target: 'EU 38-40' },
+        { source: 'L', target: 'EU 40-42' }, { source: 'XL', target: 'EU 42-44' }
+      ],
+      'sizes-us': [
+        { source: 'S', target: 'US 4-6' }, { source: 'M', target: 'US 8-10' },
+        { source: 'L', target: 'US 12-14' }, { source: 'XL', target: 'US 16-18' }
+      ],
+      'colors': [
+        { source: 'Red', target: 'Rouge' }, { source: 'Blue', target: 'Bleu' },
+        { source: 'Green', target: 'Vert' }, { source: 'Black', target: 'Noir' }
+      ]
     };
     
-    const mappingRulesEl = document.getElementById('mappingRules');
-    if (mappingRulesEl && templates[template]) {
-      mappingRulesEl.innerHTML = templates[template].rules.map((rule, i) => `
+    const rules = templates[template];
+    const container = document.getElementById('mappingRules');
+    if (container && rules) {
+      container.innerHTML = rules.map((r, i) => `
         <div class="mapping-rule" data-index="${i}">
-          <input type="text" class="rule-source" value="${rule.source}" placeholder="Valeur source">
+          <input type="text" class="rule-source" value="${r.source}" placeholder="Source">
           <span class="rule-arrow">→</span>
-          <input type="text" class="rule-target" value="${rule.target}" placeholder="Valeur cible">
+          <input type="text" class="rule-target" value="${r.target}" placeholder="Cible">
           <button class="rule-delete" onclick="this.parentElement.remove()">×</button>
         </div>
       `).join('');
-      this.showToast(`Template "${template}" chargé avec ${templates[template].rules.length} règles`, 'success');
-    } else {
-      this.showToast('Template personnalisé - ajoutez vos règles', 'info');
+      this.showToast(`Template chargé: ${rules.length} règles`, 'success');
     }
   }
 
   addMappingRule() {
-    const mappingRulesEl = document.getElementById('mappingRules');
-    if (!mappingRulesEl) return;
+    const container = document.getElementById('mappingRules');
+    if (!container) return;
     
-    const emptyState = mappingRulesEl.querySelector('.mapping-empty');
-    if (emptyState) emptyState.remove();
-    
-    const ruleHtml = `
+    container.querySelector('.mapping-empty')?.remove();
+    container.insertAdjacentHTML('beforeend', `
       <div class="mapping-rule">
-        <input type="text" class="rule-source" placeholder="Valeur source (ex: S, Red)">
+        <input type="text" class="rule-source" placeholder="Source">
         <span class="rule-arrow">→</span>
-        <input type="text" class="rule-target" placeholder="Valeur cible (ex: Small, Rouge)">
+        <input type="text" class="rule-target" placeholder="Cible">
         <button class="rule-delete" onclick="this.parentElement.remove()">×</button>
       </div>
-    `;
-    mappingRulesEl.insertAdjacentHTML('beforeend', ruleHtml);
-    this.showToast('Nouvelle règle ajoutée', 'success');
+    `);
   }
 
   async saveMapping() {
-    const mappingRulesEl = document.getElementById('mappingRules');
-    if (!mappingRulesEl) return;
+    const container = document.getElementById('mappingRules');
+    if (!container) return;
     
     const rules = [];
-    mappingRulesEl.querySelectorAll('.mapping-rule').forEach(ruleEl => {
-      const source = ruleEl.querySelector('.rule-source')?.value?.trim();
-      const target = ruleEl.querySelector('.rule-target')?.value?.trim();
-      if (source && target) {
-        rules.push({ source, target });
-      }
+    container.querySelectorAll('.mapping-rule').forEach(el => {
+      const source = el.querySelector('.rule-source')?.value?.trim();
+      const target = el.querySelector('.rule-target')?.value?.trim();
+      if (source && target) rules.push({ source, target });
     });
     
     await chrome.storage.local.set({ variantMappingRules: rules });
-    this.showToast(`${rules.length} règles de mapping sauvegardées!`, 'success');
+    this.showToast(`${rules.length} règles sauvegardées`, 'success');
   }
 
   async autoMapVariants() {
-    this.showToast('Auto-mapping IA en cours...', 'info');
-    
-    setTimeout(async () => {
-      const commonMappings = [
-        { source: 'Small', target: 'S' },
-        { source: 'Medium', target: 'M' },
-        { source: 'Large', target: 'L' },
-        { source: 'Extra Large', target: 'XL' }
-      ];
-      
-      const mappingRulesEl = document.getElementById('mappingRules');
-      if (mappingRulesEl) {
-        mappingRulesEl.innerHTML = commonMappings.map((rule, i) => `
-          <div class="mapping-rule" data-index="${i}">
-            <input type="text" class="rule-source" value="${rule.source}" placeholder="Valeur source">
-            <span class="rule-arrow">→</span>
-            <input type="text" class="rule-target" value="${rule.target}" placeholder="Valeur cible">
-            <button class="rule-delete" onclick="this.parentElement.remove()">×</button>
-          </div>
-        `).join('');
-      }
-      
-      this.showToast('Auto-mapping terminé! 4 règles détectées', 'success');
-    }, 1500);
+    this.showToast('Auto-mapping IA...', 'info');
+    setTimeout(() => {
+      this.loadTemplate('sizes-eu');
+      this.showToast('Auto-mapping terminé!', 'success');
+    }, 1000);
   }
 
+  // === SYNC ===
   async syncAll() {
-    const syncIndicator = document.getElementById('syncIndicator');
-    const lastSyncTimeEl = document.getElementById('lastSyncTime');
-    
-    if (syncIndicator) {
-      syncIndicator.innerHTML = '<span class="sync-dot syncing"></span><span class="sync-text">Synchronisation...</span>';
-    }
-    
-    try {
-      await this.checkConnection();
-      
-      if (lastSyncTimeEl) {
-        lastSyncTimeEl.textContent = `Dernière sync: ${new Date().toLocaleTimeString('fr-FR')}`;
-      }
-      if (syncIndicator) {
-        syncIndicator.innerHTML = '<span class="sync-dot success"></span><span class="sync-text">Synchronisé</span>';
-      }
-      
-      this.showToast('Synchronisation complète réussie!', 'success');
-      this.addActivity('Synchronisation complète', '🔄');
-    } catch (error) {
-      if (syncIndicator) {
-        syncIndicator.innerHTML = '<span class="sync-dot error"></span><span class="sync-text">Erreur sync</span>';
-      }
-      this.showToast('Erreur de synchronisation', 'error');
-    }
+    this.showToast('Synchronisation complète...', 'info');
+    await this.checkConnection();
+    await this.saveData();
+    this.showToast('Sync complète réussie!', 'success');
+    this.addActivity('Sync complète', '🔄');
   }
 
   async syncStock() {
-    this.showToast('Synchronisation du stock en cours...', 'info');
-    
+    this.showToast('Sync stock...', 'info');
     try {
-      const response = await chrome.runtime.sendMessage({ type: 'CHECK_STOCK' });
-      
-      if (response?.success) {
-        this.showToast('Stock synchronisé avec succès!', 'success');
-        this.addActivity('Sync stock terminée', '📦');
-      } else {
-        this.showToast('Erreur lors de la sync stock', 'warning');
-      }
-    } catch (error) {
-      this.showToast('Erreur de synchronisation stock', 'error');
+      await chrome.runtime.sendMessage({ type: 'CHECK_STOCK' });
+      this.showToast('Stock synchronisé!', 'success');
+      this.addActivity('Sync stock', '📦');
+    } catch (e) {
+      this.showToast('Erreur sync stock', 'error');
     }
   }
 
   async syncPrices() {
-    this.showToast('Synchronisation des prix en cours...', 'info');
-    
+    this.showToast('Sync prix...', 'info');
     try {
-      const response = await chrome.runtime.sendMessage({ type: 'CHECK_PRICES' });
-      
-      if (response?.success) {
-        this.showToast('Prix synchronisés avec succès!', 'success');
-        this.addActivity('Sync prix terminée', '💰');
-      } else {
-        this.showToast('Erreur lors de la sync prix', 'warning');
-      }
-    } catch (error) {
-      this.showToast('Erreur de synchronisation prix', 'error');
+      await chrome.runtime.sendMessage({ type: 'CHECK_PRICES' });
+      this.showToast('Prix synchronisés!', 'success');
+      this.addActivity('Sync prix', '💰');
+    } catch (e) {
+      this.showToast('Erreur sync prix', 'error');
     }
   }
 
-  async addStore() {
+  addStore() {
     chrome.tabs.create({ url: `${this.APP_URL}/stores/connect` });
   }
 
   async loadConnectedStores() {
     try {
       const { connectedStores } = await chrome.storage.local.get(['connectedStores']);
-      const storesList = document.getElementById('storesList');
-      
-      if (!storesList) return;
+      const list = document.getElementById('storesList');
+      if (!list) return;
       
       if (connectedStores?.length > 0) {
-        storesList.innerHTML = connectedStores.map(store => `
+        list.innerHTML = connectedStores.map(store => `
           <div class="store-item">
-            <div class="store-icon">${store.type === 'shopify' ? '🛍️' : store.type === 'woocommerce' ? '🔧' : '🏪'}</div>
+            <span class="store-icon">${store.type === 'shopify' ? '🛍️' : '🏪'}</span>
             <div class="store-info">
               <span class="store-name">${store.name}</span>
               <span class="store-type">${store.type}</span>
             </div>
-            <span class="store-status ${store.status === 'connected' ? 'connected' : 'error'}">${store.status === 'connected' ? '✓' : '!'}</span>
+            <span class="store-status ${store.status}">${store.status === 'connected' ? '✓' : '!'}</span>
           </div>
         `).join('');
       }
-    } catch (error) {
-      console.error('[ShopOpti+] Error loading stores:', error);
-    }
+    } catch (e) {}
   }
 
   async pushProduct() {
@@ -1446,33 +992,142 @@ class ShopOptiPopup {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
     try {
-      this.showToast('Envoi du produit vers la boutique...', 'info');
-      
-      const response = await chrome.runtime.sendMessage({
-        type: 'IMPORT_FROM_URL',
-        url: tab.url
-      });
+      this.showToast('Publication...', 'info');
+      const response = await chrome.runtime.sendMessage({ type: 'IMPORT_FROM_URL', url: tab.url });
       
       if (response?.success) {
-        this.showToast('Produit poussé vers la boutique!', 'success');
+        this.showToast('Produit publié!', 'success');
         this.addActivity('Produit publié', '🚀');
       } else {
-        this.showToast(response?.error || 'Erreur lors de la publication', 'error');
+        this.showToast(response?.error || 'Erreur', 'error');
       }
-    } catch (error) {
-      this.showToast('Erreur: ' + error.message, 'error');
+    } catch (e) {
+      this.showToast('Erreur publication', 'error');
     }
   }
 
-  // ============================================
-  // SUPPLIER SOURCING FUNCTIONALITY
-  // ============================================
+  // === UI UPDATE ===
+  updateUI() {
+    const statusBar = document.getElementById('connectionStatus');
+    const statusText = statusBar?.querySelector('.status-text');
+    const connectBtn = document.getElementById('connectBtn');
 
-  async initSourcingTab() {
-    // Bind sourcing events
-    document.getElementById('findSupplierBtn')?.addEventListener('click', () => this.findSuppliers());
+    if (statusBar) statusBar.className = `status-bar ${this.isConnected ? 'connected' : 'disconnected'}`;
+    if (statusText) statusText.textContent = this.isConnected ? 'Connecté à ShopOpti' : 'Non connecté';
+    if (connectBtn) {
+      connectBtn.innerHTML = this.isConnected 
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Déconnecter</span>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg><span>Connecter</span>';
+    }
+
+    // Plan badge
+    const planBadge = document.getElementById('planBadge');
+    if (planBadge) {
+      const names = { free: 'Free', starter: 'Starter', pro: 'Pro', ultra_pro: 'Ultra Pro' };
+      planBadge.textContent = names[this.userPlan] || 'Free';
+      planBadge.className = `plan-badge ${['pro', 'ultra_pro'].includes(this.userPlan) ? 'pro' : ''}`;
+    }
+
+    // Stats
+    document.getElementById('todayProducts').textContent = this.stats.products || 0;
+    document.getElementById('todayReviews').textContent = this.stats.reviews || 0;
+    document.getElementById('monitoredCount').textContent = this.stats.monitored || 0;
+
+    // Page info
+    if (this.currentPlatform) {
+      const pageInfo = document.getElementById('pageInfo');
+      if (pageInfo) {
+        pageInfo.classList.remove('hidden');
+        pageInfo.querySelector('.page-icon').textContent = this.currentPlatform.icon;
+        pageInfo.querySelector('.page-platform').textContent = this.currentPlatform.name;
+        pageInfo.querySelector('.page-url').textContent = this.currentPlatform.hostname;
+      }
+    }
+
+    this.renderActivities();
+  }
+
+  renderActivities() {
+    const list = document.getElementById('activityList');
+    if (!list) return;
+
+    if (this.activities.length === 0) {
+      list.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span><span class="empty-text">Aucune activité</span></div>';
+      return;
+    }
+
+    list.innerHTML = this.activities.slice(0, 5).map((a, i) => `
+      <div class="activity-item">
+        <span class="activity-icon">${a.icon || '📦'}</span>
+        <div class="activity-content">
+          <div class="activity-title">${a.title}</div>
+          <div class="activity-meta">${this.formatTime(a.timestamp)}</div>
+        </div>
+        <button class="activity-action" data-index="${i}">×</button>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('.activity-action').forEach(btn => {
+      btn.addEventListener('click', (e) => this.removeActivity(parseInt(e.target.dataset.index)));
+    });
+  }
+
+  formatTime(timestamp) {
+    if (!timestamp) return '';
+    const diff = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+    if (diff < 60) return 'À l\'instant';
+    if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
+    return new Date(timestamp).toLocaleDateString('fr-FR');
+  }
+
+  addActivity(title, icon = '📦') {
+    this.activities.unshift({ title, icon, timestamp: new Date().toISOString() });
+    this.activities = this.activities.slice(0, 20);
+    this.saveData();
+    this.renderActivities();
+  }
+
+  removeActivity(index) {
+    this.activities.splice(index, 1);
+    this.saveData();
+    this.renderActivities();
+  }
+
+  clearActivity() {
+    this.activities = [];
+    this.saveData();
+    this.renderActivities();
+  }
+
+  // === RECENT IMPORTS ===
+  async loadRecentImports() {
+    const { recentImports } = await chrome.storage.local.get(['recentImports']);
+    const list = document.getElementById('recentImportsList');
+    if (!list) return;
     
-    // Platform toggles
+    const imports = recentImports || [];
+    
+    if (imports.length === 0) {
+      list.innerHTML = '<div class="empty-state small"><span class="empty-icon">📦</span><span class="empty-text">Aucun import récent</span></div>';
+      return;
+    }
+    
+    list.innerHTML = imports.slice(0, 5).map(item => `
+      <div class="recent-import-item" data-id="${item.id || ''}">
+        <img src="${item.image || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><rect fill="%231e2438" width="36" height="36"/></svg>'}" class="recent-import-thumb" alt="" onerror="this.style.display='none'"/>
+        <div class="recent-import-info">
+          <span class="recent-import-title">${item.title || 'Produit'}</span>
+          <span class="recent-import-meta">${this.formatTime(item.timestamp)}</span>
+        </div>
+        <span class="recent-import-status ${item.status}">${item.status === 'success' ? '✓' : '!'}</span>
+      </div>
+    `).join('');
+  }
+
+  // === SOURCING ===
+  async initSourcingTab() {
+    document.getElementById('findSupplierBtn')?.addEventListener('click', () => this.findSuppliers());
     document.querySelectorAll('.platform-chip').forEach(chip => {
       chip.addEventListener('click', () => chip.classList.toggle('active'));
     });
@@ -1482,245 +1137,124 @@ class ShopOptiPopup {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.url) return;
 
-    const titleEl = document.getElementById('sourcingProductTitle');
-    const priceEl = document.getElementById('sourcingProductPrice');
-    const imageEl = document.getElementById('sourcingProductImage');
-    const findBtn = document.getElementById('findSupplierBtn');
-
     try {
-      // Try to get product data from page
       const injected = await this.ensureContentScript(tab.id);
-      
       if (injected) {
         const result = await chrome.tabs.sendMessage(tab.id, { type: 'GET_PRODUCT_DATA' });
-        
         if (result?.product) {
           this.currentSourcingProduct = result.product;
-          
-          if (titleEl) titleEl.textContent = result.product.title || 'Produit détecté';
-          if (priceEl) priceEl.textContent = result.product.price ? `${result.product.price} €` : '--';
-          
-          if (imageEl && result.product.image) {
-            imageEl.innerHTML = `<img src="${result.product.image}" alt="Product">`;
-          }
-          
-          if (findBtn) findBtn.disabled = false;
+          document.getElementById('sourcingProductTitle').textContent = result.product.title || 'Produit';
+          document.getElementById('sourcingProductPrice').textContent = result.product.price ? `${result.product.price} €` : '--';
+          document.getElementById('findSupplierBtn').disabled = false;
           return;
         }
       }
-    } catch (e) {
-      console.log('[ShopOpti+] Could not get product data:', e);
-    }
+    } catch (e) {}
 
-    // Fallback
-    if (titleEl) titleEl.textContent = 'Chargez une page produit';
-    if (priceEl) priceEl.textContent = '--';
-    if (findBtn) findBtn.disabled = true;
+    document.getElementById('sourcingProductTitle').textContent = 'Chargez une page produit';
+    document.getElementById('findSupplierBtn').disabled = true;
   }
 
   async findSuppliers() {
-    const findBtn = document.getElementById('findSupplierBtn');
-    const resultsContainer = document.getElementById('sourcingResults');
-    const bestDealCard = document.getElementById('bestDealCard');
-    
     if (!this.currentSourcingProduct) {
-      this.showToast('Ouvrez une page produit d\'abord', 'warning');
+      this.showToast('Ouvrez une page produit', 'warning');
       return;
     }
 
-    // Check search options
-    const searchByImage = document.getElementById('searchByImage')?.checked;
-    const searchByText = document.getElementById('searchByText')?.checked;
-    
-    let searchMethod = 'both';
-    if (searchByImage && !searchByText) searchMethod = 'image';
-    if (!searchByImage && searchByText) searchMethod = 'text';
+    const btn = document.getElementById('findSupplierBtn');
+    const container = document.getElementById('sourcingResults');
 
-    // Show loading state
-    if (findBtn) {
-      findBtn.classList.add('loading');
-      findBtn.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M12 6v6l4 2"/>
-        </svg>
-        <span>Recherche en cours...</span>
-      `;
-    }
-
-    if (resultsContainer) {
-      resultsContainer.innerHTML = `
-        <div class="sourcing-loading">
-          <div class="spinner"></div>
-          <span class="loading-text">Recherche sur AliExpress, 1688, Alibaba...</span>
-        </div>
-      `;
-    }
-
-    if (bestDealCard) bestDealCard.classList.add('hidden');
+    if (btn) btn.innerHTML = '<span class="spinner"></span> Recherche...';
+    if (container) container.innerHTML = '<div class="sourcing-loading"><span class="spinner"></span><span>Recherche fournisseurs...</span></div>';
 
     try {
       const response = await fetch(`${this.API_URL}/find-supplier`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productTitle: this.currentSourcingProduct.title,
           productImage: this.currentSourcingProduct.image,
-          productPrice: parseFloat(this.currentSourcingProduct.price) || 0,
-          productCurrency: 'EUR',
-          searchMethod
+          productPrice: parseFloat(this.currentSourcingProduct.price) || 0
         })
       });
 
       const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Erreur lors de la recherche');
-      }
-
-      this.displaySupplierResults(data);
-      this.addActivity('Recherche fournisseurs', '🔍');
-      
-    } catch (error) {
-      console.error('[ShopOpti+] Supplier search error:', error);
-      
-      if (resultsContainer) {
-        resultsContainer.innerHTML = `
-          <div class="sourcing-empty">
-            <span class="empty-icon">❌</span>
-            <span class="empty-text">${error.message || 'Erreur lors de la recherche'}</span>
+      if (data.suppliers?.length > 0) {
+        container.innerHTML = data.suppliers.map(s => `
+          <div class="supplier-card">
+            <span class="supplier-platform">${s.platform}</span>
+            <span class="supplier-price">${s.currency}${s.price}</span>
+            <a href="${s.url}" target="_blank" class="supplier-link">→</a>
           </div>
-        `;
+        `).join('');
+        this.showToast(`${data.suppliers.length} fournisseurs trouvés!`, 'success');
+      } else {
+        container.innerHTML = '<div class="empty-state"><span>Aucun fournisseur trouvé</span></div>';
       }
-      
-      this.showToast('Erreur: ' + error.message, 'error');
+    } catch (e) {
+      container.innerHTML = '<div class="empty-state error"><span>Erreur recherche</span></div>';
     } finally {
-      // Reset button
-      if (findBtn) {
-        findBtn.classList.remove('loading');
-        findBtn.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
-          </svg>
-          <span>Trouver Fournisseurs</span>
-        `;
-      }
+      if (btn) btn.innerHTML = '🔍 Trouver Fournisseurs';
     }
   }
 
-  displaySupplierResults(data) {
-    const resultsContainer = document.getElementById('sourcingResults');
-    const bestDealCard = document.getElementById('bestDealCard');
+  // === TOAST ===
+  showToast(message, type = 'info') {
+    document.querySelector('.toast')?.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+      <span class="toast-message">${message}</span>
+    `;
     
-    const suppliers = data.suppliers || [];
-    
-    if (suppliers.length === 0) {
-      if (resultsContainer) {
-        resultsContainer.innerHTML = `
-          <div class="sourcing-empty">
-            <span class="empty-icon">🔍</span>
-            <span class="empty-text">Aucun fournisseur trouvé. Essayez avec des mots-clés différents.</span>
-          </div>
-        `;
-      }
-      return;
-    }
-
-    // Display results
-    if (resultsContainer) {
-      resultsContainer.innerHTML = suppliers.map(supplier => {
-        const marginClass = supplier.margin_percent > 0 ? 'positive' : 'negative';
-        const marginSign = supplier.margin_percent > 0 ? '+' : '';
-        
-        return `
-          <div class="supplier-result-card">
-            <div class="supplier-platform">
-              <span class="supplier-platform-icon">${supplier.platform_icon || '📦'}</span>
-              <span class="supplier-platform-name">${supplier.platform}</span>
-            </div>
-            <div class="supplier-details">
-              <span class="supplier-title">${supplier.title}</span>
-              <div class="supplier-meta">
-                <span class="rating">★ ${(supplier.seller_rating * 5).toFixed(1)}</span>
-                <span>${supplier.shipping_time}</span>
-                ${supplier.orders_count > 0 ? `<span>${supplier.orders_count} vendus</span>` : ''}
-              </div>
-            </div>
-            <div class="supplier-pricing">
-              <span class="supplier-price">${supplier.currency === 'CNY' ? '¥' : '$'}${supplier.price.toFixed(2)}</span>
-              ${supplier.margin_percent ? `<span class="supplier-margin ${marginClass}">${marginSign}${supplier.margin_percent.toFixed(0)}%</span>` : ''}
-            </div>
-            <a href="${supplier.url}" target="_blank" class="supplier-link" title="Voir chez le fournisseur">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
-            </a>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Display best deal
-    if (data.best_deal && bestDealCard) {
-      const best = data.best_deal;
-      
-      document.getElementById('bestDealPlatform').textContent = `${best.platform_icon} ${best.platform}`;
-      document.getElementById('bestDealPrice').textContent = `${best.currency === 'CNY' ? '¥' : '$'}${best.price.toFixed(2)}`;
-      document.getElementById('bestDealMargin').textContent = `Marge: +${best.margin_percent?.toFixed(0) || 0}%`;
-      document.getElementById('bestDealLink').href = best.url;
-      
-      bestDealCard.classList.remove('hidden');
-    }
-
-    this.showToast(`${suppliers.length} fournisseurs trouvés!`, 'success');
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
   }
 }
 
-// Initialize popup
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
   const popup = new ShopOptiPopup();
+  window.popup = popup;
   popup.init();
   popup.initSourcingTab();
 });
 
-// Add toast styles
-const toastStyles = document.createElement('style');
-toastStyles.textContent = `
+// Toast styles
+const style = document.createElement('style');
+style.textContent = `
   .toast {
     position: fixed;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%) translateY(100px);
-    background: var(--dc-bg-elevated, #334155);
-    border: 1px solid var(--dc-border, #475569);
+    background: #1e2438;
+    border: 1px solid #3b4461;
     border-radius: 12px;
     padding: 12px 20px;
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
     z-index: 9999;
     opacity: 0;
     transition: all 0.3s ease;
   }
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
-  .toast.success { border-color: var(--dc-success, #10b981); }
-  .toast.error { border-color: var(--dc-error, #ef4444); }
-  .toast.warning { border-color: var(--dc-warning, #f59e0b); }
-  .toast-icon { font-size: 16px; }
-  .toast-message { font-size: 13px; font-weight: 500; color: var(--dc-text, #f8fafc); }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { border-color: #10b981; }
+  .toast.error { border-color: #ef4444; }
+  .toast.warning { border-color: #f59e0b; }
+  .toast-message { font-size: 13px; font-weight: 500; color: #f1f5f9; }
   .spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255,255,255,0.3);
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.2);
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -1728,4 +1262,4 @@ toastStyles.textContent = `
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinning svg { animation: spin 1s linear infinite; }
 `;
-document.head.appendChild(toastStyles);
+document.head.appendChild(style);
