@@ -1,17 +1,18 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v5.0.0
+// ShopOpti+ Chrome Extension - Content Script v5.1.0
 // SECURITY HARDENED - XSS Prevention, Safe DOM
 // Modular Platform Detection for 30+ Platforms
+// Bulk Import V5 + Multi-Store Integration
 // ============================================
 
 (function () {
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '5.0.0') return;
-  window.__shopOptiCSVersion = '5.0.0';
+  if (window.__shopOptiCSVersion === '5.1.0') return;
+  window.__shopOptiCSVersion = '5.1.0';
 
-  console.log('[ShopOpti+] Content script v5.0.0 initializing...');
+  console.log('[ShopOpti+] Content script v5.1.0 initializing...');
 
   // ============================================
   // SECURITY MODULE (inline for content script)
@@ -67,26 +68,34 @@
   }
 
   // ============================================
-  // WAIT FOR OVERLAY V2 TO LOAD
+  // WAIT FOR MODULE TO LOAD
   // ============================================
-  function waitForOverlay(timeout = 5000) {
+  function waitForModule(moduleName, timeout = 5000) {
     return new Promise((resolve, reject) => {
-      if (window.AdvancedImportOverlay) {
-        resolve();
+      if (window[moduleName]) {
+        resolve(window[moduleName]);
         return;
       }
       
       const startTime = Date.now();
       const checkInterval = setInterval(() => {
-        if (window.AdvancedImportOverlay) {
+        if (window[moduleName]) {
           clearInterval(checkInterval);
-          resolve();
+          resolve(window[moduleName]);
         } else if (Date.now() - startTime > timeout) {
           clearInterval(checkInterval);
-          reject(new Error('Import overlay failed to load'));
+          reject(new Error(`Module ${moduleName} failed to load`));
         }
       }, 100);
     });
+  }
+
+  function waitForOverlay(timeout = 5000) {
+    return waitForModule('AdvancedImportOverlay', timeout);
+  }
+
+  function waitForBulkImport(timeout = 5000) {
+    return waitForModule('ShopOptiBulkImportV5', timeout);
   }
 
   // ============================================
@@ -124,8 +133,9 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '5.0.0',
+    VERSION: '5.1.0',
     BRAND: 'ShopOpti+',
+    MAX_BULK_IMPORT: 100,
     PLATFORMS: [
       'amazon', 'aliexpress', 'alibaba', 'temu', 'shein', 'shopify', 
       'ebay', 'etsy', 'walmart', 'cjdropshipping', 'banggood', 'dhgate', 
@@ -133,6 +143,67 @@
       'lowes', 'target', 'bestbuy', 'wayfair', 'overstock', 'newegg',
       'zalando', 'asos', 'manomano', 'darty', 'boulanger', 'leroymerlin'
     ]
+  };
+  
+  // Bulk selection state
+  const BulkSelectionState = {
+    selectedProducts: new Map(),
+    isBulkMode: false,
+    
+    add(productId, data) {
+      if (this.selectedProducts.size >= CONFIG.MAX_BULK_IMPORT) {
+        console.warn(`[ShopOpti+] Max bulk selection reached (${CONFIG.MAX_BULK_IMPORT})`);
+        return false;
+      }
+      this.selectedProducts.set(productId, data);
+      this.updateUI();
+      return true;
+    },
+    
+    remove(productId) {
+      this.selectedProducts.delete(productId);
+      this.updateUI();
+    },
+    
+    toggle(productId, data) {
+      if (this.selectedProducts.has(productId)) {
+        this.remove(productId);
+      } else {
+        this.add(productId, data);
+      }
+    },
+    
+    clear() {
+      this.selectedProducts.clear();
+      this.updateUI();
+    },
+    
+    getAll() {
+      return Array.from(this.selectedProducts.values());
+    },
+    
+    count() {
+      return this.selectedProducts.size;
+    },
+    
+    updateUI() {
+      // Update floating action bar
+      const fab = document.querySelector('.shopopti-bulk-fab');
+      if (fab) {
+        const count = this.count();
+        const countBadge = fab.querySelector('.shopopti-bulk-count');
+        if (countBadge) {
+          countBadge.textContent = count.toString();
+          fab.style.display = count > 0 ? 'flex' : 'none';
+        }
+      }
+      
+      // Update selection indicators on cards
+      document.querySelectorAll('.shopopti-select-checkbox').forEach(checkbox => {
+        const productId = checkbox.dataset.productId;
+        checkbox.checked = this.selectedProducts.has(productId);
+      });
+    }
   };
 
   // ============================================
@@ -339,10 +410,15 @@
     
     const platform = detectPlatform();
     
+    // Inject bulk selection floating action bar
+    injectBulkActionBar();
+    
     const cardSelectors = {
       amazon: '[data-asin]:not([data-asin=""]):not(.shopopti-processed)',
       aliexpress: '.list-item:not(.shopopti-processed), [class*="product-card"]:not(.shopopti-processed)',
       cdiscount: '.prdtBloc:not(.shopopti-processed), .lpProduct:not(.shopopti-processed)',
+      temu: '[class*="goods-item"]:not(.shopopti-processed)',
+      shein: '[class*="product-item"]:not(.shopopti-processed)',
       ebay: '.s-item:not(.shopopti-processed)',
       default: '[data-product-id]:not(.shopopti-processed), .product-card:not(.shopopti-processed)'
     };
@@ -352,12 +428,55 @@
     
     let injectedCount = 0;
     
-    cards.forEach(card => {
+    cards.forEach((card, index) => {
       card.classList.add('shopopti-processed');
       
-      // Find a good position for the button
-      const buttonContainer = card.querySelector('.s-item__info, .product-info, .prdtBILTit') || card;
+      // Extract product ID
+      const productId = card.dataset?.asin || 
+                        card.dataset?.productId || 
+                        card.querySelector('a[href*="/dp/"]')?.href?.match(/\/dp\/([A-Z0-9]+)/i)?.[1] ||
+                        `product_${index}_${Date.now()}`;
       
+      // Create action container
+      const actionContainer = Security.createElement('div', {
+        className: 'shopopti-card-actions',
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          marginTop: '8px',
+          flexWrap: 'wrap'
+        }
+      });
+      
+      // Selection checkbox for bulk import
+      const checkboxWrapper = Security.createElement('label', {
+        className: 'shopopti-select-label',
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          cursor: 'pointer',
+          fontSize: '11px',
+          color: '#6b7280'
+        }
+      });
+      
+      const checkbox = Security.createElement('input', {
+        className: 'shopopti-select-checkbox',
+        type: 'checkbox',
+        dataset: { productId }
+      });
+      
+      checkbox.addEventListener('change', () => {
+        const productData = extractQuickDataFromCard(card, platform);
+        BulkSelectionState.toggle(productId, { ...productData, productId });
+      });
+      
+      checkboxWrapper.appendChild(checkbox);
+      checkboxWrapper.appendChild(document.createTextNode('Sélect.'));
+      
+      // Quick import button
       const btn = Security.createElement('button', {
         className: 'shopopti-card-btn',
         style: {
@@ -372,7 +491,6 @@
           fontSize: '11px',
           fontWeight: '600',
           cursor: 'pointer',
-          marginTop: '8px',
           opacity: '1',
           transition: 'all 0.2s'
         }
@@ -382,10 +500,9 @@
         e.preventDefault();
         e.stopPropagation();
         
-        // Get product URL from card
-        const link = card.querySelector('a[href*="/dp/"], a[href*="/item/"], a[href*="/itm/"], a[href*="/products/"]');
+        const link = card.querySelector('a[href*="/dp/"], a[href*="/item/"], a[href*="/itm/"], a[href*="/products/"], a[href*="/i/"]');
         if (!link) {
-          alert('Impossible de trouver le lien du produit');
+          showToast('Impossible de trouver le lien du produit', 'error');
           return;
         }
         
@@ -401,12 +518,14 @@
           if (response?.success) {
             btn.textContent = '✓';
             btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            showToast('Produit importé avec succès!', 'success');
           } else {
             throw new Error(response?.error);
           }
         } catch (error) {
           btn.textContent = '✗';
           btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+          showToast(error.message || 'Erreur d\'import', 'error');
         }
         
         setTimeout(() => {
@@ -416,13 +535,242 @@
         }, 2000);
       });
       
-      buttonContainer.appendChild(btn);
+      actionContainer.appendChild(checkboxWrapper);
+      actionContainer.appendChild(btn);
+      
+      // Find container
+      const buttonContainer = card.querySelector('.s-item__info, .product-info, .prdtBILTit') || card;
+      buttonContainer.appendChild(actionContainer);
       injectedCount++;
     });
     
     if (injectedCount > 0) {
-      console.log('[ShopOpti+] Injected', injectedCount, 'listing buttons');
+      console.log('[ShopOpti+] Injected', injectedCount, 'listing buttons with bulk selection');
     }
+  }
+  
+  // ============================================
+  // BULK ACTION FLOATING BAR
+  // ============================================
+  function injectBulkActionBar() {
+    if (document.querySelector('.shopopti-bulk-fab')) return;
+    
+    const fab = Security.createElement('div', {
+      className: 'shopopti-bulk-fab',
+      style: {
+        position: 'fixed',
+        bottom: '80px',
+        right: '20px',
+        zIndex: '2147483647',
+        display: 'none',
+        alignItems: 'center',
+        gap: '10px',
+        padding: '12px 16px',
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+        borderRadius: '16px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }
+    });
+    
+    // Count badge
+    const countBadge = Security.createElement('span', {
+      className: 'shopopti-bulk-count',
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: '28px',
+        height: '28px',
+        background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+        borderRadius: '50%',
+        color: 'white',
+        fontSize: '13px',
+        fontWeight: '700'
+      }
+    }, '0');
+    
+    // Label
+    const label = Security.createElement('span', {
+      style: { color: 'white', fontSize: '13px' }
+    }, 'sélectionné(s)');
+    
+    // Bulk import button
+    const importBtn = Security.createElement('button', {
+      className: 'shopopti-bulk-import-btn',
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '10px 16px',
+        background: 'linear-gradient(135deg, #10b981, #059669)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '10px',
+        fontSize: '13px',
+        fontWeight: '600',
+        cursor: 'pointer'
+      }
+    }, '🚀 Import en masse');
+    
+    importBtn.addEventListener('click', async () => {
+      const count = BulkSelectionState.count();
+      if (count === 0) return;
+      
+      importBtn.disabled = true;
+      importBtn.textContent = '⏳ Préparation...';
+      
+      try {
+        // Request bulk import module injection
+        const response = await safeSendMessage({
+          type: 'OPEN_BULK_IMPORT_UI',
+          products: BulkSelectionState.getAll()
+        });
+        
+        if (response?.success) {
+          await waitForBulkImport();
+          const bulkUI = new window.ShopOptiBulkImportV5();
+          bulkUI.open(BulkSelectionState.getAll());
+        } else {
+          throw new Error(response?.error || 'Failed to open bulk import');
+        }
+      } catch (error) {
+        showToast(error.message || 'Erreur', 'error');
+      } finally {
+        importBtn.disabled = false;
+        importBtn.textContent = '🚀 Import en masse';
+      }
+    });
+    
+    // Select all button
+    const selectAllBtn = Security.createElement('button', {
+      style: {
+        padding: '8px 12px',
+        background: 'rgba(255,255,255,0.1)',
+        color: 'white',
+        border: '1px solid rgba(255,255,255,0.2)',
+        borderRadius: '8px',
+        fontSize: '12px',
+        cursor: 'pointer'
+      }
+    }, '☑ Tout');
+    
+    selectAllBtn.addEventListener('click', () => {
+      const cards = document.querySelectorAll('.shopopti-processed');
+      const platform = detectPlatform();
+      
+      cards.forEach((card, index) => {
+        if (BulkSelectionState.count() >= CONFIG.MAX_BULK_IMPORT) return;
+        
+        const productId = card.dataset?.asin || 
+                          card.dataset?.productId || 
+                          `product_${index}_${Date.now()}`;
+        
+        if (!BulkSelectionState.selectedProducts.has(productId)) {
+          const productData = extractQuickDataFromCard(card, platform);
+          BulkSelectionState.add(productId, { ...productData, productId });
+        }
+      });
+    });
+    
+    // Clear button
+    const clearBtn = Security.createElement('button', {
+      style: {
+        padding: '8px 12px',
+        background: 'rgba(239,68,68,0.2)',
+        color: '#fca5a5',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '12px',
+        cursor: 'pointer'
+      }
+    }, '✕');
+    
+    clearBtn.addEventListener('click', () => {
+      BulkSelectionState.clear();
+    });
+    
+    fab.appendChild(countBadge);
+    fab.appendChild(label);
+    fab.appendChild(selectAllBtn);
+    fab.appendChild(importBtn);
+    fab.appendChild(clearBtn);
+    
+    document.body.appendChild(fab);
+  }
+  
+  // ============================================
+  // QUICK DATA EXTRACTION FROM CARD
+  // ============================================
+  function extractQuickDataFromCard(card, platform) {
+    const link = card.querySelector('a[href*="/dp/"], a[href*="/item/"], a[href*="/itm/"], a[href*="/products/"], a[href*="/i/"]');
+    const titleEl = card.querySelector('h2, h3, .s-line-clamp-2, [class*="title"]');
+    const priceEl = card.querySelector('[class*="price"], .a-offscreen');
+    const imageEl = card.querySelector('img');
+    
+    let price = 0;
+    if (priceEl) {
+      const priceText = priceEl.textContent || '';
+      const match = priceText.match(/[\d,.]+/);
+      if (match) price = parseFloat(match[0].replace(',', '.'));
+    }
+    
+    return {
+      title: Security.sanitizeText(titleEl?.textContent?.trim() || 'Produit'),
+      price,
+      image: imageEl?.src || imageEl?.dataset?.src || '',
+      url: link?.href || '',
+      platform
+    };
+  }
+  
+  // ============================================
+  // TOAST NOTIFICATIONS
+  // ============================================
+  function showToast(message, type = 'info') {
+    const existing = document.querySelector('.shopopti-toast');
+    if (existing) existing.remove();
+    
+    const colors = {
+      success: 'linear-gradient(135deg, #10b981, #059669)',
+      error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+      info: 'linear-gradient(135deg, #3b82f6, #8b5cf6)'
+    };
+    
+    const toast = Security.createElement('div', {
+      className: 'shopopti-toast',
+      style: {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        zIndex: '2147483647',
+        padding: '12px 20px',
+        background: colors[type] || colors.info,
+        color: 'white',
+        borderRadius: '10px',
+        fontSize: '14px',
+        fontWeight: '500',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        animation: 'shopopti-slide-in 0.3s ease-out'
+      }
+    }, message);
+    
+    // Add animation keyframes
+    if (!document.querySelector('#shopopti-toast-styles')) {
+      const style = document.createElement('style');
+      style.id = 'shopopti-toast-styles';
+      style.textContent = `
+        @keyframes shopopti-slide-in {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.remove(), 3000);
   }
 
   // ============================================
