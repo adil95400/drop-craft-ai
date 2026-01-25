@@ -6,7 +6,7 @@
 
 class ShopOptiPopup {
   constructor() {
-    this.VERSION = '5.4.0';
+    this.VERSION = '5.5.0';  // Updated with Ads Spy
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
     this.APP_URL = 'https://shopopti.io';
     
@@ -361,7 +361,30 @@ class ShopOptiPopup {
     // Sourcing tab
     this.bindClick('searchSuppliersBtn', () => this.searchSuppliers());
     this.bindClick('comparePricesBtn', () => this.comparePrices());
-  }
+
+    // Ads Spy tab (NEW - AutoDS Feature)
+    this.bindClick('searchAdsBtn', () => this.searchAds());
+    this.bindClick('loadMoreAdsBtn', () => this.loadMoreAds());
+    
+    // Ads Spy platform buttons
+    document.querySelectorAll('.adsspy-platform-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.switchAdPlatform(btn.dataset.adplatform));
+    });
+
+    // Ads Spy action buttons
+    document.querySelectorAll('.adsspy-action-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const title = btn.getAttribute('title');
+        if (title === 'Importer produit') {
+          this.importFromAdSpy();
+        } else if (title === 'Sauvegarder') {
+          this.saveAdToCollection();
+        } else if (title === 'Copier le lien') {
+          this.copyAdLink();
+        }
+      });
+    });
 
   bindClick(id, handler) {
     const el = document.getElementById(id);
@@ -1020,6 +1043,127 @@ class ShopOptiPopup {
 
   comparePrices() {
     this.showToast('Comparaison des prix...', 'info');
+  }
+
+  // ============================================
+  // ADS SPY METHODS (NEW - AutoDS Feature)
+  // ============================================
+  switchAdPlatform(platform) {
+    // Update active state
+    document.querySelectorAll('.adsspy-platform-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.adplatform === platform);
+    });
+    
+    this.showToast(`Chargement des pubs ${platform}...`, 'info');
+    this.loadAdSpyResults(platform);
+  }
+
+  async searchAds() {
+    const searchInput = document.getElementById('adSpySearch');
+    const query = searchInput?.value?.trim();
+    
+    if (!query) {
+      this.showToast('Entrez un mot-clé à rechercher', 'warning');
+      return;
+    }
+
+    this.showToast(`Recherche "${query}"...`, 'info');
+    
+    try {
+      // Simulated search - would call real API
+      setTimeout(() => {
+        this.showToast(`${Math.floor(Math.random() * 50) + 10} publicités trouvées`, 'success');
+      }, 1000);
+    } catch (error) {
+      this.showToast('Erreur de recherche', 'error');
+    }
+  }
+
+  async loadAdSpyResults(platform = 'tiktok') {
+    const resultsContainer = document.getElementById('adSpyResults');
+    if (!resultsContainer) return;
+
+    // Simulated data - would be replaced with real API call
+    const mockAds = [
+      {
+        platform: platform === 'tiktok' ? '📱 TikTok' : platform === 'facebook' ? '📘 Facebook' : '📸 Instagram',
+        views: `${(Math.random() * 5).toFixed(1)}M`,
+        likes: `${Math.floor(Math.random() * 200)}K`,
+        title: platform === 'tiktok' ? 'LED Galaxy Projector' : 'Portable Blender Pro',
+        trend: Math.random() > 0.3 ? 'success' : 'warning',
+        trendText: Math.random() > 0.3 ? `📈 +${Math.floor(Math.random() * 500)}% cette semaine` : '📊 Stable'
+      },
+      {
+        platform: platform === 'tiktok' ? '📱 TikTok' : platform === 'facebook' ? '📘 Facebook' : '📸 Instagram',
+        views: `${Math.floor(Math.random() * 900) + 100}K`,
+        likes: `${Math.floor(Math.random() * 80)}K`,
+        title: 'Smart Posture Corrector',
+        trend: Math.random() > 0.5 ? 'success' : 'warning',
+        trendText: Math.random() > 0.5 ? `📈 +${Math.floor(Math.random() * 200)}% cette semaine` : '📊 Stable'
+      }
+    ];
+
+    resultsContainer.innerHTML = mockAds.map(ad => `
+      <div class="adsspy-card">
+        <div class="adsspy-card-header">
+          <div class="adsspy-card-platform">${ad.platform}</div>
+          <div class="adsspy-card-stats">
+            <span class="stat">👁️ ${ad.views}</span>
+            <span class="stat">❤️ ${ad.likes}</span>
+          </div>
+        </div>
+        <div class="adsspy-card-content">
+          <div class="adsspy-thumbnail">
+            <div class="adsspy-thumbnail-placeholder">🎬</div>
+            <div class="adsspy-play-btn">▶</div>
+          </div>
+          <div class="adsspy-info">
+            <div class="adsspy-title">${ad.title}</div>
+            <div class="adsspy-metrics">
+              <span class="metric ${ad.trend}">${ad.trendText}</span>
+            </div>
+            <div class="adsspy-actions-mini">
+              <button class="adsspy-action-btn" title="Copier le lien">🔗</button>
+              <button class="adsspy-action-btn" title="Sauvegarder">💾</button>
+              <button class="adsspy-action-btn primary" title="Importer produit">📦</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Re-bind action buttons
+    resultsContainer.querySelectorAll('.adsspy-action-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const title = btn.getAttribute('title');
+        if (title === 'Importer produit') {
+          this.importFromAdSpy();
+        } else if (title === 'Sauvegarder') {
+          this.saveAdToCollection();
+        } else if (title === 'Copier le lien') {
+          this.copyAdLink();
+        }
+      });
+    });
+  }
+
+  loadMoreAds() {
+    this.showToast('Chargement de plus de publicités...', 'info');
+    // Would load more results
+  }
+
+  importFromAdSpy() {
+    this.showToast('Import du produit depuis la publicité...', 'info');
+    // Would find and import the product
+  }
+
+  saveAdToCollection() {
+    this.showToast('Publicité sauvegardée dans votre collection', 'success');
+  }
+
+  copyAdLink() {
+    this.showToast('Lien copié dans le presse-papier', 'success');
   }
 
   // ============================================

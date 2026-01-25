@@ -31,7 +31,7 @@
         <div class="header-info">
           <h1>ShopOpti<span class="ai">+</span></h1>
           <div class="header-meta">
-            <span class="version-badge">v5.4.0</span>
+            <span class="version-badge">v5.5.0</span>
             <span id="planBadge" class="plan-badge">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
@@ -391,7 +391,14 @@
     <!-- Tabs Section -->
     <section class="tabs-section">
       <div class="tabs-header">
-        <button class="tab-btn active" data-tab="sourcing">
+        <button class="tab-btn active" data-tab="adsspy">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="10 8 16 12 10 16 10 8"/>
+          </svg>
+          Ads Spy
+        </button>
+        <button class="tab-btn" data-tab="sourcing">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/>
             <path d="m21 21-4.35-4.35"/>
@@ -402,28 +409,157 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="4" y="2" width="16" height="20" rx="2"/>
             <line x1="8" y1="6" x2="16" y2="6"/>
-            <line x1="8" y1="10" x2="10" y2="10"/>
-            <line x1="12" y1="10" x2="16" y2="10"/>
-            <line x1="8" y1="14" x2="10" y2="14"/>
-            <line x1="12" y1="14" x2="16" y2="14"/>
-            <line x1="8" y1="18" x2="16" y2="18"/>
           </svg>
-          Calculateur
+          Profit
         </button>
         <button class="tab-btn" data-tab="sync">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
           </svg>
           Sync
         </button>
       </div>
 
+      <!-- Ads Spy Tab (NEW - AutoDS Feature) -->
+      <div class="tab-panel active" id="adsspyPanel">
+        <div class="adsspy-panel">
+          <div class="adsspy-header">
+            <h4>🎯 Découvrez les Winning Ads</h4>
+            <span class="adsspy-badge hot">HOT</span>
+          </div>
+          
+          <div class="adsspy-platforms">
+            <button class="adsspy-platform-btn active" data-adplatform="tiktok">
+              <span class="adsspy-icon">📱</span>
+              <span>TikTok</span>
+            </button>
+            <button class="adsspy-platform-btn" data-adplatform="facebook">
+              <span class="adsspy-icon">📘</span>
+              <span>Facebook</span>
+            </button>
+            <button class="adsspy-platform-btn" data-adplatform="instagram">
+              <span class="adsspy-icon">📸</span>
+              <span>Instagram</span>
+            </button>
+          </div>
+
+          <div class="adsspy-search">
+            <input type="text" class="form-control" placeholder="Rechercher des produits, niches..." id="adSpySearch">
+            <button class="adsspy-search-btn" id="searchAdsBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="adsspy-filters">
+            <select class="adsspy-filter" id="adSpyCategory">
+              <option value="">Toutes catégories</option>
+              <option value="beauty">Beauté</option>
+              <option value="fitness">Fitness</option>
+              <option value="tech">Tech</option>
+              <option value="home">Maison</option>
+              <option value="fashion">Mode</option>
+              <option value="pets">Animaux</option>
+            </select>
+            <select class="adsspy-filter" id="adSpySort">
+              <option value="trending">🔥 Tendance</option>
+              <option value="engagement">💬 Engagement</option>
+              <option value="views">👁️ Vues</option>
+              <option value="recent">🕐 Récent</option>
+            </select>
+          </div>
+
+          <div class="adsspy-results" id="adSpyResults">
+            <div class="adsspy-card">
+              <div class="adsspy-card-header">
+                <div class="adsspy-card-platform">📱 TikTok</div>
+                <div class="adsspy-card-stats">
+                  <span class="stat">👁️ 2.5M</span>
+                  <span class="stat">❤️ 120K</span>
+                </div>
+              </div>
+              <div class="adsspy-card-content">
+                <div class="adsspy-thumbnail">
+                  <div class="adsspy-thumbnail-placeholder">🎬</div>
+                  <div class="adsspy-play-btn">▶</div>
+                </div>
+                <div class="adsspy-info">
+                  <div class="adsspy-title">LED Sunset Lamp - Viral Product</div>
+                  <div class="adsspy-metrics">
+                    <span class="metric success">📈 +340% cette semaine</span>
+                  </div>
+                  <div class="adsspy-actions-mini">
+                    <button class="adsspy-action-btn" title="Copier le lien">🔗</button>
+                    <button class="adsspy-action-btn" title="Sauvegarder">💾</button>
+                    <button class="adsspy-action-btn primary" title="Importer produit">📦</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="adsspy-card">
+              <div class="adsspy-card-header">
+                <div class="adsspy-card-platform">📘 Facebook</div>
+                <div class="adsspy-card-stats">
+                  <span class="stat">👁️ 890K</span>
+                  <span class="stat">❤️ 45K</span>
+                </div>
+              </div>
+              <div class="adsspy-card-content">
+                <div class="adsspy-thumbnail">
+                  <div class="adsspy-thumbnail-placeholder">🎬</div>
+                  <div class="adsspy-play-btn">▶</div>
+                </div>
+                <div class="adsspy-info">
+                  <div class="adsspy-title">Mini Projector - Home Cinema</div>
+                  <div class="adsspy-metrics">
+                    <span class="metric warning">📊 Stable</span>
+                  </div>
+                  <div class="adsspy-actions-mini">
+                    <button class="adsspy-action-btn" title="Copier le lien">🔗</button>
+                    <button class="adsspy-action-btn" title="Sauvegarder">💾</button>
+                    <button class="adsspy-action-btn primary" title="Importer produit">📦</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="adsspy-load-more" id="loadMoreAdsBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            Voir plus de publicités
+          </button>
+        </div>
+      </div>
+
       <!-- Sourcing Tab -->
-      <div class="tab-panel active" id="sourcingPanel">
+      <div class="tab-panel" id="sourcingPanel">
         <div class="tab-content">
           <div class="form-group">
             <label>Rechercher des fournisseurs</label>
             <input type="text" class="form-control" placeholder="Nom du produit ou URL..." id="sourcingSearch">
+          </div>
+          <div class="supplier-results" id="supplierResults">
+            <div class="supplier-card">
+              <div class="supplier-logo">🏪</div>
+              <div class="supplier-info">
+                <div class="supplier-name">AliExpress</div>
+                <div class="supplier-price">$8.50 - $12.00</div>
+              </div>
+              <div class="supplier-rating">⭐ 4.8</div>
+            </div>
+            <div class="supplier-card">
+              <div class="supplier-logo">🏭</div>
+              <div class="supplier-info">
+                <div class="supplier-name">1688.com</div>
+                <div class="supplier-price">¥45 (~$6.20)</div>
+              </div>
+              <div class="supplier-rating">⭐ 4.5</div>
+            </div>
           </div>
           <div class="sync-actions">
             <button class="sync-btn" id="searchSuppliersBtn">
@@ -447,13 +583,16 @@
       <!-- Calculator Tab -->
       <div class="tab-panel" id="calculatorPanel">
         <div class="profit-calculator">
+          <div class="calculator-header">
+            <h4>💰 Calculateur de Profit</h4>
+          </div>
           <div class="profit-inputs">
             <div class="profit-input-group">
-              <label>Coût (€)</label>
+              <label>Coût produit (€)</label>
               <input type="number" id="costPrice" value="10" step="0.01">
             </div>
             <div class="profit-input-group">
-              <label>Vente (€)</label>
+              <label>Prix de vente (€)</label>
               <input type="number" id="sellingPrice" value="29.99" step="0.01">
             </div>
             <div class="profit-input-group">
@@ -462,23 +601,27 @@
             </div>
           </div>
           <div class="profit-results">
-            <div class="profit-result">
+            <div class="profit-result profit">
+              <div class="profit-result-icon">💵</div>
               <div class="profit-result-value" id="profitAmount">17.99€</div>
-              <div class="profit-result-label">Profit</div>
+              <div class="profit-result-label">Profit Net</div>
             </div>
-            <div class="profit-result">
+            <div class="profit-result margin">
+              <div class="profit-result-icon">📊</div>
               <div class="profit-result-value" id="marginPercent">60%</div>
               <div class="profit-result-label">Marge</div>
             </div>
-            <div class="profit-result">
+            <div class="profit-result roi">
+              <div class="profit-result-icon">🚀</div>
               <div class="profit-result-value" id="roiPercent">150%</div>
               <div class="profit-result-label">ROI</div>
             </div>
           </div>
           <div class="price-suggestions">
+            <span class="price-label">Marge rapide:</span>
             <button class="price-btn" data-margin="30">30%</button>
             <button class="price-btn" data-margin="50">50%</button>
-            <button class="price-btn" data-margin="70">70%</button>
+            <button class="price-btn active" data-margin="70">70%</button>
             <button class="price-btn" data-margin="100">100%</button>
           </div>
         </div>
@@ -487,6 +630,9 @@
       <!-- Sync Tab -->
       <div class="tab-panel" id="syncPanel">
         <div class="sync-panel">
+          <div class="sync-header">
+            <h4>🔄 Synchronisation Multi-Boutiques</h4>
+          </div>
           <div class="sync-actions">
             <button class="sync-btn" id="syncStockBtn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -515,10 +661,15 @@
               <div class="store-item">
                 <span class="store-icon">🛍️</span>
                 <span class="store-name">Ma Boutique Shopify</span>
-                <span class="store-status"></span>
+                <span class="store-status online"></span>
+              </div>
+              <div class="store-item">
+                <span class="store-icon">🛒</span>
+                <span class="store-name">WooCommerce Store</span>
+                <span class="store-status online"></span>
               </div>
             </div>
-            <button class="sync-btn" id="addStoreBtn" style="margin-top: 8px; width: 100%;">
+            <button class="sync-btn add-store" id="addStoreBtn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
