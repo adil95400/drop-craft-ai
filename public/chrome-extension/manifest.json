@@ -77,43 +77,19 @@
         "*://*.amazon.es/*",
         "*://*.amazon.it/*",
         "*://*.amazon.ca/*",
-        "*://*.amazon.co.jp/*"
-      ],
-      "js": ["content/content-injector.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
+        "*://*.amazon.co.jp/*",
         "*://*.aliexpress.com/*",
         "*://*.aliexpress.fr/*",
-        "*://*.aliexpress.us/*"
-      ],
-      "js": ["content/content-injector.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
+        "*://*.aliexpress.us/*",
         "*://*.ebay.com/*",
         "*://*.ebay.fr/*",
         "*://*.ebay.de/*",
-        "*://*.ebay.co.uk/*"
-      ],
-      "js": ["content/content-injector.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
-        "*://*.temu.com/*"
-      ],
-      "js": ["content/content-injector.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
+        "*://*.ebay.co.uk/*",
+        "*://*.temu.com/*",
         "*://*.shein.com/*",
         "*://*.shein.fr/*"
       ],
-      "js": ["content/content-injector.js"],
+      "js": ["content-script.js"],
       "run_at": "document_idle"
     }
   ],
@@ -151,7 +127,7 @@
     {
       "resources": [
         "content.css",
-        "content/content-injector.js",
+        "content-script.js",
         "icons/*.png",
         "import-overlay-v2.js",
         "bulk-import-v5.js",
