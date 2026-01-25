@@ -10855,6 +10855,87 @@ export type Database = {
           },
         ]
       }
+      translation_cache: {
+        Row: {
+          cache_key: string
+          char_count: number | null
+          created_at: string
+          hit_count: number | null
+          id: string
+          last_accessed_at: string
+          original_text: string
+          source_lang: string
+          target_lang: string
+          translated_text: string
+        }
+        Insert: {
+          cache_key: string
+          char_count?: number | null
+          created_at?: string
+          hit_count?: number | null
+          id?: string
+          last_accessed_at?: string
+          original_text: string
+          source_lang?: string
+          target_lang: string
+          translated_text: string
+        }
+        Update: {
+          cache_key?: string
+          char_count?: number | null
+          created_at?: string
+          hit_count?: number | null
+          id?: string
+          last_accessed_at?: string
+          original_text?: string
+          source_lang?: string
+          target_lang?: string
+          translated_text?: string
+        }
+        Relationships: []
+      }
+      translation_usage: {
+        Row: {
+          cached_count: number | null
+          char_count: number | null
+          context: string | null
+          created_at: string
+          id: string
+          processing_time_ms: number | null
+          source_lang: string
+          target_lang: string
+          text_count: number | null
+          translated_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          cached_count?: number | null
+          char_count?: number | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          processing_time_ms?: number | null
+          source_lang?: string
+          target_lang: string
+          text_count?: number | null
+          translated_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          cached_count?: number | null
+          char_count?: number | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          processing_time_ms?: number | null
+          source_lang?: string
+          target_lang?: string
+          text_count?: number | null
+          translated_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       unified_sync_logs: {
         Row: {
           action: string
@@ -11814,6 +11895,10 @@ export type Database = {
         Args: { customer_id_param: string }
         Returns: boolean
       }
+      cleanup_old_translation_cache: {
+        Args: { days_old?: number }
+        Returns: number
+      }
       convert_price: {
         Args: {
           p_amount: number
@@ -11833,6 +11918,19 @@ export type Database = {
       get_exchange_rate: {
         Args: { p_base: string; p_target: string }
         Returns: number
+      }
+      get_translation_usage_summary: {
+        Args: { p_user_id?: string }
+        Returns: {
+          avg_processing_time: number
+          request_count: number
+          total_cached: number
+          total_chars: number
+          total_texts: number
+          total_translated: number
+          usage_date: string
+          user_id: string
+        }[]
       }
       has_role: {
         Args: {
