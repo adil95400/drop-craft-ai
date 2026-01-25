@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.6.3",
+  "version": "5.6.4",
   "description": "Extension professionnelle dropshipping 100% AutoDS - Import 1-clic, Ads Spy TikTok/Facebook/Instagram, Auto-Order automatique, Sourcing multi-fournisseurs, Sync multi-boutiques, LibreTranslate, 45+ plateformes",
   
   "permissions": [
@@ -14,13 +14,7 @@
   
   "host_permissions": [
     "*://*.shopopti.io/*",
-    "*://*.supabase.co/*"
-  ],
-  
-  "optional_host_permissions": [
-    "*://*.aliexpress.com/*",
-    "*://*.aliexpress.fr/*",
-    "*://*.aliexpress.us/*",
+    "*://*.supabase.co/*",
     "*://*.amazon.com/*",
     "*://*.amazon.fr/*",
     "*://*.amazon.de/*",
@@ -28,16 +22,22 @@
     "*://*.amazon.es/*",
     "*://*.amazon.it/*",
     "*://*.amazon.ca/*",
-    "*://*.amazon.co.jp/*",
+    "*://*.aliexpress.com/*",
+    "*://*.aliexpress.fr/*",
     "*://*.ebay.com/*",
     "*://*.ebay.fr/*",
+    "*://*.temu.com/*",
+    "*://*.shein.com/*"
+  ],
+  
+  "optional_host_permissions": [
+    "*://*.amazon.co.jp/*",
+    "*://*.aliexpress.us/*",
     "*://*.ebay.de/*",
     "*://*.ebay.co.uk/*",
     "*://*.walmart.com/*",
     "*://*.etsy.com/*",
-    "*://*.temu.com/*",
     "*://*.wish.com/*",
-    "*://*.shein.com/*",
     "*://*.shein.fr/*",
     "*://*.banggood.com/*",
     "*://*.dhgate.com/*",
@@ -65,6 +65,57 @@
     "*://*.zalando.fr/*",
     "*://*.asos.com/*",
     "*://*.myshopify.com/*"
+  ],
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.amazon.com/*",
+        "*://*.amazon.fr/*",
+        "*://*.amazon.de/*",
+        "*://*.amazon.co.uk/*",
+        "*://*.amazon.es/*",
+        "*://*.amazon.it/*",
+        "*://*.amazon.ca/*",
+        "*://*.amazon.co.jp/*"
+      ],
+      "js": ["content/content-injector.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.aliexpress.com/*",
+        "*://*.aliexpress.fr/*",
+        "*://*.aliexpress.us/*"
+      ],
+      "js": ["content/content-injector.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.ebay.com/*",
+        "*://*.ebay.fr/*",
+        "*://*.ebay.de/*",
+        "*://*.ebay.co.uk/*"
+      ],
+      "js": ["content/content-injector.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.temu.com/*"
+      ],
+      "js": ["content/content-injector.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.shein.com/*",
+        "*://*.shein.fr/*"
+      ],
+      "js": ["content/content-injector.js"],
+      "run_at": "document_idle"
+    }
   ],
   
   "content_security_policy": {
@@ -96,10 +147,11 @@
     "128": "icons/icon128.png"
   },
   
-"web_accessible_resources": [
+  "web_accessible_resources": [
     {
       "resources": [
         "content.css",
+        "content/content-injector.js",
         "icons/*.png",
         "import-overlay-v2.js",
         "bulk-import-v5.js",
