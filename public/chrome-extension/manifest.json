@@ -122,7 +122,11 @@
         "lib/stock-extractor.js",
         "lib/csv-exporter.js",
         "lib/history-manager.js",
-        "lib/pagination-handler.js"
+        "lib/pagination-handler.js",
+        "lib/content-rewriter.js",
+        "lib/retry-manager.js",
+        "lib/auto-order-helper.js",
+        "lib/tracking-sync.js"
       ],
       "matches": ["<all_urls>"]
     }
