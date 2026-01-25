@@ -7,6 +7,7 @@ import { lazy } from 'react';
 // Pages critiques lazy loaded pour réduire le bundle initial
 const Index = lazy(() => import('@/pages/Index'));
 const AuthPage = lazy(() => import('@/pages/AuthPage'));
+const ExtensionAuthPage = lazy(() => import('@/pages/auth/ExtensionAuthPage'));
 
 // Pages publiques lazy loaded
 const Pricing = lazy(() => import('@/pages/Pricing'));
@@ -39,6 +40,7 @@ export function PublicRoutes() {
       {/* Landing & Auth */}
       <Route index element={<Index />} />
       <Route path="auth" element={<AuthPage />} />
+      <Route path="auth/extension" element={<ExtensionAuthPage />} />
       
       {/* Marketing */}
       <Route path="pricing" element={<Pricing />} />

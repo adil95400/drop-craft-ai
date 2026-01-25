@@ -16,7 +16,69 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    const { action, email, password } = await req.json()
+    const { action, email, password, userId } = await req.json()
+
+    if (action === 'generate_token') {
+      // Generate token for already authenticated user
+      if (!userId) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'User ID required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Get user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      // Generate extension token
+      const token = crypto.randomUUID() + '-' + Date.now()
+      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+
+      // Store token
+      const { error: tokenError } = await supabase
+        .from('extension_auth_tokens')
+        .insert({
+          user_id: userId,
+          token,
+          expires_at: expiresAt,
+          is_active: true,
+          device_info: { source: 'web_auth_page' }
+        })
+
+      if (tokenError) {
+        console.error('Token insert error:', tokenError)
+        throw new Error('Failed to create extension token')
+      }
+
+      // Log security event
+      await supabase.from('security_events').insert({
+        user_id: userId,
+        event_type: 'extension_token_generated',
+        severity: 'info',
+        description: 'Extension token generated via web auth page',
+        metadata: {}
+      })
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          token,
+          expiresAt,
+          user: {
+            id: userId,
+            plan: profile?.subscription_plan || 'free',
+            firstName: profile?.first_name,
+            lastName: profile?.last_name,
+            avatarUrl: profile?.avatar_url
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (action === 'login') {
       // Authenticate user
