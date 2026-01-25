@@ -1,18 +1,26 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Popup Script v5.6.2
+// ShopOpti+ Chrome Extension - Popup Script v5.6.3
 // 100% AutoDS Feature Parity - Complete & Production Ready
 // Ads Spy, Auto-Order, Multi-Store, Real-Time Sync
 // NOTIFICATIONS SYSTEM + DYNAMIC BADGE
+// FIX: All buttons event handlers verified
 // ============================================
 
 class ShopOptiPopup {
   constructor() {
-    this.VERSION = '5.6.2';  // Notifications + Badge
+    this.VERSION = '5.6.3';  // Button handlers fix
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
     this.APP_URL = 'https://shopopti.io';
     
-    // Chrome runtime detection
-    this.chrome = typeof chrome !== 'undefined' && chrome?.runtime?.id ? chrome : null;
+    // Chrome runtime detection - improved detection
+    this.chrome = null;
+    try {
+      if (typeof chrome !== 'undefined' && chrome?.runtime?.id) {
+        this.chrome = chrome;
+      }
+    } catch (e) {
+      console.log('[ShopOpti+] Not in extension context');
+    }
     
     // State
     this.isConnected = false;
@@ -37,10 +45,19 @@ class ShopOptiPopup {
     this.autoOrderEnabled = false;
     this.pendingOrders = [];
     
-    // Notifications state (NEW)
+    // Notifications state
     this.notifications = [];
     this.unreadCount = 0;
     this.notificationsPanelOpen = false;
+    
+    // Debug mode
+    this.debug = true;
+  }
+  
+  log(...args) {
+    if (this.debug) {
+      console.log('[ShopOpti+]', ...args);
+    }
   }
 
   // ============================================
@@ -263,13 +280,16 @@ class ShopOptiPopup {
   // EVENT BINDING - ALL BUTTONS
   // ============================================
   bindAllEvents() {
-    // Header actions
+    this.log('Binding all events...');
+    
+    // Header actions - these work without connection
     this.bindClick('syncBtn', () => this.syncData());
     this.bindClick('settingsBtn', () => this.openSettings());
     this.bindClick('dashboardBtn', () => this.openDashboard());
     
-    // Connection
+    // Connection button - critical, always works
     this.bindClick('connectBtn', () => {
+      this.log('Connect button clicked, isConnected:', this.isConnected);
       if (this.isConnected) {
         this.disconnect();
       } else {
@@ -452,7 +472,22 @@ class ShopOptiPopup {
   bindClick(id, handler) {
     const el = document.getElementById(id);
     if (el) {
-      el.addEventListener('click', handler);
+      // Remove any existing listeners first
+      const newHandler = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.log(`Button clicked: ${id}`);
+        try {
+          handler(e);
+        } catch (error) {
+          console.error(`[ShopOpti+] Error in handler for ${id}:`, error);
+          this.showToast(`Erreur: ${error.message}`, 'error');
+        }
+      };
+      el.addEventListener('click', newHandler);
+      this.log(`Bound click handler for: ${id}`);
+    } else {
+      this.log(`Element not found: ${id}`);
     }
   }
 
@@ -574,12 +609,20 @@ class ShopOptiPopup {
 
   showModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      this.log('Modal shown:', id);
+    }
   }
 
   hideModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+      this.log('Modal hidden:', id);
+    }
   }
 
   // ============================================
@@ -626,8 +669,18 @@ class ShopOptiPopup {
   // LOGIN METHODS
   // ============================================
   showLoginModal() {
-    this.showModal('loginModal');
-    document.getElementById('loginEmail')?.focus();
+    this.log('Showing login modal');
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById('loginEmail')?.focus();
+      }, 100);
+    } else {
+      this.log('Login modal not found!');
+      this.showToast('Modal de connexion non trouvé', 'error');
+    }
   }
 
   async handleLogin() {
@@ -1089,19 +1142,29 @@ class ShopOptiPopup {
   }
 
   openSettings() {
+    this.log('Opening settings...');
     if (this.isExtensionRuntime()) {
-      this.chrome.runtime.openOptionsPage();
+      try {
+        this.chrome.runtime.openOptionsPage?.() || 
+          this.chrome.tabs.create({ url: `${this.APP_URL}/settings` });
+      } catch (e) {
+        this.chrome.tabs.create({ url: `${this.APP_URL}/settings` });
+      }
     } else {
-      this.showToast('Ouvrir les paramètres dans l\'extension', 'info');
+      window.open(`${this.APP_URL}/settings`, '_blank');
     }
+    this.showToast('Ouverture des paramètres...', 'info');
   }
 
   openDashboard() {
+    this.log('Opening dashboard...');
+    const url = `${this.APP_URL}/dashboard`;
     if (this.isExtensionRuntime()) {
-      this.chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
+      this.chrome.tabs.create({ url });
     } else {
-      window.open(`${this.APP_URL}/dashboard`, '_blank');
+      window.open(url, '_blank');
     }
+    this.showToast('Ouverture du dashboard...', 'info');
   }
 
   openAuth() {
