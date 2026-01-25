@@ -1,8 +1,9 @@
-// ShopOpti+ Chrome Extension - Options Script v4.3.16
+// ShopOpti+ Chrome Extension - Options Script v5.3.0
+// Security: No innerHTML usage - all DOM manipulation via createElement/textContent
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '4.3.16';
+const VERSION = '5.3.0';
 
 const DEFAULT_SETTINGS = {
   apiUrl: API_URL,
@@ -527,11 +528,16 @@ async function testConnection() {
   const btn = getElement('testConnection');
   if (!btn) return;
   
-  const originalContent = btn.innerHTML;
+  // Store original text safely
+  const originalText = btn.textContent || 'Test connexion';
   
   try {
-    btn.innerHTML = '<span class="spinner"></span> Test...';
+    // Use textContent instead of innerHTML (XSS safe)
+    btn.textContent = 'Test...';
     btn.disabled = true;
+    
+    // Add spinner via CSS class instead of innerHTML
+    btn.classList.add('loading');
     
     const token = getElementValue('extensionToken', '');
     
@@ -550,16 +556,17 @@ async function testConnection() {
     
     if (response.ok) {
       updateConnectionStatus(true);
-      showNotification('Connexion réussie!', 'success');
+      showNotification('Connexion reussie!', 'success');
     } else {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.error || `Erreur HTTP: ${response.status}`);
     }
   } catch (error) {
     console.error('[ShopOpti+] Connection test error:', error);
-    showNotification(`Échec: ${error.message}`, 'error');
+    showNotification(`Echec: ${error.message}`, 'error');
   } finally {
-    btn.innerHTML = originalContent;
+    btn.textContent = originalText;
+    btn.classList.remove('loading');
     btn.disabled = false;
   }
 }
