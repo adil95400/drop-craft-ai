@@ -1,10 +1,14 @@
-// Search All Suppliers Module v1.0
-// Meta-search across all supported platforms - AutoDS parity feature
+// ============================================
+// ShopOpti+ Search All Suppliers Module v5.1.0
+// Meta-search across all supported platforms
+// AutoDS parity feature - 10+ platforms
+// ============================================
 
 (function() {
   'use strict';
 
   const SupplierSearch = {
+    VERSION: '5.1.0',
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     
     // Supported suppliers with search capabilities
