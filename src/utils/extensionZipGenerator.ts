@@ -101,7 +101,7 @@ const EXTENSION_FILES = [
   'lib/tracking-sync.js',
   'lib/ai-content-service.js',
   'lib/history-panel.js',
-  
+  'lib/remote-selectors.js',
   // Extractors
   'extractors/advanced-extractor.js',
   'extractors/aliexpress-extractor.js',

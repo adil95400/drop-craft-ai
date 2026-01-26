@@ -1,7 +1,8 @@
 /**
- * ShopOpti+ Auto-Order System v4.3.16
+ * ShopOpti+ Auto-Order System v5.7.0
  * Automated order placement for dropshipping
- * Supports: AliExpress, Amazon, Temu, CJ Dropshipping
+ * Supports: AliExpress, Amazon, Temu, CJ Dropshipping, Banggood, DHgate, 1688, Shein, eBay, Alibaba
+ * Features: Full automation + Semi-auto mode (cart fill + instructions)
  */
 
 class ShopOptiAutoOrder {
@@ -95,7 +96,10 @@ class ShopOptiAutoOrder {
   }
 
   async continueOrderProcessing(order, platform) {
+    const capabilities = this.getPlatformCapabilities()[platform] || {};
     let result;
+    
+    // Full automation platforms
     switch (platform) {
       case 'aliexpress':
         result = await this.placeAliExpressOrder(order);
@@ -108,6 +112,21 @@ class ShopOptiAutoOrder {
         break;
       case 'cjdropshipping':
         result = await this.placeCJOrder(order);
+        break;
+      // Semi-auto platforms (cart fill + instructions)
+      case 'banggood':
+      case 'dhgate':
+      case 'shein':
+      case 'ebay':
+      case 'wish':
+      case 'gearbest':
+      case 'lightinthebox':
+        result = await this.placeSemiAutoOrder(order, platform);
+        break;
+      // Agent-required platforms
+      case '1688':
+      case 'alibaba':
+        result = await this.placeAgentOrder(order, platform);
         break;
       default:
         result = { success: false, error: 'Plateforme non supportée' };
@@ -155,22 +174,32 @@ class ShopOptiAutoOrder {
       }
 
       // Platform-specific order placement
+      const capabilities = this.getPlatformCapabilities()[platform] || {};
       let result;
-      switch (platform) {
-        case 'aliexpress':
-          result = await this.placeAliExpressOrder(order);
-          break;
-        case 'amazon':
-          result = await this.placeAmazonOrder(order);
-          break;
-        case 'temu':
-          result = await this.placeTemuOrder(order);
-          break;
-        case 'cjdropshipping':
-          result = await this.placeCJOrder(order);
-          break;
-        default:
-          result = { success: false, error: 'Plateforme non implémentée' };
+      
+      if (capabilities.fullAuto) {
+        switch (platform) {
+          case 'aliexpress':
+            result = await this.placeAliExpressOrder(order);
+            break;
+          case 'amazon':
+            result = await this.placeAmazonOrder(order);
+            break;
+          case 'temu':
+            result = await this.placeTemuOrder(order);
+            break;
+          case 'cjdropshipping':
+            result = await this.placeCJOrder(order);
+            break;
+          default:
+            result = { success: false, error: 'Plateforme non implémentée' };
+        }
+      } else if (capabilities.semiAuto) {
+        result = await this.placeSemiAutoOrder(order, platform);
+      } else if (capabilities.needsAgent) {
+        result = await this.placeAgentOrder(order, platform);
+      } else {
+        result = { success: false, error: 'Plateforme non supportée' };
       }
 
       await this.recordOrderResult(order, result);
@@ -222,7 +251,35 @@ class ShopOptiAutoOrder {
     if (url.includes('amazon.')) return 'amazon';
     if (url.includes('cjdropshipping.')) return 'cjdropshipping';
     if (url.includes('temu.')) return 'temu';
+    if (url.includes('banggood.')) return 'banggood';
+    if (url.includes('dhgate.')) return 'dhgate';
+    if (url.includes('1688.')) return '1688';
+    if (url.includes('shein.')) return 'shein';
+    if (url.includes('ebay.')) return 'ebay';
+    if (url.includes('alibaba.')) return 'alibaba';
+    if (url.includes('wish.')) return 'wish';
+    if (url.includes('gearbest.')) return 'gearbest';
+    if (url.includes('lightinthebox.')) return 'lightinthebox';
     return null;
+  }
+
+  // Platform capabilities configuration
+  getPlatformCapabilities() {
+    return {
+      aliexpress: { fullAuto: true, semiAuto: true, trackingSync: true },
+      amazon: { fullAuto: true, semiAuto: true, trackingSync: true },
+      temu: { fullAuto: true, semiAuto: true, trackingSync: true },
+      cjdropshipping: { fullAuto: true, semiAuto: true, trackingSync: true, apiDirect: true },
+      banggood: { fullAuto: false, semiAuto: true, trackingSync: true },
+      dhgate: { fullAuto: false, semiAuto: true, trackingSync: true },
+      '1688': { fullAuto: false, semiAuto: true, trackingSync: false, needsAgent: true },
+      shein: { fullAuto: false, semiAuto: true, trackingSync: true },
+      ebay: { fullAuto: false, semiAuto: true, trackingSync: true },
+      alibaba: { fullAuto: false, semiAuto: true, trackingSync: false, needsAgent: true },
+      wish: { fullAuto: false, semiAuto: true, trackingSync: true },
+      gearbest: { fullAuto: false, semiAuto: true, trackingSync: true },
+      lightinthebox: { fullAuto: false, semiAuto: true, trackingSync: true }
+    };
   }
 
   // ============= ALIEXPRESS AUTO-ORDER =============
@@ -1805,6 +1862,402 @@ class ShopOptiAutoOrder {
 
   getApiUrl() {
     return this.config?.apiUrl || 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
+  }
+
+  // ============= SEMI-AUTO ORDER (Cart fill + Instructions) =============
+  async placeSemiAutoOrder(order, platform) {
+    const result = { success: false, steps: [], platform, mode: 'semi-auto' };
+    
+    try {
+      console.log(`[ShopOpti+] Starting semi-auto order for ${platform}...`);
+      
+      // Step 1: Navigate to product page if needed
+      if (!window.location.href.includes(order.supplierUrl?.split('/')[2])) {
+        await this.storeProcessingOrder(order);
+        window.location.href = order.supplierUrl;
+        return { success: true, status: 'navigating', mode: 'semi-auto' };
+      }
+      
+      // Step 2: Select variant if specified
+      if (order.variant) {
+        const variantSelected = await this.selectGenericVariant(platform, order.variant);
+        result.steps.push({ step: 'variant_selection', success: variantSelected });
+      }
+      
+      // Step 3: Set quantity
+      const quantitySet = await this.setGenericQuantity(platform, order.quantity || 1);
+      result.steps.push({ step: 'quantity', success: quantitySet });
+      
+      // Step 4: Add to cart
+      const addedToCart = await this.addToCartGeneric(platform);
+      result.steps.push({ step: 'add_to_cart', success: addedToCart });
+      
+      if (!addedToCart) {
+        return { ...result, error: 'Impossible d\'ajouter au panier' };
+      }
+      
+      // Step 5: Show instructions overlay
+      this.showSemiAutoInstructions(order, platform);
+      
+      result.success = true;
+      result.status = 'cart_filled';
+      result.message = `Produit ajouté au panier. Finalisez manuellement la commande.`;
+      result.instructions = this.getCheckoutInstructions(platform, order);
+      
+      return result;
+    } catch (error) {
+      console.error(`[ShopOpti+] Semi-auto order failed for ${platform}:`, error);
+      return { ...result, error: error.message };
+    }
+  }
+  
+  // Generic variant selection for semi-auto platforms
+  async selectGenericVariant(platform, variant) {
+    const selectors = {
+      banggood: ['[class*="option"] img', '[class*="sku"] span', '.sku-item'],
+      dhgate: ['[class*="sku"] img', '.attr-item', '.product-sku-item'],
+      shein: ['.product-intro__size-radio', '[class*="option"]', '.goods-size__item'],
+      ebay: ['#x-msku', '.vim.x-msku__select', '[class*="option"]'],
+      wish: ['[class*="option"]', '.ProductAttribute button'],
+      gearbest: ['.goods-sku-item', '[class*="option"]'],
+      lightinthebox: ['[class*="option"]', '.attr-item']
+    };
+    
+    try {
+      const platformSelectors = selectors[platform] || [];
+      
+      for (const sel of platformSelectors) {
+        const elements = document.querySelectorAll(sel);
+        for (const el of elements) {
+          const text = (el.textContent || el.alt || el.title || '').toLowerCase();
+          const variantText = (variant.color || variant.size || '').toLowerCase();
+          
+          if (text.includes(variantText)) {
+            el.click();
+            await this.delay(500);
+            return true;
+          }
+        }
+      }
+      return true; // Don't fail if variant not found
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // Generic quantity setting
+  async setGenericQuantity(platform, quantity) {
+    const selectors = [
+      'input[name="quantity"]',
+      'input[type="number"]',
+      '[class*="quantity"] input',
+      '#quantity',
+      '.qty-input'
+    ];
+    
+    try {
+      for (const sel of selectors) {
+        const input = document.querySelector(sel);
+        if (input) {
+          input.value = quantity;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          return true;
+        }
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // Generic add to cart
+  async addToCartGeneric(platform) {
+    const selectors = {
+      banggood: ['#addToCartBtn', '.add-to-cart', '[class*="add-cart"]'],
+      dhgate: ['.add-cart-btn', '[class*="addCart"]', '.buy-now-btn'],
+      shein: ['.product-intro__add-btn', '.add-to-bag', '[class*="addBag"]'],
+      ebay: ['#atcBtn', '.ux-call-to-action', '#addToCart'],
+      wish: ['[class*="add-to-cart"]', '.AddToCartButton'],
+      gearbest: ['.add-to-cart', '.add_to_cart_btn'],
+      lightinthebox: ['.add-cart', '.btn-add-cart']
+    };
+    
+    try {
+      const platformSelectors = selectors[platform] || ['.add-to-cart', '#add-to-cart'];
+      
+      for (const sel of platformSelectors) {
+        const btn = document.querySelector(sel);
+        if (btn && !btn.disabled) {
+          btn.click();
+          await this.delay(1500);
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // Show semi-auto instructions overlay
+  showSemiAutoInstructions(order, platform) {
+    const existing = document.getElementById('sho-semi-auto-overlay');
+    if (existing) existing.remove();
+    
+    const instructions = this.getCheckoutInstructions(platform, order);
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'sho-semi-auto-overlay';
+    overlay.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 380px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        z-index: 9999999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+      ">
+        <div style="
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 16px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        ">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 24px;">📦</span>
+            <span style="color: white; font-weight: 600; font-size: 16px;">ShopOpti+ Auto-Order</span>
+          </div>
+          <button id="sho-close-semi" style="
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+          ">×</button>
+        </div>
+        
+        <div style="padding: 20px;">
+          <div style="
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          ">
+            <span style="font-size: 20px;">✓</span>
+            <div>
+              <div style="font-weight: 600;">Produit ajouté au panier</div>
+              <div style="font-size: 12px; opacity: 0.9;">Finalisez manuellement la commande</div>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 16px;">
+            <div style="font-weight: 600; color: #333; margin-bottom: 8px;">📋 Instructions:</div>
+            <ol style="margin: 0; padding-left: 20px; color: #555; line-height: 1.8;">
+              ${instructions.map(i => `<li>${i}</li>`).join('')}
+            </ol>
+          </div>
+          
+          <div style="
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+          ">
+            <div style="font-weight: 600; color: #333; margin-bottom: 4px;">📦 Adresse de livraison:</div>
+            <div style="color: #666;">
+              ${order.shippingAddress?.name || 'Client'}<br>
+              ${order.shippingAddress?.address1 || ''}<br>
+              ${order.shippingAddress?.city || ''} ${order.shippingAddress?.zip || ''}<br>
+              ${order.shippingAddress?.country || ''}
+            </div>
+          </div>
+          
+          <button id="sho-copy-address" style="
+            width: 100%;
+            margin-top: 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+          ">📋 Copier l'adresse</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Event handlers
+    overlay.querySelector('#sho-close-semi').onclick = () => overlay.remove();
+    overlay.querySelector('#sho-copy-address').onclick = () => {
+      const addr = order.shippingAddress;
+      const text = `${addr?.name || ''}\n${addr?.address1 || ''}\n${addr?.city || ''} ${addr?.zip || ''}\n${addr?.country || ''}`;
+      navigator.clipboard.writeText(text);
+      overlay.querySelector('#sho-copy-address').textContent = '✓ Copié !';
+    };
+  }
+  
+  // Get checkout instructions by platform
+  getCheckoutInstructions(platform, order) {
+    const common = [
+      'Vérifiez la variante et la quantité',
+      `Entrez l'adresse de livraison du client`,
+      'Choisissez le mode de livraison',
+      'Procédez au paiement'
+    ];
+    
+    const platformSpecific = {
+      banggood: ['Allez dans votre panier', ...common, 'Copiez le numéro de commande'],
+      dhgate: ['Cliquez sur "Voir panier"', ...common, 'Notez le numéro de suivi'],
+      shein: ['Accédez au panier', ...common],
+      ebay: ['Cliquez sur "Voir le panier"', ...common, 'Utilisez "Acheter maintenant" si possible'],
+      wish: ['Ouvrez votre panier', ...common],
+      gearbest: ['Allez dans le panier', ...common],
+      lightinthebox: ['Accédez au panier', ...common]
+    };
+    
+    return platformSpecific[platform] || common;
+  }
+  
+  // ============= AGENT ORDER (1688, Alibaba) =============
+  async placeAgentOrder(order, platform) {
+    const result = { success: false, steps: [], platform, mode: 'agent' };
+    
+    console.log(`[ShopOpti+] Agent order required for ${platform}`);
+    
+    // Show agent instructions
+    this.showAgentInstructions(order, platform);
+    
+    result.success = true;
+    result.status = 'agent_required';
+    result.message = `${platform} nécessite un agent d'achat. Instructions affichées.`;
+    
+    return result;
+  }
+  
+  // Show agent instructions overlay
+  showAgentInstructions(order, platform) {
+    const existing = document.getElementById('sho-agent-overlay');
+    if (existing) existing.remove();
+    
+    const agents = {
+      '1688': ['Superbuy', 'CSSBuy', 'Wegobuy', 'Pandabuy'],
+      'alibaba': ['Alibaba Trade Assurance', 'Superbuy', 'CSSBuy']
+    };
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'sho-agent-overlay';
+    overlay.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 450px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        z-index: 9999999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+      ">
+        <div style="
+          background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+          padding: 16px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        ">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 24px;">🏭</span>
+            <span style="color: white; font-weight: 600; font-size: 16px;">Agent d'achat requis</span>
+          </div>
+          <button id="sho-close-agent" style="
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+          ">×</button>
+        </div>
+        
+        <div style="padding: 20px;">
+          <div style="
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            color: #92400e;
+          ">
+            <strong>${platform.toUpperCase()}</strong> nécessite un agent d'achat pour les commandes internationales.
+          </div>
+          
+          <div style="margin-bottom: 16px;">
+            <div style="font-weight: 600; color: #333; margin-bottom: 8px;">📋 Étapes:</div>
+            <ol style="margin: 0; padding-left: 20px; color: #555; line-height: 1.8;">
+              <li>Copiez le lien du produit</li>
+              <li>Utilisez un agent d'achat recommandé</li>
+              <li>Collez le lien et configurez la commande</li>
+              <li>L'agent achètera et expédiera pour vous</li>
+            </ol>
+          </div>
+          
+          <div style="margin-bottom: 16px;">
+            <div style="font-weight: 600; color: #333; margin-bottom: 8px;">🏢 Agents recommandés:</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              ${(agents[platform] || []).map(agent => `
+                <span style="
+                  background: #f3f4f6;
+                  padding: 6px 12px;
+                  border-radius: 20px;
+                  font-size: 13px;
+                  color: #374151;
+                ">${agent}</span>
+              `).join('')}
+            </div>
+          </div>
+          
+          <button id="sho-copy-link" style="
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+          ">📋 Copier le lien du produit</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Event handlers
+    overlay.querySelector('#sho-close-agent').onclick = () => overlay.remove();
+    overlay.querySelector('#sho-copy-link').onclick = () => {
+      navigator.clipboard.writeText(window.location.href);
+      overlay.querySelector('#sho-copy-link').textContent = '✓ Lien copié !';
+    };
   }
 }
 
