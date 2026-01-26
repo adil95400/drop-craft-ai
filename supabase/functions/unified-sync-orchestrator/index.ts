@@ -30,18 +30,12 @@ Deno.serve(async (req) => {
     console.log(`🔄 Unified Sync Orchestrator starting for user ${user_id}`)
 
     // Get all active sync configurations for this user
-    let configQuery = supabase
+    const { data: configs, error: configError } = await supabase
       .from('sync_configurations')
-      .select(`
-        *,
-        integrations:integration_id (
-          id, platform, store_url, credentials_encrypted, is_active
-        )
-      `)
+      .select('*')
       .eq('user_id', user_id)
       .eq('is_active', true)
 
-    const { data: configs, error: configError } = await configQuery
     if (configError) throw configError
 
     if (!configs || configs.length === 0) {
@@ -51,13 +45,30 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Get integration IDs from configs
+    const integrationIds = configs.map(c => c.integration_id).filter(Boolean)
+    
+    // Fetch integrations separately
+    const { data: integrations, error: intError } = await supabase
+      .from('integrations')
+      .select('id, platform, store_url, credentials_encrypted, is_active')
+      .in('id', integrationIds.length > 0 ? integrationIds : ['00000000-0000-0000-0000-000000000000'])
+    
+    if (intError) {
+      console.error('Error fetching integrations:', intError)
+    }
+    
+    // Create a map for quick lookup
+    const integrationMap = new Map((integrations || []).map(i => [i.id, i]))
+
     console.log(`Found ${configs.length} active sync configurations`)
 
     const results: any[] = []
     const allSyncTypes = sync_types || ['products', 'prices', 'stock', 'orders', 'customers', 'tracking']
 
     for (const config of configs) {
-      const integration = config.integrations as any
+      // Get integration from map
+      const integration = integrationMap.get(config.integration_id)
       if (!integration?.is_active) continue
 
       const platform = integration.platform
