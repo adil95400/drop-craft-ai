@@ -31,46 +31,72 @@
     return null;
   }
   
-  // Create import button
-  function createImportButton(type = 'single') {
+  // Create import button - Professional AutoDS style
+  function createImportButton(type = 'single', productUrl = null) {
     const button = document.createElement('button');
     button.className = `shopopti-import-btn shopopti-import-${type} ${INJECTED_CLASS}`;
+    
+    if (type === 'bulk' && productUrl) {
+      button.dataset.productUrl = productUrl;
+    }
+    
     button.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
-      <span>${type === 'bulk' ? 'Import' : 'ShopOpti+'}</span>
+      <span>${type === 'bulk' ? 'Import' : 'Import ShopOpti+'}</span>
     `;
     
     button.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
       
-      const productUrl = type === 'bulk' ? button.dataset.productUrl : window.location.href;
+      const urlToImport = type === 'bulk' ? button.dataset.productUrl : window.location.href;
       
       button.disabled = true;
-      button.innerHTML = `<span class="shopopti-spinner"></span> Import...`;
+      button.innerHTML = `<span class="shopopti-spinner"></span> Import en cours...`;
       
       try {
+        // First check auth
+        const authStatus = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ type: 'CHECK_AUTH_STATUS' }, (response) => {
+            resolve(response?.authenticated === true);
+          });
+        });
+        
+        if (!authStatus) {
+          throw new Error('Veuillez vous connecter via l\'extension popup');
+        }
+        
         const response = await chrome.runtime.sendMessage({
           type: 'IMPORT_FROM_URL',
-          url: productUrl
+          url: urlToImport,
+          options: {
+            autoOptimize: true,
+            extractReviews: true,
+            extractVariants: true
+          }
         });
         
         if (response.success) {
           button.innerHTML = `<span>✓</span> Importé!`;
           button.classList.add('shopopti-success');
-          showNotification('Produit importé avec succès!', 'success');
+          showNotification(`Produit importé avec succès!${response.productId ? ` (ID: ${response.productId.substring(0, 8)}...)` : ''}`, 'success');
+          
+          // Update badge via background
+          chrome.runtime.sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId });
         } else {
           throw new Error(response.error || 'Import échoué');
         }
       } catch (error) {
+        console.error('[ShopOpti+] Import error:', error);
         button.innerHTML = `<span>✗</span> Erreur`;
         button.classList.add('shopopti-error');
         showNotification(error.message || 'Erreur lors de l\'import', 'error');
         
+        // Reset button after error
         setTimeout(() => {
           button.disabled = false;
           button.classList.remove('shopopti-error');
@@ -80,13 +106,177 @@
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            <span>${type === 'bulk' ? 'Import' : 'ShopOpti+'}</span>
+            <span>${type === 'bulk' ? 'Import' : 'Import ShopOpti+'}</span>
           `;
         }, 3000);
       }
     });
     
     return button;
+  }
+  
+  // Create advanced import button with options modal
+  function createAdvancedImportButton() {
+    const container = document.createElement('div');
+    container.className = 'shopopti-advanced-import-container';
+    
+    const mainBtn = document.createElement('button');
+    mainBtn.className = 'shopopti-import-btn shopopti-import-main';
+    mainBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span>Import ShopOpti+</span>
+    `;
+    
+    const dropdownBtn = document.createElement('button');
+    dropdownBtn.className = 'shopopti-import-btn shopopti-import-dropdown';
+    dropdownBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>`;
+    
+    const dropdown = document.createElement('div');
+    dropdown.className = 'shopopti-dropdown-menu hidden';
+    dropdown.innerHTML = `
+      <button class="shopopti-dropdown-item" data-action="import-quick">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Import rapide
+      </button>
+      <button class="shopopti-dropdown-item" data-action="import-advanced">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Import avec options
+      </button>
+      <button class="shopopti-dropdown-item" data-action="import-reviews">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Import + Avis
+      </button>
+      <div class="shopopti-dropdown-divider"></div>
+      <button class="shopopti-dropdown-item" data-action="find-suppliers">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Trouver fournisseurs
+      </button>
+    `;
+    
+    container.appendChild(mainBtn);
+    container.appendChild(dropdownBtn);
+    container.appendChild(dropdown);
+    
+    // Event handlers
+    mainBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      await handleQuickImport(mainBtn);
+    });
+    
+    dropdownBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropdown.classList.toggle('hidden');
+    });
+    
+    dropdown.querySelectorAll('.shopopti-dropdown-item').forEach(item => {
+      item.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropdown.classList.add('hidden');
+        
+        const action = item.dataset.action;
+        if (action === 'import-quick') await handleQuickImport(mainBtn);
+        if (action === 'import-advanced') await handleAdvancedImport();
+        if (action === 'import-reviews') await handleImportWithReviews(mainBtn);
+        if (action === 'find-suppliers') await handleFindSuppliers();
+      });
+    });
+    
+    // Close dropdown on click outside
+    document.addEventListener('click', () => dropdown.classList.add('hidden'));
+    
+    return container;
+  }
+  
+  async function handleQuickImport(button) {
+    button.disabled = true;
+    button.innerHTML = `<span class="shopopti-spinner"></span> Import...`;
+    
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'IMPORT_FROM_URL',
+        url: window.location.href
+      });
+      
+      if (response.success) {
+        button.innerHTML = `<span>✓</span> Importé!`;
+        showNotification('Produit importé avec succès!', 'success');
+        chrome.runtime.sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId });
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (error) {
+      button.innerHTML = `<span>✗</span> Erreur`;
+      showNotification(error.message, 'error');
+      setTimeout(() => resetButton(button), 3000);
+    }
+  }
+  
+  async function handleAdvancedImport() {
+    try {
+      await chrome.runtime.sendMessage({
+        type: 'OPEN_IMPORT_OVERLAY',
+        productData: { url: window.location.href }
+      });
+    } catch (error) {
+      showNotification('Erreur: ' + error.message, 'error');
+    }
+  }
+  
+  async function handleImportWithReviews(button) {
+    button.disabled = true;
+    button.innerHTML = `<span class="shopopti-spinner"></span> Import + Avis...`;
+    
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'IMPORT_PRODUCT_WITH_REVIEWS',
+        url: window.location.href,
+        reviewLimit: 50
+      });
+      
+      if (response.success) {
+        button.innerHTML = `<span>✓</span> Importé!`;
+        showNotification(`Produit + ${response.reviewsCount || 0} avis importés!`, 'success');
+        chrome.runtime.sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId });
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (error) {
+      button.innerHTML = `<span>✗</span> Erreur`;
+      showNotification(error.message, 'error');
+      setTimeout(() => resetButton(button), 3000);
+    }
+  }
+  
+  async function handleFindSuppliers() {
+    try {
+      await chrome.runtime.sendMessage({
+        type: 'FIND_SUPPLIERS',
+        productData: { url: window.location.href }
+      });
+      showNotification('Recherche de fournisseurs lancée...', 'info');
+    } catch (error) {
+      showNotification('Erreur: ' + error.message, 'error');
+    }
+  }
+  
+  function resetButton(button) {
+    button.disabled = false;
+    button.classList.remove('shopopti-error', 'shopopti-success');
+    button.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span>Import ShopOpti+</span>
+    `;
   }
   
   // Show notification toast
@@ -106,57 +296,146 @@
     }, 4000);
   }
   
-  // Inject styles
+  // Inject styles - Professional AutoDS-like design
   function injectStyles() {
     if (document.getElementById('shopopti-styles')) return;
     
     const styles = document.createElement('style');
     styles.id = 'shopopti-styles';
     styles.textContent = `
+      /* Main Import Button - AutoDS Professional Style */
       .shopopti-import-btn {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        gap: 8px;
+        padding: 10px 18px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
         color: white;
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35), 0 0 0 1px rgba(255,255,255,0.1) inset;
         z-index: 9999;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .shopopti-import-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+      }
+      
+      .shopopti-import-btn:hover::before {
+        left: 100%;
       }
       
       .shopopti-import-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
-        background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45), 0 0 0 1px rgba(255,255,255,0.15) inset;
+      }
+      
+      .shopopti-import-btn:active {
+        transform: translateY(0);
       }
       
       .shopopti-import-btn:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
+        opacity: 0.8;
+        cursor: wait;
         transform: none;
       }
       
       .shopopti-import-btn.shopopti-success {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
       }
       
       .shopopti-import-btn.shopopti-error {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
       }
       
+      /* Advanced Import Container */
+      .shopopti-advanced-import-container {
+        display: inline-flex;
+        position: relative;
+        z-index: 9999;
+      }
+      
+      .shopopti-import-main {
+        border-radius: 10px 0 0 10px;
+      }
+      
+      .shopopti-import-dropdown {
+        padding: 10px 12px;
+        border-radius: 0 10px 10px 0;
+        border-left: 1px solid rgba(255,255,255,0.2);
+      }
+      
+      .shopopti-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
+        background: linear-gradient(180deg, #1e1e2e 0%, #181825 100%);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 8px;
+        min-width: 200px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        z-index: 10000;
+      }
+      
+      .shopopti-dropdown-menu.hidden {
+        display: none;
+      }
+      
+      .shopopti-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 14px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        color: #e2e8f0;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-align: left;
+      }
+      
+      .shopopti-dropdown-item:hover {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+      }
+      
+      .shopopti-dropdown-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.1);
+        margin: 6px 0;
+      }
+      
+      /* Bulk Import Button */
       .shopopti-import-bulk {
         padding: 6px 12px;
         font-size: 11px;
-        border-radius: 6px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       }
       
+      /* Spinner */
       .shopopti-spinner {
         display: inline-block;
         width: 14px;
@@ -171,19 +450,21 @@
         to { transform: rotate(360deg); }
       }
       
+      /* Floating Action Bar - AutoDS Style */
       .shopopti-floating-bar {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 24px;
+        right: 24px;
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 12px 20px;
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        gap: 16px;
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #1e1e2e 0%, #0f0f1a 100%);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 16px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
         z-index: 999999;
-        animation: shopopti-slideUp 0.3s ease;
+        animation: shopopti-slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
       @keyframes shopopti-slideUp {
@@ -193,9 +474,16 @@
       
       .shopopti-floating-bar .count {
         color: white;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      
+      .shopopti-floating-bar .count span {
+        color: #a5b4fc;
+        font-size: 24px;
+        font-weight: 700;
+        margin-right: 4px;
       }
       
       .shopopti-checkbox {

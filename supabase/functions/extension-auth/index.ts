@@ -41,11 +41,21 @@ function sanitizeToken(value: unknown): string | null {
   if (!value || typeof value !== 'string') {
     return null
   }
+  
+  // Trim whitespace first
+  const trimmed = value.trim()
+  
   // Tokens can be alphanumeric with dashes and underscores (ext_xxx format)
-  const sanitized = value.replace(/[^a-zA-Z0-9\-_]/g, '')
-  if (sanitized.length < 10 || sanitized.length > 100) {
+  // Also support UUIDs with dashes and timestamps
+  const sanitized = trimmed.replace(/[^a-zA-Z0-9\-_]/g, '')
+  
+  // Min 10 chars for ext_xxx format, max 150 for UUID-timestamp combinations
+  if (sanitized.length < 10 || sanitized.length > 150) {
+    console.log(`[extension-auth] Token length invalid: ${sanitized.length} chars`)
     return null
   }
+  
+  console.log(`[extension-auth] Token sanitized successfully: ${sanitized.substring(0, 10)}...`)
   return sanitized
 }
 
@@ -122,12 +132,17 @@ serve(async (req) => {
     // Validate extension token
     if (action === 'validate_token') {
       const rawToken = req.headers.get('x-extension-token') || data?.token
+      console.log(`[extension-auth] Validating token: ${typeof rawToken === 'string' ? rawToken.substring(0, 15) + '...' : 'null'}`)
+      
       const token = sanitizeToken(rawToken)
       
       if (!token) {
-        throw new AuthenticationError('Valid token required')
+        console.error('[extension-auth] Token sanitization failed')
+        throw new AuthenticationError('Valid token required - format incorrect')
       }
 
+      console.log(`[extension-auth] Looking up token in database: ${token.substring(0, 15)}...`)
+      
       const { data: authData, error } = await supabase
         .from('extension_auth_tokens')
         .select('*, profiles(*)')
@@ -135,9 +150,17 @@ serve(async (req) => {
         .eq('is_active', true)
         .single()
 
-      if (error || !authData) {
-        throw new AuthenticationError('Invalid token')
+      if (error) {
+        console.error('[extension-auth] Database lookup error:', error.message)
+        throw new AuthenticationError('Token not found - please generate a new token from shopopti.io')
       }
+      
+      if (!authData) {
+        console.error('[extension-auth] Token not found in database')
+        throw new AuthenticationError('Invalid token - not registered')
+      }
+      
+      console.log(`[extension-auth] Token found for user: ${authData.user_id}`)
 
       // Check expiration
       if (new Date(authData.expires_at) < new Date()) {
