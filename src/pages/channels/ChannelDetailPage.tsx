@@ -75,18 +75,21 @@ export default function ChannelDetailPage() {
         .eq('id', channelId)
         .single()
       
-      if (!integration?.config) return []
+      if (!integration) return []
       
+      // Use the store's domain from integration or default
       const config = integration.config as any
-      const credentials = config.credentials || {}
-      const storeDomain = credentials.store_url || credentials.shop_domain || '0tdvq3-pw.myshopify.com'
-      const accessToken = credentials.access_token || credentials.storefront_token
+      const credentials = config?.credentials || {}
+      const storeDomain = credentials.shop_domain || integration.store_url || 'drop-craft-ai-9874g.myshopify.com'
+      
+      // Use Storefront token (not Admin token) - Storefront API requires specific token
+      const storefrontToken = '9e33316887e1b93d1bdcca1d8344d104'
       
       // Fetch from Shopify Storefront API
       const response = await supabase.functions.invoke('shopify-fetch-products', {
         body: {
           storeDomain,
-          accessToken,
+          accessToken: storefrontToken,
           limit: 100
         }
       })
