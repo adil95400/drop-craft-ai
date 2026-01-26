@@ -1,10 +1,10 @@
 /**
- * ShopOpti+ Price Rules Engine v5.6.2
+ * ShopOpti+ Price Rules Engine v5.7.0
  * AutoDS-like pricing rules: markup, rounding, tax, min/max
  */
 
 const ShopOptiPriceRules = {
-  VERSION: '5.6.2',
+  VERSION: '5.7.0',
 
   // Default rules
   defaultRules: {

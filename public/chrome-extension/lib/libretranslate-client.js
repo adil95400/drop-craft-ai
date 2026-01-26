@@ -1,7 +1,7 @@
 /**
  * ShopOpti+ - LibreTranslate Client
  * Self-hosted translation via ShopOpti backend proxy
- * v5.6.3
+ * v5.7.0
  */
 
 (function() {

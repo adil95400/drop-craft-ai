@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Auto-Order Helper v5.6.2
+// ShopOpti+ Auto-Order Helper v5.7.0
 // Assists with supplier order placement
 // ============================================
 

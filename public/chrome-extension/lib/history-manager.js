@@ -1,10 +1,10 @@
 /**
- * ShopOpti+ Import History Manager v5.6.2
+ * ShopOpti+ Import History Manager v5.7.0
  * Track imports per store with detailed history
  */
 
 const ShopOptiHistoryManager = {
-  VERSION: '5.6.2',
+  VERSION: '5.7.0',
   MAX_HISTORY_ITEMS: 500,
 
   /**

@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Tracking Sync v5.6.2
+// ShopOpti+ Tracking Sync v5.7.0
 // Tracking number injection to stores
 // ============================================
 

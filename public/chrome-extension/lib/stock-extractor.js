@@ -1,10 +1,10 @@
 /**
- * ShopOpti+ Stock Extractor v5.6.2
+ * ShopOpti+ Stock Extractor v5.7.0
  * Extract detailed stock information: quantity, availability, low stock alerts
  */
 
 const ShopOptiStockExtractor = {
-  VERSION: '5.6.2',
+  VERSION: '5.7.0',
 
   /**
    * Extract stock information from page

@@ -1,10 +1,10 @@
 /**
- * ShopOpti+ Shipping Extractor v5.6.2
+ * ShopOpti+ Shipping Extractor v5.7.0
  * Extract detailed shipping info: cost, methods, delivery time, origin
  */
 
 const ShopOptiShippingExtractor = {
-  VERSION: '5.6.2',
+  VERSION: '5.7.0',
 
   /**
    * Extract shipping information from page

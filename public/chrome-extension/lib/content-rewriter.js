@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Content Rewriter v5.6.2
+// ShopOpti+ Content Rewriter v5.7.0
 // Title cleaning, translation, and SEO optimization
 // ============================================
 

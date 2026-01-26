@@ -1,10 +1,10 @@
 /**
- * ShopOpti+ AI Tag Generator v5.6.2
+ * ShopOpti+ AI Tag Generator v5.7.0
  * Auto-suggest tags based on title, category, description
  */
 
 const ShopOptiTagGenerator = {
-  VERSION: '5.6.2',
+  VERSION: '5.7.0',
 
   // Common dropshipping keywords
   commonTags: {
