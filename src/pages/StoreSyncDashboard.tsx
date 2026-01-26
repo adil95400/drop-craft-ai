@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
@@ -273,21 +274,26 @@ function ModuleSyncButton({
   label, 
   syncType,
   isLoading,
+  isDisabled,
   onClick 
 }: { 
   icon: any; 
   label: string; 
   syncType: string;
   isLoading?: boolean;
+  isDisabled?: boolean;
   onClick: () => void;
 }) {
   return (
-    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+    <motion.div whileHover={{ scale: isDisabled ? 1 : 1.02 }} whileTap={{ scale: isDisabled ? 1 : 0.98 }}>
       <Button
         variant="outline"
-        className="h-auto flex-col gap-2 p-4 w-full bg-card/40 backdrop-blur-sm hover:bg-card/60"
+        className={cn(
+          "h-auto flex-col gap-2 p-4 w-full bg-card/40 backdrop-blur-sm hover:bg-card/60",
+          isDisabled && "opacity-50 cursor-not-allowed"
+        )}
         onClick={onClick}
-        disabled={isLoading}
+        disabled={isLoading || isDisabled}
       >
         {isLoading ? (
           <Loader2 className="h-6 w-6 animate-spin" />
@@ -317,6 +323,7 @@ export default function StoreSyncDashboard() {
 
   // Connected stores only
   const connectedStores = connections.filter(c => c.connection_status === 'connected');
+  const hasConnectedStores = connectedStores.length > 0;
 
   // Calculate global sync progress
   const activeQueueItems = queue.filter(q => q.status === 'processing' || q.status === 'pending');
@@ -326,8 +333,21 @@ export default function StoreSyncDashboard() {
     ? Math.round((processingCount / activeQueueItems.length) * 100) 
     : 0;
 
+  // Track which module is being synced
+  const [activeSyncModule, setActiveSyncModule] = useState<string | null>(null);
+
   const handleModuleSync = (syncType: 'products' | 'prices' | 'stock' | 'orders' | 'customers' | 'tracking') => {
-    triggerModuleSync.mutate({ sync_type: syncType, direction: 'bidirectional' });
+    if (!hasConnectedStores) {
+      toast.error('Veuillez d\'abord connecter une boutique pour synchroniser vos données');
+      return;
+    }
+    setActiveSyncModule(syncType);
+    triggerModuleSync.mutate(
+      { sync_type: syncType, direction: 'bidirectional' },
+      {
+        onSettled: () => setActiveSyncModule(null)
+      }
+    );
   };
 
   return (
@@ -449,6 +469,35 @@ export default function StoreSyncDashboard() {
             </TabsList>
 
             <TabsContent value="overview" className="mt-6 space-y-6">
+              {/* No stores warning */}
+              {!isLoadingConnections && !hasConnectedStores && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card className="p-4 bg-yellow-500/10 border-yellow-500/30">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      <div className="flex-1">
+                        <p className="font-medium text-yellow-600 dark:text-yellow-400">
+                          Aucune boutique connectée
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Connectez une boutique pour activer la synchronisation
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={() => window.location.href = '/stores-channels'}
+                        className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-600 dark:text-yellow-400"
+                      >
+                        Connecter
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+
               {/* Quick Sync Actions */}
               <Card className="p-6 bg-card/60 backdrop-blur-xl">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -460,42 +509,48 @@ export default function StoreSyncDashboard() {
                     icon={Package}
                     label="Produits"
                     syncType="products"
-                    isLoading={triggerModuleSync.isPending}
+                    isLoading={activeSyncModule === 'products'}
+                    isDisabled={!hasConnectedStores || (activeSyncModule !== null && activeSyncModule !== 'products')}
                     onClick={() => handleModuleSync('products')}
                   />
                   <ModuleSyncButton
                     icon={DollarSign}
                     label="Prix"
                     syncType="prices"
-                    isLoading={triggerModuleSync.isPending}
+                    isLoading={activeSyncModule === 'prices'}
+                    isDisabled={!hasConnectedStores || (activeSyncModule !== null && activeSyncModule !== 'prices')}
                     onClick={() => handleModuleSync('prices')}
                   />
                   <ModuleSyncButton
                     icon={ArrowUpCircle}
                     label="Stock"
                     syncType="stock"
-                    isLoading={triggerModuleSync.isPending}
+                    isLoading={activeSyncModule === 'stock'}
+                    isDisabled={!hasConnectedStores || (activeSyncModule !== null && activeSyncModule !== 'stock')}
                     onClick={() => handleModuleSync('stock')}
                   />
                   <ModuleSyncButton
                     icon={ShoppingCart}
                     label="Commandes"
                     syncType="orders"
-                    isLoading={triggerModuleSync.isPending}
+                    isLoading={activeSyncModule === 'orders'}
+                    isDisabled={!hasConnectedStores || (activeSyncModule !== null && activeSyncModule !== 'orders')}
                     onClick={() => handleModuleSync('orders')}
                   />
                   <ModuleSyncButton
                     icon={Users}
                     label="Clients"
                     syncType="customers"
-                    isLoading={triggerModuleSync.isPending}
+                    isLoading={activeSyncModule === 'customers'}
+                    isDisabled={!hasConnectedStores || (activeSyncModule !== null && activeSyncModule !== 'customers')}
                     onClick={() => handleModuleSync('customers')}
                   />
                   <ModuleSyncButton
                     icon={ArrowDownCircle}
                     label="Tracking"
                     syncType="tracking"
-                    isLoading={triggerModuleSync.isPending}
+                    isLoading={activeSyncModule === 'tracking'}
+                    isDisabled={!hasConnectedStores || (activeSyncModule !== null && activeSyncModule !== 'tracking')}
                     onClick={() => handleModuleSync('tracking')}
                   />
                 </div>
