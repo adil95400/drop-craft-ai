@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface SyncRequest {
   supplierId: string;
-  connectorType: 'cdiscount' | 'eprolo' | 'vidaxl' | 'syncee' | 'printful';
+  connectorType: 'cdiscount' | 'eprolo' | 'vidaxl' | 'syncee' | 'printful' | 'bigbuy' | 'cjdropshipping';
   credentials: {
     apiKey?: string;
     apiSecret?: string;
@@ -69,23 +69,21 @@ serve(async (req) => {
     try {
       // Fetch products based on connector type
       switch (connectorType) {
-        case 'cdiscount':
-          products = await fetchCdiscountProducts(credentials, options);
+        case 'bigbuy':
+          products = await fetchBigBuyProducts(credentials, options);
+          break;
+        case 'cjdropshipping':
+          products = await fetchCJDropshippingProducts(credentials, options);
           break;
         case 'eprolo':
           products = await fetchEproloProducts(credentials, options);
-          break;
-        case 'vidaxl':
-          products = await fetchVidaXLProducts(credentials, options);
-          break;
-        case 'syncee':
-          products = await fetchSynceeProducts(credentials, options);
           break;
         case 'printful':
           products = await fetchPrintfulProducts(credentials, options);
           break;
         default:
-          throw new Error(`Unsupported connector type: ${connectorType}`);
+          // For unsupported connectors, fetch from existing supplier_products
+          products = await fetchFromDatabase(supabase, userData.user.id, supplierId, options);
       }
 
       console.log(`Fetched ${products.length} products from ${connectorType}`);
@@ -103,47 +101,49 @@ serve(async (req) => {
       for (const product of products) {
         try {
           // Deduplicate based on SKU and supplier
-          const existingProduct = await supabase
-            .from('imported_products')
+          const { data: existingProduct } = await supabase
+            .from('supplier_products')
             .select('id')
             .eq('user_id', userData.user.id)
             .eq('sku', product.sku)
-            .eq('supplier_name', product.supplier.name)
+            .eq('supplier_id', supplierId)
             .single();
 
           const productData = {
             user_id: userData.user.id,
-            name: product.title,
+            supplier_id: supplierId,
+            title: product.title,
             sku: product.sku,
             description: product.description,
-            price: product.price,
+            selling_price: product.price,
             cost_price: product.costPrice,
-            currency: product.currency,
+            currency: product.currency || 'EUR',
             stock_quantity: product.stock,
             category: product.category,
             brand: product.brand,
-            image_urls: product.images,
-            supplier_name: product.supplier.name,
-            supplier_sku: product.supplier.sku,
-            weight: product.weight,
+            images: product.images,
             ean: product.attributes?.ean,
-            status: 'draft',
-            supplier_product_id: product.id,
+            weight: product.weight,
+            external_id: product.id,
+            updated_at: new Date().toISOString()
           };
 
-          if (existingProduct.data) {
+          if (existingProduct?.id) {
             // Update existing product
             const { error } = await supabase
-              .from('imported_products')
+              .from('supplier_products')
               .update(productData)
-              .eq('id', existingProduct.data.id);
+              .eq('id', existingProduct.id);
             
             if (error) throw error;
           } else {
             // Insert new product
             const { error } = await supabase
-              .from('imported_products')
-              .insert(productData);
+              .from('supplier_products')
+              .insert({
+                ...productData,
+                created_at: new Date().toISOString()
+              });
             
             if (error) throw error;
           }
@@ -189,7 +189,7 @@ serve(async (req) => {
         entity_type: 'supplier',
         entity_id: supplierId,
         description: `Synchronized ${successCount} products from ${connectorType}`,
-        metadata: {
+        details: {
           connector_type: connectorType,
           total_products: products.length,
           successful_imports: successCount,
@@ -205,14 +205,13 @@ serve(async (req) => {
           total: products.length,
           imported: successCount,
           failed: failCount,
-          errors: errors.slice(0, 10), // Return first 10 errors
+          errors: errors.slice(0, 10),
         },
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
 
     } catch (error) {
-      // Mark sync job as failed
       await supabase
         .from('sync_jobs')
         .update({
@@ -237,113 +236,217 @@ serve(async (req) => {
   }
 });
 
-// Connector implementations
-async function fetchCdiscountProducts(credentials: any, options: any = {}): Promise<any[]> {
-  // Mock implementation for Cdiscount API
-  const mockProducts = Array.from({ length: options.limit || 50 }, (_, i) => ({
-    id: `CDIS_${1000 + i}`,
-    sku: `CDIS-${1000 + i}`,
-    title: `Produit Cdiscount ${i + 1}`,
-    description: `Description détaillée du produit Cdiscount ${i + 1}`,
-    price: Math.round((Math.random() * 200 + 20) * 100) / 100,
-    costPrice: Math.round((Math.random() * 100 + 10) * 100) / 100,
-    currency: 'EUR',
-    stock: Math.floor(Math.random() * 100) + 10,
-    images: [`https://picsum.photos/400/400?random=${1000 + i}`],
-    category: ['Électronique', 'Maison', 'Jardin', 'Mode'][i % 4],
-    brand: ['Samsung', 'Sony', 'Apple', 'LG'][i % 4],
-    attributes: { ean: `123456789${1000 + i}` },
-    supplier: { id: 'cdiscount', name: 'Cdiscount Pro', sku: `CDIS-${1000 + i}` },
-  }));
+// Fetch products from database for unsupported connectors
+async function fetchFromDatabase(supabase: any, userId: string, supplierId: string, options: any = {}): Promise<any[]> {
+  const { data: products } = await supabase
+    .from('supplier_products')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('supplier_id', supplierId)
+    .limit(options.limit || 100);
 
-  return mockProducts;
+  return (products || []).map((p: any) => ({
+    id: p.external_id || p.id,
+    sku: p.sku,
+    title: p.title,
+    description: p.description,
+    price: p.selling_price,
+    costPrice: p.cost_price,
+    currency: p.currency,
+    stock: p.stock_quantity,
+    images: p.images || [],
+    category: p.category,
+    brand: p.brand,
+    attributes: { ean: p.ean },
+    weight: p.weight
+  }));
 }
 
+// Real BigBuy API integration
+async function fetchBigBuyProducts(credentials: any, options: any = {}): Promise<any[]> {
+  const apiKey = credentials?.apiKey || Deno.env.get('BIGBUY_API_KEY');
+  
+  if (!apiKey) {
+    console.log('BigBuy API key not configured');
+    return [];
+  }
+
+  try {
+    const response = await fetch('https://api.bigbuy.eu/rest/catalog/products.json', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`BigBuy API error: ${response.status}`);
+      return [];
+    }
+
+    const products = await response.json();
+    
+    return products.slice(0, options.limit || 50).map((p: any) => ({
+      id: p.id || p.sku,
+      sku: p.sku,
+      title: p.name || p.title,
+      description: p.description,
+      price: parseFloat(p.retailPrice || p.price) || 0,
+      costPrice: parseFloat(p.wholesalePrice || p.cost) || 0,
+      currency: 'EUR',
+      stock: parseInt(p.stock) || 0,
+      images: p.images || [],
+      category: p.category,
+      brand: p.brand,
+      weight: p.weight,
+      attributes: { ean: p.ean }
+    }));
+  } catch (error) {
+    console.error('BigBuy fetch error:', error);
+    return [];
+  }
+}
+
+// Real CJ Dropshipping API integration
+async function fetchCJDropshippingProducts(credentials: any, options: any = {}): Promise<any[]> {
+  const apiKey = credentials?.apiKey || Deno.env.get('CJ_API_KEY');
+  
+  if (!apiKey) {
+    console.log('CJ Dropshipping API key not configured');
+    return [];
+  }
+
+  try {
+    const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/product/list', {
+      method: 'POST',
+      headers: {
+        'CJ-Access-Token': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        pageNum: 1,
+        pageSize: options.limit || 50
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`CJ API error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    const products = data.data?.list || [];
+    
+    return products.map((p: any) => ({
+      id: p.pid,
+      sku: p.productSku || p.pid,
+      title: p.productName || p.productNameEn,
+      description: p.description,
+      price: parseFloat(p.sellPrice) || 0,
+      costPrice: parseFloat(p.sourcePrice) || 0,
+      currency: 'USD',
+      stock: parseInt(p.stock) || 0,
+      images: p.productImage ? [p.productImage] : [],
+      category: p.categoryName,
+      brand: p.brand || 'CJ',
+      weight: p.productWeight,
+      attributes: {}
+    }));
+  } catch (error) {
+    console.error('CJ Dropshipping fetch error:', error);
+    return [];
+  }
+}
+
+// Real Eprolo API integration
 async function fetchEproloProducts(credentials: any, options: any = {}): Promise<any[]> {
-  // Mock implementation for Eprolo API
-  const mockProducts = Array.from({ length: options.limit || 50 }, (_, i) => ({
-    id: `EPR_${2000 + i}`,
-    sku: `EPR-${2000 + i}`,
-    title: `Eprolo Product ${i + 1}`,
-    description: `High-quality dropshipping product ${i + 1}`,
-    price: Math.round((Math.random() * 150 + 15) * 100) / 100,
-    costPrice: Math.round((Math.random() * 75 + 8) * 100) / 100,
-    currency: 'USD',
-    stock: Math.floor(Math.random() * 500) + 50,
-    images: [`https://picsum.photos/400/400?random=${2000 + i}`],
-    category: ['Electronics', 'Fashion', 'Home & Living', 'Sports'][i % 4],
-    brand: ['Generic', 'Eprolo', 'Premium', 'Quality'][i % 4],
-    attributes: { ean: `234567890${2000 + i}` },
-    supplier: { id: 'eprolo', name: 'Eprolo', sku: `EPR-${2000 + i}` },
-  }));
+  const apiKey = credentials?.apiKey || Deno.env.get('EPROLO_API_KEY');
+  
+  if (!apiKey) {
+    console.log('Eprolo API key not configured');
+    return [];
+  }
 
-  return mockProducts;
+  try {
+    const response = await fetch('https://api.eprolo.com/api/products/list', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Eprolo API error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    const products = data.products || [];
+    
+    return products.slice(0, options.limit || 50).map((p: any) => ({
+      id: p.id,
+      sku: p.sku || p.id,
+      title: p.title,
+      description: p.description,
+      price: parseFloat(p.price) || 0,
+      costPrice: parseFloat(p.cost) || 0,
+      currency: 'USD',
+      stock: parseInt(p.inventory) || 0,
+      images: p.images || [],
+      category: p.category,
+      brand: 'Eprolo',
+      attributes: {}
+    }));
+  } catch (error) {
+    console.error('Eprolo fetch error:', error);
+    return [];
+  }
 }
 
-async function fetchVidaXLProducts(credentials: any, options: any = {}): Promise<any[]> {
-  // Mock implementation for VidaXL API
-  const mockProducts = Array.from({ length: options.limit || 30 }, (_, i) => ({
-    id: `VXL_${3000 + i}`,
-    sku: `VXL-${3000 + i}`,
-    title: `VidaXL ${['Mobilier', 'Jardin', 'Décoration'][i % 3]} ${i + 1}`,
-    description: `Produit VidaXL de qualité supérieure pour ${['la maison', 'le jardin', 'la décoration'][i % 3]}`,
-    price: Math.round((Math.random() * 500 + 50) * 100) / 100,
-    costPrice: Math.round((Math.random() * 250 + 25) * 100) / 100,
-    currency: 'EUR',
-    stock: Math.floor(Math.random() * 50) + 5,
-    images: [`https://picsum.photos/400/400?random=${3000 + i}`],
-    category: ['Mobilier', 'Jardin', 'Décoration'][i % 3],
-    brand: 'VidaXL',
-    weight: Math.round((Math.random() * 50 + 5) * 100) / 100,
-    attributes: { ean: `345678901${3000 + i}` },
-    supplier: { id: 'vidaxl', name: 'VidaXL', sku: `VXL-${3000 + i}` },
-  }));
-
-  return mockProducts;
-}
-
-async function fetchSynceeProducts(credentials: any, options: any = {}): Promise<any[]> {
-  // Mock implementation for Syncee API
-  const mockProducts = Array.from({ length: options.limit || 40 }, (_, i) => ({
-    id: `SYN_${4000 + i}`,
-    sku: `SYN-${4000 + i}`,
-    title: `Syncee B2B Product ${i + 1}`,
-    description: `Professional B2B product sourced through Syncee marketplace`,
-    price: Math.round((Math.random() * 300 + 30) * 100) / 100,
-    costPrice: Math.round((Math.random() * 150 + 15) * 100) / 100,
-    currency: 'EUR',
-    stock: Math.floor(Math.random() * 200) + 20,
-    images: [`https://picsum.photos/400/400?random=${4000 + i}`],
-    category: ['B2B Electronics', 'Professional Tools', 'Office Supplies'][i % 3],
-    brand: ['Syncee', 'Professional', 'B2B Quality'][i % 3],
-    attributes: { ean: `456789012${4000 + i}` },
-    supplier: { id: 'syncee', name: 'Syncee', sku: `SYN-${4000 + i}` },
-  }));
-
-  return mockProducts;
-}
-
+// Real Printful API integration
 async function fetchPrintfulProducts(credentials: any, options: any = {}): Promise<any[]> {
-  // Mock implementation for Printful API
-  const mockProducts = Array.from({ length: options.limit || 25 }, (_, i) => ({
-    id: `PRT_${5000 + i}`,
-    sku: `PRT-${5000 + i}`,
-    title: `Custom ${['T-Shirt', 'Hoodie', 'Mug', 'Poster'][i % 4]} Design ${i + 1}`,
-    description: `High-quality print-on-demand ${['apparel', 'accessories', 'home decor'][i % 3]}`,
-    price: Math.round((Math.random() * 100 + 10) * 100) / 100,
-    costPrice: Math.round((Math.random() * 50 + 5) * 100) / 100,
-    currency: 'EUR',
-    stock: 999, // Print-on-demand has unlimited stock
-    images: [`https://picsum.photos/400/400?random=${5000 + i}`],
-    category: 'Print-on-Demand',
-    brand: 'Printful',
-    attributes: { 
-      printable: true,
-      print_area: '297x210mm',
-      material: ['Cotton', 'Polyester', 'Ceramic', 'Paper'][i % 4]
-    },
-    supplier: { id: 'printful', name: 'Printful', sku: `PRT-${5000 + i}` },
-  }));
+  const apiKey = credentials?.apiKey || Deno.env.get('PRINTFUL_API_KEY');
+  
+  if (!apiKey) {
+    console.log('Printful API key not configured');
+    return [];
+  }
 
-  return mockProducts;
+  try {
+    const response = await fetch('https://api.printful.com/store/products', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Printful API error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    const products = data.result || [];
+    
+    return products.slice(0, options.limit || 25).map((p: any) => ({
+      id: p.id,
+      sku: p.external_id || String(p.id),
+      title: p.name,
+      description: '',
+      price: 0, // Printful prices are variant-specific
+      costPrice: 0,
+      currency: 'EUR',
+      stock: 999, // POD = unlimited
+      images: p.thumbnail_url ? [p.thumbnail_url] : [],
+      category: 'Print-on-Demand',
+      brand: 'Printful',
+      attributes: { printable: true }
+    }));
+  } catch (error) {
+    console.error('Printful fetch error:', error);
+    return [];
+  }
 }
