@@ -256,15 +256,15 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
             >
               <div className="space-y-3">
                 <label className="text-sm font-medium">URL du flux</label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
-                    placeholder="https://example.com/products.csv ou .xml ou .json"
+                    placeholder="https://example.com/products.csv"
                     value={feedUrl}
                     onChange={(e) => setFeedUrl(e.target.value)}
                     className="flex-1"
                   />
                   <Select value={preset} onValueChange={setPreset}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                       <SelectValue placeholder="Format" />
                     </SelectTrigger>
                     <SelectContent>
@@ -289,7 +289,7 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
                 {isAnalyzing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Analyse en cours...
+                    Analyse...
                   </>
                 ) : (
                   <>
@@ -299,18 +299,18 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
                 )}
               </Button>
 
-              <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <FileSpreadsheet className="w-4 h-4 text-green-500" />
-                  CSV / Shopify
+                  CSV
                 </div>
                 <div className="flex items-center gap-1">
                   <FileCode className="w-4 h-4 text-purple-500" />
-                  XML / RSS
+                  XML
                 </div>
                 <div className="flex items-center gap-1">
                   <FileJson className="w-4 h-4 text-blue-500" />
-                  JSON / API
+                  JSON
                 </div>
               </div>
             </motion.div>
@@ -326,19 +326,19 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
               className="space-y-4"
             >
               {/* Summary */}
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 sm:gap-4">
                   {renderFormatBadge(previewData.format)}
                   <div>
-                    <p className="font-medium">{previewData.total_products} produits détectés</p>
-                    <p className="text-sm text-muted-foreground">
-                      {previewData.columns_detected.length} colonnes • Preset: {previewData.preset_applied}
+                    <p className="font-medium text-sm sm:text-base">{previewData.total_products} produits</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {previewData.columns_detected.length} colonnes
                     </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={handleReset}>
+                <Button variant="ghost" size="sm" onClick={handleReset} className="self-start sm:self-auto">
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Nouveau flux
+                  Nouveau
                 </Button>
               </div>
 
@@ -428,17 +428,17 @@ export function FeedURLImporter({ onImportComplete, className }: FeedURLImporter
               </Tabs>
 
               {/* Actions */}
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={handleReset} className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <Button variant="outline" onClick={handleReset} className="sm:flex-1">
                   Annuler
                 </Button>
                 <Button 
                   onClick={handleImport}
                   disabled={!previewData.success || previewData.total_products === 0}
-                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                  className="sm:flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Importer {previewData.total_products} produits
+                  Importer ({previewData.total_products})
                 </Button>
               </div>
             </motion.div>
