@@ -627,22 +627,27 @@ class ShopOptiPopup {
   // ============================================
   showLoginModal() {
     this.showModal('loginModal');
-    document.getElementById('loginEmail')?.focus();
+    document.getElementById('loginError')?.classList.add('hidden');
+    document.getElementById('loginToken')?.focus();
   }
 
   async handleLogin() {
     if (this.isLoggingIn) return;
     
-    const emailInput = document.getElementById('loginEmail');
-    const passwordInput = document.getElementById('loginPassword');
+    const tokenInput = document.getElementById('loginToken');
     const errorEl = document.getElementById('loginError');
     const submitBtn = document.getElementById('loginSubmitBtn');
     
-    const email = emailInput?.value?.trim();
-    const password = passwordInput?.value;
+    const token = tokenInput?.value?.trim();
     
-    if (!email || !password) {
-      this.showLoginError('Veuillez remplir tous les champs');
+    if (!token) {
+      this.showLoginError('Veuillez entrer votre token');
+      return;
+    }
+    
+    // Basic token format validation
+    if (token.length < 32) {
+      this.showLoginError('Token invalide - trop court');
       return;
     }
     
@@ -653,62 +658,64 @@ class ShopOptiPopup {
         <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="15"/>
         </svg>
-        <span>Connexion...</span>
+        <span>Validation...</span>
       `;
     }
     
     try {
-      // Call extension login endpoint
-      const response = await fetch(`${this.API_URL}/extension-login`, {
+      // Validate token with backend
+      const response = await fetch(`${this.API_URL}/extension-auth`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'login', email, password })
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-extension-token': token
+        },
+        body: JSON.stringify({ action: 'validate_token' })
       });
       
       const data = await response.json();
       
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Identifiants invalides');
+        throw new Error(data.error || 'Token invalide ou expiré');
       }
       
-      // Save to storage
+      // Token is valid - save to storage
+      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      
       await this.chrome.storage.local.set({
-        extensionToken: data.token,
-        tokenExpiry: data.expiresAt,
-        user: data.user,
+        extensionToken: token,
+        tokenExpiry: expiresAt,
+        user: data.user || { email: 'Extension User' },
         userPlan: data.user?.plan || 'free'
       });
       
       // Update state
-      this.extensionToken = data.token;
-      this.user = data.user;
+      this.extensionToken = token;
+      this.user = data.user || { email: 'Extension User' };
       this.userPlan = data.user?.plan || 'free';
       this.isConnected = true;
       
       // Hide modal and update UI
       this.hideModal('loginModal');
       this.updateUI();
-      this.showToast(`Bienvenue ${data.user?.firstName || data.user?.email}!`, 'success');
+      this.showToast('Connexion réussie!', 'success');
       
       // Clear form
-      if (emailInput) emailInput.value = '';
-      if (passwordInput) passwordInput.value = '';
+      if (tokenInput) tokenInput.value = '';
       if (errorEl) errorEl.classList.add('hidden');
       
     } catch (error) {
-      console.error('[ShopOpti+] Login error:', error);
-      this.showLoginError(error.message || 'Erreur de connexion');
+      console.error('[ShopOpti+] Token validation error:', error);
+      this.showLoginError(error.message || 'Token invalide');
     } finally {
       this.isLoggingIn = false;
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/>
-            <line x1="15" y1="12" x2="3" y2="12"/>
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
           </svg>
-          <span>Se connecter</span>
+          <span>Valider le token</span>
         `;
       }
     }
