@@ -259,14 +259,35 @@ export default function ChromeExtensionPage() {
   ];
 
   const platforms = [
+    // Full support
     { name: 'AliExpress', logo: '🛒', status: 'full' },
     { name: 'Amazon', logo: '📦', status: 'full' },
     { name: 'eBay', logo: '🏷️', status: 'full' },
     { name: 'Temu', logo: '🎯', status: 'full' },
+    { name: 'Shein', logo: '👗', status: 'full' },
+    { name: 'Etsy', logo: '🎨', status: 'full' },
+    // Semi-auto support
     { name: 'Banggood', logo: '📱', status: 'full' },
-    { name: 'CJ Dropshipping', logo: '🚚', status: 'partial' },
-    { name: 'Wish', logo: '⭐', status: 'beta' },
-    { name: 'DHgate', logo: '🏪', status: 'beta' },
+    { name: 'DHgate', logo: '🏪', status: 'full' },
+    { name: 'CJ Dropshipping', logo: '🚚', status: 'full' },
+    { name: 'Wish', logo: '⭐', status: 'full' },
+    { name: 'LightInTheBox', logo: '💡', status: 'full' },
+    { name: 'Gearbest', logo: '⚙️', status: 'full' },
+    // Agent mode
+    { name: '1688', logo: '🇨🇳', status: 'partial' },
+    { name: 'Alibaba', logo: '🏭', status: 'partial' },
+    { name: 'Taobao', logo: '🛍️', status: 'partial' },
+    // Retail
+    { name: 'Walmart', logo: '🏬', status: 'full' },
+    { name: 'Target', logo: '🎯', status: 'beta' },
+    { name: 'Best Buy', logo: '🔌', status: 'beta' },
+    { name: 'Costco', logo: '🏪', status: 'beta' },
+    { name: 'Home Depot', logo: '🔨', status: 'beta' },
+    // EU Marketplaces
+    { name: 'Cdiscount', logo: '🇫🇷', status: 'full' },
+    { name: 'Fnac', logo: '📀', status: 'beta' },
+    { name: 'ManoMano', logo: '🔧', status: 'beta' },
+    { name: 'Zalando', logo: '👟', status: 'beta' },
   ];
 
   const installSteps = [
@@ -325,7 +346,11 @@ export default function ChromeExtensionPage() {
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-2">
               <Badge className="bg-cyan-500">Extension Chrome</Badge>
-              <Badge variant="outline">v4.3.11</Badge>
+              <Badge variant="outline">v5.7.0</Badge>
+              <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Sync SaaS
+              </Badge>
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold">
@@ -363,7 +388,7 @@ export default function ChromeExtensionPage() {
               </span>
               <span className="flex items-center gap-1">
                 <CheckCircle className="h-4 w-4 text-green-500" />
-                15+ plateformes
+                45+ plateformes
               </span>
               <span className="flex items-center gap-1">
                 <CheckCircle className="h-4 w-4 text-green-500" />
@@ -568,7 +593,7 @@ export default function ChromeExtensionPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
                 {platforms.map((platform) => (
                   <div 
                     key={platform.name}
