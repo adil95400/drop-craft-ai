@@ -4431,6 +4431,7 @@ export type Database = {
       extension_auth_tokens: {
         Row: {
           created_at: string | null
+          device_info: Json | null
           expires_at: string | null
           id: string
           is_active: boolean | null
@@ -4442,6 +4443,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          device_info?: Json | null
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
@@ -4453,6 +4455,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          device_info?: Json | null
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
