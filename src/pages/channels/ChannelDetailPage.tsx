@@ -64,69 +64,90 @@ export default function ChannelDetailPage() {
     enabled: !!channelId
   })
 
-  // Fetch synced products - combine products and imported_products
+  // Fetch synced products - combine products and imported_products for the user
   const { data: syncedProducts, isLoading: productsLoading, refetch: refetchProducts } = useQuery({
     queryKey: ['channel-products', channelId],
     queryFn: async () => {
-      // Get from products table first
+      // Get user_id from the integration
+      const { data: integration } = await supabase
+        .from('integrations')
+        .select('user_id')
+        .eq('id', channelId)
+        .single()
+      
+      if (!integration?.user_id) return []
+      
+      // Get products for this user (linked to Shopify)
       const { data: productsData } = await supabase
         .from('products')
-        .select('id, name, image_url, price, stock_quantity, status, sku')
+        .select('id, name, title, image_url, images, price, stock_quantity, status, sku, shopify_product_id')
+        .eq('user_id', integration.user_id)
         .order('created_at', { ascending: false })
-        .limit(50)
+        .limit(100)
       
-      // Also get from imported_products for more complete data
-      const { data: importedData } = await supabase
-        .from('imported_products')
-        .select('id, name, image_urls, price, stock_quantity, status, sku')
-        .order('created_at', { ascending: false })
-        .limit(50)
-      
-      // Map products table data
-      const products = (productsData || []).map(p => ({
-        id: p.id,
-        title: p.name,
-        image_url: p.image_url,
-        price: p.price,
-        inventory_quantity: p.stock_quantity,
-        status: p.status,
-        sku: p.sku
-      }))
-      
-      // Map imported_products data (handle image_urls array)
-      const imported = (importedData || []).map(p => ({
-        id: p.id,
-        title: p.name,
-        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : null,
-        price: p.price,
-        inventory_quantity: p.stock_quantity,
-        status: p.status,
-        sku: p.sku
-      }))
-      
-      // Combine and dedupe by id
-      const allProducts = [...products]
-      const existingIds = new Set(products.map(p => p.id))
-      for (const ip of imported) {
-        if (!existingIds.has(ip.id)) {
-          allProducts.push(ip)
+      // Map products - prioritize image from images array if image_url is missing
+      return (productsData || []).map(p => {
+        let imageUrl = p.image_url
+        if (!imageUrl && p.images) {
+          const images = Array.isArray(p.images) ? p.images : []
+          if (images.length > 0 && typeof images[0] === 'string') {
+            imageUrl = images[0]
+          } else if (images.length > 0 && typeof images[0] === 'object' && images[0] !== null) {
+            const imgObj = images[0] as Record<string, unknown>
+            if (typeof imgObj.src === 'string') {
+              imageUrl = imgObj.src
+            }
+          }
         }
-      }
-      
-      return allProducts
+        
+        return {
+          id: p.id,
+          title: p.title || p.name,
+          image_url: imageUrl,
+          price: p.price,
+          inventory_quantity: p.stock_quantity,
+          status: p.status || (p.shopify_product_id ? 'active' : 'draft'),
+          sku: p.sku
+        }
+      })
     },
     enabled: !!channelId
   })
 
-  // Count total products
-  const { data: productCount } = useQuery({
-    queryKey: ['channel-product-count', channelId],
+  // Count total products and orders for this channel's user
+  const { data: channelStats } = useQuery({
+    queryKey: ['channel-stats', channelId],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-      if (error) throw error
-      return count || 0
+      const { data: integration } = await supabase
+        .from('integrations')
+        .select('user_id')
+        .eq('id', channelId)
+        .single()
+      
+      if (!integration?.user_id) return { products: 0, orders: 0, revenue: 0 }
+      
+      const [productsResult, ordersResult, revenueResult] = await Promise.all([
+        supabase
+          .from('products')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', integration.user_id),
+        supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', integration.user_id),
+        supabase
+          .from('orders')
+          .select('total_amount')
+          .eq('user_id', integration.user_id)
+      ])
+      
+      const revenue = (revenueResult.data || []).reduce((sum, o) => sum + (o.total_amount || 0), 0)
+      
+      return {
+        products: productsResult.count || 0,
+        orders: ordersResult.count || 0,
+        revenue
+      }
     },
     enabled: !!channelId
   })
@@ -255,9 +276,9 @@ export default function ChannelDetailPage() {
 
         {/* Stats Bar */}
         <ChannelStatsBar
-          productCount={productCount || 0}
-          orderCount={(channel as any).orders_synced || 0}
-          revenue={0}
+          productCount={channelStats?.products || 0}
+          orderCount={channelStats?.orders || 0}
+          revenue={channelStats?.revenue || 0}
           lastSync={channel.last_sync_at}
         />
 
@@ -317,7 +338,7 @@ export default function ChannelDetailPage() {
           <TabsContent value="products" className="m-0">
             <ChannelProductsTab
               products={syncedProducts || []}
-              totalCount={productCount || 0}
+              totalCount={channelStats?.products || 0}
               isLoading={productsLoading}
               onRefresh={() => { refetchProducts() }}
               onSync={() => syncMutation.mutate()}
