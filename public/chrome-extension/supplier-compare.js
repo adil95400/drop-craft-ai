@@ -1,31 +1,38 @@
 /**
- * Drop Craft AI - Supplier Comparison Engine v4.2.0
+ * ShopOpti+ Supplier Comparison Engine v5.7.0
  * Find alternative suppliers with better prices/shipping
- * Competitive with Cartifind supplier suggestions
+ * Complete cost calculation with CostCalculator integration
+ * Automatic fallback when API fails
  */
 
 (function() {
   'use strict';
 
-  if (window.__dropCraftSupplierCompareLoaded) return;
-  window.__dropCraftSupplierCompareLoaded = true;
+  if (window.__shopOptiSupplierCompareLoaded) return;
+  window.__shopOptiSupplierCompareLoaded = true;
 
   const CONFIG = {
+    VERSION: '5.7.0',
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     SUPPLIERS: {
-      aliexpress: { name: 'AliExpress', icon: '🛒', avgShipping: 15, reliability: 4.2 },
-      temu: { name: 'Temu', icon: '🛍️', avgShipping: 12, reliability: 3.8 },
-      cjdropshipping: { name: 'CJ Dropshipping', icon: '📦', avgShipping: 8, reliability: 4.5 },
-      banggood: { name: 'Banggood', icon: '🏪', avgShipping: 14, reliability: 4.0 },
-      dhgate: { name: 'DHgate', icon: '🏭', avgShipping: 18, reliability: 3.9 },
-      '1688': { name: '1688', icon: '🇨🇳', avgShipping: 20, reliability: 4.3 }
+      aliexpress: { name: 'AliExpress', icon: '🛒', avgShipping: 15, reliability: 85, color: '#ff6a00' },
+      temu: { name: 'Temu', icon: '🛍️', avgShipping: 12, reliability: 80, color: '#f97316' },
+      cjdropshipping: { name: 'CJ Dropshipping', icon: '📦', avgShipping: 8, reliability: 90, color: '#1a73e8' },
+      banggood: { name: 'Banggood', icon: '🏪', avgShipping: 14, reliability: 82, color: '#ff6600' },
+      dhgate: { name: 'DHgate', icon: '🏭', avgShipping: 18, reliability: 78, color: '#e54d00' },
+      '1688': { name: '1688', icon: '🇨🇳', avgShipping: 20, reliability: 75, color: '#ff6600' },
+      amazon: { name: 'Amazon', icon: '📦', avgShipping: 3, reliability: 95, color: '#ff9900' },
+      ebay: { name: 'eBay', icon: '🏷️', avgShipping: 10, reliability: 85, color: '#e53238' },
+      shein: { name: 'Shein', icon: '👗', avgShipping: 12, reliability: 80, color: '#000000' },
+      wish: { name: 'Wish', icon: '⭐', avgShipping: 25, reliability: 70, color: '#2fb7ec' }
     }
   };
 
-  class DropCraftSupplierCompare {
+  class ShopOptiSupplierCompare {
     constructor() {
       this.currentProduct = null;
       this.alternatives = [];
+      this.usedFallback = false;
       this.init();
     }
 
@@ -33,7 +40,7 @@
       this.injectStyles();
       this.injectUI();
       this.bindEvents();
-      console.log('🔍 DropCraft Supplier Compare v4.2 initialized');
+      console.log(`🔍 ShopOpti+ Supplier Compare v${CONFIG.VERSION} initialized`);
     }
 
     injectStyles() {
@@ -583,6 +590,8 @@
     }
 
     async findAlternatives(product) {
+      this.usedFallback = false;
+      
       // Try API first
       try {
         const token = await this.getToken();
@@ -600,23 +609,76 @@
         });
 
         if (response.ok) {
-          return response.json();
+          const data = await response.json();
+          if (data && data.length > 0) {
+            // Add margin calculation using CostCalculator
+            return this.enrichWithMargins(data, product.price);
+          }
         }
       } catch (e) {
-        console.log('Using simulated alternatives');
+        console.log('[ShopOpti+] API failed, using fallback...');
       }
 
-      // Simulated alternatives
+      // Use local fallback if available
+      if (window.ShopOptiSupplierFallback) {
+        this.usedFallback = true;
+        console.log('[ShopOpti+] Using local supplier fallback');
+        
+        const fallbackResults = await window.ShopOptiSupplierFallback.generateFallbackResults(
+          { title: product.title, price: product.price },
+          { platforms: Object.keys(CONFIG.SUPPLIERS).filter(k => k !== product.platform), reason: 'API unavailable' }
+        );
+        
+        return this.enrichWithMargins(fallbackResults.suppliers, product.price);
+      }
+
+      // Ultimate fallback: simulated alternatives
       return this.simulateAlternatives(product);
+    }
+
+    // Enrich results with complete margin calculation from CostCalculator
+    enrichWithMargins(alternatives, sellingPrice) {
+      if (!window.ShopOptiCostCalculator || !sellingPrice) return alternatives;
+      
+      return alternatives.map(alt => {
+        const productCost = alt.price || alt.pricing?.estimatedCost || 0;
+        const shippingCost = alt.shippingCost || alt.pricing?.shippingCost || 0;
+        
+        const calc = window.ShopOptiCostCalculator.calculateComplete({
+          productCost,
+          shippingCost,
+          sellingPrice,
+          vatRate: 20,
+          paymentProcessor: 'stripe',
+          platform: 'shopify',
+          includeVat: true
+        });
+        
+        return {
+          ...alt,
+          // Complete margin data
+          marginData: calc,
+          netMargin: calc.margins.net,
+          netProfit: calc.profit.net,
+          grossMargin: calc.margins.gross,
+          roi: calc.margins.roi,
+          totalCosts: calc.costs.totalCosts,
+          profitabilityLevel: calc.analysis.profitabilityLevel,
+          recommendation: calc.analysis.recommendation,
+          // Keep original estimate flag
+          isEstimate: alt.isEstimate || false
+        };
+      }).sort((a, b) => (b.netMargin || 0) - (a.netMargin || 0));
     }
 
     simulateAlternatives(product) {
       const basePrice = product.price || 10;
       const platforms = Object.entries(CONFIG.SUPPLIERS).filter(([key]) => key !== product.platform);
 
-      return platforms.map(([key, info], index) => {
+      const results = platforms.map(([key, info], index) => {
         const priceVariation = 0.7 + Math.random() * 0.6; // 70% to 130%
         const price = Math.round(basePrice * priceVariation * 100) / 100;
+        const shippingCost = Math.round(Math.random() * 5 * 100) / 100;
         const savings = Math.round((basePrice - price) * 100) / 100;
         
         return {
@@ -624,27 +686,42 @@
           ...info,
           title: product.title,
           price,
+          shippingCost,
           savings: savings > 0 ? savings : 0,
           savingsPercent: savings > 0 ? Math.round((savings / basePrice) * 100) : 0,
           shipping: info.avgShipping + Math.floor(Math.random() * 5) - 2,
-          shippingCost: Math.round(Math.random() * 5 * 100) / 100,
           rating: (Math.random() * 1 + 4).toFixed(1),
           reviews: Math.floor(Math.random() * 5000) + 100,
           orders: Math.floor(Math.random() * 10000) + 500,
           image: product.image,
-          url: `https://${key}.com/search?q=${encodeURIComponent(product.title)}`
+          url: `https://${key === '1688' ? 's.1688.com/selloffer/offer_search.htm?keywords=' : key + '.com/search?q='}${encodeURIComponent(product.title)}`,
+          isEstimate: true
         };
-      }).sort((a, b) => a.price - b.price);
+      });
+      
+      // Enrich with margin calculation
+      return this.enrichWithMargins(results, basePrice);
     }
 
     renderResults(product, alternatives) {
       const content = document.getElementById('dc-supplier-content');
       
-      const bestSavings = alternatives.reduce((max, a) => Math.max(max, a.savings), 0);
-      const avgSavings = alternatives.reduce((sum, a) => sum + a.savings, 0) / alternatives.length;
-      const fastestShipping = Math.min(...alternatives.map(a => a.shipping));
+      const bestSavings = alternatives.reduce((max, a) => Math.max(max, a.savings || 0), 0);
+      const avgSavings = alternatives.reduce((sum, a) => sum + (a.savings || 0), 0) / alternatives.length;
+      const fastestShipping = Math.min(...alternatives.map(a => a.shipping || a.avgShipping || 30));
+      const bestMargin = alternatives.reduce((max, a) => Math.max(max, a.netMargin || 0), 0);
 
       content.innerHTML = `
+        ${this.usedFallback ? `
+          <div class="dc-fallback-warning" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px;">⚠️</span>
+            <div>
+              <div style="color: #f59e0b; font-weight: 600; font-size: 13px;">Mode Estimation</div>
+              <div style="color: #94a3b8; font-size: 12px;">Prix estimés basés sur les moyennes du marché - vérifiez sur les plateformes</div>
+            </div>
+          </div>
+        ` : ''}
+        
         <div class="dc-supplier-current">
           <img class="dc-supplier-current-img" src="${product.image}" alt="${product.title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/></svg>'">
           <div class="dc-supplier-current-info">
@@ -668,12 +745,12 @@
             <div class="dc-supplier-summary-label">Alternatives trouvées</div>
           </div>
           <div class="dc-supplier-summary-card">
-            <div class="dc-supplier-summary-value">${bestSavings.toFixed(2)}€</div>
-            <div class="dc-supplier-summary-label">Économie max</div>
+            <div class="dc-supplier-summary-value" style="color: ${bestMargin >= 30 ? '#10b981' : bestMargin >= 15 ? '#eab308' : '#ef4444'}">${bestMargin.toFixed(1)}%</div>
+            <div class="dc-supplier-summary-label">Meilleure marge nette</div>
           </div>
           <div class="dc-supplier-summary-card">
-            <div class="dc-supplier-summary-value">${avgSavings.toFixed(2)}€</div>
-            <div class="dc-supplier-summary-label">Économie moyenne</div>
+            <div class="dc-supplier-summary-value">${bestSavings.toFixed(2)}€</div>
+            <div class="dc-supplier-summary-label">Économie max</div>
           </div>
           <div class="dc-supplier-summary-card">
             <div class="dc-supplier-summary-value">${fastestShipping}j</div>
@@ -682,7 +759,8 @@
         </div>
 
         <div class="dc-supplier-filters">
-          <button class="dc-supplier-filter active" data-filter="price">💰 Meilleur prix</button>
+          <button class="dc-supplier-filter active" data-filter="margin">📊 Meilleure marge</button>
+          <button class="dc-supplier-filter" data-filter="price">💰 Meilleur prix</button>
           <button class="dc-supplier-filter" data-filter="shipping">🚚 Livraison rapide</button>
           <button class="dc-supplier-filter" data-filter="rating">⭐ Mieux noté</button>
         </div>
@@ -711,9 +789,14 @@
     }
 
     renderAlternativeCard(alt, isBest = false) {
+      const profitLevel = alt.profitabilityLevel || { level: 'unknown', label: 'N/A', color: '#94a3b8', icon: '❓' };
+      const price = alt.price || alt.pricing?.estimatedCost || 0;
+      const shipping = alt.shipping || alt.avgShipping || 15;
+      
       return `
         <div class="dc-supplier-card ${isBest ? 'best' : ''}">
-          <img class="dc-supplier-card-img" src="${alt.image}" alt="${alt.title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/></svg>'">
+          ${alt.isEstimate ? `<span class="dc-estimate-badge" style="position: absolute; top: 10px; right: 10px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600;">Estimé</span>` : ''}
+          <img class="dc-supplier-card-img" src="${alt.image || ''}" alt="${alt.title || ''}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/></svg>'">
           <div class="dc-supplier-card-content">
             <div class="dc-supplier-card-header">
               <div class="dc-supplier-card-platform">
@@ -721,26 +804,45 @@
                 <span class="dc-supplier-card-platform-name">${alt.name}</span>
               </div>
               <div class="dc-supplier-card-price">
-                <div class="dc-supplier-card-price-current">${alt.price.toFixed(2)}€</div>
+                <div class="dc-supplier-card-price-current">${price.toFixed(2)}€</div>
                 ${alt.savings > 0 ? `<div class="dc-supplier-card-price-savings">-${alt.savingsPercent}% (${alt.savings.toFixed(2)}€)</div>` : ''}
               </div>
             </div>
+            
+            <!-- Margin display from CostCalculator -->
+            ${alt.netMargin !== undefined ? `
+              <div class="dc-margin-display" style="background: rgba(${profitLevel.level === 'excellent' || profitLevel.level === 'very_good' ? '16, 185, 129' : profitLevel.level === 'good' || profitLevel.level === 'acceptable' ? '234, 179, 8' : '239, 68, 68'}, 0.1); border-radius: 10px; padding: 10px 12px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="color: #94a3b8; font-size: 11px;">Marge nette (TVA, frais inclus)</div>
+                  <div style="color: ${profitLevel.color}; font-size: 18px; font-weight: 700;">${alt.netMargin.toFixed(1)}% <span style="font-size: 12px;">(${alt.netProfit >= 0 ? '+' : ''}${alt.netProfit.toFixed(2)}€)</span></div>
+                </div>
+                <div style="text-align: right;">
+                  <span style="font-size: 20px;">${profitLevel.icon}</span>
+                  <div style="color: ${profitLevel.color}; font-size: 11px; font-weight: 600;">${profitLevel.label}</div>
+                </div>
+              </div>
+            ` : ''}
+            
             <div class="dc-supplier-card-stats">
               <div class="dc-supplier-card-stat">
-                🚚 Livraison: <span class="dc-supplier-card-stat-value">${alt.shipping} jours</span>
+                🚚 Livraison: <span class="dc-supplier-card-stat-value">${shipping} jours</span>
               </div>
               <div class="dc-supplier-card-stat">
-                ⭐ Note: <span class="dc-supplier-card-stat-value">${alt.rating}/5</span>
+                ⭐ Fiabilité: <span class="dc-supplier-card-stat-value">${alt.reliability || 80}%</span>
               </div>
+              ${alt.totalCosts ? `
               <div class="dc-supplier-card-stat">
-                📦 Ventes: <span class="dc-supplier-card-stat-value">${alt.orders}+</span>
+                💵 Coût total: <span class="dc-supplier-card-stat-value">${alt.totalCosts.toFixed(2)}€</span>
               </div>
+              ` : ''}
+              ${alt.roi ? `
               <div class="dc-supplier-card-stat">
-                💬 Avis: <span class="dc-supplier-card-stat-value">${alt.reviews}</span>
+                📈 ROI: <span class="dc-supplier-card-stat-value">${alt.roi.toFixed(1)}%</span>
               </div>
+              ` : ''}
             </div>
             <div class="dc-supplier-card-actions">
-              <button class="dc-supplier-card-btn dc-supplier-card-btn-primary" data-action="open" data-url="${alt.url}">
+              <button class="dc-supplier-card-btn dc-supplier-card-btn-primary" data-action="open" data-url="${alt.url || alt.searchUrl || ''}">
                 🔗 Voir sur ${alt.name}
               </button>
               <button class="dc-supplier-card-btn dc-supplier-card-btn-secondary" data-action="import" data-index="${this.alternatives.indexOf(alt)}">
@@ -760,14 +862,17 @@
       let sorted = [...this.alternatives];
       
       switch(filter) {
+        case 'margin':
+          sorted.sort((a, b) => (b.netMargin || 0) - (a.netMargin || 0));
+          break;
         case 'price':
-          sorted.sort((a, b) => a.price - b.price);
+          sorted.sort((a, b) => (a.price || a.pricing?.estimatedCost || 0) - (b.price || b.pricing?.estimatedCost || 0));
           break;
         case 'shipping':
-          sorted.sort((a, b) => a.shipping - b.shipping);
+          sorted.sort((a, b) => (a.shipping || a.avgShipping || 30) - (b.shipping || b.avgShipping || 30));
           break;
         case 'rating':
-          sorted.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
+          sorted.sort((a, b) => (b.reliability || 0) - (a.reliability || 0));
           break;
       }
 
@@ -803,5 +908,7 @@
   }
 
   // Initialize
-  window.DropCraftSupplierCompare = new DropCraftSupplierCompare();
+  window.ShopOptiSupplierCompare = new ShopOptiSupplierCompare();
+  // Backward compatibility
+  window.DropCraftSupplierCompare = window.ShopOptiSupplierCompare;
 })();

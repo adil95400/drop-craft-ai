@@ -1,8 +1,9 @@
-// ShopOpti+ Injected script for advanced product detection v4.3.16
+// ShopOpti+ Injected script for advanced product detection v5.7.0
 // This script runs in the page context to access site-specific APIs
 
 class AdvancedProductDetector {
   constructor() {
+    this.VERSION = '5.7.0';
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
     this.platformDetectors = {
       aliexpress: new AliExpressDetector(this.API_URL),
@@ -19,7 +20,7 @@ class AdvancedProductDetector {
   init() {
     this.setupMessageListener();
     this.injectOneClickButtons();
-    console.log('[ShopOpti+] Advanced detector initialized v4.3.16');
+    console.log(`[ShopOpti+] Advanced detector initialized v${this.VERSION}`);
   }
 
   setupMessageListener() {
