@@ -1,59 +1,166 @@
 // ============================================
-// ShopOpti+ Content Injector v5.6.7 - PROFESSIONAL EDITION
+// ShopOpti+ Content Injector v5.7.0 - PROFESSIONAL EDITION
 // 100% AutoDS/Cartifind Feature Parity
-// Supports: Amazon, AliExpress, eBay, Temu, Shein, Shopify, 30+ platforms
+// MutationObserver for SPA/infinite scroll
+// Centralized selectors + Supplier search + AI content
 // ============================================
 
 (function() {
   'use strict';
   
-  const VERSION = '5.6.7';
+  const VERSION = '5.7.0';
   const INJECTED_CLASS = 'shopopti-injected';
+  const DEBOUNCE_MS = 300;
+  const MAX_REINJECT_ATTEMPTS = 5;
+  
+  // State management
+  let isInitialized = false;
+  let isAuthenticated = false;
+  let currentPlatform = null;
+  let reinjectAttempts = 0;
+  let debounceTimer = null;
+  let observer = null;
   
   // ============================================
-  // PLATFORM DETECTION (COMPREHENSIVE)
+  // CENTRALIZED SELECTORS (dynamically loaded)
+  // ============================================
+  
+  const platformSelectors = {
+    amazon: {
+      productButtons: ['#add-to-cart-button', '#buy-now-button', '#buybox', '#rightCol', '#desktop_buybox', '.a-button-stack', '#addToCart'],
+      cards: ['[data-asin]:not([data-shopopti-card])', '.s-result-item:not([data-shopopti-card])'],
+      urlPattern: /\/dp\/([A-Z0-9]+)/i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="/dp/"]');
+        if (link) return new URL(link.href, window.location.origin).href;
+        const asin = card.getAttribute('data-asin');
+        if (asin) return `${window.location.origin}/dp/${asin}`;
+        return null;
+      }
+    },
+    aliexpress: {
+      productButtons: ['.product-action', '.product-action-main', '.action--container', '[class*="AddCart"]', '.comet-v2-btn-important'],
+      cards: ['.search-item-card:not([data-shopopti-card])', '[data-pl-id]:not([data-shopopti-card])', '[class*="SearchProductFeed--item"]:not([data-shopopti-card])'],
+      urlPattern: /\/item\/(\d+)\.html/i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="/item/"]');
+        return link ? link.href : null;
+      }
+    },
+    ebay: {
+      productButtons: ['#binBtn_btn', '.ux-call-to-action', '#mainContent .x-bin-action', '[data-testid="ux-call-to-action"]'],
+      cards: ['.s-item:not([data-shopopti-card])', '.srp-results .s-item__wrapper:not([data-shopopti-card])'],
+      urlPattern: /\/itm\/(\d+)/i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="/itm/"]');
+        return link ? link.href : null;
+      }
+    },
+    temu: {
+      productButtons: ['[class*="AddToCart"]', '[class*="buy-button"]', '[class*="action-bar"]', 'button[class*="_2dQOZ"]'],
+      cards: ['[class*="goods-container"]:not([data-shopopti-card])', '[class*="product-card"]:not([data-shopopti-card])'],
+      urlPattern: /\/goods\.html/i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="goods.html"], a[href*="g-"]');
+        return link ? link.href : null;
+      }
+    },
+    shein: {
+      productButtons: ['[class*="add-cart"]', '[class*="product-intro"]', '.product-action', 'button[class*="button-buy"]'],
+      cards: ['[class*="product-card"]:not([data-shopopti-card])', '[class*="goods-item"]:not([data-shopopti-card])'],
+      urlPattern: /\/product-detail|-p-\d+\.html/i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="product"]');
+        return link ? link.href : null;
+      }
+    },
+    shopify: {
+      productButtons: ['[type="submit"][name="add"]', '.product-form__submit', '.add-to-cart', '#AddToCart', '[data-add-to-cart]'],
+      cards: ['.product-card:not([data-shopopti-card])', '[class*="product-item"]:not([data-shopopti-card])'],
+      urlPattern: /\/products\//i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="/products/"]');
+        return link ? link.href : null;
+      }
+    },
+    cdiscount: {
+      productButtons: ['#fpAddBsk', '.fpBuyBloc', '[data-qa="add-to-cart"]'],
+      cards: ['.prdtBloc:not([data-shopopti-card])'],
+      urlPattern: /\/f-\d+-[a-z0-9]+\.html/i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*=".html"]');
+        return link ? link.href : null;
+      }
+    },
+    fnac: {
+      productButtons: ['.f-buyBox-cta', '[data-automation-id="add-to-cart"]'],
+      cards: ['.Article-item:not([data-shopopti-card])'],
+      urlPattern: /\/a\d+\//i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="/a"]');
+        return link ? link.href : null;
+      }
+    },
+    etsy: {
+      productButtons: ['[data-add-to-cart-button]', '.add-to-cart-button'],
+      cards: ['[data-logger-id*="listing"]:not([data-shopopti-card])'],
+      urlPattern: /\/listing\//i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="/listing/"]');
+        return link ? link.href : null;
+      }
+    },
+    walmart: {
+      productButtons: ['[data-automation-id="atc-button"]', 'button[data-testid="add-to-cart-btn"]'],
+      cards: ['[data-item-id]:not([data-shopopti-card])'],
+      urlPattern: /\/ip\/\d+/i,
+      extractUrl: card => {
+        const link = card.querySelector('a[href*="/ip/"]');
+        return link ? link.href : null;
+      }
+    }
+  };
+  
+  // ============================================
+  // PLATFORM DETECTION
   // ============================================
   
   function detectPlatform() {
     const hostname = window.location.hostname.toLowerCase();
     const url = window.location.href.toLowerCase();
     
-    // Major platforms
-    if (hostname.includes('amazon.')) return 'amazon';
-    if (hostname.includes('aliexpress.')) return 'aliexpress';
-    if (hostname.includes('ebay.')) return 'ebay';
-    if (hostname.includes('temu.com')) return 'temu';
-    if (hostname.includes('shein.')) return 'shein';
+    const domainMap = {
+      'amazon': ['amazon.com', 'amazon.fr', 'amazon.de', 'amazon.co.uk', 'amazon.es', 'amazon.it', 'amazon.ca', 'amazon.co.jp'],
+      'aliexpress': ['aliexpress.com', 'aliexpress.fr', 'aliexpress.us'],
+      'ebay': ['ebay.com', 'ebay.fr', 'ebay.de', 'ebay.co.uk'],
+      'temu': ['temu.com'],
+      'shein': ['shein.com', 'shein.fr'],
+      'cdiscount': ['cdiscount.com'],
+      'fnac': ['fnac.com'],
+      'rakuten': ['rakuten.fr', 'rakuten.com'],
+      'etsy': ['etsy.com'],
+      'walmart': ['walmart.com'],
+      'target': ['target.com'],
+      'bestbuy': ['bestbuy.com'],
+      'banggood': ['banggood.com'],
+      'dhgate': ['dhgate.com'],
+      'wish': ['wish.com'],
+      'cjdropshipping': ['cjdropshipping.com']
+    };
     
-    // French marketplaces
-    if (hostname.includes('cdiscount.com')) return 'cdiscount';
-    if (hostname.includes('fnac.com')) return 'fnac';
-    if (hostname.includes('rakuten.')) return 'rakuten';
-    if (hostname.includes('darty.com')) return 'darty';
-    if (hostname.includes('boulanger.com')) return 'boulanger';
-    if (hostname.includes('manomano.')) return 'manomano';
-    if (hostname.includes('leroymerlin.')) return 'leroymerlin';
+    for (const [platform, domains] of Object.entries(domainMap)) {
+      if (domains.some(d => hostname.includes(d))) {
+        return platform;
+      }
+    }
     
-    // US retailers
-    if (hostname.includes('walmart.com')) return 'walmart';
-    if (hostname.includes('target.com')) return 'target';
-    if (hostname.includes('bestbuy.com')) return 'bestbuy';
-    if (hostname.includes('homedepot.com')) return 'homedepot';
-    if (hostname.includes('costco.com')) return 'costco';
-    
-    // Global platforms
-    if (hostname.includes('etsy.com')) return 'etsy';
-    if (hostname.includes('wish.com')) return 'wish';
-    if (hostname.includes('banggood.com')) return 'banggood';
-    if (hostname.includes('dhgate.com')) return 'dhgate';
-    if (hostname.includes('cjdropshipping.com')) return 'cjdropshipping';
-    if (hostname.includes('1688.com')) return '1688';
-    if (hostname.includes('taobao.com')) return 'taobao';
-    
-    // Shopify detection (must be last)
-    if (url.includes('/products/')) return 'shopify';
-    if (typeof window.Shopify !== 'undefined') return 'shopify';
-    if (hostname.includes('.myshopify.com')) return 'shopify';
+    // Shopify detection
+    if (url.includes('/products/') || 
+        document.querySelector('meta[name="shopify-checkout-api-token"]') ||
+        document.querySelector('link[href*="cdn.shopify.com"]') ||
+        typeof window.Shopify !== 'undefined') {
+      return 'shopify';
+    }
     
     return null;
   }
@@ -61,21 +168,24 @@
   function isProductPage() {
     const url = window.location.href;
     const patterns = [
-      /\/dp\/[A-Z0-9]+/i,              // Amazon
-      /\/item\/\d+\.html/i,            // AliExpress
-      /\/itm\/\d+/i,                   // eBay
-      /\/products?\//i,                 // Shopify, generic
-      /\/gp\/product\//i,              // Amazon alt
-      /\/goods\.html/i,                // Temu
-      /\/product-detail/i,             // Shein
-      /\/p\//i,                        // Various
-      /\/product\//i                   // Generic
+      /\/dp\/[A-Z0-9]+/i,
+      /\/item\/\d+\.html/i,
+      /\/itm\/\d+/i,
+      /\/products?\//i,
+      /\/gp\/product\//i,
+      /\/goods\.html/i,
+      /g-\d+\.html/i,
+      /\/product-detail/i,
+      /-p-\d+\.html/i,
+      /\/listing\//i,
+      /\/ip\/\d+/i,
+      /\/f-\d+-[a-z0-9]+\.html/i
     ];
     return patterns.some(p => p.test(url));
   }
   
   // ============================================
-  // IMPORT BUTTON - AUTODS PROFESSIONAL STYLE
+  // IMPORT BUTTON CREATION
   // ============================================
   
   function createImportButton(type = 'single', productUrl = null) {
@@ -97,7 +207,6 @@
       mainBtn.dataset.productUrl = productUrl;
     }
     
-    // Quick import click handler
     mainBtn.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -106,7 +215,7 @@
     
     container.appendChild(mainBtn);
     
-    // Add dropdown for advanced options (only on product pages)
+    // Add dropdown for single product pages
     if (type === 'single') {
       const dropdownBtn = document.createElement('button');
       dropdownBtn.className = 'shopopti-import-btn shopopti-dropdown-btn';
@@ -127,10 +236,18 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Import + Avis
         </button>
+        <button class="shopopti-dropdown-item" data-action="ai">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><circle cx="12" cy="12" r="4"/></svg>
+          Import + Optimisation IA
+        </button>
         <div class="shopopti-divider"></div>
         <button class="shopopti-dropdown-item" data-action="suppliers">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           Trouver fournisseurs
+        </button>
+        <button class="shopopti-dropdown-item" data-action="compare">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Comparer les prix
         </button>
       `;
       
@@ -149,17 +266,32 @@
           const action = item.dataset.action;
           const url = window.location.href;
           
-          if (action === 'quick') await handleQuickImport(mainBtn, url);
-          else if (action === 'advanced') await handleAdvancedImport(url);
-          else if (action === 'reviews') await handleImportWithReviews(mainBtn, url);
-          else if (action === 'suppliers') await handleFindSuppliers(url);
+          switch (action) {
+            case 'quick':
+              await handleQuickImport(mainBtn, url);
+              break;
+            case 'advanced':
+              await handleAdvancedImport(url);
+              break;
+            case 'reviews':
+              await handleImportWithReviews(mainBtn, url);
+              break;
+            case 'ai':
+              await handleImportWithAI(mainBtn, url);
+              break;
+            case 'suppliers':
+              await handleFindSuppliers(url);
+              break;
+            case 'compare':
+              await handleComparePrice(url);
+              break;
+          }
         });
       });
       
       container.appendChild(dropdownBtn);
       container.appendChild(dropdown);
       
-      // Close dropdown when clicking outside
       document.addEventListener('click', (e) => {
         if (!container.contains(e.target)) dropdown.classList.add('hidden');
       });
@@ -220,8 +352,40 @@
       
       if (response.success) {
         setButtonSuccess(button);
-        showToast(`✓ Produit + ${response.reviewsCount || response.reviews?.count || 0} avis importés!`, 'success');
+        const reviewCount = response.reviewsCount || response.reviews?.count || 0;
+        showToast(`✓ Produit + ${reviewCount} avis importés!`, 'success');
         sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId || response.product?.id });
+      } else {
+        throw new Error(response.error || 'Import échoué');
+      }
+    } catch (error) {
+      setButtonError(button);
+      showToast(error.message, 'error');
+      setTimeout(() => resetButton(button), 3000);
+    }
+  }
+  
+  async function handleImportWithAI(button, url) {
+    setButtonLoading(button, true, 'Import + IA...');
+    
+    try {
+      const response = await sendMessage({
+        type: 'IMPORT_FROM_URL',
+        url,
+        options: { 
+          autoOptimize: true, 
+          aiEnhance: true,
+          rewriteTitle: true,
+          generateDescription: true,
+          extractReviews: true,
+          extractVariants: true 
+        }
+      });
+      
+      if (response.success) {
+        setButtonSuccess(button);
+        showToast('✓ Produit importé et optimisé par IA!', 'success');
+        sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId });
       } else {
         throw new Error(response.error || 'Import échoué');
       }
@@ -234,11 +398,24 @@
   
   async function handleFindSuppliers(url) {
     try {
+      showToast('🔍 Recherche de fournisseurs...', 'info');
       await sendMessage({
         type: 'FIND_SUPPLIERS',
         productData: { url }
       });
-      showToast('🔍 Recherche de fournisseurs lancée...', 'info');
+    } catch (error) {
+      showToast('Erreur: ' + error.message, 'error');
+    }
+  }
+  
+  async function handleComparePrice(url) {
+    try {
+      showToast('📊 Comparaison des prix...', 'info');
+      await sendMessage({
+        type: 'SEARCH_ALL_SUPPLIERS',
+        query: document.title,
+        options: { comparePrice: true, sourceUrl: url }
+      });
     } catch (error) {
       showToast('Erreur: ' + error.message, 'error');
     }
@@ -283,7 +460,7 @@
   }
   
   // ============================================
-  // MESSAGING HELPER
+  // MESSAGING
   // ============================================
   
   function sendMessage(message) {
@@ -315,9 +492,7 @@
     toast.innerHTML = `<span>${message}</span>`;
     document.body.appendChild(toast);
     
-    requestAnimationFrame(() => {
-      toast.classList.add('show');
-    });
+    requestAnimationFrame(() => toast.classList.add('show'));
     
     setTimeout(() => {
       toast.classList.remove('show');
@@ -326,20 +501,15 @@
   }
   
   // ============================================
-  // PROFESSIONAL STYLES (AUTODS/CARTIFIND)
+  // STYLES INJECTION
   // ============================================
   
   function injectStyles() {
-    if (document.getElementById('shopopti-pro-styles')) return;
+    if (document.getElementById('shopopti-pro-styles-v570')) return;
     
     const styles = document.createElement('style');
-    styles.id = 'shopopti-pro-styles';
+    styles.id = 'shopopti-pro-styles-v570';
     styles.textContent = `
-      /* ========================================
-         SHOPOPTI+ PROFESSIONAL UI v5.6.7
-         AutoDS/Cartifind-quality styling
-      ======================================== */
-      
       :root {
         --shopopti-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
         --shopopti-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -347,10 +517,9 @@
         --shopopti-dark: linear-gradient(180deg, #1e1e2e 0%, #0f0f1a 100%);
         --shopopti-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
         --shopopti-shadow-lg: 0 8px 30px rgba(99, 102, 241, 0.45);
-        --shopopti-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        --shopopti-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
       
-      /* Import Button Container */
       .shopopti-import-container {
         display: inline-flex;
         position: relative;
@@ -358,7 +527,6 @@
         font-family: var(--shopopti-font);
       }
       
-      /* Main Import Button */
       .shopopti-import-btn {
         display: inline-flex;
         align-items: center;
@@ -390,63 +558,20 @@
         transition: left 0.5s;
       }
       
-      .shopopti-import-btn:hover::before {
-        left: 100%;
-      }
+      .shopopti-import-btn:hover::before { left: 100%; }
+      .shopopti-import-btn:hover { transform: translateY(-2px); box-shadow: var(--shopopti-shadow-lg); }
+      .shopopti-import-btn:active { transform: translateY(0); }
+      .shopopti-import-btn:disabled { opacity: 0.8; cursor: wait; }
+      .shopopti-import-btn.shopopti-success { background: var(--shopopti-success); }
+      .shopopti-import-btn.shopopti-error { background: var(--shopopti-error); }
       
-      .shopopti-import-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shopopti-shadow-lg), inset 0 0 0 1px rgba(255,255,255,0.15);
-      }
+      .shopopti-main-btn { border-radius: 10px 0 0 10px; }
+      .shopopti-dropdown-btn { padding: 10px 12px; border-radius: 0 10px 10px 0; border-left: 1px solid rgba(255,255,255,0.2); }
+      .shopopti-import-container:not(:has(.shopopti-dropdown-btn)) .shopopti-main-btn { border-radius: 10px; }
       
-      .shopopti-import-btn:active {
-        transform: translateY(0);
-      }
+      .shopopti-icon { width: 16px; height: 16px; flex-shrink: 0; }
+      .shopopti-icon-sm { width: 12px; height: 12px; }
       
-      .shopopti-import-btn:disabled {
-        opacity: 0.8;
-        cursor: wait;
-        transform: none;
-      }
-      
-      .shopopti-import-btn.shopopti-success {
-        background: var(--shopopti-success);
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
-      }
-      
-      .shopopti-import-btn.shopopti-error {
-        background: var(--shopopti-error);
-        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
-      }
-      
-      /* Main button with dropdown */
-      .shopopti-main-btn {
-        border-radius: 10px 0 0 10px;
-      }
-      
-      .shopopti-dropdown-btn {
-        padding: 10px 12px;
-        border-radius: 0 10px 10px 0;
-        border-left: 1px solid rgba(255,255,255,0.2);
-      }
-      
-      .shopopti-import-container:not(:has(.shopopti-dropdown-btn)) .shopopti-main-btn {
-        border-radius: 10px;
-      }
-      
-      /* Icons */
-      .shopopti-icon {
-        width: 16px;
-        height: 16px;
-        flex-shrink: 0;
-      }
-      
-      .shopopti-icon-sm {
-        width: 12px;
-        height: 12px;
-      }
-      
-      /* Spinner */
       .shopopti-spinner {
         display: inline-block;
         width: 14px;
@@ -457,11 +582,8 @@
         animation: shopopti-spin 0.8s linear infinite;
       }
       
-      @keyframes shopopti-spin {
-        to { transform: rotate(360deg); }
-      }
+      @keyframes shopopti-spin { to { transform: rotate(360deg); } }
       
-      /* Dropdown Menu */
       .shopopti-dropdown {
         position: absolute;
         top: 100%;
@@ -471,14 +593,12 @@
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 12px;
         padding: 8px;
-        min-width: 220px;
+        min-width: 240px;
         box-shadow: 0 15px 40px rgba(0,0,0,0.5);
         z-index: 10000;
       }
       
-      .shopopti-dropdown.hidden {
-        display: none;
-      }
+      .shopopti-dropdown.hidden { display: none; }
       
       .shopopti-dropdown-item {
         display: flex;
@@ -498,28 +618,12 @@
         font-family: var(--shopopti-font);
       }
       
-      .shopopti-dropdown-item svg {
-        width: 16px;
-        height: 16px;
-        opacity: 0.7;
-      }
+      .shopopti-dropdown-item svg { width: 16px; height: 16px; opacity: 0.7; }
+      .shopopti-dropdown-item:hover { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+      .shopopti-dropdown-item:hover svg { opacity: 1; }
       
-      .shopopti-dropdown-item:hover {
-        background: rgba(99, 102, 241, 0.15);
-        color: #a5b4fc;
-      }
+      .shopopti-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 6px 0; }
       
-      .shopopti-dropdown-item:hover svg {
-        opacity: 1;
-      }
-      
-      .shopopti-divider {
-        height: 1px;
-        background: rgba(255,255,255,0.1);
-        margin: 6px 0;
-      }
-      
-      /* Bulk Checkbox */
       .shopopti-checkbox {
         position: absolute;
         top: 8px;
@@ -540,28 +644,11 @@
         font-weight: bold;
       }
       
-      .shopopti-checkbox:hover {
-        border-color: #8b5cf6;
-        transform: scale(1.1);
-      }
+      .shopopti-checkbox:hover { border-color: #8b5cf6; transform: scale(1.1); }
+      .shopopti-checkbox.selected { background: #8b5cf6; border-color: #8b5cf6; color: white; }
+      .shopopti-checkbox.selected::after { content: '✓'; }
+      .shopopti-checkbox.imported { background: #10b981; border-color: #10b981; }
       
-      .shopopti-checkbox.selected {
-        background: #8b5cf6;
-        border-color: #8b5cf6;
-        color: white;
-      }
-      
-      .shopopti-checkbox.selected::after {
-        content: '✓';
-      }
-      
-      .shopopti-checkbox.imported {
-        background: #10b981;
-        border-color: #10b981;
-        color: white;
-      }
-      
-      /* Floating Bulk Action Bar */
       .shopopti-floating-bar {
         position: fixed;
         bottom: 24px;
@@ -573,31 +660,17 @@
         background: var(--shopopti-dark);
         border: 1px solid rgba(99, 102, 241, 0.3);
         border-radius: 16px;
-        box-shadow: 0 15px 50px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.5);
         z-index: 999999;
         animation: shopopti-slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         font-family: var(--shopopti-font);
       }
       
-      @keyframes shopopti-slideUp {
-        from { transform: translateY(100px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-      }
+      @keyframes shopopti-slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       
-      .shopopti-floating-bar .count {
-        color: white;
-        font-size: 15px;
-        font-weight: 600;
-      }
+      .shopopti-floating-bar .count { color: white; font-size: 15px; font-weight: 600; }
+      .shopopti-floating-bar .count span { color: #a5b4fc; font-size: 24px; font-weight: 700; margin-right: 4px; }
       
-      .shopopti-floating-bar .count span {
-        color: #a5b4fc;
-        font-size: 24px;
-        font-weight: 700;
-        margin-right: 4px;
-      }
-      
-      /* Toast Notifications */
       .shopopti-toast {
         position: fixed;
         bottom: 80px;
@@ -618,159 +691,70 @@
         gap: 10px;
       }
       
-      .shopopti-toast.show {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+      .shopopti-toast.show { opacity: 1; transform: translateY(0) scale(1); }
+      .shopopti-toast-success { background: linear-gradient(135deg, #10b981, #059669); }
+      .shopopti-toast-error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+      .shopopti-toast-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
       
-      .shopopti-toast-success { 
-        background: linear-gradient(135deg, #10b981, #059669);
-      }
-      
-      .shopopti-toast-error { 
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-      }
-      
-      .shopopti-toast-info { 
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
-      }
-      
-      /* Card overlay styling */
-      [data-shopopti-card] {
-        position: relative;
-      }
-      
-      /* Platform-specific adjustments */
-      .shopopti-amazon-btn {
-        margin-top: 12px;
-        width: fit-content;
-      }
-      
-      .shopopti-aliexpress-btn {
-        margin-top: 12px;
-      }
-      
-      .shopopti-ebay-btn {
-        margin-top: 12px;
-      }
-      
-      .shopopti-temu-btn {
-        margin-top: 12px;
-      }
-      
-      .shopopti-shein-btn {
-        margin-top: 12px;
-      }
+      [data-shopopti-card] { position: relative; }
     `;
     
     document.head.appendChild(styles);
   }
   
   // ============================================
-  // PLATFORM-SPECIFIC INJECTORS
+  // INJECTION LOGIC
   // ============================================
   
-  const platformInjectors = {
-    amazon: {
-      productSelectors: ['#add-to-cart-button', '#buy-now-button', '#buybox', '#rightCol', '#desktop_buybox', '.a-button-stack'],
-      cardSelectors: ['[data-asin]:not([data-shopopti-card])', '.s-result-item:not([data-shopopti-card])'],
-      linkPattern: /\/dp\/([A-Z0-9]+)/i,
-      extractUrl: (card) => {
-        const link = card.querySelector('a[href*="/dp/"]');
-        return link ? new URL(link.href, window.location.origin).href : null;
-      }
-    },
-    aliexpress: {
-      productSelectors: ['.product-action', '.product-action-main', '.action--container', '.product-info', '[class*="AddCart"]'],
-      cardSelectors: ['.search-item-card:not([data-shopopti-card])', '.list-item:not([data-shopopti-card])', '[data-pl-id]:not([data-shopopti-card])'],
-      linkPattern: /\/item\/(\d+)\.html/i,
-      extractUrl: (card) => {
-        const link = card.querySelector('a[href*="/item/"]');
-        return link ? link.href : null;
-      }
-    },
-    ebay: {
-      productSelectors: ['#binBtn_btn', '#is498i498', '.ux-call-to-action', '#mainContent .x-bin-action'],
-      cardSelectors: ['.s-item:not([data-shopopti-card])', '.srp-results .s-item__wrapper:not([data-shopopti-card])'],
-      linkPattern: /\/itm\/(\d+)/i,
-      extractUrl: (card) => {
-        const link = card.querySelector('a[href*="/itm/"]');
-        return link ? link.href : null;
-      }
-    },
-    temu: {
-      productSelectors: ['[class*="AddToCart"]', '[class*="buy-button"]', '[class*="action-bar"]'],
-      cardSelectors: ['[class*="goods-container"]:not([data-shopopti-card])', '[class*="product-card"]:not([data-shopopti-card])'],
-      linkPattern: /\/goods\.html/i,
-      extractUrl: (card) => {
-        const link = card.querySelector('a[href*="goods.html"]');
-        return link ? link.href : null;
-      }
-    },
-    shein: {
-      productSelectors: ['[class*="add-cart"]', '[class*="product-intro"]', '.product-action'],
-      cardSelectors: ['[class*="product-card"]:not([data-shopopti-card])', '[class*="goods-item"]:not([data-shopopti-card])'],
-      linkPattern: /\/product-detail/i,
-      extractUrl: (card) => {
-        const link = card.querySelector('a[href*="product"]');
-        return link ? link.href : null;
-      }
-    },
-    shopify: {
-      productSelectors: ['[type="submit"][name="add"]', '.product-form__submit', '.add-to-cart', '#AddToCart', '.product__add-to-cart'],
-      cardSelectors: ['.product-card:not([data-shopopti-card])', '[class*="product-item"]:not([data-shopopti-card])'],
-      linkPattern: /\/products\//i,
-      extractUrl: (card) => {
-        const link = card.querySelector('a[href*="/products/"]');
-        return link ? link.href : null;
-      }
-    }
-  };
-  
   function injectProductPageButton(platform) {
-    const config = platformInjectors[platform] || platformInjectors.shopify;
+    const selectors = platformSelectors[platform] || platformSelectors.shopify;
+    const existingBtn = document.querySelector(`.shopopti-${platform}-btn`);
     
-    // Check if already injected
-    if (document.querySelector(`.shopopti-${platform}-btn`)) return;
+    if (existingBtn) return;
     
     let targetElement = null;
-    for (const selector of config.productSelectors) {
+    for (const selector of selectors.productButtons) {
       const el = document.querySelector(selector);
-      if (el) {
+      if (el && el.offsetParent !== null) {
         targetElement = el;
         break;
       }
     }
     
-    if (targetElement) {
-      const button = createImportButton('single');
-      button.classList.add(`shopopti-${platform}-btn`);
-      
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'margin: 12px 0; display: flex;';
-      wrapper.appendChild(button);
-      
-      if (targetElement.nextSibling) {
-        targetElement.parentNode.insertBefore(wrapper, targetElement.nextSibling);
-      } else {
-        targetElement.parentNode.appendChild(wrapper);
+    if (!targetElement) {
+      if (reinjectAttempts < MAX_REINJECT_ATTEMPTS) {
+        reinjectAttempts++;
+        setTimeout(() => injectProductPageButton(platform), 500);
       }
-      
-      console.log(`[ShopOpti+] Product button injected for ${platform}`);
-    } else {
-      console.log(`[ShopOpti+] No target found for ${platform} product page`);
+      return;
     }
+    
+    const button = createImportButton('single');
+    button.classList.add(`shopopti-${platform}-btn`);
+    
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'margin: 12px 0; display: flex;';
+    wrapper.appendChild(button);
+    
+    if (targetElement.nextSibling) {
+      targetElement.parentNode.insertBefore(wrapper, targetElement.nextSibling);
+    } else {
+      targetElement.parentNode.appendChild(wrapper);
+    }
+    
+    console.log(`[ShopOpti+ v${VERSION}] Button injected for ${platform}`);
+    reinjectAttempts = 0;
   }
   
   function injectCategoryPageCheckboxes(platform) {
-    const config = platformInjectors[platform] || platformInjectors.shopify;
+    const selectors = platformSelectors[platform] || platformSelectors.shopify;
     
     let cards = [];
-    for (const selector of config.cardSelectors) {
+    for (const selector of selectors.cards) {
       const found = document.querySelectorAll(selector);
       if (found.length > 0) {
         cards = Array.from(found).filter(card => {
-          const hasLink = config.extractUrl(card);
+          const hasLink = selectors.extractUrl(card);
           const hasImage = card.querySelector('img');
           return hasLink && hasImage;
         });
@@ -791,7 +775,7 @@
       const checkbox = document.createElement('div');
       checkbox.className = 'shopopti-checkbox';
       
-      const productUrl = config.extractUrl(card);
+      const productUrl = selectors.extractUrl(card);
       if (productUrl) {
         checkbox.dataset.productUrl = productUrl;
       }
@@ -808,7 +792,7 @@
     });
     
     if (injectedCount > 0) {
-      console.log(`[ShopOpti+] Injected ${injectedCount} bulk checkboxes for ${platform}`);
+      console.log(`[ShopOpti+ v${VERSION}] Injected ${injectedCount} checkboxes for ${platform}`);
     }
   }
   
@@ -839,18 +823,14 @@
           </svg>
           Importer tout
         </button>
-        <button class="shopopti-import-btn" style="background:#64748b" id="shopopti-clear">
-          Annuler
-        </button>
+        <button class="shopopti-import-btn" style="background:#64748b" id="shopopti-clear">Annuler</button>
       `;
       
       document.getElementById('shopopti-bulk-import')?.addEventListener('click', bulkImportSelected);
       document.getElementById('shopopti-clear')?.addEventListener('click', clearSelection);
-    } else {
-      if (floatingBar) {
-        floatingBar.remove();
-        floatingBar = null;
-      }
+    } else if (floatingBar) {
+      floatingBar.remove();
+      floatingBar = null;
     }
   }
   
@@ -869,15 +849,11 @@
       btn.innerHTML = `<span class="shopopti-spinner"></span> Import ${urls.length}...`;
     }
     
-    let success = 0;
-    let errors = 0;
+    let success = 0, errors = 0;
     
     for (const url of urls) {
       try {
-        const response = await sendMessage({
-          type: 'IMPORT_FROM_URL',
-          url
-        });
+        const response = await sendMessage({ type: 'IMPORT_FROM_URL', url });
         
         if (response.success) {
           success++;
@@ -898,14 +874,7 @@
     
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `
-        <svg class="shopopti-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Importer tout
-      `;
+      btn.innerHTML = `<svg class="shopopti-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Importer tout`;
     }
     
     showToast(`${success} importé(s), ${errors} erreur(s)`, success > 0 ? 'success' : 'error');
@@ -913,29 +882,124 @@
   }
   
   function clearSelection() {
-    document.querySelectorAll('.shopopti-checkbox.selected').forEach(cb => {
-      cb.classList.remove('selected');
-    });
+    document.querySelectorAll('.shopopti-checkbox.selected').forEach(cb => cb.classList.remove('selected'));
     updateBulkSelection();
   }
   
   // ============================================
-  // MAIN INJECTION LOGIC
+  // MUTATION OBSERVER (SPA/Infinite Scroll)
   // ============================================
   
-  function injectButtons() {
-    const platform = detectPlatform();
-    if (!platform) return;
+  function setupMutationObserver() {
+    if (observer) observer.disconnect();
     
-    if (isProductPage()) {
-      injectProductPageButton(platform);
-    } else {
-      injectCategoryPageCheckboxes(platform);
+    observer = new MutationObserver((mutations) => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      
+      debounceTimer = setTimeout(() => {
+        let shouldReinject = false;
+        
+        // Check if important elements were added
+        for (const mutation of mutations) {
+          if (mutation.addedNodes.length > 0) {
+            for (const node of mutation.addedNodes) {
+              if (node.nodeType === 1) {
+                const el = node;
+                // Check for product cards or buy buttons
+                if (el.matches && (
+                  el.matches('[data-asin], .s-result-item, .search-item-card, [class*="product-card"], [class*="goods-container"]') ||
+                  el.querySelector('[data-asin], .s-result-item, .search-item-card, [class*="product-card"], #add-to-cart-button, .add-to-cart')
+                )) {
+                  shouldReinject = true;
+                  break;
+                }
+              }
+            }
+          }
+          if (shouldReinject) break;
+        }
+        
+        // Check if our button was removed
+        if (!shouldReinject && currentPlatform) {
+          const existingBtn = document.querySelector(`.shopopti-${currentPlatform}-btn`);
+          if (isProductPage() && !existingBtn) {
+            shouldReinject = true;
+          }
+        }
+        
+        if (shouldReinject) {
+          injectButtons();
+        }
+      }, DEBOUNCE_MS);
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+  
+  // ============================================
+  // URL CHANGE DETECTION (SPA Navigation)
+  // ============================================
+  
+  let lastUrl = window.location.href;
+  
+  function setupUrlChangeDetection() {
+    // Listen for popstate (back/forward buttons)
+    window.addEventListener('popstate', handleUrlChange);
+    
+    // Override pushState and replaceState
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    history.pushState = function() {
+      originalPushState.apply(this, arguments);
+      handleUrlChange();
+    };
+    
+    history.replaceState = function() {
+      originalReplaceState.apply(this, arguments);
+      handleUrlChange();
+    };
+  }
+  
+  function handleUrlChange() {
+    const currentUrl = window.location.href;
+    if (currentUrl !== lastUrl) {
+      lastUrl = currentUrl;
+      console.log(`[ShopOpti+ v${VERSION}] URL changed, re-initializing...`);
+      
+      // Reset state
+      reinjectAttempts = 0;
+      currentPlatform = detectPlatform();
+      
+      // Wait for DOM to update then reinject
+      setTimeout(() => {
+        injectButtons();
+      }, 500);
     }
   }
   
   // ============================================
-  // AUTHENTICATION CHECK
+  // MAIN INJECTION
+  // ============================================
+  
+  function injectButtons() {
+    if (!isAuthenticated) return;
+    
+    currentPlatform = detectPlatform();
+    if (!currentPlatform) return;
+    
+    if (isProductPage()) {
+      injectProductPageButton(currentPlatform);
+    } else {
+      injectCategoryPageCheckboxes(currentPlatform);
+    }
+  }
+  
+  // ============================================
+  // AUTH CHECK
   // ============================================
   
   async function checkAuthStatus() {
@@ -943,14 +1007,12 @@
       try {
         chrome.runtime.sendMessage({ type: 'CHECK_AUTH_STATUS' }, (response) => {
           if (chrome.runtime.lastError) {
-            console.log('[ShopOpti+] Auth check error:', chrome.runtime.lastError.message);
             resolve(false);
             return;
           }
           resolve(response?.authenticated === true);
         });
       } catch (error) {
-        console.log('[ShopOpti+] Auth check failed:', error);
         resolve(false);
       }
     });
@@ -961,66 +1023,36 @@
   // ============================================
   
   async function init() {
+    if (isInitialized) return;
+    isInitialized = true;
+    
     console.log(`[ShopOpti+] Content Injector v${VERSION} initializing...`);
     
-    const platform = detectPlatform();
-    if (!platform) {
-      console.log('[ShopOpti+] Unsupported platform, skipping injection');
+    currentPlatform = detectPlatform();
+    if (!currentPlatform) {
+      console.log('[ShopOpti+] Unsupported platform');
       return;
     }
     
-    console.log(`[ShopOpti+] Detected platform: ${platform}`);
+    console.log(`[ShopOpti+] Platform: ${currentPlatform}`);
     
-    // Check authentication
-    const isAuthenticated = await checkAuthStatus();
+    isAuthenticated = await checkAuthStatus();
     
     if (!isAuthenticated) {
-      console.log('[ShopOpti+] Not authenticated - buttons will not be injected');
+      console.log('[ShopOpti+] Not authenticated');
       injectStyles();
       showToast('ShopOpti+: Connectez-vous pour activer l\'import', 'info');
       return;
     }
     
-    console.log('[ShopOpti+] Authenticated - proceeding with injection');
+    console.log('[ShopOpti+] Authenticated - injecting UI');
     
     injectStyles();
     injectButtons();
+    setupMutationObserver();
+    setupUrlChangeDetection();
     
-    // Watch for dynamic content (SPA, infinite scroll)
-    const observer = new MutationObserver((mutations) => {
-      let shouldReinject = false;
-      
-      for (const mutation of mutations) {
-        if (mutation.addedNodes.length > 0) {
-          for (const node of mutation.addedNodes) {
-            if (node.nodeType === 1) {
-              const el = node;
-              if (el.querySelector && (
-                el.querySelector('[data-asin]') ||
-                el.querySelector('.s-result-item') ||
-                el.querySelector('.search-item-card') ||
-                el.querySelector('[class*="product-card"]')
-              )) {
-                shouldReinject = true;
-                break;
-              }
-            }
-          }
-        }
-        if (shouldReinject) break;
-      }
-      
-      if (shouldReinject) {
-        setTimeout(injectButtons, 500);
-      }
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-    
-    console.log('[ShopOpti+] Content Injector ready');
+    console.log(`[ShopOpti+ v${VERSION}] Ready`);
   }
   
   // Start
