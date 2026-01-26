@@ -483,6 +483,8 @@ class ShopOptiPopup {
     const userInfoEl = document.getElementById('userInfo');
     const userEmailEl = document.getElementById('userEmail');
     const userAvatarEl = document.getElementById('userAvatar');
+    const syncIndicator = document.getElementById('syncIndicator');
+    const syncStatus = document.getElementById('syncStatus');
     
     if (statusBar) {
       statusBar.classList.toggle('connected', this.isConnected);
@@ -491,6 +493,17 @@ class ShopOptiPopup {
     
     if (statusText) {
       statusText.textContent = this.isConnected ? 'Connecté' : 'Non connecté';
+    }
+    
+    // Show sync indicator when connected
+    if (syncIndicator) {
+      if (this.isConnected) {
+        syncIndicator.classList.remove('hidden');
+        syncIndicator.classList.remove('syncing');
+        if (syncStatus) syncStatus.textContent = '✓ Sync SaaS';
+      } else {
+        syncIndicator.classList.add('hidden');
+      }
     }
     
     // Show/hide user info
@@ -545,6 +558,29 @@ class ShopOptiPopup {
       if (platformName) platformName.textContent = this.currentPlatform.name;
       if (pageUrl) pageUrl.textContent = this.currentPlatform.hostname;
       if (pageIcon) pageIcon.textContent = this.currentPlatform.icon;
+    }
+  }
+  
+  // Show syncing state
+  showSyncingState() {
+    const syncIndicator = document.getElementById('syncIndicator');
+    const syncStatus = document.getElementById('syncStatus');
+    
+    if (syncIndicator && this.isConnected) {
+      syncIndicator.classList.remove('hidden');
+      syncIndicator.classList.add('syncing');
+      if (syncStatus) syncStatus.textContent = 'Sync...';
+    }
+  }
+  
+  // Hide syncing state
+  hideSyncingState() {
+    const syncIndicator = document.getElementById('syncIndicator');
+    const syncStatus = document.getElementById('syncStatus');
+    
+    if (syncIndicator) {
+      syncIndicator.classList.remove('syncing');
+      if (syncStatus) syncStatus.textContent = '✓ Sync SaaS';
     }
   }
 
@@ -1127,15 +1163,30 @@ class ShopOptiPopup {
 
     const syncBtn = document.getElementById('syncBtn');
     if (syncBtn) syncBtn.classList.add('spinning');
+    
+    // Show syncing state in status bar
+    this.showSyncingState();
 
     try {
       await this.checkConnection();
+      
+      // Sync with SaaS backend
+      if (this.isExtensionRuntime()) {
+        await this.chrome.runtime.sendMessage({ 
+          type: 'SYNC_WITH_SAAS', 
+          action: 'full_sync',
+          data: { extensionVersion: this.VERSION }
+        });
+      }
+      
       this.updateUI();
-      this.showToast('Synchronisation réussie', 'success');
+      this.showToast('✓ Synchronisation SaaS réussie', 'success');
     } catch (error) {
+      console.error('[ShopOpti+] Sync error:', error);
       this.showToast('Erreur de synchronisation', 'error');
     } finally {
       if (syncBtn) syncBtn.classList.remove('spinning');
+      this.hideSyncingState();
     }
   }
 
