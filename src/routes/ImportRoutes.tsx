@@ -23,6 +23,7 @@ const CdiscountImportPage = lazy(() => import('@/pages/import/platforms/Cdiscoun
 const QuickImportPage = lazy(() => import('@/pages/import/quick/QuickImportPage'))
 const UrlImportPage = lazy(() => import('@/pages/import/UrlImportPage'))
 const AutoDSImportPage = lazy(() => import('@/pages/import/AutoDSImportPage'))
+const FeedURLImportPage = lazy(() => import('@/pages/import/FeedURLImportPage'))
 const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'))
 const BulkImportPage = lazy(() => import('@/pages/import/BulkImportPage'))
 const MultiStoreImportPage = lazy(() => import('@/pages/import/MultiStoreImportPage'))
@@ -69,6 +70,7 @@ export function ImportRoutes() {
       <Route path="quick" element={<QuickImportPage />} />
       <Route path="url" element={<UrlImportPage />} />
       <Route path="autods" element={<AutoDSImportPage />} />
+      <Route path="feed-url" element={<FeedURLImportPage />} />
       <Route path="advanced" element={<AdvancedImportPage />} />
       <Route path="bulk" element={<BulkImportPage />} />
       <Route path="multi-store" element={<MultiStoreImportPage />} />
