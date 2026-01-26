@@ -90,7 +90,14 @@
         "*://*.shein.fr/*",
         "*://*.etsy.com/*"
       ],
-      "js": ["content-script.js"],
+      "js": [
+        "lib/remote-selectors.js",
+        "lib/retry-manager.js",
+        "lib/supplier-fallback.js",
+        "lib/cost-calculator.js",
+        "advanced-scraper.js",
+        "content-script.js"
+      ],
       "run_at": "document_idle"
     }
   ],

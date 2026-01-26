@@ -1,7 +1,8 @@
 /**
- * Drop Craft AI - Advanced Product Scraper v4.5
+ * ShopOpti+ - Advanced Product Scraper v5.7.0
  * Complete extraction: Title, Description, Brand, Stock, Shipping, Variants, Price, Category, Images, Videos, Reviews
  * With persistent monitoring and stock tracking
+ * Supports 45+ platforms with local fallback when API fails
  */
 
 (function() {

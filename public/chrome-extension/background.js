@@ -719,6 +719,7 @@ class ShopOptiBackground {
     }
 
     try {
+      // Try API first
       const response = await fetch(`${API_URL}/extension-scraper`, {
         method: 'POST',
         headers: {
@@ -733,11 +734,92 @@ class ShopOptiBackground {
       if (response.ok && data.success) {
         await this.updateStats({ products: 1 });
         this.showNotification('Import réussi', data.product?.title || 'Produit importé');
+        return data;
       }
-
-      return data;
+      
+      // API failed - try local fallback
+      console.log('[ShopOpti+] API failed, trying local fallback...', data.error);
+      return await this.localFallbackImport(url, extensionToken, data.error);
+      
     } catch (error) {
-      return { success: false, error: error.message };
+      // Network error - try local fallback
+      console.log('[ShopOpti+] Network error, trying local fallback...', error.message);
+      return await this.localFallbackImport(url, extensionToken, error.message);
+    }
+  }
+
+  async localFallbackImport(url, extensionToken, originalError) {
+    try {
+      // Execute advanced-scraper on the active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      if (!tab?.id) {
+        return { success: false, error: originalError || 'Onglet non disponible', fallbackAttempted: true };
+      }
+      
+      // Execute local extraction using AdvancedProductScraper
+      const extractResults = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: () => {
+          if (typeof AdvancedProductScraper !== 'undefined') {
+            const scraper = new AdvancedProductScraper();
+            return scraper.extractCompleteProduct();
+          }
+          return null;
+        }
+      });
+      
+      const extractedData = extractResults[0]?.result;
+      
+      if (!extractedData || !extractedData.title) {
+        return { 
+          success: false, 
+          error: originalError || 'Extraction locale échouée - données insuffisantes',
+          fallbackAttempted: true 
+        };
+      }
+      
+      console.log('[ShopOpti+] Local extraction successful:', extractedData.title);
+      
+      // Save locally extracted product via API with minimal data
+      const saveResponse = await fetch(`${API_URL}/extension-scraper`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({ 
+          action: 'save_extracted',
+          extractedData,
+          url,
+          source: 'local_fallback'
+        })
+      });
+      
+      if (saveResponse.ok) {
+        const result = await saveResponse.json();
+        if (result.success) {
+          await this.updateStats({ products: 1 });
+          this.showNotification('Import réussi (fallback)', extractedData.title);
+          return { success: true, ...result, usedFallback: true };
+        }
+      }
+      
+      // If save also failed, still return as partial success with data
+      return { 
+        success: false, 
+        error: 'Sauvegarde échouée après extraction locale',
+        extractedData, // Return data for debugging
+        usedFallback: true
+      };
+      
+    } catch (fallbackError) {
+      console.error('[ShopOpti+] Local fallback failed:', fallbackError);
+      return { 
+        success: false, 
+        error: originalError || fallbackError.message,
+        fallbackAttempted: true
+      };
     }
   }
 
