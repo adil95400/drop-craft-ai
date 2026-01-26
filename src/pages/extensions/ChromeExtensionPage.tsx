@@ -20,6 +20,7 @@ import { motion } from 'framer-motion';
 import { ExtensionAuthManager } from '@/components/extensions/ExtensionAuthManager';
 import { ExtensionInstallWelcomeModal } from '@/components/extensions/ExtensionInstallWelcomeModal';
 import { ExtensionActivityFeed } from '@/components/extensions/ExtensionActivityFeed';
+import { ExtensionSyncStatus } from '@/components/extensions/ExtensionSyncStatus';
 import { QuickConnectTokenModal } from '@/components/extensions/QuickConnectTokenModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -465,10 +466,14 @@ export default function ChromeExtensionPage() {
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-5">
+        <TabsList className="grid w-full max-w-3xl grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <Chrome className="h-4 w-4" />
             <span className="hidden sm:inline">Aperçu</span>
+          </TabsTrigger>
+          <TabsTrigger value="sync" className="flex items-center gap-1">
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">Sync</span>
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-1">
             <Settings className="h-4 w-4" />
@@ -613,6 +618,11 @@ export default function ChromeExtensionPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Sync Tab */}
+        <TabsContent value="sync" className="space-y-6">
+          <ExtensionSyncStatus />
         </TabsContent>
 
         {/* Settings Tab */}
