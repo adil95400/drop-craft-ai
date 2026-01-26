@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Popup Script v5.6.6
+// ShopOpti+ Chrome Extension - Popup Script v5.6.7
 // 100% AutoDS Feature Parity - Complete & Production Ready
 // Ads Spy, Auto-Order, Multi-Store, Real-Time Sync
 // NOTIFICATIONS SYSTEM + DYNAMIC BADGE
@@ -7,7 +7,7 @@
 
 class ShopOptiPopup {
   constructor() {
-    this.VERSION = '5.6.6';  // Notifications + Badge
+    this.VERSION = '5.6.7';  // Notifications + Badge
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
     this.APP_URL = 'https://shopopti.io';
     
