@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
 
-const EXTENSION_VERSION = '5.6.7';
+const EXTENSION_VERSION = '5.7.0';
 
 const EXTENSION_FILES = [
   // Core files

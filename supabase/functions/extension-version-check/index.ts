@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-version',
 }
 
-const CURRENT_VERSION = '5.6.7'
+const CURRENT_VERSION = '5.7.0'
 const MIN_SUPPORTED_VERSION = '5.0.0'
 
 interface VersionInfo {

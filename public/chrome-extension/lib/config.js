@@ -1,5 +1,5 @@
 /**
- * ShopOpti+ Configuration Module v5.6.7
+ * ShopOpti+ Configuration Module v5.7.0
  * Centralized configuration for the extension
  * Synced with shopopti.io backend
  */
