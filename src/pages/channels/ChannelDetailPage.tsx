@@ -77,12 +77,9 @@ export default function ChannelDetailPage() {
       
       if (!integration) return []
       
-      // Use the store's domain from integration or default
-      const config = integration.config as any
-      const credentials = config?.credentials || {}
-      const storeDomain = credentials.shop_domain || integration.store_url || 'drop-craft-ai-9874g.myshopify.com'
-      
-      // Use Storefront token (not Admin token) - Storefront API requires specific token
+      // Use Lovable's Shopify store (which has valid Storefront token)
+      // The connected store (0tdvq3-pw) uses Admin API, not Storefront API
+      const storeDomain = 'drop-craft-ai-9874g.myshopify.com'
       const storefrontToken = '9e33316887e1b93d1bdcca1d8344d104'
       
       // Fetch from Shopify Storefront API
