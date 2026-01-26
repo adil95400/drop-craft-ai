@@ -85,31 +85,16 @@ export default function ChannelDetailPage() {
         .order('created_at', { ascending: false })
         .limit(100)
       
-      // Map products - prioritize image from images array if image_url is missing
-      return (productsData || []).map(p => {
-        let imageUrl = p.image_url
-        if (!imageUrl && p.images) {
-          const images = Array.isArray(p.images) ? p.images : []
-          if (images.length > 0 && typeof images[0] === 'string') {
-            imageUrl = images[0]
-          } else if (images.length > 0 && typeof images[0] === 'object' && images[0] !== null) {
-            const imgObj = images[0] as Record<string, unknown>
-            if (typeof imgObj.src === 'string') {
-              imageUrl = imgObj.src
-            }
-          }
-        }
-        
-        return {
-          id: p.id,
-          title: p.title || p.name,
-          image_url: imageUrl,
-          price: p.price,
-          inventory_quantity: p.stock_quantity,
-          status: p.status || (p.shopify_product_id ? 'active' : 'draft'),
-          sku: p.sku
-        }
-      })
+      // Map products - use image_url directly
+      return (productsData || []).map(p => ({
+        id: p.id,
+        title: p.title || p.name,
+        image_url: p.image_url,
+        price: p.price,
+        inventory_quantity: p.stock_quantity,
+        status: p.status || (p.shopify_product_id ? 'active' : 'draft'),
+        sku: p.sku
+      }))
     },
     enabled: !!channelId
   })
