@@ -21,6 +21,7 @@ import { ExtensionAuthManager } from '@/components/extensions/ExtensionAuthManag
 import { ExtensionInstallWelcomeModal } from '@/components/extensions/ExtensionInstallWelcomeModal';
 import { ExtensionActivityFeed } from '@/components/extensions/ExtensionActivityFeed';
 import { ExtensionSyncStatus } from '@/components/extensions/ExtensionSyncStatus';
+import { ExtensionImportHistoryTable } from '@/components/extensions/ExtensionImportHistoryTable';
 import { QuickConnectTokenModal } from '@/components/extensions/QuickConnectTokenModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -796,6 +797,11 @@ export default function ChromeExtensionPage() {
         {/* Activity Tab */}
         <TabsContent value="activity" className="space-y-6">
           <ExtensionActivityFeed />
+        </TabsContent>
+
+        {/* History Tab - Full table with filters and CSV export */}
+        <TabsContent value="history" className="space-y-6">
+          <ExtensionImportHistoryTable />
         </TabsContent>
       </Tabs>
 

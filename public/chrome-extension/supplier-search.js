@@ -1,14 +1,15 @@
 // ============================================
-// ShopOpti+ Search All Suppliers Module v5.1.0
-// Meta-search across all supported platforms
+// ShopOpti+ Search All Suppliers Module v5.7.0
+// Meta-search across all supported platforms with fallback
 // AutoDS parity feature - 10+ platforms
+// Complete cost calculation integration
 // ============================================
 
 (function() {
   'use strict';
 
   const SupplierSearch = {
-    VERSION: '5.1.0',
+    VERSION: '5.7.0',
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     
     // Supported suppliers with search capabilities
@@ -109,13 +110,14 @@
     cache: new Map(),
     cacheTimeout: 5 * 60 * 1000, // 5 minutes
 
-    // Search across all suppliers
+    // Search across all suppliers with fallback
     async searchAllSuppliers(query, options = {}) {
       const {
         suppliers = Object.keys(this.SUPPLIERS),
         maxResults = 10,
         sortBy = 'price', // price, rating, shipping
-        filters = {}
+        filters = {},
+        sellingPrice = 0 // For margin calculation
       } = options;
 
       const cacheKey = `${query}_${suppliers.join(',')}_${sortBy}`;
@@ -136,10 +138,12 @@
       // Aggregate results
       let allProducts = [];
       const supplierResults = {};
+      let usedFallback = false;
+      let failedCount = 0;
 
       results.forEach((result, index) => {
         const supplier = suppliers[index];
-        if (result.status === 'fulfilled' && result.value) {
+        if (result.status === 'fulfilled' && result.value && result.value.length > 0 && !result.value[0].isSearchLink) {
           supplierResults[supplier] = {
             success: true,
             count: result.value.length,
@@ -151,6 +155,7 @@
             supplierInfo: this.SUPPLIERS[supplier]
           })));
         } else {
+          failedCount++;
           supplierResults[supplier] = {
             success: false,
             error: result.reason?.message || 'Search failed'
@@ -158,11 +163,52 @@
         }
       });
 
+      // If all API calls failed, use local fallback
+      if (failedCount === suppliers.length && window.ShopOptiSupplierFallback) {
+        console.log('[SupplierSearch] All APIs failed, using local fallback...');
+        usedFallback = true;
+        
+        const fallbackResults = await window.ShopOptiSupplierFallback.generateFallbackResults(
+          { title: query, price: sellingPrice },
+          { platforms: suppliers, reason: 'API unavailable' }
+        );
+        
+        allProducts = fallbackResults.suppliers.map(s => ({
+          ...s,
+          supplier: s.platform,
+          supplierInfo: this.SUPPLIERS[s.platform],
+          price: s.pricing.estimatedCost,
+          isEstimate: true
+        }));
+      }
+
       // Apply filters
       allProducts = this.applyFilters(allProducts, filters);
 
       // Sort results
       allProducts = this.sortResults(allProducts, sortBy);
+
+      // Calculate margins if selling price provided and CostCalculator available
+      if (sellingPrice > 0 && window.ShopOptiCostCalculator) {
+        allProducts = allProducts.map(product => {
+          const calc = window.ShopOptiCostCalculator.calculateComplete({
+            productCost: product.price || product.pricing?.estimatedCost || 0,
+            shippingCost: product.shippingCost || product.pricing?.shippingCost || 0,
+            sellingPrice: sellingPrice,
+            vatRate: 20,
+            paymentProcessor: 'stripe',
+            platform: 'shopify'
+          });
+          
+          return {
+            ...product,
+            marginData: calc,
+            netMargin: calc.margins.net,
+            netProfit: calc.profit.net,
+            profitabilityLevel: calc.analysis.profitabilityLevel
+          };
+        });
+      }
 
       const searchResult = {
         query,
@@ -171,7 +217,9 @@
         supplierResults,
         products: allProducts,
         bestPrice: allProducts.length > 0 ? allProducts[0] : null,
-        priceRange: this.getPriceRange(allProducts)
+        priceRange: this.getPriceRange(allProducts),
+        usedFallback,
+        fallbackReason: usedFallback ? 'All API calls failed' : null
       };
 
       // Cache results
@@ -183,7 +231,7 @@
       return searchResult;
     },
 
-    // Search a single supplier
+    // Search a single supplier with fallback
     async searchSupplier(supplier, query, maxResults = 10) {
       const supplierInfo = this.SUPPLIERS[supplier];
       if (!supplierInfo) return [];
@@ -198,13 +246,34 @@
 
         if (response.ok) {
           const data = await response.json();
-          return data.products || [];
+          if (data.products && data.products.length > 0) {
+            return data.products;
+          }
         }
       } catch (error) {
         console.warn(`[SupplierSearch] Backend search failed for ${supplier}:`, error);
       }
 
-      // Fallback: return mock search URL for manual search
+      // Fallback: Use local fallback if available
+      if (window.ShopOptiSupplierFallback && window.ShopOptiSupplierFallback.platforms[supplier]) {
+        console.log(`[SupplierSearch] Using fallback for ${supplier}`);
+        const fallback = await window.ShopOptiSupplierFallback.generateFallbackResults(
+          { title: query },
+          { platforms: [supplier], reason: 'API unavailable' }
+        );
+        
+        if (fallback.suppliers && fallback.suppliers.length > 0) {
+          return fallback.suppliers.map(s => ({
+            ...s,
+            isEstimate: true,
+            title: query,
+            searchUrl: s.searchUrl,
+            supplier
+          }));
+        }
+      }
+
+      // Ultimate fallback: return search link
       return [{
         title: `Rechercher "${query}" sur ${supplierInfo.name}`,
         price: null,
