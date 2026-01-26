@@ -45,21 +45,86 @@ serve(async (req) => {
       throw new Error('User not authenticated')
     }
 
-    const body: SyncRequest = await req.json()
-    console.log(`[CHANNEL-SYNC] Starting ${body.sync_type} sync for integration ${body.integration_id}`)
+    const body = await req.json()
+    const syncType = body.sync_type || 'products'
+    const direction = body.direction || 'bidirectional'
+    
+    console.log(`[CHANNEL-SYNC] Starting ${syncType} sync for user ${user.id}, integration: ${body.integration_id || 'all'}`)
 
-    // Get integration details
+    // If no specific integration_id, sync all active integrations
+    if (!body.integration_id) {
+      const { data: integrations, error: listError } = await supabaseClient
+        .from('integrations')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+      
+      if (listError) {
+        console.error('[CHANNEL-SYNC] Error fetching integrations:', listError)
+        throw new Error('Failed to fetch integrations')
+      }
+      
+      if (!integrations || integrations.length === 0) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'No active integrations found',
+            products_synced: 0,
+            orders_synced: 0 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      console.log(`[CHANNEL-SYNC] Found ${integrations.length} active integrations`)
+      
+      // Sync all integrations
+      let totalResults = {
+        success: true,
+        products_synced: 0,
+        orders_synced: 0,
+        inventory_updated: 0,
+        integrations_processed: 0,
+        errors: [] as string[]
+      }
+      
+      for (const integration of integrations) {
+        try {
+          const request: SyncRequest = {
+            integration_id: integration.id,
+            sync_type: syncType,
+            direction,
+            options: body.options
+          }
+          const result = await performSyncInternal(supabaseClient, integration, request, user.id)
+          totalResults.products_synced += result.products_synced
+          totalResults.orders_synced += result.orders_synced
+          totalResults.inventory_updated += result.inventory_updated
+          totalResults.integrations_processed++
+          if (result.errors.length) totalResults.errors.push(...result.errors)
+        } catch (e) {
+          totalResults.errors.push(`Integration ${integration.platform}: ${e.message}`)
+        }
+      }
+      
+      return new Response(
+        JSON.stringify(totalResults),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Single integration sync
     const { data: integration, error: intError } = await supabaseClient
-      .from('marketplace_integrations')
+      .from('integrations')
       .select('*')
       .eq('id', body.integration_id)
       .eq('user_id', user.id)
       .single()
 
     if (intError || !integration) {
-      // Try integrations table
+      // Try marketplace_integrations table
       const { data: altIntegration, error: altError } = await supabaseClient
-        .from('integrations')
+        .from('marketplace_integrations')
         .select('*')
         .eq('id', body.integration_id)
         .eq('user_id', user.id)
@@ -69,10 +134,30 @@ serve(async (req) => {
         throw new Error('Integration not found')
       }
       
-      return await performSync(supabaseClient, altIntegration, body, user.id)
+      const request: SyncRequest = {
+        integration_id: body.integration_id,
+        sync_type: syncType,
+        direction,
+        options: body.options
+      }
+      const result = await performSyncInternal(supabaseClient, altIntegration, request, user.id)
+      return new Response(
+        JSON.stringify({ success: true, ...result }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    return await performSync(supabaseClient, integration, body, user.id)
+    const request: SyncRequest = {
+      integration_id: body.integration_id,
+      sync_type: syncType,
+      direction,
+      options: body.options
+    }
+    const result = await performSyncInternal(supabaseClient, integration, request, user.id)
+    return new Response(
+      JSON.stringify({ success: true, ...result }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
     console.error('[CHANNEL-SYNC] Error:', error)
@@ -83,17 +168,22 @@ serve(async (req) => {
   }
 })
 
-async function performSync(
+async function performSyncInternal(
   supabase: any,
   integration: any,
   request: SyncRequest,
   userId: string
-) {
+): Promise<{
+  products_synced: number;
+  orders_synced: number;
+  inventory_updated: number;
+  errors: string[];
+  duration_ms: number;
+}> {
   const platform = integration.platform || integration.platform_type
   const startTime = Date.now()
   
   let result = {
-    success: true,
     products_synced: 0,
     orders_synced: 0,
     inventory_updated: 0,
@@ -145,13 +235,13 @@ async function performSync(
 
     result.duration_ms = Date.now() - startTime
 
-    // Update integration stats
+    // Update integration stats (ignore errors on update)
     await supabase
       .from('marketplace_integrations')
       .update({
         last_sync_at: new Date().toISOString(),
-        total_products_synced: integration.total_products_synced + result.products_synced,
-        total_orders_synced: integration.total_orders_synced + result.orders_synced,
+        total_products_synced: (integration.total_products_synced || 0) + result.products_synced,
+        total_orders_synced: (integration.total_orders_synced || 0) + result.orders_synced,
         total_sync_count: (integration.total_sync_count || 0) + 1,
         status: result.errors.length > 0 ? 'warning' : 'connected',
       })
@@ -168,7 +258,7 @@ async function performSync(
       })
       .eq('id', integration.id)
 
-    // Log sync event
+    // Log sync event (ignore errors)
     await supabase.from('marketplace_event_logs').insert({
       integration_id: integration.id,
       user_id: userId,
@@ -178,14 +268,13 @@ async function performSync(
       title: `Synchronisation ${request.sync_type} terminée`,
       message: `${result.products_synced} produits, ${result.orders_synced} commandes synchronisés`,
       data: result,
-    })
+    }).catch(() => {}) // Ignore log errors
 
     console.log(`[CHANNEL-SYNC] Completed: ${JSON.stringify(result)}`)
+    
+    await updateSyncStatus(supabase, integration.id, result.errors.length > 0 ? 'warning' : 'connected')
 
-    return new Response(
-      JSON.stringify({ success: true, ...result }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return result
 
   } catch (error) {
     await updateSyncStatus(supabase, integration.id, 'error', error.message)
