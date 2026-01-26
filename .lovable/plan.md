@@ -1,277 +1,576 @@
 
-# 🔍 Plan d'investigation et correction: Ancienne version de l'interface affichée
+# 🔧 Plan de Correction : Fiabilisation de l'Extension Chrome ShopOpti+ v5.7.0
 
-## Analyse du problème
+## Problèmes identifiés et Solutions
 
-Après avoir examiné les captures d'écran et le code actuel, j'ai identifié **3 problèmes principaux**:
+Suite à l'analyse approfondie du code source, voici les problèmes techniques confirmés et les solutions à implémenter.
 
-### 1. **Code de la sidebar incomplet**
-Dans `src/components/channable/navigation/ChannableSidebar.tsx` (lignes 67-68), le contenu du nom de l'application a été supprimé mais laissé vide:
+---
 
-```tsx
-<motion.div className="flex flex-col">
-  {/* VIDE - Devrait contenir "ShopOpti+" */}
-</motion.div>
+## 1. Intégration des Sélecteurs Distants (CRITIQUE)
+
+### Problème
+Le fichier `content-script.js` utilise des sélecteurs statiques (`platformSelectors` lignes 35-129) et n'appelle **jamais** `RemoteSelectorsManager.init()` qui existe dans `lib/remote-selectors.js`. Le module de sélecteurs distants est prêt mais non connecté.
+
+### Solution
+Modifier l'initialisation du `content-script.js` pour:
+1. Charger et initialiser `RemoteSelectorsManager` au démarrage
+2. Fusionner les sélecteurs distants avec les sélecteurs locaux
+3. Signaler automatiquement les sélecteurs cassés via `reportBrokenSelector()`
+
+### Modifications techniques
+
+**Fichier: `public/chrome-extension/content-script.js`**
+
+Ajouter dans la fonction `init()` (après ligne 1173):
+```javascript
+// Initialize remote selectors for dynamic updates
+if (typeof RemoteSelectorsManager !== 'undefined') {
+  try {
+    const remoteSelectors = await RemoteSelectorsManager.init();
+    if (remoteSelectors) {
+      mergeRemoteSelectors(remoteSelectors);
+      console.log('[ShopOpti+] Remote selectors loaded');
+    }
+  } catch (e) {
+    console.warn('[ShopOpti+] Remote selectors failed, using local:', e);
+  }
+}
 ```
 
-### 2. **Version visible vs. version du code**
-Les captures d'écran montrent:
-- Logo avec "Shopopti" 
-- Texte "the Platform" en dessous
-- Navigation avec "Tableau de Bord", "CATALOGUE & PRODUITS", etc.
+Ajouter une nouvelle fonction de fusion:
+```javascript
+function mergeRemoteSelectors(remoteSelectors) {
+  Object.keys(remoteSelectors).forEach(platform => {
+    if (platformSelectors[platform] && remoteSelectors[platform]) {
+      // Merge productButtons
+      if (remoteSelectors[platform].productButtons) {
+        platformSelectors[platform].productButtons = [
+          ...new Set([
+            ...remoteSelectors[platform].productButtons,
+            ...platformSelectors[platform].productButtons
+          ])
+        ];
+      }
+      // Merge cards selectors
+      if (remoteSelectors[platform].cards) {
+        platformSelectors[platform].cards = [
+          ...new Set([
+            ...remoteSelectors[platform].cards,
+            ...platformSelectors[platform].cards
+          ])
+        ];
+      }
+    }
+  });
+}
+```
 
-Mais le code actuel utilise:
-- Une nouvelle architecture `ChannableLayout`
-- Un design "Premium Professionnel"
-- Une navigation différente avec des groupes
+Ajouter un signalement automatique quand l'injection échoue (dans `injectProductPageButton`):
+```javascript
+if (reinjectAttempts >= MAX_REINJECT_ATTEMPTS) {
+  // Report broken selector
+  if (typeof RemoteSelectorsManager !== 'undefined') {
+    RemoteSelectorsManager.reportBrokenSelector(platform, 'productButtons', {
+      url: window.location.href,
+      selectors: selectors.productButtons
+    });
+  }
+}
+```
 
-### 3. **Problème de synchronisation**
-Les URLs du projet montrent:
-- Preview: `https://id-preview--7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovable.app`
-- Published: `https://drop-craft-ai.lovable.app`
+---
 
-L'utilisateur accède probablement à `/extensions/marketplace` et voit l'ancienne version.
+## 2. Fallback Local pour Import API (HAUTE PRIORITÉ)
 
-## Diagnostic technique
+### Problème
+Quand l'API `extension-scraper` échoue, l'import échoue totalement. Le module `SupplierFallback` existe mais n'est pas utilisé pour l'extraction de produits.
 
-### Problèmes identifiés:
+### Solution
+Implémenter un fallback local utilisant `advanced-scraper.js` quand l'API échoue.
 
-1. **Contenu manquant dans la sidebar** (lignes 67-68)
-   - Le texte "ShopOpti+" devrait apparaître à côté du logo
-   - Actuellement vide = pas de nom affiché
+### Modifications techniques
 
-2. **Cache navigateur ou version non publiée**
-   - L'utilisateur voit une version qui n'existe plus dans le code
-   - Suggère que les dernières modifications n'ont pas été publiées
-   - Ou cache du navigateur/CDN non vidé
+**Fichier: `public/chrome-extension/background.js`**
 
-3. **Fichiers potentiellement désynchronisés**
-   - Manifest de l'extension: v5.7.0
-   - Code application: structure entièrement changée
-   - Possible incohérence entre preview et production
+Modifier la fonction `scrapeAndImport` (ligne 714) pour ajouter un fallback:
 
-## Solution proposée
-
-### Phase 1: Corriger le code de la sidebar (IMMÉDIAT)
-
-**Fichier**: `src/components/channable/navigation/ChannableSidebar.tsx`
-
-**Lignes 67-69 actuelles:**
-```tsx
-<motion.div className="flex flex-col">
+```javascript
+async scrapeAndImport(url) {
+  const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
   
-</motion.div>
+  if (!extensionToken) {
+    return { success: false, error: 'Non connecté. Connectez-vous via l\'extension.' };
+  }
+
+  try {
+    // Try API first
+    const response = await fetch(`${API_URL}/extension-scraper`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-extension-token': extensionToken
+      },
+      body: JSON.stringify({ action: 'scrape_and_import', url })
+    });
+
+    const data = await response.json();
+    
+    if (response.ok && data.success) {
+      await this.updateStats({ products: 1 });
+      this.showNotification('Import réussi', data.product?.title || 'Produit importé');
+      return data;
+    }
+    
+    // API failed - try local fallback
+    console.log('[ShopOpti+] API failed, trying local fallback...');
+    return await this.localFallbackImport(url, extensionToken, data.error);
+    
+  } catch (error) {
+    // Network error - try local fallback
+    console.log('[ShopOpti+] Network error, trying local fallback...');
+    return await this.localFallbackImport(url, extensionToken, error.message);
+  }
+}
+
+async localFallbackImport(url, extensionToken, originalError) {
+  try {
+    // Execute advanced-scraper on the active tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    if (!tab?.id) {
+      return { success: false, error: originalError || 'Onglet non disponible' };
+    }
+    
+    // Execute local extraction
+    const extractResults = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        if (typeof AdvancedProductScraper !== 'undefined') {
+          const scraper = new AdvancedProductScraper();
+          return scraper.extractCompleteProduct();
+        }
+        return null;
+      }
+    });
+    
+    const extractedData = extractResults[0]?.result;
+    
+    if (!extractedData || !extractedData.title) {
+      return { 
+        success: false, 
+        error: originalError || 'Extraction locale échouée',
+        fallbackAttempted: true 
+      };
+    }
+    
+    // Save locally extracted product via API with minimal data
+    const saveResponse = await fetch(`${API_URL}/extension-scraper`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-extension-token': extensionToken
+      },
+      body: JSON.stringify({ 
+        action: 'save_extracted',
+        extractedData,
+        url,
+        source: 'local_fallback'
+      })
+    });
+    
+    if (saveResponse.ok) {
+      const result = await saveResponse.json();
+      await this.updateStats({ products: 1 });
+      this.showNotification('Import réussi (fallback)', extractedData.title);
+      return { success: true, ...result, usedFallback: true };
+    }
+    
+    return { 
+      success: false, 
+      error: 'Sauvegarde échouée après extraction locale',
+      extractedData // Return data anyway for debugging
+    };
+    
+  } catch (fallbackError) {
+    console.error('[ShopOpti+] Local fallback failed:', fallbackError);
+    return { 
+      success: false, 
+      error: originalError || fallbackError.message,
+      fallbackAttempted: true
+    };
+  }
+}
 ```
 
-**Correction à appliquer:**
-```tsx
-<motion.div className="flex flex-col">
-  <span className="text-xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent tracking-tight">
-    ShopOpti+
-  </span>
-  <span className="text-[10px] text-muted-foreground/70 font-medium tracking-wider uppercase">
-    Premium Platform
-  </span>
-</motion.div>
+---
+
+## 3. Retry Intelligent pour Import en Masse (HAUTE PRIORITÉ)
+
+### Problème
+L'import en masse (`bulk-import-v5.js` et `content-script.js` ligne 895-921) utilise une simple boucle avec 500ms de pause sans retry ni gestion d'erreurs intelligente. Le `RetryManager` existe mais n'est pas utilisé.
+
+### Solution
+Intégrer `ShopOptiRetryManager` dans les flux d'import en masse.
+
+### Modifications techniques
+
+**Fichier: `public/chrome-extension/content-script.js`**
+
+Remplacer la fonction `bulkImportSelected` (lignes 878-923):
+
+```javascript
+async function bulkImportSelected() {
+  const selected = document.querySelectorAll('.shopopti-checkbox.selected');
+  const urls = Array.from(selected).map(cb => cb.dataset.productUrl).filter(Boolean);
+  
+  if (urls.length === 0) {
+    showToast('Aucun produit sélectionné', 'error');
+    return;
+  }
+  
+  const btn = document.getElementById('shopopti-bulk-import');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="shopopti-spinner"></span> Import ${urls.length}...`;
+  }
+  
+  // Use RetryManager if available
+  if (typeof ShopOptiRetryManager !== 'undefined') {
+    const results = await ShopOptiRetryManager.batchWithRetry(
+      urls,
+      async (url) => {
+        const response = await sendMessage({ type: 'IMPORT_FROM_URL', url });
+        if (!response.success) throw new Error(response.error || 'Import failed');
+        return response;
+      },
+      {
+        maxRetries: 3,
+        concurrency: 2,
+        stopOnError: false,
+        onItemComplete: ({ item, result, index }) => {
+          const checkbox = document.querySelector(`.shopopti-checkbox[data-product-url="${CSS.escape(item)}"]`);
+          if (checkbox) {
+            checkbox.classList.remove('selected');
+            checkbox.classList.add(result.success ? 'imported' : 'error');
+          }
+          // Update button progress
+          if (btn) {
+            btn.innerHTML = `<span class="shopopti-spinner"></span> ${index + 1}/${urls.length}...`;
+          }
+        },
+        onRetry: ({ attempt, errorType, delay }) => {
+          console.log(`[ShopOpti+] Retry attempt ${attempt}, waiting ${delay}ms...`);
+        }
+      }
+    );
+    
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg class="shopopti-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Importer tout`;
+    }
+    
+    showToast(`${results.succeeded} importé(s), ${results.failed} erreur(s)`, results.succeeded > 0 ? 'success' : 'error');
+    updateBulkSelection();
+    
+  } else {
+    // Fallback to original logic (with small improvements)
+    let success = 0, errors = 0;
+    
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      try {
+        const response = await sendMessage({ type: 'IMPORT_FROM_URL', url });
+        
+        if (response.success) {
+          success++;
+          const checkbox = document.querySelector(`.shopopti-checkbox[data-product-url="${CSS.escape(url)}"]`);
+          if (checkbox) {
+            checkbox.classList.remove('selected');
+            checkbox.classList.add('imported');
+          }
+        } else {
+          errors++;
+        }
+      } catch (e) {
+        errors++;
+      }
+      
+      // Update progress
+      if (btn) {
+        btn.innerHTML = `<span class="shopopti-spinner"></span> ${i + 1}/${urls.length}...`;
+      }
+      
+      // Dynamic delay based on error rate
+      const delayMs = errors > success ? 1000 : 500;
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+    
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg class="shopopti-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Importer tout`;
+    }
+    
+    showToast(`${success} importé(s), ${errors} erreur(s)`, success > 0 ? 'success' : 'error');
+    updateBulkSelection();
+  }
+}
 ```
 
-Cette modification:
-- ✅ Affiche "ShopOpti+" avec un gradient premium
-- ✅ Ajoute un sous-titre moderne "Premium Platform"
-- ✅ Respecte le design system actuel (glassmorphism, gradients)
-- ✅ S'anime correctement avec framer-motion
+---
 
-### Phase 2: Vérifications multi-niveaux
+## 4. Vérification Token Systématique (MOYENNE PRIORITÉ)
 
-#### A. Vérifier la cohérence des noms dans tous les fichiers
+### Problème
+Le token est vérifié via `ensureAuthenticated()` mais ne gère pas les cas d'expiration pendant un import en masse.
 
-**Fichiers à auditer:**
-1. `src/components/channable/navigation/ChannableHeader.tsx`
-2. `src/components/mobile/MobileNav.tsx` 
-3. `public/chrome-extension/manifest.json` (vérifié: "ShopOpti+ - Dropshipping Pro" ✅)
-4. `package.json` (actuellement: "vite_react_shadcn_ts" - à mettre à jour?)
-5. `public/index.html` et meta tags
+### Solution
+Ajouter une vérification de token avant chaque opération d'import avec renouvellement automatique.
 
-**Recherche à effectuer:**
-```bash
-grep -r "Shopopti" src/
-grep -r "the Platform" src/
+### Modifications techniques
+
+**Fichier: `public/chrome-extension/content-script.js`**
+
+Améliorer `ensureAuthenticated`:
+
+```javascript
+async function ensureAuthenticated(forceRefresh = false) {
+  if (isAuthenticated && !forceRefresh) {
+    // Quick check - verify token is still valid
+    const status = await sendMessage({ type: 'CHECK_AUTH_STATUS' });
+    if (status?.authenticated) return true;
+  }
+  
+  // Re-check auth status with server validation
+  try {
+    const response = await sendMessage({ type: 'GET_AUTH_TOKEN' });
+    
+    if (response.authenticated && response.token) {
+      isAuthenticated = true;
+      return true;
+    }
+    
+    // Token expired or invalid
+    if (response.error === 'Session expirée') {
+      showToast('⏰ Session expirée - Reconnexion nécessaire', 'info');
+    } else {
+      showToast('🔒 Connectez-vous sur ShopOpti pour importer', 'info');
+    }
+    
+    // Open auth page
+    try {
+      await sendMessage({ type: 'OPEN_AUTH_PAGE' });
+    } catch (e) {
+      window.open(`${APP_URL}/auth/extension`, '_blank');
+    }
+    
+    isAuthenticated = false;
+    return false;
+    
+  } catch (error) {
+    console.error('[ShopOpti+] Auth check failed:', error);
+    showToast('❌ Erreur de connexion - Réessayez', 'error');
+    return false;
+  }
+}
 ```
 
-Si des occurrences existent, les remplacer par "ShopOpti+" / "Premium Platform"
+---
 
-#### B. Vérifier le logo SVG
+## 5. Mode Injection Flottant Alternatif (MOYENNE PRIORITÉ)
 
-**Fichier**: `src/assets/logo.svg`
-- Actuellement: fichier SVG encodé en base64
-- Vérifier qu'il correspond au nouveau branding
-- Si nécessaire, mettre à jour avec le logo ShopOpti+ officiel
+### Problème
+Quand les sélecteurs classiques échouent, le bouton n'apparaît pas. L'utilisateur n'a aucun moyen d'importer.
 
-### Phase 3: Publication et validation
+### Solution
+Ajouter un bouton flottant de secours qui apparaît automatiquement si l'injection standard échoue.
 
-#### 1. **Publier les changements**
-- Cliquer sur le bouton **"Publish"** dans Lovable
-- Attendre le déploiement complet (généralement 2-3 minutes)
-- Vérifier que les edge functions sont aussi redéployées
+### Modifications techniques
 
-#### 2. **Vider les caches**
-Après publication, l'utilisateur doit:
-```
-- Vider le cache du navigateur (Ctrl+Shift+Delete)
-- Forcer le rechargement (Ctrl+Shift+R)
-- Si extension Chrome: désinstaller et réinstaller
-- Tester en navigation privée pour éviter le cache
-```
+**Fichier: `public/chrome-extension/content-script.js`**
 
-#### 3. **Tests de validation**
+Ajouter après la fonction `injectProductPageButton`:
 
-**URLs à tester:**
-- ✅ `https://drop-craft-ai.lovable.app/` (page d'accueil)
-- ✅ `https://drop-craft-ai.lovable.app/dashboard` (après connexion)
-- ✅ `https://drop-craft-ai.lovable.app/extensions/marketplace`
-- ✅ Version preview pour comparer
-
-**Points de validation:**
-- [ ] Logo "ShopOpti+" visible dans la sidebar
-- [ ] Texte "Premium Platform" affiché
-- [ ] Navigation utilise la nouvelle architecture Channable
-- [ ] Pas de références à "Shopopti" ou "the Platform"
-- [ ] Design glassmorphism/gradient correctement appliqué
-- [ ] Mobile: `MobileHeader` affiche le bon nom
-
-### Phase 4: Corrections additionnelles (si nécessaire)
-
-#### Si le problème persiste après Phase 1-3:
-
-1. **Vérifier le routage**
-   - `src/routes/index.tsx` : valider que `/extensions/marketplace` utilise bien `ChannableLayout`
-   - Vérifier qu'il n'y a pas de composant legacy caché
-
-2. **Inspecter le DOM côté navigateur**
-   - Ouvrir DevTools (F12)
-   - Console → rechercher "Shopopti"
-   - Elements → inspecter la sidebar pour voir quel composant est réellement rendu
-
-3. **Vérifier les service workers**
-   - Désinstaller l'ancien service worker qui pourrait cacher l'ancien code
-   - DevTools → Application → Service Workers → Unregister
-
-4. **Comparer preview vs production**
-   ```bash
-   # Tester les deux URLs et comparer
-   curl https://id-preview--7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovable.app | grep -i "shopopti"
-   curl https://drop-craft-ai.lovable.app | grep -i "shopopti"
-   ```
-
-## Plan d'action détaillé
-
-### Étape 1: Correction immédiate du code (5 min)
-```tsx
-// src/components/channable/navigation/ChannableSidebar.tsx
-// Ligne 67-69: Remplacer le contenu vide
-<motion.div className="flex flex-col">
-  <span className="text-xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent tracking-tight">
-    ShopOpti+
-  </span>
-  <span className="text-[10px] text-muted-foreground/70 font-medium tracking-wider uppercase">
-    Premium Platform
-  </span>
-</motion.div>
+```javascript
+function injectFloatingFallbackButton(platform) {
+  // Only show if we're on a product page and normal injection failed
+  if (document.getElementById('shopopti-floating-import')) return;
+  
+  const floatingBtn = document.createElement('div');
+  floatingBtn.id = 'shopopti-floating-import';
+  floatingBtn.innerHTML = `
+    <button class="shopopti-import-btn shopopti-main-btn shopopti-floating-main">
+      <svg class="shopopti-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span class="shopopti-btn-text">Import ShopOpti+</span>
+    </button>
+    <span class="shopopti-floating-hint">Bouton de secours - sélecteurs non trouvés</span>
+  `;
+  
+  floatingBtn.style.cssText = `
+    position: fixed;
+    bottom: 100px;
+    right: 24px;
+    z-index: 9999999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  `;
+  
+  const hint = floatingBtn.querySelector('.shopopti-floating-hint');
+  if (hint) {
+    hint.style.cssText = `
+      font-size: 11px;
+      color: #94a3b8;
+      background: rgba(0,0,0,0.7);
+      padding: 4px 8px;
+      border-radius: 4px;
+    `;
+  }
+  
+  floatingBtn.querySelector('.shopopti-main-btn').addEventListener('click', async () => {
+    await handleQuickImport(floatingBtn.querySelector('.shopopti-main-btn'), window.location.href);
+  });
+  
+  document.body.appendChild(floatingBtn);
+  
+  // Report that we needed fallback button
+  if (typeof RemoteSelectorsManager !== 'undefined') {
+    RemoteSelectorsManager.reportBrokenSelector(platform, 'productButtons', {
+      url: window.location.href,
+      reason: 'Used floating fallback button'
+    });
+  }
+  
+  console.log(`[ShopOpti+ v${VERSION}] Floating fallback button injected for ${platform}`);
+}
 ```
 
-### Étape 2: Audit de cohérence (10 min)
-- Rechercher toutes les occurrences de "Shopopti" dans `src/`
-- Remplacer par "ShopOpti+" 
-- Vérifier que le header mobile (`MobileHeader`) affiche aussi le bon nom
-- Mettre à jour `package.json` name: "shopopti-platform" (si pertinent)
+Modifier `injectProductPageButton` pour appeler le fallback:
 
-### Étape 3: Publication (2-5 min)
-1. Cliquer sur **Publish** dans Lovable
-2. Attendre la confirmation de déploiement
-3. Noter l'heure de publication
-
-### Étape 4: Validation utilisateur (5 min)
-L'utilisateur doit:
-1. Vider le cache navigateur (Ctrl+Shift+Delete)
-2. Recharger la page (Ctrl+Shift+R)
-3. Si problème persiste: navigation privée
-4. Vérifier `/extensions/marketplace` spécifiquement
-
-### Étape 5: Debugging avancé (si nécessaire)
-Si l'ancien design persiste:
-1. Ouvrir DevTools (F12)
-2. Network → vider cache et recharger
-3. Console → chercher erreurs de chargement
-4. Elements → inspecter la sidebar
-5. Application → désinstaller service workers
-
-## Résumé des modifications
-
-| Fichier | Ligne | Modification | Priorité |
-|---------|-------|--------------|----------|
-| `ChannableSidebar.tsx` | 67-69 | Ajouter nom "ShopOpti+" + sous-titre | **CRITIQUE** |
-| Tous les `src/*.tsx` | Varies | Remplacer "Shopopti" → "ShopOpti+" | HAUTE |
-| `package.json` | 2 | name: "shopopti-platform" | MOYENNE |
-| `public/index.html` | Varies | Mettre à jour meta title/description | BASSE |
-
-## Risques et prévention
-
-### Risques identifiés:
-1. **Cache CDN**: Peut prendre 5-15 min pour se propager
-2. **Service Worker**: Peut servir l'ancienne version en cache
-3. **Extensions navigateur**: Peuvent injecter l'ancien code
-
-### Prévention:
-- Tester en navigation privée d'abord
-- Ajouter un paramètre de version dans les URL assets: `?v=5.7.0`
-- Vérifier les headers HTTP de cache dans DevTools
-
-## Validation finale
-
-### Checklist avant de fermer le ticket:
-- [ ] Code de la sidebar modifié et sauvegardé
-- [ ] Aucune référence à "Shopopti" dans `src/`
-- [ ] Projet publié via bouton "Publish"
-- [ ] Cache navigateur vidé
-- [ ] Page rechargée en forçant (Ctrl+Shift+R)
-- [ ] Navigation privée testée
-- [ ] "ShopOpti+" visible dans la sidebar
-- [ ] "Premium Platform" affiché sous le nom
-- [ ] Design glassmorphism/gradient appliqué
-- [ ] Mobile: même affichage cohérent
-- [ ] Extension Chrome: synchronisée (si applicable)
-
-## Notes techniques supplémentaires
-
-### Architecture actuelle (à conserver):
-- `ChannableLayout` pour desktop avec sidebar premium
-- `MobileNav` pour mobile avec navigation bottom
-- Logo: `src/assets/logo.svg` (SVG gradient)
-- Font: tracking-tight pour "ShopOpti+", uppercase pour sous-titre
-- Colors: gradient from-primary via-primary-glow to-primary
-
-### Design tokens utilisés:
-```css
-/* Nom principal */
-text-xl font-bold 
-bg-gradient-to-r from-primary via-primary-glow to-primary
-bg-clip-text text-transparent
-tracking-tight
-
-/* Sous-titre */
-text-[10px] text-muted-foreground/70
-font-medium tracking-wider uppercase
+```javascript
+function injectProductPageButton(platform) {
+  // ... existing code ...
+  
+  if (!targetElement) {
+    if (reinjectAttempts < MAX_REINJECT_ATTEMPTS) {
+      reinjectAttempts++;
+      setTimeout(() => injectProductPageButton(platform), 500);
+    } else {
+      // All attempts failed - inject floating fallback
+      injectFloatingFallbackButton(platform);
+    }
+    return;
+  }
+  
+  // ... rest of existing code ...
+}
 ```
 
-## Conclusion
+---
 
-Le problème est clairement identifié: **code incomplet dans la sidebar + possible problème de cache/publication**.
+## 6. Chargement des Librairies dans manifest.json
 
-La solution est simple et sans risque:
-1. **Ajouter le contenu manquant** dans `ChannableSidebar.tsx` (3 lignes de code)
-2. **Publier** via Lovable
-3. **Vider le cache** navigateur
+### Problème
+Les librairies (`remote-selectors.js`, `retry-manager.js`, `supplier-fallback.js`) sont dans `/lib/` mais ne sont pas injectées avec le content script.
 
-**Temps estimé**: 20-30 minutes (incluant publication et validation)
-**Complexité**: FAIBLE
-**Impact**: ÉLEVÉ (branding cohérent sur toute l'app)
+### Solution
+Modifier `manifest.json` pour inclure ces librairies comme scripts de contenu.
+
+### Modifications techniques
+
+**Fichier: `public/chrome-extension/manifest.json`**
+
+Modifier la section `content_scripts` (ligne 37):
+
+```json
+"content_scripts": [
+  {
+    "matches": [
+      "*://*.amazon.com/*",
+      "*://*.amazon.fr/*",
+      "*://*.amazon.de/*",
+      "*://*.amazon.co.uk/*",
+      "*://*.amazon.es/*",
+      "*://*.amazon.it/*",
+      "*://*.amazon.ca/*",
+      "*://*.amazon.co.jp/*",
+      "*://*.aliexpress.com/*",
+      "*://*.aliexpress.fr/*",
+      "*://*.aliexpress.us/*",
+      "*://*.ebay.com/*",
+      "*://*.ebay.fr/*",
+      "*://*.ebay.de/*",
+      "*://*.ebay.co.uk/*",
+      "*://*.temu.com/*",
+      "*://*.shein.com/*",
+      "*://*.shein.fr/*",
+      "*://*.etsy.com/*"
+    ],
+    "js": [
+      "lib/remote-selectors.js",
+      "lib/retry-manager.js",
+      "lib/supplier-fallback.js",
+      "lib/cost-calculator.js",
+      "advanced-scraper.js",
+      "content-script.js"
+    ],
+    "run_at": "document_idle"
+  }
+]
+```
+
+---
+
+## 7. Harmonisation des Versions (FAIBLE PRIORITÉ)
+
+### Problème
+`advanced-scraper.js` est en version 4.5 alors que le reste est en 5.7.0.
+
+### Solution
+Mettre à jour la version dans `advanced-scraper.js`.
+
+### Modification technique
+
+**Fichier: `public/chrome-extension/advanced-scraper.js`**
+
+Ligne 3: Changer "v4.5" en "v5.7.0"
+
+---
+
+## Résumé des Fichiers à Modifier
+
+| Fichier | Modifications | Priorité |
+|---------|---------------|----------|
+| `content-script.js` | Intégration RemoteSelectors, RetryManager, fallback button | CRITIQUE |
+| `background.js` | Fallback local pour import API | HAUTE |
+| `manifest.json` | Ajout des librairies dans content_scripts | HAUTE |
+| `advanced-scraper.js` | Mise à jour version | FAIBLE |
+
+---
+
+## Ordre d'Implémentation Recommandé
+
+1. **Modifier `manifest.json`** - Inclure les librairies nécessaires
+2. **Modifier `content-script.js`** - Intégrer tous les modules
+3. **Modifier `background.js`** - Ajouter fallback local
+4. **Mettre à jour `advanced-scraper.js`** - Version harmonisée
+5. **Tester** sur Amazon, AliExpress, Temu, Shein
+
+---
+
+## Tests de Validation
+
+Après implémentation, vérifier:
+- [ ] Bouton d'import visible sur Amazon (page produit)
+- [ ] Bouton d'import visible sur AliExpress (page produit)
+- [ ] Cases à cocher sur pages de liste/recherche
+- [ ] Import fonctionne même si API timeout (fallback local)
+- [ ] Import en masse avec retry sur erreurs réseau
+- [ ] Sélecteurs distants chargés (vérifier console)
+- [ ] Bouton flottant apparaît si sélecteurs cassés
+- [ ] Token vérifié avant chaque import
