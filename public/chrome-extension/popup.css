@@ -1,43 +1,97 @@
 /* ShopOpti+ Chrome Extension - Popup Styles v5.7.0 */
 /* 100% AutoDS Feature Parity - Professional UI */
+/* Unified Design System with Dark/Light Mode Support */
 
 :root {
-  --primary: #8b5cf6;
-  --primary-light: #a78bfa;
-  --primary-dark: #7c3aed;
-  --accent: #06b6d4;
-  --accent-light: #22d3ee;
-  --success: #10b981;
-  --success-light: #34d399;
-  --warning: #f59e0b;
-  --warning-light: #fbbf24;
-  --error: #ef4444;
-  --error-light: #f87171;
-  --hot: #ff4757;
+  /* Unified Design Tokens - Dark Mode (Default) */
+  --so-primary: #8b5cf6;
+  --so-primary-light: #a78bfa;
+  --so-primary-dark: #7c3aed;
+  --so-accent: #06b6d4;
+  --so-accent-light: #22d3ee;
+  --so-success: #10b981;
+  --so-success-light: #34d399;
+  --so-warning: #f59e0b;
+  --so-warning-light: #fbbf24;
+  --so-error: #ef4444;
+  --so-error-light: #f87171;
+  --so-hot: #ff4757;
   
-  --bg-dark: #0c0f1a;
-  --bg-surface: #151929;
-  --bg-elevated: #1e2438;
-  --bg-hover: #252b40;
-  --border: #2a3148;
-  --border-light: #3b4461;
+  --so-bg-primary: #0c0f1a;
+  --so-bg-secondary: #151929;
+  --so-bg-elevated: #1e2438;
+  --so-bg-hover: #252b40;
+  --so-border: #2a3148;
+  --so-border-light: #3b4461;
   
-  --text: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --so-text: #f1f5f9;
+  --so-text-secondary: #94a3b8;
+  --so-text-muted: #64748b;
   
-  --gradient: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
-  --gradient-hover: linear-gradient(135deg, #a78bfa 0%, #22d3ee 100%);
-  --gradient-hot: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
-  --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.3);
-  --shadow-hot: 0 0 20px rgba(255, 71, 87, 0.4);
+  --so-gradient: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  --so-gradient-hover: linear-gradient(135deg, #a78bfa 0%, #22d3ee 100%);
+  --so-gradient-hot: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+  --so-gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  --so-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --so-shadow-glow: 0 0 30px rgba(139, 92, 246, 0.3);
+  --so-shadow-elevated: 0 10px 40px rgba(0, 0, 0, 0.5);
   
-  --radius: 14px;
-  --radius-sm: 10px;
-  --radius-xs: 6px;
-  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --so-radius: 14px;
+  --so-radius-sm: 10px;
+  --so-radius-xs: 6px;
+  --so-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Legacy variable mappings for compatibility */
+  --primary: var(--so-primary);
+  --primary-light: var(--so-primary-light);
+  --primary-dark: var(--so-primary-dark);
+  --accent: var(--so-accent);
+  --accent-light: var(--so-accent-light);
+  --success: var(--so-success);
+  --success-light: var(--so-success-light);
+  --warning: var(--so-warning);
+  --warning-light: var(--so-warning-light);
+  --error: var(--so-error);
+  --error-light: var(--so-error-light);
+  --hot: var(--so-hot);
+  --bg-dark: var(--so-bg-primary);
+  --bg-surface: var(--so-bg-secondary);
+  --bg-elevated: var(--so-bg-elevated);
+  --bg-hover: var(--so-bg-hover);
+  --border: var(--so-border);
+  --border-light: var(--so-border-light);
+  --text: var(--so-text);
+  --text-secondary: var(--so-text-secondary);
+  --text-muted: var(--so-text-muted);
+  --gradient: var(--so-gradient);
+  --gradient-hover: var(--so-gradient-hover);
+  --gradient-hot: var(--so-gradient-hot);
+  --gradient-success: var(--so-gradient-success);
+  --shadow: var(--so-shadow);
+  --shadow-glow: var(--so-shadow-glow);
+  --radius: var(--so-radius);
+  --radius-sm: var(--so-radius-sm);
+  --radius-xs: var(--so-radius-xs);
+  --transition: var(--so-transition);
+}
+
+/* Light Mode Theme */
+.so-theme-light {
+  --so-primary: #7c3aed;
+  --so-primary-light: #a78bfa;
+  --so-primary-dark: #6d28d9;
+  --so-bg-primary: #ffffff;
+  --so-bg-secondary: #f8fafc;
+  --so-bg-elevated: #f1f5f9;
+  --so-bg-hover: #e2e8f0;
+  --so-border: #e2e8f0;
+  --so-border-light: #cbd5e1;
+  --so-text: #1e293b;
+  --so-text-secondary: #475569;
+  --so-text-muted: #94a3b8;
+  --so-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --so-shadow-elevated: 0 10px 40px rgba(0, 0, 0, 0.12);
+  --so-gradient: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
 }
 
 * {

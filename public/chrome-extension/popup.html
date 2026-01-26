@@ -42,6 +42,23 @@
         </div>
       </div>
       <div class="header-actions">
+        <!-- Theme Toggle Button -->
+        <button id="themeToggleBtn" class="icon-btn so-theme-toggle" title="Changer le thème">
+          <svg class="so-theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg class="so-theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <!-- History Button -->
+        <button id="historyBtn" class="icon-btn" title="Historique & Logs">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </button>
         <button id="notificationsBtn" class="icon-btn notification-btn" title="Notifications">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
@@ -49,18 +66,18 @@
           </svg>
           <span id="notificationBadge" class="notification-badge hidden">0</span>
         </button>
-        <button id="syncBtn" class="icon-btn" title="Synchroniser">
+        <button id="syncBtn" class="icon-btn" title="Synchroniser avec ShopOpti">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
           </svg>
         </button>
-        <button id="settingsBtn" class="icon-btn" title="Paramètres">
+        <button id="settingsBtn" class="icon-btn" title="Paramètres (boutiques, règles, thème)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
         </button>
-        <button id="dashboardBtn" class="icon-btn primary" title="Dashboard">
+        <button id="dashboardBtn" class="icon-btn primary" title="Ouvrir le tableau de bord ShopOpti">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
             <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -902,6 +919,11 @@
     </footer>
   </div>
 
+  <!-- UI Enhancement Libraries -->
+  <script src="lib/theme-manager.js"></script>
+  <script src="lib/history-panel.js"></script>
+  <script src="lib/performance-mode.js"></script>
+  <script src="lib/ui-enhancements.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
