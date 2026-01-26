@@ -64,8 +64,12 @@ const ChannableLogo = memo(({
         opacity: 0,
         x: -10
       }} className="flex flex-col">
-            
-            
+            <span className="text-xl font-bold bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent tracking-tight">
+              ShopOpti+
+            </span>
+            <span className="text-[10px] text-muted-foreground/70 font-medium tracking-wider uppercase">
+              Premium Platform
+            </span>
           </motion.div>}
       </AnimatePresence>
     </motion.div>;

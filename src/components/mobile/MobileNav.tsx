@@ -314,9 +314,10 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
                         <ShoppingCart className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <h1 className="font-bold text-lg">ShopOpti</h1>
+                        <h1 className="font-bold text-lg bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">ShopOpti+</h1>
                         <div className="flex items-center gap-1">
                           <Sparkles className="w-3 h-3 text-primary" />
+                          <span className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase">Premium Platform</span>
                           <span className="text-xs text-muted-foreground capitalize">{effectivePlan || 'Standard'}</span>
                         </div>
                       </div>
@@ -451,8 +452,8 @@ export function MobileHeader() {
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-base">ShopOpti</h1>
-            <p className="text-xs text-muted-foreground">Dropshipping Pro</p>
+            <h1 className="font-bold text-base bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">ShopOpti+</h1>
+            <p className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase">Premium Platform</p>
           </div>
         </div>
         
