@@ -16,6 +16,7 @@ export { UnifiedImportSource } from './UnifiedImportSource';
 export { CSVImportWizard } from './CSVImportWizard';
 export { XMLImportWizard } from './XMLImportWizard';
 export { FTPImportWizard } from './FTPImportWizard';
+export { FeedURLImporter } from './FeedURLImporter';
 
 // Bulk & Batch Operations
 export { BulkActionsPanel } from './BulkActionsPanel';
