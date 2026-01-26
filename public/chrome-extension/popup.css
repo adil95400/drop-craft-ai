@@ -2231,6 +2231,13 @@ body::-webkit-scrollbar-thumb {
   color: var(--text-muted);
 }
 
+.form-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
 .login-error {
   padding: 10px 12px;
   background: rgba(239, 68, 68, 0.1);
