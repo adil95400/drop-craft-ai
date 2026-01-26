@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { BarChart3, Package, Code2, FileText, Settings, Loader2, AlertCircle } from 'lucide-react'
+import { BarChart3, Package, Code2, FileText, Settings, Loader2, AlertCircle, Bell, ShoppingCart } from 'lucide-react'
 import { ChannablePageLayout, ChannableEmptyState } from '@/components/channable'
 import { ProductMappingEditor } from '@/components/channels/ProductMappingEditor'
 import { TransformationRulesEditor } from '@/components/channels/TransformationRulesEditor'
@@ -19,7 +19,7 @@ import { VisualMappingEditor } from '@/components/channels/VisualMappingEditor'
 import { AutoSyncSettings } from '@/components/channels/AutoSyncSettings'
 import { WebhookEventsLog } from '@/components/channels/WebhookEventsLog'
 import { useChannelWebhooks } from '@/hooks/useChannelWebhooks'
-import { ChannelHeader, ChannelStatsBar, ChannelOverviewTab, ChannelProductsTab } from '@/components/channels/detail'
+import { ChannelHeader, ChannelStatsBar, ChannelOverviewTab, ChannelProductsTab, ChannelAlertsPanel, ChannelOrdersPanel, ChannelBulkActions, ChannelSyncHistory } from '@/components/channels/detail'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, Unplug } from 'lucide-react'
@@ -307,6 +307,7 @@ export default function ChannelDetailPage() {
             {[
               { value: 'overview', icon: BarChart3, label: "Vue d'ensemble" },
               { value: 'products', icon: Package, label: 'Produits' },
+              { value: 'orders', icon: ShoppingCart, label: 'Commandes' },
               { value: 'rules', icon: Code2, label: 'Règles' },
               { value: 'mapping', icon: FileText, label: 'Mapping' },
               { value: 'settings', icon: Settings, label: 'Paramètres' },
@@ -323,7 +324,17 @@ export default function ChannelDetailPage() {
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="m-0">
+          <TabsContent value="overview" className="m-0 space-y-6">
+            {/* Alerts & Sync Row */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ChannelAlertsPanel />
+              <ChannelSyncHistory 
+                channelId={channelId || ''} 
+                onSync={async () => { syncMutation.mutate() }}
+                isSyncing={syncMutation.isPending}
+              />
+            </div>
+            
             <ChannelOverviewTab
               syncSettings={syncSettings}
               onSyncSettingsChange={setSyncSettings}
@@ -346,6 +357,11 @@ export default function ChannelDetailPage() {
               onSync={() => syncMutation.mutate()}
               isSyncing={syncMutation.isPending}
             />
+          </TabsContent>
+
+          {/* Orders Tab */}
+          <TabsContent value="orders" className="m-0">
+            <ChannelOrdersPanel channelId={channelId || ''} />
           </TabsContent>
 
           {/* Rules Tab */}
