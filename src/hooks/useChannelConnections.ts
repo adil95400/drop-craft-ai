@@ -37,6 +37,9 @@ export function useChannelConnections() {
   const { data: connections = [], isLoading, error } = useQuery({
     queryKey: ['channel-connections-unified'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const userId = session?.user?.id
+      
       // Fetch from integrations table
       const { data: integrations, error: intError } = await supabase
         .from('integrations')
@@ -53,20 +56,49 @@ export function useChannelConnections() {
       
       if (scError) console.error('Sales channels error:', scError)
 
-      // Map integrations
-      const mappedIntegrations: ChannelConnection[] = (integrations || []).map(d => ({
-        id: d.id,
-        platform_type: d.platform?.toLowerCase() || 'unknown',
-        platform_name: d.platform_name || d.platform || 'Unknown',
-        shop_domain: d.store_url,
-        connection_status: (d.connection_status as any) || 'disconnected',
-        last_sync_at: d.last_sync_at,
-        products_synced: 0,
-        orders_synced: 0,
-        created_at: d.created_at || new Date().toISOString(),
-        auto_sync_enabled: d.auto_sync_enabled || false,
-        source: 'integrations' as const
-      }))
+      // Fetch real product and order counts for the user
+      let productCount = 0
+      let orderCount = 0
+      
+      if (userId) {
+        const [productsResult, importedResult, ordersResult] = await Promise.all([
+          supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+          supabase.from('imported_products').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+          supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', userId)
+        ])
+        
+        productCount = (productsResult.count || 0) + (importedResult.count || 0)
+        orderCount = ordersResult.count || 0
+      }
+
+      // Map integrations - distribute counts to connected Shopify integrations
+      const connectedIntegrations = (integrations || []).filter(d => d.connection_status === 'connected')
+      const shopifyIntegrations = connectedIntegrations.filter(d => d.platform?.toLowerCase() === 'shopify')
+      
+      const mappedIntegrations: ChannelConnection[] = (integrations || []).map(d => {
+        // Distribute products/orders to connected Shopify integrations
+        const isConnectedShopify = d.connection_status === 'connected' && d.platform?.toLowerCase() === 'shopify'
+        const productsForThis = isConnectedShopify && shopifyIntegrations.length > 0 
+          ? Math.floor(productCount / shopifyIntegrations.length) 
+          : 0
+        const ordersForThis = isConnectedShopify && shopifyIntegrations.length > 0 
+          ? Math.floor(orderCount / shopifyIntegrations.length) 
+          : 0
+        
+        return {
+          id: d.id,
+          platform_type: d.platform?.toLowerCase() || 'unknown',
+          platform_name: d.platform_name || d.platform || 'Unknown',
+          shop_domain: d.store_url,
+          connection_status: (d.connection_status as any) || 'disconnected',
+          last_sync_at: d.last_sync_at,
+          products_synced: productsForThis,
+          orders_synced: ordersForThis,
+          created_at: d.created_at || new Date().toISOString(),
+          auto_sync_enabled: d.auto_sync_enabled || false,
+          source: 'integrations' as const
+        }
+      })
 
       // Map sales_channels
       const mappedSalesChannels: ChannelConnection[] = (salesChannels || []).map(d => {
