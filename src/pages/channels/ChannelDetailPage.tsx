@@ -116,23 +116,38 @@ export default function ChannelDetailPage() {
     enabled: !!channelId
   })
 
-  // Count total products and orders for this channel's user
+  // Count total products from Shopify and orders from local DB
   const { data: channelStats } = useQuery({
     queryKey: ['channel-stats', channelId],
     queryFn: async () => {
       const { data: integration } = await supabase
         .from('integrations')
-        .select('user_id')
+        .select('*')
         .eq('id', channelId)
         .single()
       
       if (!integration?.user_id) return { products: 0, orders: 0, revenue: 0 }
       
-      const [productsResult, ordersResult, revenueResult] = await Promise.all([
-        supabase
-          .from('products')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', integration.user_id),
+      // Get real product count from Shopify API
+      let shopifyProductCount = 0
+      const config = integration.config as any
+      const credentials = config?.credentials || {}
+      const shopDomain = credentials.shop_domain || integration.store_url
+      const accessToken = credentials.access_token
+      
+      if (shopDomain && accessToken) {
+        try {
+          const response = await supabase.functions.invoke('shopify-admin-products', {
+            body: { shopDomain, accessToken, limit: 250 }
+          })
+          shopifyProductCount = response.data?.count || response.data?.products?.length || 0
+        } catch (err) {
+          console.error('Error fetching Shopify product count:', err)
+        }
+      }
+      
+      // Get orders and revenue from local database
+      const [ordersResult, revenueResult] = await Promise.all([
         supabase
           .from('orders')
           .select('id', { count: 'exact', head: true })
@@ -146,7 +161,7 @@ export default function ChannelDetailPage() {
       const revenue = (revenueResult.data || []).reduce((sum, o) => sum + (o.total_amount || 0), 0)
       
       return {
-        products: productsResult.count || 0,
+        products: shopifyProductCount,
         orders: ordersResult.count || 0,
         revenue
       }
