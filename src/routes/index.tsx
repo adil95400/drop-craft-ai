@@ -125,6 +125,8 @@ export function AppRoutes() {
         <Route path="/crm/*" element={<Navigate to="/marketing/crm" replace />} />
         <Route path="/modern" element={<Navigate to="/dashboard" replace />} />
         <Route path="/catalog" element={<Navigate to="/products/catalogue" replace />} />
+        <Route path="/stores" element={<Navigate to="/stores-channels" replace />} />
+        <Route path="/stores/*" element={<Navigate to="/stores-channels" replace />} />
         
         {/* API Documentation redirect */}
         <Route path="/api/documentation" element={<Navigate to="/integrations/api/documentation" replace />} />
