@@ -56,31 +56,53 @@ export function useChannelConnections() {
       
       if (scError) console.error('Sales channels error:', scError)
 
-      // Fetch real product and order counts for the user
-      let productCount = 0
-      let orderCount = 0
+      // Fetch real product counts from Shopify API for each connected store
+      const shopifyIntegrations = (integrations || []).filter(
+        d => d.connection_status === 'connected' && d.platform?.toLowerCase() === 'shopify'
+      )
       
+      // Get product count directly from Shopify Admin API for each store
+      const shopifyProductCounts: Record<string, number> = {}
+      
+      for (const integration of shopifyIntegrations) {
+        try {
+          const config = integration.config as any
+          const credentials = config?.credentials || {}
+          const shopDomain = credentials.shop_domain || integration.store_url
+          const accessToken = credentials.access_token
+          
+          if (shopDomain && accessToken) {
+            // Fetch product count from Shopify Admin API
+            const response = await supabase.functions.invoke('shopify-admin-products', {
+              body: { shopDomain, accessToken, limit: 250 }
+            })
+            
+            if (response.data?.count) {
+              shopifyProductCounts[integration.id] = response.data.count
+            } else if (response.data?.products) {
+              // Fallback: count returned products
+              shopifyProductCounts[integration.id] = response.data.products.length
+            }
+          }
+        } catch (err) {
+          console.error(`Error fetching Shopify product count for ${integration.id}:`, err)
+        }
+      }
+
+      // Fetch order count from local database (orders come from Shopify sync)
+      let orderCount = 0
       if (userId) {
-        const [productsResult, importedResult, ordersResult] = await Promise.all([
-          supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-          supabase.from('imported_products').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-          supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', userId)
-        ])
-        
-        productCount = (productsResult.count || 0) + (importedResult.count || 0)
+        const ordersResult = await supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
         orderCount = ordersResult.count || 0
       }
 
-      // Map integrations - distribute counts to connected Shopify integrations
-      const connectedIntegrations = (integrations || []).filter(d => d.connection_status === 'connected')
-      const shopifyIntegrations = connectedIntegrations.filter(d => d.platform?.toLowerCase() === 'shopify')
-      
+      // Map integrations with real Shopify product counts
       const mappedIntegrations: ChannelConnection[] = (integrations || []).map(d => {
-        // Distribute products/orders to connected Shopify integrations
         const isConnectedShopify = d.connection_status === 'connected' && d.platform?.toLowerCase() === 'shopify'
-        const productsForThis = isConnectedShopify && shopifyIntegrations.length > 0 
-          ? Math.floor(productCount / shopifyIntegrations.length) 
-          : 0
+        const productsForThis = isConnectedShopify ? (shopifyProductCounts[d.id] || 0) : 0
         const ordersForThis = isConnectedShopify && shopifyIntegrations.length > 0 
           ? Math.floor(orderCount / shopifyIntegrations.length) 
           : 0
@@ -102,7 +124,6 @@ export function useChannelConnections() {
 
       // Map sales_channels
       const mappedSalesChannels: ChannelConnection[] = (salesChannels || []).map(d => {
-        // Parse sync_config safely with explicit type guard
         let autoSyncEnabled = false
         if (d.sync_config && typeof d.sync_config === 'object' && !Array.isArray(d.sync_config)) {
           const config = d.sync_config as { auto_sync?: boolean }
@@ -124,7 +145,7 @@ export function useChannelConnections() {
         }
       })
 
-      // Deduplicate by platform (prefer sales_channels if has more data)
+      // Deduplicate by id
       const allConnections = [...mappedIntegrations, ...mappedSalesChannels]
       const uniqueById = new Map<string, ChannelConnection>()
       
@@ -140,36 +161,11 @@ export function useChannelConnections() {
     staleTime: 30000
   })
 
-  // Fetch real stats from database (products + imported_products, orders)
-  const { data: realStats } = useQuery({
-    queryKey: ['channel-real-stats'],
-    queryFn: async () => {
-      // Defensive counting: avoid HEAD/206 edge-cases and always scope to the current user.
-      const { data: { session } } = await supabase.auth.getSession()
-      const userId = session?.user?.id
-      if (!userId) {
-        return { totalProducts: 0, totalOrders: 0 }
-      }
-
-      const [productsResult, importedProductsResult, ordersResult] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact' }).eq('user_id', userId).limit(1),
-        supabase.from('imported_products').select('id', { count: 'exact' }).eq('user_id', userId).limit(1),
-        supabase.from('orders').select('id', { count: 'exact' }).eq('user_id', userId).limit(1)
-      ])
-
-      return {
-        totalProducts: (productsResult.count || 0) + (importedProductsResult.count || 0),
-        totalOrders: ordersResult.count || 0
-      }
-    },
-    staleTime: 60000
-  })
-
-  // Calculate stats
+  // Compute stats from connections (which now have real Shopify counts)
   const stats: ChannelStats = {
     totalConnected: connections.filter(c => c.connection_status === 'connected').length,
-    totalProducts: realStats?.totalProducts || 0,
-    totalOrders: realStats?.totalOrders || 0,
+    totalProducts: connections.reduce((sum, c) => sum + (c.products_synced || 0), 0),
+    totalOrders: connections.reduce((sum, c) => sum + (c.orders_synced || 0), 0),
     storesCount: connections.filter(c => isStore(c.platform_type)).length,
     marketplacesCount: connections.filter(c => isMarketplace(c.platform_type)).length,
     autoSyncCount: connections.filter(c => c.auto_sync_enabled).length,
