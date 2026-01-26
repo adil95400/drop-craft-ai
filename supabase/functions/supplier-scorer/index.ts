@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     const { supplier_id } = await req.json()
 
-    console.log(`Calculating score for supplier: ${supplier_id}`)
+    console.log(`[SUPPLIER-SCORER] Calculating score for supplier: ${supplier_id}`)
 
     // Récupérer les logs de performance du fournisseur
     const { data: logs, error: logsError } = await supabase
@@ -47,50 +47,99 @@ Deno.serve(async (req) => {
 
     if (logsError) throw logsError
 
-    if (!logs || logs.length === 0) {
-      // Pas de données, créer un score initial
-      const { data: rating, error: ratingError } = await supabase
-        .from('supplier_ratings')
-        .upsert({
-          supplier_id,
-          reliability_score: 50,
-          quality_score: 50,
-          shipping_score: 50,
-          price_score: 50,
-          communication_score: 50,
-          overall_score: 50
-        })
-        .select()
-        .single()
+    // Récupérer les commandes fournisseur pour calculer les vrais scores
+    const { data: supplierOrders, error: ordersError } = await supabase
+      .from('bulk_order_items')
+      .select('*, bulk_orders(*)')
+      .eq('supplier_id', supplier_id)
+      .order('created_at', { ascending: false })
+      .limit(50)
 
-      if (ratingError) throw ratingError
+    // Récupérer les messages/communications du fournisseur
+    const { data: communications, error: commsError } = await supabase
+      .from('activity_logs')
+      .select('created_at, details')
+      .eq('entity_type', 'supplier')
+      .eq('entity_id', supplier_id)
+      .in('action', ['message_sent', 'message_received', 'response_received'])
+      .order('created_at', { ascending: false })
+      .limit(20)
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          rating,
-          message: 'Initial score created - no historical data available'
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // Récupérer les produits du fournisseur pour comparer les prix
+    const { data: supplierProducts, error: productsError } = await supabase
+      .from('supplier_products')
+      .select('price, market_price, cost_price')
+      .eq('supplier_id', supplier_id)
+      .not('price', 'is', null)
+      .limit(50)
+
+    // Calculer le score de fiabilité basé sur les données réelles
+    let reliabilityScore = 50 // Score de base
+    let qualityScore = 50
+    let shippingScore = 50
+    let communicationScore = 50
+    let priceScore = 50
+
+    // Score de fiabilité basé sur les logs de performance
+    if (logs && logs.length > 0) {
+      const totalDeliveries = logs.length
+      const onTimeDeliveries = logs.filter(l => l.delivery_time && l.delivery_time <= 15).length
+      reliabilityScore = Math.round((onTimeDeliveries / totalDeliveries) * 100)
+
+      const avgDeliveryTime = logs.reduce((sum, l) => sum + (l.delivery_time || 0), 0) / totalDeliveries
+      shippingScore = Math.round(Math.max(0, 100 - (avgDeliveryTime - 10) * 5))
+
+      const qualityIssues = logs.filter(l => l.quality_issues && l.quality_issues > 0).length
+      qualityScore = Math.round(Math.max(0, 100 - (qualityIssues / totalDeliveries) * 100))
+    } else if (supplierOrders && supplierOrders.length > 0) {
+      // Fallback: calculer à partir des commandes
+      const completedOrders = supplierOrders.filter(o => o.status === 'completed' || o.status === 'delivered')
+      reliabilityScore = supplierOrders.length > 0 
+        ? Math.round((completedOrders.length / supplierOrders.length) * 100)
+        : 50
     }
 
-    // Calculer les scores
-    const totalDeliveries = logs.length
-    const onTimeDeliveries = logs.filter(l => l.delivery_time && l.delivery_time <= 15).length
-    const reliabilityScore = Math.round((onTimeDeliveries / totalDeliveries) * 100)
+    // Score de communication basé sur les temps de réponse réels
+    if (communications && communications.length >= 2) {
+      const responseTimes: number[] = []
+      for (let i = 1; i < communications.length; i++) {
+        const diff = new Date(communications[i-1].created_at).getTime() - 
+                     new Date(communications[i].created_at).getTime()
+        if (diff > 0 && diff < 72 * 60 * 60 * 1000) { // Less than 72 hours
+          responseTimes.push(diff)
+        }
+      }
+      if (responseTimes.length > 0) {
+        const avgResponseMs = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+        const avgResponseHours = avgResponseMs / (1000 * 60 * 60)
+        // <4h = 100, 4-12h = 80, 12-24h = 60, 24-48h = 40, >48h = 20
+        if (avgResponseHours < 4) communicationScore = 100
+        else if (avgResponseHours < 12) communicationScore = 80
+        else if (avgResponseHours < 24) communicationScore = 60
+        else if (avgResponseHours < 48) communicationScore = 40
+        else communicationScore = 20
+      }
+    }
 
-    const avgDeliveryTime = logs.reduce((sum, l) => sum + (l.delivery_time || 0), 0) / totalDeliveries
-    const shippingScore = Math.round(Math.max(0, 100 - (avgDeliveryTime - 10) * 5))
-
-    const qualityIssues = logs.filter(l => l.quality_issues && l.quality_issues > 0).length
-    const qualityScore = Math.round(Math.max(0, 100 - (qualityIssues / totalDeliveries) * 100))
-
-    // Score communication (simulé - basé sur time patterns)
-    const communicationScore = Math.round(70 + Math.random() * 25)
-
-    // Score prix (simulé - comparaison marché)
-    const priceScore = Math.round(65 + Math.random() * 30)
+    // Score de prix basé sur la comparaison marché réelle
+    if (supplierProducts && supplierProducts.length > 0) {
+      const priceRatios: number[] = []
+      for (const product of supplierProducts) {
+        const marketPrice = product.market_price || product.cost_price
+        if (marketPrice && product.price) {
+          priceRatios.push(product.price / marketPrice)
+        }
+      }
+      if (priceRatios.length > 0) {
+        const avgRatio = priceRatios.reduce((a, b) => a + b, 0) / priceRatios.length
+        // Ratio < 0.8 = excellent (90+), 0.8-1.0 = good (70-90), 1.0-1.2 = average (50-70), >1.2 = poor (<50)
+        if (avgRatio < 0.8) priceScore = 90 + Math.round((0.8 - avgRatio) * 50)
+        else if (avgRatio < 1.0) priceScore = 70 + Math.round((1.0 - avgRatio) * 100)
+        else if (avgRatio < 1.2) priceScore = 50 + Math.round((1.2 - avgRatio) * 100)
+        else priceScore = Math.max(10, 50 - Math.round((avgRatio - 1.2) * 50))
+        priceScore = Math.min(100, Math.max(0, priceScore))
+      }
+    }
 
     // Score global (pondéré)
     const overallScore = Math.round(
@@ -119,24 +168,30 @@ Deno.serve(async (req) => {
 
     if (ratingError) throw ratingError
 
-    console.log(`Supplier ${supplier_id} scored: ${overallScore}/100`)
+    console.log(`[SUPPLIER-SCORER] Supplier ${supplier_id} scored: ${overallScore}/100`)
 
     return new Response(
       JSON.stringify({
         success: true,
         rating,
         metrics: {
-          total_deliveries: totalDeliveries,
-          on_time_deliveries: onTimeDeliveries,
-          avg_delivery_time: avgDeliveryTime.toFixed(1),
-          quality_issues: qualityIssues
+          total_performance_logs: logs?.length || 0,
+          total_orders: supplierOrders?.length || 0,
+          total_communications: communications?.length || 0,
+          products_analyzed: supplierProducts?.length || 0,
+          data_sources: {
+            has_performance_logs: (logs?.length || 0) > 0,
+            has_orders: (supplierOrders?.length || 0) > 0,
+            has_communications: (communications?.length || 0) > 0,
+            has_products: (supplierProducts?.length || 0) > 0
+          }
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Supplier scoring error:', error)
+    console.error('[SUPPLIER-SCORER] Error:', error)
     return new Response(
       JSON.stringify({ 
         success: false, 

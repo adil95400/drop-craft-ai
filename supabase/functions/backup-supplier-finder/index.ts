@@ -53,27 +53,89 @@ serve(async (req) => {
       throw new Error('Failed to fetch suppliers')
     }
 
-    // Calculate backup supplier scores and details
-    const backupSuppliers = suppliers.map(supplier => {
-      // Simulate reliability scoring based on historical data
-      const baseReliability = supplier.rating ? (supplier.rating / 5) * 100 : 70
-      const productCountBonus = Math.min(supplier.product_count / 10, 10)
-      const reliabilityScore = Math.min(baseReliability + productCountBonus, 100)
+    // Récupérer les ratings des fournisseurs
+    const supplierIds = suppliers?.map(s => s.id) || []
+    const { data: ratings } = await supabase
+      .from('supplier_ratings')
+      .select('*')
+      .in('supplier_id', supplierIds)
 
-      // Simulate pricing (in real implementation, this would come from supplier API or contracts)
-      const estimatedPrice = product.cost_price ? 
-        product.cost_price * (0.8 + Math.random() * 0.4) : // ±20% variation
-        product.price * (0.5 + Math.random() * 0.2) // 50-70% of retail price
+    const ratingsMap = new Map(ratings?.map(r => [r.supplier_id, r]) || [])
 
-      // Simulate lead time based on location and supplier type
-      const leadTimeDays = supplier.country === 'France' ? 
-        Math.floor(Math.random() * 5) + 2 : // 2-7 days for local
-        Math.floor(Math.random() * 10) + 5    // 5-15 days for international
+    // Récupérer les produits fournisseurs pour les vrais prix
+    const { data: supplierProducts } = await supabase
+      .from('supplier_products')
+      .select('supplier_id, price, lead_time_days, min_order_quantity')
+      .in('supplier_id', supplierIds)
 
-      // Simulate minimum order quantity
-      const minimumOrderQuantity = supplier.supplier_type === 'wholesale' ? 
-        Math.floor(Math.random() * 100) + 50 : // 50-150 for wholesale
-        Math.floor(Math.random() * 20) + 10    // 10-30 for retail
+    // Grouper les produits par fournisseur
+    const productsBySupplier = new Map<string, any[]>()
+    for (const sp of supplierProducts || []) {
+      if (!productsBySupplier.has(sp.supplier_id)) {
+        productsBySupplier.set(sp.supplier_id, [])
+      }
+      productsBySupplier.get(sp.supplier_id)!.push(sp)
+    }
+
+    // Récupérer les dernières commandes pour chaque fournisseur
+    const { data: lastOrders } = await supabase
+      .from('bulk_order_items')
+      .select('supplier_id, created_at')
+      .in('supplier_id', supplierIds)
+      .order('created_at', { ascending: false })
+
+    const lastOrderBySupplier = new Map<string, string>()
+    for (const order of lastOrders || []) {
+      if (!lastOrderBySupplier.has(order.supplier_id)) {
+        lastOrderBySupplier.set(order.supplier_id, order.created_at)
+      }
+    }
+
+    // Calculate backup supplier scores and details from REAL DATA
+    const backupSuppliers = (suppliers || []).map(supplier => {
+      const rating = ratingsMap.get(supplier.id)
+      const products = productsBySupplier.get(supplier.id) || []
+      
+      // Calculate real reliability score from rating or supplier data
+      const reliabilityScore = rating?.reliability_score || 
+        (supplier.rating ? Math.round((supplier.rating / 5) * 100) : 50)
+
+      // Calculate real estimated price from supplier products
+      let estimatedPrice = product.cost_price || product.price * 0.6
+      if (products.length > 0) {
+        const avgPrice = products.reduce((sum, p) => sum + (p.price || 0), 0) / products.length
+        if (avgPrice > 0) estimatedPrice = avgPrice
+      }
+
+      // Calculate real lead time from supplier products or use supplier default
+      let leadTimeDays = supplier.lead_time_days || 7
+      if (products.length > 0) {
+        const avgLeadTime = products
+          .filter(p => p.lead_time_days)
+          .reduce((sum, p) => sum + p.lead_time_days, 0) / 
+          products.filter(p => p.lead_time_days).length
+        if (avgLeadTime > 0) leadTimeDays = Math.round(avgLeadTime)
+      } else if (supplier.country !== 'France' && supplier.country !== 'FR') {
+        leadTimeDays = Math.max(leadTimeDays, 10) // International suppliers take longer
+      }
+
+      // Calculate real minimum order quantity from products
+      let minimumOrderQuantity = supplier.min_order_quantity || 10
+      if (products.length > 0) {
+        const avgMoq = products
+          .filter(p => p.min_order_quantity)
+          .reduce((sum, p) => sum + p.min_order_quantity, 0) /
+          products.filter(p => p.min_order_quantity).length
+        if (avgMoq > 0) minimumOrderQuantity = Math.round(avgMoq)
+      }
+
+      // Get real last order date
+      const lastOrderDate = lastOrderBySupplier.get(supplier.id)
+
+      // Determine payment terms from supplier config
+      const paymentTerms = supplier.payment_terms 
+        ? (Array.isArray(supplier.payment_terms) ? supplier.payment_terms : [supplier.payment_terms])
+        : ['Net 30']
 
       return {
         id: supplier.id,
@@ -81,8 +143,10 @@ serve(async (req) => {
         price: estimatedPrice,
         lead_time_days: leadTimeDays,
         minimum_order_quantity: minimumOrderQuantity,
-        reliability_score: Math.round(reliabilityScore),
-        last_order_date: getRandomLastOrderDate(),
+        reliability_score: reliabilityScore,
+        quality_score: rating?.quality_score || 50,
+        overall_score: rating?.overall_score || reliabilityScore,
+        last_order_date: lastOrderDate?.split('T')[0],
         supplier_type: supplier.supplier_type,
         country: supplier.country,
         rating: supplier.rating,
@@ -90,8 +154,14 @@ serve(async (req) => {
           email: supplier.contact_email ? 'Available' : 'Not available',
           phone: supplier.contact_phone ? 'Available' : 'Not available'
         },
-        available_payment_terms: getRandomPaymentTerms(),
-        estimated_capacity: Math.floor(Math.random() * 1000) + 100
+        available_payment_terms: paymentTerms,
+        estimated_capacity: supplier.capacity || (products.length * 100), // Estimate based on catalog size
+        products_in_catalog: products.length,
+        data_quality: {
+          has_rating: !!rating,
+          has_products: products.length > 0,
+          has_order_history: !!lastOrderDate
+        }
       }
     })
 
@@ -100,6 +170,9 @@ serve(async (req) => {
     switch (sort_by) {
       case 'reliability_score':
         sortedSuppliers.sort((a, b) => b.reliability_score - a.reliability_score)
+        break
+      case 'overall_score':
+        sortedSuppliers.sort((a, b) => b.overall_score - a.overall_score)
         break
       case 'price':
         sortedSuppliers.sort((a, b) => a.price - b.price)
@@ -124,7 +197,7 @@ serve(async (req) => {
         entity_type: 'product',
         entity_id: product_id,
         description: `Found ${finalResults.length} backup suppliers for ${product.name}`,
-        metadata: {
+        details: {
           product_name: product.name,
           suppliers_found: finalResults.length,
           sort_by,
@@ -164,27 +237,3 @@ serve(async (req) => {
     )
   }
 })
-
-function getRandomLastOrderDate(): string | undefined {
-  const shouldHaveLastOrder = Math.random() > 0.3
-  if (!shouldHaveLastOrder) return undefined
-  
-  const daysAgo = Math.floor(Math.random() * 180) + 30 // 30-210 days ago
-  const lastOrderDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
-  return lastOrderDate.toISOString().split('T')[0]
-}
-
-function getRandomPaymentTerms(): string[] {
-  const allTerms = ['Net 30', 'Net 15', 'COD', '2/10 Net 30', 'Prepayment', 'Letter of Credit']
-  const numberOfTerms = Math.floor(Math.random() * 3) + 1
-  const selectedTerms = []
-  
-  for (let i = 0; i < numberOfTerms; i++) {
-    const randomTerm = allTerms[Math.floor(Math.random() * allTerms.length)]
-    if (!selectedTerms.includes(randomTerm)) {
-      selectedTerms.push(randomTerm)
-    }
-  }
-  
-  return selectedTerms
-}

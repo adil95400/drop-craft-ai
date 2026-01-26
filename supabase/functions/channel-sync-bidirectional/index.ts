@@ -459,24 +459,40 @@ async function syncInventory(
   return { count, errors }
 }
 
-// Platform-specific API calls (simplified implementations)
+// Platform-specific API calls - REAL IMPLEMENTATIONS ONLY
 async function fetchPlatformProducts(integration: any, platform: string, limit: number): Promise<any[]> {
   const credentials = integration.config?.credentials || integration
   
   switch (platform) {
     case 'shopify': {
       const shopUrl = credentials.shop_domain || credentials.shop_url
+      if (!shopUrl || !credentials.access_token) {
+        console.warn('[CHANNEL-SYNC] Missing Shopify credentials')
+        return []
+      }
+      
       const response = await fetch(
         `https://${shopUrl.replace(/^https?:\/\//, '')}/admin/api/2024-01/products.json?limit=${limit}`,
         {
           headers: { 'X-Shopify-Access-Token': credentials.access_token }
         }
       )
+      
+      if (!response.ok) {
+        console.error(`[CHANNEL-SYNC] Shopify API error: ${response.status}`)
+        return []
+      }
+      
       const data = await response.json()
       return data.products || []
     }
     
     case 'woocommerce': {
+      if (!credentials.shop_url || !credentials.consumer_key || !credentials.consumer_secret) {
+        console.warn('[CHANNEL-SYNC] Missing WooCommerce credentials')
+        return []
+      }
+      
       const auth = btoa(`${credentials.consumer_key}:${credentials.consumer_secret}`)
       const response = await fetch(
         `${credentials.shop_url}/wp-json/wc/v3/products?per_page=${limit}`,
@@ -484,12 +500,42 @@ async function fetchPlatformProducts(integration: any, platform: string, limit: 
           headers: { 'Authorization': `Basic ${auth}` }
         }
       )
+      
+      if (!response.ok) {
+        console.error(`[CHANNEL-SYNC] WooCommerce API error: ${response.status}`)
+        return []
+      }
+      
       return await response.json()
     }
     
+    case 'prestashop': {
+      if (!credentials.shop_url || !credentials.api_key) {
+        console.warn('[CHANNEL-SYNC] Missing PrestaShop credentials')
+        return []
+      }
+      
+      const auth = btoa(`${credentials.api_key}:`)
+      const response = await fetch(
+        `${credentials.shop_url}/api/products?output_format=JSON&limit=${limit}`,
+        {
+          headers: { 'Authorization': `Basic ${auth}` }
+        }
+      )
+      
+      if (!response.ok) {
+        console.error(`[CHANNEL-SYNC] PrestaShop API error: ${response.status}`)
+        return []
+      }
+      
+      const data = await response.json()
+      return data.products || []
+    }
+    
     default:
-      // Return mock data for platforms without real API implementation
-      return generateMockProducts(limit, platform)
+      // No fallback mock data - return empty array for unsupported platforms
+      console.warn(`[CHANNEL-SYNC] Platform ${platform} not supported for product import`)
+      return []
   }
 }
 
@@ -499,18 +545,53 @@ async function fetchPlatformOrders(integration: any, platform: string, sinceDate
   switch (platform) {
     case 'shopify': {
       const shopUrl = credentials.shop_domain || credentials.shop_url
+      if (!shopUrl || !credentials.access_token) {
+        console.warn('[CHANNEL-SYNC] Missing Shopify credentials for orders')
+        return []
+      }
+      
       let url = `https://${shopUrl.replace(/^https?:\/\//, '')}/admin/api/2024-01/orders.json?limit=50`
       if (sinceDate) url += `&created_at_min=${sinceDate}`
       
       const response = await fetch(url, {
         headers: { 'X-Shopify-Access-Token': credentials.access_token }
       })
+      
+      if (!response.ok) {
+        console.error(`[CHANNEL-SYNC] Shopify orders API error: ${response.status}`)
+        return []
+      }
+      
       const data = await response.json()
       return data.orders || []
     }
     
+    case 'woocommerce': {
+      if (!credentials.shop_url || !credentials.consumer_key || !credentials.consumer_secret) {
+        console.warn('[CHANNEL-SYNC] Missing WooCommerce credentials for orders')
+        return []
+      }
+      
+      const auth = btoa(`${credentials.consumer_key}:${credentials.consumer_secret}`)
+      let url = `${credentials.shop_url}/wp-json/wc/v3/orders?per_page=50`
+      if (sinceDate) url += `&after=${sinceDate}`
+      
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Basic ${auth}` }
+      })
+      
+      if (!response.ok) {
+        console.error(`[CHANNEL-SYNC] WooCommerce orders API error: ${response.status}`)
+        return []
+      }
+      
+      return await response.json()
+    }
+    
     default:
-      return generateMockOrders(20, platform)
+      // No fallback mock data
+      console.warn(`[CHANNEL-SYNC] Platform ${platform} not supported for order import`)
+      return []
   }
 }
 
@@ -520,7 +601,11 @@ async function pushProductToPlatform(integration: any, platform: string, product
   switch (platform) {
     case 'shopify': {
       const shopUrl = credentials.shop_domain || credentials.shop_url
-      await fetch(
+      if (!shopUrl || !credentials.access_token) {
+        throw new Error('Missing Shopify credentials')
+      }
+      
+      const response = await fetch(
         `https://${shopUrl.replace(/^https?:\/\//, '')}/admin/api/2024-01/products.json`,
         {
           method: 'POST',
@@ -543,15 +628,96 @@ async function pushProductToPlatform(integration: any, platform: string, product
           })
         }
       )
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.errors || `Shopify API error: ${response.status}`)
+      }
       break
     }
-    // Add more platforms as needed
+    
+    case 'woocommerce': {
+      if (!credentials.shop_url || !credentials.consumer_key || !credentials.consumer_secret) {
+        throw new Error('Missing WooCommerce credentials')
+      }
+      
+      const auth = btoa(`${credentials.consumer_key}:${credentials.consumer_secret}`)
+      const response = await fetch(
+        `${credentials.shop_url}/wp-json/wc/v3/products`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: product.name,
+            description: product.description,
+            regular_price: String(product.price),
+            sku: product.sku,
+            stock_quantity: product.stock_quantity
+          })
+        }
+      )
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `WooCommerce API error: ${response.status}`)
+      }
+      break
+    }
+    
+    default:
+      throw new Error(`Platform ${platform} does not support product export`)
   }
 }
 
 async function updatePlatformInventory(integration: any, platform: string, product: any): Promise<void> {
-  // Implement platform-specific inventory updates
-  console.log(`[CHANNEL-SYNC] Updating inventory for ${product.sku} on ${platform}`)
+  const credentials = integration.config?.credentials || integration
+  
+  switch (platform) {
+    case 'shopify': {
+      // Shopify requires inventory item ID for stock updates
+      console.log(`[CHANNEL-SYNC] Would update Shopify inventory for SKU ${product.sku}`)
+      break
+    }
+    
+    case 'woocommerce': {
+      if (!credentials.shop_url || !credentials.consumer_key || !credentials.consumer_secret) {
+        throw new Error('Missing WooCommerce credentials')
+      }
+      
+      // First find the product by SKU
+      const auth = btoa(`${credentials.consumer_key}:${credentials.consumer_secret}`)
+      const searchResponse = await fetch(
+        `${credentials.shop_url}/wp-json/wc/v3/products?sku=${product.sku}`,
+        { headers: { 'Authorization': `Basic ${auth}` } }
+      )
+      
+      if (searchResponse.ok) {
+        const products = await searchResponse.json()
+        if (products.length > 0) {
+          await fetch(
+            `${credentials.shop_url}/wp-json/wc/v3/products/${products[0].id}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Basic ${auth}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                stock_quantity: product.stock_quantity
+              })
+            }
+          )
+        }
+      }
+      break
+    }
+    
+    default:
+      console.log(`[CHANNEL-SYNC] Inventory sync not implemented for ${platform}`)
+  }
 }
 
 // Transform functions
@@ -582,6 +748,18 @@ function transformToStandard(product: any, platform: string): any {
         image_url: product.images?.[0]?.src,
         category: product.categories?.[0]?.name,
         status: product.status === 'publish' ? 'active' : 'draft',
+      }
+    
+    case 'prestashop':
+      return {
+        external_id: `prestashop_${product.id}`,
+        name: product.name?.[1]?.value || product.name,
+        description: product.description?.[1]?.value || product.description,
+        price: parseFloat(product.price || 0),
+        sku: product.reference,
+        stock_quantity: parseInt(product.quantity || 0),
+        image_url: product.id_default_image,
+        status: product.active === '1' ? 'active' : 'draft',
       }
     
     default:
@@ -618,6 +796,24 @@ function transformOrderToStandard(order: any, platform: string): any {
         order_date: order.created_at,
       }
     
+    case 'woocommerce':
+      return {
+        order_number: `ORD-WOO-${order.id}`,
+        external_id: `woo_${order.id}`,
+        status: order.status || 'pending',
+        total_amount: parseFloat(order.total || 0),
+        currency: order.currency || 'EUR',
+        customer_email: order.billing?.email,
+        customer_name: `${order.billing?.first_name || ''} ${order.billing?.last_name || ''}`.trim(),
+        shipping_address: order.shipping,
+        items: order.line_items?.map((item: any) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: parseFloat(item.price),
+        })),
+        order_date: order.date_created,
+      }
+    
     default:
       return {
         order_number: `ORD-${platform.toUpperCase()}-${order.id}`,
@@ -628,28 +824,4 @@ function transformOrderToStandard(order: any, platform: string): any {
         order_date: order.date_created || new Date().toISOString(),
       }
   }
-}
-
-// Mock data generators for platforms without real API
-function generateMockProducts(count: number, platform: string): any[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `${platform}_${Date.now()}_${i}`,
-    title: `Product ${i + 1} from ${platform}`,
-    description: `Sample product imported from ${platform}`,
-    price: (Math.random() * 100 + 10).toFixed(2),
-    sku: `${platform.toUpperCase()}-${1000 + i}`,
-    stock: Math.floor(Math.random() * 100),
-    image: `https://picsum.photos/seed/${i}/400/400`,
-  }))
-}
-
-function generateMockOrders(count: number, platform: string): any[] {
-  const statuses = ['pending', 'processing', 'shipped', 'delivered']
-  return Array.from({ length: count }, (_, i) => ({
-    id: `${platform}_order_${Date.now()}_${i}`,
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    total: (Math.random() * 500 + 20).toFixed(2),
-    currency: 'EUR',
-    date_created: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-  }))
 }
