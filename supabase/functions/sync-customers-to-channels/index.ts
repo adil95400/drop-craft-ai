@@ -78,7 +78,7 @@ serve(async (req) => {
       // IMPORT: Get customers from store
       if (direction === 'import' || direction === 'bidirectional') {
         try {
-          const importResult = await importCustomersFromChannel(supabase, integration, user_id)
+          const importResult = await importCustomersFromChannel(supabase, integration, userId)
           results.imported += importResult.count
           if (importResult.errors.length > 0) {
             results.errors.push(...importResult.errors)
@@ -91,7 +91,7 @@ serve(async (req) => {
       // EXPORT: Push customers to store
       if (direction === 'export' || direction === 'bidirectional') {
         try {
-          const exportResult = await exportCustomersToChannel(supabase, integration, user_id, customer_ids)
+          const exportResult = await exportCustomersToChannel(supabase, integration, userId, customer_ids)
           results.exported += exportResult.count
           if (exportResult.errors.length > 0) {
             results.errors.push(...exportResult.errors)
@@ -104,7 +104,7 @@ serve(async (req) => {
 
     // Log sync
     await supabase.from('unified_sync_logs').insert({
-      user_id,
+      user_id: userId,
       sync_type: 'customers',
       platform: platform || 'multiple',
       entity_type: 'customers',
