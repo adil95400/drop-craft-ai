@@ -321,6 +321,22 @@ class ShopOptiPopup {
       this.importProductWithReviews();
     });
 
+    // Paste token button handler
+    this.bindClick('pasteTokenBtn', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        const tokenInput = document.getElementById('loginToken');
+        if (tokenInput && text) {
+          tokenInput.value = text.trim();
+          tokenInput.focus();
+          this.showToast('Token collé', 'success');
+        }
+      } catch (err) {
+        console.log('[ShopOpti+] Clipboard access denied');
+        this.showToast('Collez manuellement avec Ctrl+V', 'info');
+      }
+    });
+
     // Close dropdowns on outside click
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.action-dropdown-container')) {
@@ -638,7 +654,11 @@ class ShopOptiPopup {
     const errorEl = document.getElementById('loginError');
     const submitBtn = document.getElementById('loginSubmitBtn');
     
-    const token = tokenInput?.value?.trim();
+    // Get and clean token
+    let token = tokenInput?.value?.trim() || '';
+    
+    // Remove any extra whitespace or special characters
+    token = token.replace(/\s+/g, '');
     
     // Hide previous error
     if (errorEl) errorEl.classList.add('hidden');
@@ -648,9 +668,16 @@ class ShopOptiPopup {
       return;
     }
     
-    // Accept any token format (ext_xxx, UUID, or custom tokens - min 10 chars)
+    // Accept ext_xxx format (min 10 chars) or UUID format
     if (token.length < 10) {
-      this.showLoginError('Token trop court (minimum 10 caractères)');
+      this.showLoginError(`Token trop court: ${token.length} caractères (minimum 10)`);
+      return;
+    }
+    
+    // Validate token format
+    const validTokenRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!validTokenRegex.test(token)) {
+      this.showLoginError('Format de token invalide - caractères non autorisés');
       return;
     }
     
@@ -666,7 +693,7 @@ class ShopOptiPopup {
     }
     
     try {
-      console.log('[ShopOpti+] Validating token...');
+      console.log(`[ShopOpti+] Validating token: ${token.substring(0, 15)}... (${token.length} chars)`);
       
       // Validate token with backend
       const response = await fetch(`${this.API_URL}/extension-auth`, {
@@ -682,20 +709,23 @@ class ShopOptiPopup {
       });
       
       const data = await response.json();
-      console.log('[ShopOpti+] Validation response:', data);
+      console.log('[ShopOpti+] Validation response:', { success: data.success, error: data.error });
       
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Token invalide ou expiré');
+        const errorMessage = data.error || 'Token invalide ou expiré';
+        console.error('[ShopOpti+] Validation failed:', errorMessage);
+        throw new Error(errorMessage);
       }
       
-      // Token is valid - save to storage
-      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      // Token is valid - save to storage with expiry from response or default 1 year
+      const expiresAt = data.expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
       
       await this.chrome.storage.local.set({
         extensionToken: token,
         tokenExpiry: expiresAt,
-        user: data.user || { email: 'Extension User' },
-        userPlan: data.user?.plan || 'free'
+        user: data.user || { email: 'Extension User', id: data.user?.id },
+        userPlan: data.user?.plan || 'free',
+        lastLogin: new Date().toISOString()
       });
       
       // Update state
@@ -713,9 +743,14 @@ class ShopOptiPopup {
       if (tokenInput) tokenInput.value = '';
       if (errorEl) errorEl.classList.add('hidden');
       
+      // Reload connected stores
+      await this.loadConnectedStores();
+      
+      console.log('[ShopOpti+] Login successful for user:', this.user?.id);
+      
     } catch (error) {
       console.error('[ShopOpti+] Token validation error:', error);
-      this.showLoginError(error.message || 'Token invalide - vérifiez et réessayez');
+      this.showLoginError(error.message || 'Erreur de connexion - réessayez');
     } finally {
       this.isLoggingIn = false;
       if (submitBtn) {
