@@ -5,7 +5,7 @@
  */
 
 const Config = {
-  VERSION: '5.6.7',
+  VERSION: '5.7.0',
   BRAND: 'ShopOpti+',
   
   // API Configuration - Synced with shopopti.io
