@@ -102,6 +102,9 @@ const EXTENSION_FILES = [
   'lib/ai-content-service.js',
   'lib/history-panel.js',
   'lib/remote-selectors.js',
+  'lib/theme-manager.js',
+  'lib/performance-mode.js',
+  'lib/ui-enhancements.js',
   // Extractors
   'extractors/advanced-extractor.js',
   'extractors/aliexpress-extractor.js',
