@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Bulk Import System v5.6.6
+// ShopOpti+ Bulk Import System v5.6.7
 // Complete rewrite with queue, multi-store, deep extraction
 // 45+ PLATFORMS SUPPORTED - AutoDS Feature Parity
 // ============================================
@@ -14,7 +14,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '5.6.6',
+    VERSION: '5.6.7',
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     APP_URL: 'https://shopopti.io',
     MAX_SELECTION: 100,

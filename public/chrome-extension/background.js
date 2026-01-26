@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Background Service Worker v5.6.6
+// ShopOpti+ Chrome Extension - Background Service Worker v5.6.7
 // 100% AutoDS Feature Parity - Complete Production Ready
 // Ads Spy, Auto-Order, Multi-Store, Real-Time Sync
 // NOTIFICATIONS SYSTEM + DYNAMIC BADGE
@@ -7,7 +7,7 @@
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.6.6';
+const VERSION = '5.6.7';
 
 // ============================================
 // SECURITY MODULE

@@ -1,7 +1,7 @@
 /**
  * ShopOpti+ - Advanced Import Overlay V2
  * Professional import assistant with AI optimization, variant selection, and image management
- * Version 5.6.6 - Synced with shopopti.io
+ * Version 5.6.7 - Synced with shopopti.io
  */
 
 (function() {
@@ -13,7 +13,7 @@
   const CONFIG = {
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     APP_URL: 'https://shopopti.io',
-    VERSION: '5.6.6'
+    VERSION: '5.6.7'
   };
 
   // Secure element creation helper
