@@ -1,10 +1,10 @@
 /**
- * ShopOpti+ CSV Exporter v5.6.2
+ * ShopOpti+ CSV Exporter v5.7.0
  * Export products and import history to CSV
  */
 
 const ShopOptiCSVExporter = {
-  VERSION: '5.6.2',
+  VERSION: '5.7.0',
 
   /**
    * Export products to CSV

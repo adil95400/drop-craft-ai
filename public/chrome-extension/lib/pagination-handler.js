@@ -1,10 +1,10 @@
 /**
- * ShopOpti+ Pagination Handler v5.6.2
+ * ShopOpti+ Pagination Handler v5.7.0
  * Auto-detect and navigate paginated listing pages
  */
 
 const ShopOptiPagination = {
-  VERSION: '5.6.2',
+  VERSION: '5.7.0',
 
   /**
    * Detect pagination on current page

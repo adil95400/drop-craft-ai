@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Content Script v5.6.1
+// ShopOpti+ Chrome Extension - Content Script v5.7.0
 // SECURITY HARDENED - XSS Prevention, Safe DOM
 // AutoDS-Style Button Injection for 45+ Platforms
 // Bulk Import V5 + Multi-Store + Ads Spy Integration
@@ -10,10 +10,10 @@
   'use strict';
 
   // Prevent multiple injections
-  if (window.__shopOptiCSVersion === '5.6.1') return;
-  window.__shopOptiCSVersion = '5.6.1';
+  if (window.__shopOptiCSVersion === '5.7.0') return;
+  window.__shopOptiCSVersion = '5.7.0';
 
-  console.log('[ShopOpti+] Content script v5.6.1 initializing (backend-connected)...');
+  console.log('[ShopOpti+] Content script v5.7.0 initializing (backend-connected)...');
 
   // ============================================
   // SECURITY MODULE (inline for content script)
@@ -134,7 +134,7 @@
   // CONFIGURATION
   // ============================================
   const CONFIG = {
-    VERSION: '5.6.1',
+    VERSION: '5.7.0',
     BRAND: 'ShopOpti+',
     API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
     APP_URL: 'https://shopopti.io',

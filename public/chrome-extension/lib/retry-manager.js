@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Retry Manager v5.6.2
+// ShopOpti+ Retry Manager v5.7.0
 // Intelligent retry with exponential backoff
 // ============================================
 
