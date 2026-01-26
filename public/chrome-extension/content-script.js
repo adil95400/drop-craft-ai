@@ -129,6 +129,69 @@
   };
   
   // ============================================
+  // REMOTE SELECTORS INTEGRATION
+  // ============================================
+  
+  /**
+   * Merge remote selectors with local platformSelectors
+   * Remote selectors take priority for new/updated values
+   */
+  function mergeRemoteSelectors(remoteSelectors) {
+    if (!remoteSelectors || typeof remoteSelectors !== 'object') return;
+    
+    Object.keys(remoteSelectors).forEach(platform => {
+      if (remoteSelectors[platform]) {
+        // Initialize platform if not exists
+        if (!platformSelectors[platform]) {
+          platformSelectors[platform] = { productButtons: [], cards: [], extractUrl: () => null };
+        }
+        
+        // Merge productButtons (remote first, then local, dedupe)
+        if (remoteSelectors[platform].productButtons) {
+          platformSelectors[platform].productButtons = [
+            ...new Set([
+              ...remoteSelectors[platform].productButtons,
+              ...platformSelectors[platform].productButtons
+            ])
+          ];
+        }
+        
+        // Merge cards selectors
+        if (remoteSelectors[platform].cards) {
+          platformSelectors[platform].cards = [
+            ...new Set([
+              ...remoteSelectors[platform].cards,
+              ...platformSelectors[platform].cards
+            ])
+          ];
+        }
+      }
+    });
+    
+    console.log('[ShopOpti+] Remote selectors merged successfully');
+  }
+  
+  /**
+   * Initialize remote selectors if module is available
+   */
+  async function initRemoteSelectors() {
+    if (typeof RemoteSelectorsManager === 'undefined') {
+      console.log('[ShopOpti+] RemoteSelectorsManager not available, using local selectors');
+      return;
+    }
+    
+    try {
+      const remoteSelectors = await RemoteSelectorsManager.init();
+      if (remoteSelectors) {
+        mergeRemoteSelectors(remoteSelectors);
+        console.log('[ShopOpti+] Remote selectors loaded successfully');
+      }
+    } catch (e) {
+      console.warn('[ShopOpti+] Remote selectors failed, using local:', e.message);
+    }
+  }
+  
+  // ============================================
   // PLATFORM DETECTION
   // ============================================
   
@@ -311,25 +374,48 @@
   // IMPORT HANDLERS
   // ============================================
   
-  async function ensureAuthenticated() {
-    if (isAuthenticated) return true;
+  async function ensureAuthenticated(forceRefresh = false) {
+    if (isAuthenticated && !forceRefresh) {
+      // Quick check - verify token is still valid
+      try {
+        const status = await sendMessage({ type: 'CHECK_AUTH_STATUS' });
+        if (status?.authenticated) return true;
+      } catch (e) {
+        // Continue to full auth check
+      }
+    }
     
-    // Re-check auth status
-    isAuthenticated = await checkAuthStatus();
-    
-    if (!isAuthenticated) {
-      showToast('🔒 Connectez-vous sur ShopOpti pour importer', 'info');
+    // Re-check auth status with server validation
+    try {
+      const response = await sendMessage({ type: 'GET_AUTH_TOKEN' });
       
-      // Open ShopOpti auth page
+      if (response.authenticated && response.token) {
+        isAuthenticated = true;
+        return true;
+      }
+      
+      // Token expired or invalid
+      if (response.error === 'Session expirée') {
+        showToast('⏰ Session expirée - Reconnexion nécessaire', 'info');
+      } else {
+        showToast('🔒 Connectez-vous sur ShopOpti pour importer', 'info');
+      }
+      
+      // Open auth page
       try {
         await sendMessage({ type: 'OPEN_AUTH_PAGE' });
       } catch (e) {
         window.open(`${APP_URL}/auth/extension`, '_blank');
       }
+      
+      isAuthenticated = false;
+      return false;
+      
+    } catch (error) {
+      console.error('[ShopOpti+] Auth check failed:', error);
+      showToast('❌ Erreur de connexion - Réessayez', 'error');
       return false;
     }
-    
-    return true;
   }
   
   async function handleQuickImport(button, url) {
@@ -766,6 +852,17 @@
       if (reinjectAttempts < MAX_REINJECT_ATTEMPTS) {
         reinjectAttempts++;
         setTimeout(() => injectProductPageButton(platform), 500);
+      } else {
+        // All attempts failed - inject floating fallback button
+        injectFloatingFallbackButton(platform);
+        
+        // Report broken selector if RemoteSelectorsManager available
+        if (typeof RemoteSelectorsManager !== 'undefined') {
+          RemoteSelectorsManager.reportBrokenSelector(platform, 'productButtons', {
+            url: window.location.href,
+            selectors: selectors.productButtons
+          });
+        }
       }
       return;
     }
@@ -785,6 +882,61 @@
     
     console.log(`[ShopOpti+ v${VERSION}] Button injected for ${platform}`);
     reinjectAttempts = 0;
+  }
+  
+  // ============================================
+  // FLOATING FALLBACK BUTTON (when selectors fail)
+  // ============================================
+  
+  function injectFloatingFallbackButton(platform) {
+    // Only show if we're on a product page and normal injection failed
+    if (document.getElementById('shopopti-floating-import')) return;
+    
+    const floatingBtn = document.createElement('div');
+    floatingBtn.id = 'shopopti-floating-import';
+    floatingBtn.innerHTML = `
+      <button class="shopopti-import-btn shopopti-main-btn shopopti-floating-main">
+        <svg class="shopopti-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span class="shopopti-btn-text">Import ShopOpti+</span>
+      </button>
+      <span class="shopopti-floating-hint">Bouton flottant - sélecteurs non trouvés</span>
+    `;
+    
+    floatingBtn.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      z-index: 9999999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    `;
+    
+    const hint = floatingBtn.querySelector('.shopopti-floating-hint');
+    if (hint) {
+      hint.style.cssText = `
+        font-size: 11px;
+        color: #94a3b8;
+        background: rgba(0,0,0,0.7);
+        padding: 4px 8px;
+        border-radius: 4px;
+        max-width: 200px;
+        text-align: right;
+      `;
+    }
+    
+    floatingBtn.querySelector('.shopopti-floating-main').addEventListener('click', async () => {
+      await handleQuickImport(floatingBtn.querySelector('.shopopti-floating-main'), window.location.href);
+    });
+    
+    document.body.appendChild(floatingBtn);
+    
+    console.log(`[ShopOpti+ v${VERSION}] Floating fallback button injected for ${platform}`);
   }
   
   function injectCategoryPageCheckboxes(platform) {
@@ -884,15 +1036,66 @@
       return;
     }
     
+    // Check auth before bulk import
+    if (!await ensureAuthenticated()) {
+      return;
+    }
+    
     const btn = document.getElementById('shopopti-bulk-import');
     if (btn) {
       btn.disabled = true;
       btn.innerHTML = `<span class="shopopti-spinner"></span> Import ${urls.length}...`;
     }
     
+    // Use RetryManager if available for intelligent retry
+    if (typeof ShopOptiRetryManager !== 'undefined') {
+      try {
+        const results = await ShopOptiRetryManager.batchWithRetry(
+          urls,
+          async (url) => {
+            const response = await sendMessage({ type: 'IMPORT_FROM_URL', url });
+            if (!response.success) throw new Error(response.error || 'Import failed');
+            return response;
+          },
+          {
+            maxRetries: 3,
+            concurrency: 2,
+            stopOnError: false,
+            onItemComplete: ({ item, result, index }) => {
+              const checkbox = document.querySelector(`.shopopti-checkbox[data-product-url="${CSS.escape(item)}"]`);
+              if (checkbox) {
+                checkbox.classList.remove('selected');
+                checkbox.classList.add(result.success ? 'imported' : 'error');
+              }
+              // Update button progress
+              if (btn) {
+                btn.innerHTML = `<span class="shopopti-spinner"></span> ${index + 1}/${urls.length}...`;
+              }
+            },
+            onRetry: ({ attempt, errorType, delay }) => {
+              console.log(`[ShopOpti+] Retry attempt ${attempt}, waiting ${delay}ms...`);
+            }
+          }
+        );
+        
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<svg class="shopopti-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Importer tout`;
+        }
+        
+        showToast(`${results.succeeded} importé(s), ${results.failed} erreur(s)`, results.succeeded > 0 ? 'success' : 'error');
+        updateBulkSelection();
+        return;
+      } catch (e) {
+        console.warn('[ShopOpti+] RetryManager failed, using fallback:', e);
+      }
+    }
+    
+    // Fallback to original logic with improvements
     let success = 0, errors = 0;
     
-    for (const url of urls) {
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
       try {
         const response = await sendMessage({ type: 'IMPORT_FROM_URL', url });
         
@@ -905,12 +1108,21 @@
           }
         } else {
           errors++;
+          const checkbox = document.querySelector(`.shopopti-checkbox[data-product-url="${CSS.escape(url)}"]`);
+          if (checkbox) checkbox.classList.add('error');
         }
       } catch (e) {
         errors++;
       }
       
-      await new Promise(r => setTimeout(r, 500));
+      // Update progress
+      if (btn) {
+        btn.innerHTML = `<span class="shopopti-spinner"></span> ${i + 1}/${urls.length}...`;
+      }
+      
+      // Dynamic delay based on error rate (slow down if errors)
+      const delayMs = errors > success ? 1000 : 500;
+      await new Promise(r => setTimeout(r, delayMs));
     }
     
     if (btn) {
@@ -1172,6 +1384,9 @@
     
     // Inject styles first - ALWAYS
     injectStyles();
+    
+    // Initialize remote selectors for dynamic updates (non-blocking)
+    initRemoteSelectors().catch(e => console.warn('[ShopOpti+] Remote selectors init error:', e));
     
     // Check auth status (non-blocking for UI)
     isAuthenticated = await checkAuthStatus();
