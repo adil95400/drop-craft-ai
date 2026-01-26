@@ -99,14 +99,14 @@ const extensionCards: ExtensionCard[] = [
   },
   {
     id: 'browser-extension',
-    title: 'Extension Navigateur',
-    description: 'Extension Chrome/Firefox pour scraper des produits directement depuis le web',
+    title: 'Extension Navigateur v5.7.0',
+    description: 'Extension Chrome pour scraper des produits directement depuis 45+ plateformes',
     icon: <Globe className="w-6 h-6" />,
-    route: '/extension-download',
+    route: '/extensions/chrome',
     planRequired: null,
-    badge: 'Beta',
+    badge: 'v5.7.0',
     color: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
-    status: 'beta'
+    status: 'available'
   },
   {
     id: 'print-manager',
