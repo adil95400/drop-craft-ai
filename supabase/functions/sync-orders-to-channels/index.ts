@@ -1,3 +1,4 @@
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
@@ -12,23 +13,41 @@ interface OrderSyncRequest {
   order_ids?: string[]
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    const { user_id, integration_id, platform, direction = 'bidirectional', order_ids } = await req.json() as OrderSyncRequest
+    
+    // Support both body params and auth header for user_id
+    const body = await req.json() as OrderSyncRequest
+    let userId = body.user_id
 
-    if (!user_id) {
+    // If no user_id in body, try to get from auth header
+    if (!userId) {
+      const authHeader = req.headers.get('Authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '')
+        const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+          global: { headers: { Authorization: `Bearer ${token}` } }
+        })
+        const { data: { user } } = await userClient.auth.getUser()
+        if (user) userId = user.id
+      }
+    }
+
+    if (!userId) {
       return new Response(
         JSON.stringify({ success: false, error: 'user_id required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
 
-    console.log(`📋 Order sync starting for user ${user_id}, direction: ${direction}`)
+    const { integration_id, platform, direction = 'bidirectional', order_ids } = body
+
+    console.log(`📋 Order sync starting for user ${userId}, direction: ${direction}`)
 
     const results: any = {
       imported: 0,
@@ -40,7 +59,7 @@ Deno.serve(async (req) => {
     let intQuery = supabase
       .from('integrations')
       .select('*')
-      .eq('user_id', user_id)
+      .eq('user_id', userId)
       .eq('is_active', true)
 
     if (integration_id) {

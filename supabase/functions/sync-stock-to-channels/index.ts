@@ -1,3 +1,4 @@
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
@@ -9,31 +10,48 @@ interface StockSyncRequest {
   integration_id?: string
   platform?: string
   product_ids?: string[]
+  direction?: string
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    const { user_id, integration_id, platform, product_ids } = await req.json() as StockSyncRequest
+    
+    // Support both body params and auth header for user_id
+    const body = await req.json() as StockSyncRequest
+    let userId = body.user_id
 
-    if (!user_id) {
+    // If no user_id in body, try to get from auth header
+    if (!userId) {
+      const authHeader = req.headers.get('Authorization')
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '')
+        const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+          global: { headers: { Authorization: `Bearer ${token}` } }
+        })
+        const { data: { user } } = await userClient.auth.getUser()
+        if (user) userId = user.id
+      }
+    }
+
+    if (!userId) {
       return new Response(
         JSON.stringify({ success: false, error: 'user_id required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
 
-    console.log(`📦 Stock sync starting for user ${user_id}`)
+    console.log(`📦 Stock sync starting for user ${userId}`)
 
     // Get pending stock sync items from queue
     let queueQuery = supabase
       .from('unified_sync_queue')
       .select('*')
-      .eq('user_id', user_id)
+      .eq('user_id', userId)
       .eq('sync_type', 'stock')
       .eq('status', 'pending')
       .order('priority', { ascending: true })
@@ -50,7 +68,7 @@ Deno.serve(async (req) => {
         *,
         products:product_id (id, sku, stock_quantity, title)
       `)
-      .eq('user_id', user_id)
+      .eq('user_id', userId)
       .eq('sync_status', 'synced')
 
     if (mappingError) throw mappingError

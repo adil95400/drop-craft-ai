@@ -291,11 +291,18 @@ export function useTriggerModuleSync() {
           user_id: user.id,
           integration_id,
           platform,
-          direction,
+          direction: direction || 'bidirectional',
+          sync_type,
         }
       });
 
       if (error) throw error;
+      
+      // Handle case where function returns success but with no data to sync
+      if (data && !data.success && data.error) {
+        throw new Error(data.error);
+      }
+      
       return data;
     },
     onSuccess: (data, variables) => {
