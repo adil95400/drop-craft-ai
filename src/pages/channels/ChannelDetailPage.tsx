@@ -77,16 +77,23 @@ export default function ChannelDetailPage() {
       
       if (!integration) return []
       
-      // Use Lovable's Shopify store (which has valid Storefront token)
-      // The connected store (0tdvq3-pw) uses Admin API, not Storefront API
-      const storeDomain = 'drop-craft-ai-9874g.myshopify.com'
-      const storefrontToken = '9e33316887e1b93d1bdcca1d8344d104'
+      // Get credentials from the connected integration
+      const config = integration.config as any
+      const credentials = config?.credentials || {}
+      const shopDomain = credentials.shop_domain || integration.store_url
+      const accessToken = credentials.access_token
       
-      // Fetch from Shopify Storefront API
-      const response = await supabase.functions.invoke('shopify-fetch-products', {
+      if (!shopDomain || !accessToken) {
+        throw new Error("Configuration de boutique manquante")
+      }
+      
+      console.log(`Fetching products from ${shopDomain}`)
+      
+      // Fetch from Shopify Admin API (works with admin tokens)
+      const response = await supabase.functions.invoke('shopify-admin-products', {
         body: {
-          storeDomain,
-          accessToken: storefrontToken,
+          shopDomain,
+          accessToken,
           limit: 100
         }
       })
