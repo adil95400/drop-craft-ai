@@ -64,17 +64,26 @@ export default function ChannelDetailPage() {
     enabled: !!channelId
   })
 
-  // Fetch synced products
+  // Fetch synced products - combine products and imported_products
   const { data: syncedProducts, isLoading: productsLoading, refetch: refetchProducts } = useQuery({
     queryKey: ['channel-products', channelId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get from products table first
+      const { data: productsData } = await supabase
         .from('products')
         .select('id, name, image_url, price, stock_quantity, status, sku')
         .order('created_at', { ascending: false })
         .limit(50)
-      if (error) throw error
-      return (data || []).map(p => ({
+      
+      // Also get from imported_products for more complete data
+      const { data: importedData } = await supabase
+        .from('imported_products')
+        .select('id, name, image_urls, price, stock_quantity, status, sku')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      
+      // Map products table data
+      const products = (productsData || []).map(p => ({
         id: p.id,
         title: p.name,
         image_url: p.image_url,
@@ -83,6 +92,28 @@ export default function ChannelDetailPage() {
         status: p.status,
         sku: p.sku
       }))
+      
+      // Map imported_products data (handle image_urls array)
+      const imported = (importedData || []).map(p => ({
+        id: p.id,
+        title: p.name,
+        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : null,
+        price: p.price,
+        inventory_quantity: p.stock_quantity,
+        status: p.status,
+        sku: p.sku
+      }))
+      
+      // Combine and dedupe by id
+      const allProducts = [...products]
+      const existingIds = new Set(products.map(p => p.id))
+      for (const ip of imported) {
+        if (!existingIds.has(ip.id)) {
+          allProducts.push(ip)
+        }
+      }
+      
+      return allProducts
     },
     enabled: !!channelId
   })
@@ -288,7 +319,7 @@ export default function ChannelDetailPage() {
               products={syncedProducts || []}
               totalCount={productCount || 0}
               isLoading={productsLoading}
-              onRefresh={refetchProducts}
+              onRefresh={() => { refetchProducts() }}
               onSync={() => syncMutation.mutate()}
               isSyncing={syncMutation.isPending}
             />

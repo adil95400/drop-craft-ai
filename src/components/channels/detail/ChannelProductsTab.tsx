@@ -7,8 +7,16 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { Package, RefreshCw, Loader2, Search, Filter, Grid3X3, List, Image as ImageIcon } from 'lucide-react'
-import { useState, useMemo } from 'react'
+import { Package, RefreshCw, Loader2, Search, Filter, Grid3X3, List, Image as ImageIcon, Check } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel
+} from '@/components/ui/dropdown-menu'
 
 interface Product {
   id: string
@@ -38,16 +46,28 @@ export function ChannelProductsTab({
   isSyncing
 }: ChannelProductsTabProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
 
   const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return products
-    const query = searchQuery.toLowerCase()
-    return products.filter(p => 
-      p.title?.toLowerCase().includes(query) ||
-      p.sku?.toLowerCase().includes(query)
-    )
-  }, [products, searchQuery])
+    let filtered = products
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(p => 
+        p.title?.toLowerCase().includes(query) ||
+        p.sku?.toLowerCase().includes(query)
+      )
+    }
+    
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter(p => p.status === statusFilter)
+    }
+    
+    return filtered
+  }, [products, searchQuery, statusFilter])
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -79,7 +99,7 @@ export function ChannelProductsTab({
           <Button 
             variant="outline" 
             size="sm"
-            onClick={onRefresh}
+            onClick={() => onRefresh()}
             disabled={isLoading}
             className="gap-2 rounded-xl"
           >
@@ -100,9 +120,39 @@ export function ChannelProductsTab({
             />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="icon" className="rounded-xl shrink-0">
-              <Filter className="h-4 w-4" />
-            </Button>
+            {/* Filter Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant={statusFilter ? "default" : "outline"} 
+                  size="icon" 
+                  className="rounded-xl shrink-0"
+                >
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Filtrer par statut</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setStatusFilter(null)}>
+                  <span className="flex-1">Tous</span>
+                  {statusFilter === null && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('active')}>
+                  <span className="flex-1">Actif</span>
+                  {statusFilter === 'active' && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('draft')}>
+                  <span className="flex-1">Brouillon</span>
+                  {statusFilter === 'draft' && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter('archived')}>
+                  <span className="flex-1">Archivé</span>
+                  {statusFilter === 'archived' && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <div className="flex rounded-xl border border-border/50 overflow-hidden">
               <Button 
                 variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
@@ -123,6 +173,21 @@ export function ChannelProductsTab({
             </div>
           </div>
         </div>
+
+        {/* Active filter badge */}
+        {statusFilter && (
+          <div className="flex items-center gap-2 mt-3">
+            <Badge variant="secondary" className="gap-1.5">
+              Statut: {statusFilter === 'active' ? 'Actif' : statusFilter === 'draft' ? 'Brouillon' : 'Archivé'}
+              <button
+                onClick={() => setStatusFilter(null)}
+                className="ml-1 hover:text-destructive"
+              >
+                ×
+              </button>
+            </Badge>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="pt-0">
