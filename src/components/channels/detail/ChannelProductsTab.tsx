@@ -212,19 +212,23 @@ export function ChannelProductsTab({
                     transition={{ delay: Math.min(index * 0.03, 0.3) }}
                     className="flex items-center gap-4 p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-all group"
                   >
-                    <div className="w-14 h-14 rounded-xl bg-muted overflow-hidden flex-shrink-0 border border-border/30">
+                    <div className="w-14 h-14 rounded-xl bg-muted overflow-hidden flex-shrink-0 border border-border/30 [&.fallback-active_img]:hidden [&.fallback-active_[data-fallback]]:flex">
                       {product.image_url ? (
                         <img 
                           src={product.image_url} 
-                          alt={product.title || ''} 
+                          alt="" 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           loading="lazy"
+                          onError={(e) => {
+                            const target = e.currentTarget
+                            target.style.display = 'none'
+                            target.parentElement?.classList.add('fallback-active')
+                          }}
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-muted">
-                          <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
+                      ) : null}
+                      <div className={`w-full h-full items-center justify-center bg-muted ${product.image_url ? 'hidden' : 'flex'}`} data-fallback>
+                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate group-hover:text-primary transition-colors">
@@ -255,19 +259,23 @@ export function ChannelProductsTab({
                     transition={{ delay: Math.min(index * 0.03, 0.3) }}
                     className="border border-border/50 rounded-xl overflow-hidden hover:shadow-lg transition-all group bg-card"
                   >
-                    <div className="aspect-square relative bg-muted overflow-hidden">
+                    <div className="aspect-square relative bg-muted overflow-hidden [&.fallback-active_img]:hidden [&.fallback-active_[data-fallback]]:flex">
                       {product.image_url ? (
                         <img 
                           src={product.image_url} 
-                          alt={product.title || ''} 
+                          alt="" 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
+                          onError={(e) => {
+                            const target = e.currentTarget
+                            target.style.display = 'none'
+                            target.parentElement?.classList.add('fallback-active')
+                          }}
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
+                      ) : null}
+                      <div className={`w-full h-full items-center justify-center ${product.image_url ? 'hidden' : 'flex'}`} data-fallback>
+                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                      </div>
                       <div className="absolute top-2 right-2">
                         {getStatusBadge(product.status)}
                       </div>
