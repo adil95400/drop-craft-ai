@@ -86,7 +86,7 @@ serve(async (req) => {
   }
 })
 
-async function searchAds(supabase: any, userId: string, params: AdSearchParams) {
+async function searchAds(supabase: ReturnType<typeof createClient>, userId: string, params: AdSearchParams) {
   const { query, platform, category, minSpend, maxSpend, minEngagement, countries, limit = 20 } = params
 
   // Log the search
@@ -125,70 +125,20 @@ async function searchAds(supabase: any, userId: string, params: AdSearchParams) 
 
   if (error) throw error
 
-  // If no ads in DB, generate simulated data for demo
-  const results = ads.length > 0 ? ads : await generateSimulatedAds(supabase, userId, params)
-
+  // Return only real data from database - no simulated fallback
   return new Response(
     JSON.stringify({ 
       success: true, 
-      ads: results,
-      total: results.length,
-      source: ads.length > 0 ? 'database' : 'simulated'
+      ads: ads || [],
+      total: ads?.length || 0,
+      source: 'database',
+      message: ads?.length === 0 ? 'No ads found. Use the scraper to import competitor ads.' : undefined
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
 }
 
-async function generateSimulatedAds(supabase: any, userId: string, params: AdSearchParams) {
-  const categories = ['Fashion', 'Electronics', 'Beauty', 'Home', 'Fitness', 'Pets']
-  const platforms = ['facebook', 'tiktok', 'instagram']
-  const ctas = ['Shop Now', 'Learn More', 'Get Yours', 'Limited Offer', 'Buy Now']
-  const adTexts = [
-    "🔥 Viral product everyone's talking about!",
-    "✨ Transform your daily routine with this",
-    "💯 Best-selling item - 50% OFF today only",
-    "🎁 Perfect gift idea they'll actually love",
-    "⚡ Limited stock - selling fast!",
-    "🌟 Over 10,000 5-star reviews",
-    "💪 The #1 solution for your needs",
-    "🚀 New arrival that's breaking the internet"
-  ]
-
-  const simulatedAds = Array.from({ length: 12 }, (_, i) => ({
-    id: crypto.randomUUID(),
-    user_id: userId,
-    platform: platforms[i % platforms.length],
-    ad_id: `sim_${Date.now()}_${i}`,
-    advertiser_name: `Brand ${['Alpha', 'Beta', 'Gamma', 'Delta', 'Echo'][i % 5]} Store`,
-    ad_text: adTexts[i % adTexts.length],
-    ad_headline: `${categories[i % categories.length]} Must-Have #${i + 1}`,
-    ad_cta: ctas[i % ctas.length],
-    landing_page_url: `https://example-store-${i}.com/product`,
-    image_urls: [`https://picsum.photos/seed/${i}/400/400`],
-    estimated_spend_min: Math.floor(Math.random() * 500) + 100,
-    estimated_spend_max: Math.floor(Math.random() * 5000) + 1000,
-    estimated_reach: Math.floor(Math.random() * 1000000) + 50000,
-    engagement_score: Math.floor(Math.random() * 40) + 60,
-    running_days: Math.floor(Math.random() * 60) + 1,
-    countries: ['US', 'UK', 'CA', 'FR', 'DE'].slice(0, Math.floor(Math.random() * 3) + 1),
-    age_range: ['18-24', '25-34', '35-44'][i % 3],
-    gender_targeting: ['all', 'female', 'male'][i % 3],
-    interests: ['Shopping', 'Lifestyle', 'Technology'].slice(0, Math.floor(Math.random() * 3) + 1),
-    first_seen_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-    last_seen_at: new Date().toISOString(),
-    is_active: Math.random() > 0.2,
-    product_category: categories[i % categories.length],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }))
-
-  // Save to DB for future queries
-  await supabase.from('competitor_ads').insert(simulatedAds)
-
-  return simulatedAds
-}
-
-async function analyzeAd(supabase: any, userId: string, adId: string) {
+async function analyzeAd(supabase: ReturnType<typeof createClient>, userId: string, adId: string) {
   const { data: ad, error } = await supabase
     .from('competitor_ads')
     .select('*')
@@ -200,11 +150,11 @@ async function analyzeAd(supabase: any, userId: string, adId: string) {
     throw new Error('Ad not found')
   }
 
-  // Use AI to analyze the ad (simulated for now)
+  // Perform real analysis based on ad content
   const analysis: AdAnalysisResult = {
     hook_analysis: analyzeHook(ad.ad_text),
     cta_effectiveness: analyzeCta(ad.ad_cta),
-    visual_strategy: "Strong product focus with lifestyle elements",
+    visual_strategy: analyzeVisualStrategy(ad),
     targeting_insights: `Targeting ${ad.age_range || '25-44'} ${ad.gender_targeting || 'all genders'} interested in ${(ad.interests || ['general']).join(', ')}`,
     improvement_suggestions: generateSuggestions(ad),
     winning_elements: identifyWinningElements(ad),
@@ -228,6 +178,8 @@ function analyzeHook(text: string): string {
   if (text.includes('🔥') || text.includes('viral')) return "Strong emotional hook with viral potential"
   if (text.includes('OFF') || text.includes('%')) return "Discount-driven hook - high conversion potential"
   if (text.includes('⭐') || text.includes('review')) return "Social proof hook - builds trust"
+  if (text.includes('FREE') || text.includes('free')) return "Free offer hook - high click-through potential"
+  if (text.includes('LIMITED') || text.includes('limited')) return "Scarcity hook - creates urgency"
   return "Standard promotional hook"
 }
 
@@ -238,27 +190,43 @@ function analyzeCta(cta: string): string {
     'Learn More': "Educational CTA - good for consideration stage",
     'Get Yours': "Ownership CTA - creates desire",
     'Limited Offer': "Urgency CTA - drives immediate action",
-    'Buy Now': "Direct purchase CTA - maximum conversion intent"
+    'Buy Now': "Direct purchase CTA - maximum conversion intent",
+    'Sign Up': "Lead generation CTA - builds email list",
+    'Get Started': "Onboarding CTA - low friction entry"
   }
   return ctaMap[cta] || "Standard CTA"
 }
 
-function generateSuggestions(ad: any): string[] {
-  const suggestions = []
+function analyzeVisualStrategy(ad: Record<string, unknown>): string {
+  const imageCount = (ad.image_urls as string[] | undefined)?.length || 0
+  const hasVideo = !!(ad.video_url as string)
   
-  if (!ad.ad_text?.includes('🔥') && !ad.ad_text?.includes('⚡')) {
+  if (hasVideo) return "Video-first strategy - high engagement potential"
+  if (imageCount > 3) return "Multi-image carousel - product showcase"
+  if (imageCount === 1) return "Single image focus - clear product highlight"
+  return "Standard visual approach"
+}
+
+function generateSuggestions(ad: Record<string, unknown>): string[] {
+  const suggestions = []
+  const adText = ad.ad_text as string | undefined
+  const runningDays = ad.running_days as number | undefined
+  const engagementScore = ad.engagement_score as number | undefined
+  const countries = ad.countries as string[] | undefined
+  
+  if (!adText?.includes('🔥') && !adText?.includes('⚡')) {
     suggestions.push("Add attention-grabbing emojis to increase scroll-stop rate")
   }
   
-  if (!ad.ad_text?.includes('%') && !ad.ad_text?.includes('OFF')) {
+  if (!adText?.includes('%') && !adText?.includes('OFF')) {
     suggestions.push("Consider adding a discount or limited-time offer")
   }
   
-  if (ad.running_days > 30 && ad.engagement_score < 70) {
+  if ((runningDays || 0) > 30 && (engagementScore || 0) < 70) {
     suggestions.push("Ad may be experiencing fatigue - consider creative refresh")
   }
   
-  if ((ad.countries?.length || 0) < 3) {
+  if ((countries?.length || 0) < 3) {
     suggestions.push("Expand geographic targeting for broader reach")
   }
   
@@ -267,25 +235,36 @@ function generateSuggestions(ad: any): string[] {
   return suggestions.slice(0, 4)
 }
 
-function identifyWinningElements(ad: any): string[] {
+function identifyWinningElements(ad: Record<string, unknown>): string[] {
   const elements = []
+  const engagementScore = ad.engagement_score as number | undefined
+  const runningDays = ad.running_days as number | undefined
+  const estimatedReach = ad.estimated_reach as number | undefined
+  const isActive = ad.is_active as boolean | undefined
   
-  if (ad.engagement_score >= 80) elements.push("High engagement score")
-  if (ad.running_days >= 14) elements.push("Proven longevity (running 14+ days)")
-  if (ad.estimated_reach >= 500000) elements.push("Large reach indicates scalability")
-  if (ad.is_active) elements.push("Currently active - validated by platform")
+  if ((engagementScore || 0) >= 80) elements.push("High engagement score")
+  if ((runningDays || 0) >= 14) elements.push("Proven longevity (running 14+ days)")
+  if ((estimatedReach || 0) >= 500000) elements.push("Large reach indicates scalability")
+  if (isActive) elements.push("Currently active - validated by platform")
   
   return elements.length > 0 ? elements : ["Standard ad performance"]
 }
 
-function estimatePerformance(score: number): 'low' | 'medium' | 'high' | 'viral' {
-  if (score >= 90) return 'viral'
-  if (score >= 75) return 'high'
-  if (score >= 50) return 'medium'
+function estimatePerformance(score: number | null | undefined): 'low' | 'medium' | 'high' | 'viral' {
+  const s = score || 0
+  if (s >= 90) return 'viral'
+  if (s >= 75) return 'high'
+  if (s >= 50) return 'medium'
   return 'low'
 }
 
-async function saveToCollection(supabase: any, userId: string, adId: string, collectionId: string, notes?: string) {
+async function saveToCollection(
+  supabase: ReturnType<typeof createClient>, 
+  userId: string, 
+  adId: string, 
+  collectionId: string, 
+  notes?: string
+) {
   // Verify collection ownership
   const { data: collection, error: colError } = await supabase
     .from('ad_collections')
@@ -314,8 +293,16 @@ async function saveToCollection(supabase: any, userId: string, adId: string, col
     throw error
   }
 
-  // Update collection count
-  await supabase.rpc('increment_collection_count', { collection_id: collectionId })
+  // Update collection count manually
+  const { data: countData } = await supabase
+    .from('ad_collection_items')
+    .select('id', { count: 'exact' })
+    .eq('collection_id', collectionId)
+  
+  await supabase
+    .from('ad_collections')
+    .update({ ad_count: countData?.length || 0, updated_at: new Date().toISOString() })
+    .eq('id', collectionId)
 
   return new Response(
     JSON.stringify({ success: true }),
@@ -323,7 +310,13 @@ async function saveToCollection(supabase: any, userId: string, adId: string, col
   )
 }
 
-async function createCollection(supabase: any, userId: string, name: string, description?: string, color?: string) {
+async function createCollection(
+  supabase: ReturnType<typeof createClient>, 
+  userId: string, 
+  name: string, 
+  description?: string, 
+  color?: string
+) {
   const { data, error } = await supabase
     .from('ad_collections')
     .insert({
@@ -343,7 +336,7 @@ async function createCollection(supabase: any, userId: string, name: string, des
   )
 }
 
-async function getCollections(supabase: any, userId: string) {
+async function getCollections(supabase: ReturnType<typeof createClient>, userId: string) {
   const { data, error } = await supabase
     .from('ad_collections')
     .select(`
@@ -366,7 +359,12 @@ async function getCollections(supabase: any, userId: string) {
   )
 }
 
-async function getTrendingAds(supabase: any, userId: string, platform?: string, limit: number = 10) {
+async function getTrendingAds(
+  supabase: ReturnType<typeof createClient>, 
+  userId: string, 
+  platform?: string, 
+  limit: number = 10
+) {
   let query = supabase
     .from('competitor_ads')
     .select('*')
@@ -385,40 +383,82 @@ async function getTrendingAds(supabase: any, userId: string, platform?: string, 
   if (error) throw error
 
   return new Response(
-    JSON.stringify({ success: true, ads: data }),
+    JSON.stringify({ success: true, ads: data || [] }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
 }
 
-async function scrapeCompetitor(supabase: any, userId: string, url: string, platform: string) {
-  // In a real implementation, this would use a scraping service
-  // For now, we simulate the result
-  const simulatedAd = {
-    user_id: userId,
-    platform,
-    ad_id: `scraped_${Date.now()}`,
-    advertiser_name: new URL(url).hostname.replace('www.', '').split('.')[0],
-    ad_text: "Scraped ad content would appear here",
-    ad_headline: "Product from " + new URL(url).hostname,
-    landing_page_url: url,
-    engagement_score: Math.floor(Math.random() * 30) + 50,
-    is_active: true,
-    first_seen_at: new Date().toISOString(),
-    last_seen_at: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+async function scrapeCompetitor(
+  supabase: ReturnType<typeof createClient>, 
+  userId: string, 
+  url: string, 
+  platform: string
+) {
+  // Use Firecrawl API for real scraping
+  const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
+  
+  if (!firecrawlKey) {
+    throw new Error('Scraping service not configured. Please add FIRECRAWL_API_KEY.')
   }
 
-  const { data, error } = await supabase
-    .from('competitor_ads')
-    .insert(simulatedAd)
-    .select()
-    .single()
+  try {
+    // Call Firecrawl to scrape the page
+    const scrapeResponse = await fetch('https://api.firecrawl.dev/v0/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url,
+        pageOptions: {
+          onlyMainContent: true,
+          includeImages: true
+        }
+      })
+    })
 
-  if (error) throw error
+    if (!scrapeResponse.ok) {
+      throw new Error(`Scraping failed: ${scrapeResponse.status}`)
+    }
 
-  return new Response(
-    JSON.stringify({ success: true, ad: data }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  )
+    const scrapeData = await scrapeResponse.json()
+    
+    // Parse scraped data into ad format
+    const hostname = new URL(url).hostname.replace('www.', '').split('.')[0]
+    
+    const adData = {
+      user_id: userId,
+      platform,
+      ad_id: `scraped_${Date.now()}`,
+      advertiser_name: hostname.charAt(0).toUpperCase() + hostname.slice(1),
+      ad_text: scrapeData.data?.content?.substring(0, 500) || '',
+      ad_headline: scrapeData.data?.metadata?.title || `Product from ${hostname}`,
+      landing_page_url: url,
+      image_urls: scrapeData.data?.metadata?.ogImage ? [scrapeData.data.metadata.ogImage] : [],
+      engagement_score: 50, // Default score, will be updated with real data
+      is_active: true,
+      first_seen_at: new Date().toISOString(),
+      last_seen_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+
+    const { data, error } = await supabase
+      .from('competitor_ads')
+      .insert(adData)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return new Response(
+      JSON.stringify({ success: true, ad: data, source: 'firecrawl' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
+  } catch (err) {
+    console.error('Scraping error:', err)
+    throw new Error(`Failed to scrape: ${err instanceof Error ? err.message : 'Unknown error'}`)
+  }
 }

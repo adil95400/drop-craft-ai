@@ -15,6 +15,13 @@ interface SyncResult {
   source: string;
 }
 
+interface SupplierApiResponse {
+  cost_price?: number;
+  stock?: number;
+  available?: boolean;
+  error?: string;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -54,9 +61,15 @@ serve(async (req) => {
 
     for (const product of (products || [])) {
       try {
-        // Fetch latest supplier data (simulated - replace with real API calls)
-        const supplierData = await fetchSupplierData(product);
+        // Fetch latest supplier data from real supplier APIs
+        const supplierData = await fetchSupplierData(supabase, product);
         
+        if (!supplierData || supplierData.error) {
+          console.log(`No supplier data for product ${product.id}: ${supplierData?.error || 'Unknown'}`);
+          results.noChanges++;
+          continue;
+        }
+
         const updates: Record<string, unknown> = {
           last_sync_at: new Date().toISOString(),
           sync_status: 'synced',
@@ -193,21 +206,167 @@ serve(async (req) => {
   }
 });
 
-// Simulated supplier data fetch - replace with real supplier API calls
-async function fetchSupplierData(product: { id: string; source_url?: string; supplier_id?: string }) {
-  // In production, integrate with:
-  // - CJ Dropshipping API
-  // - AliExpress API
-  // - BigBuy API
-  // - Custom supplier APIs
+/**
+ * Fetch real supplier data from configured supplier APIs
+ * Supports: BigBuy, CJ Dropshipping, B2B Sports, and custom supplier APIs
+ */
+async function fetchSupplierData(
+  supabase: ReturnType<typeof createClient>,
+  product: { id: string; source_url?: string; supplier_id?: string; sku?: string }
+): Promise<SupplierApiResponse> {
   
-  // Simulate random small variations
-  const priceVariation = (Math.random() - 0.5) * 2; // -1 to +1
-  const stockVariation = Math.floor(Math.random() * 20) - 5; // -5 to +15
+  // If no supplier configured, return empty
+  if (!product.supplier_id && !product.source_url) {
+    return { error: 'No supplier configured' };
+  }
+
+  // Get supplier details
+  if (product.supplier_id) {
+    const { data: supplier } = await supabase
+      .from('suppliers')
+      .select('name, api_type, api_config, credentials_encrypted')
+      .eq('id', product.supplier_id)
+      .single();
+
+    if (supplier) {
+      try {
+        return await fetchFromSupplierApi(supplier, product);
+      } catch (err) {
+        console.error(`Supplier API error for ${supplier.name}:`, err);
+        return { error: `API error: ${err instanceof Error ? err.message : 'Unknown'}` };
+      }
+    }
+  }
+
+  // Try to fetch from source_url if available
+  if (product.source_url) {
+    try {
+      return await fetchFromSourceUrl(product.source_url);
+    } catch (err) {
+      console.error(`Source URL fetch error:`, err);
+      return { error: `URL fetch error: ${err instanceof Error ? err.message : 'Unknown'}` };
+    }
+  }
+
+  return { error: 'Could not fetch supplier data' };
+}
+
+/**
+ * Fetch data from a specific supplier API based on api_type
+ */
+async function fetchFromSupplierApi(
+  supplier: { name: string; api_type?: string; api_config?: Record<string, unknown>; credentials_encrypted?: string },
+  product: { id: string; sku?: string }
+): Promise<SupplierApiResponse> {
+  const apiType = supplier.api_type?.toLowerCase() || '';
   
-  return {
-    cost_price: Math.max(1, 10 + priceVariation),
-    stock: Math.max(0, 50 + stockVariation),
-    available: true,
-  };
+  switch (apiType) {
+    case 'bigbuy': {
+      const apiKey = Deno.env.get('BIGBUY_API_KEY');
+      if (!apiKey) return { error: 'BigBuy API key not configured' };
+      
+      const response = await fetch(`https://api.bigbuy.eu/rest/catalog/productstock/${product.sku}.json`, {
+        headers: { 
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) return { error: `BigBuy API error: ${response.status}` };
+      
+      const data = await response.json();
+      return {
+        stock: data.stock || 0,
+        cost_price: data.retailPrice || undefined,
+        available: (data.stock || 0) > 0
+      };
+    }
+    
+    case 'cjdropshipping': {
+      const apiKey = Deno.env.get('CJ_API_KEY');
+      if (!apiKey) return { error: 'CJ API key not configured' };
+      
+      const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/product/stock', {
+        method: 'POST',
+        headers: {
+          'CJ-Access-Token': apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ sku: product.sku })
+      });
+      
+      if (!response.ok) return { error: `CJ API error: ${response.status}` };
+      
+      const data = await response.json();
+      return {
+        stock: data.data?.stock || 0,
+        cost_price: data.data?.sellPrice || undefined,
+        available: data.data?.isOnSale || false
+      };
+    }
+    
+    case 'b2bsports': {
+      const authKey = Deno.env.get('B2B_SPORTS_AUTH_KEY');
+      const userKey = Deno.env.get('B2B_SPORTS_USER_KEY');
+      if (!authKey || !userKey) return { error: 'B2B Sports keys not configured' };
+      
+      const response = await fetch(`https://www.b2bsportswear.com/api/v1/products/${product.sku}/stock`, {
+        headers: {
+          'X-Auth-Key': authKey,
+          'X-User-Key': userKey,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) return { error: `B2B Sports API error: ${response.status}` };
+      
+      const data = await response.json();
+      return {
+        stock: data.quantity || 0,
+        cost_price: data.price || undefined,
+        available: (data.quantity || 0) > 0
+      };
+    }
+    
+    default:
+      // For custom APIs, use the config if available
+      if (supplier.api_config) {
+        const config = supplier.api_config as { endpoint?: string; method?: string; headers?: Record<string, string> };
+        if (config.endpoint) {
+          const response = await fetch(config.endpoint.replace('{sku}', product.sku || ''), {
+            method: config.method || 'GET',
+            headers: config.headers || {}
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            return {
+              stock: data.stock ?? data.quantity ?? 0,
+              cost_price: data.price ?? data.cost_price ?? undefined,
+              available: data.available ?? true
+            };
+          }
+        }
+      }
+      return { error: `Unsupported supplier API type: ${apiType}` };
+  }
+}
+
+/**
+ * Attempt to fetch product data from a source URL
+ * This is a fallback when no supplier API is configured
+ */
+async function fetchFromSourceUrl(sourceUrl: string): Promise<SupplierApiResponse> {
+  // Determine platform from URL
+  if (sourceUrl.includes('aliexpress.com')) {
+    // AliExpress requires special handling - would need API or scraping
+    return { error: 'AliExpress direct scraping not supported - use supplier integration' };
+  }
+  
+  if (sourceUrl.includes('amazon.')) {
+    return { error: 'Amazon direct scraping not supported - use supplier integration' };
+  }
+  
+  // For other URLs, we can't fetch reliably
+  return { error: 'Source URL type not supported for automatic sync' };
 }
