@@ -44,13 +44,28 @@ serve(async (req) => {
       orders: orders?.length 
     });
 
-    // Calculate customer metrics
+    // Calculate REAL customer metrics from database
     const customerMetrics = customers?.map(customer => {
       const customerOrders = orders?.filter(order => order.customer_id === customer.id) || [];
       const totalSpent = customerOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
       const avgOrderValue = customerOrders.length > 0 ? totalSpent / customerOrders.length : 0;
-      const daysSinceLastOrder = customerOrders.length > 0 ? 
-        Math.floor((Date.now() - new Date(customerOrders[0].created_at).getTime()) / (1000 * 60 * 60 * 24)) : 999;
+      
+      // Calculate days since last order
+      let daysSinceLastOrder = 999;
+      if (customerOrders.length > 0) {
+        const sortedOrders = customerOrders.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        daysSinceLastOrder = Math.floor(
+          (Date.now() - new Date(sortedOrders[0].created_at).getTime()) / (1000 * 60 * 60 * 24)
+        );
+      }
+      
+      // Calculate order frequency
+      const customerLifetimeDays = Math.max(1, Math.floor(
+        (Date.now() - new Date(customer.created_at).getTime()) / (1000 * 60 * 60 * 24)
+      ));
+      const ordersPerDay = customerOrders.length / customerLifetimeDays;
       
       return {
         ...customer,
@@ -58,79 +73,131 @@ serve(async (req) => {
         totalSpent,
         avgOrderValue,
         daysSinceLastOrder,
-        frequency: customerOrders.length > 1 ? 
-          customerOrders.length / Math.max(1, Math.floor((Date.now() - new Date(customer.created_at).getTime()) / (1000 * 60 * 60 * 24))) : 0
+        frequency: ordersPerDay,
+        customerLifetimeDays
       };
-    });
+    }) || [];
 
-    const prompt = `
-Vous êtes un expert en analyse comportementale client e-commerce. Analysez les données suivantes et identifiez les patterns de comportement.
+    // Calculate REAL behavioral scores and segments
+    const totalCustomers = customerMetrics.length;
+    
+    // RFM Segmentation based on real data
+    const champions = customerMetrics.filter(c => 
+      c.orderCount >= 3 && c.daysSinceLastOrder < 30 && c.totalSpent > 100
+    );
+    const loyal = customerMetrics.filter(c => 
+      c.orderCount >= 2 && c.daysSinceLastOrder < 60 && !champions.includes(c)
+    );
+    const atRisk = customerMetrics.filter(c => 
+      c.orderCount >= 1 && c.daysSinceLastOrder >= 60 && c.daysSinceLastOrder < 120
+    );
+    const lost = customerMetrics.filter(c => 
+      c.daysSinceLastOrder >= 120 || (c.orderCount === 0 && c.customerLifetimeDays > 90)
+    );
 
-DONNÉES CLIENTS:
-${JSON.stringify(customerMetrics?.slice(0, 10), null, 2)}
+    // Calculate REAL LTV from actual data
+    const avgLTV = totalCustomers > 0 
+      ? customerMetrics.reduce((sum, c) => sum + c.totalSpent, 0) / totalCustomers 
+      : 0;
 
-ANALYSE DEMANDÉE:
-- Type: ${behaviorType || 'analyse_globale'}
-- Client spécifique: ${customerId || 'Tous les clients'}
+    // Identify high-risk churn customers
+    const highRiskCustomers = customerMetrics.filter(c => 
+      (c.daysSinceLastOrder > 45 && c.orderCount > 0) ||
+      (c.frequency < 0.01 && c.orderCount === 1)
+    );
 
-Analysez et fournissez:
-1. Segmentation automatique des clients (Champions, Loyaux, À risque, Perdus)
-2. Scores comportementaux et lifetime value
-3. Probabilité de churn par client
-4. Recommandations personnalisées
-5. Patterns d'achat identifiés
-6. Opportunités de cross-sell et up-sell
+    // Generate personalized recommendations based on REAL data
+    const recommendations = customerMetrics
+      .filter(c => c.daysSinceLastOrder > 30 && c.orderCount > 0)
+      .slice(0, 10)
+      .map(c => ({
+        customer_id: c.id,
+        customer_email: c.email,
+        recommendation: c.daysSinceLastOrder > 90 
+          ? `Campagne de réactivation urgente - ${c.daysSinceLastOrder} jours sans achat`
+          : c.avgOrderValue > avgLTV * 1.5
+            ? `Client haute valeur - Offrir programme VIP`
+            : `Email de rappel avec offre personnalisée`,
+        priority: c.daysSinceLastOrder > 90 ? 'high' : c.totalSpent > avgLTV ? 'medium' : 'low'
+      }));
 
-Répondez UNIQUEMENT en JSON valide:
-{
-  "customer_segments": {
-    "champions": { "count": number, "characteristics": string },
-    "loyal": { "count": number, "characteristics": string },
-    "at_risk": { "count": number, "characteristics": string },
-    "lost": { "count": number, "characteristics": string }
-  },
-  "behavioral_insights": {
-    "purchase_patterns": string,
-    "seasonal_behavior": string,
-    "price_sensitivity": string
-  },
-  "churn_analysis": {
-    "high_risk_customers": number,
-    "churn_indicators": [string],
-    "retention_strategies": [string]
-  },
-  "personalized_recommendations": [
-    { "customer_id": string, "recommendation": string, "priority": "high|medium|low" }
-  ],
-  "ltv_analysis": {
-    "average_ltv": number,
-    "top_value_segment": string,
-    "growth_opportunities": [string]
-  }
-}
-`;
-
-    console.log('[CUSTOMER-BEHAVIOR] Calling OpenAI for analysis');
-
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
+    // Build REAL analysis result (no AI needed for basic analytics)
+    const realAnalysis = {
+      customer_segments: {
+        champions: { 
+          count: champions.length, 
+          characteristics: `${champions.length} clients avec 3+ commandes, actifs (<30j), dépenses >100€`,
+          percentage: totalCustomers > 0 ? Math.round((champions.length / totalCustomers) * 100) : 0
+        },
+        loyal: { 
+          count: loyal.length, 
+          characteristics: `${loyal.length} clients avec 2+ commandes, actifs (<60j)`,
+          percentage: totalCustomers > 0 ? Math.round((loyal.length / totalCustomers) * 100) : 0
+        },
+        at_risk: { 
+          count: atRisk.length, 
+          characteristics: `${atRisk.length} clients inactifs depuis 60-120 jours`,
+          percentage: totalCustomers > 0 ? Math.round((atRisk.length / totalCustomers) * 100) : 0
+        },
+        lost: { 
+          count: lost.length, 
+          characteristics: `${lost.length} clients inactifs 120+ jours ou sans achat`,
+          percentage: totalCustomers > 0 ? Math.round((lost.length / totalCustomers) * 100) : 0
+        }
       },
-      body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
-        messages: [{ role: 'user', content: prompt }],
-        max_completion_tokens: 2000,
-      }),
-    });
+      behavioral_insights: {
+        purchase_patterns: totalCustomers > 0 
+          ? `Moyenne de ${(customerMetrics.reduce((s, c) => s + c.orderCount, 0) / totalCustomers).toFixed(1)} commandes/client`
+          : 'Aucune donnée disponible',
+        avg_order_value: avgLTV > 0 
+          ? `${avgLTV.toFixed(2)}€ panier moyen`
+          : 'Aucune commande',
+        retention_rate: totalCustomers > 0 
+          ? `${Math.round(((champions.length + loyal.length) / totalCustomers) * 100)}% de clients actifs`
+          : '0%'
+      },
+      churn_analysis: {
+        high_risk_customers: highRiskCustomers.length,
+        churn_indicators: [
+          'Inactivité supérieure à 45 jours',
+          'Une seule commande et fréquence faible',
+          'Baisse du panier moyen sur les dernières commandes'
+        ],
+        retention_strategies: [
+          'Campagnes email personnalisées pour clients à risque',
+          'Programme de fidélité pour augmenter la rétention',
+          'Offres exclusives pour réactiver les clients perdus'
+        ]
+      },
+      personalized_recommendations: recommendations,
+      ltv_analysis: {
+        average_ltv: Math.round(avgLTV * 100) / 100,
+        total_revenue: customerMetrics.reduce((sum, c) => sum + c.totalSpent, 0),
+        top_value_segment: champions.length > 0 ? 'Champions' : loyal.length > 0 ? 'Loyal' : 'New',
+        growth_opportunities: [
+          atRisk.length > 5 ? `Réactiver ${atRisk.length} clients à risque` : null,
+          champions.length > 0 ? `Programme VIP pour ${champions.length} champions` : null,
+          'Augmenter le panier moyen avec des offres groupées'
+        ].filter(Boolean)
+      }
+    };
 
-    const aiResponse = await openAIResponse.json();
-    const aiAnalysis = JSON.parse(aiResponse.choices[0].message.content);
+    console.log('[CUSTOMER-BEHAVIOR] Analysis completed with real data');
 
-    console.log('[CUSTOMER-BEHAVIOR] AI analysis completed');
+    // Calculate REAL behavioral score based on actual metrics
+    const behavioralScore = totalCustomers > 0 
+      ? Math.round(
+          ((champions.length + loyal.length) / totalCustomers) * 50 + // 50% weight on active customers
+          Math.min(50, avgLTV / 10) // 50% weight on LTV (capped at 50)
+        )
+      : 0;
 
-    // Store results
+    // Calculate REAL churn probability
+    const churnProbability = totalCustomers > 0
+      ? Math.round(((atRisk.length + lost.length) / totalCustomers) * 100)
+      : 0;
+
+    // Store results with REAL metrics
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -143,11 +210,11 @@ Répondez UNIQUEMENT en JSON valide:
         user_id: user.id,
         customer_id: customerId,
         behavior_type: behaviorType || 'comprehensive_analysis',
-        analysis_data: aiAnalysis,
-        behavioral_score: Math.round(Math.random() * 100), // Score calculé
-        lifetime_value: aiAnalysis.ltv_analysis?.average_ltv || 0,
-        churn_probability: Math.round(Math.random() * 100),
-        recommendations: aiAnalysis.personalized_recommendations || []
+        analysis_data: realAnalysis,
+        behavioral_score: behavioralScore,
+        lifetime_value: avgLTV,
+        churn_probability: churnProbability,
+        recommendations: recommendations
       })
       .select()
       .single();
@@ -156,8 +223,14 @@ Répondez UNIQUEMENT en JSON valide:
 
     return new Response(JSON.stringify({
       success: true,
-      analysis: aiAnalysis,
-      analysisId: savedAnalysis?.id
+      analysis: realAnalysis,
+      analysisId: savedAnalysis?.id,
+      metrics: {
+        total_customers: totalCustomers,
+        behavioral_score: behavioralScore,
+        churn_probability: churnProbability,
+        average_ltv: avgLTV
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
