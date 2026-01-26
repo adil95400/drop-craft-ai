@@ -39,7 +39,8 @@ export const BrowserExtensionImportInterface = () => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [autoSync, setAutoSync] = useState(false)
 
-  const extensionId = 'drop-craft-ai-extension' // Chrome extension ID would go here
+  const extensionId = 'shopopti-plus-extension'
+  const extensionVersion = '5.7.0'
   const supportedSites = [
     'aliexpress.com',
     'amazon.com',
@@ -47,7 +48,12 @@ export const BrowserExtensionImportInterface = () => {
     'ebay.com',
     'shopify.com',
     'etsy.com',
-    'alibaba.com'
+    'alibaba.com',
+    'shein.com',
+    'temu.com',
+    '1688.com',
+    'walmart.com',
+    'taobao.com'
   ]
 
   useEffect(() => {
@@ -293,10 +299,10 @@ export const BrowserExtensionImportInterface = () => {
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Chrome className="h-6 w-6" />
-                Extension Navigateur
+                Extension ShopOpti+ v{extensionVersion}
               </h2>
               <p className="opacity-90">
-                Importez des produits en un clic depuis n'importe quel site e-commerce
+                Importez des produits en un clic depuis {supportedSites.length}+ sites e-commerce
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -313,12 +319,17 @@ export const BrowserExtensionImportInterface = () => {
                   </>
                 )}
               </Badge>
-              <Switch
-                checked={autoSync}
-                onCheckedChange={setAutoSync}
-                className="data-[state=checked]:bg-white/30"
-              />
-              <span className="text-sm opacity-80">Auto-sync</span>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={autoSync}
+                  onCheckedChange={setAutoSync}
+                  className="data-[state=checked]:bg-white/30"
+                />
+                <div className="text-left">
+                  <span className="text-sm font-medium">Auto-sync</span>
+                  <p className="text-xs opacity-70">Sync toutes les 6h</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -362,7 +373,7 @@ export const BrowserExtensionImportInterface = () => {
                   </Button>
                   <Button 
                     variant="outline" 
-                    onClick={() => window.open('/extension-download', '_blank')}
+                    onClick={() => window.open('/extensions/chrome', '_blank')}
                     className="flex-1"
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />

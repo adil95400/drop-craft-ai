@@ -182,8 +182,13 @@ export default function ExtensionAuthPage() {
                 </div>
 
                 {extensionToken && (
-                  <div className="space-y-2">
-                    <Label>Votre token d'extension</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Votre token d'extension</Label>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                        v5.7.0 • Expire dans 1 an
+                      </span>
+                    </div>
                     <div className="flex gap-2">
                       <Input 
                         value={extensionToken.substring(0, 20) + '...'} 
@@ -197,6 +202,15 @@ export default function ExtensionAuthPage() {
                     <p className="text-xs text-muted-foreground">
                       Si l'extension ne s'est pas connectée automatiquement, copiez ce token et collez-le dans les paramètres de l'extension.
                     </p>
+                    <Button 
+                      onClick={generateExtensionToken} 
+                      variant="ghost" 
+                      size="sm"
+                      className="w-full text-xs"
+                      disabled={isLoading}
+                    >
+                      🔄 Renouveler le token
+                    </Button>
                   </div>
                 )}
 

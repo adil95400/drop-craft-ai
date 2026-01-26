@@ -105,17 +105,15 @@ export const ExtensionBridge = () => {
   };
 
   const downloadExtension = (browser: string) => {
-    const urls = {
-      chrome: 'https://chrome.google.com/webstore/detail/dropshipping-scraper',
-      firefox: 'https://addons.mozilla.org/firefox/addon/dropshipping-scraper',
-      edge: 'https://microsoftedge.microsoft.com/addons/detail/dropshipping-scraper'
-    };
-    
-    // In a real implementation, these would be actual store URLs
-    toast({
-      title: "Extension en développement",
-      description: `L'extension ${browser} sera bientôt disponible`,
-    });
+    if (browser === 'chrome') {
+      // Redirect to Chrome extension page
+      window.location.href = '/extensions/chrome';
+    } else {
+      toast({
+        title: "Version en développement",
+        description: `L'extension ${browser} sera bientôt disponible. Utilisez Chrome pour l'instant.`,
+      });
+    }
   };
 
   return (
