@@ -64,36 +64,46 @@ export default function ChannelDetailPage() {
     enabled: !!channelId
   })
 
-  // Fetch synced products - combine products and imported_products for the user
+  // Fetch products directly from Shopify for this channel
   const { data: syncedProducts, isLoading: productsLoading, refetch: refetchProducts } = useQuery({
     queryKey: ['channel-products', channelId],
     queryFn: async () => {
-      // Get user_id from the integration
+      // Get channel config with Shopify credentials
       const { data: integration } = await supabase
         .from('integrations')
-        .select('user_id')
+        .select('*')
         .eq('id', channelId)
         .single()
       
-      if (!integration?.user_id) return []
+      if (!integration?.config) return []
       
-      // Get products for this user (linked to Shopify)
-      const { data: productsData } = await supabase
-        .from('products')
-        .select('id, name, title, image_url, images, price, stock_quantity, status, sku, shopify_product_id')
-        .eq('user_id', integration.user_id)
-        .order('created_at', { ascending: false })
-        .limit(100)
+      const config = integration.config as any
+      const credentials = config.credentials || {}
+      const storeDomain = credentials.store_url || credentials.shop_domain || '0tdvq3-pw.myshopify.com'
+      const accessToken = credentials.access_token || credentials.storefront_token
       
-      // Map products - use image_url directly
-      return (productsData || []).map(p => ({
+      // Fetch from Shopify Storefront API
+      const response = await supabase.functions.invoke('shopify-fetch-products', {
+        body: {
+          storeDomain,
+          accessToken,
+          limit: 100
+        }
+      })
+      
+      if (response.error) throw response.error
+      
+      const products = response.data?.products || []
+      
+      // Map Shopify products to our format
+      return products.map((p: any) => ({
         id: p.id,
-        title: p.title || p.name,
-        image_url: p.image_url,
-        price: p.price,
-        inventory_quantity: p.stock_quantity,
-        status: p.status || (p.shopify_product_id ? 'active' : 'draft'),
-        sku: p.sku
+        title: p.title,
+        image_url: p.images?.edges?.[0]?.node?.url || '',
+        price: parseFloat(p.priceRange?.minVariantPrice?.amount || '0'),
+        inventory_quantity: p.variants?.edges?.[0]?.node?.availableForSale ? 1 : 0,
+        status: 'active',
+        sku: p.handle
       }))
     },
     enabled: !!channelId
