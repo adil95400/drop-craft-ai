@@ -50,8 +50,10 @@ const Security = {
     'SEARCH_ADS', 'GET_VIRAL_PRODUCTS', 'SAVE_AD_TO_COLLECTION',
     // Auth + Backend Connection
     'GET_AUTH_TOKEN', 'PRODUCT_IMPORTED', 'CHECK_AUTH_STATUS',
-    // Notifications System (NEW)
-    'UPDATE_BADGE', 'GET_NOTIFICATIONS', 'ADD_NOTIFICATION', 'CLEAR_NOTIFICATIONS'
+    // Notifications System
+    'UPDATE_BADGE', 'GET_NOTIFICATIONS', 'ADD_NOTIFICATION', 'CLEAR_NOTIFICATIONS',
+    // SaaS Sync (NEW)
+    'OPEN_AUTH_PAGE', 'SYNC_WITH_SAAS', 'GET_SAAS_STATUS'
   ],
 
   rateLimits: new Map(),
@@ -398,6 +400,25 @@ class ShopOptiBackground {
           sendResponse({ success: true });
           break;
 
+        // ============================================
+        // SAAS SYNC HANDLERS (NEW)
+        // ============================================
+        
+        case 'OPEN_AUTH_PAGE':
+          chrome.tabs.create({ url: `${APP_URL}/auth/extension` });
+          sendResponse({ success: true });
+          break;
+
+        case 'SYNC_WITH_SAAS':
+          const saasResult = await this.syncWithSaaS(message.action, message.data);
+          sendResponse(saasResult);
+          break;
+
+        case 'GET_SAAS_STATUS':
+          const saasStatus = await this.getSaaSStatus();
+          sendResponse(saasStatus);
+          break;
+
         default:
           sendResponse({ error: 'Unknown message type' });
       }
@@ -408,6 +429,67 @@ class ShopOptiBackground {
   }
 
   // ============================================
+  // SAAS SYNC METHODS
+  // ============================================
+  
+  async syncWithSaaS(action, data = {}) {
+    try {
+      const { extensionToken } = await chrome.storage.local.get(['extensionToken']);
+      
+      if (!extensionToken) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      const response = await fetch(`${API_URL}/extension-sync-realtime`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': extensionToken
+        },
+        body: JSON.stringify({
+          action: action || 'sync',
+          data,
+          timestamp: new Date().toISOString(),
+          extensionVersion: VERSION
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Sync failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      // Update local cache with synced data
+      if (result.settings) {
+        await chrome.storage.local.set({ syncedSettings: result.settings });
+      }
+      if (result.stores) {
+        await chrome.storage.local.set({ userStores: result.stores });
+      }
+
+      return { success: true, ...result };
+    } catch (error) {
+      console.error('[ShopOpti+] SaaS sync error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getSaaSStatus() {
+    try {
+      const { extensionToken, syncedSettings, userStores, lastSyncAt } = 
+        await chrome.storage.local.get(['extensionToken', 'syncedSettings', 'userStores', 'lastSyncAt']);
+
+      return {
+        connected: !!extensionToken,
+        lastSync: lastSyncAt || null,
+        storesCount: userStores?.length || 0,
+        settings: syncedSettings || null
+      };
+    } catch (error) {
+      return { connected: false, error: error.message };
+    }
+  }
   // AUTH TOKEN METHODS (for content scripts)
   // ============================================
   

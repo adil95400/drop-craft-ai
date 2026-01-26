@@ -3,6 +3,8 @@
 // 100% AutoDS/Cartifind Feature Parity
 // MutationObserver for SPA/infinite scroll
 // Centralized selectors + Supplier search + AI content
+// ALWAYS SHOW BUTTONS - Auth check on action
+// Full Sync with ShopOpti SaaS
 // ============================================
 
 (function() {
@@ -11,7 +13,10 @@
   const VERSION = '5.7.0';
   const INJECTED_CLASS = 'shopopti-injected';
   const DEBOUNCE_MS = 300;
-  const MAX_REINJECT_ATTEMPTS = 5;
+  const MAX_REINJECT_ATTEMPTS = 8;
+  const INJECTION_RETRY_DELAY = 400;
+  const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
+  const APP_URL = 'https://shopopti.io';
   
   // State management
   let isInitialized = false;
@@ -20,6 +25,8 @@
   let reinjectAttempts = 0;
   let debounceTimer = null;
   let observer = null;
+  let syncedSettings = null;
+  let userStores = [];
   
   // ============================================
   // CENTRALIZED SELECTORS (dynamically loaded)
@@ -304,20 +311,54 @@
   // IMPORT HANDLERS
   // ============================================
   
+  async function ensureAuthenticated() {
+    if (isAuthenticated) return true;
+    
+    // Re-check auth status
+    isAuthenticated = await checkAuthStatus();
+    
+    if (!isAuthenticated) {
+      showToast('🔒 Connectez-vous sur ShopOpti pour importer', 'info');
+      
+      // Open ShopOpti auth page
+      try {
+        await sendMessage({ type: 'OPEN_AUTH_PAGE' });
+      } catch (e) {
+        window.open(`${APP_URL}/auth/extension`, '_blank');
+      }
+      return false;
+    }
+    
+    return true;
+  }
+  
   async function handleQuickImport(button, url) {
+    // Check auth before import
+    if (!await ensureAuthenticated()) {
+      return;
+    }
+    
     setButtonLoading(button, true);
     
     try {
       const response = await sendMessage({
         type: 'IMPORT_FROM_URL',
         url,
-        options: { autoOptimize: true, extractReviews: true, extractVariants: true }
+        options: { 
+          autoOptimize: true, 
+          extractReviews: true, 
+          extractVariants: true,
+          targetStores: userStores.map(s => s.id)
+        }
       });
       
       if (response.success) {
         setButtonSuccess(button);
         showToast(`✓ Produit importé!${response.productId ? ` (ID: ${response.productId.substring(0, 8)}...)` : ''}`, 'success');
         sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId });
+        
+        // Sync with SaaS
+        syncWithSaaS('product_imported', { productId: response.productId, url });
       } else {
         throw new Error(response.error || 'Import échoué');
       }
@@ -982,15 +1023,14 @@
   }
   
   // ============================================
-  // MAIN INJECTION
+  // MAIN INJECTION - ALWAYS INJECT BUTTONS
   // ============================================
   
   function injectButtons() {
-    if (!isAuthenticated) return;
-    
     currentPlatform = detectPlatform();
     if (!currentPlatform) return;
     
+    // ALWAYS inject buttons - auth check happens on action
     if (isProductPage()) {
       injectProductPageButton(currentPlatform);
     } else {
@@ -1019,6 +1059,100 @@
   }
   
   // ============================================
+  // SAAS SYNC
+  // ============================================
+  
+  async function syncWithSaaS(action, data = {}) {
+    try {
+      await sendMessage({
+        type: 'SYNC_DATA',
+        action,
+        data,
+        timestamp: new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('[ShopOpti+] SaaS sync failed:', e);
+    }
+  }
+  
+  async function loadSyncedSettings() {
+    try {
+      const response = await sendMessage({ type: 'GET_SETTINGS' });
+      if (response?.settings) {
+        syncedSettings = response.settings;
+      }
+      
+      const storesResponse = await sendMessage({ type: 'GET_USER_STORES' });
+      if (storesResponse?.stores) {
+        userStores = storesResponse.stores;
+      }
+    } catch (e) {
+      console.warn('[ShopOpti+] Failed to load settings:', e);
+    }
+  }
+  
+  // ============================================
+  // FLOATING SIDEBAR - Always visible
+  // ============================================
+  
+  function createFloatingSidebar() {
+    if (document.getElementById('shopopti-sidebar')) return;
+    
+    const sidebar = document.createElement('div');
+    sidebar.id = 'shopopti-sidebar';
+    sidebar.className = 'shopopti-quick-panel';
+    sidebar.innerHTML = `
+      <button class="shopopti-quick-btn" data-action="import" title="Import rapide">
+        📦
+      </button>
+      <button class="shopopti-quick-btn" data-action="suppliers" title="Rechercher fournisseurs">
+        🔍
+      </button>
+      <button class="shopopti-quick-btn" data-action="compare" title="Comparer les prix">
+        💰
+      </button>
+      <button class="shopopti-quick-btn" data-action="dashboard" title="Tableau de bord">
+        📊
+      </button>
+      <button class="shopopti-quick-btn" data-action="settings" title="Paramètres">
+        ⚙️
+      </button>
+    `;
+    
+    sidebar.querySelectorAll('.shopopti-quick-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const action = btn.dataset.action;
+        
+        switch (action) {
+          case 'import':
+            if (isProductPage()) {
+              const mainBtn = document.querySelector('.shopopti-main-btn');
+              if (mainBtn) mainBtn.click();
+            } else {
+              showToast('Allez sur une page produit pour importer', 'info');
+            }
+            break;
+          case 'suppliers':
+            await handleFindSuppliers(window.location.href);
+            break;
+          case 'compare':
+            await handleComparePrice(window.location.href);
+            break;
+          case 'dashboard':
+            window.open(`${APP_URL}/dashboard`, '_blank');
+            break;
+          case 'settings':
+            window.open(`${APP_URL}/settings`, '_blank');
+            break;
+        }
+      });
+    });
+    
+    document.body.appendChild(sidebar);
+  }
+  
+  // ============================================
   // INITIALIZATION
   // ============================================
   
@@ -1036,30 +1170,56 @@
     
     console.log(`[ShopOpti+] Platform: ${currentPlatform}`);
     
-    isAuthenticated = await checkAuthStatus();
+    // Inject styles first - ALWAYS
+    injectStyles();
     
-    if (!isAuthenticated) {
-      console.log('[ShopOpti+] Not authenticated');
-      injectStyles();
-      showToast('ShopOpti+: Connectez-vous pour activer l\'import', 'info');
-      return;
+    // Check auth status (non-blocking for UI)
+    isAuthenticated = await checkAuthStatus();
+    console.log(`[ShopOpti+] Auth status: ${isAuthenticated ? 'connected' : 'not connected'}`);
+    
+    // Load synced settings if authenticated
+    if (isAuthenticated) {
+      await loadSyncedSettings();
     }
     
-    console.log('[ShopOpti+] Authenticated - injecting UI');
-    
-    injectStyles();
+    // ALWAYS inject buttons - auth check happens on action
     injectButtons();
+    
+    // Create floating sidebar for quick actions
+    createFloatingSidebar();
+    
+    // Setup observers for SPA navigation
     setupMutationObserver();
     setupUrlChangeDetection();
     
-    console.log(`[ShopOpti+ v${VERSION}] Ready`);
+    // Show welcome message
+    if (!isAuthenticated) {
+      showToast('🚀 ShopOpti+ actif - Connectez-vous pour importer', 'info');
+    } else {
+      console.log('[ShopOpti+] Authenticated with', userStores.length, 'stores');
+    }
+    
+    // Periodic re-injection for dynamic pages
+    setInterval(() => {
+      if (!document.querySelector(`.shopopti-${currentPlatform}-btn`) && isProductPage()) {
+        console.log('[ShopOpti+] Re-injecting buttons...');
+        injectButtons();
+      }
+    }, 3000);
+    
+    console.log(`[ShopOpti+ v${VERSION}] Ready on ${currentPlatform}`);
   }
   
-  // Start
+  // Start immediately
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    init();
+    // Use requestIdleCallback for better performance
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(init, { timeout: 500 });
+    } else {
+      setTimeout(init, 100);
+    }
   }
   
 })();
