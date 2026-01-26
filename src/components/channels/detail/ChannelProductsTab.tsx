@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { Package, RefreshCw, Loader2, Search, Filter, Grid3X3, List, Image as ImageIcon, Check } from 'lucide-react'
+import { Package, RefreshCw, Loader2, Search, Filter, Grid3X3, List, Image as ImageIcon, Check, CheckSquare, Square } from 'lucide-react'
 import { useState, useMemo, useCallback } from 'react'
+import { ChannelBulkActions } from './ChannelBulkActions'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +49,13 @@ export function ChannelProductsTab({
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    )
+  }
 
   const filteredProducts = useMemo(() => {
     let filtered = products
@@ -191,6 +199,17 @@ export function ChannelProductsTab({
       </CardHeader>
 
       <CardContent className="pt-0">
+        {/* Bulk Actions */}
+        <ChannelBulkActions
+          products={filteredProducts}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          onAction={async (action, ids, params) => {
+            console.log('Bulk action:', action, ids, params)
+            // TODO: Implement real bulk actions
+          }}
+        />
+
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
@@ -210,8 +229,22 @@ export function ChannelProductsTab({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: Math.min(index * 0.03, 0.3) }}
-                    className="flex items-center gap-4 p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-all group"
+                    onClick={() => toggleSelection(product.id)}
+                    className={cn(
+                      "flex items-center gap-4 p-4 border rounded-xl hover:bg-muted/30 transition-all group cursor-pointer",
+                      selectedIds.includes(product.id) 
+                        ? "border-primary bg-primary/5" 
+                        : "border-border/50"
+                    )}
                   >
+                    {/* Selection checkbox */}
+                    <div className="flex items-center justify-center w-5 h-5">
+                      {selectedIds.includes(product.id) ? (
+                        <CheckSquare className="h-5 w-5 text-primary" />
+                      ) : (
+                        <Square className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
+                      )}
+                    </div>
                     <div className="w-14 h-14 rounded-xl bg-muted overflow-hidden flex-shrink-0 border border-border/30 [&.fallback-active_img]:hidden [&.fallback-active_[data-fallback]]:flex">
                       {product.image_url ? (
                         <img 
