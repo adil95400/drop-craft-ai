@@ -15,14 +15,14 @@ interface SyncRule {
   id: string
   user_id: string
   name: string
-  source_type: 'shopify' | 'woocommerce' | 'bigbuy' | 'aliexpress' | 'internal'
-  target_type: 'shopify' | 'woocommerce' | 'bigbuy' | 'aliexpress' | 'internal'
+  source_type: string
+  target_type: string
   sync_type: 'stock' | 'price' | 'both'
   frequency_minutes: number
   is_active: boolean
   conflict_resolution: 'source_wins' | 'target_wins' | 'highest_wins' | 'manual'
+  integration_id?: string
   last_sync_at?: string
-  next_sync_at?: string
   success_rate: number
   configuration: any
 }
@@ -42,6 +42,112 @@ interface SyncJob {
   sync_details: any
 }
 
+// Fetch real external stock from integration
+async function getExternalStock(rule: SyncRule, sku: string): Promise<number | null> {
+  if (!rule.integration_id) {
+    return null
+  }
+
+  // Get integration credentials
+  const { data: integration } = await supabase
+    .from('integrations')
+    .select('platform, config, store_url')
+    .eq('id', rule.integration_id)
+    .single()
+
+  if (!integration) {
+    console.log(`No integration found for rule ${rule.id}`)
+    return null
+  }
+
+  // Get stock from supplier_products or product_channel_mappings
+  const { data: mapping } = await supabase
+    .from('product_channel_mappings')
+    .select('external_product_id, last_synced_stock')
+    .eq('integration_id', rule.integration_id)
+    .eq('local_sku', sku)
+    .single()
+
+  if (mapping?.last_synced_stock !== undefined) {
+    return mapping.last_synced_stock
+  }
+
+  // Fall back to supplier_products
+  const { data: supplierProduct } = await supabase
+    .from('supplier_products')
+    .select('stock_quantity')
+    .eq('sku', sku)
+    .single()
+
+  return supplierProduct?.stock_quantity ?? null
+}
+
+// Fetch real external price from integration
+async function getExternalPrice(rule: SyncRule, sku: string): Promise<number | null> {
+  if (!rule.integration_id) {
+    return null
+  }
+
+  // Get last synced price from mappings
+  const { data: mapping } = await supabase
+    .from('product_channel_mappings')
+    .select('external_product_id, last_synced_price')
+    .eq('integration_id', rule.integration_id)
+    .eq('local_sku', sku)
+    .single()
+
+  if (mapping?.last_synced_price !== undefined) {
+    return mapping.last_synced_price
+  }
+
+  // Fall back to supplier_products
+  const { data: supplierProduct } = await supabase
+    .from('supplier_products')
+    .select('selling_price')
+    .eq('sku', sku)
+    .single()
+
+  return supplierProduct?.selling_price ?? null
+}
+
+// Update external stock via integration
+async function updateExternalStock(rule: SyncRule, sku: string, stock: number): Promise<boolean> {
+  console.log(`Updating external stock for ${sku}: ${stock}`)
+  
+  // Queue sync to channel
+  await supabase
+    .from('unified_sync_queue')
+    .insert({
+      user_id: rule.user_id,
+      sync_type: 'stock',
+      entity_type: 'product',
+      action: 'update',
+      priority: 2,
+      payload: { sku, stock_quantity: stock, integration_id: rule.integration_id }
+    })
+
+  return true
+}
+
+// Update external price via integration
+async function updateExternalPrice(rule: SyncRule, sku: string, price: number): Promise<boolean> {
+  console.log(`Updating external price for ${sku}: ${price}`)
+  
+  // Queue sync to channel
+  await supabase
+    .from('unified_sync_queue')
+    .insert({
+      user_id: rule.user_id,
+      sync_type: 'price',
+      entity_type: 'product',
+      action: 'update',
+      priority: 3,
+      payload: { sku, price, integration_id: rule.integration_id }
+    })
+
+  return true
+}
+
 async function processStockSync(rule: SyncRule, direction: 'source_to_target' | 'target_to_source') {
   console.log(`Processing stock sync for rule ${rule.id}, direction: ${direction}`)
   
@@ -55,10 +161,10 @@ async function processStockSync(rule: SyncRule, direction: 'source_to_target' | 
   try {
     // Get products that need stock sync
     const { data: products, error: productsError } = await supabase
-      .from('imported_products')
-      .select('*')
+      .from('products')
+      .select('id, sku, stock_quantity, updated_at')
       .eq('user_id', rule.user_id)
-      .neq('stock_quantity', null)
+      .not('stock_quantity', 'is', null)
       .limit(100)
 
     if (productsError) {
@@ -70,18 +176,25 @@ async function processStockSync(rule: SyncRule, direction: 'source_to_target' | 
       return results
     }
 
-    // Process each product
     for (const product of products) {
       try {
-        // Simulate external API call to get/update stock
         const externalStock = await getExternalStock(rule, product.sku)
         const currentStock = product.stock_quantity || 0
+
+        if (externalStock === null) {
+          results.details.push({
+            product_id: product.id,
+            sku: product.sku,
+            skipped: true,
+            reason: 'No external stock data available'
+          })
+          continue
+        }
 
         let newStock = currentStock
         let hasConflict = false
 
         if (direction === 'source_to_target') {
-          // Update local stock from external source
           if (externalStock !== currentStock) {
             if (rule.conflict_resolution === 'source_wins') {
               newStock = externalStock
@@ -93,14 +206,12 @@ async function processStockSync(rule: SyncRule, direction: 'source_to_target' | 
             }
           }
         } else {
-          // Update external stock from local
           await updateExternalStock(rule, product.sku, currentStock)
         }
 
         if (!hasConflict && newStock !== currentStock) {
-          // Update local stock
           const { error: updateError } = await supabase
-            .from('imported_products')
+            .from('products')
             .update({ 
               stock_quantity: newStock,
               updated_at: new Date().toISOString()
@@ -154,12 +265,11 @@ async function processPriceSync(rule: SyncRule, direction: 'source_to_target' | 
   }
 
   try {
-    // Get products that need price sync
     const { data: products, error: productsError } = await supabase
-      .from('imported_products')
-      .select('*')
+      .from('products')
+      .select('id, sku, price, updated_at')
       .eq('user_id', rule.user_id)
-      .neq('price', null)
+      .not('price', 'is', null)
       .limit(100)
 
     if (productsError) {
@@ -171,18 +281,25 @@ async function processPriceSync(rule: SyncRule, direction: 'source_to_target' | 
       return results
     }
 
-    // Process each product
     for (const product of products) {
       try {
-        // Simulate external API call to get/update price
         const externalPrice = await getExternalPrice(rule, product.sku)
         const currentPrice = parseFloat(product.price) || 0
+
+        if (externalPrice === null) {
+          results.details.push({
+            product_id: product.id,
+            sku: product.sku,
+            skipped: true,
+            reason: 'No external price data available'
+          })
+          continue
+        }
 
         let newPrice = currentPrice
         let hasConflict = false
 
         if (direction === 'source_to_target') {
-          // Update local price from external source
           if (Math.abs(externalPrice - currentPrice) > 0.01) {
             if (rule.conflict_resolution === 'source_wins') {
               newPrice = externalPrice
@@ -194,14 +311,12 @@ async function processPriceSync(rule: SyncRule, direction: 'source_to_target' | 
             }
           }
         } else {
-          // Update external price from local
           await updateExternalPrice(rule, product.sku, currentPrice)
         }
 
         if (!hasConflict && Math.abs(newPrice - currentPrice) > 0.01) {
-          // Update local price
           const { error: updateError } = await supabase
-            .from('imported_products')
+            .from('products')
             .update({ 
               price: newPrice,
               updated_at: new Date().toISOString()
@@ -244,42 +359,12 @@ async function processPriceSync(rule: SyncRule, direction: 'source_to_target' | 
   return results
 }
 
-// Simulate external API calls
-async function getExternalStock(rule: SyncRule, sku: string): Promise<number> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100))
-  
-  // Return random stock between 0-100 for demo
-  return Math.floor(Math.random() * 101)
-}
-
-async function getExternalPrice(rule: SyncRule, sku: string): Promise<number> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100))
-  
-  // Return random price between 10-500 for demo
-  return Math.round((Math.random() * 490 + 10) * 100) / 100
-}
-
-async function updateExternalStock(rule: SyncRule, sku: string, stock: number): Promise<void> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 150))
-  console.log(`Updated external stock for ${sku}: ${stock}`)
-}
-
-async function updateExternalPrice(rule: SyncRule, sku: string, price: number): Promise<void> {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 150))
-  console.log(`Updated external price for ${sku}: ${price}`)
-}
-
 async function executeSyncRule(rule: SyncRule): Promise<SyncJob> {
   const jobId = crypto.randomUUID()
   const startTime = new Date().toISOString()
 
   console.log(`Starting sync job ${jobId} for rule ${rule.id}`)
 
-  // Create sync job record
   const syncJob: SyncJob = {
     id: jobId,
     rule_id: rule.id,
@@ -299,19 +384,16 @@ async function executeSyncRule(rule: SyncRule): Promise<SyncJob> {
       price: { processed: 0, failed: 0, conflicts: 0, details: [] }
     }
 
-    // Process stock sync if needed
     if (rule.sync_type === 'stock' || rule.sync_type === 'both') {
       console.log('Processing stock sync...')
       results.stock = await processStockSync(rule, 'source_to_target')
     }
 
-    // Process price sync if needed
     if (rule.sync_type === 'price' || rule.sync_type === 'both') {
       console.log('Processing price sync...')
       results.price = await processPriceSync(rule, 'source_to_target')
     }
 
-    // Update sync job with results
     syncJob.status = 'completed'
     syncJob.completed_at = new Date().toISOString()
     syncJob.processed_items = results.stock.processed + results.price.processed
@@ -319,18 +401,13 @@ async function executeSyncRule(rule: SyncRule): Promise<SyncJob> {
     syncJob.conflicts = results.stock.conflicts + results.price.conflicts
     syncJob.sync_details = results
 
-    // Update rule's last sync time and success rate
-    const totalItems = syncJob.processed_items + syncJob.failed_items
-    const successRate = totalItems > 0 ? (syncJob.processed_items / totalItems) * 100 : 100
-
-    // Log sync activity
     await supabase
       .from('activity_logs')
       .insert({
         user_id: rule.user_id,
         action: 'bidirectional_sync',
         description: `Sync completed: ${syncJob.processed_items} items processed, ${syncJob.failed_items} failed, ${syncJob.conflicts} conflicts`,
-        metadata: {
+        details: {
           rule_id: rule.id,
           rule_name: rule.name,
           sync_type: rule.sync_type,
@@ -352,14 +429,13 @@ async function executeSyncRule(rule: SyncRule): Promise<SyncJob> {
       stack: error.stack
     }
 
-    // Log error
     await supabase
       .from('activity_logs')
       .insert({
         user_id: rule.user_id,
         action: 'bidirectional_sync_error',
         description: `Sync failed: ${error.message}`,
-        metadata: {
+        details: {
           rule_id: rule.id,
           rule_name: rule.name,
           error: error.message,
@@ -373,7 +449,6 @@ async function executeSyncRule(rule: SyncRule): Promise<SyncJob> {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -382,7 +457,6 @@ serve(async (req) => {
     const { action, rule_id, user_id } = await req.json()
 
     if (action === 'execute_rule') {
-      // Execute a specific sync rule
       if (!rule_id) {
         return new Response(
           JSON.stringify({ error: 'rule_id is required' }),
@@ -393,22 +467,50 @@ serve(async (req) => {
         )
       }
 
-      // Mock rule data for demo
-      const mockRule: SyncRule = {
-        id: rule_id,
-        user_id: user_id || 'demo-user',
-        name: 'Demo Sync Rule',
+      // Fetch real rule from database
+      const { data: rule, error: ruleError } = await supabase
+        .from('sync_configurations')
+        .select(`
+          id,
+          user_id,
+          integration_id,
+          sync_products,
+          sync_stock,
+          sync_prices,
+          sync_frequency,
+          is_active,
+          conflict_resolution
+        `)
+        .eq('id', rule_id)
+        .single()
+
+      if (ruleError || !rule) {
+        return new Response(
+          JSON.stringify({ error: 'Sync rule not found' }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 404 
+          }
+        )
+      }
+
+      // Map to SyncRule interface
+      const syncRule: SyncRule = {
+        id: rule.id,
+        user_id: rule.user_id,
+        name: `Sync ${rule.id}`,
         source_type: 'internal',
-        target_type: 'shopify',
-        sync_type: 'both',
-        frequency_minutes: 15,
-        is_active: true,
-        conflict_resolution: 'source_wins',
-        success_rate: 95,
+        target_type: 'channel',
+        sync_type: rule.sync_stock && rule.sync_prices ? 'both' : (rule.sync_stock ? 'stock' : 'price'),
+        frequency_minutes: parseInt(rule.sync_frequency) || 15,
+        is_active: rule.is_active,
+        conflict_resolution: rule.conflict_resolution || 'source_wins',
+        integration_id: rule.integration_id,
+        success_rate: 100,
         configuration: {}
       }
 
-      const syncJob = await executeSyncRule(mockRule)
+      const syncJob = await executeSyncRule(syncRule)
 
       return new Response(
         JSON.stringify({
@@ -423,30 +525,45 @@ serve(async (req) => {
     }
 
     if (action === 'get_active_rules') {
-      // Return mock active rules for demo
-      const mockRules = [
-        {
-          id: '1',
-          name: 'Shopify ↔ Stock Central',
-          sync_type: 'both',
-          frequency_minutes: 15,
-          is_active: true,
-          next_sync_at: new Date(Date.now() + 15 * 60 * 1000).toISOString()
-        },
-        {
-          id: '2',
-          name: 'BigBuy → Catalogue',
-          sync_type: 'price',
-          frequency_minutes: 60,
-          is_active: true,
-          next_sync_at: new Date(Date.now() + 60 * 60 * 1000).toISOString()
-        }
-      ]
+      // Fetch real active rules from database
+      const { data: rules, error: rulesError } = await supabase
+        .from('sync_configurations')
+        .select(`
+          id,
+          user_id,
+          integration_id,
+          sync_products,
+          sync_stock,
+          sync_prices,
+          sync_frequency,
+          is_active,
+          last_full_sync_at,
+          platform
+        `)
+        .eq('user_id', user_id)
+        .eq('is_active', true)
+        .limit(50)
+
+      if (rulesError) {
+        throw rulesError
+      }
+
+      const formattedRules = (rules || []).map(r => ({
+        id: r.id,
+        name: `${r.platform || 'Channel'} Sync`,
+        sync_type: r.sync_stock && r.sync_prices ? 'both' : (r.sync_stock ? 'stock' : 'price'),
+        frequency_minutes: parseInt(r.sync_frequency) || 15,
+        is_active: r.is_active,
+        last_sync_at: r.last_full_sync_at,
+        next_sync_at: r.last_full_sync_at 
+          ? new Date(new Date(r.last_full_sync_at).getTime() + (parseInt(r.sync_frequency) || 15) * 60 * 1000).toISOString()
+          : null
+      }))
 
       return new Response(
         JSON.stringify({
           success: true,
-          rules: mockRules
+          rules: formattedRules
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
