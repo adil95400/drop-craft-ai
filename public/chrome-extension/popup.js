@@ -640,14 +640,17 @@ class ShopOptiPopup {
     
     const token = tokenInput?.value?.trim();
     
+    // Hide previous error
+    if (errorEl) errorEl.classList.add('hidden');
+    
     if (!token) {
-      this.showLoginError('Veuillez entrer votre token');
+      this.showLoginError('Veuillez entrer votre token d\'extension');
       return;
     }
     
-    // Basic token format validation
-    if (token.length < 32) {
-      this.showLoginError('Token invalide - trop court');
+    // Accept any token format (ext_xxx, UUID, or custom tokens - min 10 chars)
+    if (token.length < 10) {
+      this.showLoginError('Token trop court (minimum 10 caractères)');
       return;
     }
     
@@ -658,11 +661,13 @@ class ShopOptiPopup {
         <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="15"/>
         </svg>
-        <span>Validation...</span>
+        <span>Validation en cours...</span>
       `;
     }
     
     try {
+      console.log('[ShopOpti+] Validating token...');
+      
       // Validate token with backend
       const response = await fetch(`${this.API_URL}/extension-auth`, {
         method: 'POST',
@@ -670,10 +675,14 @@ class ShopOptiPopup {
           'Content-Type': 'application/json',
           'x-extension-token': token
         },
-        body: JSON.stringify({ action: 'validate_token' })
+        body: JSON.stringify({ 
+          action: 'validate_token',
+          data: { token }
+        })
       });
       
       const data = await response.json();
+      console.log('[ShopOpti+] Validation response:', data);
       
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Token invalide ou expiré');
@@ -698,7 +707,7 @@ class ShopOptiPopup {
       // Hide modal and update UI
       this.hideModal('loginModal');
       this.updateUI();
-      this.showToast('Connexion réussie!', 'success');
+      this.showToast('✓ Connexion réussie!', 'success');
       
       // Clear form
       if (tokenInput) tokenInput.value = '';
@@ -706,7 +715,7 @@ class ShopOptiPopup {
       
     } catch (error) {
       console.error('[ShopOpti+] Token validation error:', error);
-      this.showLoginError(error.message || 'Token invalide');
+      this.showLoginError(error.message || 'Token invalide - vérifiez et réessayez');
     } finally {
       this.isLoggingIn = false;
       if (submitBtn) {

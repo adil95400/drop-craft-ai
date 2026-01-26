@@ -41,8 +41,8 @@ function sanitizeToken(value: unknown): string | null {
   if (!value || typeof value !== 'string') {
     return null
   }
-  // Tokens should be alphanumeric with dashes
-  const sanitized = value.replace(/[^a-zA-Z0-9-]/g, '')
+  // Tokens can be alphanumeric with dashes and underscores (ext_xxx format)
+  const sanitized = value.replace(/[^a-zA-Z0-9\-_]/g, '')
   if (sanitized.length < 10 || sanitized.length > 100) {
     return null
   }
