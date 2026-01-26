@@ -456,12 +456,85 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return { error };
   };
 
+  /**
+   * Get user sessions - queries activity_logs for auth events
+   * Returns recent login sessions for the current user
+   */
   const getUserSessions = async () => {
-    return { data: [], error: null };
+    if (!user) return { data: [], error: new Error('User not authenticated') };
+
+    try {
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('entity_type', 'auth')
+        .in('action', ['user_login', 'SIGNED_IN'])
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      const sessions = (data || []).map(log => {
+        const details = log.details as Record<string, unknown> | null;
+        return {
+          id: log.id,
+          created_at: log.created_at,
+          user_agent: (details?.user_agent as string) || log.user_agent,
+          ip_address: log.ip_address,
+          is_current: false
+        };
+      });
+
+      return { data: sessions, error: null };
+    } catch (error) {
+      console.error('Failed to get user sessions:', error);
+      return { data: [], error };
+    }
   };
 
+  /**
+   * Revoke all user sessions except current
+   * Signs out user from all devices by invalidating refresh tokens
+   */
   const revokeUserSessions = async () => {
-    return { error: null };
+    if (!user) return { error: new Error('User not authenticated') };
+
+    try {
+      // Sign out globally - this invalidates all refresh tokens
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      
+      if (error) throw error;
+
+      // Log the security event
+      await supabase.from('activity_logs').insert({
+        user_id: user.id,
+        action: 'sessions_revoked',
+        entity_type: 'auth',
+        description: 'All user sessions revoked',
+        details: {
+          timestamp: new Date().toISOString(),
+          user_agent: navigator.userAgent
+        },
+        severity: 'warn',
+        source: 'client'
+      });
+
+      toast({
+        title: "Sessions révoquées",
+        description: "Toutes vos sessions ont été déconnectées. Veuillez vous reconnecter.",
+      });
+
+      return { error: null };
+    } catch (error) {
+      console.error('Failed to revoke sessions:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de révoquer les sessions.",
+        variant: "destructive"
+      });
+      return { error };
+    }
   };
 
   const value = useMemo<UnifiedAuthContextType>(() => ({
