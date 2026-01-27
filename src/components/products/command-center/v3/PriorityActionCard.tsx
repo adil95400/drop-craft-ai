@@ -1,12 +1,14 @@
 /**
- * Priority Action Card V3
- * Carte de priorité avec CTA principal, impact business et design premium
+ * Priority Action Card V3 - Prescriptive Edition
+ * Carte 100% actionnable : 1 problème, 1 impact, 1 CTA principal
+ * Style équilibré : CTA principal fort + lien secondaire discret
  */
 
+import { memo } from 'react'
 import { motion, Variants } from 'framer-motion'
 import { 
   LucideIcon, ChevronRight, AlertTriangle, Sparkles, 
-  DollarSign, RefreshCw, Zap, TrendingDown
+  DollarSign, RefreshCw, Zap, TrendingDown, ArrowRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -24,6 +26,7 @@ interface PriorityActionCardProps {
   onPrimaryAction: () => void
   onSecondaryAction: () => void
   isLoading?: boolean
+  isProcessing?: boolean
 }
 
 // Icônes par type
@@ -36,39 +39,43 @@ const CARD_ICONS: Record<PriorityCardType, LucideIcon> = {
   margin_loss: TrendingDown
 }
 
-// Styles par variant
+// Styles par variant - Couleurs plus vives et contrastées
 const VARIANT_STYLES = {
   destructive: {
-    bg: 'bg-gradient-to-br from-red-500/10 to-red-600/5',
-    border: 'border-red-500/30',
+    bg: 'bg-gradient-to-br from-red-500/15 to-red-600/5',
+    border: 'border-red-500/40',
     iconBg: 'bg-red-500/20',
     iconColor: 'text-red-500',
-    glow: 'hover:shadow-red-500/20',
-    pulseColor: 'bg-red-500'
+    glow: 'hover:shadow-red-500/30',
+    ctaBg: 'bg-red-500 hover:bg-red-600 text-white',
+    impactColor: 'text-red-600 dark:text-red-400'
   },
   warning: {
-    bg: 'bg-gradient-to-br from-orange-500/10 to-amber-500/5',
-    border: 'border-orange-500/30',
+    bg: 'bg-gradient-to-br from-orange-500/15 to-amber-500/5',
+    border: 'border-orange-500/40',
     iconBg: 'bg-orange-500/20',
     iconColor: 'text-orange-500',
-    glow: 'hover:shadow-orange-500/20',
-    pulseColor: 'bg-orange-500'
+    glow: 'hover:shadow-orange-500/30',
+    ctaBg: 'bg-orange-500 hover:bg-orange-600 text-white',
+    impactColor: 'text-orange-600 dark:text-orange-400'
   },
   info: {
-    bg: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/5',
-    border: 'border-blue-500/30',
+    bg: 'bg-gradient-to-br from-blue-500/15 to-cyan-500/5',
+    border: 'border-blue-500/40',
     iconBg: 'bg-blue-500/20',
     iconColor: 'text-blue-500',
-    glow: 'hover:shadow-blue-500/20',
-    pulseColor: 'bg-blue-500'
+    glow: 'hover:shadow-blue-500/30',
+    ctaBg: 'bg-blue-500 hover:bg-blue-600 text-white',
+    impactColor: 'text-blue-600 dark:text-blue-400'
   },
   primary: {
-    bg: 'bg-gradient-to-br from-purple-500/10 to-pink-500/5',
-    border: 'border-purple-500/30',
+    bg: 'bg-gradient-to-br from-purple-500/15 to-pink-500/5',
+    border: 'border-purple-500/40',
     iconBg: 'bg-purple-500/20',
     iconColor: 'text-purple-500',
-    glow: 'hover:shadow-purple-500/20',
-    pulseColor: 'bg-purple-500'
+    glow: 'hover:shadow-purple-500/30',
+    ctaBg: 'bg-purple-500 hover:bg-purple-600 text-white',
+    impactColor: 'text-purple-600 dark:text-purple-400'
   },
   muted: {
     bg: 'bg-muted/30',
@@ -76,7 +83,8 @@ const VARIANT_STYLES = {
     iconBg: 'bg-muted-foreground/20',
     iconColor: 'text-muted-foreground',
     glow: 'hover:shadow-muted/20',
-    pulseColor: 'bg-muted-foreground'
+    ctaBg: 'bg-muted-foreground hover:bg-muted-foreground/80 text-white',
+    impactColor: 'text-muted-foreground'
   }
 }
 
@@ -97,11 +105,12 @@ const iconVariants: Variants = {
   }
 }
 
-export function PriorityActionCard({
+export const PriorityActionCard = memo(function PriorityActionCard({
   card,
   onPrimaryAction,
   onSecondaryAction,
-  isLoading = false
+  isLoading = false,
+  isProcessing = false
 }: PriorityActionCardProps) {
   const config = PRIORITY_CARD_CONFIG[card.type]
   const styles = VARIANT_STYLES[config.variant]
@@ -118,23 +127,25 @@ export function PriorityActionCard({
         <TooltipTrigger asChild>
           <motion.div
             className={cn(
-              'relative p-5 rounded-2xl border-2 overflow-hidden',
-              'transition-shadow duration-300',
+              'relative p-4 sm:p-5 rounded-2xl border-2 overflow-hidden',
+              'transition-shadow duration-300 cursor-pointer',
               styles.bg,
               styles.border,
               styles.glow,
-              'hover:shadow-xl'
+              'hover:shadow-xl',
+              isProcessing && 'opacity-75 pointer-events-none'
             )}
             variants={cardVariants}
             initial="idle"
             whileHover="hover"
+            onClick={onPrimaryAction}
           >
             {/* Pulse indicator for critical */}
             {isPriorityCritical && (
               <motion.div
                 className={cn(
-                  'absolute top-3 right-3 w-2 h-2 rounded-full',
-                  styles.pulseColor
+                  'absolute top-3 right-3 w-2.5 h-2.5 rounded-full',
+                  config.variant === 'destructive' ? 'bg-red-500' : 'bg-orange-500'
                 )}
                 animate={{ 
                   scale: [1, 1.5, 1],
@@ -144,129 +155,160 @@ export function PriorityActionCard({
               />
             )}
             
-            {/* Header: Icon + Count */}
-            <div className="flex items-start justify-between mb-4">
+            {/* Header: Icon + Count - Plus compact */}
+            <div className="flex items-center justify-between mb-3">
               <motion.div 
                 className={cn(
-                  'w-12 h-12 rounded-xl flex items-center justify-center',
+                  'w-11 h-11 rounded-xl flex items-center justify-center',
                   styles.iconBg
                 )}
                 variants={iconVariants}
               >
-                <Icon className={cn('h-6 w-6', styles.iconColor)} />
+                <Icon className={cn('h-5 w-5', styles.iconColor)} />
               </motion.div>
               
-              <motion.span 
-                className={cn('text-3xl font-bold tabular-nums', styles.iconColor)}
+              <motion.div 
+                className="text-right"
                 key={card.count}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                {card.count.toLocaleString('fr-FR')}
-              </motion.span>
+                <span className={cn('text-2xl sm:text-3xl font-bold tabular-nums', styles.iconColor)}>
+                  {card.count.toLocaleString('fr-FR')}
+                </span>
+                <p className="text-[10px] text-muted-foreground -mt-1">produits</p>
+              </motion.div>
             </div>
             
-            {/* Title */}
-            <h3 className="text-lg font-semibold text-foreground mb-1">
+            {/* Title - Plus grand et impactant */}
+            <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
               {config.title}
             </h3>
             
-            {/* Impact Label */}
-            <p className={cn('text-sm font-medium mb-1', styles.iconColor)}>
-              {config.impactLabel}
-            </p>
-            
-            {/* Impact Detail */}
-            <p className="text-xs text-muted-foreground mb-4">
+            {/* Impact - Visible et clair */}
+            <p className={cn('text-sm font-semibold mb-3', styles.impactColor)}>
               {card.impactLabel}
             </p>
             
-            {/* Actions */}
-            <div className="flex items-center gap-2">
+            {/* Actions - CTA principal dominant + secondaire discret */}
+            <div className="space-y-2">
+              {/* CTA Principal - Full width, couleur forte */}
               <Button
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation()
                   onPrimaryAction()
                 }}
-                disabled={isLoading}
+                disabled={isLoading || isProcessing}
                 className={cn(
-                  'flex-1 gap-1.5 font-medium',
-                  isPriorityCritical && 'animate-pulse'
+                  'w-full gap-2 font-semibold h-10',
+                  styles.ctaBg,
+                  'shadow-lg'
                 )}
               >
-                {config.ctaPrimary}
-                <ChevronRight className="h-4 w-4" />
+                {isProcessing ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </motion.div>
+                ) : (
+                  <>
+                    {config.ctaPrimary}
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
               
-              <Button
-                variant="ghost"
-                size="sm"
+              {/* Lien secondaire - Discret */}
+              <button
                 onClick={(e) => {
                   e.stopPropagation()
                   onSecondaryAction()
                 }}
-                disabled={isLoading}
-                className="text-muted-foreground hover:text-foreground"
+                disabled={isLoading || isProcessing}
+                className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
               >
-                {config.ctaSecondary}
-              </Button>
+                {config.ctaSecondary} →
+              </button>
             </div>
           </motion.div>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-xs">
-          <p>{config.tooltip}</p>
+          <p className="font-medium mb-1">{config.title}</p>
+          <p className="text-xs text-muted-foreground">{config.tooltip}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   )
-}
+})
 
 /**
- * Grille responsive des cartes de priorité
+ * Grille responsive des cartes de priorité - Optimized
  */
 interface PriorityCardsGridProps {
   cards: PriorityCard[]
   onCardAction: (card: PriorityCard, action: 'primary' | 'secondary') => void
   isLoading?: boolean
   maxCards?: number
+  processingCardType?: PriorityCardType | null
 }
 
-export function PriorityCardsGrid({
+export const PriorityCardsGrid = memo(function PriorityCardsGrid({
   cards,
   onCardAction,
   isLoading = false,
-  maxCards = 4
+  maxCards = 4,
+  processingCardType = null
 }: PriorityCardsGridProps) {
   // Filtrer les cartes avec count > 0 et limiter
   const visibleCards = cards
     .filter(c => c.count > 0)
     .slice(0, maxCards)
   
-  if (visibleCards.length === 0) return null
+  if (visibleCards.length === 0) {
+    return (
+      <motion.div 
+        className="p-6 rounded-2xl bg-emerald-500/5 border-2 border-emerald-500/30 text-center"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-3">
+          <Sparkles className="h-6 w-6 text-emerald-500" />
+        </div>
+        <h3 className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+          Catalogue optimisé
+        </h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Aucune action prioritaire requise. Continuez ainsi !
+        </p>
+      </motion.div>
+    )
+  }
   
   return (
     <motion.div 
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ staggerChildren: 0.1 }}
     >
       {visibleCards.map((card, index) => (
         <motion.div
           key={card.type}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
+          transition={{ delay: index * 0.08 }}
         >
           <PriorityActionCard
             card={card}
             onPrimaryAction={() => onCardAction(card, 'primary')}
             onSecondaryAction={() => onCardAction(card, 'secondary')}
             isLoading={isLoading}
+            isProcessing={processingCardType === card.type}
           />
         </motion.div>
       ))}
     </motion.div>
   )
-}
+})

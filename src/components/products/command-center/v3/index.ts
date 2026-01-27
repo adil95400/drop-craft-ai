@@ -1,6 +1,7 @@
 /**
  * Command Center V3 - Exports
- * Phase 1 + Phase 2 (AI Brain) + Phase 3 (Predictive) + Optimizations
+ * Hub de pilotage business prescriptif
+ * Phase 1 + Phase 2 (AI Brain) + Phase 3 (Predictive) + Phase 4 (Prescriptive)
  */
 
 // Utilities (shared calculations)
@@ -50,6 +51,13 @@ export { PredictiveAlertsPanel } from './PredictiveAlertsPanel'
 export { ROIDashboardPanel } from './ROIDashboardPanel'
 export { TrendAnalysisPanel } from './TrendAnalysisPanel'
 export { PredictiveCommandCenter } from './PredictiveCommandCenter'
+
+// Phase 4: Prescriptive - 100% Actionnable
+export { PrescriptiveCommandCenterV3 } from './PrescriptiveCommandCenterV3'
+export { PrescriptiveHeader } from './PrescriptiveHeader'
+export { CollapsibleKPIBar } from './CollapsibleKPIBar'
+export { ActionCelebrationModal } from './ActionCelebrationModal'
+export type { ActionResult } from './ActionCelebrationModal'
 
 // Components
 export { PriorityActionCard, PriorityCardsGrid } from './PriorityActionCard'
