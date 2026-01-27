@@ -1,12 +1,14 @@
 /**
  * Category Mapping Dashboard
  * Interface principale de gestion du mapping de catégories
+ * Phase 2: Ajout de l'onglet IA
  */
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Plus, 
   Play, 
@@ -17,6 +19,7 @@ import {
   Sparkles,
   CheckCircle2,
   ArrowRight,
+  Brain,
 } from 'lucide-react';
 import { 
   useCategoryMappings, 
@@ -27,6 +30,7 @@ import {
 } from '@/hooks/useCategoryMapping';
 import { CreateMappingDialog } from './CreateMappingDialog';
 import { MappingRulesEditor } from './MappingRulesEditor';
+import { CategoryMappingAIPanel } from './CategoryMappingAIPanel';
 import { CategoryMapping } from '@/services/CategoryMappingService';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -85,61 +89,78 @@ export function CategoryMappingDashboard() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <FolderTree className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats?.totalMappings || 0}</p>
-                <p className="text-sm text-muted-foreground">Mappings totaux</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats?.activeMappings || 0}</p>
-                <p className="text-sm text-muted-foreground">Mappings actifs</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Package className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats?.totalProductsMapped || 0}</p>
-                <p className="text-sm text-muted-foreground">Produits mappés</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-orange-500/10 rounded-lg">
-                <Sparkles className="h-5 w-5 text-orange-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats?.pendingSuggestions || 0}</p>
-                <p className="text-sm text-muted-foreground">Suggestions IA</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Tabs defaultValue="ai" className="space-y-6">
+        <TabsList className="bg-muted/50">
+          <TabsTrigger value="ai" className="gap-2">
+            <Brain className="h-4 w-4" />
+            Intelligence IA
+          </TabsTrigger>
+          <TabsTrigger value="mappings" className="gap-2">
+            <FolderTree className="h-4 w-4" />
+            Mappings
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="ai" className="space-y-6">
+          <CategoryMappingAIPanel />
+        </TabsContent>
+
+        <TabsContent value="mappings" className="space-y-6">
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <FolderTree className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats?.totalMappings || 0}</p>
+                    <p className="text-sm text-muted-foreground">Mappings totaux</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats?.activeMappings || 0}</p>
+                    <p className="text-sm text-muted-foreground">Mappings actifs</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <Package className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats?.totalProductsMapped || 0}</p>
+                    <p className="text-sm text-muted-foreground">Produits mappés</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 bg-orange-500/10 rounded-lg">
+                    <Sparkles className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats?.pendingSuggestions || 0}</p>
+                    <p className="text-sm text-muted-foreground">Suggestions IA</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
       {/* Mappings List */}
       {isLoading ? (
@@ -235,6 +256,8 @@ export function CategoryMappingDashboard() {
           ))}
         </div>
       )}
+        </TabsContent>
+      </Tabs>
 
       {/* Dialogs */}
       <CreateMappingDialog 

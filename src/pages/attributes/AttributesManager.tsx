@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Tag, 
   ArrowLeft,
@@ -11,13 +12,15 @@ import {
   XCircle,
   AlertCircle,
   Target,
-  TrendingUp
+  TrendingUp,
+  Brain
 } from 'lucide-react'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { AttributesAIPanel } from '@/components/attributes'
 import { motion } from 'framer-motion'
 
 const StatCard = ({ 
@@ -132,36 +135,53 @@ export default function AttributesManager() {
         </Button>
       }
     >
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <StatCard
-          title="Attributs Générés"
-          value={totalAttributes}
-          subtitle="Produits avec attributs IA"
-          icon={Tag}
-        />
-        <StatCard
-          title="Approuvés"
-          value={approvedCount}
-          subtitle="Prêts pour indexation"
-          icon={CheckCircle2}
-          color="green"
-        />
-        <StatCard
-          title="En Attente"
-          value={totalAttributes - approvedCount}
-          subtitle="À valider"
-          icon={AlertCircle}
-          color="yellow"
-        />
-        <StatCard
-          title="Confiance Moy."
-          value={`${avgConfidence}%`}
-          subtitle="Catégorisation IA"
-          icon={Target}
-          color="blue"
-        />
-      </div>
+      <Tabs defaultValue="ai" className="space-y-6">
+        <TabsList className="bg-muted/50">
+          <TabsTrigger value="ai" className="gap-2">
+            <Brain className="h-4 w-4" />
+            Intelligence IA
+          </TabsTrigger>
+          <TabsTrigger value="attributes" className="gap-2">
+            <Tag className="h-4 w-4" />
+            Attributs
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="ai" className="space-y-6">
+          <AttributesAIPanel />
+        </TabsContent>
+
+        <TabsContent value="attributes" className="space-y-6">
+          {/* Stats */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <StatCard
+              title="Attributs Générés"
+              value={totalAttributes}
+              subtitle="Produits avec attributs IA"
+              icon={Tag}
+            />
+            <StatCard
+              title="Approuvés"
+              value={approvedCount}
+              subtitle="Prêts pour indexation"
+              icon={CheckCircle2}
+              color="green"
+            />
+            <StatCard
+              title="En Attente"
+              value={totalAttributes - approvedCount}
+              subtitle="À valider"
+              icon={AlertCircle}
+              color="yellow"
+            />
+            <StatCard
+              title="Confiance Moy."
+              value={`${avgConfidence}%`}
+              subtitle="Catégorisation IA"
+              icon={Target}
+              color="blue"
+            />
+          </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -257,6 +277,8 @@ export default function AttributesManager() {
           </CardContent>
         </Card>
       </motion.div>
+        </TabsContent>
+      </Tabs>
     </ChannablePageWrapper>
   )
 }
