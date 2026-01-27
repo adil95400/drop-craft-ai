@@ -1,5 +1,5 @@
 /**
- * Price Rules Dashboard
+ * Price Rules Dashboard - Enhanced with AI
  */
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,16 +8,17 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Plus, Play, Eye, Trash2, DollarSign, TrendingUp, Package, Zap, Link2 
+  Plus, Play, Eye, Trash2, DollarSign, Link2, Brain 
 } from 'lucide-react';
 import { 
-  usePriceRules, usePriceRulesStats, useUpdatePriceRule, 
+  usePriceRules, useUpdatePriceRule, 
   useDeletePriceRule, useApplyPriceRule, useSimulatePriceRule 
 } from '@/hooks/usePriceRules';
 import { CreatePriceRuleDialog } from './CreatePriceRuleDialog';
 import { PriceRuleLogsPanel } from './PriceRuleLogsPanel';
 import { PriceSyncPanel } from './PriceSyncPanel';
-import { PriceRule } from '@/services/PriceRulesService';
+import { AIRecommendationsPanel } from './AIRecommendationsPanel';
+import { EnhancedStatsGrid } from './EnhancedStatsGrid';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -29,7 +30,6 @@ const ruleTypeLabels: Record<string, string> = {
 export function PriceRulesDashboard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { data: rules = [], isLoading } = usePriceRules();
-  const { data: stats } = usePriceRulesStats();
   const updateRule = useUpdatePriceRule();
   const deleteRule = useDeletePriceRule();
   const applyRule = useApplyPriceRule();
@@ -48,32 +48,16 @@ export function PriceRulesDashboard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { icon: DollarSign, label: 'Règles totales', value: stats?.totalRules || 0, color: 'primary' },
-          { icon: Zap, label: 'Règles actives', value: stats?.activeRules || 0, color: 'green-500' },
-          { icon: Package, label: 'Produits affectés', value: stats?.totalProductsAffected || 0, color: 'blue-500' },
-          { icon: TrendingUp, label: "Applications aujourd'hui", value: stats?.recentApplications || 0, color: 'orange-500' },
-        ].map((stat, i) => (
-          <Card key={i}>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className={`p-2 bg-${stat.color}/10 rounded-lg`}>
-                  <stat.icon className={`h-5 w-5 text-${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Enhanced Stats with AI scoring */}
+      <EnhancedStatsGrid />
 
       <Tabs defaultValue="rules" className="space-y-4">
         <TabsList>
           <TabsTrigger value="rules">Mes règles</TabsTrigger>
+          <TabsTrigger value="ai" className="gap-1">
+            <Brain className="h-4 w-4" />
+            IA
+          </TabsTrigger>
           <TabsTrigger value="sync" className="gap-1">
             <Link2 className="h-4 w-4" />
             Sync Boutiques
@@ -134,6 +118,10 @@ export function PriceRulesDashboard() {
               </Card>
             ))
           )}
+        </TabsContent>
+
+        <TabsContent value="ai" className="space-y-4">
+          <AIRecommendationsPanel />
         </TabsContent>
 
         <TabsContent value="sync">
