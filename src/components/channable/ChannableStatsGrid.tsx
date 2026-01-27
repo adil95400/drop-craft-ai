@@ -79,7 +79,7 @@ export function ChannableStatsGrid({
                       stat.trend === 'neutral' && "bg-muted text-muted-foreground"
                     )}>
                       <TrendIcon className="h-3 w-3" />
-                      {stat.change > 0 ? '+' : ''}{stat.change}%
+                      {stat.change > 0 ? '+' : ''}{typeof stat.change === 'number' ? stat.change.toFixed(1) : stat.change}%
                     </div>
                   )}
                 </div>

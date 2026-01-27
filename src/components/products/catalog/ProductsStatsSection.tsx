@@ -59,7 +59,7 @@ export function ProductsStatsSection({ stats, auditStats, compact = true }: Prod
       value: stats.active.toLocaleString(),
       icon: CheckCircle,
       color: 'success',
-      change: stats.total > 0 ? ((stats.active / stats.total) * 100) : 0,
+      change: stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0,
       trend: 'neutral',
       changeLabel: '% du total'
     },
