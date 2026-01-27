@@ -1,6 +1,6 @@
 /**
  * Command Center - Exports
- * Phase 1, 2, 3 & 4 (Premium) Components
+ * Phase 1, 2, 3, 4 & V3 (Premium) Components
  */
 
 // Phase 1 - Core
@@ -25,6 +25,9 @@ export { StockPredictionsAlert } from './StockPredictionsAlert'
 // Phase 4 - Premium Enhancements
 export { BulkActionsBar } from './BulkActionsBar'
 export { RealTimeIndicator } from './RealTimeIndicator'
+
+// V3 - Command Center Premium
+export * from './v3'
 
 // Types
 export * from './types'

@@ -59,7 +59,9 @@ import {
   ROIMiniDashboard,
   StockPredictionsAlert,
   // Phase 4
-  BulkActionsBar
+  BulkActionsBar,
+  // V3
+  CommandCenterV3
 } from '@/components/products/command-center'
 
 // Stock Predictions Hook
@@ -132,6 +134,7 @@ export default function ChannableProductsPage() {
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [smartFilter, setSmartFilter] = useState<SmartFilterType>('all')
+  const [useV3CommandCenter] = useState(true) // V3 activé par défaut
 
   // Handler for view mode change with persistence
   const handleViewModeChange = useCallback((mode: ViewMode) => {
@@ -494,52 +497,62 @@ export default function ChannableProductsPage() {
         />
       ) : (
         <>
-          {/* 🆕 Command Center - À faire aujourd'hui */}
-          <CommandCenterSection
-            products={products}
-            auditResults={auditResults}
-            onCardClick={handleCommandCardClick}
-            isLoading={isLoading}
-          />
+          {/* 🆕 Command Center V3 - Centre de pilotage business */}
+          {useV3CommandCenter ? (
+            <CommandCenterV3
+              products={products}
+              auditResults={auditResults}
+              onFilterChange={setSmartFilter}
+              onProductSelect={setSelectedProducts}
+              isLoading={isLoading}
+            />
+          ) : (
+            <>
+              {/* Legacy Command Center V2 */}
+              <CommandCenterSection
+                products={products}
+                auditResults={auditResults}
+                onCardClick={handleCommandCardClick}
+                isLoading={isLoading}
+              />
 
-          {/* 🆕 Phase 3: IA Prédictive Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Alertes Stock Prédictives */}
-            <div className="lg:col-span-2">
-              {criticalAlerts.length > 0 && (
-                <StockPredictionsAlert
-                  alerts={criticalAlerts}
+              {/* Phase 3: IA Prédictive Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2">
+                  {criticalAlerts.length > 0 && (
+                    <StockPredictionsAlert
+                      alerts={criticalAlerts}
+                      onViewProduct={(id) => {
+                        const product = products.find(p => p.id === id)
+                        if (product) handleView(product)
+                      }}
+                      onReorder={handleStockReorder}
+                      maxVisible={3}
+                    />
+                  )}
+                  
+                  <div className={criticalAlerts.length > 0 ? 'mt-4' : ''}>
+                    <ROIMiniDashboard
+                      products={products}
+                      currency="€"
+                      isLoading={isLoading}
+                    />
+                  </div>
+                </div>
+                
+                <AIRecommendationsPanel
+                  recommendations={commandCenterData.recommendations}
+                  onActionClick={handleRecommendationAction}
                   onViewProduct={(id) => {
                     const product = products.find(p => p.id === id)
                     if (product) handleView(product)
                   }}
-                  onReorder={handleStockReorder}
-                  maxVisible={3}
-                />
-              )}
-              
-              {/* ROI Mini Dashboard */}
-              <div className={criticalAlerts.length > 0 ? 'mt-4' : ''}>
-                <ROIMiniDashboard
-                  products={products}
-                  currency="€"
+                  maxVisible={5}
                   isLoading={isLoading}
                 />
               </div>
-            </div>
-            
-            {/* Recommandations IA */}
-            <AIRecommendationsPanel
-              recommendations={commandCenterData.recommendations}
-              onActionClick={handleRecommendationAction}
-              onViewProduct={(id) => {
-                const product = products.find(p => p.id === id)
-                if (product) handleView(product)
-              }}
-              maxVisible={5}
-              isLoading={isLoading}
-            />
-          </div>
+            </>
+          )}
 
           {/* 🆕 Smart Filters Bar */}
           <SmartFiltersBar
