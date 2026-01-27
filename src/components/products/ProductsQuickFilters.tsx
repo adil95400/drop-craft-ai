@@ -1,3 +1,6 @@
+/**
+ * ProductsQuickFilters - Filtres rapides avec "À traiter" prioritaire (Sprint 4)
+ */
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,9 +13,12 @@ import {
   Sparkles,
   ShoppingCart,
   Globe,
-  X
+  X,
+  Zap,
+  Brain
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface QuickFilter {
   id: string;
@@ -20,6 +26,8 @@ interface QuickFilter {
   icon: React.ElementType;
   count?: number;
   color?: string;
+  isPrimary?: boolean;
+  emoji?: string;
 }
 
 interface ProductsQuickFiltersProps {
@@ -33,6 +41,7 @@ interface ProductsQuickFiltersProps {
     winners: number;
     trending: number;
     toOptimize: number;
+    toProcess?: number; // Sprint 4: À traiter
   };
   sources?: string[];
   activeSource?: string;
@@ -47,13 +56,25 @@ export function ProductsQuickFilters({
   activeSource,
   onSourceChange
 }: ProductsQuickFiltersProps) {
+  // Sprint 4: Primary "À traiter" filter first
+  const toProcessCount = counts.toProcess || counts.toOptimize + counts.lowStock;
+  
   const filters: QuickFilter[] = [
+    { 
+      id: 'toProcess', 
+      label: 'À traiter maintenant', 
+      icon: Zap, 
+      count: toProcessCount,
+      color: 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-700 border-amber-500/40 hover:from-amber-500/30 hover:to-orange-500/30',
+      isPrimary: true,
+      emoji: '🎯'
+    },
     { 
       id: 'all', 
       label: 'Tous', 
       icon: Package, 
       count: counts.all,
-      color: 'bg-primary/10 text-primary hover:bg-primary/20'
+      color: 'bg-muted text-foreground hover:bg-muted/80'
     },
     { 
       id: 'active', 
@@ -74,28 +95,32 @@ export function ProductsQuickFilters({
       label: 'Stock faible', 
       icon: AlertTriangle, 
       count: counts.lowStock,
-      color: 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20'
+      color: 'bg-red-500/10 text-red-600 hover:bg-red-500/20',
+      emoji: '⚠️'
     },
     { 
       id: 'winners', 
       label: 'Winners', 
       icon: Star, 
       count: counts.winners,
-      color: 'bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20'
+      color: 'bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20',
+      emoji: '⭐'
     },
     { 
       id: 'trending', 
       label: 'Tendance', 
       icon: TrendingUp, 
       count: counts.trending,
-      color: 'bg-purple-500/10 text-purple-600 hover:bg-purple-500/20'
+      color: 'bg-purple-500/10 text-purple-600 hover:bg-purple-500/20',
+      emoji: '📈'
     },
     { 
       id: 'toOptimize', 
-      label: 'À optimiser', 
+      label: 'Opportunités', 
       icon: Sparkles, 
       count: counts.toOptimize,
-      color: 'bg-red-500/10 text-red-600 hover:bg-red-500/20'
+      color: 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20',
+      emoji: '💰'
     }
   ];
 
@@ -108,6 +133,15 @@ export function ProductsQuickFilters({
 
   return (
     <div className="space-y-3">
+      {/* Sprint 4: AI Decision header */}
+      <div className="flex items-center gap-2 text-sm">
+        <Brain className="h-4 w-4 text-primary" />
+        <span className="font-medium text-foreground">Filtres décisionnels</span>
+        <Badge variant="outline" className="text-[10px] bg-purple-500/10 text-purple-600 border-purple-500/30">
+          IA
+        </Badge>
+      </div>
+      
       {/* Filtres principaux */}
       <div className="flex flex-wrap gap-2">
         {filters.map((filter) => {
@@ -115,27 +149,54 @@ export function ProductsQuickFilters({
           const isActive = activeFilter === filter.id;
           
           return (
-            <Button
+            <motion.div
               key={filter.id}
-              variant={isActive ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onFilterChange(filter.id)}
-              className={cn(
-                "gap-2 transition-all duration-200",
-                !isActive && filter.color
-              )}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <Icon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{filter.label}</span>
-              {filter.count !== undefined && filter.count > 0 && (
-                <Badge 
-                  variant={isActive ? 'secondary' : 'outline'} 
-                  className="h-5 min-w-[20px] px-1.5 text-xs"
-                >
-                  {filter.count}
-                </Badge>
-              )}
-            </Button>
+              <Button
+                variant={isActive ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onFilterChange(filter.id)}
+                className={cn(
+                  "gap-2 transition-all duration-200",
+                  filter.isPrimary && !isActive && "ring-2 ring-amber-500/30 ring-offset-1 ring-offset-background font-bold",
+                  !isActive && filter.color
+                )}
+              >
+                {/* Emoji for instant recognition */}
+                {filter.emoji && <span className="text-sm">{filter.emoji}</span>}
+                {!filter.emoji && <Icon className="h-3.5 w-3.5" />}
+                
+                <span className={cn(
+                  "hidden sm:inline",
+                  filter.isPrimary && "inline" // Always show primary label
+                )}>
+                  {filter.isPrimary ? filter.label : filter.label}
+                </span>
+                
+                {filter.count !== undefined && filter.count > 0 && (
+                  <Badge 
+                    variant={isActive ? 'secondary' : 'outline'} 
+                    className={cn(
+                      "h-5 min-w-[20px] px-1.5 text-xs font-bold",
+                      filter.isPrimary && !isActive && "bg-amber-500/20 text-amber-700 border-amber-500/30"
+                    )}
+                  >
+                    {filter.count}
+                  </Badge>
+                )}
+                
+                {/* Pulse for primary with items */}
+                {filter.isPrimary && filter.count && filter.count > 0 && !isActive && (
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1], opacity: [1, 0.6, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="h-2 w-2 rounded-full bg-amber-500"
+                  />
+                )}
+              </Button>
+            </motion.div>
           );
         })}
       </div>

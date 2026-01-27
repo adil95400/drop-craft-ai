@@ -37,7 +37,8 @@ import {
   ProductStatusData,
   ProductMicroInfo,
   ProductAIBadge as ProductAIBadgeType,
-  ProductAIBadgeComponent
+  ProductAIBadgeComponent,
+  DecisionBadge
 } from './command-center';
 
 interface EnhancedProductCardProps {
@@ -291,10 +292,10 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
             </Button>
           </motion.div>
 
-          {/* AI Badge V3 - or fallback to Score */}
+          {/* Sprint 4: Decision Badge - Lecture immédiate sans ouvrir la fiche */}
           <div className="absolute bottom-3 right-3">
             {aiBadge ? (
-              <ProductAIBadgeComponent badge={aiBadge} compact />
+              <DecisionBadge badge={aiBadge} size="sm" showLabel={true} />
             ) : (
               <TooltipProvider>
                 <Tooltip>
