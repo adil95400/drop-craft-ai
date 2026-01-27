@@ -1,15 +1,16 @@
 /**
  * Vue Standard du catalogue produits - Simplifiée sans boutons en double
  * Phase 2: Support du mode Business avec viewMode
+ * V3: Support des badges IA
  */
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Package, BarChart3 } from 'lucide-react'
+import { Package, BarChart3, Brain } from 'lucide-react'
 import { ProductsGridView } from '@/components/products/ProductsGridView'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { FilterState } from '@/hooks/useProductFilters'
-import { ViewMode } from '@/components/products/command-center'
+import { ViewMode, ProductAIBadge } from '@/components/products/command-center'
 
 interface ProductsStandardViewProps {
   products: UnifiedProduct[]
@@ -30,6 +31,9 @@ interface ProductsStandardViewProps {
   onSelectionChange?: (ids: string[]) => void
   // Phase 2: View mode
   viewMode?: ViewMode
+  // V3: AI Badges
+  productBadges?: Map<string, ProductAIBadge>
+  isAISorted?: boolean
 }
 
 export function ProductsStandardView({
@@ -48,7 +52,9 @@ export function ProductsStandardView({
   isLoading,
   selectedProducts = [],
   onSelectionChange,
-  viewMode = 'standard'
+  viewMode = 'standard',
+  productBadges,
+  isAISorted = false
 }: ProductsStandardViewProps) {
   const isBusinessMode = viewMode === 'business'
   
@@ -63,15 +69,24 @@ export function ProductsStandardView({
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                isBusinessMode ? 'bg-emerald-500/10' : 'bg-primary/10'
+                isAISorted ? 'bg-primary/10' : isBusinessMode ? 'bg-emerald-500/10' : 'bg-primary/10'
               }`}>
-                {isBusinessMode ? (
+                {isAISorted ? (
+                  <Brain className="h-5 w-5 text-primary" />
+                ) : isBusinessMode ? (
                   <BarChart3 className="h-5 w-5 text-emerald-600" />
                 ) : (
                   <Package className="h-5 w-5 text-primary" />
                 )}
               </div>
-              <span>{isBusinessMode ? 'Vue Business' : 'Catalogue complet'}</span>
+              <div className="flex items-center gap-2">
+                <span>{isBusinessMode ? 'Vue Business' : 'Catalogue complet'}</span>
+                {isAISorted && (
+                  <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+                    Tri IA
+                  </Badge>
+                )}
+              </div>
             </div>
             <Badge variant="secondary" className="text-base px-3 py-1">
               {totalCount} produits
@@ -87,6 +102,7 @@ export function ProductsStandardView({
             selectedProducts={selectedProducts}
             onSelectionChange={onSelectionChange}
             viewMode={viewMode}
+            productBadges={productBadges}
           />
         </CardContent>
       </Card>

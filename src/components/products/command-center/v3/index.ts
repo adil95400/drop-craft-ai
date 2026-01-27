@@ -1,5 +1,6 @@
 /**
  * Command Center V3 - Exports
+ * Phase 1 + Phase 2 (AI Brain)
  */
 
 // Labels & Types
@@ -17,6 +18,22 @@ export type {
   ProductAIBadge, 
   AIPriorityEngineResult 
 } from './useAIPriorityEngine'
+
+// Phase 2: AI Brain - Sorting & Badges
+export { 
+  useAISortedProducts,
+  AI_SORT_MODE_LABELS
+} from './useAISortedProducts'
+export type { AISortMode } from './useAISortedProducts'
+
+export { 
+  ProductAIBadgeComponent,
+  ProductAIBadgeMinimal,
+  ProductAIPriorityIndicator
+} from './ProductAIBadge'
+
+export { AISortSelector } from './AISortSelector'
+export { AIContextPanel } from './AIContextPanel'
 
 // Components
 export { PriorityActionCard, PriorityCardsGrid } from './PriorityActionCard'

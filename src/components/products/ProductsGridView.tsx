@@ -8,7 +8,7 @@ import { EnhancedProductCard } from './EnhancedProductCard';
 import { ProductsPagination } from './ProductsPagination';
 import { ProductViewModal } from '@/components/modals/ProductViewModal';
 import { Package } from 'lucide-react';
-import { ViewMode } from './command-center';
+import { ViewMode, ProductAIBadge } from './command-center';
 
 interface ProductsGridViewProps {
   products: UnifiedProduct[];
@@ -19,6 +19,8 @@ interface ProductsGridViewProps {
   onSelectionChange?: (ids: string[]) => void;
   itemsPerPage?: number;
   viewMode?: ViewMode;
+  // V3: AI Badges map
+  productBadges?: Map<string, ProductAIBadge>;
 }
 
 export const ProductsGridView = memo(function ProductsGridView({
@@ -29,7 +31,8 @@ export const ProductsGridView = memo(function ProductsGridView({
   selectedProducts = [],
   onSelectionChange,
   itemsPerPage: initialItemsPerPage = 24,
-  viewMode = 'standard'
+  viewMode = 'standard',
+  productBadges
 }: ProductsGridViewProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
@@ -125,6 +128,7 @@ export const ProductsGridView = memo(function ProductsGridView({
         {paginatedProducts.map((product) => {
           const isSelected = selectedProducts.includes(product.id);
           const uniqueKey = `${product.source}-${product.id}`;
+          const aiBadge = productBadges?.get(product.id);
 
           return (
             <EnhancedProductCard
@@ -137,6 +141,7 @@ export const ProductsGridView = memo(function ProductsGridView({
               onSelectChange={(checked) => handleSelectProduct(product.id, checked)}
               showSelection={!!onSelectionChange}
               viewMode={viewMode}
+              aiBadge={aiBadge}
             />
           );
         })}
