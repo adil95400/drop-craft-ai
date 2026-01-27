@@ -1,43 +1,46 @@
 /**
- * ToProcessPage - Backlog intelligent (Version simplifiée)
+ * ToProcessPage - Backlog intelligent avec données réelles
+ * Hub d'exécution: priorisation IA des actions requises
  */
-import { useState, useMemo } from 'react';
-import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package } from 'lucide-react';
-import { useProductsUnified } from '@/hooks/unified';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package, Sparkles, Euro, Clock } from 'lucide-react'
+import { useProductBacklog, BacklogCategory, BacklogItem } from '@/hooks/catalog'
+import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
+import { Progress } from '@/components/ui/progress'
 
 export default function ToProcessPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'actions' | 'opportunities'>('all');
-  const { products, isLoading } = useProductsUnified();
-  
-  // Compter les produits par catégorie avec les bons noms de propriétés
-  const counts = useMemo(() => {
-    if (!products) return { actions: 0, opportunities: 0, total: 0 };
-    
-    const actions = products.filter(p => (p.stock_quantity || 0) < 5).length;
-    const opportunities = products.filter(p => (p.profit_margin || 0) < 15).length;
-    
-    return { actions, opportunities, total: actions + opportunities };
-  }, [products]);
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<BacklogCategory>('all')
+  const { backlogItems, counts, totalEstimatedImpact, filterByCategory, isLoading } = useProductBacklog()
 
-  // Filtrer les produits selon l'onglet
-  const filteredProducts = useMemo(() => {
-    if (!products) return [];
-    
-    return products.filter(p => {
-      const isAction = (p.stock_quantity || 0) < 5;
-      const isOpportunity = (p.profit_margin || 0) < 15;
-      
-      if (activeTab === 'actions') return isAction;
-      if (activeTab === 'opportunities') return isOpportunity && !isAction;
-      return isAction || isOpportunity;
-    }).sort((a, b) => (a.stock_quantity || 0) - (b.stock_quantity || 0));
-  }, [products, activeTab]);
+  // Filtrer selon l'onglet actif
+  const filteredItems = useMemo(() => {
+    return filterByCategory(activeTab).slice(0, 20)
+  }, [activeTab, filterByCategory])
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'critical': return 'text-red-500 bg-red-500/10'
+      case 'high': return 'text-orange-500 bg-orange-500/10'
+      case 'medium': return 'text-amber-500 bg-amber-500/10'
+      default: return 'text-blue-500 bg-blue-500/10'
+    }
+  }
+
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case 'critical': return { label: '⚠️ Critique', variant: 'destructive' as const }
+      case 'high': return { label: '🔥 Urgent', variant: 'destructive' as const }
+      case 'medium': return { label: '⏳ À traiter', variant: 'secondary' as const }
+      default: return { label: '💡 Suggestion', variant: 'outline' as const }
+    }
+  }
 
   return (
     <ChannablePageWrapper
@@ -45,18 +48,42 @@ export default function ToProcessPage() {
       subtitle="Backlog intelligent"
       description="Actions requises et opportunités triées par priorité IA"
       heroImage="products"
-      badge={{ label: `${counts.total} produits`, variant: 'secondary' }}
+      badge={{ label: `${counts.total} produits`, variant: counts.critical > 0 ? 'destructive' : 'secondary' }}
       actions={
-        <Button onClick={() => {}}>
+        <Button onClick={() => navigate('/products')}>
           <Zap className="h-4 w-4 mr-2" />
           Traiter en masse
         </Button>
       }
     >
       <div className="space-y-6">
+        {/* Impact estimé global */}
+        {totalEstimatedImpact > 0 && (
+          <Card className="bg-gradient-to-r from-emerald-500/5 to-teal-500/5 border-emerald-500/20">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-emerald-500/10">
+                  <Euro className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Impact potentiel estimé</p>
+                  <p className="text-2xl font-bold text-emerald-600">+{totalEstimatedImpact.toLocaleString()}€</p>
+                </div>
+              </div>
+              <Badge variant="outline" className="text-emerald-600 border-emerald-500/30">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Estimation IA
+              </Badge>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Stats rapides */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className={cn("cursor-pointer transition-all hover:shadow-md", activeTab === 'all' && "ring-2 ring-primary")} onClick={() => setActiveTab('all')}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card 
+            className={cn("cursor-pointer transition-all hover:shadow-md", activeTab === 'all' && "ring-2 ring-primary")} 
+            onClick={() => setActiveTab('all')}
+          >
             <CardContent className="p-4 flex items-center gap-4">
               <div className="p-3 rounded-xl bg-muted"><Filter className="h-5 w-5 text-muted-foreground" /></div>
               <div>
@@ -66,64 +93,119 @@ export default function ToProcessPage() {
             </CardContent>
           </Card>
 
-          <Card className={cn("cursor-pointer transition-all hover:shadow-md", activeTab === 'actions' && "ring-2 ring-destructive")} onClick={() => setActiveTab('actions')}>
+          <Card 
+            className={cn("cursor-pointer transition-all hover:shadow-md", activeTab === 'actions' && "ring-2 ring-destructive")} 
+            onClick={() => setActiveTab('actions')}
+          >
             <CardContent className="p-4 flex items-center gap-4">
               <div className="p-3 rounded-xl bg-destructive/10"><AlertCircle className="h-5 w-5 text-destructive" /></div>
               <div>
                 <p className="text-2xl font-bold text-destructive">{counts.actions}</p>
-                <p className="text-sm text-muted-foreground">Actions requises</p>
+                <p className="text-sm text-muted-foreground">Actions stock</p>
               </div>
-              <Badge variant="destructive" className="ml-auto">⚠️</Badge>
+              {counts.critical > 0 && <Badge variant="destructive" className="ml-auto">⚠️ {counts.critical}</Badge>}
             </CardContent>
           </Card>
 
-          <Card className={cn("cursor-pointer transition-all hover:shadow-md", activeTab === 'opportunities' && "ring-2 ring-amber-500")} onClick={() => setActiveTab('opportunities')}>
+          <Card 
+            className={cn("cursor-pointer transition-all hover:shadow-md", activeTab === 'opportunities' && "ring-2 ring-amber-500")} 
+            onClick={() => setActiveTab('opportunities')}
+          >
             <CardContent className="p-4 flex items-center gap-4">
               <div className="p-3 rounded-xl bg-amber-500/10"><TrendingUp className="h-5 w-5 text-amber-600" /></div>
               <div>
                 <p className="text-2xl font-bold text-amber-600">{counts.opportunities}</p>
-                <p className="text-sm text-muted-foreground">Opportunités</p>
+                <p className="text-sm text-muted-foreground">Opportunités marge</p>
               </div>
               <Badge className="ml-auto bg-amber-500">💰</Badge>
             </CardContent>
           </Card>
+
+          <Card 
+            className={cn("cursor-pointer transition-all hover:shadow-md", activeTab === 'optimization' && "ring-2 ring-violet-500")} 
+            onClick={() => setActiveTab('optimization')}
+          >
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-violet-500/10"><Sparkles className="h-5 w-5 text-violet-600" /></div>
+              <div>
+                <p className="text-2xl font-bold text-violet-600">{counts.optimization}</p>
+                <p className="text-sm text-muted-foreground">Optimisations</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Liste des produits */}
+        {/* Liste des produits à traiter */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Produits à traiter</CardTitle>
-            <Button variant="outline" size="sm"><ArrowUpDown className="h-4 w-4 mr-2" />Tri IA</Button>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Produits à traiter ({filteredItems.length})
+            </CardTitle>
+            <Button variant="outline" size="sm">
+              <ArrowUpDown className="h-4 w-4 mr-2" />Tri IA
+            </Button>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
-            ) : filteredProducts.length === 0 ? (
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24 rounded-xl" />
+                ))}
+              </div>
+            ) : filteredItems.length === 0 ? (
               <div className="text-center py-12">
                 <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold">Tout est en ordre !</h3>
+                <p className="text-muted-foreground">Aucun produit ne nécessite d'action immédiate</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredProducts.slice(0, 10).map((product) => (
-                  <div key={product.id} className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-accent/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                        {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" /> : <Package className="h-6 w-6 m-3 text-muted-foreground" />}
+                {filteredItems.map((item: BacklogItem) => {
+                  const priorityBadge = getPriorityBadge(item.priority)
+                  return (
+                    <div 
+                      key={item.product.id} 
+                      className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                          {item.product.image_url ? (
+                            <img src={item.product.image_url} alt={item.product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium line-clamp-1">{item.product.name}</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {item.reasons.slice(0, 2).map((reason, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">{reason}</Badge>
+                            ))}
+                          </div>
+                          {item.estimatedImpact > 0 && (
+                            <p className="text-xs text-emerald-600 mt-1">
+                              Impact potentiel: +{item.estimatedImpact}€
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium line-clamp-1">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">Stock: {product.stock_quantity || 0}</p>
+                      <div className="flex items-center gap-3">
+                        <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>
+                        <Button size="sm" onClick={() => navigate(`/products?id=${item.product.id}`)}>
+                          {item.suggestedAction}
+                        </Button>
                       </div>
                     </div>
-                    <Button size="sm">Traiter</Button>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </ChannablePageWrapper>
-  );
+  )
 }
