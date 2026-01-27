@@ -424,37 +424,92 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
             )}
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Sprint 2: Single Primary CTA based on AI status */}
           <div className="flex gap-2 pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 h-9 text-xs bg-background/50 hover:bg-accent border-border/50"
-              onClick={() => onEdit(product)}
-            >
-              <Edit className="h-3.5 w-3.5 mr-1.5" />
-              Modifier
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary"
-              onClick={() => onView(product)}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-9 w-9 p-0 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-              onClick={() => {
-                if (confirm('Supprimer ce produit ?')) {
-                  onDelete(product.id);
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {/* Primary CTA - AI-driven */}
+            {aiBadge?.type === 'risk' ? (
+              <Button
+                size="sm"
+                className="flex-1 h-9 text-xs bg-red-500 hover:bg-red-600 text-white shadow-sm"
+                onClick={() => onView(product)}
+              >
+                <AlertTriangle className="h-3.5 w-3.5 mr-1.5" />
+                Corriger
+              </Button>
+            ) : aiBadge?.type === 'opportunity' ? (
+              <Button
+                size="sm"
+                className="flex-1 h-9 text-xs bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+                onClick={() => onView(product)}
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                Optimiser
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 h-9 text-xs bg-background/50 hover:bg-accent border-border/50"
+                onClick={() => onView(product)}
+              >
+                <Eye className="h-3.5 w-3.5 mr-1.5" />
+                Voir
+              </Button>
+            )}
+            
+            {/* Secondary: Edit (discrete) */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-9 w-9 p-0 hover:bg-muted"
+                    onClick={() => onEdit(product)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Modifier</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            {/* Tertiary: More actions in dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 w-9 p-0 hover:bg-muted"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={() => onView(product)} className="gap-2">
+                  <Eye className="h-4 w-4" />
+                  Voir détails
+                </DropdownMenuItem>
+                {onDuplicate && (
+                  <DropdownMenuItem onClick={() => onDuplicate(product)} className="gap-2">
+                    <Copy className="h-4 w-4" />
+                    Dupliquer
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => {
+                    if (confirm('Supprimer ce produit ?')) {
+                      onDelete(product.id);
+                    }
+                  }}
+                  className="text-destructive focus:text-destructive gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Supprimer
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardContent>
       </Card>
