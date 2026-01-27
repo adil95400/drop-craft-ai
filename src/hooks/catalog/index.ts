@@ -59,3 +59,14 @@ export {
   type BacklogAIStats,
   type BacklogRecommendation
 } from './useProductBacklogAI'
+
+// Phase 2: AI Hooks - Catalog Health
+export {
+  useCatalogHealthAIStats,
+  useHealthRecommendations,
+  useApplyHealthRecommendation,
+  type CatalogHealthAIStats,
+  type HealthPriorityAction,
+  type CategoryHealthInsight,
+  type HealthRecommendation
+} from './useCatalogHealthAI'

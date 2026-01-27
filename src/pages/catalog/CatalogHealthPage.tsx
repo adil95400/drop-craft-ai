@@ -1,14 +1,16 @@
 /**
  * CatalogHealthPage - Santé du Catalogue avec données réelles
- * Dashboard macro des KPIs catalogue
+ * Dashboard macro des KPIs catalogue avec Intelligence IA
  */
 import { useState } from 'react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { HeartPulse, CheckCircle, AlertTriangle, XCircle, Activity, Download, TrendingUp, Image, Tag, Package } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { HeartPulse, CheckCircle, AlertTriangle, XCircle, Activity, Download, TrendingUp, Image, Tag, Package, Brain, Sparkles } from 'lucide-react'
 import { useCatalogHealth } from '@/hooks/catalog'
+import { CatalogHealthAIPanel } from '@/components/catalog'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
@@ -60,7 +62,7 @@ export default function CatalogHealthPage() {
     <ChannablePageWrapper 
       title="Santé du Catalogue" 
       subtitle="Vue macro & KPIs" 
-      description="Pilotez la qualité de votre catalogue avec des données réelles" 
+      description="Pilotez la qualité de votre catalogue avec l'Intelligence IA" 
       heroImage="analytics"
       badge={{ 
         label: `Score: ${metrics?.globalScore || 0}%`, 
@@ -72,7 +74,27 @@ export default function CatalogHealthPage() {
         </Button>
       }
     >
-      <div className="space-y-6">
+      <Tabs defaultValue="ai" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="ai" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            Intelligence IA
+            <Sparkles className="h-3 w-3 text-violet-500" />
+          </TabsTrigger>
+          <TabsTrigger value="details" className="flex items-center gap-2">
+            <HeartPulse className="h-4 w-4" />
+            Détails
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Onglet Intelligence IA */}
+        <TabsContent value="ai">
+          <CatalogHealthAIPanel />
+        </TabsContent>
+
+        {/* Onglet Détails - Contenu original */}
+        <TabsContent value="details">
+          <div className="space-y-6">
         {/* Score global */}
         <Card className="bg-gradient-to-br from-primary/5 via-violet-500/5 to-purple-500/5">
           <CardContent className="p-6">
@@ -214,8 +236,10 @@ export default function CatalogHealthPage() {
               </ResponsiveContainer>
             </div>
           </CardContent>
-        </Card>
-      </div>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </ChannablePageWrapper>
   )
 }
