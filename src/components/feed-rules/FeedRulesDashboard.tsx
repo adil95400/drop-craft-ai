@@ -1,6 +1,6 @@
 /**
  * Feed Rules Dashboard
- * Interface principale de gestion des règles if/then
+ * Interface principale de gestion des règles if/then avec IA
  */
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
+  Brain,
 } from 'lucide-react';
 import { 
   useFeedRules, 
@@ -31,6 +32,7 @@ import {
 import { CreateRuleDialog } from './CreateRuleDialog';
 import { RuleTemplatesPanel } from './RuleTemplatesPanel';
 import { RuleExecutionsPanel } from './RuleExecutionsPanel';
+import { FeedRulesAIPanel } from './FeedRulesAIPanel';
 import { FeedRule } from '@/services/FeedRulesService';
 
 export function FeedRulesDashboard() {
@@ -134,6 +136,10 @@ export function FeedRulesDashboard() {
       <Tabs defaultValue="rules" className="space-y-4">
         <TabsList>
           <TabsTrigger value="rules">Mes règles</TabsTrigger>
+          <TabsTrigger value="ai" className="gap-1">
+            <Brain className="h-4 w-4" />
+            IA
+          </TabsTrigger>
           <TabsTrigger value="templates">Templates</TabsTrigger>
           <TabsTrigger value="history">Historique</TabsTrigger>
         </TabsList>
@@ -235,6 +241,10 @@ export function FeedRulesDashboard() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <FeedRulesAIPanel />
         </TabsContent>
 
         <TabsContent value="templates">
