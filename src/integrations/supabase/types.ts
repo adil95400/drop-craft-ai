@@ -7503,6 +7503,71 @@ export type Database = {
           },
         ]
       }
+      product_channel_mappings: {
+        Row: {
+          channel_id: string | null
+          channel_type: string
+          created_at: string
+          current_price: number | null
+          external_product_id: string | null
+          external_variant_id: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          metadata: Json | null
+          product_id: string | null
+          sync_error: string | null
+          sync_status: string | null
+          target_price: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id?: string | null
+          channel_type?: string
+          created_at?: string
+          current_price?: number | null
+          external_product_id?: string | null
+          external_variant_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          product_id?: string | null
+          sync_error?: string | null
+          sync_status?: string | null
+          target_price?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string | null
+          channel_type?: string
+          created_at?: string
+          current_price?: number | null
+          external_product_id?: string | null
+          external_variant_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          product_id?: string | null
+          sync_error?: string | null
+          sync_status?: string | null
+          target_price?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_channel_mappings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_enrichment: {
         Row: {
           ai_suggestions: Json | null
