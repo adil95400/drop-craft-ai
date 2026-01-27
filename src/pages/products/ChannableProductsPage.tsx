@@ -628,6 +628,7 @@ export default function ChannableProductsPage() {
               resetAuditFilters()
             }}
             isLoading={isLoading}
+            isAISorted={['ai_priority', 'risk_first', 'opportunity_first'].includes(aiSortMode)}
           />
 
           {/* V3: AI Sort Selector */}

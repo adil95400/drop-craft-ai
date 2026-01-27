@@ -1,7 +1,7 @@
 /**
  * Vue Standard du catalogue produits - Simplifiée sans boutons en double
  * Phase 2: Support du mode Business avec viewMode
- * V3: Support des badges IA
+ * V3: Support des badges IA avec indication "Recommandé"
  */
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import { ProductsGridView } from '@/components/products/ProductsGridView'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { FilterState } from '@/hooks/useProductFilters'
 import { ViewMode, ProductAIBadge } from '@/components/products/command-center'
+import { cn } from '@/lib/utils'
 
 interface ProductsStandardViewProps {
   products: UnifiedProduct[]
@@ -65,12 +66,17 @@ export function ProductsStandardView({
       transition={{ duration: 0.3 }}
     >
       <Card className="border-border/50 bg-card/50 backdrop-blur shadow-xl">
-        <CardHeader>
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                isAISorted ? 'bg-primary/10' : isBusinessMode ? 'bg-emerald-500/10' : 'bg-primary/10'
-              }`}>
+              <div className={cn(
+                'h-10 w-10 rounded-xl flex items-center justify-center transition-colors',
+                isAISorted 
+                  ? 'bg-gradient-to-br from-primary/20 to-primary/10' 
+                  : isBusinessMode 
+                    ? 'bg-emerald-500/10' 
+                    : 'bg-primary/10'
+              )}>
                 {isAISorted ? (
                   <Brain className="h-5 w-5 text-primary" />
                 ) : isBusinessMode ? (
@@ -79,17 +85,30 @@ export function ProductsStandardView({
                   <Package className="h-5 w-5 text-primary" />
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <span>{isBusinessMode ? 'Vue Business' : 'Catalogue complet'}</span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">
+                    {isBusinessMode ? 'Vue Business' : 'Catalogue complet'}
+                  </span>
+                  {isAISorted && (
+                    <Badge 
+                      variant="outline" 
+                      className="text-[10px] px-2 py-0.5 bg-gradient-to-r from-primary/15 to-primary/5 text-primary border-primary/30 font-medium"
+                    >
+                      <Brain className="h-2.5 w-2.5 mr-1" />
+                      Tri IA recommandé
+                    </Badge>
+                  )}
+                </div>
                 {isAISorted && (
-                  <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
-                    Tri IA
-                  </Badge>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Classement optimisé par urgence et impact business
+                  </p>
                 )}
               </div>
             </div>
-            <Badge variant="secondary" className="text-base px-3 py-1">
-              {totalCount} produits
+            <Badge variant="secondary" className="text-base px-3 py-1 font-semibold">
+              {totalCount.toLocaleString('fr-FR')} produits
             </Badge>
           </CardTitle>
         </CardHeader>
