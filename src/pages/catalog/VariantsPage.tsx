@@ -1,23 +1,27 @@
 /**
  * VariantsPage - Gestion des anomalies variantes avec données réelles
  * Hub d'exécution: stock, prix, synchronisation des variantes
+ * Phase 2: Intégration panneau Intelligence IA
  */
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Layers, Package, DollarSign, RefreshCw, CheckCircle, Zap, Search, AlertTriangle } from 'lucide-react'
+import { Layers, Package, DollarSign, RefreshCw, CheckCircle, Zap, Search, AlertTriangle, Sparkles } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { useVariantAnalysis, VariantIssue } from '@/hooks/catalog'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { VariantsAIPanel } from '@/components/catalog/VariantsAIPanel'
 
 export default function VariantsPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'issues' | 'ai'>('ai')
   const { stats, issues, totalIssues, isLoading } = useVariantAnalysis()
 
   // Filtrer les problèmes
@@ -73,6 +77,23 @@ export default function VariantsPage() {
         </Button>
       }
     >
+      {/* Mode selector */}
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'issues' | 'ai')} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="ai" className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Intelligence IA
+          </TabsTrigger>
+          <TabsTrigger value="issues" className="gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Problèmes ({totalIssues})
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {viewMode === 'ai' ? (
+        <VariantsAIPanel />
+      ) : (
       <div className="space-y-6">
         {/* Stats globales */}
         {stats.productsWithVariants > 0 && (
@@ -186,6 +207,7 @@ export default function VariantsPage() {
           </CardContent>
         </Card>
       </div>
+      )}
     </ChannablePageWrapper>
   )
 }

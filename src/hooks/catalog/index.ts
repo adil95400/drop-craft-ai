@@ -10,7 +10,7 @@ export { useAttributeAnalysis, type AttributeIssue, type AttributeStats, type Ma
 export { useCategoryClassification, type ClassificationIssue, type ClassificationMetrics, type CategoryStats, type BrandStats } from './useCategoryClassification'
 export { useVariantAnalysis, type VariantIssue, type VariantStats } from './useVariantAnalysis'
 
-// Phase 2: AI Hooks
+// Phase 2: AI Hooks - Attributes
 export { 
   useAttributesAIStats, 
   useAttributeRecommendations, 
@@ -21,6 +21,7 @@ export {
   type MarketplaceReadiness
 } from './useAttributesAI'
 
+// Phase 2: AI Hooks - Category Mapping
 export {
   useCategoryMappingAIStats,
   useCategorySuggestions,
@@ -31,3 +32,21 @@ export {
   type CategorySuggestion,
   type MappingRecommendation
 } from './useCategoryMappingAI'
+
+// Phase 2: AI Hooks - Media
+export {
+  useMediaAIStats,
+  useMediaRecommendations,
+  useApplyMediaRecommendation,
+  type MediaAIStats,
+  type MediaRecommendation
+} from './useMediaAI'
+
+// Phase 2: AI Hooks - Variants
+export {
+  useVariantsAIStats,
+  useVariantRecommendations,
+  useApplyVariantRecommendation,
+  type VariantsAIStats,
+  type VariantRecommendation
+} from './useVariantsAI'

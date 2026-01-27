@@ -1,6 +1,7 @@
 /**
  * MediaPage - Correction des médias avec données réelles et actions IA
  * Hub d'exécution: images et vidéos du catalogue
+ * Phase 2: Intégration panneau Intelligence IA
  */
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -14,10 +15,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MediaAIPanel } from '@/components/catalog/MediaAIPanel'
 
 export default function MediaPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<string>('critical')
+  const [viewMode, setViewMode] = useState<'issues' | 'ai'>('ai')
   const { 
     stats, 
     issues, 
@@ -86,6 +89,23 @@ export default function MediaPage() {
         </div>
       }
     >
+      {/* Mode selector */}
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'issues' | 'ai')} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="ai" className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Intelligence IA
+          </TabsTrigger>
+          <TabsTrigger value="issues" className="gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Problèmes ({issues.length})
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {viewMode === 'ai' ? (
+        <MediaAIPanel />
+      ) : (
       <div className="space-y-6">
         {/* Score médias avec impact business */}
         <Card className="bg-gradient-to-r from-primary/5 to-violet-500/5 border-primary/20">
@@ -261,6 +281,7 @@ export default function MediaPage() {
           </CardContent>
         </Card>
       </div>
+      )}
     </ChannablePageWrapper>
   )
 }
