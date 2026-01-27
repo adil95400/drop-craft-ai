@@ -11,46 +11,27 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import { 
   TrendingUp, TrendingDown, DollarSign, AlertTriangle, 
   Settings, Play, Pause, History, Target, Plus, Loader2, Check
 } from 'lucide-react';
-
-interface PriceRule {
-  id: number;
-  name: string;
-  description: string;
-  status: 'active' | 'paused';
-  products: number;
-  savings: string;
-}
-
-interface MonitoredProduct {
-  id: number;
-  name: string;
-  myPrice: number;
-  competitors: { name: string; price: number; change: number }[];
-  recommended: number;
-  lastUpdate: string;
-}
-
-interface PriceHistoryItem {
-  id: number;
-  product: string;
-  oldPrice: number;
-  newPrice: number;
-  reason: string;
-  date: string;
-}
+import {
+  usePriceMonitoringStats,
+  useMonitoredProducts,
+  usePriceMonitorRules,
+  usePriceHistory,
+  useApplyRecommendedPrice,
+  useTogglePriceRule,
+  useCreatePriceMonitorRule,
+  useSaveMonitoringSettings,
+} from '@/hooks/usePriceMonitoring';
 
 export default function PriceMonitoringPage() {
-  const { toast } = useToast();
   const [autoPricingEnabled, setAutoPricingEnabled] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showNewRuleModal, setShowNewRuleModal] = useState(false);
-  const [applyingPrice, setApplyingPrice] = useState<number | null>(null);
-  const [savingSettings, setSavingSettings] = useState(false);
 
   // Form states
   const [settings, setSettings] = useState({
@@ -67,129 +48,41 @@ export default function PriceMonitoringPage() {
     description: ''
   });
 
-  const [priceRules, setPriceRules] = useState<PriceRule[]>([
-    {
-      id: 1,
-      name: 'Competitive Pricing',
-      description: 'Toujours 5% moins cher que le concurrent le moins cher',
-      status: 'active',
-      products: 245,
-      savings: '+12%'
-    },
-    {
-      id: 2,
-      name: 'Dynamic Margin',
-      description: 'Marge minimum 30%, maximum 50%',
-      status: 'active',
-      products: 189,
-      savings: '+8%'
-    },
-    {
-      id: 3,
-      name: 'Flash Sales',
-      description: 'Réduction automatique sur stock élevé',
-      status: 'paused',
-      products: 67,
-      savings: '+15%'
-    }
-  ]);
+  // Hooks
+  const { data: stats, isLoading: isLoadingStats } = usePriceMonitoringStats();
+  const { data: monitoredProducts = [], isLoading: isLoadingProducts } = useMonitoredProducts();
+  const { data: priceRules = [], isLoading: isLoadingRules } = usePriceMonitorRules();
+  const { data: priceHistory = [], isLoading: isLoadingHistory } = usePriceHistory(20);
+  
+  const applyPrice = useApplyRecommendedPrice();
+  const toggleRule = useTogglePriceRule();
+  const createRule = useCreatePriceMonitorRule();
+  const saveSettings = useSaveMonitoringSettings();
 
-  const [monitoredProducts, setMonitoredProducts] = useState<MonitoredProduct[]>([
-    {
-      id: 1,
-      name: 'Wireless Headphones Pro',
-      myPrice: 79.99,
-      competitors: [
-        { name: 'Amazon', price: 84.99, change: -2 },
-        { name: 'eBay', price: 82.50, change: 0 },
-        { name: 'AliExpress', price: 75.00, change: -5 }
-      ],
-      recommended: 78.99,
-      lastUpdate: '2 min ago'
-    },
-    {
-      id: 2,
-      name: 'Smart Watch X5',
-      myPrice: 149.99,
-      competitors: [
-        { name: 'Amazon', price: 159.99, change: 0 },
-        { name: 'eBay', price: 145.00, change: -3 },
-        { name: 'Walmart', price: 152.00, change: +2 }
-      ],
-      recommended: 147.99,
-      lastUpdate: '5 min ago'
-    }
-  ]);
-
-  const [priceHistory] = useState<PriceHistoryItem[]>([
-    { id: 1, product: 'Wireless Headphones Pro', oldPrice: 82.99, newPrice: 79.99, reason: 'Concurrence', date: '2024-01-15 14:30' },
-    { id: 2, product: 'Smart Watch X5', oldPrice: 155.00, newPrice: 149.99, reason: 'Marge optimisée', date: '2024-01-15 12:15' },
-    { id: 3, product: 'Bluetooth Speaker', oldPrice: 45.00, newPrice: 42.99, reason: 'Stock élevé', date: '2024-01-15 10:00' },
-    { id: 4, product: 'USB-C Hub', oldPrice: 28.00, newPrice: 29.99, reason: 'Rupture concurrence', date: '2024-01-14 18:45' },
-  ]);
-
-  const handleApplyPrice = async (productId: number, recommendedPrice: number) => {
-    setApplyingPrice(productId);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setMonitoredProducts(products => 
-      products.map(p => 
-        p.id === productId ? { ...p, myPrice: recommendedPrice } : p
-      )
-    );
-    
-    toast({
-      title: "Prix mis à jour",
-      description: `Le prix a été ajusté à $${recommendedPrice}`,
-    });
-    setApplyingPrice(null);
+  const handleApplyPrice = (productId: string, recommendedPrice: number) => {
+    applyPrice.mutate({ productId, newPrice: recommendedPrice });
   };
 
-  const handleToggleRule = (ruleId: number) => {
-    setPriceRules(rules => rules.map(rule => 
-      rule.id === ruleId 
-        ? { ...rule, status: rule.status === 'active' ? 'paused' : 'active' }
-        : rule
-    ));
-    const rule = priceRules.find(r => r.id === ruleId);
-    toast({ 
-      title: rule?.status === 'active' ? 'Règle mise en pause' : 'Règle activée',
-      description: `"${rule?.name}" a été ${rule?.status === 'active' ? 'mise en pause' : 'activée'}`
-    });
+  const handleToggleRule = (ruleId: string, currentStatus: string) => {
+    toggleRule.mutate({ ruleId, isActive: currentStatus !== 'active' });
   };
 
-  const handleSaveSettings = async () => {
-    setSavingSettings(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({
-      title: "Paramètres enregistrés",
-      description: "Les paramètres de monitoring ont été mis à jour",
-    });
-    setSavingSettings(false);
+  const handleSaveSettings = () => {
+    saveSettings.mutate(settings);
+    setShowConfigModal(false);
   };
 
-  const handleCreateRule = async () => {
+  const handleCreateRule = () => {
     if (!newRule.name) {
-      toast({ title: "Erreur", description: "Le nom de la règle est requis", variant: "destructive" });
+      toast.error('Le nom de la règle est requis');
       return;
     }
     
-    const rule: PriceRule = {
-      id: Date.now(),
-      name: newRule.name,
-      description: newRule.description || `Règle ${newRule.type} avec marge ${newRule.margin}%`,
-      status: 'active',
-      products: 0,
-      savings: '+0%'
-    };
-    
-    setPriceRules(rules => [...rules, rule]);
-    setShowNewRuleModal(false);
-    setNewRule({ name: '', type: 'competitive', margin: '', description: '' });
-    
-    toast({
-      title: "Règle créée",
-      description: `La règle "${rule.name}" a été créée avec succès`,
+    createRule.mutate(newRule, {
+      onSuccess: () => {
+        setShowNewRuleModal(false);
+        setNewRule({ name: '', type: 'competitive', margin: '', description: '' });
+      }
     });
   };
 
@@ -215,12 +108,7 @@ export default function PriceMonitoringPage() {
                 checked={autoPricingEnabled}
                 onCheckedChange={(checked) => {
                   setAutoPricingEnabled(checked);
-                  toast({
-                    title: checked ? "Auto-Pricing activé" : "Auto-Pricing désactivé",
-                    description: checked 
-                      ? "Les prix seront ajustés automatiquement selon vos règles" 
-                      : "Les ajustements de prix nécessiteront votre approbation"
-                  });
+                  toast.success(checked ? "Auto-Pricing activé" : "Auto-Pricing désactivé");
                 }}
               />
             </div>
@@ -241,8 +129,12 @@ export default function PriceMonitoringPage() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,247</div>
-              <p className="text-xs text-muted-foreground">+23 cette semaine</p>
+              {isLoadingStats ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{stats?.productsMonitored || 0}</div>
+              )}
+              <p className="text-xs text-muted-foreground">En surveillance active</p>
             </CardContent>
           </Card>
 
@@ -252,8 +144,12 @@ export default function PriceMonitoringPage() {
               <TrendingUp className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">342</div>
-              <p className="text-xs text-green-500">+12% vs hier</p>
+              {isLoadingStats ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{stats?.pricesAdjusted24h || 0}</div>
+              )}
+              <p className="text-xs text-green-500">Ajustements automatiques</p>
             </CardContent>
           </Card>
 
@@ -263,8 +159,12 @@ export default function PriceMonitoringPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">38.5%</div>
-              <p className="text-xs text-green-500">+2.3% ce mois</p>
+              {isLoadingStats ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{stats?.avgMargin || 0}%</div>
+              )}
+              <p className="text-xs text-muted-foreground">Sur produits surveillés</p>
             </CardContent>
           </Card>
 
@@ -274,7 +174,11 @@ export default function PriceMonitoringPage() {
               <AlertTriangle className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              {isLoadingStats ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{stats?.priceAlerts || 0}</div>
+              )}
               <p className="text-xs text-muted-foreground">Nécessite attention</p>
             </CardContent>
           </Card>
@@ -297,64 +201,78 @@ export default function PriceMonitoringPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {monitoredProducts.map((product) => (
-                  <Card key={product.id}>
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h4 className="font-semibold">{product.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Dernière mise à jour: {product.lastUpdate}
-                          </p>
+                {isLoadingProducts ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 w-full" />)}
+                  </div>
+                ) : monitoredProducts.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun produit surveillé</p>
+                    <p className="text-sm">Activez la surveillance sur vos produits pour commencer</p>
+                  </div>
+                ) : (
+                  monitoredProducts.map((product) => (
+                    <Card key={product.id}>
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h4 className="font-semibold">{product.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              SKU: {product.sku} • Dernière mise à jour: {product.lastUpdate}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-muted-foreground">Votre prix</div>
+                            <div className="text-2xl font-bold">{product.myPrice.toFixed(2)}€</div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm text-muted-foreground">Votre prix</div>
-                          <div className="text-2xl font-bold">${product.myPrice}</div>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-3 gap-4 mb-4">
-                        {product.competitors.map((comp, idx) => (
-                          <div key={idx} className="border rounded-lg p-3">
-                            <div className="text-sm font-medium mb-1">{comp.name}</div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-lg font-bold">${comp.price}</span>
-                              <Badge variant={comp.change < 0 ? 'destructive' : comp.change > 0 ? 'default' : 'secondary'}>
-                                {comp.change > 0 ? '+' : ''}{comp.change}%
-                              </Badge>
+                        {product.competitors.length > 0 && (
+                          <div className="grid grid-cols-3 gap-4 mb-4">
+                            {product.competitors.map((comp, idx) => (
+                              <div key={idx} className="border rounded-lg p-3">
+                                <div className="text-sm font-medium mb-1">{comp.name}</div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-lg font-bold">{comp.price.toFixed(2)}€</span>
+                                  <Badge variant={comp.change < 0 ? 'destructive' : comp.change > 0 ? 'default' : 'secondary'}>
+                                    {comp.change > 0 ? '+' : ''}{comp.change.toFixed(1)}%
+                                  </Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                          <div>
+                            <div className="text-sm font-medium text-green-900 dark:text-green-100">Prix Recommandé</div>
+                            <div className="text-xs text-green-700 dark:text-green-300">
+                              Optimisé pour compétitivité et marge
                             </div>
                           </div>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                        <div>
-                          <div className="text-sm font-medium text-green-900">Prix Recommandé</div>
-                          <div className="text-xs text-green-700">
-                            Optimisé pour compétitivité et marge
+                          <div className="flex items-center gap-3">
+                            <div className="text-2xl font-bold text-green-900 dark:text-green-100">{product.recommended.toFixed(2)}€</div>
+                            <Button 
+                              size="sm" 
+                              variant="default"
+                              onClick={() => handleApplyPrice(product.id, product.recommended)}
+                              disabled={applyPrice.isPending || product.myPrice === product.recommended}
+                            >
+                              {applyPrice.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : product.myPrice === product.recommended ? (
+                                <><Check className="h-4 w-4 mr-1" /> Appliqué</>
+                              ) : (
+                                'Appliquer'
+                              )}
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-2xl font-bold text-green-900">${product.recommended}</div>
-                          <Button 
-                            size="sm" 
-                            variant="default"
-                            onClick={() => handleApplyPrice(product.id, product.recommended)}
-                            disabled={applyingPrice === product.id || product.myPrice === product.recommended}
-                          >
-                            {applyingPrice === product.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : product.myPrice === product.recommended ? (
-                              <><Check className="h-4 w-4 mr-1" /> Appliqué</>
-                            ) : (
-                              'Appliquer'
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -373,57 +291,69 @@ export default function PriceMonitoringPage() {
               </Button>
             </div>
 
-            <div className="grid gap-4">
-              {priceRules.map((rule) => (
-                <Card key={rule.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold">{rule.name}</h4>
-                          <Badge variant={rule.status === 'active' ? 'default' : 'secondary'}>
-                            {rule.status === 'active' ? 'Actif' : 'Pausé'}
-                          </Badge>
+            {isLoadingRules ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+              </div>
+            ) : priceRules.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucune règle configurée</p>
+                  <Button className="mt-4" onClick={() => setShowNewRuleModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Créer une règle
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {priceRules.map((rule) => (
+                  <Card key={rule.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="font-semibold">{rule.name}</h4>
+                            <Badge variant={rule.status === 'active' ? 'default' : 'secondary'}>
+                              {rule.status === 'active' ? 'Actif' : 'Pausé'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {rule.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="text-muted-foreground">
+                              {rule.products} produits
+                            </span>
+                            <span className="text-green-600 font-medium">
+                              {rule.savings} conversions
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {rule.description}
-                        </p>
-                        <div className="flex items-center gap-4 text-sm">
-                          <span className="text-muted-foreground">
-                            {rule.products} produits
-                          </span>
-                          <span className="text-green-600 font-medium">
-                            {rule.savings} conversions
-                          </span>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleToggleRule(rule.id, rule.status)}
+                            disabled={toggleRule.isPending}
+                          >
+                            {rule.status === 'active' ? (
+                              <><Pause className="h-4 w-4 mr-2" />Pause</>
+                            ) : (
+                              <><Play className="h-4 w-4 mr-2" />Activer</>
+                            )}
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Settings className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleToggleRule(rule.id)}
-                        >
-                          {rule.status === 'active' ? (
-                            <><Pause className="h-4 w-4 mr-2" />Pause</>
-                          ) : (
-                            <><Play className="h-4 w-4 mr-2" />Activer</>
-                          )}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            toast({ title: "Modification", description: `Édition de "${rule.name}"` });
-                          }}
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4">
@@ -435,37 +365,45 @@ export default function PriceMonitoringPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Produit</TableHead>
-                      <TableHead>Ancien Prix</TableHead>
-                      <TableHead>Nouveau Prix</TableHead>
-                      <TableHead>Raison</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {priceHistory.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.product}</TableCell>
-                        <TableCell className="text-muted-foreground">${item.oldPrice}</TableCell>
-                        <TableCell className={item.newPrice < item.oldPrice ? 'text-red-600' : 'text-green-600'}>
-                          ${item.newPrice}
-                          {item.newPrice < item.oldPrice ? (
-                            <TrendingDown className="inline h-3 w-3 ml-1" />
-                          ) : (
-                            <TrendingUp className="inline h-3 w-3 ml-1" />
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{item.reason}</Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">{item.date}</TableCell>
+                {isLoadingHistory ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+                  </div>
+                ) : priceHistory.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun historique disponible</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Produit</TableHead>
+                        <TableHead>Ancien Prix</TableHead>
+                        <TableHead>Nouveau Prix</TableHead>
+                        <TableHead>Raison</TableHead>
+                        <TableHead>Date</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {priceHistory.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">{item.product}</TableCell>
+                          <TableCell className="line-through text-muted-foreground">
+                            {item.oldPrice.toFixed(2)}€
+                          </TableCell>
+                          <TableCell className="font-bold text-primary">
+                            {item.newPrice.toFixed(2)}€
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{item.reason}</Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{item.date}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -473,159 +411,164 @@ export default function PriceMonitoringPage() {
           <TabsContent value="settings" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Paramètres de Monitoring</CardTitle>
+                <CardTitle>Paramètres de Surveillance</CardTitle>
                 <CardDescription>
-                  Configurez vos sources et règles de surveillance
+                  Configurez les options de monitoring des prix
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Fréquence de vérification (minutes)</Label>
-                  <Input 
-                    type="number" 
-                    value={settings.checkFrequency}
-                    onChange={(e) => setSettings({...settings, checkFrequency: parseInt(e.target.value) || 15})}
-                  />
-                  <p className="text-xs text-muted-foreground">Minutes entre chaque vérification</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Marge minimum (%)</Label>
-                  <Input 
-                    type="number" 
-                    value={settings.minMargin}
-                    onChange={(e) => setSettings({...settings, minMargin: parseInt(e.target.value) || 20})}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Marge maximum (%)</Label>
-                  <Input 
-                    type="number" 
-                    value={settings.maxMargin}
-                    onChange={(e) => setSettings({...settings, maxMargin: parseInt(e.target.value) || 60})}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Notifications prix</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Alertes quand un concurrent baisse ses prix
-                    </p>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="frequency">Fréquence de vérification (minutes)</Label>
+                    <Input 
+                      id="frequency"
+                      type="number" 
+                      value={settings.checkFrequency}
+                      onChange={(e) => setSettings({...settings, checkFrequency: parseInt(e.target.value)})}
+                    />
                   </div>
-                  <Switch 
-                    checked={settings.notifications}
-                    onCheckedChange={(checked) => setSettings({...settings, notifications: checked})}
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="minMargin">Marge minimum (%)</Label>
+                    <Input 
+                      id="minMargin"
+                      type="number" 
+                      value={settings.minMargin}
+                      onChange={(e) => setSettings({...settings, minMargin: parseInt(e.target.value)})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="maxMargin">Marge maximum (%)</Label>
+                    <Input 
+                      id="maxMargin"
+                      type="number" 
+                      value={settings.maxMargin}
+                      onChange={(e) => setSettings({...settings, maxMargin: parseInt(e.target.value)})}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-6">
+                    <Switch 
+                      id="notifications"
+                      checked={settings.notifications}
+                      onCheckedChange={(checked) => setSettings({...settings, notifications: checked})}
+                    />
+                    <Label htmlFor="notifications">Notifications activées</Label>
+                  </div>
                 </div>
-
-                <Button className="w-full" onClick={handleSaveSettings} disabled={savingSettings}>
-                  {savingSettings ? (
-                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enregistrement...</>
-                  ) : (
-                    'Enregistrer les Paramètres'
-                  )}
+                <Button onClick={handleSaveSettings} disabled={saveSettings.isPending}>
+                  {saveSettings.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                  Sauvegarder les paramètres
                 </Button>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
         </div>
-      </ChannablePageWrapper>
 
-      {/* Config Modal */}
-      <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Configuration Auto-Pricing</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Mode de pricing</Label>
-              <Select defaultValue="competitive">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="competitive">Compétitif - Toujours sous la concurrence</SelectItem>
-                  <SelectItem value="margin">Marge - Optimiser les profits</SelectItem>
-                  <SelectItem value="dynamic">Dynamique - IA adaptative</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Sources de prix à surveiller</Label>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="default">Amazon</Badge>
-                <Badge variant="default">eBay</Badge>
-                <Badge variant="default">AliExpress</Badge>
-                <Badge variant="outline">+ Ajouter</Badge>
+        {/* Config Modal */}
+        <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Configuration du Monitoring</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Fréquence de vérification (minutes)</Label>
+                <Input 
+                  type="number" 
+                  value={settings.checkFrequency}
+                  onChange={(e) => setSettings({...settings, checkFrequency: parseInt(e.target.value)})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Marge minimum (%)</Label>
+                <Input 
+                  type="number" 
+                  value={settings.minMargin}
+                  onChange={(e) => setSettings({...settings, minMargin: parseInt(e.target.value)})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Marge maximum (%)</Label>
+                <Input 
+                  type="number" 
+                  value={settings.maxMargin}
+                  onChange={(e) => setSettings({...settings, maxMargin: parseInt(e.target.value)})}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch 
+                  checked={settings.notifications}
+                  onCheckedChange={(checked) => setSettings({...settings, notifications: checked})}
+                />
+                <Label>Notifications</Label>
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfigModal(false)}>Annuler</Button>
-            <Button onClick={() => {
-              setShowConfigModal(false);
-              toast({ title: "Configuration enregistrée" });
-            }}>Enregistrer</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowConfigModal(false)}>Annuler</Button>
+              <Button onClick={handleSaveSettings} disabled={saveSettings.isPending}>
+                Sauvegarder
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* New Rule Modal */}
-      <Dialog open={showNewRuleModal} onOpenChange={setShowNewRuleModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Créer une Règle de Prix</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Nom de la règle</Label>
-              <Input 
-                placeholder="Ex: Prix compétitif -5%"
-                value={newRule.name}
-                onChange={(e) => setNewRule({...newRule, name: e.target.value})}
-              />
+        {/* New Rule Modal */}
+        <Dialog open={showNewRuleModal} onOpenChange={setShowNewRuleModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nouvelle Règle de Prix</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Nom de la règle</Label>
+                <Input 
+                  value={newRule.name}
+                  onChange={(e) => setNewRule({...newRule, name: e.target.value})}
+                  placeholder="Ex: Compétitif -5%"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Type de règle</Label>
+                <Select value={newRule.type} onValueChange={(v) => setNewRule({...newRule, type: v})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="competitive">Compétitif</SelectItem>
+                    <SelectItem value="margin">Marge cible</SelectItem>
+                    <SelectItem value="markup">Markup</SelectItem>
+                    <SelectItem value="rounding">Arrondi psychologique</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Marge/Pourcentage (%)</Label>
+                <Input 
+                  type="number"
+                  value={newRule.margin}
+                  onChange={(e) => setNewRule({...newRule, margin: e.target.value})}
+                  placeholder="Ex: 25"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Description (optionnelle)</Label>
+                <Input 
+                  value={newRule.description}
+                  onChange={(e) => setNewRule({...newRule, description: e.target.value})}
+                  placeholder="Description de la règle"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Type de règle</Label>
-              <Select value={newRule.type} onValueChange={(v) => setNewRule({...newRule, type: v})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="competitive">Prix compétitif</SelectItem>
-                  <SelectItem value="margin">Marge fixe</SelectItem>
-                  <SelectItem value="flash">Flash sale</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Marge/Réduction (%)</Label>
-              <Input 
-                type="number"
-                placeholder="5"
-                value={newRule.margin}
-                onChange={(e) => setNewRule({...newRule, margin: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Description (optionnel)</Label>
-              <Input 
-                placeholder="Description de la règle..."
-                value={newRule.description}
-                onChange={(e) => setNewRule({...newRule, description: e.target.value})}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewRuleModal(false)}>Annuler</Button>
-            <Button onClick={handleCreateRule}>Créer la règle</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowNewRuleModal(false)}>Annuler</Button>
+              <Button onClick={handleCreateRule} disabled={createRule.isPending}>
+                {createRule.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                Créer la règle
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </ChannablePageWrapper>
     </>
   );
 }

@@ -179,18 +179,104 @@ export const PriceRulesService = {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('Non authentifié');
 
-    // Simulate applying the rule
-    const productsCount = Math.floor(Math.random() * 300) + 50;
-    const totalChange = (Math.random() - 0.3) * productsCount * 5;
-    const avgChangePercent = (Math.random() - 0.3) * 15;
+    // Get the rule details
+    const { data: rule, error: ruleError } = await supabase
+      .from('price_rules')
+      .select('*')
+      .eq('id', ruleId)
+      .single();
 
+    if (ruleError || !rule) throw new Error('Règle non trouvée');
+
+    // Get products that match the rule criteria
+    let productsQuery = supabase
+      .from('products')
+      .select('id, price, cost_price, name, category')
+      .eq('user_id', userData.user.id)
+      .not('price', 'is', null);
+
+    // Apply filter based on rule.apply_to
+    const applyFilter = rule.apply_filter as Record<string, unknown> | null;
+    if (rule.apply_to === 'category' && applyFilter?.category) {
+      productsQuery = productsQuery.eq('category', applyFilter.category as string);
+    }
+
+    const { data: products, error: productsError } = await productsQuery;
+    if (productsError) throw productsError;
+
+    const calculation = (rule.calculation || { type: 'percentage', value: 10 }) as unknown as PriceCalculation;
+    let totalChange = 0;
+    let updatedCount = 0;
+
+    // Apply price changes to each product
+    for (const product of products || []) {
+      let newPrice = product.price;
+      const costPrice = product.cost_price || product.price * 0.6;
+
+      switch (rule.rule_type) {
+        case 'markup':
+          // Apply markup percentage on cost
+          newPrice = costPrice * (1 + (calculation.value || 30) / 100);
+          break;
+        case 'margin':
+          // Set price to achieve target margin
+          newPrice = costPrice / (1 - (calculation.value || 25) / 100);
+          break;
+        case 'fixed':
+          // Add or subtract fixed amount
+          newPrice = product.price + (calculation.value || 0);
+          break;
+        case 'rounding':
+          // Round to psychological price
+          const roundTo = calculation.roundTo || 99;
+          newPrice = Math.floor(product.price) + roundTo / 100;
+          break;
+        case 'competitive':
+          // Reduce by competitive percentage
+          newPrice = product.price * (1 - (calculation.value || 5) / 100);
+          break;
+      }
+
+      // Apply min/max constraints
+      if (calculation.minPrice) newPrice = Math.max(newPrice, calculation.minPrice);
+      if (calculation.maxPrice) newPrice = Math.min(newPrice, calculation.maxPrice);
+      
+      newPrice = Math.round(newPrice * 100) / 100;
+
+      if (newPrice !== product.price) {
+        // Update product price
+        await supabase
+          .from('products')
+          .update({ price: newPrice, updated_at: new Date().toISOString() })
+          .eq('id', product.id);
+
+        // Log price change
+        await supabase.from('price_history').insert({
+          user_id: userData.user.id,
+          product_id: product.id,
+          old_price: product.price,
+          new_price: newPrice,
+          change_reason: `Règle: ${rule.name}`,
+          source: 'price_rule',
+        } as never);
+
+        totalChange += newPrice - product.price;
+        updatedCount++;
+      }
+    }
+
+    const avgChangePercent = updatedCount > 0 
+      ? (totalChange / (products || []).reduce((sum, p) => sum + p.price, 0)) * 100 
+      : 0;
+
+    // Log the rule execution
     const { data, error } = await supabase
       .from('price_rule_logs')
       .insert({
         rule_id: ruleId,
         user_id: userData.user.id,
         action: 'applied',
-        products_count: productsCount,
+        products_count: updatedCount,
         total_price_change: totalChange,
         avg_price_change_percent: avgChangePercent,
       } as never)
@@ -199,11 +285,12 @@ export const PriceRulesService = {
 
     if (error) throw error;
 
+    // Update rule metadata
     await supabase
       .from('price_rules')
       .update({ 
         last_applied_at: new Date().toISOString(),
-        products_affected: productsCount,
+        products_affected: updatedCount,
         updated_at: new Date().toISOString(),
       })
       .eq('id', ruleId);
@@ -215,10 +302,77 @@ export const PriceRulesService = {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('Non authentifié');
 
-    const productsCount = Math.floor(Math.random() * 300) + 50;
-    const totalChange = (Math.random() - 0.3) * productsCount * 5;
-    const avgChangePercent = (Math.random() - 0.3) * 15;
+    // Get the rule details
+    const { data: rule, error: ruleError } = await supabase
+      .from('price_rules')
+      .select('*')
+      .eq('id', ruleId)
+      .single();
 
+    if (ruleError || !rule) throw new Error('Règle non trouvée');
+
+    // Get products that would be affected
+    let productsQuery = supabase
+      .from('products')
+      .select('id, sku, price, cost_price, name, category')
+      .eq('user_id', userData.user.id)
+      .not('price', 'is', null)
+      .limit(100);
+
+    const applyFilter = rule.apply_filter as Record<string, unknown> | null;
+    if (rule.apply_to === 'category' && applyFilter?.category) {
+      productsQuery = productsQuery.eq('category', applyFilter.category as string);
+    }
+
+    const { data: products } = await productsQuery;
+    const calculation = (rule.calculation || { type: 'percentage', value: 10 }) as unknown as PriceCalculation;
+
+    // Calculate what prices would be
+    const sampleProducts: { sku: string; old_price: number; new_price: number }[] = [];
+    let totalChange = 0;
+
+    for (const product of (products || []).slice(0, 10)) {
+      let newPrice = product.price;
+      const costPrice = product.cost_price || product.price * 0.6;
+
+      switch (rule.rule_type) {
+        case 'markup':
+          newPrice = costPrice * (1 + (calculation.value || 30) / 100);
+          break;
+        case 'margin':
+          newPrice = costPrice / (1 - (calculation.value || 25) / 100);
+          break;
+        case 'fixed':
+          newPrice = product.price + (calculation.value || 0);
+          break;
+        case 'rounding':
+          const roundTo = calculation.roundTo || 99;
+          newPrice = Math.floor(product.price) + roundTo / 100;
+          break;
+        case 'competitive':
+          newPrice = product.price * (1 - (calculation.value || 5) / 100);
+          break;
+      }
+
+      if (calculation.minPrice) newPrice = Math.max(newPrice, calculation.minPrice);
+      if (calculation.maxPrice) newPrice = Math.min(newPrice, calculation.maxPrice);
+      
+      newPrice = Math.round(newPrice * 100) / 100;
+      totalChange += newPrice - product.price;
+
+      sampleProducts.push({
+        sku: product.sku || product.id.slice(0, 8),
+        old_price: product.price,
+        new_price: newPrice,
+      });
+    }
+
+    const productsCount = (products || []).length;
+    const avgChangePercent = productsCount > 0 
+      ? (totalChange / (products || []).reduce((sum, p) => sum + p.price, 0)) * 100 
+      : 0;
+
+    // Log the simulation (no actual changes)
     const { data, error } = await supabase
       .from('price_rule_logs')
       .insert({
@@ -228,13 +382,7 @@ export const PriceRulesService = {
         products_count: productsCount,
         total_price_change: totalChange,
         avg_price_change_percent: avgChangePercent,
-        details: {
-          sample_products: [
-            { sku: 'SKU001', old_price: 29.99, new_price: 34.99 },
-            { sku: 'SKU002', old_price: 49.99, new_price: 54.99 },
-            { sku: 'SKU003', old_price: 19.99, new_price: 22.99 },
-          ]
-        }
+        details: { sample_products: sampleProducts }
       } as never)
       .select()
       .single();
