@@ -43,6 +43,16 @@ import {
   ProductsRulesView
 } from '@/components/products/catalog'
 
+// Command Center
+import {
+  CommandCenterSection,
+  SmartFiltersBar,
+  useCommandCenterData,
+  useSmartFilteredProducts,
+  ActionCardType,
+  SmartFilterType
+} from '@/components/products/command-center'
+
 // Composants règles
 import { RuleBuilder } from '@/components/rules/RuleBuilder'
 import { RuleTemplatesDialog } from '@/components/rules/RuleTemplatesDialog'
@@ -105,6 +115,7 @@ export default function ChannableProductsPage() {
   const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null)
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [smartFilter, setSmartFilter] = useState<SmartFilterType>('all')
 
   // === RULES STATE ===
   const initialMainView = searchParams.get('tab') === 'rules' ? 'rules' : 'products'
@@ -276,7 +287,39 @@ export default function ChannableProductsPage() {
     { id: 'optimize', label: 'À optimiser', count: auditStats.poorCount, icon: Package }
   ], [stats, auditStats])
 
-  const finalFilteredProducts = viewMode === 'audit' ? auditFilteredProducts : filteredProducts
+  // Command Center data
+  const commandCenterData = useCommandCenterData({ 
+    products, 
+    auditResults 
+  })
+  
+  // Smart filtered products
+  const smartFilteredProducts = useSmartFilteredProducts(
+    filteredProducts, 
+    commandCenterData, 
+    smartFilter
+  )
+
+  const finalFilteredProducts = viewMode === 'audit' 
+    ? auditFilteredProducts 
+    : (smartFilter !== 'all' ? smartFilteredProducts : filteredProducts)
+
+  // Handler for Command Center card clicks
+  const handleCommandCardClick = useCallback((type: ActionCardType, productIds: string[]) => {
+    // Apply smart filter based on card type
+    const filterMap: Record<ActionCardType, SmartFilterType> = {
+      stock: 'at_risk',
+      quality: 'at_risk',
+      price_rule: 'no_price_rule',
+      ai: 'ai_recommended',
+      sync: 'not_synced'
+    }
+    setSmartFilter(filterMap[type])
+    toast({ 
+      title: `Filtre appliqué`, 
+      description: `${productIds.length} produits affichés` 
+    })
+  }, [toast])
 
   // === LOADING STATE ===
   if (isLoading) {
@@ -378,6 +421,22 @@ export default function ChannableProductsPage() {
         />
       ) : (
         <>
+          {/* 🆕 Command Center - À faire aujourd'hui */}
+          <CommandCenterSection
+            products={products}
+            auditResults={auditResults}
+            onCardClick={handleCommandCardClick}
+            isLoading={isLoading}
+          />
+
+          {/* 🆕 Smart Filters Bar */}
+          <SmartFiltersBar
+            activeFilter={smartFilter}
+            onFilterChange={setSmartFilter}
+            data={commandCenterData}
+            totalProducts={stats.total}
+          />
+
           {/* Stats Grid */}
           <ProductsStatsSection 
             stats={{
