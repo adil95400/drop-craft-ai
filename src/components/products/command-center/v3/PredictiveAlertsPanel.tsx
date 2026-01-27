@@ -1,0 +1,260 @@
+/**
+ * Command Center V3 - Phase 3: Predictive Alerts Panel
+ * Shows stock-out predictions and urgent business alerts
+ */
+
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  AlertTriangle, 
+  TrendingDown, 
+  TrendingUp, 
+  Clock, 
+  Package,
+  DollarSign,
+  ChevronRight,
+  Sparkles
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { PredictiveAlert } from './usePredictiveInsights'
+
+interface PredictiveAlertsPanelProps {
+  alerts: PredictiveAlert[]
+  onAlertAction: (alert: PredictiveAlert) => void
+  onViewAll: () => void
+  maxAlerts?: number
+  isLoading?: boolean
+}
+
+const alertTypeConfig: Record<PredictiveAlert['type'], {
+  icon: typeof AlertTriangle
+  color: string
+  bgColor: string
+  label: string
+}> = {
+  stockout: {
+    icon: Package,
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    label: 'Rupture'
+  },
+  margin_decline: {
+    icon: TrendingDown,
+    color: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-500/10',
+    label: 'Marge'
+  },
+  opportunity: {
+    icon: Sparkles,
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bgColor: 'bg-emerald-500/10',
+    label: 'Opportunité'
+  },
+  trend_up: {
+    icon: TrendingUp,
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-500/10',
+    label: 'Tendance ↑'
+  },
+  trend_down: {
+    icon: TrendingDown,
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-500/10',
+    label: 'Tendance ↓'
+  }
+}
+
+const urgencyConfig: Record<PredictiveAlert['urgency'], {
+  badge: 'destructive' | 'secondary' | 'outline' | 'default'
+  pulse: boolean
+}> = {
+  critical: { badge: 'destructive', pulse: true },
+  high: { badge: 'destructive', pulse: false },
+  medium: { badge: 'secondary', pulse: false },
+  low: { badge: 'outline', pulse: false }
+}
+
+export function PredictiveAlertsPanel({
+  alerts,
+  onAlertAction,
+  onViewAll,
+  maxAlerts = 5,
+  isLoading = false
+}: PredictiveAlertsPanelProps) {
+  const visibleAlerts = alerts.slice(0, maxAlerts)
+  const hasMore = alerts.length > maxAlerts
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-5 w-5 rounded bg-muted animate-pulse" />
+          <div className="h-5 w-32 rounded bg-muted animate-pulse" />
+        </div>
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (alerts.length === 0) {
+    return (
+      <motion.div 
+        className="rounded-xl border border-border/50 bg-gradient-to-br from-emerald-500/5 to-emerald-600/10 p-6 text-center"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500/10 mb-3">
+          <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <h3 className="font-semibold text-foreground mb-1">Aucune alerte urgente</h3>
+        <p className="text-sm text-muted-foreground">
+          Votre catalogue est bien optimisé, continuez ainsi !
+        </p>
+      </motion.div>
+    )
+  }
+
+  return (
+    <motion.div 
+      className="rounded-xl border border-border/50 bg-card/50 overflow-hidden"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/30">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-primary/10">
+            <AlertTriangle className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm">Alertes Prédictives</h3>
+            <p className="text-xs text-muted-foreground">
+              {alerts.length} alerte{alerts.length > 1 ? 's' : ''} détectée{alerts.length > 1 ? 's' : ''}
+            </p>
+          </div>
+        </div>
+        <Badge variant="secondary" className="text-xs">
+          <Clock className="h-3 w-3 mr-1" />
+          Temps réel
+        </Badge>
+      </div>
+
+      {/* Alerts List */}
+      <ScrollArea className="max-h-[320px]">
+        <div className="p-2 space-y-2">
+          <AnimatePresence mode="popLayout">
+            {visibleAlerts.map((alert, index) => {
+              const typeConf = alertTypeConfig[alert.type]
+              const urgConf = urgencyConfig[alert.urgency]
+              const Icon = typeConf.icon
+
+              return (
+                <motion.div
+                  key={alert.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={cn(
+                    "relative rounded-lg border border-border/50 p-3 hover:bg-muted/50 transition-colors group",
+                    urgConf.pulse && "ring-1 ring-destructive/20"
+                  )}
+                >
+                  {/* Urgency indicator */}
+                  {urgConf.pulse && (
+                    <span className="absolute top-2 right-2 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
+                    </span>
+                  )}
+
+                  <div className="flex items-start gap-3">
+                    {/* Icon */}
+                    <div className={cn("p-2 rounded-lg shrink-0", typeConf.bgColor)}>
+                      <Icon className={cn("h-4 w-4", typeConf.color)} />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm truncate">
+                          {alert.title}
+                        </span>
+                        <Badge variant={urgConf.badge} className="text-[10px] px-1.5 py-0">
+                          {typeConf.label}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
+                        {alert.productName}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <DollarSign className="h-3 w-3" />
+                                <span>Impact: {formatCurrency(alert.potentialImpact)}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{alert.recommendation}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => onAlertAction(alert)}
+                        >
+                          {alert.actionLabel}
+                          <ChevronRight className="h-3 w-3 ml-1" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        </div>
+      </ScrollArea>
+
+      {/* Footer */}
+      {hasMore && (
+        <div className="p-3 border-t border-border/50 bg-muted/20">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs"
+            onClick={onViewAll}
+          >
+            Voir les {alerts.length - maxAlerts} autres alertes
+            <ChevronRight className="h-3 w-3 ml-1" />
+          </Button>
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+function formatCurrency(value: number): string {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M€`
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}K€`
+  return `${value.toFixed(0)}€`
+}

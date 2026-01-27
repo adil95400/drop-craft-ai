@@ -1,6 +1,6 @@
 /**
  * Command Center V3 - Exports
- * Phase 1 + Phase 2 (AI Brain)
+ * Phase 1 + Phase 2 (AI Brain) + Phase 3 (Predictive)
  */
 
 // Labels & Types
@@ -34,6 +34,19 @@ export {
 
 export { AISortSelector } from './AISortSelector'
 export { AIContextPanel } from './AIContextPanel'
+
+// Phase 3: Predictive Insights
+export { usePredictiveInsights } from './usePredictiveInsights'
+export type { 
+  PredictiveAlert, 
+  ROIMetrics, 
+  TrendAnalysis 
+} from './usePredictiveInsights'
+
+export { PredictiveAlertsPanel } from './PredictiveAlertsPanel'
+export { ROIDashboardPanel } from './ROIDashboardPanel'
+export { TrendAnalysisPanel } from './TrendAnalysisPanel'
+export { PredictiveCommandCenter } from './PredictiveCommandCenter'
 
 // Components
 export { PriorityActionCard, PriorityCardsGrid } from './PriorityActionCard'
