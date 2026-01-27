@@ -234,6 +234,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   },
   
   // Module FUSIONNÉ: Tarification (remplace repricing, dynamicPricing, priceRules, stock-repricing)
+  // Navigation harmonisée avec terminologie claire:
+  // - Règles: Règles statiques (markup, marge, arrondi)
+  // - Automatisation: Repricing temps réel et sync boutiques
+  // - Veille: Surveillance concurrence et auto-pricing
+  // - Optimisation IA: Recommandations intelligentes
   pricing: {
     id: 'pricing',
     name: 'Tarification',
@@ -241,16 +246,17 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/pricing',
-    features: ['price-rules', 'dynamic-pricing', 'repricing', 'margin-control'],
-    description: 'Gestion des prix',
+    features: ['price-rules', 'dynamic-pricing', 'repricing', 'margin-control', 'store-sync'],
+    description: 'Gestion et optimisation des prix',
     category: 'automation',
     order: 4,
     groupId: 'catalog',
     subModules: [
-      { id: 'pricing-rules', name: 'Règles de Prix', route: '/pricing/rules', icon: 'GitBranch', description: 'Définir les règles', features: ['rules'], order: 1 },
-      { id: 'pricing-dynamic', name: 'Prix Dynamiques', route: '/pricing/dynamic', icon: 'TrendingUp', description: 'Ajustement automatique', features: ['dynamic'], order: 2 },
-      { id: 'pricing-repricing', name: 'Repricing', route: '/pricing/repricing', icon: 'RefreshCw', description: 'Repricing compétitif', features: ['repricing'], order: 3 },
-      { id: 'pricing-monitoring', name: 'Surveillance', route: '/pricing/monitoring', icon: 'Eye', description: 'Surveiller les prix', features: ['monitoring'], order: 4 },
+      { id: 'pricing-hub', name: 'Hub Tarification', route: '/pricing', icon: 'LayoutDashboard', description: 'Vue d\'ensemble et KPIs', features: ['overview', 'kpis'], order: 1 },
+      { id: 'pricing-rules', name: 'Règles de Prix', route: '/pricing/rules', icon: 'GitBranch', description: 'Règles statiques (markup, marge, arrondi)', features: ['rules'], order: 2 },
+      { id: 'pricing-automation', name: 'Repricing Auto', route: '/pricing/repricing', icon: 'Zap', description: 'Repricing temps réel vers boutiques', features: ['repricing', 'sync'], order: 3 },
+      { id: 'pricing-monitoring', name: 'Veille Prix', route: '/pricing/monitoring', icon: 'Eye', description: 'Surveillance concurrence et auto-pricing', features: ['monitoring', 'competitors'], order: 4 },
+      { id: 'pricing-optimization', name: 'Optimisation IA', route: '/pricing/optimization', icon: 'Brain', description: 'Recommandations IA et élasticité', features: ['ai', 'elasticity'], order: 5 },
     ]
   },
 
