@@ -189,7 +189,7 @@ serve(async (req) => {
       )
     }
 
-    // GET /multi-tenant/analytics - Get tenant analytics
+    // GET /multi-tenant/analytics - Get tenant analytics from real database
     if (method === 'GET' && pathname === '/multi-tenant/analytics') {
       const url = new URL(req.url)
       const tenantId = url.searchParams.get('tenant_id')
@@ -204,7 +204,7 @@ serve(async (req) => {
       // Verify tenant ownership
       const { data: tenant } = await supabase
         .from('tenants')
-        .select('id')
+        .select('id, created_at')
         .eq('id', tenantId)
         .eq('owner_id', user.id)
         .single()
@@ -216,20 +216,69 @@ serve(async (req) => {
         )
       }
 
-      // Get tenant analytics (mocked for now)
+      // Fetch real analytics from database
+      const today = new Date().toISOString().split('T')[0]
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
+      // Get tenant users count
+      const { count: usersCount } = await supabase
+        .from('tenant_users')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+
+      // Get active users today
+      const { count: activeUsersToday } = await supabase
+        .from('activity_logs')
+        .select('user_id', { count: 'exact', head: true })
+        .gte('created_at', `${today}T00:00:00Z`)
+
+      // Get revenue this month (from orders linked to tenant)
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .eq('user_id', user.id)
+        .gte('created_at', thirtyDaysAgo)
+
+      const revenueThisMonth = orders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0
+
+      // Get API calls today
+      const { count: apiCallsToday } = await supabase
+        .from('api_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', `${today}T00:00:00Z`)
+
+      // Get storage usage
+      const { data: storageData } = await supabase
+        .from('media_library')
+        .select('file_size')
+        .eq('user_id', user.id)
+
+      const storageUsedMb = storageData?.reduce((sum, f) => sum + (Number(f.file_size) || 0), 0) / (1024 * 1024) || 0
+
+      // Get feature usage from tenant settings
+      const { data: tenantFull } = await supabase
+        .from('tenants')
+        .select('features, settings')
+        .eq('id', tenantId)
+        .single()
+
+      const features = tenantFull?.features || []
+
       const analytics = {
         tenant_id: tenantId,
-        users_count: Math.floor(Math.random() * 50) + 10,
-        active_users_today: Math.floor(Math.random() * 20) + 5,
-        revenue_this_month: Math.floor(Math.random() * 10000) + 1000,
-        api_calls_today: Math.floor(Math.random() * 1000) + 100,
-        storage_used_mb: Math.floor(Math.random() * 500) + 50,
+        users_count: usersCount || 0,
+        active_users_today: activeUsersToday || 0,
+        revenue_this_month: Math.round(revenueThisMonth * 100) / 100,
+        api_calls_today: apiCallsToday || 0,
+        storage_used_mb: Math.round(storageUsedMb * 100) / 100,
         features_usage: {
-          sso: Math.random() > 0.5,
-          custom_domain: Math.random() > 0.7,
-          white_label: true,
-          api_access: Math.random() > 0.3
-        }
+          sso: features.includes('sso'),
+          custom_domain: features.includes('custom_domain'),
+          white_label: features.includes('white_label'),
+          api_access: features.includes('api_access')
+        },
+        source: 'database'
       }
 
       return new Response(
