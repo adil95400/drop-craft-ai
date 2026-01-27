@@ -38,6 +38,7 @@ import { ToolsRoutes } from './ToolsRoutes';
 import { OrderRoutes } from './OrderRoutes';
 import { CustomerRoutes } from './CustomerRoutes';
 import { SettingsRoutes } from './SettingsRoutes';
+import { CatalogRoutes } from './CatalogRoutes';
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -124,9 +125,13 @@ export function AppRoutes() {
         <Route path="/crm/activity" element={<Navigate to="/marketing/crm/activity" replace />} />
         <Route path="/crm/*" element={<Navigate to="/marketing/crm" replace />} />
         <Route path="/modern" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/catalog" element={<Navigate to="/products/catalogue" replace />} />
+        {/* Legacy /catalog redirect - new catalog routes are at /catalog/* */}
         <Route path="/stores" element={<Navigate to="/stores-channels" replace />} />
         <Route path="/stores/*" element={<Navigate to="/stores-channels" replace />} />
+        
+        {/* Redirections Attributs vers nouveau groupe Catalogue */}
+        <Route path="/attributes" element={<Navigate to="/catalog/attributes" replace />} />
+        <Route path="/attributes/*" element={<Navigate to="/catalog/attributes" replace />} />
         
         {/* API Documentation redirect */}
         <Route path="/api/documentation" element={<Navigate to="/integrations/api/documentation" replace />} />
@@ -149,6 +154,10 @@ export function AppRoutes() {
         <Route path="/customers/*" element={<ProtectedRoute><ChannableLayout><CustomerRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/settings/*" element={<ProtectedRoute><ChannableLayout><SettingsRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/products/*" element={<ProtectedRoute><ChannableLayout><ProductRoutes /></ChannableLayout></ProtectedRoute>} />
+        
+        {/* NOUVEAU: Routes Catalogue - Hub d'exécution produit */}
+        <Route path="/catalog/*" element={<ProtectedRoute><ChannableLayout><CatalogRoutes /></ChannableLayout></ProtectedRoute>} />
+        
         <Route path="/analytics/*" element={<ProtectedRoute><ChannableLayout><AnalyticsRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/automation/*" element={<ProtectedRoute><ChannableLayout><AutomationRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/marketing/*" element={<ProtectedRoute><ChannableLayout><MarketingRoutes /></ChannableLayout></ProtectedRoute>} />
@@ -157,7 +166,6 @@ export function AppRoutes() {
         <Route path="/extensions/*" element={<ProtectedRoute><ChannableLayout><ExtensionRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/audit/*" element={<ProtectedRoute><ChannableLayout><AuditRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/rewrite/*" element={<ProtectedRoute><ChannableLayout><RewriteRoutes /></ChannableLayout></ProtectedRoute>} />
-        <Route path="/attributes/*" element={<ProtectedRoute><ChannableLayout><AttributesRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/stock/*" element={<ProtectedRoute><ChannableLayout><StockRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/import/*" element={<ProtectedRoute><ChannableLayout><ImportRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/feeds/*" element={<ProtectedRoute><ChannableLayout><FeedRoutes /></ChannableLayout></ProtectedRoute>} />
