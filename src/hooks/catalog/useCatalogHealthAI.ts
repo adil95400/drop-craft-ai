@@ -1,10 +1,12 @@
 /**
  * useCatalogHealthAI - Hook IA pour l'optimisation de la santé catalogue
  * Analyse prédictive, recommandations et plan d'action automatisé
+ * Connecté au edge function catalog-ai-hub
  */
 import { useMemo } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCatalogHealth } from './useCatalogHealth'
+import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
 // Types pour les stats IA de santé catalogue
@@ -13,8 +15,8 @@ export interface CatalogHealthAIStats {
   predictedScoreIn7Days: number
   predictedScoreIn30Days: number
   riskLevel: 'low' | 'medium' | 'high' | 'critical'
-  automationPotential: number // % du backlog automatisable
-  estimatedTimeToFullHealth: number // jours
+  automationPotential: number
+  estimatedTimeToFullHealth: number
   priorityActions: HealthPriorityAction[]
   categoryInsights: CategoryHealthInsight[]
   benchmarkComparison: {
@@ -321,34 +323,66 @@ export function useHealthRecommendations() {
 }
 
 /**
- * Hook pour appliquer une recommandation de santé
+ * Hook pour appliquer une recommandation de santé via edge function
  */
 export function useApplyHealthRecommendation() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (recommendation: HealthRecommendation) => {
-      // Simulation de l'application
       console.log('[Health AI] Applying recommendation:', recommendation.actionType)
       
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const { data, error } = await supabase.functions.invoke('catalog-ai-hub', {
+        body: {
+          module: 'health',
+          action: 'apply',
+          recommendationId: recommendation.actionType,
+          productIds: [],
+          context: { recommendation }
+        }
+      })
+
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Failed to apply recommendation')
 
       return {
         success: true,
-        appliedTo: recommendation.affectedProducts,
-        scoreGain: recommendation.estimatedScoreGain
+        appliedTo: data.result?.updatedCount || recommendation.affectedProducts,
+        scoreGain: recommendation.estimatedScoreGain,
+        message: data.result?.message
       }
     },
     onSuccess: (data, recommendation) => {
       toast.success(`✅ ${recommendation.title} appliquée`, {
-        description: `${data.appliedTo} produits traités • +${data.scoreGain} pts de score`
+        description: data.message || `${data.appliedTo} produits traités • +${data.scoreGain} pts de score`
       })
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['catalog-ai-recommendations'] })
     },
     onError: (error) => {
+      console.error('[Health AI] Apply error:', error)
       toast.error('Erreur lors de l\'application', {
         description: error instanceof Error ? error.message : 'Erreur inconnue'
       })
     }
+  })
+}
+
+/**
+ * Hook pour récupérer les recommandations IA depuis le backend
+ */
+export function useAIRecommendationsFromBackend(module: 'health' | 'backlog' | 'media' | 'variants' | 'attributes' | 'categories') {
+  return useQuery({
+    queryKey: ['catalog-ai-recommendations', module],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('catalog-ai-hub', {
+        body: { module, action: 'recommend' }
+      })
+
+      if (error) throw error
+      return data?.data || { recommendations: [], insights: [] }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false
   })
 }
