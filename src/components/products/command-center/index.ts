@@ -1,6 +1,6 @@
 /**
  * Command Center - Exports
- * Phase 1, 2 & 3 Components
+ * Phase 1, 2, 3 & 4 (Premium) Components
  */
 
 // Phase 1 - Core
@@ -10,7 +10,7 @@ export { SmartFiltersBar } from './SmartFiltersBar'
 export { BusinessKPIGrid } from './BusinessKPIGrid'
 export { useCommandCenterData, useSmartFilteredProducts } from './useCommandCenterData'
 
-// Phase 2 - Premium
+// Phase 2 - Premium Views
 export { ProductStatusBadges, calculateProductStatus } from './ProductStatusBadges'
 export type { ProductStatusData } from './ProductStatusBadges'
 export { ProductMicroInfo } from './ProductMicroInfo'
@@ -21,6 +21,10 @@ export type { ViewMode } from './ViewModeSelector'
 export { AIRecommendationsPanel } from './AIRecommendationsPanel'
 export { ROIMiniDashboard } from './ROIMiniDashboard'
 export { StockPredictionsAlert } from './StockPredictionsAlert'
+
+// Phase 4 - Premium Enhancements
+export { BulkActionsBar } from './BulkActionsBar'
+export { RealTimeIndicator } from './RealTimeIndicator'
 
 // Types
 export * from './types'
