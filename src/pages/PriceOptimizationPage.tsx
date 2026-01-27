@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,8 @@ import {
 } from '@/hooks/usePriceOptimization';
 
 const PriceOptimizationPage: React.FC = () => {
+  const [applyingId, setApplyingId] = useState<string | null>(null);
+  
   const { data: stats, isLoading: isLoadingStats } = useOptimizationStats();
   const { data: recommendations = [], isLoading: isLoadingRecs } = usePriceRecommendations();
   const { data: competitors = [], isLoading: isLoadingCompetitors } = useCompetitorAnalysis();
@@ -26,6 +28,13 @@ const PriceOptimizationPage: React.FC = () => {
   
   const applyRecommendation = useApplyRecommendation();
   const applyAll = useApplyAllRecommendations();
+
+  const handleApplyRecommendation = (rec: typeof recommendations[0]) => {
+    setApplyingId(rec.id);
+    applyRecommendation.mutate(rec, {
+      onSettled: () => setApplyingId(null),
+    });
+  };
 
   return (
     <>
@@ -175,10 +184,10 @@ const PriceOptimizationPage: React.FC = () => {
                             </Badge>
                             <Button 
                               size="sm"
-                              onClick={() => applyRecommendation.mutate(rec)}
-                              disabled={applyRecommendation.isPending}
+                              onClick={() => handleApplyRecommendation(rec)}
+                              disabled={applyingId !== null}
                             >
-                              {applyRecommendation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Appliquer'}
+                              {applyingId === rec.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Appliquer'}
                             </Button>
                           </div>
                         </div>
