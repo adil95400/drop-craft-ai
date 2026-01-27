@@ -1,17 +1,19 @@
 /**
  * Barre d'actions rapides pour la page Produits
  * Phase 2: Intégration ViewModeSelector avec mode Business
+ * Sprint 1 V3: Tri IA intégré comme décision par défaut
  */
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   Plus, Upload, Download, Wand2, RefreshCw, 
-  Filter 
+  Filter, Brain
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { ViewModeSelector, ViewMode } from '@/components/products/command-center'
+import { cn } from '@/lib/utils'
 
 interface ProductsQuickActionsBarProps {
   onRefresh: () => void
@@ -24,6 +26,7 @@ interface ProductsQuickActionsBarProps {
   onShowFilters: () => void
   onResetFilters?: () => void
   isLoading?: boolean
+  isAISorted?: boolean
 }
 
 export function ProductsQuickActionsBar({
@@ -34,7 +37,8 @@ export function ProductsQuickActionsBar({
   hasActiveFilters,
   onShowFilters,
   onResetFilters,
-  isLoading = false
+  isLoading = false,
+  isAISorted = true
 }: ProductsQuickActionsBarProps) {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -72,6 +76,14 @@ export function ProductsQuickActionsBar({
           <Wand2 className="h-4 w-4" />
           Enrichir IA
         </Button>
+        
+        {/* Indicateur tri IA actif */}
+        {isAISorted && (
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-primary/5 border border-primary/20">
+            <Brain className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-medium text-primary">Tri IA actif</span>
+          </div>
+        )}
       </div>
       
       {/* Actions secondaires (droite) */}
@@ -94,7 +106,7 @@ export function ProductsQuickActionsBar({
           onClick={onRefresh}
           disabled={isLoading}
         >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           <span className="hidden md:inline">Actualiser</span>
         </Button>
         <Button
