@@ -1,8 +1,9 @@
 /**
- * Command Center V3 - Phase 3: ROI Dashboard Panel
+ * Command Center V3 - Phase 3: ROI Dashboard Panel - Optimized
  * Real-time ROI metrics and projections
  */
 
+import { memo } from 'react'
 import { motion } from 'framer-motion'
 import { 
   TrendingUp, 
@@ -24,6 +25,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { ROIMetrics } from './usePredictiveInsights'
+import { GridSkeleton } from './utils/skeletons'
+import { formatCurrency } from './utils/calculations'
 
 interface ROIDashboardPanelProps {
   metrics: ROIMetrics
@@ -31,25 +34,52 @@ interface ROIDashboardPanelProps {
   isLoading?: boolean
 }
 
-export function ROIDashboardPanel({
+// Memoized metric card
+const MetricCard = memo(function MetricCard({ 
+  icon: Icon, 
+  label, 
+  value, 
+  subtext, 
+  variant 
+}: {
+  icon: typeof DollarSign
+  label: string
+  value: string
+  subtext: string
+  variant: 'default' | 'success' | 'warning' | 'primary'
+}) {
+  const variantStyles = {
+    default: 'bg-card/50',
+    success: 'bg-emerald-500/5',
+    warning: 'bg-orange-500/5',
+    primary: 'bg-primary/5'
+  }
+
+  const iconStyles = {
+    default: 'text-muted-foreground',
+    success: 'text-emerald-600 dark:text-emerald-400',
+    warning: 'text-orange-600 dark:text-orange-400',
+    primary: 'text-primary'
+  }
+
+  return (
+    <div className={cn("p-4", variantStyles[variant])}>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className={cn("h-4 w-4", iconStyles[variant])} />
+        <span className="text-xs text-muted-foreground">{label}</span>
+      </div>
+      <p className="text-lg font-semibold text-foreground">{value}</p>
+      <p className="text-[10px] text-muted-foreground mt-1">{subtext}</p>
+    </div>
+  )
+})
+
+export const ROIDashboardPanel = memo(function ROIDashboardPanel({
   metrics,
-  currency = '€',
   isLoading = false
 }: ROIDashboardPanelProps) {
   if (isLoading) {
-    return (
-      <div className="rounded-xl border border-border/50 bg-card/50 p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-5 w-5 rounded bg-muted animate-pulse" />
-          <div className="h-5 w-32 rounded bg-muted animate-pulse" />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-20 rounded-lg bg-muted animate-pulse" />
-          ))}
-        </div>
-      </div>
-    )
+    return <GridSkeleton cols={2} rows={2} />
   }
 
   const TrendIcon = metrics.roiTrend === 'up' 
@@ -72,7 +102,6 @@ export function ROIDashboardPanel({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/30">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-primary/10">
@@ -80,9 +109,7 @@ export function ROIDashboardPanel({
           </div>
           <div>
             <h3 className="font-semibold text-sm">ROI Temps Réel</h3>
-            <p className="text-xs text-muted-foreground">
-              Performances et projections
-            </p>
+            <p className="text-xs text-muted-foreground">Performances et projections</p>
           </div>
         </div>
         <div className={cn("flex items-center gap-1", trendColor)}>
@@ -94,7 +121,6 @@ export function ROIDashboardPanel({
         </div>
       </div>
 
-      {/* Main ROI Display */}
       <div className="p-4 border-b border-border/50">
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -135,7 +161,6 @@ export function ROIDashboardPanel({
         </p>
       </div>
 
-      {/* Metrics Grid */}
       <div className="grid grid-cols-2 gap-px bg-border/50">
         <MetricCard
           icon={DollarSign}
@@ -168,45 +193,4 @@ export function ROIDashboardPanel({
       </div>
     </motion.div>
   )
-}
-
-interface MetricCardProps {
-  icon: typeof DollarSign
-  label: string
-  value: string
-  subtext: string
-  variant: 'default' | 'success' | 'warning' | 'primary'
-}
-
-function MetricCard({ icon: Icon, label, value, subtext, variant }: MetricCardProps) {
-  const variantStyles = {
-    default: 'bg-card/50',
-    success: 'bg-emerald-500/5',
-    warning: 'bg-orange-500/5',
-    primary: 'bg-primary/5'
-  }
-
-  const iconStyles = {
-    default: 'text-muted-foreground',
-    success: 'text-emerald-600 dark:text-emerald-400',
-    warning: 'text-orange-600 dark:text-orange-400',
-    primary: 'text-primary'
-  }
-
-  return (
-    <div className={cn("p-4", variantStyles[variant])}>
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className={cn("h-4 w-4", iconStyles[variant])} />
-        <span className="text-xs text-muted-foreground">{label}</span>
-      </div>
-      <p className="text-lg font-semibold text-foreground">{value}</p>
-      <p className="text-[10px] text-muted-foreground mt-1">{subtext}</p>
-    </div>
-  )
-}
-
-function formatCurrency(value: number): string {
-  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M€`
-  if (value >= 1000) return `${(value / 1000).toFixed(1)}K€`
-  return `${value.toFixed(0)}€`
-}
+})
