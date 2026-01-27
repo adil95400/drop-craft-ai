@@ -49,8 +49,11 @@ import {
   SmartFiltersBar,
   useCommandCenterData,
   useSmartFilteredProducts,
+  ViewModeSelector,
+  useViewModePreference,
   ActionCardType,
-  SmartFilterType
+  SmartFilterType,
+  ViewMode
 } from '@/components/products/command-center'
 
 // Composants règles
@@ -105,7 +108,8 @@ export default function ChannableProductsPage() {
 
   // === UI STATE ===
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
-  const [viewMode, setViewMode] = useState<'standard' | 'audit'>('standard')
+  const { getStoredMode, setStoredMode } = useViewModePreference()
+  const [viewMode, setViewMode] = useState<ViewMode>(getStoredMode())
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [showBulkEdit, setShowBulkEdit] = useState(false)
   const [showBulkEnrichment, setShowBulkEnrichment] = useState(false)
@@ -116,6 +120,12 @@ export default function ChannableProductsPage() {
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [smartFilter, setSmartFilter] = useState<SmartFilterType>('all')
+
+  // Handler for view mode change with persistence
+  const handleViewModeChange = useCallback((mode: ViewMode) => {
+    setViewMode(mode)
+    setStoredMode(mode)
+  }, [setStoredMode])
 
   // === RULES STATE ===
   const initialMainView = searchParams.get('tab') === 'rules' ? 'rules' : 'products'
@@ -463,7 +473,7 @@ export default function ChannableProductsPage() {
             onRefresh={handleRefresh}
             onEnrich={() => setShowBulkEnrichment(true)}
             viewMode={viewMode}
-            onViewModeChange={setViewMode}
+            onViewModeChange={handleViewModeChange}
             expertMode={expertMode}
             onExpertModeChange={setExpertMode}
             hasActiveFilters={hasActiveFilters || auditActiveCount > 0}
@@ -592,7 +602,7 @@ export default function ChannableProductsPage() {
             />
           ) : (
             <ProductsStandardView
-              products={filteredProducts}
+              products={smartFilter !== 'all' ? smartFilteredProducts : filteredProducts}
               allProducts={products}
               totalCount={stats.total}
               filters={filters}
@@ -607,6 +617,7 @@ export default function ChannableProductsPage() {
               isLoading={isLoading}
               selectedProducts={selectedProducts}
               onSelectionChange={setSelectedProducts}
+              viewMode={viewMode}
             />
           )}
         </>

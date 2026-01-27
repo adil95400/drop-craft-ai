@@ -8,6 +8,7 @@ import { EnhancedProductCard } from './EnhancedProductCard';
 import { ProductsPagination } from './ProductsPagination';
 import { ProductViewModal } from '@/components/modals/ProductViewModal';
 import { Package } from 'lucide-react';
+import { ViewMode } from './command-center';
 
 interface ProductsGridViewProps {
   products: UnifiedProduct[];
@@ -17,6 +18,7 @@ interface ProductsGridViewProps {
   selectedProducts?: string[];
   onSelectionChange?: (ids: string[]) => void;
   itemsPerPage?: number;
+  viewMode?: ViewMode;
 }
 
 export const ProductsGridView = memo(function ProductsGridView({
@@ -26,7 +28,8 @@ export const ProductsGridView = memo(function ProductsGridView({
   onView,
   selectedProducts = [],
   onSelectionChange,
-  itemsPerPage: initialItemsPerPage = 24
+  itemsPerPage: initialItemsPerPage = 24,
+  viewMode = 'standard'
 }: ProductsGridViewProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
@@ -133,6 +136,7 @@ export const ProductsGridView = memo(function ProductsGridView({
               isSelected={isSelected}
               onSelectChange={(checked) => handleSelectProduct(product.id, checked)}
               showSelection={!!onSelectionChange}
+              viewMode={viewMode}
             />
           );
         })}
