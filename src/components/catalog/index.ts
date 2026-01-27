@@ -6,3 +6,4 @@
 // Phase 2: AI Panels
 export { MediaAIPanel } from './MediaAIPanel'
 export { VariantsAIPanel } from './VariantsAIPanel'
+export { BacklogAIPanel } from './BacklogAIPanel'

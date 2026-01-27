@@ -50,3 +50,12 @@ export {
   type VariantsAIStats,
   type VariantRecommendation
 } from './useVariantsAI'
+
+// Phase 2: AI Hooks - Product Backlog
+export {
+  useBacklogAIStats,
+  useBacklogRecommendations,
+  useApplyBacklogRecommendation,
+  type BacklogAIStats,
+  type BacklogRecommendation
+} from './useProductBacklogAI'

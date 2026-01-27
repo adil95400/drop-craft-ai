@@ -1,6 +1,7 @@
 /**
  * ToProcessPage - Backlog intelligent avec données réelles
  * Hub d'exécution: priorisation IA des actions requises
+ * Phase 2: Intégration IA
  */
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -8,8 +9,10 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package, Sparkles, Euro, Clock } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package, Sparkles, Euro, Clock, Brain } from 'lucide-react'
 import { useProductBacklog, BacklogCategory, BacklogItem } from '@/hooks/catalog'
+import { BacklogAIPanel } from '@/components/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
@@ -17,6 +20,7 @@ import { Progress } from '@/components/ui/progress'
 export default function ToProcessPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<BacklogCategory>('all')
+  const [viewMode, setViewMode] = useState<'list' | 'ai'>('ai')
   const { backlogItems, counts, totalEstimatedImpact, filterByCategory, isLoading } = useProductBacklog()
 
   // Filtrer selon l'onglet actif
@@ -56,8 +60,24 @@ export default function ToProcessPage() {
         </Button>
       }
     >
-      <div className="space-y-6">
-        {/* Impact estimé global */}
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'ai')} className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="ai" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            Intelligence IA
+          </TabsTrigger>
+          <TabsTrigger value="list" className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            Liste détaillée
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="ai" className="mt-6">
+          <BacklogAIPanel />
+        </TabsContent>
+
+        <TabsContent value="list" className="mt-6">
+          <div className="space-y-6">
         {totalEstimatedImpact > 0 && (
           <Card className="bg-gradient-to-r from-emerald-500/5 to-teal-500/5 border-emerald-500/20">
             <CardContent className="p-4 flex items-center justify-between">
@@ -205,7 +225,9 @@ export default function ToProcessPage() {
             )}
           </CardContent>
         </Card>
-      </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </ChannablePageWrapper>
   )
 }
