@@ -26,7 +26,7 @@ export { StockPredictionsAlert } from './StockPredictionsAlert'
 export { BulkActionsBar } from './BulkActionsBar'
 export { RealTimeIndicator } from './RealTimeIndicator'
 
-// V3 - Command Center Premium
+// V3 - Command Center Premium (Phase 1 + 2)
 export * from './v3'
 
 // Types

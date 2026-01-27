@@ -35,7 +35,9 @@ import { motion } from 'framer-motion';
 import { 
   ProductStatusBadges, 
   ProductStatusData,
-  ProductMicroInfo 
+  ProductMicroInfo,
+  ProductAIBadge as ProductAIBadgeType,
+  ProductAIBadgeComponent
 } from './command-center';
 
 interface EnhancedProductCardProps {
@@ -51,6 +53,8 @@ interface EnhancedProductCardProps {
   // Phase 2: Business mode props
   statusData?: ProductStatusData;
   viewMode?: 'standard' | 'audit' | 'business';
+  // V3: AI Badge
+  aiBadge?: ProductAIBadgeType;
 }
 
 export const EnhancedProductCard = memo(function EnhancedProductCard({
@@ -64,7 +68,8 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
   onSelectChange,
   showSelection = true,
   statusData,
-  viewMode = 'standard'
+  viewMode = 'standard',
+  aiBadge
 }: EnhancedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -286,23 +291,27 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
             </Button>
           </motion.div>
 
-          {/* AI Score Badge */}
+          {/* AI Badge V3 - or fallback to Score */}
           <div className="absolute bottom-3 right-3">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/95 shadow-lg backdrop-blur-sm border border-border/50"
-                  )}>
-                    <Sparkles className={cn("h-3.5 w-3.5", scoreConfig.color)} />
-                    <span className={cn("text-sm font-bold", scoreConfig.color)}>{aiScore}</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="left">
-                  <p>Score IA: {scoreConfig.label}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {aiBadge ? (
+              <ProductAIBadgeComponent badge={aiBadge} compact />
+            ) : (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/95 shadow-lg backdrop-blur-sm border border-border/50"
+                    )}>
+                      <Sparkles className={cn("h-3.5 w-3.5", scoreConfig.color)} />
+                      <span className={cn("text-sm font-bold", scoreConfig.color)}>{aiScore}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    <p>Score IA: {scoreConfig.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </div>
 

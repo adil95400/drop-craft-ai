@@ -10,6 +10,7 @@ import { useUnifiedProducts } from '@/hooks/useUnifiedProducts'
 import { useProductFilters } from '@/hooks/useProductFilters'
 import { useAuditFilters } from '@/hooks/useAuditFilters'
 import { useProductsAudit } from '@/hooks/useProductAuditEngine'
+import { usePriceRules } from '@/hooks/usePriceRules'
 import { BulkEnrichmentDialog } from '@/components/enrichment'
 import { ProductsDebugPanel } from '@/components/debug/ProductsDebugPanel'
 import { ProductViewModal } from '@/components/modals/ProductViewModal'
@@ -61,7 +62,11 @@ import {
   // Phase 4
   BulkActionsBar,
   // V3
-  CommandCenterV3
+  CommandCenterV3,
+  useAIPriorityEngine,
+  useAISortedProducts,
+  AISortSelector,
+  AISortMode
 } from '@/components/products/command-center'
 
 // Stock Predictions Hook
@@ -107,6 +112,17 @@ export default function ChannableProductsPage() {
   // Stock Predictions (Phase 3)
   const { criticalAlerts, stats: stockPredictionStats } = useStockPredictions()
   
+  // V3: Price Rules for AI Engine
+  const { data: priceRules = [] } = usePriceRules()
+  const priceRulesActive = priceRules.some((r: any) => r.is_active && r.apply_to === 'all')
+  
+  // V3: AI Priority Engine
+  const aiEngineResult = useAIPriorityEngine({
+    products,
+    auditResults,
+    priceRulesActive
+  })
+  
   // Hook pour les règles
   const { 
     rules, 
@@ -135,6 +151,10 @@ export default function ChannableProductsPage() {
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [smartFilter, setSmartFilter] = useState<SmartFilterType>('all')
   const [useV3CommandCenter] = useState(true) // V3 activé par défaut
+  
+  // V3: AI Sorting State
+  const [aiSortMode, setAiSortMode] = useState<AISortMode>('ai_priority')
+  const [aiSortAscending, setAiSortAscending] = useState(false)
 
   // Handler for view mode change with persistence
   const handleViewModeChange = useCallback((mode: ViewMode) => {
@@ -324,10 +344,18 @@ export default function ChannableProductsPage() {
     commandCenterData, 
     smartFilter
   )
+  
+  // V3: AI Sorted products
+  const aiSortedProducts = useAISortedProducts({
+    products: smartFilter !== 'all' ? smartFilteredProducts : filteredProducts,
+    engineResult: aiEngineResult,
+    sortMode: aiSortMode,
+    ascending: aiSortAscending
+  })
 
   const finalFilteredProducts = viewMode === 'audit' 
     ? auditFilteredProducts 
-    : (smartFilter !== 'all' ? smartFilteredProducts : filteredProducts)
+    : aiSortedProducts
 
   // Handler for Command Center card clicks
   const handleCommandCardClick = useCallback((type: ActionCardType, productIds: string[]) => {
@@ -600,6 +628,19 @@ export default function ChannableProductsPage() {
             isLoading={isLoading}
           />
 
+          {/* V3: AI Sort Selector */}
+          {useV3CommandCenter && viewMode !== 'audit' && (
+            <div className="flex items-center justify-end">
+              <AISortSelector
+                currentMode={aiSortMode}
+                ascending={aiSortAscending}
+                onModeChange={setAiSortMode}
+                onDirectionChange={setAiSortAscending}
+                isAIDefault={true}
+              />
+            </div>
+          )}
+
           {/* Bulk Actions Bar */}
           {selectedProducts.length > 0 && (
             <motion.div 
@@ -717,7 +758,7 @@ export default function ChannableProductsPage() {
             />
           ) : (
             <ProductsStandardView
-              products={smartFilter !== 'all' ? smartFilteredProducts : filteredProducts}
+              products={finalFilteredProducts}
               allProducts={products}
               totalCount={stats.total}
               filters={filters}
@@ -733,6 +774,8 @@ export default function ChannableProductsPage() {
               selectedProducts={selectedProducts}
               onSelectionChange={setSelectedProducts}
               viewMode={viewMode}
+              productBadges={aiEngineResult.productBadges}
+              isAISorted={aiSortMode === 'ai_priority' || aiSortMode === 'risk_first' || aiSortMode === 'opportunity_first'}
             />
           )}
         </>
