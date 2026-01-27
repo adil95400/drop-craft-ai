@@ -57,7 +57,9 @@ import {
   // Phase 3
   AIRecommendationsPanel,
   ROIMiniDashboard,
-  StockPredictionsAlert
+  StockPredictionsAlert,
+  // Phase 4
+  BulkActionsBar
 } from '@/components/products/command-center'
 
 // Stock Predictions Hook
@@ -359,6 +361,38 @@ export default function ChannableProductsPage() {
       description: `Commande de ${quantity} unités en cours de préparation` 
     })
   }, [toast])
+
+  // Handler for bulk actions
+  const handleBulkAction = useCallback(async (actionId: string, productIds: string[]) => {
+    switch (actionId) {
+      case 'apply_price_rule':
+        toast({ title: 'Règle de prix', description: `Application en cours sur ${productIds.length} produits...` })
+        break
+      case 'sync_stores':
+        toast({ title: 'Synchronisation', description: `Synchronisation de ${productIds.length} produits en cours...` })
+        break
+      case 'optimize_ai':
+        toast({ title: 'Optimisation IA', description: `Analyse de ${productIds.length} produits...` })
+        break
+      case 'add_tag':
+        toast({ title: 'Tags', description: 'Ouverture du gestionnaire de tags...' })
+        break
+      case 'export':
+        setShowPlatformExport(true)
+        break
+      case 'delete':
+        setBulkDeleteDialogOpen(true)
+        break
+      default:
+        toast({ title: 'Action', description: `Action ${actionId} sur ${productIds.length} produits` })
+    }
+    // Simulate delay for demo
+    await new Promise(resolve => setTimeout(resolve, 1000))
+  }, [toast])
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedProducts([])
+  }, [])
 
   // === LOADING STATE ===
   if (isLoading) {
@@ -896,6 +930,15 @@ export default function ChannableProductsPage() {
           setSelectedProducts([])
           toast({ title: 'Export terminé', description: 'Les produits ont été exportés avec succès' })
         }}
+      />
+
+      {/* Bulk Actions Bar - Phase 4 */}
+      <BulkActionsBar
+        selectedCount={selectedProducts.length}
+        selectedIds={selectedProducts}
+        onClear={handleClearSelection}
+        onAction={handleBulkAction}
+        isVisible={selectedProducts.length > 0}
       />
     </ChannablePageWrapper>
   )

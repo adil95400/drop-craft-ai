@@ -1,9 +1,9 @@
 /**
  * Barre de filtres intelligents pour le Command Center
- * Filtres métier orientés action
+ * Filtres métier orientés action - Optimisé mobile
  */
 
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { 
   AlertTriangle, TrendingUp, DollarSign, RefreshCw, 
   Sparkles, TrendingDown, Package 
@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { SmartFilterType, SMART_FILTER_LABELS, CommandCenterData } from './types'
 
 interface SmartFiltersBarProps {
@@ -43,6 +44,19 @@ const filterVariants: Record<SmartFilterType, string> = {
   not_synced: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20',
   ai_recommended: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20',
   losing_margin: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+}
+
+// Animation variants
+const buttonVariants: Variants = {
+  idle: { scale: 1 },
+  hover: { scale: 1.02 },
+  tap: { scale: 0.98 }
+}
+
+const badgeVariants: Variants = {
+  initial: { scale: 0.8, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0.8, opacity: 0 }
 }
 
 export function SmartFiltersBar({
@@ -96,51 +110,77 @@ export function SmartFiltersBar({
   ]
   
   return (
-    <div className="flex flex-wrap items-center gap-2 p-3 bg-muted/30 rounded-lg border border-border/50">
-      <span className="text-sm font-medium text-muted-foreground mr-2">
-        Filtres :
-      </span>
+    <div className="p-3 bg-muted/30 rounded-lg border border-border/50">
+      {/* Label - hidden on mobile */}
+      <div className="hidden sm:flex items-center mb-2">
+        <span className="text-sm font-medium text-muted-foreground">
+          Filtres intelligents :
+        </span>
+      </div>
       
-      <TooltipProvider>
-        {filterOptions.map((option) => {
-          const Icon = filterIcons[option.id]
-          const isActive = activeFilter === option.id
-          
-          return (
-            <Tooltip key={option.id}>
-              <TooltipTrigger asChild>
-                <motion.button
-                  onClick={() => onFilterChange(option.id)}
-                  className={cn(
-                    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium',
-                    'transition-all duration-200 border',
-                    isActive 
-                      ? cn(filterVariants[option.id], 'border-current/30 ring-2 ring-current/20')
-                      : 'border-transparent hover:border-border bg-background/50 text-muted-foreground hover:text-foreground'
-                  )}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{option.label}</span>
-                  <Badge 
-                    variant="secondary" 
-                    className={cn(
-                      'h-5 min-w-5 px-1.5 text-[10px] font-bold',
-                      isActive ? 'bg-current/20 text-current' : ''
-                    )}
-                  >
-                    {option.count}
-                  </Badge>
-                </motion.button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>{option.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          )
-        })}
-      </TooltipProvider>
+      {/* Scrollable filters for mobile */}
+      <ScrollArea className="w-full">
+        <div className="flex items-center gap-2 pb-2 sm:pb-0">
+          <TooltipProvider>
+            {filterOptions.map((option, index) => {
+              const Icon = filterIcons[option.id]
+              const isActive = activeFilter === option.id
+              
+              return (
+                <Tooltip key={option.id}>
+                  <TooltipTrigger asChild>
+                    <motion.button
+                      onClick={() => onFilterChange(option.id)}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium',
+                        'transition-all duration-200 border whitespace-nowrap',
+                        // Mobile optimization - larger touch targets
+                        'min-h-[44px] touch-manipulation',
+                        isActive 
+                          ? cn(filterVariants[option.id], 'border-current/30 ring-2 ring-current/20')
+                          : 'border-transparent hover:border-border bg-background/50 text-muted-foreground hover:text-foreground'
+                      )}
+                      variants={buttonVariants}
+                      initial="idle"
+                      whileHover="hover"
+                      whileTap="tap"
+                      layout
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="hidden sm:inline">{option.label}</span>
+                      <motion.div
+                        key={option.count}
+                        variants={badgeVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                      >
+                        <Badge 
+                          variant="secondary" 
+                          className={cn(
+                            'h-5 min-w-5 px-1.5 text-[10px] font-bold',
+                            isActive ? 'bg-current/20 text-current' : ''
+                          )}
+                        >
+                          {option.count}
+                        </Badge>
+                      </motion.div>
+                    </motion.button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="sm:hidden">
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-xs text-muted-foreground">{option.tooltip}</p>
+                  </TooltipContent>
+                  <TooltipContent side="bottom" className="hidden sm:block">
+                    <p>{option.tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )
+            })}
+          </TooltipProvider>
+        </div>
+        <ScrollBar orientation="horizontal" className="sm:hidden" />
+      </ScrollArea>
     </div>
   )
 }

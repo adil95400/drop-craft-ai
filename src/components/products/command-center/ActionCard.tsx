@@ -1,10 +1,10 @@
 /**
  * Carte d'action du Command Center
- * Affiche un KPI avec action rapide
+ * Design premium avec animations avancées
  */
 
-import { motion } from 'framer-motion'
-import { LucideIcon, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react'
+import { motion, Variants } from 'framer-motion'
+import { LucideIcon, TrendingUp, TrendingDown, ChevronRight, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { 
   Tooltip,
@@ -29,43 +29,97 @@ interface ActionCardProps {
     direction: 'up' | 'down'
   }
   isLoading?: boolean
+  // Bulk actions
+  selectable?: boolean
+  selected?: boolean
+  onSelect?: (selected: boolean) => void
 }
 
 const variantStyles: Record<ActionCardVariant, {
   bg: string
+  bgHover: string
   border: string
   text: string
   iconBg: string
+  glow: string
 }> = {
   destructive: {
-    bg: 'bg-red-500/10 hover:bg-red-500/15',
+    bg: 'bg-red-500/10',
+    bgHover: 'hover:bg-red-500/20',
     border: 'border-red-500/30',
     text: 'text-red-600 dark:text-red-400',
-    iconBg: 'bg-red-500/20'
+    iconBg: 'bg-red-500/20',
+    glow: 'shadow-red-500/20'
   },
   warning: {
-    bg: 'bg-orange-500/10 hover:bg-orange-500/15',
+    bg: 'bg-orange-500/10',
+    bgHover: 'hover:bg-orange-500/20',
     border: 'border-orange-500/30',
     text: 'text-orange-600 dark:text-orange-400',
-    iconBg: 'bg-orange-500/20'
+    iconBg: 'bg-orange-500/20',
+    glow: 'shadow-orange-500/20'
   },
   info: {
-    bg: 'bg-blue-500/10 hover:bg-blue-500/15',
+    bg: 'bg-blue-500/10',
+    bgHover: 'hover:bg-blue-500/20',
     border: 'border-blue-500/30',
     text: 'text-blue-600 dark:text-blue-400',
-    iconBg: 'bg-blue-500/20'
+    iconBg: 'bg-blue-500/20',
+    glow: 'shadow-blue-500/20'
   },
   primary: {
-    bg: 'bg-purple-500/10 hover:bg-purple-500/15',
+    bg: 'bg-purple-500/10',
+    bgHover: 'hover:bg-purple-500/20',
     border: 'border-purple-500/30',
     text: 'text-purple-600 dark:text-purple-400',
-    iconBg: 'bg-purple-500/20'
+    iconBg: 'bg-purple-500/20',
+    glow: 'shadow-purple-500/20'
   },
   muted: {
-    bg: 'bg-muted/50 hover:bg-muted/70',
+    bg: 'bg-muted/50',
+    bgHover: 'hover:bg-muted/70',
     border: 'border-muted-foreground/20',
     text: 'text-muted-foreground',
-    iconBg: 'bg-muted-foreground/20'
+    iconBg: 'bg-muted-foreground/20',
+    glow: 'shadow-muted/20'
+  }
+}
+
+// Animation variants with proper typing
+const cardVariants: Variants = {
+  idle: { scale: 1, y: 0 },
+  hover: { 
+    scale: 1.02, 
+    y: -4,
+    transition: { type: 'spring' as const, stiffness: 400, damping: 25 }
+  },
+  tap: { scale: 0.98 }
+}
+
+const iconVariants: Variants = {
+  idle: { rotate: 0, scale: 1 },
+  hover: { 
+    rotate: [0, -10, 10, -5, 0], 
+    scale: 1.1,
+    transition: { duration: 0.5 }
+  }
+}
+
+const pulseVariants: Variants = {
+  idle: { opacity: 0, scale: 0.8 },
+  hover: { 
+    opacity: [0, 0.5, 0],
+    scale: [0.8, 1.2, 0.8],
+    transition: { duration: 1.5, repeat: Infinity }
+  }
+}
+
+const arrowVariants: Variants = {
+  idle: { x: 0, opacity: 0 },
+  hover: { 
+    x: 3, 
+    opacity: 1,
+    transition: { type: 'spring' as const, stiffness: 400 }
   }
 }
 
@@ -79,18 +133,26 @@ export function ActionCard({
   cta,
   onClick,
   trend,
-  isLoading = false
+  isLoading = false,
+  selectable = false,
+  selected = false,
+  onSelect
 }: ActionCardProps) {
   const styles = variantStyles[variant]
   
   if (isLoading) {
     return (
-      <div className="p-4 rounded-xl border bg-card">
+      <div className="p-4 rounded-xl border bg-card animate-pulse">
         <Skeleton className="h-10 w-10 rounded-lg mb-3" />
         <Skeleton className="h-8 w-16 mb-1" />
         <Skeleton className="h-4 w-24" />
       </div>
     )
+  }
+  
+  const handleSelect = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onSelect?.(!selected)
   }
   
   return (
@@ -100,68 +162,124 @@ export function ActionCard({
           <motion.button
             onClick={onClick}
             className={cn(
-              'relative p-4 rounded-xl border transition-all duration-200',
-              'text-left w-full group cursor-pointer',
+              'relative p-4 rounded-xl border transition-colors duration-300',
+              'text-left w-full group cursor-pointer overflow-hidden',
               'focus:outline-none focus:ring-2 focus:ring-primary/50',
+              // Mobile touch targets
+              'min-h-[120px] touch-manipulation',
               styles.bg,
-              styles.border
+              styles.bgHover,
+              styles.border,
+              selected && 'ring-2 ring-primary'
             )}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
+            variants={cardVariants}
+            initial="idle"
+            whileHover="hover"
+            whileTap="tap"
           >
-            {/* Icon */}
-            <div className={cn(
-              'w-10 h-10 rounded-lg flex items-center justify-center mb-3',
-              styles.iconBg
-            )}>
-              <Icon className={cn('h-5 w-5', styles.text)} />
-            </div>
+            {/* Animated glow background */}
+            <motion.div 
+              className={cn(
+                'absolute inset-0 rounded-xl blur-xl -z-10',
+                styles.iconBg
+              )}
+              variants={pulseVariants}
+            />
             
-            {/* Count */}
-            <div className="flex items-end gap-2 mb-1">
-              <span className={cn('text-2xl font-bold', styles.text)}>
-                {count.toLocaleString('fr-FR')}
-              </span>
-              
-              {/* Trend indicator */}
-              {trend && (
-                <span className={cn(
-                  'flex items-center text-xs font-medium pb-1',
-                  trend.direction === 'up' ? 'text-red-500' : 'text-green-500'
+            {/* Selection checkbox */}
+            {selectable && (
+              <motion.div 
+                className="absolute top-2 right-2 z-10"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={handleSelect}
+              >
+                <div className={cn(
+                  'w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all',
+                  selected 
+                    ? 'bg-primary border-primary text-primary-foreground' 
+                    : 'border-muted-foreground/40 bg-background/80'
                 )}>
+                  {selected && <Check className="h-4 w-4" />}
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Icon with animation */}
+            <motion.div 
+              className={cn(
+                'w-10 h-10 rounded-lg flex items-center justify-center mb-3',
+                styles.iconBg
+              )}
+              variants={iconVariants}
+            >
+              <Icon className={cn('h-5 w-5', styles.text)} />
+            </motion.div>
+            
+            {/* Count with number animation */}
+            <div className="flex items-end gap-2 mb-1">
+              <motion.span 
+                className={cn('text-2xl font-bold tabular-nums', styles.text)}
+                key={count}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
+                {count.toLocaleString('fr-FR')}
+              </motion.span>
+              
+              {/* Trend indicator with animation */}
+              {trend && (
+                <motion.span 
+                  className={cn(
+                    'flex items-center text-xs font-medium pb-1',
+                    trend.direction === 'up' ? 'text-red-500' : 'text-green-500'
+                  )}
+                  initial={{ opacity: 0, x: -5 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
                   {trend.direction === 'up' ? (
                     <TrendingUp className="h-3 w-3 mr-0.5" />
                   ) : (
                     <TrendingDown className="h-3 w-3 mr-0.5" />
                   )}
                   {trend.value}%
-                </span>
+                </motion.span>
               )}
             </div>
             
             {/* Labels */}
-            <p className="text-sm font-medium text-foreground">{label}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm font-medium text-foreground line-clamp-1">{label}</p>
+            <p className="text-xs text-muted-foreground line-clamp-1">
               {sublabel.replace('{count}', count.toString())}
             </p>
             
-            {/* CTA Arrow */}
-            <div className={cn(
-              'absolute top-4 right-4 opacity-0 group-hover:opacity-100',
-              'transition-opacity duration-200',
-              styles.text
-            )}>
+            {/* CTA Arrow with animation */}
+            <motion.div 
+              className={cn(
+                'absolute top-4 right-4',
+                styles.text,
+                selectable && 'hidden'
+              )}
+              variants={arrowVariants}
+            >
               <ChevronRight className="h-4 w-4" />
-            </div>
+            </motion.div>
             
             {/* Hover CTA text */}
-            <div className={cn(
-              'absolute bottom-3 right-4 opacity-0 group-hover:opacity-100',
-              'transition-opacity duration-200 text-xs font-medium',
-              styles.text
-            )}>
-              {cta} →
-            </div>
+            <motion.div 
+              className={cn(
+                'absolute bottom-3 right-4 text-xs font-medium',
+                styles.text
+              )}
+              initial={{ opacity: 0, x: 5 }}
+              whileHover={{ opacity: 1, x: 0 }}
+            >
+              <span className="hidden group-hover:inline-flex items-center gap-1">
+                {cta} <ChevronRight className="h-3 w-3" />
+              </span>
+            </motion.div>
           </motion.button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-xs">

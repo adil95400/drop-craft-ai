@@ -1,15 +1,17 @@
 /**
  * Section Command Center - "À faire aujourd'hui"
  * Bloc principal orienté action en haut de la page produits
+ * V2 - Animations premium, temps réel, mobile optimisé
  */
 
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { 
   AlertTriangle, Sparkles, DollarSign, Brain, RefreshCw,
-  ArrowRight
+  ArrowRight, CheckCircle2
 } from 'lucide-react'
 import { ProductAuditResult } from '@/types/audit'
 import { ActionCard } from './ActionCard'
+import { RealTimeIndicator } from './RealTimeIndicator'
 import { useCommandCenterData } from './useCommandCenterData'
 import { 
   ActionCardType, 
@@ -64,19 +66,34 @@ const cardConfig: Record<ActionCardType, {
   }
 }
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
+      staggerChildren: 0.08,
+      delayChildren: 0.1
     }
   }
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { type: 'spring', stiffness: 300, damping: 25 }
+  }
+}
+
+const headerVariants: Variants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: { 
+    opacity: 1, 
+    x: 0,
+    transition: { type: 'spring', stiffness: 200 }
+  }
 }
 
 export function CommandCenterSection({
@@ -107,26 +124,35 @@ export function CommandCenterSection({
       initial="hidden"
       animate="visible"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header with real-time indicator */}
+      <motion.div 
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        variants={headerVariants}
+      >
         <div className="flex items-center gap-3">
-          <div className={cn(
-            'w-10 h-10 rounded-xl flex items-center justify-center',
-            hasIssues 
-              ? 'bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/30'
-              : 'bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-emerald-500/30'
-          )}>
-            {hasIssues ? (
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
-            ) : (
-              <Sparkles className="h-5 w-5 text-emerald-500" />
+          <motion.div 
+            className={cn(
+              'w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0',
+              hasIssues 
+                ? 'bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/30'
+                : 'bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-emerald-500/30'
             )}
-          </div>
+            animate={hasIssues ? { 
+              boxShadow: ['0 0 0 0 rgba(249, 115, 22, 0)', '0 0 0 8px rgba(249, 115, 22, 0.1)', '0 0 0 0 rgba(249, 115, 22, 0)']
+            } : {}}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            {hasIssues ? (
+              <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+            ) : (
+              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-500" />
+            )}
+          </motion.div>
           <div>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-base sm:text-lg font-semibold">
               {hasIssues ? 'À faire aujourd\'hui' : 'Tout est en ordre'}
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {hasIssues 
                 ? `${totalIssues.toLocaleString('fr-FR')} produits nécessitent votre attention`
                 : 'Votre catalogue est optimisé'
@@ -135,19 +161,25 @@ export function CommandCenterSection({
           </div>
         </div>
         
-        {hasIssues && (
-          <motion.button
-            className="hidden sm:flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium"
-            whileHover={{ x: 4 }}
-          >
-            Tout voir <ArrowRight className="h-4 w-4" />
-          </motion.button>
-        )}
-      </div>
+        <div className="flex items-center gap-3">
+          {/* Real-time status indicator */}
+          <RealTimeIndicator showMetrics />
+          
+          {hasIssues && (
+            <motion.button
+              className="hidden sm:flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium px-3 py-1.5 rounded-lg hover:bg-primary/5 transition-colors"
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Tout voir <ArrowRight className="h-4 w-4" />
+            </motion.button>
+          )}
+        </div>
+      </motion.div>
       
-      {/* Action Cards Grid */}
+      {/* Action Cards Grid - Mobile responsive */}
       <motion.div 
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3"
         variants={containerVariants}
       >
         {sortedCards.map((card) => {
