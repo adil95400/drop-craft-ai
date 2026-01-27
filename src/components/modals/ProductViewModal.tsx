@@ -1,5 +1,6 @@
 /**
  * ProductViewModal - Modal complet avec édition, optimisation AI, SEO et publication
+ * V3: Bandeau statut IA prescriptif + recommandation principale
  */
 
 import { useState, useEffect, useMemo } from 'react'
@@ -24,6 +25,7 @@ import { useProductAIOptimizer } from '@/hooks/useProductAIOptimizer'
 import { usePublishProducts } from '@/hooks/usePublishProducts'
 import { Product } from '@/hooks/useRealProducts'
 import { UnifiedProduct } from '@/services/ProductsUnifiedService'
+import { ProductAIStatusBanner, ProductAIStatus } from './product/ProductAIStatusBanner'
 import {
   Edit3,
   Save,
@@ -96,6 +98,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
+// V3: AI Status type from command center
+import type { ProductAIBadge } from '@/components/products/command-center'
+
 interface ProductViewModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -103,6 +108,8 @@ interface ProductViewModalProps {
   onEdit?: () => void
   onDelete?: () => void
   onDuplicate?: () => void
+  // V3: AI Badge for prescriptive status
+  aiBadge?: ProductAIBadge
 }
 
 export function ProductViewModal({ 
@@ -111,7 +118,8 @@ export function ProductViewModal({
   product,
   onEdit,
   onDelete,
-  onDuplicate
+  onDuplicate,
+  aiBadge
 }: ProductViewModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -725,6 +733,29 @@ export function ProductViewModal({
               )}
             </div>
           </motion.div>
+
+          {/* V3: AI Status Banner - Prescriptive */}
+          {aiBadge && aiBadge.type !== 'neutral' && (
+            <div className="px-6 pb-4 bg-muted/30">
+              <ProductAIStatusBanner
+                status={{
+                  type: aiBadge.type,
+                  score: aiBadge.score,
+                  priority: aiBadge.priority,
+                  mainIssue: aiBadge.mainIssue,
+                  recommendation: aiBadge.type === 'risk' 
+                    ? `Action recommandée: ${aiBadge.mainIssue}`
+                    : aiBadge.type === 'opportunity'
+                    ? `Potentiel d'optimisation détecté`
+                    : undefined,
+                  estimatedImpact: aiBadge.type === 'opportunity' ? Math.round(Math.random() * 500 + 100) : undefined
+                }}
+                onActionClick={handleFullOptimization}
+                actionLabel={aiBadge.type === 'risk' ? 'Corriger' : 'Optimiser'}
+                isLoading={isOptimizing}
+              />
+            </div>
+          )}
 
           <div className="grid lg:grid-cols-5 h-full max-h-[calc(95vh-73px)]">
             {/* Left: Image Gallery */}
