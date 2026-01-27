@@ -83,7 +83,7 @@ serve(
     const authKey = Deno.env.get('B2B_SPORTS_AUTH_KEY')
 
     if (!userKey || !authKey) {
-      throw new ValidationError('Identifiants B2B Sports non configurés')
+      throw new ValidationError('Identifiants B2B Sports non configurés. Veuillez ajouter B2B_SPORTS_USER_KEY et B2B_SPORTS_AUTH_KEY dans les secrets.')
     }
 
     const { action, limit } = await parseJsonValidated(req, BodySchema)
@@ -91,11 +91,22 @@ serve(
     console.log(`B2B Sports Import - Action: ${action}`)
 
     if (action === 'test') {
-      const testResult = await fetchB2BProducts(userKey, authKey, 1, 1)
-      return new Response(
-        JSON.stringify({ success: true, message: 'API connection successful', sample: testResult }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      try {
+        const testResult = await fetchB2BProducts(userKey, authKey, 1, 1)
+        return new Response(
+          JSON.stringify({ success: true, message: 'API connection successful', sample: testResult }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `API connection failed: ${error.message}`,
+            hint: 'Vérifiez vos identifiants B2B Sports dans les secrets du projet'
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
     // Sync products to shared catalog
@@ -125,11 +136,18 @@ serve(
       }
     }
 
-    console.log(`Total products fetched: ${allProducts.length}`)
+    console.log(`Total products fetched from API: ${allProducts.length}`)
 
+    // If no products from API, return error - NO DEMO DATA IN PRODUCTION
     if (allProducts.length === 0) {
-      allProducts = generateDemoProducts()
-      console.log('Using demo products as API returned no data')
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Aucun produit récupéré depuis l\'API B2B Sports',
+          hint: 'Vérifiez que votre compte B2B Sports a accès au catalogue et que les identifiants sont corrects'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Get supplier ID from premium_suppliers
@@ -173,6 +191,7 @@ serve(
     const batchSize = 50
     let insertedCount = 0
     let errorCount = 0
+    const errors: string[] = []
 
     for (let i = 0; i < catalogProducts.length; i += batchSize) {
       const batch = catalogProducts.slice(i, i + batchSize)
@@ -187,12 +206,13 @@ serve(
       if (error) {
         console.error('Batch upsert error:', error)
         errorCount += batch.length
+        errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`)
       } else {
         insertedCount += batch.length
       }
     }
 
-    console.log(`Catalog sync complete: ${insertedCount} products`)
+    console.log(`Catalog sync complete: ${insertedCount} products synced, ${errorCount} errors`)
 
     return new Response(
       JSON.stringify({
@@ -200,57 +220,10 @@ serve(
         message: `${insertedCount} produits synchronisés dans le catalogue`,
         synced: insertedCount,
         errors: errorCount,
+        error_details: errors.length > 0 ? errors : undefined,
         total_fetched: allProducts.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }, corsHeaders)
 )
-
-function generateDemoProducts(): B2BProduct[] {
-  const categories = ['Football', 'Basketball', 'Running', 'Tennis', 'Fitness', 'Natation', 'Cyclisme']
-  const brands = ['Nike', 'Adidas', 'Puma', 'Reebok', 'Under Armour', 'New Balance', 'Asics']
-
-  const products: B2BProduct[] = []
-
-  const productTemplates = [
-    { name: 'Ballon de Football Pro', category: 'Football', basePrice: 29.99 },
-    { name: 'Chaussures Running Elite', category: 'Running', basePrice: 89.99 },
-    { name: 'Raquette Tennis Pro', category: 'Tennis', basePrice: 149.99 },
-    { name: 'Maillot Sport Performance', category: 'Fitness', basePrice: 34.99 },
-    { name: 'Short Sport Respirant', category: 'Fitness', basePrice: 24.99 },
-    { name: 'Ballon Basketball Official', category: 'Basketball', basePrice: 39.99 },
-    { name: 'Lunettes Natation Pro', category: 'Natation', basePrice: 19.99 },
-    { name: 'Casque Vélo Aéro', category: 'Cyclisme', basePrice: 79.99 },
-    { name: 'Gants Fitness Grip', category: 'Fitness', basePrice: 14.99 },
-    { name: 'Sac Sport Grande Capacité', category: 'Fitness', basePrice: 44.99 },
-    { name: 'Chaussettes Sport Pack x3', category: 'Running', basePrice: 12.99 },
-    { name: 'Bandeau Sport Anti-Transpiration', category: 'Fitness', basePrice: 9.99 },
-    { name: 'Protège-Tibias Football', category: 'Football', basePrice: 19.99 },
-    { name: 'Corde à Sauter Pro', category: 'Fitness', basePrice: 14.99 },
-    { name: 'Gourde Sport Isotherme', category: 'Fitness', basePrice: 24.99 },
-  ]
-
-  for (let i = 0; i < 50; i++) {
-    const template = productTemplates[i % productTemplates.length]
-    const brand = brands[Math.floor(Math.random() * brands.length)]
-    const variation = Math.floor(Math.random() * 10) + 1
-
-    products.push({
-      id: `b2b-${1000 + i}`,
-      sku: `B2B-SPT-${1000 + i}`,
-      name: `${brand} ${template.name} V${variation}`,
-      description: `Produit de qualité professionnelle ${brand}. ${template.name} parfait pour les sportifs exigeants.`,
-      price: template.basePrice + (Math.random() * 20 - 10),
-      stock: Math.floor(Math.random() * 100) + 10,
-      category: template.category,
-      brand: brand,
-      images: [`https://picsum.photos/seed/${1000 + i}/400/400`],
-      weight: Math.random() * 2 + 0.1,
-      ean: `302830${String(1000000 + i).slice(-7)}`,
-    })
-  }
-
-  return products
-}
-

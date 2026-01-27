@@ -121,8 +121,37 @@ Return ONLY valid JSON in this exact format:
       throw predError;
     }
 
-    // Create restock suggestion
-    const estimatedCost = prediction.recommendedQuantity * (currentStock > 0 ? 10 : 12); // Mock unit cost
+    // Calculate estimated cost from real product data
+    let unitCost = 10; // Default fallback
+    
+    // Try to get real cost from products table
+    const { data: productData } = await supabase
+      .from('products')
+      .select('cost_price, price')
+      .eq('id', itemId)
+      .single();
+    
+    if (productData?.cost_price) {
+      unitCost = productData.cost_price;
+    } else if (productData?.price) {
+      // Estimate cost as 60% of selling price if cost not available
+      unitCost = productData.price * 0.6;
+    } else {
+      // Try supplier_products table
+      const { data: supplierProduct } = await supabase
+        .from('supplier_products')
+        .select('cost_price, selling_price')
+        .eq('id', itemId)
+        .single();
+      
+      if (supplierProduct?.cost_price) {
+        unitCost = supplierProduct.cost_price;
+      } else if (supplierProduct?.selling_price) {
+        unitCost = supplierProduct.selling_price * 0.6;
+      }
+    }
+
+    const estimatedCost = prediction.recommendedQuantity * unitCost;
     
     const { data: suggestionData, error: suggError } = await supabase
       .from('restock_suggestions')
@@ -160,6 +189,7 @@ Return ONLY valid JSON in this exact format:
       JSON.stringify({
         prediction: predictionData,
         suggestion: suggestionData,
+        unit_cost_used: unitCost,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
