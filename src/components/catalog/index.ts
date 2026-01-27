@@ -7,3 +7,4 @@
 export { MediaAIPanel } from './MediaAIPanel'
 export { VariantsAIPanel } from './VariantsAIPanel'
 export { BacklogAIPanel } from './BacklogAIPanel'
+export { CatalogHealthAIPanel } from './CatalogHealthAIPanel'
