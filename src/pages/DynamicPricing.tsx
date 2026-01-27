@@ -1,12 +1,15 @@
-import { useState } from 'react'
-import { Helmet } from 'react-helmet-async'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -15,93 +18,109 @@ import {
   LineChart,
   Settings,
   Play,
-  Pause,
-  AlertCircle,
-  Info
-} from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-
-interface PricingRule {
-  id: string
-  name: string
-  type: 'competitor' | 'demand' | 'inventory' | 'time'
-  isActive: boolean
-  description: string
-  products: number
-  avgImpact: string
-}
+  Plus,
+  Loader2
+} from 'lucide-react';
+import { 
+  useDynamicPricingRules, 
+  useDynamicPricingStats, 
+  useToggleDynamicRule,
+  usePriceAdjustmentHistory,
+  useDynamicPricingConfig,
+  useUpdateDynamicPricingConfig,
+  useCreateDynamicRule,
+  useSimulateDynamicRule,
+  type DynamicRuleType
+} from '@/hooks/useDynamicPricingRules';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export default function DynamicPricing() {
-  const { toast } = useToast()
-  
-  const [rules, setRules] = useState<PricingRule[]>([
-    {
-      id: '1',
-      name: 'Alignement Concurrent',
-      type: 'competitor',
-      isActive: true,
-      description: 'Ajuste les prix pour rester 5% en dessous de la concurrence',
-      products: 234,
-      avgImpact: '+12%'
-    },
-    {
-      id: '2',
-      name: 'Prix Dynamique Demande',
-      type: 'demand',
-      isActive: true,
-      description: 'Augmente les prix pour les produits à forte demande',
-      products: 89,
-      avgImpact: '+18%'
-    },
-    {
-      id: '3',
-      name: 'Liquidation Stock',
-      type: 'inventory',
-      isActive: false,
-      description: 'Réduit les prix pour les produits en surstock',
-      products: 45,
-      avgImpact: '-15%'
-    },
-    {
-      id: '4',
-      name: 'Prix Heures Creuses',
-      type: 'time',
-      isActive: false,
-      description: 'Ajuste les prix selon l\'heure et le jour',
-      products: 156,
-      avgImpact: '+8%'
-    }
-  ])
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [newRuleName, setNewRuleName] = useState('');
+  const [newRuleType, setNewRuleType] = useState<DynamicRuleType>('competitor');
+  const [newRuleImpact, setNewRuleImpact] = useState(10);
+  const [newRuleDescription, setNewRuleDescription] = useState('');
 
-  const toggleRule = (id: string) => {
-    setRules(prev => prev.map(rule => 
-      rule.id === id ? { ...rule, isActive: !rule.isActive } : rule
-    ))
-    toast({
-      title: 'Règle mise à jour',
-      description: 'La règle de pricing a été mise à jour'
-    })
-  }
+  const { data: rules = [], isLoading: rulesLoading } = useDynamicPricingRules();
+  const { data: stats } = useDynamicPricingStats();
+  const { data: history = [], isLoading: historyLoading } = usePriceAdjustmentHistory(20);
+  const { data: config } = useDynamicPricingConfig();
+  
+  const toggleRule = useToggleDynamicRule();
+  const updateConfig = useUpdateDynamicPricingConfig();
+  const createRule = useCreateDynamicRule();
+  const simulateRule = useSimulateDynamicRule();
+
+  const [localConfig, setLocalConfig] = useState<{
+    min_margin_percent: number;
+    max_margin_percent: number;
+    adjustment_frequency_hours: number;
+    notifications_enabled: boolean;
+  } | null>(null);
+
+  const activeConfig = localConfig || config || {
+    min_margin_percent: 25,
+    max_margin_percent: 80,
+    adjustment_frequency_hours: 6,
+    notifications_enabled: true,
+  };
 
   const getRuleIcon = (type: string) => {
     switch (type) {
-      case 'competitor': return <Target className="h-5 w-5" />
-      case 'demand': return <TrendingUp className="h-5 w-5" />
-      case 'inventory': return <TrendingDown className="h-5 w-5" />
-      case 'time': return <LineChart className="h-5 w-5" />
-      default: return <Settings className="h-5 w-5" />
+      case 'competitor': return <Target className="h-5 w-5" />;
+      case 'demand': return <TrendingUp className="h-5 w-5" />;
+      case 'inventory': return <TrendingDown className="h-5 w-5" />;
+      case 'time': return <LineChart className="h-5 w-5" />;
+      default: return <Settings className="h-5 w-5" />;
     }
-  }
+  };
 
   const getRuleColor = (type: string) => {
     switch (type) {
-      case 'competitor': return 'text-blue-600'
-      case 'demand': return 'text-green-600'
-      case 'inventory': return 'text-orange-600'
-      case 'time': return 'text-purple-600'
-      default: return 'text-gray-600'
+      case 'competitor': return 'text-blue-600';
+      case 'demand': return 'text-green-600';
+      case 'inventory': return 'text-orange-600';
+      case 'time': return 'text-purple-600';
+      default: return 'text-muted-foreground';
     }
-  }
+  };
+
+  const getRuleTypeLabel = (type: string) => {
+    switch (type) {
+      case 'competitor': return 'Concurrent';
+      case 'demand': return 'Demande';
+      case 'inventory': return 'Inventaire';
+      case 'time': return 'Horaire';
+      default: return type;
+    }
+  };
+
+  const handleCreateRule = () => {
+    if (!newRuleName.trim()) return;
+    
+    createRule.mutate({
+      name: newRuleName,
+      type: newRuleType,
+      description: newRuleDescription,
+      impact: newRuleImpact,
+    }, {
+      onSuccess: () => {
+        setIsCreateOpen(false);
+        setNewRuleName('');
+        setNewRuleDescription('');
+        setNewRuleImpact(10);
+      }
+    });
+  };
+
+  const handleSaveConfig = () => {
+    if (localConfig) {
+      updateConfig.mutate(localConfig, {
+        onSuccess: () => setLocalConfig(null)
+      });
+    }
+  };
 
   return (
     <>
@@ -120,10 +139,75 @@ export default function DynamicPricing() {
               Intelligence artificielle et règles automatisées
             </p>
           </div>
-          <Button variant="hero">
-            <Zap className="h-4 w-4 mr-2" />
-            Nouvelle Règle
-          </Button>
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button variant="hero">
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvelle Règle
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Créer une règle dynamique</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Nom de la règle</Label>
+                  <Input 
+                    value={newRuleName} 
+                    onChange={(e) => setNewRuleName(e.target.value)}
+                    placeholder="Ex: Alignement Concurrent"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Type de règle</Label>
+                  <Select value={newRuleType} onValueChange={(v) => setNewRuleType(v as DynamicRuleType)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="competitor">Concurrent</SelectItem>
+                      <SelectItem value="demand">Demande</SelectItem>
+                      <SelectItem value="inventory">Inventaire</SelectItem>
+                      <SelectItem value="time">Horaire</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Impact prix (%)</Label>
+                  <div className="flex items-center gap-4">
+                    <Slider 
+                      value={[newRuleImpact]} 
+                      onValueChange={([v]) => setNewRuleImpact(v)}
+                      min={-30}
+                      max={30}
+                      step={1}
+                      className="flex-1"
+                    />
+                    <span className="w-16 text-right font-medium">
+                      {newRuleImpact > 0 ? '+' : ''}{newRuleImpact}%
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Input 
+                    value={newRuleDescription} 
+                    onChange={(e) => setNewRuleDescription(e.target.value)}
+                    placeholder="Ex: Ajuste les prix pour rester compétitif"
+                  />
+                </div>
+                <Button 
+                  onClick={handleCreateRule} 
+                  className="w-full"
+                  disabled={createRule.isPending || !newRuleName.trim()}
+                >
+                  {createRule.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Créer la règle
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Stats */}
@@ -131,7 +215,11 @@ export default function DynamicPricing() {
           <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
             <CardContent className="p-4 text-center">
               <TrendingUp className="h-6 w-6 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-green-900 dark:text-green-100">+14.2%</div>
+              <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                {stats?.revenueChange !== undefined ? (
+                  `${stats.revenueChange > 0 ? '+' : ''}${stats.revenueChange}%`
+                ) : '—'}
+              </div>
               <div className="text-sm text-green-800 dark:text-green-200">Revenu ce mois</div>
             </CardContent>
           </Card>
@@ -139,7 +227,7 @@ export default function DynamicPricing() {
           <Card>
             <CardContent className="p-4 text-center">
               <Zap className="h-6 w-6 text-primary mx-auto mb-2" />
-              <div className="text-2xl font-bold">524</div>
+              <div className="text-2xl font-bold">{stats?.productsOptimized || 0}</div>
               <div className="text-sm text-muted-foreground">Produits optimisés</div>
             </CardContent>
           </Card>
@@ -147,7 +235,7 @@ export default function DynamicPricing() {
           <Card>
             <CardContent className="p-4 text-center">
               <Target className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">4</div>
+              <div className="text-2xl font-bold">{stats?.activeRules || 0}</div>
               <div className="text-sm text-muted-foreground">Règles actives</div>
             </CardContent>
           </Card>
@@ -155,7 +243,7 @@ export default function DynamicPricing() {
           <Card>
             <CardContent className="p-4 text-center">
               <LineChart className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">1,247</div>
+              <div className="text-2xl font-bold">{stats?.adjustmentsToday || 0}</div>
               <div className="text-sm text-muted-foreground">Ajustements/jour</div>
             </CardContent>
           </Card>
@@ -170,43 +258,77 @@ export default function DynamicPricing() {
           </TabsList>
 
           <TabsContent value="rules" className="space-y-4">
-            {rules.map((rule) => (
-              <Card key={rule.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 bg-primary/10 rounded-lg ${getRuleColor(rule.type)}`}>
-                        {getRuleIcon(rule.type)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-lg">{rule.name}</h3>
-                          <Badge variant={rule.isActive ? 'default' : 'secondary'}>
-                            {rule.isActive ? 'Actif' : 'Inactif'}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">{rule.description}</p>
-                        <div className="flex items-center gap-4 text-sm">
-                          <span>{rule.products} produits</span>
-                          <span className={rule.avgImpact.startsWith('+') ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                            Impact moyen: {rule.avgImpact}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        checked={rule.isActive}
-                        onCheckedChange={() => toggleRule(rule.id)}
-                      />
-                      <Button variant="outline" size="sm">
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+            {rulesLoading ? (
+              <Card>
+                <CardContent className="py-10 text-center text-muted-foreground">
+                  <Loader2 className="h-6 w-6 mx-auto animate-spin mb-2" />
+                  Chargement...
                 </CardContent>
               </Card>
-            ))}
+            ) : rules.length === 0 ? (
+              <Card>
+                <CardContent className="py-10 text-center">
+                  <Zap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="font-medium mb-2">Aucune règle dynamique</h3>
+                  <p className="text-muted-foreground mb-4">Créez votre première règle de pricing dynamique</p>
+                  <Button onClick={() => setIsCreateOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Créer une règle
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              rules.map((rule) => (
+                <Card key={rule.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-3 bg-primary/10 rounded-lg ${getRuleColor(rule.type)}`}>
+                          {getRuleIcon(rule.type)}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-lg">{rule.name}</h3>
+                            <Badge variant={rule.is_active ? 'default' : 'secondary'}>
+                              {rule.is_active ? 'Actif' : 'Inactif'}
+                            </Badge>
+                            <Badge variant="outline">{getRuleTypeLabel(rule.type)}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">{rule.description}</p>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span>{rule.products_count} produits</span>
+                            <span className={rule.avg_impact >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                              Impact moyen: {rule.avg_impact > 0 ? '+' : ''}{rule.avg_impact}%
+                            </span>
+                            {rule.last_executed_at && (
+                              <span className="text-muted-foreground">
+                                Exécuté {formatDistanceToNow(new Date(rule.last_executed_at), { addSuffix: true, locale: fr })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => simulateRule.mutate(rule.id)}
+                          disabled={simulateRule.isPending}
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          Simuler
+                        </Button>
+                        <Switch
+                          checked={rule.is_active}
+                          onCheckedChange={(checked) => toggleRule.mutate({ ruleId: rule.id, isActive: checked })}
+                          disabled={toggleRule.isPending}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="history" className="space-y-4">
@@ -218,27 +340,36 @@ export default function DynamicPricing() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { product: 'Wireless Earbuds', oldPrice: 29.99, newPrice: 27.99, reason: 'Concurrent -10%', time: 'Il y a 2h' },
-                    { product: 'Smart Watch', oldPrice: 89.99, newPrice: 94.99, reason: 'Forte demande', time: 'Il y a 5h' },
-                    { product: 'Phone Case', oldPrice: 14.99, newPrice: 12.99, reason: 'Surstock', time: 'Il y a 1j' }
-                  ].map((change, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{change.product}</p>
-                        <p className="text-sm text-muted-foreground">{change.reason}</p>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm line-through text-muted-foreground">{change.oldPrice}€</span>
-                          <span className="font-bold text-primary">{change.newPrice}€</span>
+                {historyLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Loader2 className="h-6 w-6 mx-auto animate-spin mb-2" />
+                    Chargement...
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Aucun ajustement enregistré
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {history.map((change) => (
+                      <div key={change.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{change.product_name}</p>
+                          <p className="text-sm text-muted-foreground">{change.reason}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground">{change.time}</p>
+                        <div className="text-right">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm line-through text-muted-foreground">{change.old_price.toFixed(2)}€</span>
+                            <span className="font-bold text-primary">{change.new_price.toFixed(2)}€</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(change.created_at), { addSuffix: true, locale: fr })}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -252,16 +383,46 @@ export default function DynamicPricing() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-center py-8">
-                  <LineChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Simulation de Scénarios</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Testez l'impact de vos règles de pricing sur vos revenus
-                  </p>
-                  <Button>
-                    Lancer une Simulation
-                  </Button>
-                </div>
+                {rules.length === 0 ? (
+                  <div className="text-center py-8">
+                    <LineChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Aucune règle à simuler</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Créez d'abord une règle de pricing dynamique
+                    </p>
+                    <Button onClick={() => setIsCreateOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Créer une règle
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {rules.map((rule) => (
+                      <div key={rule.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 bg-primary/10 rounded ${getRuleColor(rule.type)}`}>
+                            {getRuleIcon(rule.type)}
+                          </div>
+                          <div>
+                            <p className="font-medium">{rule.name}</p>
+                            <p className="text-sm text-muted-foreground">{rule.products_count} produits concernés</p>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => simulateRule.mutate(rule.id)}
+                          disabled={simulateRule.isPending}
+                        >
+                          {simulateRule.isPending ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Play className="h-4 w-4 mr-2" />
+                          )}
+                          Simuler
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -275,18 +436,51 @@ export default function DynamicPricing() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <p className="font-medium">Limites de Prix</p>
-                      <p className="text-sm text-muted-foreground">Marge min: 25% • Marge max: 80%</p>
+                      <p className="font-medium">Limites de Marge</p>
+                      <p className="text-sm text-muted-foreground">
+                        Min: {activeConfig.min_margin_percent}% • Max: {activeConfig.max_margin_percent}%
+                      </p>
                     </div>
-                    <Button variant="outline" size="sm">Modifier</Button>
+                    <div className="flex items-center gap-2">
+                      <Input 
+                        type="number" 
+                        className="w-20" 
+                        value={activeConfig.min_margin_percent}
+                        onChange={(e) => setLocalConfig({ ...activeConfig, min_margin_percent: Number(e.target.value) })}
+                      />
+                      <span>-</span>
+                      <Input 
+                        type="number" 
+                        className="w-20" 
+                        value={activeConfig.max_margin_percent}
+                        onChange={(e) => setLocalConfig({ ...activeConfig, max_margin_percent: Number(e.target.value) })}
+                      />
+                      <span>%</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">Fréquence d'Ajustement</p>
-                      <p className="text-sm text-muted-foreground">Toutes les 6 heures</p>
+                      <p className="text-sm text-muted-foreground">
+                        Toutes les {activeConfig.adjustment_frequency_hours} heures
+                      </p>
                     </div>
-                    <Button variant="outline" size="sm">Modifier</Button>
+                    <Select 
+                      value={String(activeConfig.adjustment_frequency_hours)}
+                      onValueChange={(v) => setLocalConfig({ ...activeConfig, adjustment_frequency_hours: Number(v) })}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 heure</SelectItem>
+                        <SelectItem value="3">3 heures</SelectItem>
+                        <SelectItem value="6">6 heures</SelectItem>
+                        <SelectItem value="12">12 heures</SelectItem>
+                        <SelectItem value="24">24 heures</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -294,8 +488,18 @@ export default function DynamicPricing() {
                       <p className="font-medium">Notifications</p>
                       <p className="text-sm text-muted-foreground">M'alerter des changements importants</p>
                     </div>
-                    <Switch checked />
+                    <Switch 
+                      checked={activeConfig.notifications_enabled}
+                      onCheckedChange={(checked) => setLocalConfig({ ...activeConfig, notifications_enabled: checked })}
+                    />
                   </div>
+
+                  {localConfig && (
+                    <Button onClick={handleSaveConfig} className="w-full" disabled={updateConfig.isPending}>
+                      {updateConfig.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      Enregistrer la configuration
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -303,5 +507,5 @@ export default function DynamicPricing() {
         </Tabs>
       </div>
     </>
-  )
+  );
 }
