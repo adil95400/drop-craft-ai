@@ -1,9 +1,10 @@
 /**
- * KPI Feedback Bar V3
+ * KPI Feedback Bar V3 - Optimized
  * KPIs repositionnés comme feedback d'action (pas décoration)
- * Max 4 KPIs visibles par défaut
+ * Utilise les utilitaires centralisés et memo pour performance
  */
 
+import { memo, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Package, DollarSign, Percent, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -14,37 +15,43 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { KPI_FEEDBACK_CONFIG } from './labels'
-
-interface KPIData {
-  avgMargin: number
-  stockValue: number
-  potentialProfit: number
-  profitableProducts: number
-  totalProducts: number
-}
+import { AggregatedKPIs } from './utils/calculations'
+import { KPIBarSkeleton } from './utils/skeletons'
 
 interface KPIFeedbackBarProps {
-  data: KPIData
-  previousData?: KPIData
+  data: AggregatedKPIs
+  previousData?: AggregatedKPIs
   isLoading?: boolean
   currency?: string
 }
 
-interface KPIItemProps {
+interface KPITrend {
+  value: number
+  direction: 'up' | 'down'
+  positive: boolean
+}
+
+interface KPIConfig {
+  key: string
   label: string
   value: string | number
   unit: string
   tooltip: string
   icon: typeof TrendingUp
-  trend?: {
-    value: number
-    direction: 'up' | 'down'
-    positive: boolean
-  }
+  trend?: KPITrend
   color: string
 }
 
-function KPIItem({ label, value, unit, tooltip, icon: Icon, trend, color }: KPIItemProps) {
+// Memoized KPI Item
+const KPIItem = memo(function KPIItem({ 
+  label, 
+  value, 
+  unit, 
+  tooltip, 
+  icon: Icon, 
+  trend, 
+  color 
+}: Omit<KPIConfig, 'key'>) {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -57,10 +64,7 @@ function KPIItem({ label, value, unit, tooltip, icon: Icon, trend, color }: KPII
             )}
             whileHover={{ scale: 1.02 }}
           >
-            <div className={cn(
-              'w-10 h-10 rounded-lg flex items-center justify-center',
-              color
-            )}>
+            <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', color)}>
               <Icon className="h-5 w-5" />
             </div>
             
@@ -77,9 +81,7 @@ function KPIItem({ label, value, unit, tooltip, icon: Icon, trend, color }: KPII
             {trend && (
               <div className={cn(
                 'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md',
-                trend.positive 
-                  ? 'bg-emerald-500/10 text-emerald-600' 
-                  : 'bg-red-500/10 text-red-600'
+                trend.positive ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
               )}>
                 {trend.direction === 'up' ? (
                   <TrendingUp className="h-3 w-3" />
@@ -97,26 +99,27 @@ function KPIItem({ label, value, unit, tooltip, icon: Icon, trend, color }: KPII
       </Tooltip>
     </TooltipProvider>
   )
+})
+
+// Trend calculation helper
+function calculateTrend(current: number, previous?: number): KPITrend | undefined {
+  if (!previous || previous === 0) return undefined
+  const diff = ((current - previous) / previous) * 100
+  return {
+    value: Math.abs(diff),
+    direction: diff >= 0 ? 'up' : 'down',
+    positive: diff >= 0
+  }
 }
 
-export function KPIFeedbackBar({
+export const KPIFeedbackBar = memo(function KPIFeedbackBar({
   data,
   previousData,
   isLoading = false,
   currency = '€'
 }: KPIFeedbackBarProps) {
-  // Calculer les tendances si données précédentes disponibles
-  const calculateTrend = (current: number, previous?: number): KPIItemProps['trend'] => {
-    if (!previous || previous === 0) return undefined
-    const diff = ((current - previous) / previous) * 100
-    return {
-      value: Math.abs(diff),
-      direction: diff >= 0 ? 'up' as const : 'down' as const,
-      positive: diff >= 0
-    }
-  }
-  
-  const kpis: Array<KPIItemProps & { key: string }> = [
+  // Memoize KPI configurations
+  const kpis = useMemo((): KPIConfig[] => [
     {
       key: 'avg_margin',
       label: KPI_FEEDBACK_CONFIG.avg_margin.label,
@@ -157,19 +160,10 @@ export function KPIFeedbackBar({
       trend: calculateTrend(data.profitableProducts, previousData?.profitableProducts),
       color: 'bg-amber-500/10 text-amber-500'
     }
-  ]
+  ], [data, previousData, currency])
   
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[1, 2, 3, 4].map(i => (
-          <div 
-            key={i} 
-            className="h-[72px] rounded-xl bg-muted/30 animate-pulse"
-          />
-        ))}
-      </div>
-    )
+    return <KPIBarSkeleton />
   }
   
   return (
@@ -186,9 +180,17 @@ export function KPIFeedbackBar({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 + index * 0.05 }}
         >
-          <KPIItem {...kpi} />
+          <KPIItem
+            label={kpi.label}
+            value={kpi.value}
+            unit={kpi.unit}
+            tooltip={kpi.tooltip}
+            icon={kpi.icon}
+            trend={kpi.trend}
+            color={kpi.color}
+          />
         </motion.div>
       ))}
     </motion.div>
   )
-}
+})

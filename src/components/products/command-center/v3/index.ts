@@ -1,7 +1,10 @@
 /**
  * Command Center V3 - Exports
- * Phase 1 + Phase 2 (AI Brain) + Phase 3 (Predictive)
+ * Phase 1 + Phase 2 (AI Brain) + Phase 3 (Predictive) + Optimizations
  */
+
+// Utilities (shared calculations)
+export * from './utils'
 
 // Labels & Types
 export * from './labels'

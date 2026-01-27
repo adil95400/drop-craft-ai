@@ -4,7 +4,7 @@
  */
 
 import { motion } from 'framer-motion'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
 import { usePriceRules } from '@/hooks/usePriceRules'
@@ -53,23 +53,40 @@ export function CommandCenterV3({
     priceRulesActive
   })
   
-  // Calculer les KPIs
-  const kpiData = {
-    avgMargin: products.reduce((sum, p) => {
-      const margin = p.profit_margin ?? calculateMargin(p.price, p.cost_price)
-      return sum + margin
-    }, 0) / Math.max(products.length, 1),
-    stockValue: products.reduce((sum, p) => sum + (p.price ?? 0) * (p.stock_quantity ?? 0), 0),
-    potentialProfit: products.reduce((sum, p) => {
-      const margin = p.profit_margin ?? calculateMargin(p.price, p.cost_price)
-      return sum + ((p.price ?? 0) * margin / 100 * (p.stock_quantity ?? 0))
-    }, 0),
-    profitableProducts: products.filter(p => {
-      const margin = p.profit_margin ?? calculateMargin(p.price, p.cost_price)
-      return margin >= 20
-    }).length,
-    totalProducts: products.length
-  }
+  // Calculer les KPIs avec utilitaire centralisé
+  const kpiData = useMemo(() => {
+    let totalMargin = 0
+    let stockValue = 0
+    let potentialProfit = 0
+    let profitableProducts = 0
+    let totalCost = 0
+    let totalRevenue = 0
+
+    for (const p of products) {
+      const price = p.price ?? 0
+      const cost = p.cost_price ?? 0
+      const stock = p.stock_quantity ?? 0
+      const margin = p.profit_margin ?? calculateMargin(price, cost)
+
+      totalMargin += margin
+      stockValue += price * stock
+      potentialProfit += (price * margin / 100) * stock
+      totalCost += cost * stock
+      totalRevenue += price * stock
+
+      if (margin >= 20) profitableProducts++
+    }
+
+    return {
+      avgMargin: totalMargin / Math.max(products.length, 1),
+      stockValue,
+      potentialProfit,
+      profitableProducts,
+      totalProducts: products.length,
+      totalCost,
+      totalRevenue
+    }
+  }, [products])
   
   const hasIssues = priorityCards.some(card => card.count > 0)
   const totalIssues = priorityCards.reduce((sum, card) => sum + card.count, 0)
