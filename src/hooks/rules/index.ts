@@ -16,3 +16,10 @@ export {
   type FeedRuleRecommendation,
   type FeedRulesAIStats,
 } from './useFeedRulesAI';
+
+export {
+  useCatalogRulesAIStats,
+  useApplyCatalogRecommendation,
+  type CatalogRulesAIStats,
+  type CatalogAIRecommendation,
+} from './useCatalogRulesAI';
