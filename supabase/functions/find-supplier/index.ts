@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,7 +36,6 @@ async function searchAliExpress(query: string, imageUrl: string | null): Promise
   const results: SupplierResult[] = []
   
   try {
-    // Text search on AliExpress
     const response = await fetch(
       `https://aliexpress-datahub.p.rapidapi.com/item_search?q=${encodeURIComponent(query)}&page=1`,
       {
@@ -78,53 +78,68 @@ async function searchAliExpress(query: string, imageUrl: string | null): Promise
   return results
 }
 
-// Search 1688 via web scraping simulation
+// Search 1688 via Firecrawl (real scraping)
 async function search1688(query: string): Promise<SupplierResult[]> {
-  // Note: 1688 requires special access, we simulate with placeholder
-  // In production, use official 1688 API or authorized scraping service
-  
   const results: SupplierResult[] = []
   
-  try {
-    // Simulate 1688 search results with realistic factory prices
-    // These would come from actual 1688 API in production
-    const mockResults = [
-      {
-        title: `${query} - Fabricant Usine`,
-        price: 2.50,
-        moq: 100,
-        seller: 'Yiwu Factory Direct'
-      },
-      {
-        title: `${query} - Grossiste`,
-        price: 3.20,
-        moq: 50,
-        seller: 'Guangzhou Wholesale'
-      },
-      {
-        title: `${query} - OEM Disponible`,
-        price: 1.80,
-        moq: 500,
-        seller: 'Shenzhen Manufacturer'
-      }
-    ]
+  if (!FIRECRAWL_API_KEY) {
+    console.log('[find-supplier] No Firecrawl key for 1688 search')
+    return results
+  }
 
-    for (const item of mockResults) {
-      results.push({
-        platform: '1688.com',
-        platform_icon: '🏭',
-        title: item.title,
-        price: item.price,
-        currency: 'CNY',
-        url: `https://s.1688.com/selloffer/offer_search.htm?keywords=${encodeURIComponent(query)}`,
-        image: '',
-        shipping_cost: 0,
-        shipping_time: `MOQ: ${item.moq} pcs`,
-        seller_name: item.seller,
-        seller_rating: 0.90 + Math.random() * 0.09,
-        orders_count: Math.floor(Math.random() * 10000) + 1000,
-        similarity_score: 0.75
+  try {
+    const searchUrl = `https://s.1688.com/selloffer/offer_search.htm?keywords=${encodeURIComponent(query)}`
+    
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${FIRECRAWL_API_KEY}`
+      },
+      body: JSON.stringify({
+        url: searchUrl,
+        formats: ['markdown'],
+        waitFor: 3000,
+        timeout: 30000
       })
+    })
+
+    if (!response.ok) {
+      console.error('[find-supplier] 1688 Firecrawl error:', response.status)
+      return results
+    }
+
+    const data = await response.json()
+    const markdown = data.data?.markdown || ''
+
+    // Extract product info from scraped content
+    const priceMatches = markdown.matchAll(/¥\s*([\d.,]+)/g)
+    const titleMatches = markdown.matchAll(/\[([^\]]+)\]\([^)]+1688\.com/g)
+    
+    const prices = Array.from(priceMatches).slice(0, 5)
+    const titles = Array.from(titleMatches).slice(0, 5)
+
+    for (let i = 0; i < Math.min(prices.length, 5); i++) {
+      const price = parseFloat(prices[i]?.[1]?.replace(',', '') || '0')
+      const title = titles[i]?.[1] || `${query} - Factory ${i + 1}`
+      
+      if (price > 0) {
+        results.push({
+          platform: '1688.com',
+          platform_icon: '🏭',
+          title: title.substring(0, 100),
+          price,
+          currency: 'CNY',
+          url: searchUrl,
+          image: '',
+          shipping_cost: 0,
+          shipping_time: 'MOQ varies',
+          seller_name: 'Factory Supplier',
+          seller_rating: 0.92,
+          orders_count: 0,
+          similarity_score: 0.75
+        })
+      }
     }
   } catch (error) {
     console.error('[find-supplier] 1688 exception:', error)
@@ -133,7 +148,7 @@ async function search1688(query: string): Promise<SupplierResult[]> {
   return results
 }
 
-// Search Alibaba
+// Search Alibaba via Firecrawl
 async function searchAlibaba(query: string): Promise<SupplierResult[]> {
   const results: SupplierResult[] = []
 
@@ -198,24 +213,8 @@ async function searchAlibaba(query: string): Promise<SupplierResult[]> {
       }
     }
 
-    // If no matches, provide placeholder results
-    if (results.length === 0) {
-      results.push({
-        platform: 'Alibaba',
-        platform_icon: '🏪',
-        title: `${query} - Wholesale`,
-        price: 5.00,
-        currency: 'USD',
-        url: searchUrl,
-        image: '',
-        shipping_cost: 0,
-        shipping_time: 'Contact for MOQ',
-        seller_name: 'Alibaba Supplier',
-        seller_rating: 0.85,
-        orders_count: 0,
-        similarity_score: 0.65
-      })
-    }
+    // If scraping didn't find products, return empty (no mock data)
+    console.log(`[find-supplier] Alibaba: found ${results.length} products`)
   } catch (error) {
     console.error('[find-supplier] Alibaba exception:', error)
   }
@@ -223,7 +222,7 @@ async function searchAlibaba(query: string): Promise<SupplierResult[]> {
   return results
 }
 
-// Google reverse image search via Firecrawl
+// Search via Firecrawl web search
 async function reverseImageSearch(imageUrl: string, query: string): Promise<SupplierResult[]> {
   if (!FIRECRAWL_API_KEY) {
     console.log('[find-supplier] No Firecrawl for image search')
@@ -233,7 +232,6 @@ async function reverseImageSearch(imageUrl: string, query: string): Promise<Supp
   const results: SupplierResult[] = []
 
   try {
-    // Use Firecrawl search API to find similar products
     const response = await fetch('https://api.firecrawl.dev/v1/search', {
       method: 'POST',
       headers: {
@@ -280,7 +278,6 @@ async function reverseImageSearch(imageUrl: string, query: string): Promise<Supp
         platformIcon = '🇨🇳'
       }
 
-      // Extract price from markdown
       const priceMatch = item.markdown?.match(/\$\s*([\d.,]+)/) || 
                         item.markdown?.match(/([\d.,]+)\s*(?:USD|EUR|€|\$)/)
       const price = priceMatch ? parseFloat(priceMatch[1].replace(',', '')) : 0
@@ -308,13 +305,48 @@ async function reverseImageSearch(imageUrl: string, query: string): Promise<Supp
   return results
 }
 
+// Fetch from database cache
+async function fetchCachedSuppliers(supabase: any, query: string): Promise<SupplierResult[]> {
+  const results: SupplierResult[] = []
+  
+  try {
+    // Search supplier_products for matching items
+    const { data: products } = await supabase
+      .from('supplier_products')
+      .select('*')
+      .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+      .limit(10)
+    
+    for (const product of products || []) {
+      results.push({
+        platform: product.source || 'Database',
+        platform_icon: '💾',
+        title: product.title || product.name,
+        price: product.cost_price || product.price,
+        currency: 'EUR',
+        url: product.source_url || '',
+        image: product.image_url || '',
+        shipping_cost: 0,
+        shipping_time: 'In stock',
+        seller_name: product.supplier_name || 'Local Supplier',
+        seller_rating: 0.95,
+        orders_count: product.sales_count || 0,
+        similarity_score: 0.90
+      })
+    }
+  } catch (error) {
+    console.error('[find-supplier] Cache lookup error:', error)
+  }
+  
+  return results
+}
+
 // Calculate margin and savings
 function calculateMargins(supplierPrice: number, supplierCurrency: string, retailPrice: number, retailCurrency: string): {
   margin_percent: number
   margin_amount: number
   savings: number
 } {
-  // Convert to EUR for comparison (simplified)
   const rates: Record<string, number> = {
     'USD': 0.92,
     'CNY': 0.13,
@@ -350,12 +382,17 @@ serve(async (req) => {
   try {
     console.log(`[${requestId}] Find supplier request`)
 
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    )
+
     const { 
       productTitle, 
       productImage, 
       productPrice, 
       productCurrency,
-      searchMethod // 'image', 'text', 'both'
+      searchMethod
     } = await req.json()
 
     if (!productTitle && !productImage) {
@@ -369,6 +406,9 @@ serve(async (req) => {
 
     // Run all searches in parallel
     const searchPromises: Promise<SupplierResult[]>[] = []
+
+    // Always check database cache first
+    searchPromises.push(fetchCachedSuppliers(supabase, productTitle || ''))
 
     // Text-based searches
     if (productTitle && (searchMethod === 'text' || searchMethod === 'both' || !searchMethod)) {
@@ -385,9 +425,26 @@ serve(async (req) => {
     const allResults = await Promise.all(searchPromises)
     let suppliers = allResults.flat()
 
+    // If no results from APIs, return empty with message (NO MOCK DATA)
+    if (suppliers.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          suppliers: [],
+          best_deal: null,
+          search_query: productTitle,
+          retail_price: productPrice || 0,
+          retail_currency: productCurrency || 'EUR',
+          platforms_searched: ['AliExpress', '1688.com', 'Alibaba', 'Database'],
+          message: 'No suppliers found. Try a different search term or configure API keys for better results.',
+          timestamp: new Date().toISOString()
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Sort by price (lowest first)
     suppliers.sort((a, b) => {
-      // Normalize to USD for comparison
       const rates: Record<string, number> = { 'USD': 1, 'CNY': 0.14, 'EUR': 1.08 }
       const priceA = a.price * (rates[a.currency] || 1)
       const priceB = b.price * (rates[b.currency] || 1)
@@ -414,7 +471,6 @@ serve(async (req) => {
 
     console.log(`[${requestId}] Found ${uniqueSuppliers.length} suppliers`)
 
-    // Find best deal
     const bestDeal = uniqueSuppliers.length > 0 ? uniqueSuppliers[0] : null
 
     return new Response(
@@ -425,7 +481,7 @@ serve(async (req) => {
         search_query: productTitle,
         retail_price: retailPrice,
         retail_currency: retailCurrency,
-        platforms_searched: ['AliExpress', '1688.com', 'Alibaba'],
+        platforms_searched: ['AliExpress', '1688.com', 'Alibaba', 'Database'],
         timestamp: new Date().toISOString()
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

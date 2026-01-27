@@ -15,7 +15,7 @@ interface ConnectorRequest {
   limit?: number
 }
 
-// Endpoints API par fournisseur
+// API endpoints by supplier
 const API_ENDPOINTS: Record<string, { test: string, products: string, base: string }> = {
   bigbuy: {
     base: 'https://api.bigbuy.eu',
@@ -46,6 +46,16 @@ const API_ENDPOINTS: Record<string, { test: string, products: string, base: stri
     base: 'https://api.zendrop.com/v1',
     test: '/account',
     products: '/products'
+  },
+  printful: {
+    base: 'https://api.printful.com',
+    test: '/stores',
+    products: '/sync/products'
+  },
+  eprolo: {
+    base: 'https://openapi.eprolo.com',
+    test: '/api/v1/user/info',
+    products: '/api/v1/product/list'
   }
 }
 
@@ -59,7 +69,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Authentification
+    // Authentication
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       throw new Error('Authorization required')
@@ -84,7 +94,7 @@ serve(async (req) => {
 
         const config = API_ENDPOINTS[supplier_type.toLowerCase()]
         if (!config) {
-          // Pour les fournisseurs sans API, valider le format
+          // For suppliers without API, validate format only
           return new Response(
             JSON.stringify({ 
               success: true, 
@@ -95,14 +105,14 @@ serve(async (req) => {
           )
         }
 
-        // Test API réel
+        // Real API test
         const isValid = await testSupplierApi(config, credentials, supplier_type)
 
         return new Response(
           JSON.stringify({ 
             success: true, 
             valid: isValid,
-            message: isValid ? 'Connexion API réussie' : 'Échec de la connexion API'
+            message: isValid ? 'API connection successful' : 'API connection failed'
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
@@ -113,7 +123,7 @@ serve(async (req) => {
           throw new Error('Credentials and supplier_id required')
         }
 
-        // Chiffrer les credentials (simple base64 pour l'exemple, utiliser un vrai chiffrement en prod)
+        // Encrypt credentials (simple base64, use real encryption in production)
         const encrypted = btoa(JSON.stringify(credentials))
 
         const { error } = await supabase
@@ -132,14 +142,13 @@ serve(async (req) => {
 
         if (error) throw error
 
-        // Notification
-        await supabase.from('supplier_notifications').insert({
+        // Log activity
+        await supabase.from('activity_logs').insert({
           user_id: user.id,
-          supplier_id,
-          notification_type: 'credentials_saved',
-          title: 'Credentials sauvegardés',
-          message: `Les identifiants ${supplier_type} ont été enregistrés`,
-          severity: 'success'
+          action: 'supplier_credentials_saved',
+          description: `Saved credentials for ${supplier_type}`,
+          entity_type: 'supplier',
+          entity_id: supplier_id
         })
 
         return new Response(
@@ -153,7 +162,7 @@ serve(async (req) => {
           throw new Error('supplier_id required')
         }
 
-        // Récupérer les credentials
+        // Get credentials
         const { data: creds, error: credsError } = await supabase
           .from('supplier_credentials')
           .select('credentials_encrypted')
@@ -173,7 +182,7 @@ serve(async (req) => {
           isValid = await testSupplierApi(config, decrypted, supplier_type)
         }
 
-        // Mettre à jour le statut
+        // Update status
         await supabase
           .from('supplier_credentials')
           .update({
@@ -197,8 +206,8 @@ serve(async (req) => {
         const page = body.page || 1
         const limit = body.limit || 50
 
-        // Récupérer les credentials
-        let credentials = null
+        // Get credentials
+        let storedCredentials = null
         if (supplier_id) {
           const { data: creds } = await supabase
             .from('supplier_credentials')
@@ -208,28 +217,47 @@ serve(async (req) => {
             .single()
           
           if (creds) {
-            credentials = JSON.parse(atob(creds.credentials_encrypted))
+            storedCredentials = JSON.parse(atob(creds.credentials_encrypted))
           }
         }
 
         const config = API_ENDPOINTS[supplier_type.toLowerCase()]
         let products: any[] = []
 
-        if (config && credentials) {
-          products = await fetchSupplierProducts(config, credentials, supplier_type, page, limit)
-        } else {
-          // Mode démo
-          products = generateDemoProducts(supplier_type, limit)
+        if (config && storedCredentials) {
+          // Fetch from real API
+          products = await fetchSupplierProducts(config, storedCredentials, supplier_type, page, limit)
+        }
+        
+        // If no API products, fetch from database cache
+        if (products.length === 0) {
+          const { data: cachedProducts } = await supabase
+            .from('supplier_products')
+            .select('*')
+            .eq('user_id', user.id)
+            .ilike('source', `%${supplier_type}%`)
+            .range((page - 1) * limit, page * limit - 1)
+          
+          products = (cachedProducts || []).map(p => ({
+            id: p.id,
+            sku: p.sku,
+            title: p.title || p.name,
+            price: p.price,
+            cost: p.cost_price,
+            stock: p.stock_quantity,
+            image: p.image_url,
+            category: p.category
+          }))
         }
 
-        // Logger l'appel API
-        await supabase.from('supplier_analytics').upsert({
+        // Log API call
+        await supabase.from('api_analytics').upsert({
           user_id: user.id,
-          supplier_id,
-          analytics_date: new Date().toISOString().split('T')[0],
-          api_calls: 1
+          date: new Date().toISOString().split('T')[0],
+          endpoint: `supplier-api-connector/${supplier_type}`,
+          total_requests: 1
         }, {
-          onConflict: 'user_id,supplier_id,analytics_date'
+          onConflict: 'user_id,date,endpoint'
         })
 
         return new Response(
@@ -238,17 +266,17 @@ serve(async (req) => {
             products,
             page,
             limit,
-            total: products.length
+            total: products.length,
+            source: products.length > 0 && storedCredentials ? 'api' : 'cache'
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
       case 'get_inventory': {
-        // Récupérer l'inventaire en temps réel
         const config = API_ENDPOINTS[supplier_type.toLowerCase()]
         
-        // Récupérer les credentials
+        // Get credentials
         let creds = null
         if (supplier_id) {
           const { data } = await supabase
@@ -264,8 +292,26 @@ serve(async (req) => {
         }
 
         let inventory: any[] = []
+        
         if (config && creds) {
           inventory = await fetchInventoryUpdate(config, creds, supplier_type)
+        }
+        
+        // If no API inventory, get from database
+        if (inventory.length === 0) {
+          const { data: dbInventory } = await supabase
+            .from('supplier_products')
+            .select('sku, stock_quantity, updated_at')
+            .eq('user_id', user.id)
+            .ilike('source', `%${supplier_type}%`)
+            .limit(100)
+          
+          inventory = (dbInventory || []).map(p => ({
+            sku: p.sku,
+            stock: p.stock_quantity || 0,
+            updated: true,
+            last_update: p.updated_at
+          }))
         }
 
         return new Response(
@@ -297,7 +343,7 @@ async function testSupplierApi(
       'Content-Type': 'application/json'
     }
 
-    // Configuration auth selon fournisseur
+    // Auth configuration by supplier
     switch (supplierType.toLowerCase()) {
       case 'bigbuy':
         headers['Authorization'] = `Bearer ${credentials.api_key}`
@@ -307,7 +353,11 @@ async function testSupplierApi(
         break
       case 'spocket':
       case 'zendrop':
+      case 'printful':
         headers['Authorization'] = `Bearer ${credentials.api_key}`
+        break
+      case 'eprolo':
+        headers['api-key'] = credentials.api_key
         break
       default:
         headers['X-API-Key'] = credentials.api_key
@@ -346,6 +396,12 @@ async function fetchSupplierProducts(
       case 'cjdropshipping':
         headers['CJ-Access-Token'] = credentials.api_key
         break
+      case 'printful':
+        headers['Authorization'] = `Bearer ${credentials.api_key}`
+        break
+      case 'eprolo':
+        headers['api-key'] = credentials.api_key
+        break
       default:
         headers['Authorization'] = `Bearer ${credentials.api_key}`
     }
@@ -358,12 +414,12 @@ async function fetchSupplierProducts(
     
     if (!response.ok) {
       console.error(`[fetchSupplierProducts] API error: ${response.status}`)
-      return generateDemoProducts(supplierType, limit)
+      return []
     }
 
     const data = await response.json()
 
-    // Mapper selon le fournisseur
+    // Map by supplier
     if (supplierType.toLowerCase() === 'bigbuy') {
       return (data || []).map((p: any) => ({
         id: p.id || p.sku,
@@ -377,7 +433,20 @@ async function fetchSupplierProducts(
       }))
     }
 
-    // Format générique
+    if (supplierType.toLowerCase() === 'printful') {
+      return (data.result || []).map((p: any) => ({
+        id: p.id,
+        sku: p.external_id || p.id,
+        title: p.name,
+        price: 0,
+        cost: 0,
+        stock: 999,
+        image: p.thumbnail_url,
+        category: 'Print on Demand'
+      }))
+    }
+
+    // Generic format
     return (data.products || data.data || data || []).map((p: any) => ({
       id: p.id || p.sku,
       sku: p.sku || p.id,
@@ -390,7 +459,7 @@ async function fetchSupplierProducts(
 
   } catch (error) {
     console.error('[fetchSupplierProducts] Error:', error)
-    return generateDemoProducts(supplierType, limit)
+    return []
   }
 }
 
@@ -399,30 +468,48 @@ async function fetchInventoryUpdate(
   credentials: Record<string, string>,
   supplierType: string
 ): Promise<any[]> {
-  // Retourner un update d'inventaire simulé
-  return [
-    { sku: 'DEMO-001', stock: Math.floor(Math.random() * 100), updated: true },
-    { sku: 'DEMO-002', stock: Math.floor(Math.random() * 100), updated: true },
-  ]
-}
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    }
 
-function generateDemoProducts(supplierType: string, count: number): any[] {
-  const products = []
-  const categories = ['Electronics', 'Fashion', 'Home', 'Beauty', 'Sports']
-  
-  for (let i = 0; i < count; i++) {
-    const basePrice = Math.random() * 80 + 20
-    products.push({
-      id: `${supplierType}-${Date.now()}-${i}`,
-      sku: `${supplierType.toUpperCase().slice(0, 3)}-${1000 + i}`,
-      title: `${categories[i % categories.length]} Product ${i + 1}`,
-      price: Math.round(basePrice * 1.4 * 100) / 100,
-      cost: Math.round(basePrice * 100) / 100,
-      stock: Math.floor(Math.random() * 500) + 10,
-      image: `https://picsum.photos/seed/${supplierType}${i}/300/300`,
-      category: categories[i % categories.length]
-    })
+    switch (supplierType.toLowerCase()) {
+      case 'bigbuy':
+        headers['Authorization'] = `Bearer ${credentials.api_key}`
+        // BigBuy has a stock endpoint
+        const bbResponse = await fetch(`${config.base}/rest/catalog/productstockbyreference.json`, {
+          method: 'GET',
+          headers
+        })
+        if (bbResponse.ok) {
+          const data = await bbResponse.json()
+          return Object.entries(data || {}).map(([sku, stock]) => ({
+            sku,
+            stock: stock as number,
+            updated: true
+          }))
+        }
+        break
+        
+      case 'cjdropshipping':
+        headers['CJ-Access-Token'] = credentials.api_key
+        const cjResponse = await fetch(`https://developers.cjdropshipping.com/api2.0/v1/product/stock`, {
+          method: 'GET',
+          headers
+        })
+        if (cjResponse.ok) {
+          const data = await cjResponse.json()
+          return (data.data || []).map((item: any) => ({
+            sku: item.sku,
+            stock: item.stock || 0,
+            updated: true
+          }))
+        }
+        break
+    }
+  } catch (error) {
+    console.error('[fetchInventoryUpdate] Error:', error)
   }
   
-  return products
+  return []
 }
