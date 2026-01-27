@@ -64,6 +64,7 @@ import {
   // V3
   CommandCenterV3,
   PredictiveCommandCenter,
+  PrescriptiveCommandCenterV3,
   useAIPriorityEngine,
   useAISortedProducts,
   AISortSelector,
@@ -151,7 +152,7 @@ export default function ChannableProductsPage() {
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [smartFilter, setSmartFilter] = useState<SmartFilterType>('all')
-  const [useV3CommandCenter] = useState(true) // V3 activé par défaut
+  const [useV3CommandCenter] = useState(true) // V3 Prescriptive activé par défaut
   
   // V3: AI Sorting State
   const [aiSortMode, setAiSortMode] = useState<AISortMode>('ai_priority')
@@ -526,9 +527,9 @@ export default function ChannableProductsPage() {
         />
       ) : (
         <>
-          {/* 🆕 Command Center V3 - Centre de pilotage business avec prédictif */}
+          {/* 🆕 Command Center V3 Prescriptif - Hub de pilotage business */}
           {useV3CommandCenter ? (
-            <PredictiveCommandCenter
+            <PrescriptiveCommandCenterV3
               products={products}
               auditResults={auditResults}
               onFilterChange={setSmartFilter}
