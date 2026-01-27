@@ -28,7 +28,7 @@ serve(async (req) => {
 
     console.log(`[REPRICING] Action: ${action}, User: ${user.id}`);
 
-    // Action: apply_rule - Appliquer une règle de pricing
+    // Action: apply_rule - Apply a pricing rule
     if (action === 'apply_rule' && rule_id) {
       const { data: rule } = await supabaseClient
         .from('pricing_rules')
@@ -40,7 +40,7 @@ serve(async (req) => {
 
       if (!rule) throw new Error('Pricing rule not found or inactive');
 
-      // Créer un job dans la queue
+      // Create job in queue
       const { data: job } = await supabaseClient
         .from('repricing_queue')
         .insert({
@@ -54,7 +54,7 @@ serve(async (req) => {
         .select()
         .single();
 
-      // Récupérer les produits à reprendre
+      // Get products for the rule
       const products = await getProductsForRule(supabaseClient, user.id, rule, product_ids, apply_to_all);
 
       const results = [];
@@ -63,7 +63,7 @@ serve(async (req) => {
 
       for (const product of products) {
         try {
-          const newPrice = await calculateNewPrice(supabaseClient, product, rule);
+          const newPrice = await calculateNewPrice(supabaseClient, user.id, product, rule);
           
           if (newPrice !== null && newPrice !== product.price) {
             const result = await updateProductPrice(supabaseClient, user.id, product, newPrice, rule);
@@ -76,7 +76,7 @@ serve(async (req) => {
         }
       }
 
-      // Mettre à jour le job
+      // Update job status
       await supabaseClient
         .from('repricing_queue')
         .update({
@@ -90,7 +90,7 @@ serve(async (req) => {
         })
         .eq('id', job.id);
 
-      // Mettre à jour les stats de la règle
+      // Update rule stats
       await supabaseClient
         .from('pricing_rules')
         .update({
@@ -112,7 +112,7 @@ serve(async (req) => {
       });
     }
 
-    // Action: calculate_preview - Prévisualiser les changements sans appliquer
+    // Action: calculate_preview - Preview changes without applying
     if (action === 'calculate_preview' && rule_id) {
       const { data: rule } = await supabaseClient
         .from('pricing_rules')
@@ -126,8 +126,8 @@ serve(async (req) => {
       const products = await getProductsForRule(supabaseClient, user.id, rule, product_ids, apply_to_all);
       const preview = [];
 
-      for (const product of products.slice(0, 50)) { // Limiter à 50 pour la preview
-        const newPrice = await calculateNewPrice(supabaseClient, product, rule);
+      for (const product of products.slice(0, 50)) {
+        const newPrice = await calculateNewPrice(supabaseClient, user.id, product, rule);
         
         if (newPrice !== null) {
           const currentMargin = product.cost_price 
@@ -160,7 +160,7 @@ serve(async (req) => {
       });
     }
 
-    // Action: apply_all_rules - Appliquer toutes les règles actives
+    // Action: apply_all_rules - Apply all active rules
     if (action === 'apply_all_rules') {
       const { data: rules } = await supabaseClient
         .from('pricing_rules')
@@ -176,7 +176,7 @@ serve(async (req) => {
         
         for (const product of products) {
           try {
-            const newPrice = await calculateNewPrice(supabaseClient, product, rule);
+            const newPrice = await calculateNewPrice(supabaseClient, user.id, product, rule);
             if (newPrice !== null && newPrice !== product.price) {
               const result = await updateProductPrice(supabaseClient, user.id, product, newPrice, rule);
               allResults.push(result);
@@ -229,8 +229,27 @@ async function getProductsForRule(supabaseClient: any, userId: string, rule: any
   return products || [];
 }
 
-async function calculateNewPrice(supabaseClient: any, product: any, rule: any): Promise<number | null> {
-  const costPrice = product.cost_price || product.price * 0.5; // Fallback si pas de coût
+async function calculateNewPrice(supabaseClient: any, userId: string, product: any, rule: any): Promise<number | null> {
+  // Get real cost price from database, not fallback
+  let costPrice = product.cost_price;
+  
+  // If no cost_price on supplier_products, try to find it in products table
+  if (!costPrice) {
+    const { data: mainProduct } = await supabaseClient
+      .from('products')
+      .select('cost_price')
+      .eq('user_id', userId)
+      .or(`sku.eq.${product.sku},name.eq.${product.name}`)
+      .single();
+    
+    costPrice = mainProduct?.cost_price;
+  }
+  
+  // If still no cost price, we cannot calculate margins accurately
+  if (!costPrice) {
+    console.warn(`[REPRICING] No cost price for product ${product.id}, using estimate`);
+    costPrice = product.price * 0.5; // Last resort fallback
+  }
 
   let newPrice: number;
 
@@ -245,43 +264,73 @@ async function calculateNewPrice(supabaseClient: any, product: any, rule: any): 
       if (rule.max_price && newPrice > rule.max_price) newPrice = rule.max_price;
       break;
 
-    case 'competitive':
-      // Simuler récupération prix concurrent
-      const competitorPrice = product.price * (1 + (Math.random() * 0.2 - 0.1)); // ±10%
+    case 'competitive': {
+      // Get REAL competitor prices from price_monitoring table
+      const { data: competitorPrices } = await supabaseClient
+        .from('price_monitoring')
+        .select('competitor_price')
+        .eq('product_id', product.id)
+        .eq('user_id', userId)
+        .order('checked_at', { ascending: false })
+        .limit(5);
+      
+      let competitorPrice: number;
+      
+      if (competitorPrices && competitorPrices.length > 0) {
+        // Use average of recent competitor prices
+        const validPrices = competitorPrices
+          .map(p => p.competitor_price)
+          .filter(p => p && p > 0);
+        
+        competitorPrice = validPrices.length > 0
+          ? validPrices.reduce((a, b) => a + b, 0) / validPrices.length
+          : product.price;
+      } else {
+        // No competitor data, use current price as baseline
+        competitorPrice = product.price;
+      }
       
       if (rule.competitor_price_offset) {
         newPrice = competitorPrice + rule.competitor_price_offset;
       } else if (rule.competitor_price_offset_percent) {
         newPrice = competitorPrice * (1 + (rule.competitor_price_offset_percent / 100));
       } else {
-        newPrice = competitorPrice * 0.95; // -5% par défaut
+        newPrice = competitorPrice * 0.95; // -5% default
       }
       break;
+    }
 
-    case 'dynamic':
-      // Règles dynamiques basées sur stock, ventes, etc.
-      const stockLevel = product.stock_quantity || 0;
-      const basePrice = costPrice * 1.3; // Marge 30% de base
+    case 'dynamic': {
+      // Dynamic rules based on REAL stock levels from inventory
+      const { data: inventoryData } = await supabaseClient
+        .from('inventory')
+        .select('stock')
+        .eq('product_id', product.id)
+        .single();
+      
+      const stockLevel = inventoryData?.stock ?? product.stock_quantity ?? 0;
+      const basePrice = costPrice * 1.3; // 30% base margin
       
       if (stockLevel > 100) {
-        newPrice = basePrice * 0.9; // -10% si surstock
+        newPrice = basePrice * 0.9; // -10% if overstock
       } else if (stockLevel < 10) {
-        newPrice = basePrice * 1.1; // +10% si stock faible
+        newPrice = basePrice * 1.1; // +10% if low stock
       } else {
         newPrice = basePrice;
       }
       break;
+    }
 
     default:
       return null;
   }
 
-  // Appliquer les contraintes
+  // Apply constraints
   const minMargin = rule.min_margin_percent || 15;
   const minPriceFromMargin = costPrice * (1 + (minMargin / 100));
   newPrice = Math.max(newPrice, minPriceFromMargin);
 
-  // Arrondir si configuré
+  // Round if configured
   if (rule.round_to) {
     const roundTo = parseFloat(rule.round_to);
     newPrice = Math.floor(newPrice) + roundTo;
@@ -299,13 +348,13 @@ async function updateProductPrice(supabaseClient: any, userId: string, product: 
     ? ((newPrice - product.cost_price) / newPrice * 100)
     : 0;
 
-  // Mettre à jour le prix du produit
+  // Update product price
   await supabaseClient
     .from('supplier_products')
     .update({ price: newPrice })
     .eq('id', product.id);
 
-  // Enregistrer dans l'historique
+  // Record in price history
   await supabaseClient
     .from('price_history')
     .insert({
