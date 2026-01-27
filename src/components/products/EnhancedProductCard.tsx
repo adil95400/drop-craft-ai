@@ -25,11 +25,18 @@ import {
   Sparkles,
   AlertTriangle,
   CheckCircle,
-  Zap
+  Zap,
+  DollarSign,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion } from 'framer-motion';
+import { 
+  ProductStatusBadges, 
+  ProductStatusData,
+  ProductMicroInfo 
+} from './command-center';
 
 interface EnhancedProductCardProps {
   product: UnifiedProduct;
@@ -41,6 +48,9 @@ interface EnhancedProductCardProps {
   isSelected?: boolean;
   onSelectChange?: (checked: boolean) => void;
   showSelection?: boolean;
+  // Phase 2: Business mode props
+  statusData?: ProductStatusData;
+  viewMode?: 'standard' | 'audit' | 'business';
 }
 
 export const EnhancedProductCard = memo(function EnhancedProductCard({
@@ -52,7 +62,9 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
   onPublish,
   isSelected = false,
   onSelectChange,
-  showSelection = true
+  showSelection = true,
+  statusData,
+  viewMode = 'standard'
 }: EnhancedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -70,6 +82,18 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
   const profit = product.cost_price 
     ? product.price - product.cost_price 
     : null;
+
+  // Default status data if not provided
+  const defaultStatusData: ProductStatusData = statusData || {
+    stockCritical: (product.stock_quantity || 0) < 10,
+    lowQuality: aiScore < 40,
+    aiOptimized: false,
+    hasPriceRule: false,
+    recentlySync: true,
+    losingMargin: margin !== null && margin < 15,
+    qualityScore: aiScore,
+    stockQuantity: product.stock_quantity || 0
+  };
 
   const getStockStatus = () => {
     const stock = product.stock_quantity || 0;
@@ -127,7 +151,9 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
             </motion.div>
           )}
           
+          {/* Phase 2: Dynamic Status Badges */}
           <div className="flex flex-col gap-1.5">
+            {/* Legacy badges for Winner/Trending */}
             {isWinner && (
               <Badge className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white shadow-lg border-0 text-[10px] px-2">
                 <Star className="h-3 w-3 mr-1 fill-current" />
@@ -141,6 +167,12 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                 Tendance
               </Badge>
             )}
+            
+            {/* New Phase 2 Status Badges */}
+            <ProductStatusBadges 
+              status={defaultStatusData} 
+              compact={true}
+            />
           </div>
         </div>
 
@@ -360,15 +392,26 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
             </div>
           </div>
 
-          {/* Source Badge */}
+          {/* Phase 2: Micro-infos + Source Badge */}
           <div className="flex items-center justify-between pt-1">
             <Badge variant="outline" className="text-[10px] capitalize bg-muted/50 border-border/50">
               {product.source || 'local'}
             </Badge>
-            {product.category && (
-              <span className="text-[10px] text-muted-foreground truncate max-w-[100px]">
-                {product.category}
-              </span>
+            
+            {/* Micro-infos for Business mode */}
+            {viewMode === 'business' ? (
+              <ProductMicroInfo
+                margin={margin ?? undefined}
+                lastSyncedAt={product.updated_at}
+                hasPriceRule={defaultStatusData.hasPriceRule}
+                compact
+              />
+            ) : (
+              product.category && (
+                <span className="text-[10px] text-muted-foreground truncate max-w-[100px]">
+                  {product.category}
+                </span>
+              )
             )}
           </div>
 

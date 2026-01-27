@@ -1,21 +1,23 @@
 /**
  * Barre d'actions rapides pour la page Produits
+ * Phase 2: Intégration ViewModeSelector avec mode Business
  */
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   Plus, Upload, Download, Wand2, RefreshCw, 
-  Grid, Target, Filter 
+  Filter 
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { ViewModeSelector, ViewMode } from '@/components/products/command-center'
 
 interface ProductsQuickActionsBarProps {
   onRefresh: () => void
   onEnrich: () => void
-  viewMode: 'standard' | 'audit'
-  onViewModeChange: (mode: 'standard' | 'audit') => void
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
   expertMode: boolean
   onExpertModeChange: (enabled: boolean) => void
   hasActiveFilters: boolean
@@ -74,27 +76,12 @@ export function ProductsQuickActionsBar({
       
       {/* Actions secondaires (droite) */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Toggles de vue */}
-        <div className="flex items-center rounded-md border bg-muted/30 p-0.5">
-          <Button
-            variant={viewMode === 'standard' ? 'default' : 'ghost'}
-            onClick={() => onViewModeChange('standard')}
-            size="sm"
-            className="gap-1.5 h-7 px-2.5"
-          >
-            <Grid className="h-3.5 w-3.5" />
-            Standard
-          </Button>
-          <Button
-            variant={viewMode === 'audit' ? 'default' : 'ghost'}
-            onClick={() => onViewModeChange('audit')}
-            size="sm"
-            className="gap-1.5 h-7 px-2.5"
-          >
-            <Target className="h-3.5 w-3.5" />
-            Audit
-          </Button>
-        </div>
+        {/* Phase 2: ViewModeSelector avec mode Business */}
+        <ViewModeSelector
+          value={viewMode}
+          onChange={onViewModeChange}
+          disabled={isLoading}
+        />
         
         {/* Séparateur */}
         <div className="hidden sm:block h-6 w-px bg-border" />
