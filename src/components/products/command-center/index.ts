@@ -1,6 +1,7 @@
 /**
  * Command Center - Exports
  * Phase 1, 2, 3, 4 & V3 (Premium) Components
+ * Sprint 4: Badges décisionnels & Filtres IA
  */
 
 // Phase 1 - Core
@@ -26,8 +27,12 @@ export { StockPredictionsAlert } from './StockPredictionsAlert'
 export { BulkActionsBar } from './BulkActionsBar'
 export { RealTimeIndicator } from './RealTimeIndicator'
 
-// V3 - Command Center Premium (Phase 1 + 2)
+// V3 - Command Center Premium (Phase 1 + 2 + 3 + 4 + Sprint 4)
 export * from './v3'
+
+// Sprint 4: AI Decision Filters (from products)
+export { AIDecisionFilters, AIDecisionFilterBar } from '../AIDecisionFilters'
+export type { AIFilterType } from '../AIDecisionFilters'
 
 // Types
 export * from './types'

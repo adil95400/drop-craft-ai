@@ -81,6 +81,7 @@ import { ProductReviewsTab } from './product/ProductReviewsTab'
 import { ProductVideosTab } from './product/ProductVideosTab'
 import { ProductVariantsTab } from './product/ProductVariantsTab'
 import { ImageGalleryModal } from './ImageGalleryModal'
+import { PrescriptiveProductHeader } from './product/PrescriptiveProductHeader'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -753,24 +754,18 @@ export function ProductViewModal({
             </div>
           </motion.div>
 
-          {/* V3: AI Status Banner - Prescriptive */}
+          {/* Sprint 4: Prescriptive Product Header - Bandeau IA immersif */}
           {aiBadge && aiBadge.type !== 'neutral' && (
             <div className="px-6 pb-4 bg-muted/30">
-              <ProductAIStatusBanner
-                status={{
-                  type: aiBadge.type,
-                  score: aiBadge.score,
-                  priority: aiBadge.priority,
-                  mainIssue: aiBadge.mainIssue,
-                  recommendation: aiBadge.type === 'risk' 
-                    ? `Action recommandée: ${aiBadge.mainIssue}`
-                    : aiBadge.type === 'opportunity'
-                    ? `Potentiel d'optimisation détecté`
-                    : undefined,
-                  estimatedImpact: aiBadge.type === 'opportunity' ? Math.round(Math.random() * 500 + 100) : undefined
+              <PrescriptiveProductHeader
+                product={{
+                  name: product.name,
+                  image_url: product.image_url,
+                  status: product.status,
+                  price: product.price
                 }}
-                onActionClick={handleFullOptimization}
-                actionLabel={aiBadge.type === 'risk' ? 'Corriger' : 'Optimiser'}
+                aiBadge={aiBadge}
+                onPrimaryAction={handleFullOptimization}
                 isLoading={isOptimizing}
               />
             </div>

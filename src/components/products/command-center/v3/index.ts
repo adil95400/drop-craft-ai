@@ -2,6 +2,7 @@
  * Command Center V3 - Exports
  * Hub de pilotage business prescriptif
  * Phase 1 + Phase 2 (AI Brain) + Phase 3 (Predictive) + Phase 4 (Prescriptive)
+ * Sprint 4: Badges décisionnels & Filtres IA
  */
 
 // Utilities (shared calculations)
@@ -38,6 +39,14 @@ export {
 
 export { AISortSelector } from './AISortSelector'
 export { AIContextPanel } from './AIContextPanel'
+
+// Sprint 4: Decision Badges
+export { 
+  DecisionBadge, 
+  DecisionBadgeInline, 
+  DecisionBadgeWithAction 
+} from './DecisionBadge'
+export type { DecisionType } from './DecisionBadge'
 
 // Phase 3: Predictive Insights
 export { usePredictiveInsights } from './usePredictiveInsights'
