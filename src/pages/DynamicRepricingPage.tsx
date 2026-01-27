@@ -3,105 +3,76 @@ import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDynamicRepricing } from '@/hooks/useMarketplacePhase2';
-import { TrendingUp, Target, Zap, DollarSign, Plus, Play, Pause, Edit2, Trash2, History, ArrowUpDown, Calendar } from 'lucide-react';
+import { useRepricingRules, useRepricingHistory, useRepricingDashboard } from '@/hooks/useRepricingRules';
+import { TrendingUp, Target, Zap, DollarSign, Plus, Play, Pause, Edit2, Trash2, History, ArrowUpDown, Calendar, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuthOptimized } from '@/shared';
-import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-interface RepricingRule {
-  id: string;
-  name: string;
-  strategy: 'beat_competition' | 'match_competition' | 'margin_based' | 'dynamic';
-  minMargin: number;
-  maxDiscount: number;
-  products: number;
-  status: 'active' | 'paused';
-  lastRun: string;
-  priceChanges: number;
-}
-
-interface HistoryEntry {
-  id: string;
-  date: string;
-  product: string;
-  oldPrice: number;
-  newPrice: number;
-  reason: string;
-  rule: string;
-  margin: number;
-}
+import { Skeleton } from '@/components/ui/skeleton';
+import type { RepricingRule } from '@/types/marketplace-repricing';
 
 export default function DynamicRepricingPage() {
-  const { toast } = useToast();
-  const { user } = useAuthOptimized();
-  const { dashboard, isLoadingDashboard, executeRepricing, isRepricingExecuting } = useDynamicRepricing(user?.id || '');
+  const { 
+    rules, 
+    isLoading: isLoadingRules, 
+    createRule, 
+    toggleRule, 
+    deleteRule, 
+    executeRule,
+    isCreating,
+    isExecuting 
+  } = useRepricingRules();
+  
+  const { data: history = [], isLoading: isLoadingHistory } = useRepricingHistory(20);
+  const { data: dashboard, isLoading: isLoadingDashboard } = useRepricingDashboard();
   
   const [showCreateRuleModal, setShowCreateRuleModal] = useState(false);
-  const [newRule, setNewRule] = useState({ name: '', strategy: 'beat_competition', minMargin: 15, maxDiscount: 20 });
-  
-  // Mock rules data
-  const [rules, setRules] = useState<RepricingRule[]>([
-    { id: '1', name: 'Battre Amazon -5%', strategy: 'beat_competition', minMargin: 15, maxDiscount: 10, products: 156, status: 'active', lastRun: '2h', priceChanges: 23 },
-    { id: '2', name: 'Marge optimale 25%', strategy: 'margin_based', minMargin: 25, maxDiscount: 5, products: 89, status: 'active', lastRun: '1h', priceChanges: 12 },
-    { id: '3', name: 'Prix dynamique IA', strategy: 'dynamic', minMargin: 20, maxDiscount: 15, products: 234, status: 'paused', lastRun: '1j', priceChanges: 0 },
-  ]);
+  const [newRule, setNewRule] = useState({ 
+    name: '', 
+    strategy: 'competitive' as RepricingRule['strategy'], 
+    minMargin: 15, 
+    maxDiscount: 20 
+  });
 
-  // Mock history data
-  const [history] = useState<HistoryEntry[]>([
-    { id: '1', date: '2024-01-15 14:32', product: 'iPhone 15 Case', oldPrice: 29.99, newPrice: 27.99, reason: 'Concurrence -5%', rule: 'Battre Amazon -5%', margin: 18 },
-    { id: '2', date: '2024-01-15 14:30', product: 'USB-C Cable Pro', oldPrice: 19.99, newPrice: 18.49, reason: 'Marge optimisée', rule: 'Marge optimale 25%', margin: 25 },
-    { id: '3', date: '2024-01-15 14:28', product: 'Wireless Charger', oldPrice: 34.99, newPrice: 32.99, reason: 'Concurrence -5%', rule: 'Battre Amazon -5%', margin: 22 },
-    { id: '4', date: '2024-01-15 13:45', product: 'Screen Protector Pack', oldPrice: 12.99, newPrice: 11.99, reason: 'Demande faible', rule: 'Prix dynamique IA', margin: 28 },
-    { id: '5', date: '2024-01-15 13:20', product: 'Laptop Stand', oldPrice: 49.99, newPrice: 47.99, reason: 'Concurrence -5%', rule: 'Battre Amazon -5%', margin: 19 },
-  ]);
-
-  const handleToggleRule = (ruleId: string) => {
-    setRules(rules.map(rule => 
-      rule.id === ruleId 
-        ? { ...rule, status: rule.status === 'active' ? 'paused' : 'active' }
-        : rule
-    ));
-    toast({ title: "Statut de la règle modifié" });
+  const handleToggleRule = (ruleId: string, currentStatus: boolean) => {
+    toggleRule({ ruleId, isActive: !currentStatus });
   };
 
   const handleDeleteRule = (ruleId: string) => {
-    setRules(rules.filter(rule => rule.id !== ruleId));
-    toast({ title: "Règle supprimée", variant: "destructive" });
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette règle ?')) {
+      deleteRule(ruleId);
+    }
   };
 
   const handleCreateRule = () => {
-    if (!newRule.name) {
-      toast({ title: "Nom requis", variant: "destructive" });
-      return;
-    }
-    const rule: RepricingRule = {
-      id: Date.now().toString(),
+    if (!newRule.name) return;
+    
+    createRule({
       name: newRule.name,
-      strategy: newRule.strategy as RepricingRule['strategy'],
-      minMargin: newRule.minMargin,
-      maxDiscount: newRule.maxDiscount,
-      products: 0,
-      status: 'paused',
-      lastRun: '-',
-      priceChanges: 0
-    };
-    setRules([...rules, rule]);
+      strategy: newRule.strategy,
+      min_margin_percent: newRule.minMargin,
+      max_discount_percent: newRule.maxDiscount,
+      target_margin_percent: 25,
+      rounding_strategy: 'nearest_99',
+      competitor_analysis_enabled: true,
+      update_frequency_minutes: 60,
+      is_active: false
+    });
+    
     setShowCreateRuleModal(false);
-    setNewRule({ name: '', strategy: 'beat_competition', minMargin: 15, maxDiscount: 20 });
-    toast({ title: "Règle créée", description: "Activez-la pour commencer le repricing" });
+    setNewRule({ name: '', strategy: 'competitive', minMargin: 15, maxDiscount: 20 });
   };
 
   const strategyLabels: Record<string, string> = {
     beat_competition: 'Battre la concurrence',
     match_competition: 'Aligner sur concurrence',
+    competitive: 'Compétitif',
     margin_based: 'Basé sur marge',
+    buybox: 'Buy Box',
     dynamic: 'Dynamique IA'
   };
 
@@ -122,109 +93,85 @@ export default function DynamicRepricingPage() {
         <div className="space-y-6">
 
         {/* KPIs Dashboard */}
-        {dashboard && (
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Règles Actives</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{rules.filter(r => r.status === 'active').length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Automatisation en cours
-                </p>
-              </CardContent>
-            </Card>
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Règles Actives</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingDashboard ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{dashboard?.active_rules || 0}</div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Automatisation en cours
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Produits Monitorés</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{dashboard.products_monitored}</div>
-                <p className="text-xs text-muted-foreground">
-                  Surveillance continue
-                </p>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Produits Monitorés</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingDashboard ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{dashboard?.products_monitored || 0}</div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Surveillance continue
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Repricing Aujourd'hui</CardTitle>
-                <Zap className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{dashboard.repricing_executions_today}</div>
-                <p className="text-xs text-muted-foreground">
-                  Modifications automatiques
-                </p>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Repricing Aujourd'hui</CardTitle>
+              <Zap className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingDashboard ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <div className="text-2xl font-bold">{dashboard?.repricing_executions_today || 0}</div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Modifications automatiques
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Impact Marge</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Impact Marge</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingDashboard ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
                 <div className="text-2xl font-bold">
-                  {dashboard.avg_margin_change > 0 ? '+' : ''}{dashboard.avg_margin_change.toFixed(2)}%
+                  {(dashboard?.avg_margin_change || 0) > 0 ? '+' : ''}{(dashboard?.avg_margin_change || 0).toFixed(2)}%
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Changement moyen
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              )}
+              <p className="text-xs text-muted-foreground">
+                Changement moyen
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs defaultValue="rules" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="rules">Règles de repricing</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
+            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="buybox">Performance Buy Box</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="overview">
-            <Card>
-              <CardHeader>
-                <CardTitle>Changements Récents</CardTitle>
-                <CardDescription>Dernières modifications de prix automatiques</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoadingDashboard ? (
-                  <div className="text-center py-8 text-muted-foreground">Chargement...</div>
-                ) : dashboard?.recent_changes.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Aucun changement récent
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {dashboard?.recent_changes.map((change, idx) => (
-                      <div key={idx} className="flex items-center justify-between border-b pb-4 last:border-0">
-                        <div>
-                          <p className="font-medium">{change.product_name}</p>
-                          <p className="text-sm text-muted-foreground">{change.marketplace}</p>
-                        </div>
-                        <div className="text-right">
-                          <div className="flex items-center gap-2">
-                            <span className="line-through text-muted-foreground">{change.old_price}€</span>
-                            <span className="font-bold text-primary">{change.new_price}€</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Marge: {change.margin_impact > 0 ? '+' : ''}{change.margin_impact.toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="rules">
             <Card>
@@ -239,56 +186,85 @@ export default function DynamicRepricingPage() {
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {rules.map((rule) => (
-                    <div key={rule.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-full ${rule.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-muted text-muted-foreground'}`}>
-                          {rule.status === 'active' ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                {isLoadingRules ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <Skeleton key={i} className="h-24 w-full" />
+                    ))}
+                  </div>
+                ) : rules.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">Aucune règle configurée</p>
+                    <p className="text-sm">Créez votre première règle de repricing pour commencer l'automatisation.</p>
+                    <Button className="mt-4" onClick={() => setShowCreateRuleModal(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Créer une règle
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {rules.map((rule) => (
+                      <div key={rule.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-2 rounded-full ${rule.is_active ? 'bg-green-100 text-green-600' : 'bg-muted text-muted-foreground'}`}>
+                            {rule.is_active ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                          </div>
+                          <div>
+                            <p className="font-medium">{rule.name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline">{strategyLabels[rule.strategy] || rule.strategy}</Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {rule.execution_count || 0} produits • Marge min: {rule.min_margin_percent}%
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{rule.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline">{strategyLabels[rule.strategy]}</Badge>
-                            <span className="text-xs text-muted-foreground">
-                              {rule.products} produits • Marge min: {rule.minMargin}%
-                            </span>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right text-sm">
+                            <p className="font-medium">{rule.execution_count || 0} exécutions</p>
+                            <p className="text-muted-foreground">
+                              {rule.last_executed_at 
+                                ? `Dernière: ${new Date(rule.last_executed_at).toLocaleDateString()}`
+                                : 'Jamais exécutée'
+                              }
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleToggleRule(rule.id, rule.is_active)}
+                              title={rule.is_active ? 'Mettre en pause' : 'Activer'}
+                            >
+                              {rule.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => executeRule(rule.id)}
+                              disabled={isExecuting}
+                              title="Exécuter maintenant"
+                            >
+                              {isExecuting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                            </Button>
+                            <Button variant="ghost" size="icon" title="Modifier">
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleDeleteRule(rule.id)}
+                              title="Supprimer"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right text-sm">
-                          <p className="font-medium">{rule.priceChanges} changements</p>
-                          <p className="text-muted-foreground">Dernière exec: {rule.lastRun}</p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleToggleRule(rule.id)}
-                          >
-                            {rule.status === 'active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleDeleteRule(rule.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {rules.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Aucune règle configurée. Créez votre première règle de repricing.
-                    </div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -315,38 +291,97 @@ export default function DynamicRepricingPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Produit</TableHead>
-                      <TableHead>Ancien Prix</TableHead>
-                      <TableHead>Nouveau Prix</TableHead>
-                      <TableHead>Raison</TableHead>
-                      <TableHead>Règle</TableHead>
-                      <TableHead>Marge</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {history.map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell className="text-muted-foreground">{entry.date}</TableCell>
-                        <TableCell className="font-medium">{entry.product}</TableCell>
-                        <TableCell className="line-through text-muted-foreground">{entry.oldPrice.toFixed(2)}€</TableCell>
-                        <TableCell className="font-bold text-primary">{entry.newPrice.toFixed(2)}€</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{entry.reason}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm">{entry.rule}</TableCell>
-                        <TableCell>
-                          <Badge variant={entry.margin >= 20 ? 'default' : 'secondary'}>
-                            {entry.margin}%
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
+                {isLoadingHistory ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <Skeleton key={i} className="h-12 w-full" />
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun historique de repricing disponible</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Produit</TableHead>
+                        <TableHead>Ancien Prix</TableHead>
+                        <TableHead>Nouveau Prix</TableHead>
+                        <TableHead>Raison</TableHead>
+                        <TableHead>Marge</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {history.map((entry: any) => (
+                        <TableRow key={entry.id}>
+                          <TableCell className="text-muted-foreground">
+                            {new Date(entry.date).toLocaleString()}
+                          </TableCell>
+                          <TableCell className="font-medium">{entry.product}</TableCell>
+                          <TableCell className="line-through text-muted-foreground">
+                            {entry.oldPrice?.toFixed(2)}€
+                          </TableCell>
+                          <TableCell className="font-bold text-primary">
+                            {entry.newPrice?.toFixed(2)}€
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{entry.reason}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={entry.margin >= 20 ? 'default' : 'secondary'}>
+                              {entry.margin?.toFixed(1)}%
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="overview">
+            <Card>
+              <CardHeader>
+                <CardTitle>Changements Récents</CardTitle>
+                <CardDescription>Dernières modifications de prix automatiques</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingDashboard ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : !dashboard?.recent_changes || dashboard.recent_changes.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Aucun changement récent
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {dashboard.recent_changes.map((change, idx) => (
+                      <div key={idx} className="flex items-center justify-between border-b pb-4 last:border-0">
+                        <div>
+                          <p className="font-medium">{change.product_name}</p>
+                          <p className="text-sm text-muted-foreground">{change.marketplace}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-2">
+                            <span className="line-through text-muted-foreground">{change.old_price}€</span>
+                            <span className="font-bold text-primary">{change.new_price}€</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Marge: {change.margin_impact > 0 ? '+' : ''}{change.margin_impact.toFixed(2)}%
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -358,22 +393,36 @@ export default function DynamicRepricingPage() {
                 <CardDescription>Votre position sur chaque marketplace</CardDescription>
               </CardHeader>
               <CardContent>
-                {dashboard?.buybox_performance.map((perf, idx) => (
-                  <div key={idx} className="flex items-center justify-between border-b pb-4 mb-4 last:border-0">
-                    <div>
-                      <p className="font-medium">{perf.marketplace}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Position moyenne: {perf.avg_position.toFixed(1)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg">{perf.buybox_win_rate.toFixed(1)}%</p>
-                      <p className="text-xs text-muted-foreground">
-                        {perf.products_in_buybox} produits en Buy Box
-                      </p>
-                    </div>
+                {isLoadingDashboard ? (
+                  <div className="space-y-4">
+                    {[1, 2].map(i => (
+                      <Skeleton key={i} className="h-20 w-full" />
+                    ))}
                   </div>
-                ))}
+                ) : !dashboard?.buybox_performance || dashboard.buybox_performance.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Aucune donnée Buy Box disponible
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {dashboard.buybox_performance.map((perf, idx) => (
+                      <div key={idx} className="flex items-center justify-between border-b pb-4 mb-4 last:border-0">
+                        <div>
+                          <p className="font-medium">{perf.marketplace}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Position moyenne: {perf.avg_position.toFixed(1)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">{perf.buybox_win_rate.toFixed(1)}%</p>
+                          <p className="text-xs text-muted-foreground">
+                            {perf.products_in_buybox} produits en Buy Box
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -385,26 +434,30 @@ export default function DynamicRepricingPage() {
       <Dialog open={showCreateRuleModal} onOpenChange={setShowCreateRuleModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nouvelle règle de repricing</DialogTitle>
+            <DialogTitle>Nouvelle Règle de Repricing</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Nom de la règle</Label>
-              <Input 
-                placeholder="Ex: Battre Amazon -5%"
+              <Label htmlFor="name">Nom de la règle</Label>
+              <Input
+                id="name"
                 value={newRule.name}
                 onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
+                placeholder="Ex: Battre Amazon -5%"
               />
             </div>
             <div className="space-y-2">
-              <Label>Stratégie</Label>
-              <Select value={newRule.strategy} onValueChange={(v) => setNewRule({ ...newRule, strategy: v })}>
+              <Label htmlFor="strategy">Stratégie</Label>
+              <Select 
+                value={newRule.strategy} 
+                onValueChange={(value: RepricingRule['strategy']) => setNewRule({ ...newRule, strategy: value })}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="beat_competition">Battre la concurrence</SelectItem>
-                  <SelectItem value="match_competition">Aligner sur concurrence</SelectItem>
+                  <SelectItem value="competitive">Compétitif</SelectItem>
+                  <SelectItem value="buybox">Buy Box</SelectItem>
                   <SelectItem value="margin_based">Basé sur marge</SelectItem>
                   <SelectItem value="dynamic">Dynamique IA</SelectItem>
                 </SelectContent>
@@ -412,26 +465,33 @@ export default function DynamicRepricingPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Marge minimum (%)</Label>
-                <Input 
+                <Label htmlFor="minMargin">Marge minimum (%)</Label>
+                <Input
+                  id="minMargin"
                   type="number"
                   value={newRule.minMargin}
-                  onChange={(e) => setNewRule({ ...newRule, minMargin: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => setNewRule({ ...newRule, minMargin: Number(e.target.value) })}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Réduction max (%)</Label>
-                <Input 
+                <Label htmlFor="maxDiscount">Remise maximum (%)</Label>
+                <Input
+                  id="maxDiscount"
                   type="number"
                   value={newRule.maxDiscount}
-                  onChange={(e) => setNewRule({ ...newRule, maxDiscount: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => setNewRule({ ...newRule, maxDiscount: Number(e.target.value) })}
                 />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateRuleModal(false)}>Annuler</Button>
-            <Button onClick={handleCreateRule}>Créer la règle</Button>
+            <Button variant="outline" onClick={() => setShowCreateRuleModal(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleCreateRule} disabled={isCreating || !newRule.name}>
+              {isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Créer la règle
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
