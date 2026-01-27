@@ -1,10 +1,12 @@
 /**
  * useProductBacklogAI - Intelligence artificielle pour le backlog produit
  * Phase 2: Analyse prédictive et actions automatisées
+ * Connecté au edge function catalog-ai-hub
  */
 import { useMemo } from 'react'
 import { useProductBacklog, BacklogItem } from './useProductBacklog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
 export interface BacklogAIStats {
@@ -223,24 +225,40 @@ export function useApplyBacklogRecommendation() {
 
   return useMutation({
     mutationFn: async (recommendation: BacklogRecommendation) => {
-      // Simulate processing - in real app would trigger actual actions
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      console.log('[Backlog AI] Applying recommendation:', recommendation.type)
       
+      const { data, error } = await supabase.functions.invoke('catalog-ai-hub', {
+        body: {
+          module: 'backlog',
+          action: 'apply',
+          recommendationId: recommendation.type,
+          context: { recommendation }
+        }
+      })
+
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Failed to apply recommendation')
+
       return {
         success: true,
-        processed: recommendation.affectedProducts,
-        recommendation
+        processed: data.result?.updatedCount || recommendation.affectedProducts,
+        recommendation,
+        message: data.result?.message
       }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['catalog-ai-recommendations'] })
       toast.success(
         `✅ ${data.recommendation.title}`,
-        { description: `${data.processed} produits traités. Impact: +${data.recommendation.estimatedImpact}€` }
+        { description: data.message || `${data.processed} produits traités. Impact: +${data.recommendation.estimatedImpact}€` }
       )
     },
-    onError: () => {
-      toast.error('Erreur lors de l\'application de la recommandation')
+    onError: (error) => {
+      console.error('[Backlog AI] Apply error:', error)
+      toast.error('Erreur lors de l\'application de la recommandation', {
+        description: error instanceof Error ? error.message : 'Erreur inconnue'
+      })
     }
   })
 }
