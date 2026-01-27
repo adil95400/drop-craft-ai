@@ -32,7 +32,6 @@ serve(async (req) => {
       case 'generate_upsells': {
         const { product_id, cart_items } = params;
         
-        // Use Lovable AI to generate intelligent upsell suggestions
         const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
         
         const prompt = `Generate 3 upsell/cross-sell product suggestions for:
@@ -103,7 +102,6 @@ Return suggestions with:
       case 'create_bundle': {
         const { bundle_name, product_ids, discount_type, discount_value } = params;
 
-        // Calculate bundle pricing
         const { data: products } = await supabaseClient
           .from('products')
           .select('price')
@@ -148,7 +146,7 @@ Return suggestions with:
       }
 
       case 'calculate_discount': {
-        const { cart_value, customer_data, conditions } = params;
+        const { cart_value, customer_data } = params;
 
         let discount = 0;
         const { data: discounts } = await supabaseClient
@@ -161,20 +159,16 @@ Return suggestions with:
         for (const rule of discounts || []) {
           const cond = rule.conditions || {};
           
-          // Check minimum cart value
           if (cond.min_cart_value && cart_value < cond.min_cart_value) continue;
-          
-          // Check customer type
           if (cond.customer_type && customer_data?.type !== cond.customer_type) continue;
 
-          // Apply discount
           if (rule.discount_type === 'percentage') {
             discount = Math.max(discount, (cart_value * rule.discount_value) / 100);
           } else if (rule.discount_type === 'fixed') {
             discount = Math.max(discount, rule.discount_value);
           }
 
-          break; // Use first matching discount
+          break;
         }
 
         return new Response(
@@ -229,8 +223,33 @@ Return suggestions with:
         }
 
         if (widget_type === 'live_visitors') {
-          // Simulate live visitors (in real app, use analytics)
-          data.visitors_count = Math.floor(Math.random() * 50) + 20;
+          // Query real analytics data from conversion_events in last 5 minutes
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+          
+          const { count, error } = await supabaseClient
+            .from('conversion_events')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('event_type', 'page_view')
+            .gte('created_at', fiveMinutesAgo);
+
+          if (error) {
+            console.error('Error fetching live visitors:', error);
+            data.visitors_count = 0;
+          } else {
+            data.visitors_count = count || 0;
+          }
+          
+          // Also get unique sessions in last hour for context
+          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+          const { data: sessions } = await supabaseClient
+            .from('conversion_events')
+            .select('session_id')
+            .eq('user_id', user.id)
+            .gte('created_at', oneHourAgo);
+          
+          const uniqueSessions = new Set(sessions?.map(s => s.session_id).filter(Boolean));
+          data.hourly_unique_visitors = uniqueSessions.size;
         }
 
         return new Response(

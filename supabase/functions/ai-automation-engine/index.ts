@@ -7,7 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -69,6 +68,8 @@ serve(async (req) => {
 });
 
 async function analyzeAutomationData(rule: any, inputData: any) {
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+  
   const prompt = `
 Analysez les données suivantes pour la règle d'automatisation "${rule.name}" de type "${rule.rule_type}":
 
@@ -85,14 +86,14 @@ Analysez:
 Répondez en JSON avec: shouldTrigger, confidence, riskLevel, recommendations, reasoning
 `;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
+      'Authorization': `Bearer ${lovableApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-5-2025-08-07',
+      model: 'google/gemini-2.5-flash',
       messages: [
         { 
           role: 'system', 
@@ -100,7 +101,6 @@ Répondez en JSON avec: shouldTrigger, confidence, riskLevel, recommendations, r
         },
         { role: 'user', content: prompt }
       ],
-      max_completion_tokens: 1000,
     }),
   });
 
@@ -108,7 +108,8 @@ Répondez en JSON avec: shouldTrigger, confidence, riskLevel, recommendations, r
   const content = data.choices[0].message.content;
   
   try {
-    return JSON.parse(content);
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
   } catch {
     return {
       shouldTrigger: false,
@@ -127,8 +128,7 @@ async function generateAutomationDecisions(rule: any, inputData: any, analysis: 
 
   const decisions = [];
 
-  // Générer des décisions basées sur le type de règle
-  for (const action of rule.actions) {
+  for (const action of rule.actions || []) {
     const decision = {
       ruleId: rule.id,
       actionType: action.type,
@@ -192,41 +192,179 @@ async function executeAutomationActions(supabase: any, decisions: any[], userId:
 }
 
 async function updateProductPrice(supabase: any, decision: any, userId: string) {
-  // Exemple d'action de mise à jour de prix
-  return { success: true, message: 'Price update simulated', action: 'price_update' };
+  const { productId, newPrice, reason } = decision.parameters || {};
+  
+  if (!productId || !newPrice) {
+    return { success: false, message: 'Missing productId or newPrice in parameters' };
+  }
+
+  // Get current price for logging
+  const { data: product, error: fetchError } = await supabase
+    .from('products')
+    .select('price, title')
+    .eq('id', productId)
+    .eq('user_id', userId)
+    .single();
+
+  if (fetchError || !product) {
+    return { success: false, message: 'Product not found' };
+  }
+
+  const oldPrice = product.price;
+
+  // Update the price
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({ 
+      price: newPrice,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', productId)
+    .eq('user_id', userId);
+
+  if (updateError) {
+    return { success: false, message: updateError.message };
+  }
+
+  // Log the price change
+  await supabase.from('activity_logs').insert({
+    user_id: userId,
+    action: 'automation_price_update',
+    entity_type: 'product',
+    entity_id: productId,
+    description: `Price updated from ${oldPrice}€ to ${newPrice}€ via automation`,
+    details: { oldPrice, newPrice, reason, productTitle: product.title }
+  });
+
+  return { 
+    success: true, 
+    message: `Price updated for ${product.title}: ${oldPrice}€ → ${newPrice}€`,
+    action: 'price_update',
+    details: { oldPrice, newPrice }
+  };
 }
 
 async function adjustInventoryLevel(supabase: any, decision: any, userId: string) {
-  // Exemple d'action d'ajustement de stock
-  return { success: true, message: 'Inventory adjustment simulated', action: 'inventory_adjustment' };
+  const { productId, quantityChange, reason } = decision.parameters || {};
+  
+  if (!productId || quantityChange === undefined) {
+    return { success: false, message: 'Missing productId or quantityChange in parameters' };
+  }
+
+  // Get current stock
+  const { data: product, error: fetchError } = await supabase
+    .from('products')
+    .select('stock_quantity, title')
+    .eq('id', productId)
+    .eq('user_id', userId)
+    .single();
+
+  if (fetchError || !product) {
+    return { success: false, message: 'Product not found' };
+  }
+
+  const oldStock = product.stock_quantity || 0;
+  const newStock = Math.max(0, oldStock + quantityChange);
+
+  // Update stock
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({ 
+      stock_quantity: newStock,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', productId)
+    .eq('user_id', userId);
+
+  if (updateError) {
+    return { success: false, message: updateError.message };
+  }
+
+  // Log the stock change
+  await supabase.from('activity_logs').insert({
+    user_id: userId,
+    action: 'automation_stock_adjustment',
+    entity_type: 'product',
+    entity_id: productId,
+    description: `Stock adjusted from ${oldStock} to ${newStock} via automation`,
+    details: { oldStock, newStock, quantityChange, reason, productTitle: product.title }
+  });
+
+  return { 
+    success: true, 
+    message: `Stock adjusted for ${product.title}: ${oldStock} → ${newStock}`,
+    action: 'inventory_adjustment',
+    details: { oldStock, newStock, quantityChange }
+  };
 }
 
 async function sendAutomationNotification(supabase: any, decision: any, userId: string) {
+  const { title, message, type } = decision.parameters || {};
+  
   const { error } = await supabase.from('notifications').insert({
     user_id: userId,
-    title: 'Automation Alert',
-    message: `Automated action executed: ${decision.actionType}`,
-    type: 'automation'
+    title: title || 'Automation Alert',
+    message: message || `Automated action executed: ${decision.actionType}`,
+    type: type || 'automation'
   });
 
   return { success: !error, message: error ? error.message : 'Notification sent' };
 }
 
 async function createMarketingCampaign(supabase: any, decision: any, userId: string) {
-  // Exemple de création de campagne marketing
-  return { success: true, message: 'Marketing campaign creation simulated', action: 'campaign_creation' };
+  const { campaignName, campaignType, targetProducts, discount } = decision.parameters || {};
+  
+  if (!campaignName) {
+    return { success: false, message: 'Missing campaignName in parameters' };
+  }
+
+  const { data: campaign, error } = await supabase
+    .from('automated_campaigns')
+    .insert({
+      user_id: userId,
+      name: campaignName,
+      trigger_type: 'ai_automation',
+      trigger_config: { source: 'automation_engine', decision: decision.ruleId },
+      actions: { 
+        type: campaignType || 'discount',
+        targetProducts: targetProducts || [],
+        discount: discount || 0
+      },
+      is_active: true
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  return { 
+    success: true, 
+    message: `Campaign "${campaignName}" created successfully`,
+    action: 'campaign_creation',
+    campaignId: campaign?.id
+  };
 }
 
 async function updateRulePerformance(supabase: any, ruleId: string, results: any[]) {
-  const successRate = results.filter(r => r.result.success).length / results.length * 100;
+  const successCount = results.filter(r => r.result.success).length;
+  const successRate = results.length > 0 ? (successCount / results.length * 100) : 0;
   
+  // Get current execution count
+  const { data: rule } = await supabase
+    .from('automation_rules')
+    .select('trigger_count')
+    .eq('id', ruleId)
+    .single();
+
+  const newCount = (rule?.trigger_count || 0) + 1;
+
   await supabase
     .from('automation_rules')
     .update({
-      execution_count: supabase.raw('execution_count + 1'),
-      success_rate: successRate,
-      last_executed_at: new Date().toISOString(),
-      performance_metrics: { lastResults: results }
+      trigger_count: newCount,
+      last_triggered_at: new Date().toISOString()
     })
     .eq('id', ruleId);
 }

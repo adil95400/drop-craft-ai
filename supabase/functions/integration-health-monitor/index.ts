@@ -20,7 +20,6 @@ serve(async (req) => {
 
     console.log('Starting integration health monitoring...')
 
-    // Get all active integrations
     const { data: integrations, error: integrationsError } = await supabaseClient
       .from('integrations')
       .select('*')
@@ -32,14 +31,12 @@ serve(async (req) => {
 
     const healthResults = []
 
-    // Check health of each integration
     for (const integration of integrations || []) {
       console.log(`Checking health for integration ${integration.id} (${integration.platform})`)
       
       try {
         const healthCheck = await checkIntegrationHealth(integration)
         
-        // Update integration status if needed
         if (healthCheck.status !== integration.connection_status) {
           await supabaseClient
             .from('integrations')
@@ -50,7 +47,6 @@ serve(async (req) => {
             .eq('id', integration.id)
         }
 
-        // Log health check result
         await supabaseClient
           .from('health_logs')
           .insert({
@@ -71,7 +67,6 @@ serve(async (req) => {
       } catch (error) {
         console.error(`Health check failed for integration ${integration.id}:`, error)
         
-        // Mark as unhealthy
         await supabaseClient
           .from('integrations')
           .update({ 
@@ -146,34 +141,12 @@ async function checkIntegrationHealth(integration: any) {
       case 'prestashop':
         details = await checkPrestaShopHealth(integration)
         break
-      case 'magento':
-        details = await checkMagentoHealth(integration)
-        break
-      case 'bigcommerce':
-        details = await checkBigCommerceHealth(integration)
-        break
-      case 'etsy':
-        details = await checkEtsyHealth(integration)
-        break
-      case 'rakuten':
-        details = await checkRakutenHealth(integration)
-        break
-      case 'fnac':
-        details = await checkFnacHealth(integration)
-        break
-      case 'mercadolibre':
-        details = await checkMercadoLibreHealth(integration)
-        break
-      case 'cdiscount':
-        details = await checkCdiscountHealth(integration)
-        break
       default:
         details = await checkGenericHealth(integration)
     }
 
     const responseTime = Date.now() - startTime
 
-    // Determine overall health status
     if (responseTime > 10000) {
       healthStatus = 'slow'
     } else if (details.error) {
@@ -196,132 +169,137 @@ async function checkIntegrationHealth(integration: any) {
 }
 
 async function checkShopifyHealth(integration: any) {
-  const shopDomain = integration.store_config?.domain || integration.encrypted_credentials?.shop_domain
-  const accessToken = integration.encrypted_credentials?.access_token
+  const config = integration.config || {}
+  const credentials = config.credentials || {}
+  const shopDomain = credentials.shop_domain || integration.store_url
+  const accessToken = credentials.access_token
 
   if (!shopDomain || !accessToken) {
-    throw new Error('Missing Shopify credentials')
+    return { error: 'Missing Shopify credentials', status: 'unconfigured' }
   }
 
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 300))
-  
-  return {
-    shop_name: integration.store_config?.shop_name || 'Shopify Store',
-    plan: 'basic',
-    api_version: '2023-10'
+  try {
+    const response = await fetch(`https://${shopDomain}/admin/api/2024-01/shop.json`, {
+      method: 'GET',
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { error: `Shopify API error: ${response.status}`, details: errorText }
+    }
+
+    const data = await response.json()
+    return {
+      shop_name: data.shop?.name || 'Unknown',
+      plan: data.shop?.plan_name || 'Unknown',
+      api_version: '2024-01',
+      status: 'connected'
+    }
+  } catch (error) {
+    return { error: error.message, status: 'connection_failed' }
   }
 }
 
 async function checkWooCommerceHealth(integration: any) {
-  // Simulate WooCommerce health check
-  await new Promise(resolve => setTimeout(resolve, 400))
-  
-  return {
-    version: '8.2.1',
-    php_version: '8.1',
-    wordpress_version: '6.3'
+  const config = integration.config || {}
+  const credentials = config.credentials || {}
+  const storeUrl = credentials.store_url || integration.store_url
+  const consumerKey = credentials.consumer_key
+  const consumerSecret = credentials.consumer_secret
+
+  if (!storeUrl || !consumerKey || !consumerSecret) {
+    return { error: 'Missing WooCommerce credentials', status: 'unconfigured' }
+  }
+
+  try {
+    const auth = btoa(`${consumerKey}:${consumerSecret}`)
+    const response = await fetch(`${storeUrl}/wp-json/wc/v3/system_status`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      return { error: `WooCommerce API error: ${response.status}`, status: 'api_error' }
+    }
+
+    const data = await response.json()
+    return {
+      version: data.environment?.version || 'Unknown',
+      php_version: data.environment?.php_version || 'Unknown',
+      wordpress_version: data.environment?.wp_version || 'Unknown',
+      status: 'connected'
+    }
+  } catch (error) {
+    return { error: error.message, status: 'connection_failed' }
   }
 }
 
 async function checkAmazonHealth(integration: any) {
-  // Amazon SP-API health check simulation
-  await new Promise(resolve => setTimeout(resolve, 500))
+  const config = integration.config || {}
+  const credentials = config.credentials || {}
   
+  if (!credentials.refresh_token || !credentials.client_id) {
+    return { error: 'Missing Amazon SP-API credentials', status: 'unconfigured' }
+  }
+
+  // Amazon SP-API requires OAuth token refresh - just verify credentials exist
   return {
-    marketplace: integration.encrypted_credentials?.marketplace || 'FR',
-    status: 'API accessible',
-    last_sync: integration.last_sync_at
+    marketplace: credentials.marketplace || 'Unknown',
+    status: 'credentials_configured',
+    last_sync: integration.last_sync_at,
+    note: 'Full health check requires active session'
   }
 }
 
 async function checkPrestaShopHealth(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 350))
-  
-  return {
-    version: '8.1.2',
-    php_version: '8.0',
-    status: 'Webservice active'
-  }
-}
+  const config = integration.config || {}
+  const credentials = config.credentials || {}
+  const storeUrl = credentials.store_url || integration.store_url
+  const apiKey = credentials.api_key
 
-async function checkMagentoHealth(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 450))
-  
-  return {
-    version: '2.4.6',
-    edition: 'Community',
-    status: 'REST API active'
+  if (!storeUrl || !apiKey) {
+    return { error: 'Missing PrestaShop credentials', status: 'unconfigured' }
   }
-}
 
-async function checkBigCommerceHealth(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 320))
-  
-  return {
-    store_hash: integration.credentials?.store_hash || 'unknown',
-    status: 'API accessible',
-    tier: 'Standard'
-  }
-}
+  try {
+    const auth = btoa(`${apiKey}:`)
+    const response = await fetch(`${storeUrl}/api/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Output-Format': 'JSON',
+      },
+    })
 
-async function checkEtsyHealth(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 280))
-  
-  return {
-    shop_id: integration.platform_data?.shop_id || 'unknown',
-    status: 'API accessible',
-    api_version: 'v3'
-  }
-}
+    if (!response.ok) {
+      return { error: `PrestaShop API error: ${response.status}`, status: 'api_error' }
+    }
 
-async function checkRakutenHealth(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 380))
-  
-  return {
-    marketplace: 'France',
-    status: 'Connection verified',
-    last_activity: integration.last_sync_at
-  }
-}
-
-async function checkFnacHealth(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 420))
-  
-  return {
-    marketplace: 'France',
-    status: 'XML API accessible',
-    last_activity: integration.last_sync_at
-  }
-}
-
-async function checkMercadoLibreHealth(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 360))
-  
-  return {
-    user_id: integration.credentials?.user_id || 'unknown',
-    status: 'API accessible',
-    country: 'Argentina'
-  }
-}
-
-async function checkCdiscountHealth(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 390))
-  
-  return {
-    marketplace: 'France',
-    status: 'SOAP API accessible',
-    last_activity: integration.last_sync_at
+    return {
+      status: 'connected',
+      webservice: 'active',
+      last_activity: integration.last_sync_at
+    }
+  } catch (error) {
+    return { error: error.message, status: 'connection_failed' }
   }
 }
 
 async function checkGenericHealth(integration: any) {
-  // Generic health check for other platforms
-  await new Promise(resolve => setTimeout(resolve, 200))
-  
+  const config = integration.config || {}
+  const hasCredentials = config.credentials && Object.keys(config.credentials).length > 0
+
   return {
     platform: integration.platform_type,
-    status: 'Connection verified',
-    last_activity: integration.last_sync_at || integration.created_at
+    status: hasCredentials ? 'credentials_configured' : 'unconfigured',
+    last_activity: integration.last_sync_at || integration.created_at,
+    note: 'Platform-specific health check not implemented'
   }
 }
