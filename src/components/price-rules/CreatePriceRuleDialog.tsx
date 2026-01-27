@@ -1,14 +1,13 @@
 /**
- * Create Price Rule Dialog
+ * Create Price Rule Dialog - Channable Design
  */
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { ChannableModal, ChannableFormField } from '@/components/channable/ChannableModal';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreatePriceRule, useRuleTypeOptions, useApplyToOptions } from '@/hooks/usePriceRules';
+import { DollarSign } from 'lucide-react';
 
 interface CreatePriceRuleDialogProps {
   open: boolean;
@@ -46,65 +45,89 @@ export function CreatePriceRuleDialog({ open, onOpenChange }: CreatePriceRuleDia
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Nouvelle règle de prix</DialogTitle>
-          <DialogDescription>Définissez une règle de tarification automatique</DialogDescription>
-        </DialogHeader>
+    <ChannableModal
+      open={open}
+      onOpenChange={handleClose}
+      title="Nouvelle règle de prix"
+      description="Définissez une règle de tarification automatique pour optimiser vos marges"
+      icon={DollarSign}
+      variant="premium"
+      size="lg"
+      onSubmit={handleSubmit}
+      submitLabel="Créer la règle"
+      isSubmitting={createRule.isPending}
+      submitDisabled={!name.trim() || !value.trim()}
+    >
+      <div className="space-y-4">
+        <ChannableFormField label="Nom de la règle" required>
+          <Input 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            placeholder="Ex: Markup 30% fournisseur A"
+            className="bg-background"
+          />
+        </ChannableFormField>
 
-        <div className="space-y-4 py-4">
-          <div>
-            <Label>Nom</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Markup 30% fournisseur A" />
-          </div>
-          <div>
-            <Label>Description</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description..." rows={2} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Type de règle</Label>
-              <Select value={ruleType} onValueChange={setRuleType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {ruleTypeOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Appliquer à</Label>
-              <Select value={applyTo} onValueChange={setApplyTo}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {applyToOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Valeur (%)</Label>
-              <Input type="number" value={value} onChange={(e) => setValue(e.target.value)} placeholder="30" />
-            </div>
-            <div>
-              <Label>Priorité</Label>
-              <Input type="number" value={priority} onChange={(e) => setPriority(e.target.value)} placeholder="0" />
-            </div>
-          </div>
+        <ChannableFormField label="Description" hint="Optionnel - Décrivez l'objectif de cette règle">
+          <Textarea 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+            placeholder="Description de la règle..." 
+            rows={2}
+            className="bg-background resize-none"
+          />
+        </ChannableFormField>
+
+        <div className="grid grid-cols-2 gap-4">
+          <ChannableFormField label="Type de règle">
+            <Select value={ruleType} onValueChange={setRuleType}>
+              <SelectTrigger className="bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[200] bg-popover">
+                {ruleTypeOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ChannableFormField>
+
+          <ChannableFormField label="Appliquer à">
+            <Select value={applyTo} onValueChange={setApplyTo}>
+              <SelectTrigger className="bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[200] bg-popover">
+                {applyToOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ChannableFormField>
         </div>
 
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={handleClose}>Annuler</Button>
-          <Button onClick={handleSubmit} disabled={!name.trim() || !value.trim() || createRule.isPending}>
-            Créer
-          </Button>
+        <div className="grid grid-cols-2 gap-4">
+          <ChannableFormField label="Valeur (%)" required>
+            <Input 
+              type="number" 
+              value={value} 
+              onChange={(e) => setValue(e.target.value)} 
+              placeholder="30"
+              className="bg-background"
+            />
+          </ChannableFormField>
+
+          <ChannableFormField label="Priorité" hint="Plus élevé = appliqué en premier">
+            <Input 
+              type="number" 
+              value={priority} 
+              onChange={(e) => setPriority(e.target.value)} 
+              placeholder="0"
+              className="bg-background"
+            />
+          </ChannableFormField>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </ChannableModal>
   );
 }

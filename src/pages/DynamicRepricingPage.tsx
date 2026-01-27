@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { ChannableModal, ChannableFormField } from '@/components/channable/ChannableModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRepricingRules, useRepricingHistory, useRepricingDashboard } from '@/hooks/useRepricingRules';
 import { TrendingUp, Target, Zap, DollarSign, Plus, Play, Pause, Edit2, Trash2, History, ArrowUpDown, Calendar, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -430,71 +429,68 @@ export default function DynamicRepricingPage() {
         </div>
       </ChannablePageWrapper>
 
-      {/* Create Rule Modal */}
-      <Dialog open={showCreateRuleModal} onOpenChange={setShowCreateRuleModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nouvelle Règle de Repricing</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nom de la règle</Label>
+      {/* Create Rule Modal - Channable Design */}
+      <ChannableModal
+        open={showCreateRuleModal}
+        onOpenChange={setShowCreateRuleModal}
+        title="Nouvelle Règle de Repricing"
+        description="Configurez une stratégie de prix automatique pour maximiser vos marges"
+        icon={Zap}
+        variant="premium"
+        size="lg"
+        onSubmit={handleCreateRule}
+        submitLabel="Créer la règle"
+        isSubmitting={isCreating}
+        submitDisabled={!newRule.name}
+      >
+        <div className="space-y-4">
+          <ChannableFormField label="Nom de la règle" required>
+            <Input
+              value={newRule.name}
+              onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
+              placeholder="Ex: Battre Amazon -5%"
+              className="bg-background"
+            />
+          </ChannableFormField>
+
+          <ChannableFormField label="Stratégie de repricing">
+            <Select 
+              value={newRule.strategy} 
+              onValueChange={(value: RepricingRule['strategy']) => setNewRule({ ...newRule, strategy: value })}
+            >
+              <SelectTrigger className="bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[200] bg-popover">
+                <SelectItem value="competitive">🎯 Compétitif</SelectItem>
+                <SelectItem value="buybox">🏆 Buy Box</SelectItem>
+                <SelectItem value="margin_based">💰 Basé sur marge</SelectItem>
+                <SelectItem value="dynamic">🤖 Dynamique IA</SelectItem>
+              </SelectContent>
+            </Select>
+          </ChannableFormField>
+
+          <div className="grid grid-cols-2 gap-4">
+            <ChannableFormField label="Marge minimum (%)" hint="Seuil de rentabilité">
               <Input
-                id="name"
-                value={newRule.name}
-                onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
-                placeholder="Ex: Battre Amazon -5%"
+                type="number"
+                value={newRule.minMargin}
+                onChange={(e) => setNewRule({ ...newRule, minMargin: Number(e.target.value) })}
+                className="bg-background"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="strategy">Stratégie</Label>
-              <Select 
-                value={newRule.strategy} 
-                onValueChange={(value: RepricingRule['strategy']) => setNewRule({ ...newRule, strategy: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="competitive">Compétitif</SelectItem>
-                  <SelectItem value="buybox">Buy Box</SelectItem>
-                  <SelectItem value="margin_based">Basé sur marge</SelectItem>
-                  <SelectItem value="dynamic">Dynamique IA</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="minMargin">Marge minimum (%)</Label>
-                <Input
-                  id="minMargin"
-                  type="number"
-                  value={newRule.minMargin}
-                  onChange={(e) => setNewRule({ ...newRule, minMargin: Number(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="maxDiscount">Remise maximum (%)</Label>
-                <Input
-                  id="maxDiscount"
-                  type="number"
-                  value={newRule.maxDiscount}
-                  onChange={(e) => setNewRule({ ...newRule, maxDiscount: Number(e.target.value) })}
-                />
-              </div>
-            </div>
+            </ChannableFormField>
+
+            <ChannableFormField label="Remise maximum (%)" hint="Limite de réduction">
+              <Input
+                type="number"
+                value={newRule.maxDiscount}
+                onChange={(e) => setNewRule({ ...newRule, maxDiscount: Number(e.target.value) })}
+                className="bg-background"
+              />
+            </ChannableFormField>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateRuleModal(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleCreateRule} disabled={isCreating || !newRule.name}>
-              {isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Créer la règle
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </ChannableModal>
     </>
   );
 }

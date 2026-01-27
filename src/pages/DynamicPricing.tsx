@@ -3,11 +3,10 @@ import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ChannableModal, ChannableFormField } from '@/components/channable/ChannableModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { 
@@ -139,76 +138,76 @@ export default function DynamicPricing() {
               Intelligence artificielle et règles automatisées
             </p>
           </div>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button variant="hero">
-                <Plus className="h-4 w-4 mr-2" />
-                Nouvelle Règle
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Créer une règle dynamique</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label>Nom de la règle</Label>
-                  <Input 
-                    value={newRuleName} 
-                    onChange={(e) => setNewRuleName(e.target.value)}
-                    placeholder="Ex: Alignement Concurrent"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Type de règle</Label>
-                  <Select value={newRuleType} onValueChange={(v) => setNewRuleType(v as DynamicRuleType)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="competitor">Concurrent</SelectItem>
-                      <SelectItem value="demand">Demande</SelectItem>
-                      <SelectItem value="inventory">Inventaire</SelectItem>
-                      <SelectItem value="time">Horaire</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Impact prix (%)</Label>
-                  <div className="flex items-center gap-4">
-                    <Slider 
-                      value={[newRuleImpact]} 
-                      onValueChange={([v]) => setNewRuleImpact(v)}
-                      min={-30}
-                      max={30}
-                      step={1}
-                      className="flex-1"
-                    />
-                    <span className="w-16 text-right font-medium">
-                      {newRuleImpact > 0 ? '+' : ''}{newRuleImpact}%
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Input 
-                    value={newRuleDescription} 
-                    onChange={(e) => setNewRuleDescription(e.target.value)}
-                    placeholder="Ex: Ajuste les prix pour rester compétitif"
-                  />
-                </div>
-                <Button 
-                  onClick={handleCreateRule} 
-                  className="w-full"
-                  disabled={createRule.isPending || !newRuleName.trim()}
-                >
-                  {createRule.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Créer la règle
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button variant="hero" onClick={() => setIsCreateOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvelle Règle
+          </Button>
         </div>
+
+        {/* Create Rule Modal - Channable Design */}
+        <ChannableModal
+          open={isCreateOpen}
+          onOpenChange={setIsCreateOpen}
+          title="Créer une règle dynamique"
+          description="Définissez une stratégie de pricing intelligente pilotée par l'IA"
+          icon={Zap}
+          variant="premium"
+          size="lg"
+          onSubmit={handleCreateRule}
+          submitLabel="Créer la règle"
+          isSubmitting={createRule.isPending}
+          submitDisabled={!newRuleName.trim()}
+        >
+          <div className="space-y-4">
+            <ChannableFormField label="Nom de la règle" required>
+              <Input 
+                value={newRuleName} 
+                onChange={(e) => setNewRuleName(e.target.value)}
+                placeholder="Ex: Alignement Concurrent"
+                className="bg-background"
+              />
+            </ChannableFormField>
+
+            <ChannableFormField label="Type de règle">
+              <Select value={newRuleType} onValueChange={(v) => setNewRuleType(v as DynamicRuleType)}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[200] bg-popover">
+                  <SelectItem value="competitor">🎯 Concurrent</SelectItem>
+                  <SelectItem value="demand">📈 Demande</SelectItem>
+                  <SelectItem value="inventory">📦 Inventaire</SelectItem>
+                  <SelectItem value="time">⏰ Horaire</SelectItem>
+                </SelectContent>
+              </Select>
+            </ChannableFormField>
+
+            <ChannableFormField label="Impact prix (%)" hint="Ajustement positif ou négatif">
+              <div className="flex items-center gap-4">
+                <Slider 
+                  value={[newRuleImpact]} 
+                  onValueChange={([v]) => setNewRuleImpact(v)}
+                  min={-30}
+                  max={30}
+                  step={1}
+                  className="flex-1"
+                />
+                <span className={`w-16 text-right font-bold ${newRuleImpact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {newRuleImpact > 0 ? '+' : ''}{newRuleImpact}%
+                </span>
+              </div>
+            </ChannableFormField>
+
+            <ChannableFormField label="Description" hint="Optionnel">
+              <Input 
+                value={newRuleDescription} 
+                onChange={(e) => setNewRuleDescription(e.target.value)}
+                placeholder="Ex: Ajuste les prix pour rester compétitif"
+                className="bg-background"
+              />
+            </ChannableFormField>
+          </div>
+        </ChannableModal>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
