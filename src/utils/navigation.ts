@@ -64,6 +64,9 @@ export class NavigationService {
       '/', '/auth', '/dashboard',
       '/products', '/products/import', '/products/import/quick', '/products/import/advanced', '/products/import/manage',
       '/products/catalogue', '/products/inventory-predictor',
+      // Nouveau groupe Catalogue - Hub d'exécution
+      '/catalog/to-process', '/catalog/variants', '/catalog/media', 
+      '/catalog/attributes', '/catalog/categories-brands', '/catalog/health',
       '/orders', '/customers', '/marketplace-sync',
       '/analytics', '/analytics/advanced',
       '/automation', '/automation/ai-hub', '/automation/stock-sync',
@@ -75,6 +78,7 @@ export class NavigationService {
 
     return validPaths.includes(path) || 
            path.startsWith('/products/') || 
+           path.startsWith('/catalog/') ||
            path.startsWith('/orders/') || 
            path.startsWith('/customers/') ||
            path.startsWith('/marketing/') || 
