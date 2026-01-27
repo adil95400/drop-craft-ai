@@ -24,6 +24,86 @@ interface TikTokProduct {
   posted_at?: string
 }
 
+// Fetch TikTok data using Firecrawl API
+async function fetchTikTokData(hashtag: string, firecrawlApiKey: string): Promise<TikTokProduct[]> {
+  const searchUrl = `https://www.tiktok.com/tag/${encodeURIComponent(hashtag)}`
+  
+  try {
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: searchUrl,
+        formats: ['markdown', 'html'],
+        waitFor: 3000
+      })
+    })
+
+    if (!response.ok) {
+      console.error('Firecrawl API error:', await response.text())
+      return []
+    }
+
+    const result = await response.json()
+    const products: TikTokProduct[] = []
+    
+    if (result.success && result.data) {
+      const content = result.data.markdown || result.data.html || ''
+      
+      // Parse video data from scraped content
+      const videoMatches = content.match(/video\/(\d+)/g) || []
+      const viewMatches = content.match(/(\d+(?:\.\d+)?[KMB]?)\s*(?:views|vues)/gi) || []
+      const likeMatches = content.match(/(\d+(?:\.\d+)?[KMB]?)\s*(?:likes|j'aime)/gi) || []
+      
+      for (let i = 0; i < Math.min(videoMatches.length, 10); i++) {
+        const videoId = videoMatches[i]?.replace('video/', '') || `${Date.now()}_${i}`
+        const viewsStr = viewMatches[i] || '0'
+        const likesStr = likeMatches[i] || '0'
+        
+        const views = parseMetricValue(viewsStr)
+        const likes = parseMetricValue(likesStr)
+        const comments = Math.floor(likes * 0.1) // Estimate
+        const shares = Math.floor(likes * 0.05) // Estimate
+        
+        const engagementRate = views > 0 ? ((likes + comments + shares) / views) * 100 : 0
+        const viralScore = Math.min(100, Math.floor(engagementRate * 15 + (views > 100000 ? 20 : 0)))
+        
+        products.push({
+          product_name: `Trending #${hashtag} Product`,
+          url: `https://www.tiktok.com/@discover/video/${videoId}`,
+          viral_score: viralScore,
+          views,
+          likes,
+          comments,
+          shares,
+          engagement_rate: parseFloat(engagementRate.toFixed(2)),
+          hashtags: [hashtag],
+          posted_at: new Date().toISOString()
+        })
+      }
+    }
+    
+    return products
+  } catch (error) {
+    console.error(`Error fetching TikTok data for #${hashtag}:`, error)
+    return []
+  }
+}
+
+function parseMetricValue(str: string): number {
+  const num = parseFloat(str.replace(/[^0-9.]/g, ''))
+  if (isNaN(num)) return 0
+  
+  const upperStr = str.toUpperCase()
+  if (upperStr.includes('B')) return num * 1000000000
+  if (upperStr.includes('M')) return num * 1000000
+  if (upperStr.includes('K')) return num * 1000
+  return num
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -45,49 +125,61 @@ serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    const { hashtags = ['tiktokmademebuyit', 'amazonfinds', 'dropshipping', 'productreview'], limit = 20 } = await req.json()
+    const { hashtags = ['tiktokmademebuyit', 'amazonfinds', 'dropshipping'], limit = 20 } = await req.json()
+    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY')
 
     console.log(`Scraping TikTok for hashtags: ${hashtags.join(', ')}`)
 
-    // Simulation de scraping TikTok (en production, utiliser TikTok API v2)
-    // Pour l'instant, on génère des données de démonstration
-    const products: TikTokProduct[] = []
-    
-    for (const hashtag of hashtags) {
-      // Ici, vous intégreriez l'API TikTok réelle
-      // Pour la démo, on génère des données simulées
-      const demoProducts = Array.from({ length: Math.min(limit, 5) }, (_, i) => ({
-        product_name: `Produit tendance ${hashtag} #${i + 1}`,
-        url: `https://www.tiktok.com/@demo/video/${Math.random().toString(36).substr(2, 9)}`,
-        viral_score: Math.floor(Math.random() * 40) + 60, // Score 60-100
-        views: Math.floor(Math.random() * 1000000) + 100000,
-        likes: Math.floor(Math.random() * 50000) + 10000,
-        comments: Math.floor(Math.random() * 5000) + 1000,
-        shares: Math.floor(Math.random() * 10000) + 2000,
-        engagement_rate: parseFloat((Math.random() * 5 + 2).toFixed(2)), // 2-7%
-        price: parseFloat((Math.random() * 50 + 10).toFixed(2)),
-        thumbnail_url: `https://picsum.photos/seed/${i}/400/600`,
-        video_url: `https://www.tiktok.com/@demo/video/${Math.random().toString(36).substr(2, 9)}`,
-        hashtags: [hashtag, 'trending', 'viral'],
-        creator_username: `creator_${Math.floor(Math.random() * 1000)}`,
-        creator_followers: Math.floor(Math.random() * 1000000) + 10000,
-        posted_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-      }))
-      
-      products.push(...demoProducts)
+    let products: TikTokProduct[] = []
+
+    if (firecrawlApiKey) {
+      // Use real Firecrawl API
+      for (const hashtag of hashtags) {
+        const hashtagProducts = await fetchTikTokData(hashtag, firecrawlApiKey)
+        products.push(...hashtagProducts.slice(0, Math.ceil(limit / hashtags.length)))
+      }
     }
 
-    // Sauvegarder dans la base de données
+    if (products.length === 0) {
+      // Check for existing viral products in database as fallback
+      const { data: existingProducts } = await supabaseClient
+        .from('viral_products')
+        .select('*')
+        .eq('platform', 'tiktok')
+        .order('viral_score', { ascending: false })
+        .limit(limit)
+
+      if (existingProducts && existingProducts.length > 0) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            products: existingProducts,
+            count: existingProducts.length,
+            source: 'cache',
+            message: `${existingProducts.length} produits TikTok récupérés depuis le cache`
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        )
+      }
+
+      throw new Error('FIRECRAWL_API_KEY non configurée et aucun cache disponible. Veuillez configurer la clé API pour le scraping TikTok.')
+    }
+
+    // Save to database
+    const productsToInsert = products.map(p => ({
+      user_id: user.id,
+      platform: 'tiktok',
+      ...p,
+      estimated_margin: p.price ? parseFloat((p.price * 1.5).toFixed(2)) : null,
+      analyzed_at: new Date().toISOString()
+    }))
+
     const { data: savedProducts, error: insertError } = await supabaseClient
       .from('viral_products')
-      .insert(
-        products.map(p => ({
-          user_id: user.id,
-          platform: 'tiktok',
-          ...p,
-          estimated_margin: p.price ? parseFloat((p.price * 1.5).toFixed(2)) : null
-        }))
-      )
+      .insert(productsToInsert)
       .select()
 
     if (insertError) {
@@ -95,9 +187,11 @@ serve(async (req) => {
       throw insertError
     }
 
-    // Mettre à jour les tendances
+    // Update trend data
     for (const hashtag of hashtags) {
       const hashtagProducts = products.filter(p => p.hashtags?.includes(hashtag))
+      if (hashtagProducts.length === 0) continue
+      
       const totalViews = hashtagProducts.reduce((sum, p) => sum + p.views, 0)
       const avgEngagement = hashtagProducts.reduce((sum, p) => sum + p.engagement_rate, 0) / hashtagProducts.length
       
@@ -121,6 +215,7 @@ serve(async (req) => {
         success: true,
         products: savedProducts,
         count: savedProducts?.length || 0,
+        source: 'live',
         message: `${savedProducts?.length || 0} produits viraux TikTok trouvés et sauvegardés`
       }),
       {
