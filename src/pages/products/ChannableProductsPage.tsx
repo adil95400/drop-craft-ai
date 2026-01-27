@@ -53,8 +53,15 @@ import {
   useViewModePreference,
   ActionCardType,
   SmartFilterType,
-  ViewMode
+  ViewMode,
+  // Phase 3
+  AIRecommendationsPanel,
+  ROIMiniDashboard,
+  StockPredictionsAlert
 } from '@/components/products/command-center'
+
+// Stock Predictions Hook
+import { useStockPredictions } from '@/hooks/useStockPredictions'
 
 // Composants règles
 import { RuleBuilder } from '@/components/rules/RuleBuilder'
@@ -92,6 +99,9 @@ export default function ChannableProductsPage() {
     activeCount: auditActiveCount 
   } = useAuditFilters(filteredProducts)
   const { auditResults, stats: auditStats } = useProductsAudit(products)
+  
+  // Stock Predictions (Phase 3)
+  const { criticalAlerts, stats: stockPredictionStats } = useStockPredictions()
   
   // Hook pour les règles
   const { 
@@ -331,6 +341,25 @@ export default function ChannableProductsPage() {
     })
   }, [toast])
 
+  // Handler for AI Recommendations
+  const handleRecommendationAction = useCallback((rec: { productId: string; type: string }) => {
+    if (rec.type === 'restock') {
+      toast({ title: 'Réapprovisionnement', description: 'Ouverture du module de commande...' })
+    } else if (rec.type === 'optimize_content') {
+      navigate(`/products/${rec.productId}/edit`)
+    } else {
+      toast({ title: 'Action', description: `Traitement de l'action: ${rec.type}` })
+    }
+  }, [toast, navigate])
+
+  // Handler for stock reorder
+  const handleStockReorder = useCallback((productId: string, quantity: number) => {
+    toast({ 
+      title: 'Commander', 
+      description: `Commande de ${quantity} unités en cours de préparation` 
+    })
+  }, [toast])
+
   // === LOADING STATE ===
   if (isLoading) {
     return (
@@ -438,6 +467,45 @@ export default function ChannableProductsPage() {
             onCardClick={handleCommandCardClick}
             isLoading={isLoading}
           />
+
+          {/* 🆕 Phase 3: IA Prédictive Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Alertes Stock Prédictives */}
+            <div className="lg:col-span-2">
+              {criticalAlerts.length > 0 && (
+                <StockPredictionsAlert
+                  alerts={criticalAlerts}
+                  onViewProduct={(id) => {
+                    const product = products.find(p => p.id === id)
+                    if (product) handleView(product)
+                  }}
+                  onReorder={handleStockReorder}
+                  maxVisible={3}
+                />
+              )}
+              
+              {/* ROI Mini Dashboard */}
+              <div className={criticalAlerts.length > 0 ? 'mt-4' : ''}>
+                <ROIMiniDashboard
+                  products={products}
+                  currency="€"
+                  isLoading={isLoading}
+                />
+              </div>
+            </div>
+            
+            {/* Recommandations IA */}
+            <AIRecommendationsPanel
+              recommendations={commandCenterData.recommendations}
+              onActionClick={handleRecommendationAction}
+              onViewProduct={(id) => {
+                const product = products.find(p => p.id === id)
+                if (product) handleView(product)
+              }}
+              maxVisible={5}
+              isLoading={isLoading}
+            />
+          </div>
 
           {/* 🆕 Smart Filters Bar */}
           <SmartFiltersBar
