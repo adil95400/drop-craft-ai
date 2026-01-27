@@ -849,6 +849,7 @@ export default function ChannableProductsPage() {
         open={!!viewModalProduct}
         onOpenChange={(open) => !open && setViewModalProduct(null)}
         product={viewModalProduct}
+        aiBadge={viewModalProduct ? aiEngineResult.productBadges.get(viewModalProduct.id) : undefined}
         onEdit={() => {
           if (viewModalProduct) {
             handleEdit(viewModalProduct)
