@@ -1,13 +1,14 @@
 /**
  * Command Center V3 - Section principale
  * Intègre Header, Priority Cards et KPI Feedback
+ * Sprint 3: Enhanced with business feedback and KPI animations
  */
 
 import { motion } from 'framer-motion'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useToast } from '@/hooks/use-toast'
 import { usePriceRules } from '@/hooks/usePriceRules'
+import { useBusinessFeedback } from '@/hooks/useBusinessFeedback'
 import { ProductAuditResult } from '@/types/audit'
 
 import { CommandCenterHeaderV3 } from './CommandCenterHeaderV3'
@@ -42,8 +43,18 @@ export function CommandCenterV3({
   isLoading = false
 }: CommandCenterV3Props) {
   const navigate = useNavigate()
-  const { toast } = useToast()
   const { data: priceRules = [] } = usePriceRules()
+  
+  // Business feedback hook for enriched toasts
+  const { 
+    showOptimizationSuccess, 
+    showRiskEliminated, 
+    showPriceRuleApplied,
+    showSyncComplete 
+  } = useBusinessFeedback()
+  
+  // State for KPI highlight animation
+  const [highlightedKPI, setHighlightedKPI] = useState<string | undefined>()
   
   // AI Priority Engine
   const priceRulesActive = priceRules.some(r => r.is_active && r.apply_to === 'all')
@@ -91,7 +102,13 @@ export function CommandCenterV3({
   const hasIssues = priorityCards.some(card => card.count > 0)
   const totalIssues = priorityCards.reduce((sum, card) => sum + card.count, 0)
   
-  // Handlers
+  // Helper to trigger KPI highlight
+  const triggerKPIHighlight = useCallback((kpiKey: string) => {
+    setHighlightedKPI(kpiKey)
+    setTimeout(() => setHighlightedKPI(undefined), 1000)
+  }, [])
+  
+  // Handlers with enriched business feedback
   const handleCardAction = useCallback((card: PriorityCard, action: 'primary' | 'secondary') => {
     // Map card type to smart filter
     const filterMap: Record<string, SmartFilterType> = {
@@ -103,56 +120,60 @@ export function CommandCenterV3({
       margin_loss: 'losing_margin'
     }
     
+    // Estimate potential gain based on card type
+    const estimateGain = (type: string, count: number): number => {
+      const gainPerProduct: Record<string, number> = {
+        stock_critical: 15,
+        no_price_rule: 25,
+        ai_opportunities: 50,
+        margin_loss: 35,
+        quality_low: 20,
+        not_synced: 10
+      }
+      return (gainPerProduct[type] || 10) * count
+    }
+    
     if (action === 'primary') {
-      // Action principale: appliquer le filtre + déclencher l'action
+      // Action principale: appliquer le filtre + déclencher l'action avec feedback enrichi
       onFilterChange(filterMap[card.type] || 'all')
       
-      // Actions spécifiques par type
+      // Actions spécifiques par type avec business feedback
       switch (card.type) {
         case 'stock_critical':
-          toast({ 
-            title: 'Synchronisation', 
-            description: `Préparation de ${card.count} produits à synchroniser...` 
-          })
+          showSyncComplete(card.count)
+          triggerKPIHighlight('stock_value')
           break
         case 'no_price_rule':
           navigate('/pricing/rules')
-          toast({ 
-            title: 'Règles de prix', 
-            description: 'Configurez vos règles de tarification' 
-          })
+          showPriceRuleApplied(card.count, estimateGain(card.type, card.count))
+          triggerKPIHighlight('potential_profit')
           break
         case 'ai_opportunities':
-          toast({ 
-            title: 'Optimisation IA', 
-            description: `Analyse de ${card.count} opportunités en cours...` 
-          })
+          showOptimizationSuccess(card.count, estimateGain(card.type, card.count))
+          triggerKPIHighlight('potential_profit')
           break
         case 'not_synced':
-          toast({ 
-            title: 'Resynchronisation', 
-            description: `${card.count} produits en cours de synchronisation...` 
-          })
+          showSyncComplete(card.count)
           break
         case 'quality_low':
           navigate('/audit/scoring')
+          showRiskEliminated(card.count)
           break
         case 'margin_loss':
           navigate('/pricing/optimization')
+          showOptimizationSuccess(card.count, estimateGain(card.type, card.count))
+          triggerKPIHighlight('avg_margin')
           break
       }
       
       // Sélectionner les produits concernés
       onProductSelect?.(card.productIds)
     } else {
-      // Action secondaire: juste filtrer
+      // Action secondaire: juste filtrer avec feedback léger
       onFilterChange(filterMap[card.type] || 'all')
-      toast({ 
-        title: 'Filtre appliqué', 
-        description: `${card.count} produits affichés` 
-      })
+      showOptimizationSuccess(card.count, 0)
     }
-  }, [onFilterChange, onProductSelect, navigate, toast])
+  }, [onFilterChange, onProductSelect, navigate, showOptimizationSuccess, showRiskEliminated, showPriceRuleApplied, showSyncComplete, triggerKPIHighlight])
   
   return (
     <motion.div
@@ -177,11 +198,12 @@ export function CommandCenterV3({
         maxCards={4}
       />
       
-      {/* KPI Feedback Bar */}
+      {/* KPI Feedback Bar with highlight animation */}
       <KPIFeedbackBar
         data={kpiData}
         isLoading={isLoading}
         currency="€"
+        highlightedKPI={highlightedKPI}
       />
     </motion.div>
   )
