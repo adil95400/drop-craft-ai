@@ -40,7 +40,10 @@ export function PriceSyncPanel() {
   const { data: logs } = usePriceSyncLogs(30);
   const integrationsResult = useIntegrations();
 
-  const connectedStores = integrationsResult?.integrations?.filter((i: any) => i.enabled || i.is_connected) || [];
+  // Filter connected stores - check multiple possible field names
+  const connectedStores = integrationsResult?.integrations?.filter((i: any) => 
+    i.enabled || i.is_connected || i.is_active || i.connection_status === 'connected'
+  ) || [];
 
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
