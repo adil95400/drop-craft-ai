@@ -63,6 +63,7 @@ import {
   BulkActionsBar,
   // V3
   CommandCenterV3,
+  PredictiveCommandCenter,
   useAIPriorityEngine,
   useAISortedProducts,
   AISortSelector,
@@ -525,9 +526,9 @@ export default function ChannableProductsPage() {
         />
       ) : (
         <>
-          {/* 🆕 Command Center V3 - Centre de pilotage business */}
+          {/* 🆕 Command Center V3 - Centre de pilotage business avec prédictif */}
           {useV3CommandCenter ? (
-            <CommandCenterV3
+            <PredictiveCommandCenter
               products={products}
               auditResults={auditResults}
               onFilterChange={setSmartFilter}
