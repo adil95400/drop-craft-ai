@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Play, Pause, ListFilter, ArrowRight } from 'lucide-react';
+import { Plus, Play, Pause, ListFilter, ArrowRight, Sparkles } from 'lucide-react';
 import { RulesStatsGrid } from './RulesStatsGrid';
 import { CatalogRuleCard } from './CatalogRuleCard';
+import { CatalogRulesAIPanel } from './CatalogRulesAIPanel';
 import { ProductRule, RuleTemplate } from '@/lib/rules/ruleTypes';
 
 interface CatalogRulesTabProps {
@@ -91,6 +92,10 @@ export function CatalogRulesTab({
           <TabsTrigger value="templates" className="gap-2">
             <ListFilter className="h-4 w-4" />
             Modèles ({safeTemplates.length})
+          </TabsTrigger>
+          <TabsTrigger value="ai" className="gap-2 bg-gradient-to-r from-primary/10 to-purple-500/10">
+            <Sparkles className="h-4 w-4" />
+            IA
           </TabsTrigger>
         </TabsList>
 
@@ -197,6 +202,12 @@ export function CatalogRulesTab({
               </motion.div>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="ai" className="space-y-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <CatalogRulesAIPanel />
+          </motion.div>
         </TabsContent>
       </Tabs>
     </div>
