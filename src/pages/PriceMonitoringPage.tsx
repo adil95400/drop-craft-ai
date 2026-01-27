@@ -1,22 +1,22 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { ChannableModal, ChannableFormField } from '@/components/channable/ChannableModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { 
   TrendingUp, TrendingDown, DollarSign, AlertTriangle, 
-  Settings, Play, Pause, History, Target, Plus, Loader2, Check
+  Settings, Play, Pause, History, Target, Plus, Loader2, Check, Eye
 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 import {
   usePriceMonitoringStats,
   useMonitoredProducts,
@@ -464,110 +464,120 @@ export default function PriceMonitoringPage() {
         </Tabs>
         </div>
 
-        {/* Config Modal */}
-        <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Configuration du Monitoring</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Fréquence de vérification (minutes)</Label>
-                <Input 
-                  type="number" 
-                  value={settings.checkFrequency}
-                  onChange={(e) => setSettings({...settings, checkFrequency: parseInt(e.target.value)})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Marge minimum (%)</Label>
+        {/* Config Modal - Channable Design */}
+        <ChannableModal
+          open={showConfigModal}
+          onOpenChange={setShowConfigModal}
+          title="Configuration du Monitoring"
+          description="Ajustez les paramètres de surveillance des prix"
+          icon={Settings}
+          variant="default"
+          size="md"
+          onSubmit={handleSaveSettings}
+          submitLabel="Sauvegarder"
+          isSubmitting={saveSettings.isPending}
+        >
+          <div className="space-y-4">
+            <ChannableFormField label="Fréquence de vérification" hint="En minutes">
+              <Input 
+                type="number" 
+                value={settings.checkFrequency}
+                onChange={(e) => setSettings({...settings, checkFrequency: parseInt(e.target.value)})}
+                className="bg-background"
+              />
+            </ChannableFormField>
+
+            <div className="grid grid-cols-2 gap-4">
+              <ChannableFormField label="Marge minimum (%)">
                 <Input 
                   type="number" 
                   value={settings.minMargin}
                   onChange={(e) => setSettings({...settings, minMargin: parseInt(e.target.value)})}
+                  className="bg-background"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>Marge maximum (%)</Label>
+              </ChannableFormField>
+
+              <ChannableFormField label="Marge maximum (%)">
                 <Input 
                   type="number" 
                   value={settings.maxMargin}
                   onChange={(e) => setSettings({...settings, maxMargin: parseInt(e.target.value)})}
+                  className="bg-background"
                 />
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch 
-                  checked={settings.notifications}
-                  onCheckedChange={(checked) => setSettings({...settings, notifications: checked})}
-                />
-                <Label>Notifications</Label>
-              </div>
+              </ChannableFormField>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowConfigModal(false)}>Annuler</Button>
-              <Button onClick={handleSaveSettings} disabled={saveSettings.isPending}>
-                Sauvegarder
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
-        {/* New Rule Modal */}
-        <Dialog open={showNewRuleModal} onOpenChange={setShowNewRuleModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Nouvelle Règle de Prix</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Nom de la règle</Label>
-                <Input 
-                  value={newRule.name}
-                  onChange={(e) => setNewRule({...newRule, name: e.target.value})}
-                  placeholder="Ex: Compétitif -5%"
-                />
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div>
+                <p className="text-sm font-medium">Notifications</p>
+                <p className="text-xs text-muted-foreground">Recevoir des alertes de prix</p>
               </div>
-              <div className="space-y-2">
-                <Label>Type de règle</Label>
-                <Select value={newRule.type} onValueChange={(v) => setNewRule({...newRule, type: v})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="competitive">Compétitif</SelectItem>
-                    <SelectItem value="margin">Marge cible</SelectItem>
-                    <SelectItem value="markup">Markup</SelectItem>
-                    <SelectItem value="rounding">Arrondi psychologique</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Marge/Pourcentage (%)</Label>
-                <Input 
-                  type="number"
-                  value={newRule.margin}
-                  onChange={(e) => setNewRule({...newRule, margin: e.target.value})}
-                  placeholder="Ex: 25"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Description (optionnelle)</Label>
-                <Input 
-                  value={newRule.description}
-                  onChange={(e) => setNewRule({...newRule, description: e.target.value})}
-                  placeholder="Description de la règle"
-                />
-              </div>
+              <Switch 
+                checked={settings.notifications}
+                onCheckedChange={(checked) => setSettings({...settings, notifications: checked})}
+              />
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNewRuleModal(false)}>Annuler</Button>
-              <Button onClick={handleCreateRule} disabled={createRule.isPending}>
-                {createRule.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Créer la règle
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </ChannableModal>
+
+        {/* New Rule Modal - Channable Design */}
+        <ChannableModal
+          open={showNewRuleModal}
+          onOpenChange={setShowNewRuleModal}
+          title="Nouvelle Règle de Prix"
+          description="Créez une stratégie de pricing intelligente"
+          icon={Target}
+          variant="premium"
+          size="lg"
+          onSubmit={handleCreateRule}
+          submitLabel="Créer la règle"
+          isSubmitting={createRule.isPending}
+          submitDisabled={!newRule.name}
+        >
+          <div className="space-y-4">
+            <ChannableFormField label="Nom de la règle" required>
+              <Input 
+                value={newRule.name}
+                onChange={(e) => setNewRule({...newRule, name: e.target.value})}
+                placeholder="Ex: Compétitif -5%"
+                className="bg-background"
+              />
+            </ChannableFormField>
+
+            <ChannableFormField label="Type de règle">
+              <Select value={newRule.type} onValueChange={(v) => setNewRule({...newRule, type: v})}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[200] bg-popover">
+                  <SelectItem value="competitive">🎯 Compétitif</SelectItem>
+                  <SelectItem value="margin">💰 Marge cible</SelectItem>
+                  <SelectItem value="markup">📈 Markup</SelectItem>
+                  <SelectItem value="rounding">🔢 Arrondi psychologique</SelectItem>
+                </SelectContent>
+              </Select>
+            </ChannableFormField>
+
+            <ChannableFormField label="Marge / Pourcentage (%)" hint="Valeur à appliquer">
+              <Input 
+                type="number"
+                value={newRule.margin}
+                onChange={(e) => setNewRule({...newRule, margin: e.target.value})}
+                placeholder="Ex: 25"
+                className="bg-background"
+              />
+            </ChannableFormField>
+
+            <ChannableFormField label="Description" hint="Optionnel">
+              <Input 
+                value={newRule.description}
+                onChange={(e) => setNewRule({...newRule, description: e.target.value})}
+                placeholder="Description de la règle"
+                className="bg-background"
+              />
+            </ChannableFormField>
+          </div>
+        </ChannableModal>
       </ChannablePageWrapper>
     </>
   );
