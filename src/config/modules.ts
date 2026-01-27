@@ -190,9 +190,11 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 3. CATALOG - Gestion du catalogue produits (6 modules)
+  // 3. CATALOG - Hub d'exécution produit (7 modules)
+  // Vision: Catalogue = Exécution / Qualité & Audit = Diagnostic / IA = Transversal
   // ═══════════════════════════════════════════════════════════════════════════
   
+  // 1. Produits - Command Center (page pilier quotidienne)
   products: {
     id: 'products',
     name: 'Produits',
@@ -200,16 +202,109 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/products',
-    features: ['product-management', 'bulk-actions'],
-    description: 'Gérer votre catalogue',
+    features: ['command-center', 'ai-priority', 'bulk-actions', 'prescriptive-badges'],
+    description: 'Command Center - Vue quotidienne pilotée par IA',
     category: 'product',
     order: 1,
     groupId: 'catalog'
   },
   
-  // rules: SUPPRIMÉ - Intégré comme onglet dans /products?tab=rules
+  // 2. À traiter - Backlog intelligent (raccourci mental quotidien)
+  toProcess: {
+    id: 'toProcess',
+    name: 'À traiter',
+    icon: 'AlertCircle',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/catalog/to-process',
+    features: ['ai-priority-queue', 'bulk-actions', 'action-required', 'opportunities'],
+    description: 'Backlog intelligent - Actions requises et opportunités',
+    category: 'product',
+    order: 2,
+    groupId: 'catalog'
+  },
+
+  // 3. Variantes - Gestion anomalies variantes
+  variants: {
+    id: 'variants',
+    name: 'Variantes',
+    icon: 'Layers',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/catalog/variants',
+    features: ['variant-stock', 'variant-price', 'variant-sync', 'parent-inconsistencies'],
+    description: 'Variantes sans stock, prix ou synchronisation',
+    category: 'product',
+    order: 3,
+    groupId: 'catalog'
+  },
+
+  // 4. Médias - Correction images/vidéos (pas diagnostic, exécution)
+  catalogMedia: {
+    id: 'catalogMedia',
+    name: 'Médias',
+    icon: 'Image',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/catalog/media',
+    features: ['missing-images', 'non-compliant-images', 'missing-videos', 'ai-optimization'],
+    description: 'Correction et optimisation des médias produits',
+    category: 'product',
+    order: 4,
+    groupId: 'catalog'
+  },
+
+  // 5. Attributs (PRO) - Enrichissement attributs (déplacé sous Catalogue)
+  attributes: {
+    id: 'attributes',
+    name: 'Attributs',
+    icon: 'Tag',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/catalog/attributes',
+    features: ['missing-attributes', 'normalization', 'marketplace-critical', 'ai-enrichment'],
+    description: 'Enrichissement et normalisation des attributs',
+    category: 'product',
+    order: 5,
+    groupId: 'catalog',
+    badge: 'pro'
+  },
+
+  // 6. Catégories & Marques - Classification produits
+  categoriesBrands: {
+    id: 'categoriesBrands',
+    name: 'Catégories & Marques',
+    icon: 'FolderTree',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/catalog/categories-brands',
+    features: ['uncategorized', 'misclassified', 'missing-brand', 'ai-suggestions'],
+    description: 'Classification et organisation des produits',
+    category: 'product',
+    order: 6,
+    groupId: 'catalog'
+  },
+
+  // 7. Santé du Catalogue - KPIs macro et évolution
+  catalogHealth: {
+    id: 'catalogHealth',
+    name: 'Santé du Catalogue',
+    icon: 'HeartPulse',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/catalog/health',
+    features: ['optimized-percentage', 'blocking-issues', 'global-score', 'evolution'],
+    description: 'Vue macro et KPIs pour pilotage long terme',
+    category: 'product',
+    order: 7,
+    groupId: 'catalog'
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 3b. CATALOG - Modules Diagnostic & Automatisation (séparés du hub exécution)
+  // ═══════════════════════════════════════════════════════════════════════════
   
-  // Module FUSIONNÉ: Qualité & Audit (remplace audit, qa, productScoring)
+  // Module FUSIONNÉ: Qualité & Audit (diagnostic, pas exécution)
   quality: {
     id: 'quality',
     name: 'Qualité & Audit',
@@ -218,10 +313,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     minPlan: 'standard',
     route: '/audit',
     features: ['quality-scoring', 'seo-audit', 'product-audit', 'qa'],
-    description: 'Audit et contrôle qualité',
+    description: 'Diagnostic et contrôle qualité',
     category: 'product',
-    order: 3,
-    groupId: 'catalog',
+    order: 10,
+    groupId: 'insights',
     subModules: [
       { id: 'quality-dashboard', name: 'Dashboard', route: '/audit', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'quality-products', name: 'Audit Produits', route: '/audit/products', icon: 'Package', description: 'Auditer les produits', features: ['products'], order: 2 },
@@ -233,12 +328,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     ]
   },
   
-  // Module FUSIONNÉ: Tarification (remplace repricing, dynamicPricing, priceRules, stock-repricing)
-  // Navigation harmonisée avec terminologie claire:
-  // - Règles: Règles statiques (markup, marge, arrondi)
-  // - Automatisation: Repricing temps réel et sync boutiques
-  // - Veille: Surveillance concurrence et auto-pricing
-  // - Optimisation IA: Recommandations intelligentes
+  // Module FUSIONNÉ: Tarification (moteur de règles, automatisation)
   pricing: {
     id: 'pricing',
     name: 'Tarification',
@@ -249,8 +339,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['price-rules', 'dynamic-pricing', 'repricing', 'margin-control', 'store-sync'],
     description: 'Gestion et optimisation des prix',
     category: 'automation',
-    order: 4,
-    groupId: 'catalog',
+    order: 11,
+    groupId: 'insights',
     subModules: [
       { id: 'pricing-hub', name: 'Hub Tarification', route: '/pricing', icon: 'LayoutDashboard', description: 'Vue d\'ensemble et KPIs', features: ['overview', 'kpis'], order: 1 },
       { id: 'pricing-rules', name: 'Règles de Prix', route: '/pricing/rules', icon: 'GitBranch', description: 'Règles statiques (markup, marge, arrondi)', features: ['rules'], order: 2 },
@@ -260,7 +350,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     ]
   },
 
-  // Module FUSIONNÉ: Intelligence Artificielle (remplace aiOptimization, aiContent, aiAssistant, contentGeneration, catalogIntelligence)
+  // Module Intelligence IA (transversal - génération, assistance)
   ai: {
     id: 'ai',
     name: 'Intelligence IA',
@@ -268,34 +358,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'pro',
     route: '/ai',
-    features: ['ai-descriptions', 'ai-seo', 'ai-content', 'ai-assistant', 'catalog-intelligence'],
-    description: 'Optimisation par IA',
+    features: ['ai-descriptions', 'ai-seo', 'ai-content', 'ai-assistant'],
+    description: 'Outils IA transversaux',
     category: 'automation',
-    order: 5,
-    groupId: 'catalog',
+    order: 12,
+    groupId: 'tools',
     badge: 'pro',
     subModules: [
       { id: 'ai-optimization', name: 'Optimisation', route: '/ai/optimization', icon: 'Sparkles', description: 'Optimisation IA', features: ['optimization'], order: 1 },
       { id: 'ai-content', name: 'Génération Contenu', route: '/ai/content', icon: 'Wand2', description: 'Créer du contenu', features: ['content'], order: 2 },
       { id: 'ai-assistant', name: 'Assistant IA', route: '/ai/assistant', icon: 'Bot', description: 'Assistant intelligent', features: ['assistant'], order: 3 },
-      { id: 'ai-catalog', name: 'Intelligence Catalogue', route: '/ai/catalog', icon: 'Brain', description: 'IA pour le catalogue', features: ['catalog-ai'], order: 4 },
-      { id: 'ai-rewrite', name: 'Réécriture', route: '/ai/rewrite', icon: 'FileEdit', description: 'Réécrire les textes', features: ['rewrite'], order: 5 },
+      { id: 'ai-rewrite', name: 'Réécriture', route: '/ai/rewrite', icon: 'FileEdit', description: 'Réécrire les textes', features: ['rewrite'], order: 4 },
     ]
-  },
-
-  attributes: {
-    id: 'attributes',
-    name: 'Attributs',
-    icon: 'Tag',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/attributes/manager',
-    features: ['attribute-management', 'ai-attributes'],
-    description: 'Gestion des attributs produits',
-    category: 'product',
-    order: 6,
-    groupId: 'catalog',
-    badge: 'pro'
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
