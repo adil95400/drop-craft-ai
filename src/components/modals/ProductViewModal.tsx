@@ -68,7 +68,15 @@ import {
   Check,
   MessageSquare,
   ThumbsUp,
+  MoreHorizontal,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ProductReviewsTab } from './product/ProductReviewsTab'
 import { ProductVideosTab } from './product/ProductVideosTab'
 import { ProductVariantsTab } from './product/ProductVariantsTab'
@@ -706,29 +714,40 @@ export function ProductViewModal({
                 </>
               ) : (
                 <>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button size="sm" variant="outline" onClick={onDuplicate}>
-                          <Copy className="h-4 w-4 mr-1.5" />
-                          Dupliquer
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Créer une copie de ce produit</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  {/* Sprint 2: Single primary action with secondary in dropdown */}
                   <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
                     <Edit3 className="h-4 w-4 mr-1.5" />
                     Modifier
                   </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive"
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1.5" />
-                    Supprimer
-                  </Button>
+                  
+                  {/* Secondary actions in dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost" className="h-9 w-9 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      {onDuplicate && (
+                        <DropdownMenuItem onClick={onDuplicate} className="gap-2">
+                          <Copy className="h-4 w-4" />
+                          Dupliquer
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem onClick={() => {}} className="gap-2">
+                        <Share2 className="h-4 w-4" />
+                        Partager
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => setShowDeleteDialog(true)}
+                        className="text-destructive focus:text-destructive gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Supprimer
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </>
               )}
             </div>

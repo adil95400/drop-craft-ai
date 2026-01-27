@@ -95,94 +95,113 @@ export const ProductAIStatusBanner = memo(function ProductAIStatusBanner({
   const Icon = config.icon
   const showAction = status.type !== 'optimized' && status.type !== 'neutral' && onActionClick
   
+  // Sprint 2: Determine primary CTA label based on status
+  const getPrimaryCTALabel = () => {
+    if (actionLabel) return actionLabel
+    switch (status.type) {
+      case 'risk': return 'Corriger maintenant'
+      case 'opportunity': return 'Optimiser'
+      default: return 'Voir détails'
+    }
+  }
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        'relative overflow-hidden rounded-xl border px-4 py-3',
+        'relative overflow-hidden rounded-xl border-2 px-5 py-4',
         'bg-gradient-to-r',
         config.bgClass,
         config.borderClass,
         className
       )}
     >
-      <div className="flex items-center gap-3">
-        {/* Status Icon */}
+      <div className="flex items-center gap-4">
+        {/* Status Icon - Larger for prescriptive feel */}
         <motion.div 
           className={cn(
-            'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+            'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',
             config.iconClass
           )}
           animate={status.type === 'risk' ? {
-            scale: [1, 1.05, 1],
+            scale: [1, 1.08, 1],
           } : {}}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-6 w-6" />
         </motion.div>
         
-        {/* Content */}
+        {/* Content - More prescriptive messaging */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className={cn('text-sm font-bold', config.textClass)}>
+          <div className="flex items-center gap-2 mb-1">
+            <span className={cn('text-base font-bold', config.textClass)}>
               {config.label}
             </span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                    <Brain className="h-3 w-3" />
-                    <span className="text-[10px] font-medium">IA</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="font-medium">Analyse par Intelligence Artificielle</p>
-                  <p className="text-xs text-muted-foreground">Score: {status.score}/100</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <Brain className="h-3 w-3" />
+              <span className="text-[10px] font-semibold">Recommandation IA</span>
+            </div>
           </div>
           
-          {status.recommendation && (
-            <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
+          {status.recommendation ? (
+            <p className="text-sm text-foreground font-medium">
               {status.recommendation}
             </p>
-          )}
+          ) : status.mainIssue ? (
+            <p className="text-sm text-foreground font-medium">
+              {status.type === 'risk' ? '⚠️ ' : '💡 '}{status.mainIssue}
+            </p>
+          ) : null}
         </div>
         
-        {/* Impact & Action */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Impact Badge + Single Primary CTA */}
+        <div className="flex items-center gap-4 shrink-0">
           {status.estimatedImpact && status.estimatedImpact > 0 && (
-            <div className="text-right hidden sm:block">
-              <p className="text-xs text-muted-foreground">Potentiel</p>
-              <p className={cn('text-sm font-bold', config.textClass)}>
+            <div className="text-center px-3 py-1.5 rounded-lg bg-background/80 border border-border/50 hidden sm:block">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Potentiel</p>
+              <p className={cn('text-lg font-bold', config.textClass)}>
                 +{status.estimatedImpact.toLocaleString('fr-FR')}€
               </p>
             </div>
           )}
           
+          {/* Single Primary CTA - Dominant */}
           {showAction && (
             <Button
-              size="sm"
+              size="lg"
               onClick={onActionClick}
               disabled={isLoading}
-              className={cn('gap-1.5 font-semibold', config.ctaClass)}
+              className={cn(
+                'gap-2 font-bold px-6 shadow-lg',
+                config.ctaClass
+              )}
             >
-              <Zap className="h-3.5 w-3.5" />
-              {actionLabel || 'Optimiser'}
-              <ArrowRight className="h-3.5 w-3.5" />
+              {isLoading ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                >
+                  <Zap className="h-4 w-4" />
+                </motion.div>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4" />
+                  {getPrimaryCTALabel()}
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           )}
         </div>
       </div>
       
-      {/* Priority indicator */}
+      {/* Priority indicator - More prominent */}
       {status.priority === 'critical' && (
         <motion.div
-          className="absolute top-0 right-0 w-2 h-full bg-red-500"
-          animate={{ opacity: [1, 0.5, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
+          className="absolute top-0 right-0 w-1.5 h-full bg-red-500 rounded-r-xl"
+          animate={{ opacity: [1, 0.4, 1] }}
+          transition={{ duration: 1, repeat: Infinity }}
         />
       )}
     </motion.div>
