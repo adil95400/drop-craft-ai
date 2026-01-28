@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useRealCustomers } from "@/hooks/useRealCustomers";
+import { useCustomersUnified } from "@/hooks/unified";
 import { supabase } from "@/integrations/supabase/client";
 import { customerSchema, CustomerFormData } from "@/lib/validation/customerSchema";
 import { Loader2, User, Mail, Phone, MapPin, AlertCircle } from "lucide-react";
@@ -21,7 +21,7 @@ interface CreateCustomerDialogProps {
 
 export const CreateCustomerDialog = ({ open, onOpenChange }: CreateCustomerDialogProps) => {
   const { toast } = useToast();
-  const { addCustomer, isAdding } = useRealCustomers();
+  const { addCustomer, isAdding } = useCustomersUnified();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<CustomerFormData>({

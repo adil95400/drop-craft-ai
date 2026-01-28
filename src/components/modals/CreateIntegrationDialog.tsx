@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { useRealIntegrations } from "@/hooks/useRealIntegrations";
+import { useIntegrationsUnified } from "@/hooks/unified";
 import { supabase } from "@/integrations/supabase/client";
 import { logError } from '@/utils/consoleCleanup';
 import { Link2, Key, Globe, Shield, CheckCircle, Zap, ArrowRight, Store, Loader2 } from "lucide-react";
@@ -37,7 +37,7 @@ const platformOptions = [
 
 export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegrationDialogProps) => {
   const { toast } = useToast();
-  const { addIntegration, isAdding } = useRealIntegrations();
+  const { addIntegration, isAdding } = useIntegrationsUnified();
   const isMobile = useIsMobile();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -70,11 +70,18 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
       const credentials: Record<string, string> = {};
       if (formData.apiKey) credentials.api_key = formData.apiKey;
       if (formData.apiSecret) credentials.api_secret = formData.apiSecret;
+      
+      // Use the unified hook API format
       addIntegration({
-        platform_name: formData.name, platform_type: formData.type, platform_url: formData.webhookUrl || undefined,
-        is_active: formData.enabled, connection_status: 'disconnected',
+        template: { id: formData.type, name: formData.name },
+        config: {
+          platform_url: formData.webhookUrl || undefined,
+          is_active: formData.enabled,
+          connection_status: 'disconnected' as const
+        },
         credentials: Object.keys(credentials).length > 0 ? credentials : undefined,
       });
+      
       toast({ title: "Intégration créée" });
       onOpenChange(false);
       setCurrentStep(1);
