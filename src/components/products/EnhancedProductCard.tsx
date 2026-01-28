@@ -27,7 +27,9 @@ import {
   CheckCircle,
   Zap,
   DollarSign,
-  RefreshCw
+  RefreshCw,
+  Share2,
+  Heart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -40,6 +42,9 @@ import {
   ProductAIBadgeComponent,
   DecisionBadge
 } from './command-center';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface EnhancedProductCardProps {
   product: UnifiedProduct;
@@ -75,6 +80,11 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(() => {
+    const favorites = JSON.parse(localStorage.getItem('product-favorites') || '[]');
+    return favorites.includes(product.id);
+  });
+  const queryClient = useQueryClient();
 
   const imageUrl = product.image_url;
   const aiScore = (product as any).ai_score || Math.floor(Math.random() * 40) + 60;
@@ -99,6 +109,107 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
     losingMargin: margin !== null && margin < 15,
     qualityScore: aiScore,
     stockQuantity: product.stock_quantity || 0
+  };
+
+  // Real duplicate handler
+  const handleDuplicate = async () => {
+    if (onDuplicate) {
+      onDuplicate(product);
+      return;
+    }
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Vous devez être connecté');
+        return;
+      }
+
+      const { error } = await supabase.from('products').insert([{
+        user_id: user.id,
+        title: product.name,
+        name: `${product.name} (copie)`,
+        description: product.description,
+        price: product.price,
+        cost_price: product.cost_price,
+        sku: product.sku ? `${product.sku}-COPY` : null,
+        category: product.category,
+        stock_quantity: product.stock_quantity,
+        image_url: product.image_url,
+        status: 'draft'
+      }]);
+
+      if (error) throw error;
+      toast.success('Produit dupliqué avec succès');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['unified-products'] });
+    } catch (error) {
+      console.error('Error duplicating:', error);
+      toast.error('Erreur lors de la duplication');
+    }
+  };
+
+  // Share handler
+  const handleShare = async () => {
+    const productUrl = `${window.location.origin}/products?id=${product.id}`;
+    const shareText = `${product.name} - ${product.price}€`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: shareText,
+          url: productUrl
+        });
+      } catch {
+        await navigator.clipboard.writeText(productUrl);
+        toast.success('Lien copié dans le presse-papier');
+      }
+    } else {
+      await navigator.clipboard.writeText(productUrl);
+      toast.success('Lien copié dans le presse-papier');
+    }
+  };
+
+  // Favorites handler
+  const handleToggleFavorite = () => {
+    const favorites = JSON.parse(localStorage.getItem('product-favorites') || '[]');
+    const newFavorites = isFavorite 
+      ? favorites.filter((id: string) => id !== product.id)
+      : [...favorites, product.id];
+    localStorage.setItem('product-favorites', JSON.stringify(newFavorites));
+    setIsFavorite(!isFavorite);
+    toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris');
+  };
+
+  // Publish handler
+  const handlePublish = async () => {
+    if (onPublish) {
+      onPublish(product);
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Vous devez être connecté');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('products')
+        .update({ status: 'active', updated_at: new Date().toISOString() })
+        .eq('id', product.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      toast.success('Produit publié !');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['unified-products'] });
+    } catch (error) {
+      console.error('Error publishing:', error);
+      toast.error('Erreur lors de la publication');
+    }
   };
 
   const getStockStatus = () => {
@@ -207,21 +318,31 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                   <Edit className="h-4 w-4" />
                   Modifier
                 </DropdownMenuItem>
-                {onDuplicate && (
-                  <DropdownMenuItem onClick={() => onDuplicate(product)} className="gap-2">
-                    <Copy className="h-4 w-4" />
-                    Dupliquer
-                  </DropdownMenuItem>
-                )}
-                {onPublish && (
-                  <DropdownMenuItem onClick={() => onPublish(product)} className="gap-2">
+                <DropdownMenuItem onClick={handleDuplicate} className="gap-2">
+                  <Copy className="h-4 w-4" />
+                  Dupliquer
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShare} className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Partager
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleToggleFavorite} className="gap-2">
+                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-red-500")} />
+                  {isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                </DropdownMenuItem>
+                {product.status !== 'active' && (
+                  <DropdownMenuItem onClick={handlePublish} className="gap-2">
                     <Upload className="h-4 w-4" />
                     Publier
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
-                  onClick={() => onDelete(product.id)}
+                  onClick={() => {
+                    if (confirm('Supprimer ce produit ?')) {
+                      onDelete(product.id);
+                    }
+                  }}
                   className="text-destructive focus:text-destructive gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -486,17 +607,23 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem onClick={() => onView(product)} className="gap-2">
                   <Eye className="h-4 w-4" />
                   Voir détails
                 </DropdownMenuItem>
-                {onDuplicate && (
-                  <DropdownMenuItem onClick={() => onDuplicate(product)} className="gap-2">
-                    <Copy className="h-4 w-4" />
-                    Dupliquer
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem onClick={handleDuplicate} className="gap-2">
+                  <Copy className="h-4 w-4" />
+                  Dupliquer
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShare} className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Partager
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleToggleFavorite} className="gap-2">
+                  <Heart className={cn("h-4 w-4", isFavorite && "fill-red-500 text-red-500")} />
+                  Favoris
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={() => {

@@ -23,6 +23,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/hooks/useRealProducts";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface ProductActionButtonsProps {
   product: Product;
@@ -44,10 +48,20 @@ export const ProductActionButtons = ({
   onToggleFavorite,
   onViewAnalytics,
   onView,
-  isFavorite = false,
+  isFavorite: externalFavorite,
   compact = false
 }: ProductActionButtonsProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Local favorite state
+  const [localFavorite, setLocalFavorite] = useState(() => {
+    if (externalFavorite !== undefined) return externalFavorite;
+    const favorites = JSON.parse(localStorage.getItem('product-favorites') || '[]');
+    return favorites.includes(product.id);
+  });
+  
+  const isFavorite = externalFavorite ?? localFavorite;
 
   const handleViewProduct = () => {
     if (onView) {
@@ -71,27 +85,76 @@ export const ProductActionButtons = ({
     }
   };
 
-  const handleDeleteProduct = () => {
+  // Real delete handler with confirmation
+  const handleDeleteProduct = async () => {
+    const confirmDelete = window.confirm(`Êtes-vous sûr de vouloir supprimer "${product.name}" ?`);
+    if (!confirmDelete) return;
+    
     if (onDelete) {
-      const confirmDelete = window.confirm(`Êtes-vous sûr de vouloir supprimer "${product.name}" ?`);
-      if (confirmDelete) {
-        onDelete(product.id);
+      onDelete(product.id);
+    } else {
+      // Real delete
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .eq('id', product.id)
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
         toast({
           title: "Produit supprimé",
           description: `${product.name} a été supprimé avec succès`,
           variant: "destructive",
         });
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+      } catch (error) {
+        toast({ title: "Erreur", description: "Impossible de supprimer", variant: "destructive" });
       }
     }
   };
 
-  const handleDuplicateProduct = () => {
+  // Real duplicate handler
+  const handleDuplicateProduct = async () => {
     if (onDuplicate) {
       onDuplicate(product);
       toast({
         title: "Produit dupliqué",
         description: `Une copie de ${product.name} a été créée`,
       });
+      return;
+    }
+    
+    // Real duplicate
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      
+      const { error } = await supabase.from('products').insert([{
+        user_id: user.id,
+        title: product.name,
+        name: `${product.name} (copie)`,
+        description: product.description,
+        price: product.price,
+        cost_price: product.cost_price,
+        sku: product.sku ? `${product.sku}-COPY` : null,
+        category: product.category,
+        stock_quantity: product.stock_quantity,
+        image_url: product.image_url,
+        status: 'draft'
+      }]);
+      
+      if (error) throw error;
+      toast({
+        title: "Produit dupliqué",
+        description: `Une copie de ${product.name} a été créée`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    } catch (error) {
+      toast({ title: "Erreur", description: "Impossible de dupliquer", variant: "destructive" });
     }
   };
 
@@ -123,25 +186,36 @@ export const ProductActionButtons = ({
     });
   };
 
+  // Local favorite toggle
   const handleToggleFavorite = () => {
     if (onToggleFavorite) {
       onToggleFavorite(product.id);
-      toast({
-        title: isFavorite ? "Retiré des favoris" : "Ajouté aux favoris",
-        description: `${product.name} ${isFavorite ? 'retiré des' : 'ajouté aux'} favoris`,
-      });
+    } else {
+      // Local storage fallback
+      const favorites = JSON.parse(localStorage.getItem('product-favorites') || '[]');
+      const newFavorites = isFavorite 
+        ? favorites.filter((id: string) => id !== product.id)
+        : [...favorites, product.id];
+      localStorage.setItem('product-favorites', JSON.stringify(newFavorites));
+      setLocalFavorite(!isFavorite);
     }
+    toast({
+      title: isFavorite ? "Retiré des favoris" : "Ajouté aux favoris",
+      description: `${product.name} ${isFavorite ? 'retiré des' : 'ajouté aux'} favoris`,
+    });
   };
 
   const handleViewAnalytics = () => {
     if (onViewAnalytics) {
       onViewAnalytics(product.id);
     } else {
-      toast({
-        title: "Analytics",
-        description: `Ouverture des analytics pour ${product.name}`,
-      });
+      // Navigate to analytics page
+      window.location.href = `/products?id=${product.id}&tab=analytics`;
     }
+    toast({
+      title: "Analytics",
+      description: `Ouverture des analytics pour ${product.name}`,
+    });
   };
 
   const handleShareProduct = async () => {
