@@ -140,13 +140,68 @@
           return validator.validate(normalizedData);
         });
 
+        // Step 5: Intelligence Analysis (Phase C)
+        await this.executeStep(job, 'intelligence', async () => {
+          const normalizedProduct = job.steps[2].result;
+          const intelligence = {};
+
+          // Supplier detection
+          if (window.ShopOptiSupplierDetection) {
+            try {
+              intelligence.suppliers = await window.ShopOptiSupplierDetection.detectSuppliers(
+                normalizedProduct,
+                { bypassCache: options.bypassCache }
+              );
+            } catch (e) {
+              console.warn('[Orchestrator] Supplier detection failed:', e);
+              intelligence.suppliers = [];
+            }
+          }
+
+          // Margin suggestions
+          if (window.ShopOptiMarginEngine) {
+            try {
+              intelligence.marginSuggestions = window.ShopOptiMarginEngine.getSuggestions(
+                normalizedProduct,
+                options.marginOptions
+              );
+            } catch (e) {
+              console.warn('[Orchestrator] Margin suggestion failed:', e);
+              intelligence.marginSuggestions = null;
+            }
+          }
+
+          // Auto-translation (if target language specified)
+          if (window.ShopOptiTranslation && options.translateTo) {
+            try {
+              const translated = await window.ShopOptiTranslation.translateProduct(
+                normalizedProduct,
+                { targetLang: options.translateTo, mode: options.translationMode || 'balanced' }
+              );
+              intelligence.translatedProduct = translated;
+            } catch (e) {
+              console.warn('[Orchestrator] Translation failed:', e);
+              intelligence.translatedProduct = null;
+            }
+          }
+
+          return intelligence;
+        });
+
         // Compile final result
         const validation = job.steps[3].result;
         const normalizedProduct = job.steps[2].result;
+        const intelligence = job.steps[4]?.result || {};
 
         job.result = {
-          product: normalizedProduct,
+          product: intelligence.translatedProduct || normalizedProduct,
+          originalProduct: intelligence.translatedProduct ? normalizedProduct : null,
           validation,
+          intelligence: {
+            suppliers: intelligence.suppliers || [],
+            marginSuggestions: intelligence.marginSuggestions,
+            translated: !!intelligence.translatedProduct
+          },
           platform: job.platform,
           metadata: {
             jobId,
