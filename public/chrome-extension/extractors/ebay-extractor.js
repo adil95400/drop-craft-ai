@@ -1,7 +1,7 @@
 /**
- * ShopOpti+ eBay Extractor v5.1.0
+ * ShopOpti+ eBay Extractor v5.7.0
  * High-fidelity extraction for eBay product pages
- * Extracts: Images, Variants, Videos, Reviews, Specifications
+ * Extends BaseExtractor - Extracts: Images, Variants, Videos, Reviews, Specifications
  */
 
 (function() {
@@ -10,10 +10,54 @@
   if (window.__shopoptiEbayExtractorLoaded) return;
   window.__shopoptiEbayExtractorLoaded = true;
 
-  class EbayExtractor {
+  const BaseExtractor = window.ShopOptiBaseExtractor;
+
+  class EbayExtractor extends (BaseExtractor || Object) {
     constructor() {
+      if (BaseExtractor) super();
       this.platform = 'ebay';
+      this.version = '5.7.0';
       this.itemId = this.extractItemId();
+      this.interceptedData = {};
+      this.setupNetworkInterception();
+    }
+
+    setupNetworkInterception() {
+      if (this._interceptorActive) return;
+      this._interceptorActive = true;
+
+      const self = this;
+      const originalFetch = window.fetch;
+      
+      window.fetch = async function(...args) {
+        const response = await originalFetch.apply(this, args);
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        
+        if (url && self.isRelevantRequest(url)) {
+          try {
+            const clone = response.clone();
+            const data = await clone.json();
+            self.processInterceptedData(url, data);
+          } catch (e) {}
+        }
+        
+        return response;
+      };
+    }
+
+    isRelevantRequest(url) {
+      if (!url) return false;
+      return url.includes('/api/') || 
+             url.includes('item') || 
+             url.includes('reviews');
+    }
+
+    processInterceptedData(url, data) {
+      if (url.includes('review')) {
+        this.interceptedData.reviews = data;
+      } else {
+        this.interceptedData.product = data;
+      }
     }
 
     /**
@@ -24,7 +68,8 @@
         /\/itm\/(\d+)/,
         /\/p\/(\d+)/,
         /item=(\d+)/,
-        /itemId=(\d+)/
+        /itemId=(\d+)/,
+        /\/itm\/[^/]+\/(\d+)/
       ];
 
       for (const pattern of patterns) {
@@ -35,11 +80,19 @@
       return null;
     }
 
+    getPlatform() {
+      return 'ebay';
+    }
+
+    getExternalId() {
+      return this.itemId;
+    }
+
     /**
      * Main extraction method
      */
     async extractComplete() {
-      console.log('[ShopOpti+ eBay] Starting extraction, Item ID:', this.itemId);
+      console.log('[ShopOpti+ eBay v5.7.0] Starting extraction, Item ID:', this.itemId);
 
       const [basicInfo, pricing, images, videos, variants, reviews, specifications] = await Promise.all([
         this.extractBasicInfo(),
@@ -55,6 +108,7 @@
         external_id: this.itemId,
         url: window.location.href,
         platform: 'ebay',
+        version: this.version,
         extractedAt: new Date().toISOString(),
         ...basicInfo,
         ...pricing,
@@ -65,7 +119,7 @@
         specifications
       };
 
-      console.log('[ShopOpti+ eBay] Extraction complete:', {
+      console.log('[ShopOpti+ eBay v5.7.0] Extraction complete:', {
         title: productData.title?.substring(0, 50),
         images: images.length,
         variants: variants.length
@@ -78,7 +132,7 @@
      * Extract basic product info
      */
     async extractBasicInfo() {
-      // JSON-LD
+      // JSON-LD first
       const jsonLD = this.extractFromJsonLD();
       if (jsonLD.title) return jsonLD;
 
@@ -87,7 +141,8 @@
         'h1.x-item-title__mainTitle',
         '[data-testid="x-item-title"]',
         '#itemTitle',
-        'h1[itemprop="name"]'
+        'h1[itemprop="name"]',
+        '.x-item-title span'
       ];
 
       let title = '';
@@ -103,7 +158,8 @@
       const brandSelectors = [
         '[data-testid="x-store-info"] a',
         '.x-sellercard-atf__info a',
-        '[class*="seller-info"] a'
+        '[class*="seller-info"] a',
+        '.x-seller-info a'
       ];
       let brand = '';
       for (const sel of brandSelectors) {
@@ -124,7 +180,7 @@
         } catch (e) {}
       }
       if (!description) {
-        const descEl = document.querySelector('#viTabs_0_is, [itemprop="description"]');
+        const descEl = document.querySelector('#viTabs_0_is, [itemprop="description"], .d-item-description');
         description = descEl?.textContent?.trim()?.substring(0, 5000) || '';
       }
 
@@ -194,7 +250,8 @@
           '[data-testid="x-price-primary"] .ux-textspans',
           '[itemprop="price"]',
           '#prcIsum',
-          '.x-price-primary'
+          '.x-price-primary',
+          '.x-buybox__price-section span'
         ];
 
         for (const sel of priceSelectors) {
@@ -207,7 +264,12 @@
       }
 
       // Original price
-      const originalSelectors = ['[data-testid="x-price-secondary"]', '.x-price-secondary', '[class*="original-price"]'];
+      const originalSelectors = [
+        '[data-testid="x-price-secondary"]',
+        '.x-price-secondary',
+        '[class*="original-price"]',
+        '.ux-textspans--STRIKETHROUGH'
+      ];
       for (const sel of originalSelectors) {
         const el = document.querySelector(sel);
         if (el?.textContent) {
@@ -243,7 +305,7 @@
       const images = new Set();
 
       // Main carousel images
-      document.querySelectorAll('.ux-image-carousel img, [data-testid="ux-image-carousel"] img').forEach(img => {
+      document.querySelectorAll('.ux-image-carousel img, [data-testid="ux-image-carousel"] img, .ux-image-magnify img').forEach(img => {
         const src = img.dataset?.src || img.dataset?.zoom || img.src;
         if (src) {
           images.add(this.normalizeImageUrl(src));
@@ -251,7 +313,7 @@
       });
 
       // Thumbnail images
-      document.querySelectorAll('[class*="thumb"] img, .x-photos-thumb img').forEach(img => {
+      document.querySelectorAll('[class*="thumb"] img, .x-photos-thumb img, .ux-image-filmstrip img').forEach(img => {
         const src = img.dataset?.src || img.src;
         if (src) {
           images.add(this.normalizeImageUrl(src));
@@ -288,14 +350,11 @@
     normalizeImageUrl(src) {
       if (!src) return null;
 
-      // Ensure HTTPS
       if (src.startsWith('//')) src = 'https:' + src;
 
       // Get high-res version
       src = src.replace(/s-l\d+/g, 's-l1600');
       src = src.replace(/\$_\d+/g, '$_57');
-
-      // Remove query params for dedup
       src = src.split('?')[0];
 
       return src;
@@ -344,7 +403,7 @@
       });
 
       // Buttons/swatches
-      document.querySelectorAll('.x-variation-value, [class*="variation-item"]').forEach(item => {
+      document.querySelectorAll('.x-variation-value, [class*="variation-item"], .x-msku__swatch-button').forEach(item => {
         const title = item.getAttribute('aria-label') || item.textContent?.trim();
         const img = item.querySelector('img');
         
@@ -353,7 +412,7 @@
             id: `var_${variants.length}`,
             title: title,
             image: img?.src ? this.normalizeImageUrl(img.src) : null,
-            available: !item.className.includes('unavailable')
+            available: !item.className.includes('unavailable') && !item.hasAttribute('disabled')
           });
         }
       });
@@ -426,12 +485,12 @@
         }
       });
 
-      // Item specifics list
-      document.querySelectorAll('.x-item-specifics li, [class*="item-specifics"] li').forEach(li => {
-        const text = li.textContent?.trim();
-        const colonIndex = text?.indexOf(':');
-        if (colonIndex > 0) {
-          specs[text.substring(0, colonIndex).trim()] = text.substring(colonIndex + 1).trim();
+      // Labels-values layout
+      document.querySelectorAll('.ux-layout-section--features .ux-labels-values').forEach(item => {
+        const key = item.querySelector('.ux-labels-values__labels')?.textContent?.trim();
+        const value = item.querySelector('.ux-labels-values__values')?.textContent?.trim();
+        if (key && value) {
+          specs[key] = value;
         }
       });
 
@@ -439,8 +498,12 @@
     }
   }
 
-  // Export to global scope
-  window.ShopOptiEbayExtractor = EbayExtractor;
-  console.log('[ShopOpti+] eBay Extractor v5.1.0 loaded');
+  // Register with ExtractorRegistry
+  if (window.ExtractorRegistry) {
+    window.ExtractorRegistry.register('ebay', EbayExtractor);
+  }
 
+  window.EbayExtractor = EbayExtractor;
+  window.ShopOptiEbayExtractor = EbayExtractor;
+  console.log('[ShopOpti+] eBay Extractor v5.7.0 loaded');
 })();

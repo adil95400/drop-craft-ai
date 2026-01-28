@@ -1,7 +1,7 @@
 /**
  * ShopOpti+ Etsy Extractor v5.7.0
  * High-fidelity extraction for Etsy product pages
- * Handmade/Vintage Market - Extracts: Images, Variants, Reviews
+ * Extends BaseExtractor - Handmade/Vintage Market - Extracts: Images, Variants, Reviews
  */
 
 (function() {
@@ -10,10 +10,54 @@
   if (window.__shopoptiEtsyExtractorLoaded) return;
   window.__shopoptiEtsyExtractorLoaded = true;
 
-  class EtsyExtractor {
+  const BaseExtractor = window.ShopOptiBaseExtractor;
+
+  class EtsyExtractor extends (BaseExtractor || Object) {
     constructor() {
+      if (BaseExtractor) super();
       this.platform = 'etsy';
+      this.version = '5.7.0';
       this.listingId = this.extractListingId();
+      this.interceptedData = {};
+      this.setupNetworkInterception();
+    }
+
+    setupNetworkInterception() {
+      if (this._interceptorActive) return;
+      this._interceptorActive = true;
+
+      const self = this;
+      const originalFetch = window.fetch;
+      
+      window.fetch = async function(...args) {
+        const response = await originalFetch.apply(this, args);
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        
+        if (url && self.isRelevantRequest(url)) {
+          try {
+            const clone = response.clone();
+            const data = await clone.json();
+            self.processInterceptedData(url, data);
+          } catch (e) {}
+        }
+        
+        return response;
+      };
+    }
+
+    isRelevantRequest(url) {
+      if (!url) return false;
+      return url.includes('/api/') || 
+             url.includes('listing') || 
+             url.includes('review');
+    }
+
+    processInterceptedData(url, data) {
+      if (url.includes('review')) {
+        this.interceptedData.reviews = data;
+      } else {
+        this.interceptedData.product = data;
+      }
     }
 
     extractListingId() {
@@ -21,8 +65,16 @@
       return match ? match[1] : null;
     }
 
+    getPlatform() {
+      return 'etsy';
+    }
+
+    getExternalId() {
+      return this.listingId;
+    }
+
     async extractComplete() {
-      console.log('[ShopOpti+ Etsy] Starting extraction, Listing ID:', this.listingId);
+      console.log('[ShopOpti+ Etsy v5.7.0] Starting extraction, Listing ID:', this.listingId);
 
       const [basicInfo, pricing, images, variants, reviews, specifications] = await Promise.all([
         this.extractBasicInfo(),
@@ -37,6 +89,7 @@
         external_id: this.listingId,
         url: window.location.href,
         platform: 'etsy',
+        version: this.version,
         extractedAt: new Date().toISOString(),
         ...basicInfo,
         ...pricing,
@@ -52,9 +105,9 @@
       const jsonLD = this.extractFromJsonLD();
       if (jsonLD.title) return jsonLD;
 
-      const titleEl = document.querySelector('h1[data-listing-page-title], h1.wt-text-body-01');
-      const shopEl = document.querySelector('[data-shop-name], .wt-text-link-no-underline');
-      const descEl = document.querySelector('[data-product-details-description-text-content], .wt-text-body-01');
+      const titleEl = document.querySelector('h1[data-listing-page-title], h1.wt-text-body-01, [data-buy-box-listing-title]');
+      const shopEl = document.querySelector('[data-shop-name], .wt-text-link-no-underline, [data-shop-info] a');
+      const descEl = document.querySelector('[data-product-details-description-text-content], .wt-text-body-01, .wt-content-toggle__body');
 
       return {
         title: titleEl?.textContent?.trim() || '',
@@ -104,20 +157,19 @@
 
       // DOM fallback
       if (price === 0) {
-        const priceEl = document.querySelector('[data-appears-component-name="price"] p, .wt-text-title-03');
+        const priceEl = document.querySelector('[data-appears-component-name="price"] p, .wt-text-title-03, [data-buy-box-region="price"]');
         if (priceEl) {
           price = this.parsePrice(priceEl.textContent || '');
         }
       }
 
       // Original price
-      const originalEl = document.querySelector('.wt-text-strikethrough, del');
+      const originalEl = document.querySelector('.wt-text-strikethrough, del, [data-original-price]');
       if (originalEl) {
         const op = this.parsePrice(originalEl.textContent || '');
         if (op > price) originalPrice = op;
       }
 
-      // Currency detection
       const currency = this.detectCurrency();
 
       return { price, originalPrice, currency };
@@ -140,7 +192,7 @@
       const images = new Set();
 
       // Main carousel images
-      document.querySelectorAll('[data-carousel-image] img, .listing-page-image-carousel img').forEach(img => {
+      document.querySelectorAll('[data-carousel-image] img, .listing-page-image-carousel img, .image-carousel img').forEach(img => {
         const src = img.dataset?.srcDelay || img.dataset?.src || img.src;
         if (src && this.isValidImage(src)) {
           images.add(this.normalizeImageUrl(src));
@@ -148,7 +200,7 @@
       });
 
       // Thumbnails
-      document.querySelectorAll('[data-carousel-thumbnail] img, .carousel-thumbnail img').forEach(img => {
+      document.querySelectorAll('[data-carousel-thumbnail] img, .carousel-thumbnail img, .listing-thumb img').forEach(img => {
         const src = img.dataset?.srcDelay || img.dataset?.src || img.src;
         if (src && this.isValidImage(src)) {
           images.add(this.normalizeImageUrl(src));
@@ -217,7 +269,7 @@
       });
 
       // Variation buttons
-      document.querySelectorAll('[data-variation-value], .wt-list-inline button').forEach(button => {
+      document.querySelectorAll('[data-variation-value], .wt-list-inline button, [data-personalization-variation]').forEach(button => {
         const title = button.textContent?.trim() || button.getAttribute('title');
         const value = button.dataset?.variationValue;
         
@@ -237,11 +289,12 @@
       const reviews = [];
 
       // Rating summary
-      const ratingEl = document.querySelector('[data-rating], [aria-label*="star"]');
-      const countEl = document.querySelector('[data-reviews-count], .wt-text-caption');
+      const ratingEl = document.querySelector('[data-rating], [aria-label*="star"], [data-shop-star-rating]');
+      const countEl = document.querySelector('[data-reviews-count], .wt-text-caption, [data-reviews]');
 
       if (ratingEl || countEl) {
-        const ratingMatch = ratingEl?.getAttribute('aria-label')?.match(/([\d.]+)/);
+        const ratingMatch = ratingEl?.getAttribute('aria-label')?.match(/([\d.]+)/) || 
+                           ratingEl?.getAttribute('data-rating')?.match(/([\d.]+)/);
         const countMatch = countEl?.textContent?.match(/(\d+)/);
         
         reviews.push({
@@ -252,11 +305,11 @@
       }
 
       // Individual reviews
-      document.querySelectorAll('[data-review-region] > div, .review-item').forEach(reviewEl => {
+      document.querySelectorAll('[data-review-region] > div, .review-item, [data-review-id]').forEach(reviewEl => {
         const review = {
-          author: reviewEl.querySelector('.wt-text-title-01, .reviewer-name')?.textContent?.trim() || 'Anonymous',
+          author: reviewEl.querySelector('.wt-text-title-01, .reviewer-name, [data-review-author]')?.textContent?.trim() || 'Anonymous',
           rating: this.extractReviewRating(reviewEl),
-          content: reviewEl.querySelector('.wt-content-toggle--truncated, .review-content')?.textContent?.trim() || '',
+          content: reviewEl.querySelector('.wt-content-toggle--truncated, .review-content, [data-review-body]')?.textContent?.trim() || '',
           date: reviewEl.querySelector('.wt-text-caption, .review-date')?.textContent?.trim() || '',
           images: []
         };
@@ -305,7 +358,7 @@
       });
 
       // Key-value pairs
-      document.querySelectorAll('.wt-text-body-01 .wt-display-flex-xs').forEach(item => {
+      document.querySelectorAll('.wt-text-body-01 .wt-display-flex-xs, [data-item-overview] li').forEach(item => {
         const text = item.textContent?.trim();
         const colonIndex = text?.indexOf(':');
         if (colonIndex > 0 && colonIndex < 30) {
@@ -321,9 +374,12 @@
     }
   }
 
+  // Register with ExtractorRegistry
   if (window.ExtractorRegistry) {
     window.ExtractorRegistry.register('etsy', EtsyExtractor);
   }
 
   window.EtsyExtractor = EtsyExtractor;
+  window.ShopOptiEtsyExtractor = EtsyExtractor;
+  console.log('[ShopOpti+] Etsy Extractor v5.7.0 loaded');
 })();

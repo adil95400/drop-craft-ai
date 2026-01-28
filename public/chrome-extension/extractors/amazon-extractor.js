@@ -1,7 +1,7 @@
 /**
- * ShopOpti+ Amazon Extractor v5.1.0
+ * ShopOpti+ Amazon Extractor v5.7.0
  * High-fidelity extraction for Amazon product pages
- * Extracts: Images (ASIN-filtered, high-res), Variants, Videos, Reviews, Specifications
+ * Extends BaseExtractor - Extracts: Images, Variants, Videos, Reviews, Specifications
  */
 
 (function() {
@@ -10,26 +10,94 @@
   if (window.__shopoptiAmazonExtractorLoaded) return;
   window.__shopoptiAmazonExtractorLoaded = true;
 
-  class AmazonExtractor {
+  const BaseExtractor = window.ShopOptiBaseExtractor;
+
+  class AmazonExtractor extends (BaseExtractor || Object) {
     constructor() {
+      if (BaseExtractor) super();
       this.platform = 'amazon';
+      this.version = '5.7.0';
       this.asin = this.extractASIN();
       this.seenImageHashes = new Set();
+      this.interceptedData = {};
+      this.setupNetworkInterception();
+    }
+
+    /**
+     * Setup network interception for SPA data capture
+     */
+    setupNetworkInterception() {
+      if (this._interceptorActive) return;
+      this._interceptorActive = true;
+
+      const self = this;
+      const originalFetch = window.fetch;
+      
+      window.fetch = async function(...args) {
+        const response = await originalFetch.apply(this, args);
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        
+        if (url && self.isRelevantRequest(url)) {
+          try {
+            const clone = response.clone();
+            const data = await clone.json();
+            self.processInterceptedData(url, data);
+          } catch (e) {}
+        }
+        
+        return response;
+      };
+
+      // XHR interception
+      const originalXHROpen = XMLHttpRequest.prototype.open;
+      const originalXHRSend = XMLHttpRequest.prototype.send;
+      
+      XMLHttpRequest.prototype.open = function(method, url) {
+        this._shopoptiUrl = url;
+        return originalXHROpen.apply(this, arguments);
+      };
+
+      XMLHttpRequest.prototype.send = function() {
+        this.addEventListener('load', function() {
+          if (self.isRelevantRequest(this._shopoptiUrl)) {
+            try {
+              const data = JSON.parse(this.responseText);
+              self.processInterceptedData(this._shopoptiUrl, data);
+            } catch (e) {}
+          }
+        });
+        return originalXHRSend.apply(this, arguments);
+      };
+    }
+
+    isRelevantRequest(url) {
+      if (!url) return false;
+      return url.includes('/api/') || 
+             url.includes('product') || 
+             url.includes('reviews') ||
+             url.includes('images');
+    }
+
+    processInterceptedData(url, data) {
+      if (url.includes('review')) {
+        this.interceptedData.reviews = data;
+      } else if (url.includes('image')) {
+        this.interceptedData.images = data;
+      } else {
+        this.interceptedData.product = data;
+      }
     }
 
     /**
      * Extract ASIN from URL or page
      */
     extractASIN() {
-      // From URL
       const urlMatch = window.location.href.match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/i);
       if (urlMatch) return urlMatch[1];
 
-      // From page elements
       const asinInput = document.querySelector('input[name="ASIN"], input[name="asin"]');
       if (asinInput?.value) return asinInput.value;
 
-      // From data attributes
       const productEl = document.querySelector('[data-asin]');
       if (productEl?.dataset?.asin) return productEl.dataset.asin;
 
@@ -37,10 +105,24 @@
     }
 
     /**
-     * Main extraction method
+     * Get platform identifier
+     */
+    getPlatform() {
+      return 'amazon';
+    }
+
+    /**
+     * Get external product ID
+     */
+    getExternalId() {
+      return this.asin;
+    }
+
+    /**
+     * Main extraction method - implements BaseExtractor contract
      */
     async extractComplete() {
-      console.log('[ShopOpti+ Amazon] Starting extraction, ASIN:', this.asin);
+      console.log('[ShopOpti+ Amazon v5.7.0] Starting extraction, ASIN:', this.asin);
 
       const [basicInfo, pricing, images, videos, variants, reviews, specifications] = await Promise.all([
         this.extractBasicInfo(),
@@ -56,6 +138,7 @@
         external_id: this.asin,
         url: window.location.href,
         platform: 'amazon',
+        version: this.version,
         extractedAt: new Date().toISOString(),
         ...basicInfo,
         ...pricing,
@@ -66,7 +149,7 @@
         specifications
       };
 
-      console.log('[ShopOpti+ Amazon] Extraction complete:', {
+      console.log('[ShopOpti+ Amazon v5.7.0] Extraction complete:', {
         title: productData.title?.substring(0, 50),
         images: images.length,
         videos: videos.length,
@@ -81,23 +164,54 @@
      * Extract basic product info
      */
     async extractBasicInfo() {
-      // Title
-      const titleEl = document.querySelector('#productTitle, #title span, h1.product-title-word-break');
-      const title = titleEl?.textContent?.trim() || '';
+      // Try JSON-LD first
+      const jsonLD = this.extractFromJsonLD();
+      if (jsonLD.title) return jsonLD;
 
-      // Brand
-      const brandSelectors = ['#bylineInfo', 'a#bylineInfo', '.po-brand .po-break-word', '[data-brand]'];
-      let brand = '';
-      for (const sel of brandSelectors) {
+      // Title with multiple fallbacks
+      const titleSelectors = [
+        '#productTitle',
+        '#title span',
+        'h1.product-title-word-break',
+        '[data-feature-name="title"] span',
+        'h1[data-automation-id="product-title"]'
+      ];
+      let title = '';
+      for (const sel of titleSelectors) {
         const el = document.querySelector(sel);
         if (el?.textContent?.trim()) {
-          brand = el.textContent.replace(/^(Visit the|Marque\s*:|Brand:?)\s*/i, '').trim();
+          title = el.textContent.trim();
           break;
         }
       }
 
-      // Description
-      const descriptionSelectors = ['#feature-bullets ul', '#productDescription', '#aplus'];
+      // Brand with cleanup
+      const brandSelectors = [
+        '#bylineInfo',
+        'a#bylineInfo',
+        '.po-brand .po-break-word',
+        '[data-brand]',
+        '#brand'
+      ];
+      let brand = '';
+      for (const sel of brandSelectors) {
+        const el = document.querySelector(sel);
+        if (el?.textContent?.trim()) {
+          brand = el.textContent
+            .replace(/^(Visit the|Marque\s*:|Brand:?|Store:?)\s*/i, '')
+            .trim();
+          break;
+        }
+      }
+
+      // Description with multiple sources
+      const descriptionSelectors = [
+        '#feature-bullets ul',
+        '#productDescription',
+        '#aplus',
+        '#aplus_feature_div',
+        '[data-a-feature-name="productDescription"]'
+      ];
       let description = '';
       for (const sel of descriptionSelectors) {
         const el = document.querySelector(sel);
@@ -107,8 +221,10 @@
         }
       }
 
-      // SKU / Model number
-      const detailsTable = document.querySelector('#productDetails_detailBullets_sections1, #detailBullets_feature_div');
+      // SKU / Model number from details
+      const detailsTable = document.querySelector(
+        '#productDetails_detailBullets_sections1, #detailBullets_feature_div, #productDetails_techSpec_section_1'
+      );
       let sku = '';
       if (detailsTable) {
         const rows = detailsTable.querySelectorAll('tr, li');
@@ -126,36 +242,38 @@
       return { title, brand, description, sku: sku || this.asin };
     }
 
+    extractFromJsonLD() {
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      for (const script of scripts) {
+        try {
+          const data = JSON.parse(script.textContent);
+          const items = Array.isArray(data) ? data : [data];
+          for (const item of items) {
+            if (item['@type'] === 'Product') {
+              return {
+                title: item.name || '',
+                description: item.description || '',
+                brand: typeof item.brand === 'string' ? item.brand : item.brand?.name || '',
+                sku: item.sku || item.mpn || ''
+              };
+            }
+          }
+        } catch (e) {}
+      }
+      return {};
+    }
+
     /**
      * Extract pricing with multiple strategies
      */
     async extractPricing() {
       const priceStrategies = [
-        // Strategy 1: Core price feature div
-        () => {
-          const priceEl = document.querySelector('#corePrice_feature_div .a-offscreen, #corePrice_feature_div .a-price .a-offscreen');
-          return priceEl?.textContent;
-        },
-        // Strategy 2: Price block
-        () => {
-          const priceEl = document.querySelector('#priceblock_ourprice, #priceblock_dealprice, #priceblock_saleprice');
-          return priceEl?.textContent;
-        },
-        // Strategy 3: Apex price
-        () => {
-          const priceEl = document.querySelector('.a-price[data-a-color="price"] .a-offscreen');
-          return priceEl?.textContent;
-        },
-        // Strategy 4: Buy box price
-        () => {
-          const priceEl = document.querySelector('#newBuyBoxPrice, #price_inside_buybox');
-          return priceEl?.textContent;
-        },
-        // Strategy 5: Regular a-price
-        () => {
-          const priceEl = document.querySelector('.a-price .a-offscreen');
-          return priceEl?.textContent;
-        }
+        () => document.querySelector('#corePrice_feature_div .a-offscreen, #corePrice_feature_div .a-price .a-offscreen')?.textContent,
+        () => document.querySelector('#priceblock_ourprice, #priceblock_dealprice, #priceblock_saleprice')?.textContent,
+        () => document.querySelector('.a-price[data-a-color="price"] .a-offscreen')?.textContent,
+        () => document.querySelector('#newBuyBoxPrice, #price_inside_buybox')?.textContent,
+        () => document.querySelector('.a-price .a-offscreen')?.textContent,
+        () => document.querySelector('[data-a-color="price"] .a-offscreen')?.textContent
       ];
 
       let price = 0;
@@ -172,7 +290,8 @@
         '.a-text-strike .a-offscreen',
         '.a-price[data-a-strike] .a-offscreen',
         '#listPrice',
-        '.a-text-price .a-offscreen'
+        '.a-text-price .a-offscreen',
+        '[data-a-strike="true"] .a-offscreen'
       ];
       let originalPrice = null;
       for (const sel of originalPriceSelectors) {
@@ -186,9 +305,7 @@
         }
       }
 
-      // Currency detection
       const currency = this.detectCurrency();
-
       return { price, originalPrice, currency };
     }
 
@@ -196,7 +313,7 @@
       if (!priceStr) return 0;
       let clean = priceStr.replace(/[€$£¥₹₽\s]/gi, '').replace(/EUR|USD|GBP/gi, '').trim();
       
-      // Handle formats
+      // Handle European format (1.234,56)
       if (/^\d{1,3}([.\s]\d{3})*,\d{2}$/.test(clean)) {
         clean = clean.replace(/[.\s]/g, '').replace(',', '.');
       } else if (clean.includes(',') && !clean.includes('.')) {
@@ -210,7 +327,8 @@
       const currencyMap = {
         'amazon.fr': 'EUR', 'amazon.de': 'EUR', 'amazon.it': 'EUR', 'amazon.es': 'EUR',
         'amazon.com': 'USD', 'amazon.co.uk': 'GBP', 'amazon.ca': 'CAD',
-        'amazon.co.jp': 'JPY', 'amazon.in': 'INR'
+        'amazon.co.jp': 'JPY', 'amazon.in': 'INR', 'amazon.com.mx': 'MXN',
+        'amazon.com.br': 'BRL', 'amazon.com.au': 'AUD'
       };
       
       for (const [domain, currency] of Object.entries(currencyMap)) {
@@ -226,8 +344,8 @@
       const images = new Set();
 
       // Strategy 1: altImages with data attributes (highest quality)
-      document.querySelectorAll('#altImages img, #imageBlock img').forEach(img => {
-        const hiRes = img.dataset?.oldHires || img.dataset?.aHires;
+      document.querySelectorAll('#altImages img, #imageBlock img, #imgTagWrapperId img').forEach(img => {
+        const hiRes = img.dataset?.oldHires || img.dataset?.aHires || img.dataset?.zoom;
         if (hiRes) {
           const normalized = this.normalizeImageUrl(hiRes);
           if (this.isValidAmazonImage(normalized)) {
@@ -237,7 +355,7 @@
       });
 
       // Strategy 2: Main image
-      const mainImage = document.querySelector('#landingImage, #imgBlkFront');
+      const mainImage = document.querySelector('#landingImage, #imgBlkFront, #main-image');
       if (mainImage) {
         const src = mainImage.dataset?.oldHires || mainImage.dataset?.aHires || mainImage.src;
         const normalized = this.normalizeImageUrl(src);
@@ -246,17 +364,16 @@
         }
       }
 
-      // Strategy 3: Color images from JavaScript
+      // Strategy 3: Parse from JavaScript data
       try {
         const scripts = document.querySelectorAll('script:not([src])');
         for (const script of scripts) {
           const content = script.textContent;
           
-          // Parse colorImages object
-          const colorImagesMatch = content.match(/colorImages['"]\s*:\s*(\{[^}]+\}|\[[^\]]+\])/s);
+          // colorImages object
+          const colorImagesMatch = content.match(/colorImages['"]\s*:\s*\{['"]initial['"]\s*:\s*\[([\s\S]*?)\]/);
           if (colorImagesMatch) {
-            const colorImagesStr = colorImagesMatch[0];
-            const hiResMatches = colorImagesStr.matchAll(/hiRes["']?\s*:\s*["']([^"']+)["']/g);
+            const hiResMatches = colorImagesMatch[1].matchAll(/hiRes["']?\s*:\s*["']([^"']+)["']/g);
             for (const match of hiResMatches) {
               const normalized = this.normalizeImageUrl(match[1]);
               if (this.isValidAmazonImage(normalized)) {
@@ -265,7 +382,7 @@
             }
           }
 
-          // Parse imageGalleryData
+          // imageGalleryData
           const galleryMatch = content.match(/imageGalleryData["']?\s*:\s*\[([^\]]+)\]/s);
           if (galleryMatch) {
             const mainUrlMatches = galleryMatch[1].matchAll(/mainUrl["']?\s*:\s*["']([^"']+)["']/g);
@@ -282,7 +399,7 @@
       }
 
       // Strategy 4: A+ content images
-      document.querySelectorAll('#aplus img, .aplus-module img').forEach(img => {
+      document.querySelectorAll('#aplus img, .aplus-module img, #aplus3p_feature_div img').forEach(img => {
         const src = img.dataset?.src || img.src;
         if (src && src.includes('images-amazon') && !src.includes('transparent-pixel')) {
           const normalized = this.normalizeImageUrl(src);
@@ -331,12 +448,11 @@
       if (!url) return false;
       if (!url.includes('images-amazon') && !url.includes('m.media-amazon')) return false;
       if (url.includes('transparent-pixel') || url.includes('sprite') || url.includes('icon')) return false;
-      if (url.includes('loading') || url.includes('placeholder')) return false;
+      if (url.includes('loading') || url.includes('placeholder') || url.includes('grey-pixel')) return false;
       return true;
     }
 
     getImageHash(url) {
-      // Extract core image identifier
       const match = url.match(/\/([A-Z0-9]{10,})\./i);
       return match ? match[1] : url;
     }
@@ -348,7 +464,6 @@
       const videos = [];
 
       try {
-        // Strategy 1: Video player data
         const scripts = document.querySelectorAll('script:not([src])');
         for (const script of scripts) {
           const content = script.textContent;
@@ -372,14 +487,14 @@
           }
         }
 
-        // Strategy 2: Video elements
+        // Video elements
         document.querySelectorAll('video source').forEach(source => {
           if (source.src && !videos.some(v => v.url === source.src)) {
             videos.push({ url: source.src, type: 'mp4', platform: 'amazon' });
           }
         });
 
-        // Strategy 3: Video thumbnails (extract video ID)
+        // Video thumbnails
         document.querySelectorAll('[data-video-url]').forEach(el => {
           const url = el.dataset.videoUrl;
           if (url && !videos.some(v => v.url === url)) {
@@ -401,7 +516,6 @@
       const variants = [];
 
       try {
-        // Strategy 1: Twister data from scripts
         const scripts = document.querySelectorAll('script:not([src])');
         for (const script of scripts) {
           const content = script.textContent;
@@ -410,7 +524,6 @@
           const dimensionMatch = content.match(/dimensionValuesDisplayData["']?\s*:\s*(\{[^}]+\})/s);
           if (dimensionMatch) {
             try {
-              // Parse dimension data
               const dimData = JSON.parse(dimensionMatch[1].replace(/'/g, '"'));
               for (const [asin, values] of Object.entries(dimData)) {
                 if (Array.isArray(values) && values.length > 0) {
@@ -442,7 +555,7 @@
           }
         }
 
-        // Strategy 2: DOM-based extraction
+        // DOM fallback
         if (variants.length === 0) {
           // Size options
           const sizeSelect = document.querySelector('#native_dropdown_selected_size_name, #size_name_');
@@ -496,59 +609,49 @@
         const countMatch = countEl?.textContent?.match(/[\d\s,.]+/);
         const reviewCount = countMatch ? parseInt(countMatch[0].replace(/[\s,.]/g, '')) : 0;
 
+        if (rating || reviewCount) {
+          reviews.push({
+            type: 'summary',
+            averageRating: parseFloat(rating) || 0,
+            totalCount: reviewCount
+          });
+        }
+
         // Individual reviews
         document.querySelectorAll('[data-hook="review"]').forEach(reviewEl => {
+          const authorEl = reviewEl.querySelector('.a-profile-name');
+          const ratingEl = reviewEl.querySelector('[data-hook="review-star-rating"], .a-icon-star');
+          const titleEl = reviewEl.querySelector('[data-hook="review-title"] span:last-child');
+          const contentEl = reviewEl.querySelector('[data-hook="review-body"] span');
+          const dateEl = reviewEl.querySelector('[data-hook="review-date"]');
+          
           const review = {
-            author: reviewEl.querySelector('.a-profile-name')?.textContent?.trim() || 'Anonymous',
-            rating: parseFloat(reviewEl.querySelector('[data-hook="review-star-rating"] .a-icon-alt')?.textContent?.match(/(\d[.,]?\d?)/)?.[1]?.replace(',', '.')) || 0,
-            title: reviewEl.querySelector('[data-hook="review-title"] span:last-child')?.textContent?.trim() || '',
-            content: reviewEl.querySelector('[data-hook="review-body"] span')?.textContent?.trim() || '',
-            date: reviewEl.querySelector('[data-hook="review-date"]')?.textContent?.trim() || '',
-            verified: !!reviewEl.querySelector('[data-hook="avp-badge"]'),
-            helpful: parseInt(reviewEl.querySelector('[data-hook="helpful-vote-statement"]')?.textContent?.match(/\d+/)?.[0]) || 0
+            author: authorEl?.textContent?.trim() || 'Anonymous',
+            rating: parseInt(ratingEl?.className?.match(/a-star-(\d)/)?.[1]) || 5,
+            title: titleEl?.textContent?.trim() || '',
+            content: contentEl?.textContent?.trim() || '',
+            date: dateEl?.textContent?.trim() || '',
+            images: [],
+            verified: !!reviewEl.querySelector('[data-hook="avp-badge"]')
           };
 
           // Review images
-          const images = [];
           reviewEl.querySelectorAll('[data-hook="review-image-tile"] img').forEach(img => {
-            if (img.src && !img.src.includes('sprite')) {
-              images.push(img.src.replace(/\._[A-Z]{2}\d+_\./, '._SL500_.'));
+            if (img.src && this.isValidAmazonImage(img.src)) {
+              review.images.push(this.normalizeImageUrl(img.src));
             }
           });
-          review.images = images;
 
           if (review.content || review.title) {
             reviews.push(review);
           }
         });
 
-        // Add summary as first item
-        if (rating) {
-          reviews.unshift({
-            type: 'summary',
-            averageRating: parseFloat(rating),
-            totalCount: reviewCount,
-            distribution: this.extractRatingDistribution()
-          });
-        }
-
       } catch (e) {
         console.warn('[ShopOpti+ Amazon] Review extraction error:', e);
       }
 
       return reviews.slice(0, 50);
-    }
-
-    extractRatingDistribution() {
-      const distribution = {};
-      document.querySelectorAll('#histogramTable tr, .a-histogram-row').forEach(row => {
-        const stars = row.querySelector('.a-text-right, td:first-child')?.textContent?.match(/(\d)/)?.[1];
-        const percent = row.querySelector('.a-nowrap, td:last-child')?.textContent?.match(/(\d+)%/)?.[1];
-        if (stars && percent) {
-          distribution[stars] = parseInt(percent);
-        }
-      });
-      return distribution;
     }
 
     /**
@@ -559,46 +662,49 @@
 
       try {
         // Product details table
-        document.querySelectorAll('#productDetails_detailBullets_sections1 tr, #prodDetails tr').forEach(row => {
-          const key = row.querySelector('th')?.textContent?.trim();
-          const value = row.querySelector('td')?.textContent?.trim();
-          if (key && value) {
-            specs[key] = value;
-          }
-        });
-
-        // Detail bullets
-        document.querySelectorAll('#detailBullets_feature_div li, #productDetails_techSpec_section_1 tr').forEach(el => {
-          const text = el.textContent?.trim();
-          const colonIndex = text?.indexOf(':');
-          if (colonIndex > 0) {
-            const key = text.substring(0, colonIndex).trim();
-            const value = text.substring(colonIndex + 1).trim();
+        document.querySelectorAll('#productDetails_detailBullets_sections1 tr, #productDetails_techSpec_section_1 tr').forEach(row => {
+          const th = row.querySelector('th');
+          const td = row.querySelector('td');
+          if (th && td) {
+            const key = th.textContent.trim().replace(/\s+/g, ' ');
+            const value = td.textContent.trim().replace(/\s+/g, ' ');
             if (key && value) {
               specs[key] = value;
             }
           }
         });
 
-        // Technical specs
-        document.querySelectorAll('#tech-specs-desktop tr, .tech-spec-table tr').forEach(row => {
-          const key = row.querySelector('th, td:first-child')?.textContent?.trim();
-          const value = row.querySelector('td:last-child')?.textContent?.trim();
-          if (key && value && key !== value) {
-            specs[key] = value;
+        // Technical details
+        document.querySelectorAll('#technicalSpecifications_section_1 tr').forEach(row => {
+          const cells = row.querySelectorAll('th, td');
+          if (cells.length >= 2) {
+            specs[cells[0].textContent.trim()] = cells[1].textContent.trim();
+          }
+        });
+
+        // Detail bullets
+        document.querySelectorAll('#detailBullets_feature_div li span').forEach(span => {
+          const text = span.textContent?.trim();
+          const colonIndex = text?.indexOf(':');
+          if (colonIndex > 0) {
+            specs[text.substring(0, colonIndex).trim()] = text.substring(colonIndex + 1).trim();
           }
         });
 
       } catch (e) {
-        console.warn('[ShopOpti+ Amazon] Specs extraction error:', e);
+        console.warn('[ShopOpti+ Amazon] Specifications extraction error:', e);
       }
 
       return specs;
     }
   }
 
-  // Export to global scope
-  window.ShopOptiAmazonExtractor = AmazonExtractor;
-  console.log('[ShopOpti+] Amazon Extractor v5.1.0 loaded');
+  // Register with ExtractorRegistry
+  if (window.ExtractorRegistry) {
+    window.ExtractorRegistry.register('amazon', AmazonExtractor);
+  }
 
+  window.AmazonExtractor = AmazonExtractor;
+  window.ShopOptiAmazonExtractor = AmazonExtractor;
+  console.log('[ShopOpti+] Amazon Extractor v5.7.0 loaded');
 })();
