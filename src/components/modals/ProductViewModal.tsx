@@ -735,7 +735,14 @@ export function ProductViewModal({
                           Dupliquer
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => {}} className="gap-2">
+                      <DropdownMenuItem onClick={() => {
+                        const productUrl = `${window.location.origin}/products/${product.id}`;
+                        navigator.clipboard.writeText(productUrl);
+                        toast({
+                          title: 'Lien copié',
+                          description: 'Le lien a été copié dans le presse-papier'
+                        });
+                      }} className="gap-2">
                         <Share2 className="h-4 w-4" />
                         Partager
                       </DropdownMenuItem>
