@@ -242,6 +242,112 @@
     }
 
     /**
+     * Show enhanced preview before import
+     * Integrates with Quick Import mode if available
+     * @param {string} jobId - Job ID to show preview for
+     * @returns {Promise<{action: string, mode: string}>}
+     */
+    async showPreview(jobId) {
+      const job = this.completedJobs.get(jobId) || this.activeJobs.get(jobId);
+      
+      if (!job || !job.result) {
+        throw this.createError('JOB_NOT_FOUND', `Job ${jobId} not found or not ready`);
+      }
+
+      const product = job.result.product;
+      const validation = job.result.validation;
+
+      // Check Quick Import availability
+      const quickImport = window.ShopOptiQuickImport;
+      const canQuickImport = quickImport?.canQuickImport(validation)?.canQuickImport || false;
+
+      // Use Enhanced Preview if available
+      if (window.ShopOptiEnhancedPreview) {
+        const result = await window.ShopOptiEnhancedPreview.show(product, validation, {
+          showQuickImport: canQuickImport
+        });
+
+        if (result.action === 'import') {
+          return this.confirmImport(jobId, { mode: result.mode });
+        }
+
+        return result;
+      }
+
+      // Fallback to basic PreImportDialog
+      if (window.ShopOptiPreImportDialog) {
+        const confirmed = await window.ShopOptiPreImportDialog.show(product, validation);
+        if (confirmed) {
+          return this.confirmImport(jobId);
+        }
+        return { action: 'cancel' };
+      }
+
+      // No dialog available, auto-confirm if valid
+      if (validation.canImport) {
+        return this.confirmImport(jobId);
+      }
+
+      throw this.createError('NO_DIALOG', 'No preview dialog available and product requires confirmation');
+    }
+
+    /**
+     * Quick import (bypass preview for power users)
+     * @param {string} url - URL to import
+     * @param {Object} options - Import options
+     * @returns {Promise<Object>}
+     */
+    async quickImport(url, options = {}) {
+      const quickImport = window.ShopOptiQuickImport;
+      
+      if (!quickImport?.enabled) {
+        throw this.createError('QUICK_IMPORT_DISABLED', 'Quick import mode is not enabled');
+      }
+
+      // Notify UI manager if available
+      window.ShopOptiUI?.setState('importing', { message: 'Import rapide...' });
+
+      try {
+        // Extract product
+        const result = await this.extract(url, { ...options, skipPreview: true });
+
+        // Check if can quick import
+        const canQuick = quickImport.canQuickImport(result.validation);
+        if (!canQuick.canQuickImport) {
+          // Fall back to preview
+          window.ShopOptiUI?.toast(canQuick.reason, 'warning');
+          return this.showPreview(result.metadata.jobId);
+        }
+
+        // Apply quick settings and import
+        const modifiedProduct = quickImport.applyQuickSettings(result.product, options.priceRules);
+        const importResult = await this.executeImport(modifiedProduct, options);
+
+        // Record in history
+        await quickImport.recordImport(modifiedProduct, result.platform?.key);
+
+        // Show success
+        if (quickImport.settings.showSuccessNotification) {
+          window.ShopOptiUI?.toast('Produit importé avec succès !', 'success');
+        }
+
+        window.ShopOptiUI?.setState('success');
+
+        return {
+          success: true,
+          product: modifiedProduct,
+          importResult,
+          mode: 'quick'
+        };
+
+      } catch (error) {
+        window.ShopOptiUI?.setState('error');
+        window.ShopOptiUI?.toast(error.message, 'error');
+        throw error;
+      }
+    }
+
+    /**
      * Confirm import after validation warnings
      */
     async confirmImport(jobId, options = {}) {
@@ -251,21 +357,37 @@
         throw this.createError('JOB_NOT_FOUND', `Job ${jobId} not found`);
       }
 
-      if (job.status !== STATUS.AWAITING_CONFIRMATION) {
-        throw this.createError('INVALID_STATE', `Job ${jobId} is not awaiting confirmation`);
+      if (job.status !== STATUS.AWAITING_CONFIRMATION && job.status !== STATUS.COMPLETED) {
+        throw this.createError('INVALID_STATE', `Job ${jobId} is not ready for import`);
       }
 
       job.status = STATUS.IMPORTING;
       this.notifyListeners('import_started', job);
 
+      // Notify UI
+      window.ShopOptiUI?.setState('importing', { message: 'Import en cours...' });
+
       try {
+        // Apply quick import settings if in quick mode
+        let productToImport = job.result.product;
+        if (options.mode === 'quick' && window.ShopOptiQuickImport) {
+          productToImport = window.ShopOptiQuickImport.applyQuickSettings(productToImport, options.priceRules);
+        }
+
         // Proceed with import
-        const importResult = await this.executeImport(job.result.product, options);
+        const importResult = await this.executeImport(productToImport, options);
         
         job.status = STATUS.COMPLETED;
         job.importResult = importResult;
         
         this.notifyListeners('import_completed', job);
+        window.ShopOptiUI?.setState('success');
+        window.ShopOptiUI?.toast('Import réussi !', 'success');
+
+        // Record in quick import history
+        if (options.mode === 'quick' && window.ShopOptiQuickImport) {
+          await window.ShopOptiQuickImport.recordImport(productToImport, job.platform?.key);
+        }
         
         return importResult;
 
@@ -274,6 +396,8 @@
         job.error = this.createError(ERROR_CODES.IMPORT_FAILED, error.message);
         
         this.notifyListeners('import_failed', job);
+        window.ShopOptiUI?.setState('error');
+        window.ShopOptiUI?.toast(`Erreur: ${error.message}`, 'error');
         
         throw job.error;
       }

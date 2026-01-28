@@ -2779,3 +2779,156 @@ body::-webkit-scrollbar-thumb {
   color: var(--primary);
   border-color: var(--primary);
 }
+
+/* ============================================
+   QUICK IMPORT MODE STYLES (Phase B UX)
+   ============================================ */
+
+.quick-import-section {
+  margin: 12px 16px;
+}
+
+.quick-import-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.08) 100%);
+  border: 1px solid var(--so-success);
+  border-radius: var(--so-radius);
+  animation: quickImportPulse 2s ease-in-out infinite;
+}
+
+.quick-import-banner.disabled {
+  background: var(--so-bg-elevated);
+  border-color: var(--so-border);
+  animation: none;
+}
+
+@keyframes quickImportPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+.quick-import-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--so-gradient-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.quick-import-banner.disabled .quick-import-icon-wrap {
+  background: var(--so-bg-hover);
+  color: var(--so-text-muted);
+}
+
+.quick-import-text {
+  flex: 1;
+}
+
+.quick-import-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--so-success);
+  margin-bottom: 2px;
+}
+
+.quick-import-banner.disabled .quick-import-title {
+  color: var(--so-text);
+}
+
+.quick-import-desc {
+  font-size: 11px;
+  color: var(--so-text-secondary);
+}
+
+/* Enhanced Preview Trigger */
+.preview-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--so-bg-elevated);
+  border: 1px solid var(--so-border);
+  border-radius: var(--so-radius-sm);
+  color: var(--so-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--so-transition);
+  width: 100%;
+}
+
+.preview-trigger-btn:hover {
+  border-color: var(--so-primary);
+  background: rgba(139, 92, 246, 0.05);
+}
+
+.preview-trigger-btn .preview-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--so-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.preview-trigger-btn .preview-arrow {
+  margin-left: auto;
+  color: var(--so-text-muted);
+}
+
+/* Import Mode Selector */
+.import-mode-selector {
+  display: flex;
+  gap: 8px;
+  margin: 12px 16px;
+}
+
+.import-mode-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--so-radius-sm);
+  border: 2px solid var(--so-border);
+  background: var(--so-bg-secondary);
+  cursor: pointer;
+  transition: var(--so-transition);
+  text-align: center;
+}
+
+.import-mode-btn:hover {
+  border-color: var(--so-primary);
+}
+
+.import-mode-btn.active {
+  border-color: var(--so-primary);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+}
+
+.import-mode-btn .mode-icon {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.import-mode-btn .mode-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--so-text);
+  display: block;
+}
+
+.import-mode-btn .mode-desc {
+  font-size: 10px;
+  color: var(--so-text-muted);
+}
+
+.import-mode-btn.active .mode-label {
+  color: var(--so-primary);
+}
