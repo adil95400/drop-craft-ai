@@ -1,7 +1,7 @@
 /**
- * ShopOpti+ Shein Extractor v5.1.0
+ * ShopOpti+ Shein Extractor v5.7.0
  * High-fidelity extraction for Shein product pages
- * Extracts: Images, Variants (color/size), Videos, Reviews, Specifications
+ * Extends BaseExtractor - Extracts: Images, Variants (color/size), Videos, Reviews, Specifications
  */
 
 (function() {
@@ -10,16 +10,61 @@
   if (window.__shopoptiSheinExtractorLoaded) return;
   window.__shopoptiSheinExtractorLoaded = true;
 
-  class SheinExtractor {
+  const BaseExtractor = window.ShopOptiBaseExtractor;
+
+  class SheinExtractor extends (BaseExtractor || Object) {
     constructor() {
+      if (BaseExtractor) super();
       this.platform = 'shein';
+      this.version = '5.7.0';
       this.productId = this.extractProductId();
       this.pageData = null;
+      this.interceptedData = {};
+      this.setupNetworkInterception();
     }
 
-    /**
-     * Extract product ID from URL
-     */
+    setupNetworkInterception() {
+      if (this._interceptorActive) return;
+      this._interceptorActive = true;
+
+      const self = this;
+      const originalFetch = window.fetch;
+      
+      window.fetch = async function(...args) {
+        const response = await originalFetch.apply(this, args);
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        
+        if (url && self.isRelevantRequest(url)) {
+          try {
+            const clone = response.clone();
+            const data = await clone.json();
+            self.processInterceptedData(url, data);
+          } catch (e) {}
+        }
+        
+        return response;
+      };
+    }
+
+    isRelevantRequest(url) {
+      if (!url) return false;
+      return url.includes('/api/') || 
+             url.includes('product') || 
+             url.includes('goods') ||
+             url.includes('comment');
+    }
+
+    processInterceptedData(url, data) {
+      if (url.includes('comment')) {
+        this.interceptedData.reviews = data;
+      } else if (url.includes('goods') || url.includes('product')) {
+        this.interceptedData.product = data;
+        if (data.info || data.data) {
+          this.pageData = data.info || data.data;
+        }
+      }
+    }
+
     extractProductId() {
       const patterns = [
         /-p-(\d+)\.html/,
@@ -35,13 +80,17 @@
       return null;
     }
 
-    /**
-     * Try to get page data from window objects
-     */
+    getPlatform() {
+      return 'shein';
+    }
+
+    getExternalId() {
+      return this.productId;
+    }
+
     getPageData() {
       if (this.pageData) return this.pageData;
 
-      // Try common Shein data objects
       const dataKeys = ['productIntroData', 'goodsDetailv2Info', '__INITIAL_DATA__', 'gbProductInfo'];
 
       for (const key of dataKeys) {
@@ -56,7 +105,6 @@
       for (const script of scripts) {
         const content = script.textContent;
         
-        // productIntroData pattern
         const productMatch = content.match(/productIntroData\s*=\s*(\{[\s\S]*?\});/);
         if (productMatch) {
           try {
@@ -65,7 +113,6 @@
           } catch (e) {}
         }
 
-        // __INITIAL_DATA__ pattern
         const initialMatch = content.match(/__INITIAL_DATA__\s*=\s*(\{[\s\S]*?\});/);
         if (initialMatch) {
           try {
@@ -78,11 +125,8 @@
       return null;
     }
 
-    /**
-     * Main extraction method
-     */
     async extractComplete() {
-      console.log('[ShopOpti+ Shein] Starting extraction, Product ID:', this.productId);
+      console.log('[ShopOpti+ Shein v5.7.0] Starting extraction, Product ID:', this.productId);
 
       this.getPageData();
 
@@ -100,6 +144,7 @@
         external_id: this.productId,
         url: window.location.href,
         platform: 'shein',
+        version: this.version,
         extractedAt: new Date().toISOString(),
         ...basicInfo,
         ...pricing,
@@ -110,7 +155,7 @@
         specifications
       };
 
-      console.log('[ShopOpti+ Shein] Extraction complete:', {
+      console.log('[ShopOpti+ Shein v5.7.0] Extraction complete:', {
         title: productData.title?.substring(0, 50),
         images: images.length,
         variants: variants.length
@@ -119,9 +164,6 @@
       return productData;
     }
 
-    /**
-     * Extract basic product info
-     */
     async extractBasicInfo() {
       // From page data
       if (this.pageData?.detail) {
@@ -149,6 +191,7 @@
         '[class*="product-name"]',
         '.goods-title',
         'h1[class*="title"]',
+        '.product-intro__info h1',
         'h1'
       ];
 
@@ -179,9 +222,6 @@
       return '';
     }
 
-    /**
-     * Extract pricing
-     */
     async extractPricing() {
       let price = 0;
       let originalPrice = null;
@@ -205,7 +245,8 @@
           '.product-intro__head-price .from',
           '[class*="price"] [class*="current"]',
           '.goods-price',
-          '[class*="sale-price"]'
+          '[class*="sale-price"]',
+          '.price-wrapper .original'
         ];
 
         for (const sel of priceSelectors) {
@@ -248,9 +289,6 @@
       return match ? parseFloat(match[0]) : 0;
     }
 
-    /**
-     * Extract images
-     */
     async extractImages() {
       const images = new Set();
 
@@ -278,7 +316,8 @@
         '.product-intro__thumbs-item img',
         '[class*="goods-gallery"] img',
         '.swiper-slide img',
-        '[class*="carousel"] img'
+        '[class*="carousel"] img',
+        '.product-intro__head-image img'
       ];
 
       for (const sel of imageSelectors) {
@@ -302,19 +341,15 @@
     normalizeImageUrl(src) {
       if (!src) return null;
 
-      // Ensure HTTPS
       if (src.startsWith('//')) src = 'https:' + src;
 
-      // Get high-res version (remove thumbnail suffix)
+      // Get high-res version
       src = src.replace(/_thumbnail_\d+x\d+/, '');
       src = src.replace(/\?.*$/, '');
 
       return src;
     }
 
-    /**
-     * Extract product videos
-     */
     async extractVideos() {
       const videos = [];
 
@@ -340,15 +375,12 @@
       return videos.slice(0, 10);
     }
 
-    /**
-     * Extract product variants (color, size)
-     */
     async extractVariants() {
       const variants = [];
 
       // From page data - Colors
       if (this.pageData?.detail?.multiColor || this.pageData?.attrList) {
-        const colors = this.pageData.detail.multiColor || this.pageData.attrList?.color || [];
+        const colors = this.pageData.detail?.multiColor || this.pageData.attrList?.color || [];
         colors.forEach(color => {
           variants.push({
             id: color.goods_id?.toString() || color.id,
@@ -362,7 +394,7 @@
 
       // From page data - Sizes
       if (this.pageData?.detail?.attrSizeList || this.pageData?.sizeList) {
-        const sizes = this.pageData.detail.attrSizeList || this.pageData.sizeList || [];
+        const sizes = this.pageData.detail?.attrSizeList || this.pageData.sizeList || [];
         sizes.forEach(size => {
           variants.push({
             id: size.attr_id?.toString() || size.id,
@@ -410,9 +442,6 @@
       return variants;
     }
 
-    /**
-     * Extract product reviews
-     */
     async extractReviews() {
       const reviews = [];
 
@@ -478,9 +507,6 @@
       return 5;
     }
 
-    /**
-     * Extract product specifications
-     */
     async extractSpecifications() {
       const specs = {};
 
@@ -504,8 +530,12 @@
     }
   }
 
-  // Export to global scope
-  window.ShopOptiSheinExtractor = SheinExtractor;
-  console.log('[ShopOpti+] Shein Extractor v5.1.0 loaded');
+  // Register with ExtractorRegistry
+  if (window.ExtractorRegistry) {
+    window.ExtractorRegistry.register('shein', SheinExtractor);
+  }
 
+  window.SheinExtractor = SheinExtractor;
+  window.ShopOptiSheinExtractor = SheinExtractor;
+  console.log('[ShopOpti+] Shein Extractor v5.7.0 loaded');
 })();

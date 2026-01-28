@@ -1,7 +1,7 @@
 /**
- * ShopOpti+ AliExpress Extractor v5.1.0
+ * ShopOpti+ AliExpress Extractor v5.7.0
  * High-fidelity extraction for AliExpress product pages
- * Extracts: Images (800x800), Variants, Videos, Reviews, Specifications
+ * Extends BaseExtractor - Extracts: Images (800x800), Variants, Videos, Reviews, Specifications
  */
 
 (function() {
@@ -10,11 +10,62 @@
   if (window.__shopoptiAliExpressExtractorLoaded) return;
   window.__shopoptiAliExpressExtractorLoaded = true;
 
-  class AliExpressExtractor {
+  const BaseExtractor = window.ShopOptiBaseExtractor;
+
+  class AliExpressExtractor extends (BaseExtractor || Object) {
     constructor() {
+      if (BaseExtractor) super();
       this.platform = 'aliexpress';
+      this.version = '5.7.0';
       this.productId = this.extractProductId();
       this.pageData = null;
+      this.interceptedData = {};
+      this.setupNetworkInterception();
+    }
+
+    /**
+     * Setup network interception for SPA data capture
+     */
+    setupNetworkInterception() {
+      if (this._interceptorActive) return;
+      this._interceptorActive = true;
+
+      const self = this;
+      const originalFetch = window.fetch;
+      
+      window.fetch = async function(...args) {
+        const response = await originalFetch.apply(this, args);
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        
+        if (url && self.isRelevantRequest(url)) {
+          try {
+            const clone = response.clone();
+            const data = await clone.json();
+            self.processInterceptedData(url, data);
+          } catch (e) {}
+        }
+        
+        return response;
+      };
+    }
+
+    isRelevantRequest(url) {
+      if (!url) return false;
+      return url.includes('/api/') || 
+             url.includes('product') || 
+             url.includes('sku') ||
+             url.includes('review') ||
+             url.includes('feedback');
+    }
+
+    processInterceptedData(url, data) {
+      if (url.includes('review') || url.includes('feedback')) {
+        this.interceptedData.reviews = data;
+      } else if (url.includes('sku')) {
+        this.interceptedData.skus = data;
+      } else {
+        this.interceptedData.product = data;
+      }
     }
 
     /**
@@ -37,16 +88,23 @@
       return null;
     }
 
+    getPlatform() {
+      return 'aliexpress';
+    }
+
+    getExternalId() {
+      return this.productId;
+    }
+
     /**
      * Try to get page data from window objects
      */
     getPageData() {
       if (this.pageData) return this.pageData;
 
-      // Try common AliExpress data objects
       const dataKeys = [
         'runParams', 'detailData', 'pageData', 
-        '__INITIAL_STATE__', 'productData'
+        '__INITIAL_STATE__', 'productData', 'window.runParams'
       ];
 
       for (const key of dataKeys) {
@@ -56,7 +114,7 @@
         }
       }
 
-      // Try parsing from script tags
+      // Parse from script tags
       const scripts = document.querySelectorAll('script:not([src])');
       for (const script of scripts) {
         const content = script.textContent;
@@ -78,6 +136,15 @@
             return this.pageData;
           } catch (e) {}
         }
+
+        // window.__INIT_DATA__ pattern
+        const initMatch = content.match(/__INIT_DATA__\s*=\s*(\{[\s\S]*?\});/);
+        if (initMatch) {
+          try {
+            this.pageData = JSON.parse(initMatch[1]);
+            return this.pageData;
+          } catch (e) {}
+        }
       }
 
       return null;
@@ -87,9 +154,8 @@
      * Main extraction method
      */
     async extractComplete() {
-      console.log('[ShopOpti+ AliExpress] Starting extraction, Product ID:', this.productId);
+      console.log('[ShopOpti+ AliExpress v5.7.0] Starting extraction, Product ID:', this.productId);
 
-      // Try to get structured data first
       this.getPageData();
 
       const [basicInfo, pricing, images, videos, variants, reviews, specifications] = await Promise.all([
@@ -106,6 +172,7 @@
         external_id: this.productId,
         url: window.location.href,
         platform: 'aliexpress',
+        version: this.version,
         extractedAt: new Date().toISOString(),
         ...basicInfo,
         ...pricing,
@@ -116,7 +183,7 @@
         specifications
       };
 
-      console.log('[ShopOpti+ AliExpress] Extraction complete:', {
+      console.log('[ShopOpti+ AliExpress v5.7.0] Extraction complete:', {
         title: productData.title?.substring(0, 50),
         images: images.length,
         videos: videos.length,
@@ -157,6 +224,7 @@
         '.product-title',
         '.product-title-text',
         'h1[class*="title"]',
+        '.title--wrap--UUHae_g h1',
         'h1'
       ];
 
@@ -175,7 +243,8 @@
         '.store-name',
         '[class*="store-name"]',
         '.shop-name a',
-        '.store-header-name'
+        '.store-header-name',
+        '.store--info--oVYPqIY'
       ];
 
       for (const sel of selectors) {
@@ -193,7 +262,8 @@
         '.product-description',
         '[class*="description"]',
         '#product-description',
-        '.detail-desc'
+        '.detail-desc',
+        '.description--wrap--SHjiB_I'
       ];
 
       for (const sel of selectors) {
@@ -217,9 +287,9 @@
       // From page data
       if (this.pageData?.priceModule) {
         const priceModule = this.pageData.priceModule;
-        price = parseFloat(priceModule.minAmount?.value || priceModule.activityAmount?.value || 0);
+        price = parseFloat(priceModule.minAmount?.value || priceModule.activityAmount?.value || priceModule.formattedActivityPrice?.replace(/[^0-9.]/g, '') || 0);
         originalPrice = parseFloat(priceModule.maxAmount?.value || priceModule.originalAmount?.value || 0);
-        currency = priceModule.minAmount?.currency || 'USD';
+        currency = priceModule.minAmount?.currency || priceModule.currencyCode || 'USD';
         
         if (originalPrice <= price) originalPrice = null;
       }
@@ -231,7 +301,8 @@
           '[class*="price-current"]',
           '.uniform-banner-box-price',
           '[class*="product-price"] [class*="current"]',
-          '.es--wrap--erdmPRe'
+          '.es--wrap--erdmPRe',
+          '.price--current--I_0sLrN'
         ];
 
         for (const sel of priceSelectors) {
@@ -243,7 +314,7 @@
         }
 
         // Original price
-        const originalSelectors = ['.product-price-origin', '[class*="price-original"]', '[class*="del"]'];
+        const originalSelectors = ['.product-price-origin', '[class*="price-original"]', '[class*="del"]', '.price--original--F_xXPgr'];
         for (const sel of originalSelectors) {
           const el = document.querySelector(sel);
           if (el?.textContent) {
@@ -260,8 +331,8 @@
       const currencyEl = document.querySelector('[class*="currency"]');
       if (currencyEl?.textContent) {
         if (currencyEl.textContent.includes('€')) currency = 'EUR';
-        if (currencyEl.textContent.includes('$')) currency = 'USD';
-        if (currencyEl.textContent.includes('£')) currency = 'GBP';
+        else if (currencyEl.textContent.includes('$')) currency = 'USD';
+        else if (currencyEl.textContent.includes('£')) currency = 'GBP';
       }
 
       return { price, originalPrice, currency };
@@ -293,7 +364,9 @@
         '.images-view img',
         '[class*="gallery"] img',
         '.image-view-magnifier img',
-        '.slider--img--D7MJNPZ'
+        '.slider--img--D7MJNPZ',
+        '.pdp-info-right-image img',
+        '.magnifier--image--RHvmpe0'
       ];
 
       for (const sel of sliderSelectors) {
@@ -319,7 +392,6 @@
         for (const script of scripts) {
           const content = script.textContent;
           
-          // imagePathList pattern
           const pathListMatch = content.match(/imagePathList["']?\s*:\s*\[([^\]]+)\]/);
           if (pathListMatch) {
             const urls = pathListMatch[1].matchAll(/["']([^"']+alicdn[^"']+)["']/g);
@@ -336,18 +408,13 @@
     normalizeImageUrl(src) {
       if (!src) return null;
 
-      // Ensure HTTPS
       if (src.startsWith('//')) src = 'https:' + src;
 
       // Convert to 800x800 high-res
       src = src.replace(/_\d+x\d+\w*\./, '_800x800.');
       src = src.replace(/\.\d+x\d+\./, '.800x800.');
-      
-      // Remove size suffixes
       src = src.replace(/_[0-9]+x[0-9]+[a-z]*\.jpg/i, '.jpg');
       src = src.replace(/\.jpg_\d+x\d+\.jpg/i, '.jpg');
-
-      // Remove query params
       src = src.split('?')[0];
 
       return src;
@@ -418,8 +485,7 @@
 
       // DOM fallback
       if (variants.length === 0) {
-        // Color/Size swatches
-        document.querySelectorAll('[class*="sku-property"] [class*="item"], .sku-item').forEach(item => {
+        document.querySelectorAll('[class*="sku-property"] [class*="item"], .sku-item, .sku-property-item').forEach(item => {
           const img = item.querySelector('img');
           const title = item.getAttribute('title') || item.textContent?.trim();
           const id = item.dataset?.skuId || item.dataset?.value;
@@ -455,6 +521,24 @@
         });
       }
 
+      // Use intercepted data if available
+      if (this.interceptedData.reviews) {
+        // Process intercepted reviews
+        const feedbackData = this.interceptedData.reviews;
+        if (feedbackData.data?.evaViewList) {
+          feedbackData.data.evaViewList.forEach(eva => {
+            reviews.push({
+              author: eva.buyerName || 'Anonymous',
+              rating: eva.buyerEval || 5,
+              content: eva.buyerFeedback || '',
+              date: eva.evalDate || '',
+              country: eva.buyerCountry || '',
+              images: (eva.images || []).map(img => this.normalizeImageUrl(img))
+            });
+          });
+        }
+      }
+
       // DOM extraction for individual reviews
       document.querySelectorAll('.feedback-item, [class*="review-item"]').forEach(reviewEl => {
         const review = {
@@ -478,12 +562,6 @@
         }
       });
 
-      // Try AJAX endpoint for more reviews
-      if (reviews.length <= 1) {
-        const ajaxReviews = await this.fetchReviewsAjax();
-        reviews.push(...ajaxReviews);
-      }
-
       return reviews.slice(0, 50);
     }
 
@@ -497,26 +575,6 @@
         }
       }
       return 5;
-    }
-
-    async fetchReviewsAjax() {
-      try {
-        const response = await fetch(`https://feedback.aliexpress.com/pc/searchEvaluation.do?productId=${this.productId}&page=1&pageSize=20`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.data?.evaViewList) {
-            return data.data.evaViewList.map(r => ({
-              author: r.buyerName || 'Anonymous',
-              rating: parseInt(r.buyerEval) || 5,
-              content: r.buyerTranslationFeedback || r.buyerFeedback || '',
-              date: r.evalDate || '',
-              country: r.buyerCountry || '',
-              images: r.images || []
-            }));
-          }
-        }
-      } catch (e) {}
-      return [];
     }
 
     /**
@@ -533,15 +591,14 @@
       }
 
       // DOM fallback
-      document.querySelectorAll('.product-prop, [class*="specification"] li, [class*="property"] li').forEach(el => {
-        const keyEl = el.querySelector('.propName, [class*="name"]');
-        const valueEl = el.querySelector('.propValue, [class*="value"]');
-        
+      document.querySelectorAll('[class*="specification"] li, [class*="property-item"]').forEach(el => {
+        const keyEl = el.querySelector('[class*="name"], [class*="key"]');
+        const valueEl = el.querySelector('[class*="value"]');
         if (keyEl && valueEl) {
           specs[keyEl.textContent.trim()] = valueEl.textContent.trim();
         } else {
-          const text = el.textContent;
-          const colonIndex = text.indexOf(':');
+          const text = el.textContent?.trim();
+          const colonIndex = text?.indexOf(':');
           if (colonIndex > 0) {
             specs[text.substring(0, colonIndex).trim()] = text.substring(colonIndex + 1).trim();
           }
@@ -552,8 +609,12 @@
     }
   }
 
-  // Export to global scope
-  window.ShopOptiAliExpressExtractor = AliExpressExtractor;
-  console.log('[ShopOpti+] AliExpress Extractor v5.1.0 loaded');
+  // Register with ExtractorRegistry
+  if (window.ExtractorRegistry) {
+    window.ExtractorRegistry.register('aliexpress', AliExpressExtractor);
+  }
 
+  window.AliExpressExtractor = AliExpressExtractor;
+  window.ShopOptiAliExpressExtractor = AliExpressExtractor;
+  console.log('[ShopOpti+] AliExpress Extractor v5.7.0 loaded');
 })();

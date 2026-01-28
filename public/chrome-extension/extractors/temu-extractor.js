@@ -1,7 +1,7 @@
 /**
- * ShopOpti+ Temu Extractor v5.1.0
+ * ShopOpti+ Temu Extractor v5.7.0
  * High-fidelity extraction for Temu product pages
- * Extracts: Images, Variants, Videos, Reviews, Specifications
+ * Extends BaseExtractor - Extracts: Images, Variants, Videos, Reviews, Specifications
  */
 
 (function() {
@@ -10,22 +10,69 @@
   if (window.__shopoptiTemuExtractorLoaded) return;
   window.__shopoptiTemuExtractorLoaded = true;
 
-  class TemuExtractor {
+  const BaseExtractor = window.ShopOptiBaseExtractor;
+
+  class TemuExtractor extends (BaseExtractor || Object) {
     constructor() {
+      if (BaseExtractor) super();
       this.platform = 'temu';
+      this.version = '5.7.0';
       this.productId = this.extractProductId();
       this.pageData = null;
+      this.interceptedData = {};
+      this.setupNetworkInterception();
     }
 
-    /**
-     * Extract product ID from URL
-     */
+    setupNetworkInterception() {
+      if (this._interceptorActive) return;
+      this._interceptorActive = true;
+
+      const self = this;
+      const originalFetch = window.fetch;
+      
+      window.fetch = async function(...args) {
+        const response = await originalFetch.apply(this, args);
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        
+        if (url && self.isRelevantRequest(url)) {
+          try {
+            const clone = response.clone();
+            const data = await clone.json();
+            self.processInterceptedData(url, data);
+          } catch (e) {}
+        }
+        
+        return response;
+      };
+    }
+
+    isRelevantRequest(url) {
+      if (!url) return false;
+      return url.includes('/api/') || 
+             url.includes('goods') || 
+             url.includes('product') ||
+             url.includes('review');
+    }
+
+    processInterceptedData(url, data) {
+      if (url.includes('review')) {
+        this.interceptedData.reviews = data;
+      } else if (url.includes('goods') || url.includes('product')) {
+        this.interceptedData.product = data;
+        // Try to extract structured data
+        if (data.data || data.result) {
+          this.pageData = data.data || data.result;
+        }
+      }
+    }
+
     extractProductId() {
       const patterns = [
         /goods\.html\?goods_id=(\d+)/,
         /-g-(\d+)\.html/,
         /goodsId[=:](\d+)/,
-        /\/(\d{15,})\.html/
+        /\/(\d{15,})\.html/,
+        /goods_id=(\d+)/
       ];
 
       for (const pattern of patterns) {
@@ -36,14 +83,18 @@
       return null;
     }
 
-    /**
-     * Try to get page data from window objects
-     */
+    getPlatform() {
+      return 'temu';
+    }
+
+    getExternalId() {
+      return this.productId;
+    }
+
     getPageData() {
       if (this.pageData) return this.pageData;
 
-      // Try common Temu data objects
-      const dataKeys = ['__INITIAL_STATE__', 'rawData', 'initData', 'pageData'];
+      const dataKeys = ['__INITIAL_STATE__', 'rawData', 'initData', 'pageData', '__NEXT_DATA__'];
 
       for (const key of dataKeys) {
         if (window[key]) {
@@ -57,7 +108,6 @@
       for (const script of scripts) {
         const content = script.textContent;
         
-        // __INITIAL_STATE__ pattern
         const stateMatch = content.match(/__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\});/);
         if (stateMatch) {
           try {
@@ -66,7 +116,6 @@
           } catch (e) {}
         }
 
-        // window.rawData pattern
         const rawMatch = content.match(/window\.rawData\s*=\s*(\{[\s\S]*?\});/);
         if (rawMatch) {
           try {
@@ -79,11 +128,8 @@
       return null;
     }
 
-    /**
-     * Main extraction method
-     */
     async extractComplete() {
-      console.log('[ShopOpti+ Temu] Starting extraction, Product ID:', this.productId);
+      console.log('[ShopOpti+ Temu v5.7.0] Starting extraction, Product ID:', this.productId);
 
       this.getPageData();
 
@@ -101,6 +147,7 @@
         external_id: this.productId,
         url: window.location.href,
         platform: 'temu',
+        version: this.version,
         extractedAt: new Date().toISOString(),
         ...basicInfo,
         ...pricing,
@@ -111,7 +158,7 @@
         specifications
       };
 
-      console.log('[ShopOpti+ Temu] Extraction complete:', {
+      console.log('[ShopOpti+ Temu v5.7.0] Extraction complete:', {
         title: productData.title?.substring(0, 50),
         images: images.length,
         variants: variants.length
@@ -120,16 +167,13 @@
       return productData;
     }
 
-    /**
-     * Extract basic product info
-     */
     async extractBasicInfo() {
       // From page data
       if (this.pageData?.goods) {
         const goods = this.pageData.goods;
         return {
           title: goods.goodsName || goods.title || this.extractTitleFromDOM(),
-          brand: goods.brandName || goods.storeName || '',
+          brand: goods.brandName || goods.storeName || 'Temu',
           description: goods.desc || goods.description || this.extractDescriptionFromDOM(),
           sku: goods.goodsSn || this.productId
         };
@@ -149,6 +193,7 @@
         '.goods-title',
         '.product-title',
         '[data-testid="goods-title"]',
+        '.goods-detail-title',
         'h1'
       ];
 
@@ -196,9 +241,6 @@
       return '';
     }
 
-    /**
-     * Extract pricing
-     */
     async extractPricing() {
       let price = 0;
       let originalPrice = null;
@@ -218,7 +260,8 @@
           '[class*="price-current"]',
           '.goods-price',
           '[data-testid="price"]',
-          '[class*="salePrice"]'
+          '[class*="salePrice"]',
+          '.price-wrapper span'
         ];
 
         for (const sel of priceSelectors) {
@@ -259,9 +302,6 @@
       return match ? parseFloat(match[0]) : 0;
     }
 
-    /**
-     * Extract images
-     */
     async extractImages() {
       const images = new Set();
 
@@ -279,7 +319,8 @@
         '[class*="image-slider"] img',
         '.product-gallery img',
         '[class*="swiper"] img',
-        '[data-testid="gallery-image"] img'
+        '[data-testid="gallery-image"] img',
+        '.goods-detail-gallery img'
       ];
 
       for (const sel of imageSelectors) {
@@ -319,22 +360,16 @@
     normalizeImageUrl(src) {
       if (!src) return null;
 
-      // Ensure HTTPS
       if (src.startsWith('//')) src = 'https:' + src;
 
       // Get high-res version
       src = src.replace(/_\d+x\d+\./, '.');
       src = src.replace(/thumbnail_\d+/, 'thumbnail_800');
-
-      // Remove query params for dedup
       src = src.split('?')[0];
 
       return src;
     }
 
-    /**
-     * Extract product videos
-     */
     async extractVideos() {
       const videos = [];
 
@@ -373,9 +408,6 @@
       return videos.slice(0, 10);
     }
 
-    /**
-     * Extract product variants
-     */
     async extractVariants() {
       const variants = [];
 
@@ -412,9 +444,6 @@
       return variants;
     }
 
-    /**
-     * Extract product reviews
-     */
     async extractReviews() {
       const reviews = [];
 
@@ -468,9 +497,6 @@
       return 5;
     }
 
-    /**
-     * Extract product specifications
-     */
     async extractSpecifications() {
       const specs = {};
 
@@ -494,8 +520,12 @@
     }
   }
 
-  // Export to global scope
-  window.ShopOptiTemuExtractor = TemuExtractor;
-  console.log('[ShopOpti+] Temu Extractor v5.1.0 loaded');
+  // Register with ExtractorRegistry
+  if (window.ExtractorRegistry) {
+    window.ExtractorRegistry.register('temu', TemuExtractor);
+  }
 
+  window.TemuExtractor = TemuExtractor;
+  window.ShopOptiTemuExtractor = TemuExtractor;
+  console.log('[ShopOpti+] Temu Extractor v5.7.0 loaded');
 })();

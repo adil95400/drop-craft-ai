@@ -1,7 +1,7 @@
 /**
  * ShopOpti+ Shopify Extractor v5.7.0
  * High-fidelity extraction for any Shopify store
- * Uses Shopify's JSON API for reliable data capture
+ * Extends BaseExtractor - Uses Shopify's JSON API for reliable data capture
  */
 
 (function() {
@@ -10,11 +10,59 @@
   if (window.__shopoptiShopifyExtractorLoaded) return;
   window.__shopoptiShopifyExtractorLoaded = true;
 
-  class ShopifyExtractor {
+  const BaseExtractor = window.ShopOptiBaseExtractor;
+
+  class ShopifyExtractor extends (BaseExtractor || Object) {
     constructor() {
+      if (BaseExtractor) super();
       this.platform = 'shopify';
+      this.version = '5.7.0';
       this.productHandle = this.extractProductHandle();
       this.productData = null;
+      this.interceptedData = {};
+      this.setupNetworkInterception();
+    }
+
+    setupNetworkInterception() {
+      if (this._interceptorActive) return;
+      this._interceptorActive = true;
+
+      const self = this;
+      const originalFetch = window.fetch;
+      
+      window.fetch = async function(...args) {
+        const response = await originalFetch.apply(this, args);
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+        
+        if (url && self.isRelevantRequest(url)) {
+          try {
+            const clone = response.clone();
+            const data = await clone.json();
+            self.processInterceptedData(url, data);
+          } catch (e) {}
+        }
+        
+        return response;
+      };
+    }
+
+    isRelevantRequest(url) {
+      if (!url) return false;
+      return url.includes('/products/') || 
+             url.includes('product.json') ||
+             url.includes('/cart/') ||
+             url.includes('reviews');
+    }
+
+    processInterceptedData(url, data) {
+      if (url.includes('review')) {
+        this.interceptedData.reviews = data;
+      } else if (url.includes('.json')) {
+        if (data.product) {
+          this.productData = data.product;
+        }
+        this.interceptedData.product = data;
+      }
     }
 
     extractProductHandle() {
@@ -22,8 +70,16 @@
       return match ? match[1] : null;
     }
 
+    getPlatform() {
+      return 'shopify';
+    }
+
+    getExternalId() {
+      return this.productData?.id?.toString() || this.productHandle;
+    }
+
     async extractComplete() {
-      console.log('[ShopOpti+ Shopify] Starting extraction for product:', this.productHandle);
+      console.log('[ShopOpti+ Shopify v5.7.0] Starting extraction for product:', this.productHandle);
 
       // Fetch product JSON from Shopify API
       await this.fetchProductData();
@@ -41,6 +97,7 @@
         url: window.location.href,
         platform: 'shopify',
         storeDomain: window.location.hostname,
+        version: this.version,
         extractedAt: new Date().toISOString(),
         ...basicInfo,
         ...pricing,
@@ -48,11 +105,14 @@
         videos: await this.extractVideos(),
         variants,
         reviews,
-        metafields: await this.extractMetafields()
+        metafields: await this.extractMetafields(),
+        specifications: {}
       };
     }
 
     async fetchProductData() {
+      if (this.productData) return;
+
       try {
         // Try the JSON API endpoint
         const response = await fetch(`${window.location.origin}/products/${this.productHandle}.json`);
@@ -70,10 +130,21 @@
         
         if (content.includes('"product":') || content.includes('ShopifyAnalytics.meta.product')) {
           try {
-            const productMatch = content.match(/"product"\s*:\s*({[\s\S]+?})\s*[,}]/);
-            if (productMatch) {
-              this.productData = JSON.parse(productMatch[1]);
-              return;
+            // Various patterns for product data
+            const patterns = [
+              /"product"\s*:\s*(\{[\s\S]+?\})\s*[,}]/,
+              /var\s+meta\s*=\s*(\{[\s\S]*?"product"[\s\S]*?\});/,
+              /ShopifyAnalytics\.meta\.product\s*=\s*(\{[\s\S]*?\});/
+            ];
+
+            for (const pattern of patterns) {
+              const match = content.match(pattern);
+              if (match) {
+                try {
+                  this.productData = JSON.parse(match[1]);
+                  if (this.productData) return;
+                } catch (e) {}
+              }
             }
           } catch (e) {}
         }
@@ -87,7 +158,7 @@
                 title: ldData.name,
                 description: ldData.description,
                 vendor: ldData.brand?.name,
-                images: ldData.image ? [{ src: ldData.image }] : [],
+                images: ldData.image ? (Array.isArray(ldData.image) ? ldData.image.map(i => ({ src: i })) : [{ src: ldData.image }]) : [],
                 variants: ldData.offers ? [{
                   price: ldData.offers.price,
                   available: ldData.offers.availability?.includes('InStock')
@@ -135,10 +206,13 @@
 
       if (this.productData?.variants?.length > 0) {
         const variant = this.productData.variants[0];
-        price = parseFloat(variant.price) / 100 || parseFloat(variant.price) || 0;
+        // Handle both cents (Shopify API) and dollars (some themes)
+        const rawPrice = parseFloat(variant.price);
+        price = rawPrice > 1000 ? rawPrice / 100 : rawPrice;
         
         if (variant.compare_at_price) {
-          const comparePrice = parseFloat(variant.compare_at_price) / 100 || parseFloat(variant.compare_at_price);
+          const rawCompare = parseFloat(variant.compare_at_price);
+          const comparePrice = rawCompare > 1000 ? rawCompare / 100 : rawCompare;
           if (comparePrice > price) originalPrice = comparePrice;
         }
       } else {
@@ -195,13 +269,24 @@
       }
 
       // Gallery images
-      document.querySelectorAll('.product__media img, .product-gallery img, [class*="gallery"] img, [data-product-media-type="image"] img').forEach(img => {
-        let src = img.dataset.src || img.src;
-        if (src) {
-          src = src.replace(/_(pico|icon|thumb|small|compact|medium|large|grande|original|1024x1024|2048x2048)\./, '.');
-          if (!src.includes('placeholder')) images.add(src);
-        }
-      });
+      const gallerySelectors = [
+        '.product__media img',
+        '.product-gallery img',
+        '[class*="gallery"] img',
+        '[data-product-media-type="image"] img',
+        '.product__photos img',
+        '.product-single__media img'
+      ];
+
+      for (const sel of gallerySelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          let src = img.dataset.src || img.src;
+          if (src) {
+            src = src.replace(/_(pico|icon|thumb|small|compact|medium|large|grande|original|1024x1024|2048x2048)\./, '.');
+            if (!src.includes('placeholder')) images.add(src);
+          }
+        });
+      }
 
       // Featured image
       const featuredImg = document.querySelector('.product__media-item--featured img, .product-featured-image');
@@ -251,13 +336,21 @@
 
       if (this.productData?.variants) {
         this.productData.variants.forEach(variant => {
+          const rawPrice = parseFloat(variant.price);
+          const price = rawPrice > 1000 ? rawPrice / 100 : rawPrice;
+          
+          let compareAtPrice = null;
+          if (variant.compare_at_price) {
+            const rawCompare = parseFloat(variant.compare_at_price);
+            compareAtPrice = rawCompare > 1000 ? rawCompare / 100 : rawCompare;
+          }
+
           variants.push({
             id: variant.id?.toString(),
             title: variant.title,
             sku: variant.sku,
-            price: parseFloat(variant.price) / 100 || parseFloat(variant.price),
-            compareAtPrice: variant.compare_at_price ? 
-              (parseFloat(variant.compare_at_price) / 100 || parseFloat(variant.compare_at_price)) : null,
+            price: price,
+            compareAtPrice: compareAtPrice,
             available: variant.available,
             options: [variant.option1, variant.option2, variant.option3].filter(Boolean),
             image: variant.featured_image?.src
@@ -295,10 +388,39 @@
       const reviews = [];
 
       // Many Shopify stores use apps like Judge.me, Yotpo, Loox, etc.
-      // Try to extract from common review app structures
+      const reviewAppSelectors = {
+        'judgeme': { 
+          container: '.jdgm-rev', 
+          author: '.jdgm-rev__author', 
+          body: '.jdgm-rev__body',
+          rating: '[data-rating]',
+          date: '.jdgm-rev__timestamp'
+        },
+        'yotpo': {
+          container: '.yotpo-review',
+          author: '.yotpo-user-name',
+          body: '.content-review',
+          rating: '.sr-only',
+          date: '.yotpo-review-date'
+        },
+        'loox': {
+          container: '.loox-review',
+          author: '.loox-review-author',
+          body: '.loox-review-content',
+          rating: '.loox-rating',
+          date: '.loox-review-date'
+        },
+        'stamped': {
+          container: '.stamped-review',
+          author: '.author',
+          body: '.stamped-review-content-body',
+          rating: '[data-rating]',
+          date: '.created'
+        }
+      };
 
       // Rating summary
-      const ratingEl = document.querySelector('[class*="rating"] [class*="average"], .jdgm-prev-badge__stars, .yotpo-stars');
+      const ratingEl = document.querySelector('[class*="rating"] [class*="average"], .jdgm-prev-badge__stars, .yotpo-stars, .stamped-badge');
       const countEl = document.querySelector('[class*="review-count"], .jdgm-prev-badge__text, .yotpo-reviews-num');
       
       if (ratingEl) {
@@ -314,24 +436,15 @@
         });
       }
 
-      // Individual reviews (common patterns)
-      const reviewSelectors = [
-        '.jdgm-rev',
-        '.yotpo-review',
-        '.loox-review',
-        '.spr-review',
-        '[class*="review-item"]',
-        '.review'
-      ];
-
-      for (const selector of reviewSelectors) {
-        document.querySelectorAll(selector).forEach(reviewEl => {
-          const author = reviewEl.querySelector('[class*="author"], [class*="name"], .jdgm-rev__author')?.textContent?.trim() || 'Anonymous';
-          const starsEl = reviewEl.querySelector('[class*="stars"], [class*="rating"]');
+      // Extract reviews from various apps
+      for (const [appName, selectors] of Object.entries(reviewAppSelectors)) {
+        document.querySelectorAll(selectors.container).forEach(reviewEl => {
+          const author = reviewEl.querySelector(selectors.author)?.textContent?.trim() || 'Anonymous';
+          const starsEl = reviewEl.querySelector(selectors.rating);
           const stars = starsEl?.getAttribute('data-rating') || 
             starsEl?.querySelectorAll('.filled, .on, [class*="full"]').length || 5;
-          const content = reviewEl.querySelector('[class*="body"], [class*="content"], .jdgm-rev__body')?.textContent?.trim() || '';
-          const date = reviewEl.querySelector('[class*="date"], .jdgm-rev__timestamp')?.textContent?.trim() || '';
+          const content = reviewEl.querySelector(selectors.body)?.textContent?.trim() || '';
+          const date = reviewEl.querySelector(selectors.date)?.textContent?.trim() || '';
           
           const images = [];
           reviewEl.querySelectorAll('[class*="photo"] img, [class*="image"] img').forEach(img => {
@@ -345,7 +458,8 @@
               rating: parseInt(stars) || 5,
               content,
               date,
-              images
+              images,
+              source: appName
             });
           }
         });
@@ -374,4 +488,6 @@
   }
 
   window.ShopifyExtractor = ShopifyExtractor;
+  window.ShopOptiShopifyExtractor = ShopifyExtractor;
+  console.log('[ShopOpti+] Shopify Extractor v5.7.0 loaded');
 })();
