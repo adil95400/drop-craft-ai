@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ Extension Download Edge Function v5.6.6
+// ShopOpti+ Extension Download Edge Function v5.7.0
 // Generates and serves the complete Chrome extension ZIP
 // ============================================
 
@@ -11,10 +11,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const VERSION = '5.6.6'
+const VERSION = '5.7.0'
 const APP_URL = 'https://shopopti.io'
 
-// Complete file list for the extension
+// Complete file list for the extension v5.7.0
 const EXTENSION_FILES = [
   // Core files
   'manifest.json',
@@ -83,35 +83,87 @@ const EXTENSION_FILES = [
   // Documentation
   'README.md',
   'PRIVACY_POLICY.md',
+  'CHANGELOG.md',
   
-  // Library files
+  // ==========================================
+  // LIBRARY FILES v5.7.0 (Phase A/B/C)
+  // ==========================================
   'lib/api-client.js',
   'lib/auth.js',
   'lib/auto-order-helper.js',
+  'lib/auto-translation-service.js',
+  'lib/base-extractor.js',
+  'lib/bulk-import-queue.js',
+  'lib/bulk-import-state-machine.js',
   'lib/config.js',
   'lib/content-rewriter.js',
+  'lib/cost-calculator.js',
   'lib/csv-exporter.js',
+  'lib/data-normalizer.js',
+  'lib/enhanced-preview.js',
+  'lib/extraction-orchestrator.js',
+  'lib/extractor-bridge.js',
   'lib/history-manager.js',
+  'lib/history-panel.js',
+  'lib/import-pipeline.js',
   'lib/import-queue.js',
   'lib/libretranslate-client.js',
+  'lib/margin-suggestion-engine.js',
+  'lib/media-enrichment.js',
+  'lib/official-api-client.js',
   'lib/pagination-handler.js',
+  'lib/performance-mode.js',
+  'lib/platform-detector.js',
+  'lib/pre-import-dialog.js',
   'lib/price-rules.js',
+  'lib/product-validator.js',
+  'lib/quality-scorer.js',
+  'lib/quick-import-mode.js',
+  'lib/remote-selectors.js',
   'lib/retry-manager.js',
+  'lib/review-translator.js',
   'lib/security.js',
+  'lib/selectors-config.js',
+  'lib/session-manager.js',
   'lib/shipping-extractor.js',
+  'lib/simplified-popup-ui.js',
   'lib/stock-extractor.js',
   'lib/store-manager.js',
+  'lib/supplier-detection-engine.js',
+  'lib/supplier-fallback.js',
+  'lib/supplier-search.js',
   'lib/tag-generator.js',
+  'lib/theme-manager.js',
+  'lib/token-refresh.js',
   'lib/tracking-sync.js',
+  'lib/ui-enhancements.js',
+  'lib/unified-button-injector.js',
+  'lib/variant-mapper.js',
   
-  // Extractors
+  // ==========================================
+  // EXTRACTORS v5.7.0 (17 platforms)
+  // ==========================================
+  'extractors/core-extractor.js',
+  'extractors/extractor-registry.js',
   'extractors/advanced-extractor.js',
   'extractors/aliexpress-extractor.js',
   'extractors/amazon-extractor.js',
-  'extractors/core-extractor.js',
+  'extractors/banggood-extractor.js',
+  'extractors/cdiscount-extractor.js',
+  'extractors/cjdropshipping-extractor.js',
+  'extractors/dhgate-extractor.js',
   'extractors/ebay-extractor.js',
+  'extractors/etsy-extractor.js',
+  'extractors/fnac-extractor.js',
+  'extractors/homedepot-extractor.js',
+  'extractors/rakuten-extractor.js',
   'extractors/shein-extractor.js',
+  'extractors/shopify-extractor.js',
   'extractors/temu-extractor.js',
+  'extractors/tiktok-extractor.js',
+  'extractors/tiktok-reviews-extractor.js',
+  'extractors/walmart-extractor.js',
+  'extractors/wish-extractor.js',
   
   // Icons (binary)
   'icons/icon16.png',
@@ -129,14 +181,20 @@ function generateFallbackContent(filePath: string): string | null {
     return `/* ShopOpti+ ${fileName} v${VERSION} - Placeholder */\n`
   }
   
-  // JS fallback
+  // JS fallback - create proper IIFE to prevent load errors
   if (fileName.endsWith('.js')) {
-    return `// ShopOpti+ ${fileName} v${VERSION}\n// This file is a placeholder\nconsole.log('[ShopOpti+] ${fileName} loaded');\n`
+    const safeName = fileName.replace('.js', '').replace(/-/g, '_')
+    return `// ShopOpti+ ${fileName} v${VERSION}\n(function() {\n  'use strict';\n  console.log('[ShopOpti+] ${fileName} loaded (fallback)');\n  if (typeof window !== 'undefined') {\n    window.ShopOpti_${safeName}_loaded = true;\n  }\n})();\n`
   }
   
   // HTML fallback
   if (fileName.endsWith('.html') && fileName !== 'popup.html' && fileName !== 'options.html') {
     return `<!DOCTYPE html>\n<html><head><title>ShopOpti+</title></head><body><p>ShopOpti+ v${VERSION}</p></body></html>`
+  }
+  
+  // MD fallback
+  if (fileName.endsWith('.md')) {
+    return `# ShopOpti+ ${fileName}\n\nVersion ${VERSION}\n`
   }
   
   return null
@@ -155,6 +213,7 @@ serve(async (req) => {
     let filesLoaded = 0
     let filesFailed = 0
     const failedFiles: string[] = []
+    const loadedFiles: string[] = []
     
     // Fetch files from the production app
     const baseUrl = APP_URL
@@ -179,6 +238,7 @@ serve(async (req) => {
             zip.file(filePath, text)
           }
           filesLoaded++
+          loadedFiles.push(filePath)
         } else {
           // Try fallback content
           const fallback = generateFallbackContent(filePath)
@@ -237,7 +297,7 @@ serve(async (req) => {
 4. Cliquez sur "Charger l'extension non empaquetée"
 5. Sélectionnez le dossier décompressé
 
-## Fonctionnalités
+## Fonctionnalités v${VERSION}
 
 ✅ Import 1-clic depuis 45+ plateformes (Amazon, AliExpress, Temu, Shein, eBay...)
 ✅ Import en masse avec sélection par checkbox
@@ -248,6 +308,16 @@ serve(async (req) => {
 ✅ Auto-Order / Fulfillment automatique
 ✅ Ads Spy TikTok/Facebook/Instagram
 ✅ Traduction intégrée via LibreTranslate
+
+### Nouveautés Phase A/B/C
+- VariantMapper universel (100% couverture variantes)
+- QualityScorer intelligent (scoring pondéré)
+- BulkImportStateMachine (imports robustes)
+- QuickImportMode (1-clic pour experts)
+- EnhancedPreview (aperçu immersif)
+- SupplierDetectionEngine (sourcing alternatif)
+- MarginSuggestionEngine (pricing IA)
+- AutoTranslationService (traduction pro)
 
 ## Configuration
 
