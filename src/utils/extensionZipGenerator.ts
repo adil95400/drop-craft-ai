@@ -168,14 +168,35 @@ export async function generateExtensionZip(): Promise<void> {
   const zip = new JSZip();
   
   // Try multiple base paths for different environments
+  // Note: Vite's BASE_URL can differ between preview/published.
+  // We include it to avoid fetching from a wrong root.
+  const viteBase = (import.meta as any)?.env?.BASE_URL ?? '/';
+  const normalizedViteBase = viteBase.endsWith('/') ? viteBase.slice(0, -1) : viteBase;
+
   const basePaths = [
+    `${normalizedViteBase}/chrome-extension`,
     '/chrome-extension',
     './chrome-extension',
-    `${window.location.origin}/chrome-extension`
+    `${window.location.origin}${normalizedViteBase}/chrome-extension`,
+    `${window.location.origin}/chrome-extension`,
   ];
   
   let filesLoaded = 0;
   let filesFailed = 0;
+  const failedFiles: string[] = [];
+
+  // If any of these are missing, the extension will NOT load in Chrome.
+  // Keep this list minimal and strictly aligned with manifest references.
+  const requiredFiles = new Set<string>([
+    'manifest.json',
+    'background.js',
+    'content-script.js',
+    'lib/base-extractor.js',
+    'lib/platform-detector.js',
+    'lib/extractor-bridge.js',
+    'extractors/extractor-registry.js',
+    'extractors/core-extractor.js',
+  ]);
   
   toast.info(`Préparation de ${EXTENSION_FILES.length} fichiers...`);
   
@@ -217,16 +238,35 @@ export async function generateExtensionZip(): Promise<void> {
     if (!fileLoaded) {
       console.warn(`Could not load file: ${filePath}`);
       filesFailed++;
+      failedFiles.push(filePath);
     }
   }
   
-  // Check if we got enough files
+  // Hard fail if required files are missing (prevents producing a broken ZIP)
+  const missingRequired = [...requiredFiles].filter((f) => failedFiles.includes(f));
+  if (missingRequired.length > 0) {
+    const details = missingRequired.slice(0, 12).join(', ');
+    toast.error(
+      `Téléchargement annulé: fichiers requis introuvables (${missingRequired.length}). Ouvrez la console pour le détail.`
+    );
+    console.error('Extension ZIP generation aborted. Missing required files:', missingRequired);
+    console.error('All failed files:', failedFiles);
+    throw new Error(`Missing required extension files: ${details}`);
+  }
+
+  // Safety net: if *almost nothing* was fetched, likely wrong base path.
   if (filesLoaded < 10) {
-    toast.error('Erreur: Impossible de charger les fichiers de l\'extension');
+    toast.error(
+      "Erreur: impossible d'accéder aux fichiers /chrome-extension (base path incorrect ou assets non déployés)."
+    );
+    console.error('Not enough extension files could be loaded. Failed files:', failedFiles);
     throw new Error('Not enough extension files could be loaded');
   }
   
   console.log(`Loaded ${filesLoaded}/${EXTENSION_FILES.length} files (${filesFailed} failed)`);
+  if (filesFailed > 0) {
+    console.warn('Some optional extension files could not be loaded:', failedFiles);
+  }
 
   // Add installation README
   const readmeContent = `# ShopOpti+ Chrome Extension v${EXTENSION_VERSION}
