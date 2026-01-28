@@ -313,7 +313,7 @@ export function HelpCenter() {
                 key={link.title}
                 variant="outline"
                 className="h-auto py-3 justify-start"
-                onClick={() => {/* Navigate to link */}}
+                onClick={() => window.location.href = link.href}
               >
                 <link.icon className="h-4 w-4 mr-2 text-primary" />
                 <span className="text-sm">{link.title}</span>

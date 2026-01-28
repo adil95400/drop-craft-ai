@@ -32,8 +32,31 @@ export default function UpsellManager() {
     }
   })
 
-  const handleCreateRule = () => {
-    toast.success('Règle d\'upsell créée avec succès')
+  const handleCreateRule = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error('Non authentifié')
+        return
+      }
+      
+      // Créer la règle dans la base de données
+      const { error } = await supabase.from('automation_rules').insert({
+        user_id: user.id,
+        name: `Règle upsell - ${triggerType}`,
+        trigger_type: triggerType,
+        action_type: 'upsell',
+        trigger_config: { discount_percent: parseFloat(discountPercent) },
+        action_config: { trigger: triggerType },
+        is_active: true
+      })
+      
+      if (error) throw error
+      toast.success('Règle d\'upsell créée avec succès')
+    } catch (error) {
+      console.error('Erreur création règle:', error)
+      toast.error('Erreur lors de la création de la règle')
+    }
   }
 
   const upsellStrategies = [

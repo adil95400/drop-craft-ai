@@ -135,9 +135,28 @@ export const DeveloperDashboard = () => {
 
   const handlePublishExtension = async (extensionId: string) => {
     try {
-      // Simulate publishing process
-      toast.success('Extension publiée avec succès !')
+      const { supabase } = await import('@/integrations/supabase/client')
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        toast.error('Non authentifié')
+        return
+      }
+      
+      // Mettre à jour le statut de l'extension
+      const { error } = await supabase
+        .from('integrations')
+        .update({ 
+          status: 'pending_review',
+          config: { submitted_at: new Date().toISOString() }
+        })
+        .eq('id', extensionId)
+        .eq('user_id', user.id)
+      
+      if (error) throw error
+      toast.success('Extension soumise pour révision !')
     } catch (error) {
+      console.error('Erreur publication:', error)
       toast.error('Erreur lors de la publication')
     }
   }

@@ -44,19 +44,32 @@ export function PlatformConnectionCard({ platform }: PlatformConnectionCardProps
   const config = platformConfig[platform];
   const Icon = config.icon;
 
-  const handleConnect = () => {
-    // Simulate OAuth flow
-    const mockAccountData = {
-      accountId: `${platform}_${Math.random().toString(36).substr(2, 9)}`,
-      accountName: `My ${config.name} Account`,
-      accessToken: 'mock_access_token',
-      refreshToken: 'mock_refresh_token',
-      tokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      metadata: {}
-    };
-
-    connectPlatform();
-    setShowConnect(false);
+  const handleConnect = async () => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error('Non authentifié');
+        return;
+      }
+      
+      // Insérer la connexion dans la base de données
+      const { error } = await supabase.from('ad_accounts').insert({
+        user_id: user.id,
+        platform: platform,
+        name: `My ${config.name} Account`,
+        status: 'pending_auth',
+        credentials_encrypted: null // À remplir après OAuth réel
+      });
+      
+      if (error) throw error;
+      
+      connectPlatform();
+      setShowConnect(false);
+    } catch (error) {
+      console.error('Erreur connexion:', error);
+    }
   };
 
   return (
