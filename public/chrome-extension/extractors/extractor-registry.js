@@ -349,23 +349,31 @@
   };
 
   // Auto-register existing extractors
-  if (window.AliExpressExtractor) {
-    ExtractorRegistry.register('aliexpress', window.AliExpressExtractor);
-  }
-  if (window.AmazonExtractor) {
-    ExtractorRegistry.register('amazon', window.AmazonExtractor);
-  }
-  if (window.TikTokShopExtractor) {
-    ExtractorRegistry.register('tiktok_shop', window.TikTokShopExtractor);
-  }
-  if (window.TemuExtractor) {
-    ExtractorRegistry.register('temu', window.TemuExtractor);
-  }
-  if (window.SheinExtractor) {
-    ExtractorRegistry.register('shein', window.SheinExtractor);
-  }
-  if (window.EbayExtractor) {
-    ExtractorRegistry.register('ebay', window.EbayExtractor);
+  const autoRegisterExtractors = {
+    'aliexpress': 'AliExpressExtractor',
+    'amazon': 'AmazonExtractor',
+    'ebay': 'EbayExtractor',
+    'temu': 'TemuExtractor',
+    'shein': 'SheinExtractor',
+    'tiktok_shop': 'TikTokShopExtractor',
+    'walmart': 'WalmartExtractor',
+    'etsy': 'EtsyExtractor',
+    'cdiscount': 'CdiscountExtractor',
+    'fnac': 'FnacExtractor',
+    'rakuten': 'RakutenExtractor',
+    'shopify': 'ShopifyExtractor',
+    'cjdropshipping': 'CJDropshippingExtractor',
+    'banggood': 'BanggoodExtractor',
+    'dhgate': 'DHgateExtractor',
+    'wish': 'WishExtractor',
+    'homedepot': 'HomeDepotExtractor'
+  };
+
+  // Register all available extractors
+  for (const [platform, extractorName] of Object.entries(autoRegisterExtractors)) {
+    if (window[extractorName]) {
+      ExtractorRegistry.register(platform, window[extractorName]);
+    }
   }
 
   // Export
