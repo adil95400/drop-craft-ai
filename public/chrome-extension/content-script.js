@@ -427,26 +427,69 @@
     setButtonLoading(button, true);
     
     try {
-      const response = await sendMessage({
-        type: 'IMPORT_FROM_URL',
-        url,
-        options: { 
-          autoOptimize: true, 
-          extractReviews: true, 
-          extractVariants: true,
+      // USE NEW PIPELINE if available
+      if (window.ShopOptiPipeline) {
+        const result = await window.ShopOptiPipeline.processUrl(url, {
           targetStores: userStores.map(s => s.id)
-        }
-      });
-      
-      if (response.success) {
-        setButtonSuccess(button);
-        showToast(`✓ Produit importé!${response.productId ? ` (ID: ${response.productId.substring(0, 8)}...)` : ''}`, 'success');
-        sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId });
+        });
         
-        // Sync with SaaS
-        syncWithSaaS('product_imported', { productId: response.productId, url });
+        // Handle awaiting confirmation (validation warnings)
+        if (result.status === 'awaiting_confirmation') {
+          setButtonLoading(button, false);
+          
+          // Show pre-import dialog with validation results
+          if (window.ShopOptiPreImportDialog) {
+            const confirmed = await window.ShopOptiPreImportDialog.show(
+              result.product,
+              result.validation
+            );
+            
+            if (confirmed) {
+              setButtonLoading(button, true);
+              const importResult = await window.ShopOptiPipeline.confirmImport(result.jobId);
+              
+              if (importResult.success) {
+                setButtonSuccess(button);
+                showToast(`✓ Produit importé! (Score: ${result.validation.score}%)`, 'success');
+                syncWithSaaS('product_imported', { productId: importResult.product?.id, url });
+              } else {
+                throw new Error(importResult.error || 'Import échoué');
+              }
+            } else {
+              resetButton(button);
+              return;
+            }
+          }
+        } else if (result.success) {
+          setButtonSuccess(button);
+          const productId = result.product?.id || result.product?.product_id;
+          showToast(`✓ Produit importé! (Score: ${result.validation?.score || 100}%)`, 'success');
+          sendMessage({ type: 'PRODUCT_IMPORTED', productId });
+          syncWithSaaS('product_imported', { productId, url });
+        } else {
+          throw new Error(result.error || 'Import échoué');
+        }
       } else {
-        throw new Error(response.error || 'Import échoué');
+        // FALLBACK to legacy import
+        const response = await sendMessage({
+          type: 'IMPORT_FROM_URL',
+          url,
+          options: { 
+            autoOptimize: true, 
+            extractReviews: true, 
+            extractVariants: true,
+            targetStores: userStores.map(s => s.id)
+          }
+        });
+        
+        if (response.success) {
+          setButtonSuccess(button);
+          showToast(`✓ Produit importé!${response.productId ? ` (ID: ${response.productId.substring(0, 8)}...)` : ''}`, 'success');
+          sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId });
+          syncWithSaaS('product_imported', { productId: response.productId, url });
+        } else {
+          throw new Error(response.error || 'Import échoué');
+        }
       }
     } catch (error) {
       console.error('[ShopOpti+] Import error:', error);
