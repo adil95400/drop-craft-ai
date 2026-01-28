@@ -27,6 +27,7 @@ import { StockLevelsTable } from '@/components/stock/StockLevelsTable';
 import { StockMovementsLog } from '@/components/stock/StockMovementsLog';
 import { StockAlertsPanel } from '@/components/stock/StockAlertsPanel';
 import { VariantManager } from '@/components/stock/VariantManager';
+import { StockMovementDialog } from '@/components/stock/StockMovementDialog';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import {
   ChannableStatsGrid,
@@ -39,6 +40,7 @@ export default function StockManagementPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
+  const [movementDialogOpen, setMovementDialogOpen] = useState(false);
   
   const stats = useStockStats();
   const { data: alerts = [], refetch: refetchAlerts } = useStockAlerts();
@@ -86,7 +88,7 @@ export default function StockManagementPage() {
       id: 'add-movement',
       label: 'Nouveau mouvement',
       icon: Plus,
-      onClick: () => toast({ title: 'Mouvement de stock', description: 'Ouverture du formulaire' }),
+      onClick: () => setMovementDialogOpen(true),
       variant: 'primary'
     },
     {
@@ -134,7 +136,7 @@ export default function StockManagementPage() {
       }}
       actions={
         <div className="flex gap-2">
-          <Button onClick={() => toast({ title: 'Mouvement de stock' })} className="gap-2">
+          <Button onClick={() => setMovementDialogOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             Nouveau mouvement
           </Button>
@@ -145,6 +147,8 @@ export default function StockManagementPage() {
         </div>
       }
     >
+      {/* Stock Movement Dialog */}
+      <StockMovementDialog open={movementDialogOpen} onOpenChange={setMovementDialogOpen} />
       {/* Stats Grid */}
       <ChannableStatsGrid stats={channableStats} columns={4} compact />
 

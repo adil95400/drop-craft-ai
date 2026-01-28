@@ -4,12 +4,37 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useRealAdsManager } from '@/hooks/useRealAdsManager';
-import { Plus, Play, Pause, TrendingUp, DollarSign, Megaphone, Sparkles } from 'lucide-react';
+import { Plus, Play, Pause, TrendingUp, DollarSign, Megaphone, Sparkles, Loader2 } from 'lucide-react';
 import { CreateCampaignDialog } from './CreateCampaignDialog';
-
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 export function CampaignManager() {
   const { campaigns, isLoading } = useRealAdsManager();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [togglingCampaignId, setTogglingCampaignId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const handleToggleCampaignStatus = async (campaignId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+    setTogglingCampaignId(campaignId);
+    try {
+      const { error } = await supabase
+        .from('ad_campaigns')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', campaignId);
+      
+      if (error) throw error;
+      
+      toast.success(newStatus === 'active' ? 'Campagne activée' : 'Campagne mise en pause');
+      queryClient.invalidateQueries({ queryKey: ['ad-campaigns'] });
+    } catch (error) {
+      console.error('Toggle campaign error:', error);
+      toast.error('Impossible de modifier le statut');
+    } finally {
+      setTogglingCampaignId(null);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -82,18 +107,28 @@ export function CampaignManager() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => console.log('Pause', campaign.id)}
+                        onClick={() => handleToggleCampaignStatus(campaign.id, 'active')}
+                        disabled={togglingCampaignId === campaign.id}
                       >
-                        <Pause className="h-4 w-4" />
+                        {togglingCampaignId === campaign.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Pause className="h-4 w-4" />
+                        )}
                       </Button>
                     )}
                     {campaign.status === 'paused' && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => console.log('Play', campaign.id)}
+                        onClick={() => handleToggleCampaignStatus(campaign.id, 'paused')}
+                        disabled={togglingCampaignId === campaign.id}
                       >
-                        <Play className="h-4 w-4" />
+                        {togglingCampaignId === campaign.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
                       </Button>
                     )}
                   </div>

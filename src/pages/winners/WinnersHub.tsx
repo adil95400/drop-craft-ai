@@ -133,9 +133,14 @@ export default function WinnersHub() {
                 Import Masse
               </Button>
               <Button
-                onClick={() => toast({ title: "Sélectionnez 2-4 produits", description: "Cochez les produits dans la liste" })}
+                onClick={() => {
+                  if (selectedForComparison.length < 2) {
+                    toast({ title: "Sélectionnez 2-4 produits", description: "Cochez les produits dans la liste pour les comparer" });
+                  }
+                }}
                 variant="outline"
                 className="gap-2"
+                disabled={selectedForComparison.length >= 2}
               >
                 <GitCompare className="w-4 h-4" />
                 Comparer ({selectedForComparison.length})

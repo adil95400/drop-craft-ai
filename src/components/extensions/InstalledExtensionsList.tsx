@@ -3,7 +3,7 @@
  * Gestion, configuration et monitoring
  */
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,10 +14,26 @@ import {
 } from 'lucide-react'
 import { useExtensions } from '@/hooks/useExtensions'
 import { useToast } from '@/hooks/use-toast'
+import { ExtensionConfigDialog } from './ExtensionConfigDialog'
 
 export const InstalledExtensionsList: React.FC = () => {
   const { extensions, isLoading, toggleExtension, uninstallExtension } = useExtensions()
   const { toast } = useToast()
+  const [configDialogOpen, setConfigDialogOpen] = useState(false)
+  const [selectedExtension, setSelectedExtension] = useState<{
+    id: string;
+    name: string;
+    config: Record<string, any> | null;
+  } | null>(null)
+
+  const handleOpenConfig = (extension: any) => {
+    setSelectedExtension({
+      id: extension.id,
+      name: extension.name || 'Extension',
+      config: extension.config as Record<string, any> | null,
+    })
+    setConfigDialogOpen(true)
+  }
 
   const handleToggle = async (extensionId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
@@ -135,7 +151,7 @@ export const InstalledExtensionsList: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => console.log('Configure', extension.id)}
+                    onClick={() => handleOpenConfig(extension)}
                   >
                     <Settings className="w-4 h-4" />
                   </Button>
@@ -172,6 +188,13 @@ export const InstalledExtensionsList: React.FC = () => {
           </Card>
         )
       })}
+      
+      {/* Extension Config Dialog */}
+      <ExtensionConfigDialog
+        open={configDialogOpen}
+        onOpenChange={setConfigDialogOpen}
+        extension={selectedExtension}
+      />
     </div>
   )
 }
