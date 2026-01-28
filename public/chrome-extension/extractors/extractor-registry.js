@@ -307,9 +307,36 @@
 
     /**
      * Extract product using appropriate extractor
+     * Now integrates with the full pipeline (validation, normalization)
      */
     async extract(options = {}) {
       const platform = options.platform || this.detectPlatform();
+      
+      // Use ExtractionOrchestrator if available (preferred)
+      if (window.ExtractionOrchestrator && options.useOrchestrator !== false) {
+        console.log('[ExtractorRegistry] Delegating to ExtractionOrchestrator');
+        try {
+          const result = await window.ExtractionOrchestrator.extract(
+            window.location.href,
+            { ...options, platform }
+          );
+          return result.product;
+        } catch (e) {
+          console.warn('[ExtractorRegistry] Orchestrator failed, using direct extraction:', e);
+        }
+      }
+
+      // Use ExtractorBridge if available
+      if (window.ExtractorBridge && options.useBridge !== false) {
+        console.log('[ExtractorRegistry] Delegating to ExtractorBridge');
+        try {
+          return await window.ExtractorBridge.extract(window.location.href, options);
+        } catch (e) {
+          console.warn('[ExtractorRegistry] Bridge failed, using direct extraction:', e);
+        }
+      }
+
+      // Direct extraction fallback
       const extractor = this.getExtractor(platform);
       
       if (!extractor) {
@@ -327,8 +354,15 @@
         }
       }
       
-      // Fallback to scraping
-      return extractor.extractComplete();
+      // Direct scraping
+      const rawResult = await extractor.extractComplete();
+      
+      // Apply normalization if available
+      if (window.ShopOptiNormalizer) {
+        return window.ShopOptiNormalizer.normalize(rawResult, platform);
+      }
+      
+      return rawResult;
     },
 
     /**
@@ -345,6 +379,51 @@
       }
       
       return null;
+    },
+
+    /**
+     * Validate extracted product data
+     * @param {object} productData - Raw extracted data
+     * @returns {object} Validation result
+     */
+    validateProduct(productData) {
+      if (window.ShopOptiValidator) {
+        return window.ShopOptiValidator.validate(productData);
+      }
+      
+      // Basic validation fallback
+      const issues = [];
+      const warnings = [];
+      
+      if (!productData.title) issues.push({ field: 'title', message: 'Missing title' });
+      if (!productData.price) issues.push({ field: 'price', message: 'Missing price' });
+      if (!productData.images?.length) warnings.push({ field: 'images', message: 'No images' });
+      
+      return {
+        valid: issues.length === 0,
+        score: issues.length === 0 ? 80 : 30,
+        issues,
+        warnings
+      };
+    },
+
+    /**
+     * Get extraction capabilities for current platform
+     */
+    getExtractionCapabilities(platform = null) {
+      platform = platform || this.detectPlatform();
+      
+      if (window.ExtractorBridge) {
+        return window.ExtractorBridge.getCapabilities(platform);
+      }
+      
+      const config = this.getPlatformConfig(platform);
+      return {
+        supports: config.features || [],
+        reliability: config.apiAvailable ? 0.9 : 0.7,
+        hasApi: config.apiAvailable,
+        apiType: config.apiType
+      };
     }
   };
 
