@@ -95,6 +95,13 @@
         "lib/retry-manager.js",
         "lib/supplier-fallback.js",
         "lib/cost-calculator.js",
+        "lib/product-validator.js",
+        "lib/data-normalizer.js",
+        "lib/import-pipeline.js",
+        "lib/pre-import-dialog.js",
+        "lib/unified-button-injector.js",
+        "lib/bulk-import-queue.js",
+        "extractors/extractor-registry.js",
         "advanced-scraper.js",
         "content-script.js"
       ],
