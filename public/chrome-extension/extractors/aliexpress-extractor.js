@@ -201,12 +201,14 @@
       if (this.pageData) {
         const titleModule = this.pageData.titleModule || this.pageData.pageModule || {};
         const storeModule = this.pageData.storeModule || {};
+        const categoryModule = this.pageData.categoryModule || this.pageData.crossLinkModule || {};
 
         return {
           title: titleModule.subject || titleModule.title || this.extractTitleFromDOM(),
-          brand: storeModule.storeName || storeModule.companyId || '',
+          brand: storeModule.storeName || storeModule.companyId || this.extractBrandFromDOM(),
           description: this.extractDescription(),
-          sku: this.productId
+          sku: titleModule.productId || this.productId,
+          category: categoryModule.categoryName || categoryModule.name || this.extractCategoryFromDOM()
         };
       }
 
@@ -214,7 +216,8 @@
         title: this.extractTitleFromDOM(),
         brand: this.extractBrandFromDOM(),
         description: this.extractDescription(),
-        sku: this.productId
+        sku: this.productId,
+        category: this.extractCategoryFromDOM()
       };
     }
 
@@ -253,6 +256,45 @@
           return el.textContent.trim();
         }
       }
+
+      return '';
+    }
+
+    extractCategoryFromDOM() {
+      // Breadcrumbs AliExpress
+      const breadcrumbSelectors = [
+        '.breadcrumb--item--10Wmzx4 a',
+        '[class*="breadcrumb"] a',
+        '[class*="Breadcrumb"] a',
+        '.breadcrumb a',
+        'nav[aria-label*="breadcrumb"] a',
+        '[class*="category-path"] a'
+      ];
+
+      for (const sel of breadcrumbSelectors) {
+        const crumbs = document.querySelectorAll(sel);
+        if (crumbs.length > 1) {
+          // Prendre l'avant-dernier (catégorie, pas le produit)
+          const categoryEl = crumbs[crumbs.length - 2];
+          if (categoryEl?.textContent?.trim()) {
+            return categoryEl.textContent.trim();
+          }
+        }
+      }
+
+      // Meta category
+      const metaCategory = document.querySelector('meta[property="product:category"]')?.content;
+      if (metaCategory) return metaCategory;
+
+      // Essayer dans les scripts
+      try {
+        const scripts = document.querySelectorAll('script:not([src])');
+        for (const script of scripts) {
+          const content = script.textContent;
+          const catMatch = content.match(/categoryName["']?\s*:\s*["']([^"']+)["']/);
+          if (catMatch) return catMatch[1];
+        }
+      } catch (e) {}
 
       return '';
     }
@@ -474,7 +516,7 @@
           property.skuPropertyValues?.forEach(value => {
             variants.push({
               id: value.propertyValueId?.toString(),
-              title: value.propertyValueDisplayName || value.skuPropertyImagePath,
+              title: value.propertyValueDisplayName || value.propertyValueName || value.skuPropertyImagePath,
               type: property.skuPropertyName,
               image: value.skuPropertyImagePath ? this.normalizeImageUrl(value.skuPropertyImagePath) : null,
               available: true
@@ -483,22 +525,63 @@
         });
       }
 
-      // DOM fallback
+      // DOM fallback - sélecteurs étendus pour AliExpress 2025
       if (variants.length === 0) {
-        document.querySelectorAll('[class*="sku-property"] [class*="item"], .sku-item, .sku-property-item').forEach(item => {
-          const img = item.querySelector('img');
-          const title = item.getAttribute('title') || item.textContent?.trim();
-          const id = item.dataset?.skuId || item.dataset?.value;
+        const variantSelectors = [
+          '[class*="sku-property"] [class*="item"]',
+          '.sku-item',
+          '.sku-property-item',
+          '[class*="skuProperty"] [class*="item"]',
+          '[class*="sku-wrap"] [class*="item"]',
+          '[data-sku-id]',
+          '[class*="Product_SkuProperty"] button',
+          '[class*="sku--item--"]'
+        ];
 
-          if (title) {
-            variants.push({
-              id: id || `var_${variants.length}`,
-              title: title,
-              image: img?.src ? this.normalizeImageUrl(img.src) : null,
-              available: !item.className.includes('disabled')
-            });
+        for (const sel of variantSelectors) {
+          document.querySelectorAll(sel).forEach(item => {
+            const img = item.querySelector('img');
+            const title = item.getAttribute('title') || item.getAttribute('data-title') || item.textContent?.trim();
+            const id = item.dataset?.skuId || item.dataset?.value || item.dataset?.propertyValueId;
+
+            if (title && title.length > 0 && title.length < 100) {
+              variants.push({
+                id: id || `var_${variants.length}`,
+                title: title,
+                image: img?.src ? this.normalizeImageUrl(img.src) : null,
+                available: !item.className.includes('disabled') && !item.className.includes('unavailable')
+              });
+            }
+          });
+          if (variants.length > 0) break;
+        }
+      }
+
+      // Extraire depuis les scripts si toujours vide
+      if (variants.length === 0) {
+        try {
+          const scripts = document.querySelectorAll('script:not([src])');
+          for (const script of scripts) {
+            const content = script.textContent;
+            const skuMatch = content.match(/productSKUPropertyList["']?\s*:\s*(\[[^\]]+\])/);
+            if (skuMatch) {
+              try {
+                const skuData = JSON.parse(skuMatch[1]);
+                skuData.forEach(property => {
+                  (property.skuPropertyValues || []).forEach(value => {
+                    variants.push({
+                      id: value.propertyValueId?.toString(),
+                      title: value.propertyValueDisplayName || value.propertyValueName,
+                      type: property.skuPropertyName,
+                      image: value.skuPropertyImagePath ? this.normalizeImageUrl(value.skuPropertyImagePath) : null,
+                      available: true
+                    });
+                  });
+                });
+              } catch (e) {}
+            }
           }
-        });
+        } catch (e) {}
       }
 
       return variants;
@@ -521,9 +604,49 @@
         });
       }
 
+      // DOM extraction for rating summary if not from page data
+      if (reviews.length === 0) {
+        const ratingSelectors = [
+          '[class*="rating"] [class*="score"]',
+          '[class*="review-star"]',
+          '[class*="product-rating"]',
+          '.overview-rating'
+        ];
+        for (const sel of ratingSelectors) {
+          const ratingEl = document.querySelector(sel);
+          if (ratingEl?.textContent) {
+            const rating = parseFloat(ratingEl.textContent.match(/[\d.]+/)?.[0] || 0);
+            if (rating > 0 && rating <= 5) {
+              reviews.push({
+                type: 'summary',
+                averageRating: rating,
+                totalCount: 0
+              });
+              break;
+            }
+          }
+        }
+
+        // Review count
+        const countSelectors = [
+          '[class*="review-count"]',
+          '[class*="review"] [class*="count"]',
+          '[class*="feedback-count"]'
+        ];
+        for (const sel of countSelectors) {
+          const countEl = document.querySelector(sel);
+          if (countEl?.textContent) {
+            const count = parseInt(countEl.textContent.match(/[\d,]+/)?.[0]?.replace(',', '') || 0);
+            if (count > 0 && reviews.length > 0) {
+              reviews[0].totalCount = count;
+              break;
+            }
+          }
+        }
+      }
+
       // Use intercepted data if available
       if (this.interceptedData.reviews) {
-        // Process intercepted reviews
         const feedbackData = this.interceptedData.reviews;
         if (feedbackData.data?.evaViewList) {
           feedbackData.data.evaViewList.forEach(eva => {
@@ -539,28 +662,37 @@
         }
       }
 
-      // DOM extraction for individual reviews
-      document.querySelectorAll('.feedback-item, [class*="review-item"]').forEach(reviewEl => {
-        const review = {
-          author: reviewEl.querySelector('.user-name, [class*="reviewer"]')?.textContent?.trim() || 'Anonymous',
-          rating: this.extractReviewRating(reviewEl),
-          content: reviewEl.querySelector('.buyer-feedback, [class*="content"]')?.textContent?.trim() || '',
-          date: reviewEl.querySelector('.r-time, [class*="date"]')?.textContent?.trim() || '',
-          country: reviewEl.querySelector('.user-country, [class*="country"]')?.textContent?.trim() || '',
-          images: []
-        };
+      // DOM extraction for individual reviews - sélecteurs étendus
+      const reviewSelectors = [
+        '.feedback-item',
+        '[class*="review-item"]',
+        '[class*="ReviewItem"]',
+        '[class*="evaluation-item"]'
+      ];
 
-        // Review images
-        reviewEl.querySelectorAll('img[src*="alicdn"]').forEach(img => {
-          if (img.src && !img.src.includes('avatar')) {
-            review.images.push(this.normalizeImageUrl(img.src));
+      for (const sel of reviewSelectors) {
+        document.querySelectorAll(sel).forEach(reviewEl => {
+          const review = {
+            author: reviewEl.querySelector('.user-name, [class*="reviewer"], [class*="userName"]')?.textContent?.trim() || 'Anonymous',
+            rating: this.extractReviewRating(reviewEl),
+            content: reviewEl.querySelector('.buyer-feedback, [class*="content"], [class*="feedback"]')?.textContent?.trim() || '',
+            date: reviewEl.querySelector('.r-time, [class*="date"], [class*="time"]')?.textContent?.trim() || '',
+            country: reviewEl.querySelector('.user-country, [class*="country"]')?.textContent?.trim() || '',
+            images: []
+          };
+
+          // Review images
+          reviewEl.querySelectorAll('img[src*="alicdn"]').forEach(img => {
+            if (img.src && !img.src.includes('avatar') && !img.src.includes('icon')) {
+              review.images.push(this.normalizeImageUrl(img.src));
+            }
+          });
+
+          if (review.content) {
+            reviews.push(review);
           }
         });
-
-        if (review.content) {
-          reviews.push(review);
-        }
-      });
+      }
 
       return reviews.slice(0, 50);
     }
