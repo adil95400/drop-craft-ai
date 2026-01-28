@@ -1,49 +1,121 @@
-# ShopOpti+ Chrome Extension v3.0
+# ShopOpti+ Chrome Extension v5.7.0
 
-Extension Chrome professionnelle pour le dropshipping avec import 1-click, surveillance des prix et automatisation.
+> Extension professionnelle d'import de produits e-commerce pour 17+ plateformes marketplace.
 
-## 🚀 Installation pour Développeurs
+## 🚀 Fonctionnalités Principales
 
-### Mode Développeur (Local)
+- **Import 1-clic** depuis Amazon, AliExpress, eBay, Temu, Shein, Shopify, Etsy et 10+ autres
+- **Extraction HD** des images, vidéos et variantes produit
+- **Validation intelligente** avec score de qualité 0-100%
+- **Import bulk** avec gestion de file d'attente et retry automatique
+- **Synchronisation temps réel** avec ShopOpti Cloud
+- **Pipeline atomique** en 6 étapes avec feedback utilisateur
 
-1. Ouvrez Chrome et allez à `chrome://extensions/`
-2. Activez le "Mode développeur" (coin supérieur droit)
-3. Cliquez sur "Charger l'extension non empaquetée"
-4. Sélectionnez le dossier `public/chrome-extension/`
+## 📦 Installation
 
-### Publication sur Chrome Web Store
+### Option 1: Téléchargement automatique (Recommandé)
 
-1. Compressez tout le contenu du dossier en `.zip`
-2. Allez sur [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
-3. Payez les frais d'inscription (5$ une seule fois)
-4. Créez un nouvel élément et uploadez le `.zip`
-5. Remplissez les informations (voir `STORE_LISTING.md`)
-6. Soumettez pour révision
+1. Connectez-vous à [shopopti.io](https://shopopti.io)
+2. Naviguez vers `/extensions/chrome`
+3. Cliquez sur **"Télécharger l'extension"**
+4. Décompressez le fichier ZIP téléchargé
+5. Ouvrez Chrome → `chrome://extensions`
+6. Activez le **"Mode développeur"** (coin supérieur droit)
+7. Cliquez **"Charger l'extension non empaquetée"**
+8. Sélectionnez le dossier décompressé
 
-## 📁 Structure des Fichiers
+### Option 2: Installation manuelle
+
+```bash
+# Cloner le repository
+git clone https://github.com/your-org/shopopti-extension.git
+
+# Naviguer vers le dossier extension
+cd public/chrome-extension
+
+# Charger dans Chrome (étapes 5-8 ci-dessus)
+```
+
+## 🔐 Configuration
+
+### Authentification par Token
+
+1. Rendez-vous sur [shopopti.io/auth/extension](https://shopopti.io/auth/extension)
+2. Générez un nouveau token d'extension
+3. Dans l'extension, collez le token dans le champ prévu
+4. Cliquez **"Connecter"**
+
+Le token expire après 1 an et peut être révoqué à tout moment.
+
+## 🎯 Utilisation
+
+### Import Rapide
+
+1. Visitez une page produit sur une plateforme supportée
+2. Le bouton **"+ ShopOpti"** apparaît automatiquement
+3. Cliquez pour prévisualiser les données extraites
+4. Vérifiez le score de qualité (recommandé: ≥60%)
+5. Confirmez pour importer dans votre catalogue
+
+### Import en Masse
+
+1. Ouvrez le popup de l'extension
+2. Sélectionnez l'onglet **"Bulk Import"**
+3. Collez vos URLs (une par ligne)
+4. Configurez les options (variantes, avis, etc.)
+5. Lancez l'import
+
+## 🌐 Plateformes Supportées
+
+| Plateforme | Produits | Variantes | Avis | Images HD | Vidéos |
+|------------|----------|-----------|------|-----------|--------|
+| Amazon | ✅ | ✅ | ✅ | ✅ | ✅ |
+| AliExpress | ✅ | ✅ | ✅ | ✅ | ✅ |
+| eBay | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Temu | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Shein | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Shopify | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Etsy | ✅ | ✅ | ✅ | ✅ | ✅ |
+| CJ Dropshipping | ✅ | ✅ | ❌ | ✅ | ❌ |
+| Banggood | ✅ | ✅ | ✅ | ✅ | ❌ |
+| DHgate | ✅ | ✅ | ❌ | ✅ | ❌ |
+| Wish | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Cdiscount | ✅ | ❌ | ✅ | ✅ | ❌ |
+| Walmart | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Home Depot | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Fnac | ✅ | ❌ | ✅ | ✅ | ❌ |
+| Rakuten | ✅ | ✅ | ✅ | ✅ | ❌ |
+| TikTok Shop | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+## 🏗️ Architecture v5.7.0
 
 ```
-chrome-extension/
-├── manifest.json          # Configuration de l'extension (Manifest V3)
-├── background.js          # Service Worker (582 lignes)
-├── content.js             # Script injecté sur les pages (765 lignes)
-├── content.css            # Styles pour content script
-├── injected.js            # Script avancé de détection
-├── popup.html             # Interface popup principale
-├── popup.js               # Logique du popup (557 lignes)
-├── popup.css              # Styles du popup
-├── options.html           # Page de configuration
-├── options.js             # Logique des options
-├── auth.html              # Page d'authentification
-├── auth.js                # Logique d'authentification
-├── icons/                 # Icônes de l'extension
-│   ├── icon16.png
-│   ├── icon32.png
-│   ├── icon48.png
-│   └── icon128.png
-├── README.md              # Ce fichier
-├── PRIVACY_POLICY.md      # Politique de confidentialité (requis)
-└── STORE_LISTING.md       # Informations pour le Store
+public/chrome-extension/
+├── manifest.json                    # Configuration Chrome Extension (Manifest V3)
+├── background.js                    # Service Worker
+├── content-script.js                # Script d'injection principal
+├── popup.html/css/js                # Interface utilisateur
+├── extractors/                      # Extracteurs modulaires par plateforme
+│   ├── extractor-registry.js        # Registre central des extracteurs
+│   ├── amazon-extractor.js          # Amazon (toutes régions)
+│   ├── aliexpress-extractor.js      # AliExpress
+│   ├── ebay-extractor.js            # eBay
+│   ├── temu-extractor.js            # Temu
+│   ├── shein-extractor.js           # Shein
+│   ├── shopify-extractor.js         # Stores Shopify
+│   ├── etsy-extractor.js            # Etsy
+│   └── ...                          # 10+ autres extracteurs
+├── lib/                             # Librairies partagées
+│   ├── base-extractor.js            # Contrat d'extraction unifié
+│   ├── platform-detector.js         # Détection plateforme avancée
+│   ├── extraction-orchestrator.js   # Gestionnaire cycle de vie jobs
+│   ├── extractor-bridge.js          # Interface extracteurs unifiée
+│   ├── retry-manager.js             # Gestion retry exponential backoff
+│   └── session-manager.js           # Gestion tokens/sessions
+└── docs/                            # Documentation
+    ├── DEVELOPER_GUIDE.md           # Guide création extracteurs
+    ├── API_REFERENCE.md             # Référence API complète
+    └── TROUBLESHOOTING.md           # Résolution problèmes
 ```
 
 ## 🔧 Configuration API
@@ -59,69 +131,10 @@ const APP_URL = 'https://shopopti.io';
 
 | Endpoint | Description |
 |----------|-------------|
-| `/extension-sync` | Synchronisation des données et import produits |
-| `/product-url-scraper` | Import par URL avec Firecrawl |
-| `/analyze-competitor` | Analyse concurrentielle |
-| `/ai-optimize-product` | Optimisation IA des produits |
-
-## ⚙️ Fonctionnalités Complètes
-
-### 📦 Import 1-Click
-- Détection automatique des pages produit
-- Extraction des données (titre, prix, images, description)
-- Import direct vers le dashboard ShopOpti+
-- Support JSON-LD et Microdata
-
-### ⭐ Import d'Avis
-- Extraction des reviews depuis les pages produit
-- Filtrage par note et pertinence
-- Import bulk possible
-
-### 📊 Surveillance des Prix
-- Monitoring automatique toutes les 30 minutes
-- Alertes push en cas de changement
-- Historique des prix
-
-### 🤖 Automatisation
-- Auto-injection des boutons d'import
-- Alertes de stock automatiques
-- Synchronisation temps réel
-- Menu contextuel (clic droit)
-
-## 🌐 Plateformes Supportées (16+)
-
-| Plateforme | Import | Avis | Prix |
-|------------|--------|------|------|
-| AliExpress | ✅ | ✅ | ✅ |
-| Amazon | ✅ | ✅ | ✅ |
-| eBay | ✅ | ✅ | ✅ |
-| Temu | ✅ | ✅ | ✅ |
-| Walmart | ✅ | ✅ | ✅ |
-| Etsy | ✅ | ✅ | ✅ |
-| Wish | ✅ | ✅ | ✅ |
-| Banggood | ✅ | ✅ | ✅ |
-| DHgate | ✅ | ✅ | ✅ |
-| 1688 | ✅ | ⚠️ | ✅ |
-| Taobao | ✅ | ⚠️ | ✅ |
-| Shein | ✅ | ✅ | ✅ |
-| CJ Dropshipping | ✅ | ✅ | ✅ |
-| LightInTheBox | ✅ | ✅ | ✅ |
-| Gearbest | ✅ | ✅ | ✅ |
-
-### CMS E-commerce Détectés
-- Shopify
-- WooCommerce
-- Magento
-- PrestaShop
-- OpenCart
-- Sites génériques
-
-## 🔐 Authentification
-
-1. L'utilisateur se connecte via `auth.html`
-2. Un token est généré et stocké dans `chrome.storage.local`
-3. Le token est envoyé via header `x-extension-token`
-4. Le token expire après 30 jours
+| `/import-product` | Import d'un produit unique |
+| `/bulk-import` | Import en masse |
+| `/extension-sync` | Synchronisation état extension |
+| `/validate-token` | Validation token extension |
 
 ## 📋 Permissions Requises
 
@@ -137,69 +150,56 @@ const APP_URL = 'https://shopopti.io';
     "contextMenus"    // Menu clic droit
   ],
   "host_permissions": [
-    "https://*/*",    // Accès aux sites HTTPS
-    "http://*/*"      // Accès aux sites HTTP
+    "https://*/*",
+    "http://*/*"
   ]
 }
 ```
 
 ## 🧪 Tests
 
-### Test Manuel
-
-1. Installer l'extension en mode développeur
-2. Aller sur AliExpress/Amazon
-3. Ouvrir le popup de l'extension
-4. Tester chaque fonctionnalité
-
-### Vérification de la Connexion API
-
 ```bash
-curl -X POST https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/extension-sync \
-  -H "Content-Type: application/json" \
-  -d '{"action": "sync_status"}'
+# Exécuter tous les tests
+npm run test
+
+# Tests E2E extension uniquement
+npm run test -- src/test/chrome-extension
+
+# Tests spécifiques
+npm run test -- src/test/chrome-extension/e2e/extraction-e2e.test.ts
 ```
 
-## ✅ Checklist Publication Chrome Web Store
+### Couverture de Tests
 
-- [x] Manifest V3 configuré
-- [x] Toutes les icônes (16, 32, 48, 128px)
-- [x] Privacy Policy (`PRIVACY_POLICY.md`)
-- [x] Store Listing (`STORE_LISTING.md`)
-- [x] Popup fonctionnel
-- [x] Options page fonctionnelle
-- [x] Authentification fonctionnelle
-- [x] Content scripts injectés
-- [x] Background service worker
-- [x] Menu contextuel
-- [x] Notifications
-- [x] Alarms pour surveillance
-- [ ] Screenshots (1280x800 ou 640x400)
-- [ ] Promotional tiles
-- [ ] Compte développeur Chrome ($5)
+- **Unit Tests**: Validation, normalisation, détection plateforme
+- **Integration Tests**: Pipeline complet d'import
+- **E2E Tests**: 17 plateformes, performance, fiabilité
 
 ## 📝 Notes de Version
 
-### v3.0.0 (Janvier 2025)
-- Migration vers Manifest V3
-- Nouveau design du popup (style AutoDS)
-- Support de 16+ plateformes
-- Système d'authentification amélioré
-- Import d'avis
-- Surveillance des prix en temps réel
-- Menu contextuel complet
-- Synchronisation avec ShopOpti+ Cloud
-- **Auto-Order** : Commandes automatiques
-- **Spy Competitor** : Analyse concurrentielle
-- **Bulk Import CSV** : Import en masse depuis fichier
-- **AI Optimize** : Optimisation IA des descriptions (PRO)
+### v5.7.0 (Janvier 2025)
+- **Pipeline Atomique**: Flux 6 étapes (Detect → Extract → Validate → Normalize → Confirm → Import)
+- **Prévisualisation Pré-Import**: Modal confirmation avec score qualité
+- **17 Extracteurs Modulaires**: Isolation complète pour mises à jour rapides
+- **Interception Réseau**: Capture données API natives (fetch/XHR)
+- **Score Qualité 0-100%**: Évaluation automatique des données
+
+### v5.6.6 (Janvier 2025)
+- Détection environnement preview vs extension installée
+- Optimisation popup authentification token-only
+
+### v5.6.0 (Janvier 2025)
+- Support TikTok Shop
+- Extraction vidéos pour Amazon et AliExpress
+- Import bulk avec queue et retry automatique
 
 ## 📄 Licence
 
-Propriétaire - ShopOpti+ © 2025
+Propriétaire - ShopOpti © 2025
 
 ## 📞 Support
 
-- **Website:** https://shopopti.io
-- **Support:** https://shopopti.io/support
-- **Email:** support@shopopti.com
+- **Documentation:** [docs.shopopti.io](https://docs.shopopti.io)
+- **Website:** [shopopti.io](https://shopopti.io)
+- **Email:** support@shopopti.io
+- **Discord:** [Rejoindre le serveur](https://discord.gg/shopopti)
