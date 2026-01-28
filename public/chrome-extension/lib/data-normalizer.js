@@ -347,9 +347,15 @@
     }
 
     /**
-     * Normalize variants array
+     * Normalize variants array using VariantMapper if available
      */
-    normalizeVariants(variants) {
+    normalizeVariants(variants, platform) {
+      // Use the new VariantMapper if available
+      if (window.ShopOptiVariantMapper) {
+        return window.ShopOptiVariantMapper.map(variants, platform || 'generic', {});
+      }
+
+      // Fallback to legacy normalization
       if (!Array.isArray(variants)) return [];
 
       return variants.map((variant, index) => ({
