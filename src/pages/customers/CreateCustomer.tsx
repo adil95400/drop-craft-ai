@@ -184,7 +184,27 @@ export default function CreateCustomer() {
               Retour aux clients
             </Button>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => toast.info('Brouillon sauvegardé')}>
+              <Button variant="outline" onClick={async () => {
+                try {
+                  const { supabase } = await import('@/integrations/supabase/client');
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    toast.error('Non authentifié');
+                    return;
+                  }
+                  // Sauvegarder le brouillon dans localStorage
+                  const draftData = {
+                    ...formData,
+                    addresses,
+                    avatarUrl,
+                    savedAt: new Date().toISOString()
+                  };
+                  localStorage.setItem(`customer_draft_${user.id}`, JSON.stringify(draftData));
+                  toast.success('Brouillon sauvegardé localement');
+                } catch (error) {
+                  toast.error('Erreur lors de la sauvegarde');
+                }
+              }}>
                 Sauvegarder
               </Button>
               <Button onClick={handleSubmit}>

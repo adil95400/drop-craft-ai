@@ -447,7 +447,14 @@ export default function SupportMainPage() {
                   action="Démarrer le chat"
                   badge="En ligne"
                   badgeColor="success"
-                  onClick={() => {}}
+                  onClick={() => {
+                    // Ouvrir le widget de chat Crisp ou rediriger vers la page de chat
+                    if (typeof window !== 'undefined' && (window as any).$crisp) {
+                      (window as any).$crisp.push(['do', 'chat:open']);
+                    } else {
+                      navigate('/support/chat');
+                    }
+                  }}
                   delay={0.1}
                 />
                 <SupportChannelCard

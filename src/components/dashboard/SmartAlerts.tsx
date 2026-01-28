@@ -165,7 +165,9 @@ export function SmartAlerts() {
         actionable: true,
         action: {
           label: 'Voir les suggestions',
-          onClick: () => toast.success('Ouverture des optimisations')
+          onClick: () => {
+            window.location.href = '/analytics/ai-insights';
+          }
         }
       })
     }

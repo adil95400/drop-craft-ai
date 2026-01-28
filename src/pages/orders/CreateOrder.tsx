@@ -354,11 +354,48 @@ export default function CreateOrder() {
           <>
             <Button 
               variant="outline" 
-              onClick={() => toast.info('Brouillon sauvegardé')}
+              onClick={async () => {
+                try {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    toast.error('Non authentifié');
+                    return;
+                  }
+                  const draftData = {
+                    items,
+                    selectedCustomer,
+                    shippingMethod: formData.shippingMethod,
+                    paymentMethod: formData.paymentMethod,
+                    notes: formData.customerNote,
+                    savedAt: new Date().toISOString()
+                  };
+                  localStorage.setItem(`order_draft_${user.id}`, JSON.stringify(draftData));
+                  toast.success('Brouillon sauvegardé');
+                } catch (error) {
+                  toast.error('Erreur lors de la sauvegarde');
+                }
+              }}
               disabled={isSubmitting}
             >
               <FileText className="h-4 w-4 mr-2" />
               Brouillon
+            </Button>
+            <Button 
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="min-w-[140px]"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Création...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Créer
+                </>
+              )}
             </Button>
             <Button 
               onClick={handleSubmit}

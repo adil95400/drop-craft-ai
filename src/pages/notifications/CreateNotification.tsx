@@ -118,7 +118,32 @@ export default function CreateNotification() {
               Retour au tableau de bord
             </Button>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => toast.info('Prévisualisation envoyée')}>
+              <Button variant="outline" onClick={async () => {
+                if (!formData.title || !formData.message) {
+                  toast.error('Titre et message requis pour la prévisualisation');
+                  return;
+                }
+                try {
+                  const { supabase } = await import('@/integrations/supabase/client');
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user?.email) {
+                    toast.error('Email utilisateur non disponible');
+                    return;
+                  }
+                  // Envoyer la prévisualisation à l'utilisateur connecté
+                  const { error } = await supabase.from('notifications').insert({
+                    user_id: user.id,
+                    title: `[PREVIEW] ${formData.title}`,
+                    message: formData.message,
+                    type: formData.type || 'info',
+                    is_read: false
+                  });
+                  if (error) throw error;
+                  toast.success(`Prévisualisation envoyée à ${user.email}`);
+                } catch (error) {
+                  toast.error('Erreur lors de l\'envoi de la prévisualisation');
+                }
+              }}>
                 <Eye className="mr-2 h-4 w-4" />
                 Tester
               </Button>
