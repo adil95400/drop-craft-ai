@@ -724,6 +724,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
           <ChannableBulkActions
             selectedCount={selectedProducts.size}
             totalCount={filteredProducts.length}
+            selectedIds={Array.from(selectedProducts)}
             isAllSelected={selectedProducts.size === filteredProducts.length}
             onSelectAll={handleSelectAll}
             onDeselectAll={() => setSelectedProducts(new Set())}

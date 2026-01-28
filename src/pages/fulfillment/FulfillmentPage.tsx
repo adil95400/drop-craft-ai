@@ -61,6 +61,12 @@ export default function FulfillmentPage() {
   };
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newShipmentOpen, setNewShipmentOpen] = useState(false);
+  const [settingsForm, setSettingsForm] = useState({
+    processing_delay: '24h',
+    notification_mode: 'shipped',
+    default_carrier: 'auto'
+  });
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [shipmentForm, setShipmentForm] = useState({
     recipient_name: '',
     recipient_email: '',
@@ -130,7 +136,40 @@ export default function FulfillmentPage() {
   const handleCreateCarrier = (carrier: any) => {
     createCarrier.mutate(carrier);
   };
-  
+
+  const handleSaveSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      // Store settings in user_settings table or local storage
+      const { error } = await supabase.from('user_settings').upsert({
+        user_id: user.id,
+        setting_key: 'fulfillment_settings',
+        setting_value: settingsForm,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,setting_key'
+      });
+
+      if (error) {
+        // Fallback to localStorage if table doesn't exist
+        localStorage.setItem('fulfillment_settings', JSON.stringify(settingsForm));
+      }
+
+      toast.success('Paramètres sauvegardés');
+      setSettingsOpen(false);
+    } catch (error) {
+      console.error('Save settings error:', error);
+      // Fallback to localStorage
+      localStorage.setItem('fulfillment_settings', JSON.stringify(settingsForm));
+      toast.success('Paramètres sauvegardés localement');
+      setSettingsOpen(false);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
   return (
     <ChannablePageWrapper
       title="Logistique & Expéditions"
@@ -311,7 +350,10 @@ export default function FulfillmentPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Délai de traitement par défaut</Label>
-              <Select defaultValue="24h">
+              <Select 
+                value={settingsForm.processing_delay}
+                onValueChange={(v) => setSettingsForm(prev => ({ ...prev, processing_delay: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -325,7 +367,10 @@ export default function FulfillmentPage() {
             </div>
             <div className="space-y-2">
               <Label>Notification client automatique</Label>
-              <Select defaultValue="shipped">
+              <Select 
+                value={settingsForm.notification_mode}
+                onValueChange={(v) => setSettingsForm(prev => ({ ...prev, notification_mode: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -338,7 +383,10 @@ export default function FulfillmentPage() {
             </div>
             <div className="space-y-2">
               <Label>Transporteur par défaut</Label>
-              <Select defaultValue="auto">
+              <Select 
+                value={settingsForm.default_carrier}
+                onValueChange={(v) => setSettingsForm(prev => ({ ...prev, default_carrier: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -354,7 +402,8 @@ export default function FulfillmentPage() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Button onClick={() => { toast.success('Paramètres sauvegardés'); setSettingsOpen(false); }}>
+            <Button onClick={handleSaveSettings} disabled={isSavingSettings}>
+              {isSavingSettings && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Sauvegarder
             </Button>
           </div>

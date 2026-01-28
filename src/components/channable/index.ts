@@ -24,7 +24,7 @@ export { ChannableAdvancedFilters, type FilterConfig } from './ChannableAdvanced
 
 // Actions
 export { ChannableQuickActions } from './ChannableQuickActions'
-export { ChannableBulkActions, DEFAULT_CHANNEL_BULK_ACTIONS, type BulkAction } from './ChannableBulkActions'
+export { ChannableBulkActions, type BulkAction } from './ChannableBulkActions'
 
 // Visual
 export { ChannableHexagons } from './ChannableHexagons'

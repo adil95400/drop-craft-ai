@@ -656,6 +656,7 @@ export default function StoresAndChannelsHub() {
               <ChannableBulkActions
                 selectedCount={selectedIds.size}
                 totalCount={filteredConnections.length}
+                selectedIds={Array.from(selectedIds)}
                 onSelectAll={selectAll}
                 onDeselectAll={deselectAll}
                 isAllSelected={selectedIds.size === filteredConnections.length && filteredConnections.length > 0}

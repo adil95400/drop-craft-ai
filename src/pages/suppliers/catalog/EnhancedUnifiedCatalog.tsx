@@ -551,6 +551,7 @@ export function EnhancedUnifiedCatalog() {
             <ChannableBulkActions
               selectedCount={selectedProducts.size}
               totalCount={paginatedProducts.length}
+              selectedIds={Array.from(selectedProducts)}
               isAllSelected={selectedProducts.size === paginatedProducts.length}
               onSelectAll={handleSelectAll}
               onDeselectAll={() => setSelectedProducts(new Set())}

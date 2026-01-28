@@ -32,6 +32,7 @@ export interface BulkAction {
 interface ChannableBulkActionsProps {
   selectedCount: number
   totalCount: number
+  selectedIds: string[]
   onSelectAll: () => void
   onDeselectAll: () => void
   isAllSelected: boolean
@@ -42,6 +43,7 @@ interface ChannableBulkActionsProps {
 export function ChannableBulkActions({
   selectedCount,
   totalCount,
+  selectedIds,
   onSelectAll,
   onDeselectAll,
   isAllSelected,
@@ -97,7 +99,7 @@ export function ChannableBulkActions({
                   key={action.id}
                   variant={action.variant || 'outline'}
                   size="sm"
-                  onClick={() => action.onClick([])}
+                  onClick={() => action.onClick(selectedIds)}
                   disabled={action.disabled}
                   className={cn(
                     "gap-1.5",
@@ -128,7 +130,7 @@ export function ChannableBulkActions({
                           <DropdownMenuSeparator />
                         )}
                         <DropdownMenuItem
-                          onClick={() => action.onClick([])}
+                          onClick={() => action.onClick(selectedIds)}
                           disabled={action.disabled}
                           className={cn(
                             action.variant === 'destructive' && "text-destructive focus:text-destructive"
@@ -160,44 +162,5 @@ export function ChannableBulkActions({
   )
 }
 
-// Default bulk actions for channels
-export const DEFAULT_CHANNEL_BULK_ACTIONS: BulkAction[] = [
-  {
-    id: 'sync-all',
-    label: 'Synchroniser',
-    icon: RefreshCw,
-    onClick: (ids) => console.log('Sync:', ids)
-  },
-  {
-    id: 'enable-all',
-    label: 'Activer',
-    icon: Power,
-    onClick: (ids) => console.log('Enable:', ids)
-  },
-  {
-    id: 'disable-all',
-    label: 'Désactiver',
-    icon: PowerOff,
-    variant: 'outline',
-    onClick: (ids) => console.log('Disable:', ids)
-  },
-  {
-    id: 'export',
-    label: 'Exporter',
-    icon: Download,
-    onClick: (ids) => console.log('Export:', ids)
-  },
-  {
-    id: 'settings',
-    label: 'Paramètres',
-    icon: Settings2,
-    onClick: (ids) => console.log('Settings:', ids)
-  },
-  {
-    id: 'delete',
-    label: 'Supprimer',
-    icon: Trash2,
-    variant: 'destructive',
-    onClick: (ids) => console.log('Delete:', ids)
-  },
-]
+// Note: DEFAULT_CHANNEL_BULK_ACTIONS removed - actions should be defined
+// in the parent component with real handlers connected to Supabase
