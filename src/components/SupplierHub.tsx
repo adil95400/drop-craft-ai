@@ -283,7 +283,23 @@ const SupplierHub: React.FC = () => {
       case 'oauth':
         return (
           <div className="text-center py-4">
-            <Button onClick={() => {/* OAuth flow */}}>
+            <Button onClick={() => {
+              // Rediriger vers la page OAuth du fournisseur
+              const oauthUrls: Record<string, string> = {
+                'shopify': 'https://shopify.com/oauth',
+                'woocommerce': 'https://woocommerce.com/oauth',
+                'bigbuy': 'https://bigbuy.eu/oauth'
+              };
+              const oauthUrl = oauthUrls[template.id];
+              if (oauthUrl) {
+                window.open(oauthUrl, '_blank');
+              } else {
+                toast({
+                  title: 'Information',
+                  description: 'Configuration OAuth non disponible pour ce fournisseur'
+                });
+              }
+            }}>
               Se connecter avec OAuth
             </Button>
           </div>

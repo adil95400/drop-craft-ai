@@ -72,12 +72,48 @@ const ProductDetailPage: React.FC = () => {
     }, 1000);
   }, [id]);
 
-  const handleAddToCart = () => {
-    toast.success('Produit ajouté au panier!');
+  const handleAddToCart = async () => {
+    try {
+      // Stocker dans localStorage pour le panier
+      const cartKey = 'marketplace_cart';
+      const existingCart = JSON.parse(localStorage.getItem(cartKey) || '[]');
+      const existingItem = existingCart.find((item: any) => item.id === id);
+      
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else {
+        existingCart.push({
+          id,
+          name: product?.name,
+          price: product?.price,
+          quantity,
+          image: product?.images?.[0]
+        });
+      }
+      
+      localStorage.setItem(cartKey, JSON.stringify(existingCart));
+      toast.success(`${quantity} produit(s) ajouté(s) au panier!`);
+    } catch (error) {
+      toast.error('Erreur lors de l\'ajout au panier');
+    }
   };
 
-  const handleAddToFavorites = () => {
-    toast.success('Produit ajouté aux favoris!');
+  const handleAddToFavorites = async () => {
+    try {
+      const favKey = 'marketplace_favorites';
+      const existingFavs = JSON.parse(localStorage.getItem(favKey) || '[]');
+      
+      if (existingFavs.includes(id)) {
+        toast.info('Produit déjà dans les favoris');
+        return;
+      }
+      
+      existingFavs.push(id);
+      localStorage.setItem(favKey, JSON.stringify(existingFavs));
+      toast.success('Produit ajouté aux favoris!');
+    } catch (error) {
+      toast.error('Erreur lors de l\'ajout aux favoris');
+    }
   };
 
   if (loading) {

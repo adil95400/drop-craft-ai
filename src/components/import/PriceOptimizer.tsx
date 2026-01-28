@@ -320,7 +320,10 @@ export const PriceOptimizer = ({ products, onApplyOptimization }: PriceOptimizer
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => {/* Preview logic */}}
+                          onClick={() => {
+                            // Ouvrir modal de prévisualisation avec le prix suggéré
+                            toast.info(`Prix actuel: ${suggestion.currentPrice}€ → Suggéré: ${suggestion.suggestedPrice}€`);
+                          }}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>

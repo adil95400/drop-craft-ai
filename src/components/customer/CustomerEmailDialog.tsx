@@ -54,8 +54,39 @@ export function CustomerEmailDialog({ customer, open, onOpenChange }: CustomerEm
 
     setSending(true);
     try {
-      // Simulate email sending - in production, this would call an edge function
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Non authentifié",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Appeler l'edge function d'envoi d'email
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: customer.email,
+          subject: formData.subject,
+          body: formData.body,
+          customerId: customer.id
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Logger l'activité
+      await supabase.from('activity_logs').insert({
+        user_id: user.id,
+        action: 'email_sent',
+        entity_type: 'customer',
+        entity_id: customer.id,
+        description: `Email envoyé à ${customer.email}`,
+        details: { subject: formData.subject }
+      });
       
       toast({
         title: "Email envoyé",

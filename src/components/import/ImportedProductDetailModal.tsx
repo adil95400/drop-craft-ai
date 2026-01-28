@@ -147,13 +147,35 @@ export function ImportedProductDetailModal({
   };
 
   const handlePublish = async () => {
-    toast.info("Publication en cours...");
-    // TODO: Implement publish to store
+    if (!productId) return;
+    try {
+      const { error } = await supabase
+        .from('imported_products')
+        .update({ status: 'published', published_at: new Date().toISOString() })
+        .eq('id', productId);
+      
+      if (error) throw error;
+      toast.success("Produit publié avec succès");
+    } catch (error) {
+      console.error('Erreur publication:', error);
+      toast.error("Erreur lors de la publication");
+    }
   };
 
   const handleSync = async () => {
-    toast.info("Synchronisation en cours...");
-    // TODO: Implement re-sync from source
+    if (!productId) return;
+    try {
+      toast.info("Synchronisation en cours...");
+      const { error } = await supabase.functions.invoke('product-sync', {
+        body: { productIds: [productId], action: 'sync' }
+      });
+      
+      if (error) throw error;
+      toast.success("Synchronisation terminée");
+    } catch (error) {
+      console.error('Erreur sync:', error);
+      toast.error("Erreur lors de la synchronisation");
+    }
   };
 
   const getRatingDistribution = () => {
