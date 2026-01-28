@@ -166,8 +166,7 @@
     async extractBasicInfo() {
       // Try JSON-LD first
       const jsonLD = this.extractFromJsonLD();
-      if (jsonLD.title) return jsonLD;
-
+      
       // Title with multiple fallbacks
       const titleSelectors = [
         '#productTitle',
@@ -176,12 +175,14 @@
         '[data-feature-name="title"] span',
         'h1[data-automation-id="product-title"]'
       ];
-      let title = '';
-      for (const sel of titleSelectors) {
-        const el = document.querySelector(sel);
-        if (el?.textContent?.trim()) {
-          title = el.textContent.trim();
-          break;
+      let title = jsonLD.title || '';
+      if (!title) {
+        for (const sel of titleSelectors) {
+          const el = document.querySelector(sel);
+          if (el?.textContent?.trim()) {
+            title = el.textContent.trim();
+            break;
+          }
         }
       }
 
@@ -193,14 +194,16 @@
         '[data-brand]',
         '#brand'
       ];
-      let brand = '';
-      for (const sel of brandSelectors) {
-        const el = document.querySelector(sel);
-        if (el?.textContent?.trim()) {
-          brand = el.textContent
-            .replace(/^(Visit the|Marque\s*:|Brand:?|Store:?)\s*/i, '')
-            .trim();
-          break;
+      let brand = jsonLD.brand || '';
+      if (!brand) {
+        for (const sel of brandSelectors) {
+          const el = document.querySelector(sel);
+          if (el?.textContent?.trim()) {
+            brand = el.textContent
+              .replace(/^(Visit the|Marque\s*:|Brand:?|Store:?|Visiter la boutique)\s*/i, '')
+              .trim();
+            break;
+          }
         }
       }
 
@@ -212,12 +215,14 @@
         '#aplus_feature_div',
         '[data-a-feature-name="productDescription"]'
       ];
-      let description = '';
-      for (const sel of descriptionSelectors) {
-        const el = document.querySelector(sel);
-        if (el?.textContent?.trim()) {
-          description = el.textContent.trim().substring(0, 5000);
-          break;
+      let description = jsonLD.description || '';
+      if (!description) {
+        for (const sel of descriptionSelectors) {
+          const el = document.querySelector(sel);
+          if (el?.textContent?.trim()) {
+            description = el.textContent.trim().substring(0, 5000);
+            break;
+          }
         }
       }
 
@@ -225,8 +230,8 @@
       const detailsTable = document.querySelector(
         '#productDetails_detailBullets_sections1, #detailBullets_feature_div, #productDetails_techSpec_section_1'
       );
-      let sku = '';
-      if (detailsTable) {
+      let sku = jsonLD.sku || '';
+      if (!sku && detailsTable) {
         const rows = detailsTable.querySelectorAll('tr, li');
         for (const row of rows) {
           const text = row.textContent.toLowerCase();
@@ -239,7 +244,55 @@
         }
       }
 
-      return { title, brand, description, sku: sku || this.asin };
+      // Category extraction
+      const category = this.extractCategoryFromDOM();
+
+      return { 
+        title, 
+        brand, 
+        description, 
+        sku: sku || this.asin,
+        category 
+      };
+    }
+
+    extractCategoryFromDOM() {
+      // Breadcrumbs Amazon
+      const breadcrumbSelectors = [
+        '#wayfinding-breadcrumbs_feature_div a',
+        '#wayfinding-breadcrumbs_container a',
+        '.a-breadcrumb a',
+        '[class*="breadcrumb"] a'
+      ];
+
+      for (const sel of breadcrumbSelectors) {
+        const crumbs = document.querySelectorAll(sel);
+        if (crumbs.length > 0) {
+          // Prendre le dernier élément du breadcrumb
+          const lastCrumb = crumbs[crumbs.length - 1];
+          if (lastCrumb?.textContent?.trim()) {
+            return lastCrumb.textContent.trim();
+          }
+        }
+      }
+
+      // Fallback: category dans les details
+      const detailRows = document.querySelectorAll('#productDetails_detailBullets_sections1 tr, #detailBullets_feature_div li');
+      for (const row of detailRows) {
+        const text = row.textContent.toLowerCase();
+        if (text.includes('catégorie') || text.includes('category') || text.includes('department')) {
+          const value = row.querySelector('td:last-child, span:last-child');
+          if (value?.textContent?.trim()) {
+            return value.textContent.trim();
+          }
+        }
+      }
+
+      // Meta tags
+      const metaCategory = document.querySelector('meta[property="product:category"]')?.content;
+      if (metaCategory) return metaCategory;
+
+      return '';
     }
 
     extractFromJsonLD() {
@@ -555,35 +608,85 @@
           }
         }
 
-        // DOM fallback
+        // DOM fallback - Sélecteurs étendus pour Amazon 2025
         if (variants.length === 0) {
-          // Size options
-          const sizeSelect = document.querySelector('#native_dropdown_selected_size_name, #size_name_');
-          if (sizeSelect) {
-            sizeSelect.querySelectorAll('option').forEach(opt => {
-              if (opt.value && opt.value !== '-1') {
+          // Size options - sélecteurs améliorés
+          const sizeSelectors = [
+            '#native_dropdown_selected_size_name',
+            '#size_name_',
+            '[id*="size"] select',
+            '#variation_size_name select'
+          ];
+          
+          for (const sel of sizeSelectors) {
+            const sizeSelect = document.querySelector(sel);
+            if (sizeSelect) {
+              sizeSelect.querySelectorAll('option').forEach(opt => {
+                if (opt.value && opt.value !== '-1' && opt.textContent?.trim()) {
+                  variants.push({
+                    id: opt.value,
+                    title: opt.textContent.trim(),
+                    type: 'size',
+                    available: !opt.className.includes('unavailable')
+                  });
+                }
+              });
+              if (variants.length > 0) break;
+            }
+          }
+
+          // Size swatches (boutons)
+          if (variants.length === 0) {
+            document.querySelectorAll('#variation_size_name li, [id*="size"] li').forEach(li => {
+              const title = li.getAttribute('title') || li.querySelector('span')?.textContent?.trim();
+              const asin = li.dataset.asin || li.querySelector('[data-asin]')?.dataset.asin;
+              if (title) {
                 variants.push({
-                  id: opt.value,
-                  title: opt.textContent.trim(),
+                  id: asin || `size_${variants.length}`,
+                  title: title.replace('Click to select', '').replace('Cliquez pour sélectionner', '').trim(),
                   type: 'size',
-                  available: !opt.className.includes('unavailable')
+                  available: !li.className.includes('unavailable') && !li.className.includes('swatchUnavailable')
                 });
               }
             });
           }
 
-          // Color swatches
-          document.querySelectorAll('#variation_color_name li, #color_name_ li').forEach(li => {
-            const asin = li.dataset.asin || li.querySelector('[data-asin]')?.dataset.asin;
-            const title = li.getAttribute('title') || li.querySelector('img')?.alt;
-            if (asin && title) {
-              variants.push({
-                id: asin,
-                title: title.replace('Click to select', '').trim(),
-                type: 'color',
-                available: !li.className.includes('unavailable')
-              });
-            }
+          // Color swatches - sélecteurs améliorés
+          const colorSelectors = [
+            '#variation_color_name li',
+            '#color_name_ li',
+            '[id*="color"] li',
+            '.swatches li'
+          ];
+          
+          for (const sel of colorSelectors) {
+            document.querySelectorAll(sel).forEach(li => {
+              const asin = li.dataset.asin || li.querySelector('[data-asin]')?.dataset.asin;
+              const title = li.getAttribute('title') || li.querySelector('img')?.alt || li.textContent?.trim();
+              if (title && title.length > 0) {
+                variants.push({
+                  id: asin || `color_${variants.length}`,
+                  title: title.replace('Click to select', '').replace('Cliquez pour sélectionner', '').trim(),
+                  type: 'color',
+                  available: !li.className.includes('unavailable') && !li.className.includes('swatchUnavailable')
+                });
+              }
+            });
+          }
+
+          // Variation dropdown générique
+          document.querySelectorAll('[id^="variation_"] select').forEach(select => {
+            const type = select.id.replace('variation_', '').replace('_name', '');
+            select.querySelectorAll('option').forEach(opt => {
+              if (opt.value && opt.value !== '-1' && opt.textContent?.trim()) {
+                variants.push({
+                  id: opt.value,
+                  title: opt.textContent.trim(),
+                  type: type,
+                  available: !opt.className.includes('unavailable')
+                });
+              }
+            });
           });
         }
 
