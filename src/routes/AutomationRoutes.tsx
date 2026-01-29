@@ -21,7 +21,6 @@ const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPa
 const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
 
 // Optimization
-const OptimizationHub = lazy(() => import('@/pages/OptimizationHub'));
 const FeedOptimizationPage = lazy(() => import('@/pages/FeedOptimizationPage'));
 const StockSyncDashboard = lazy(() => import('@/pages/StockManagementDashboard'));
 const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssistant'));
@@ -59,7 +58,7 @@ export function AutomationRoutes() {
       <Route path="promotions" element={<PromotionsAutomationPage />} />
       
       {/* Optimization */}
-      <Route path="optimization" element={<OptimizationHub />} />
+      <Route path="optimization" element={<FeedOptimizationPage />} />
       <Route path="feed-optimization" element={<FeedOptimizationPage />} />
       <Route path="stock-sync" element={<StockSyncDashboard />} />
       <Route path="unified-sync" element={<UnifiedSyncDashboard />} />
