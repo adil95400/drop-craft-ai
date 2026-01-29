@@ -55,9 +55,7 @@ const CreateNotification = lazy(() => import('@/pages/notifications/CreateNotifi
 const CouponsManagementPage = lazy(() => import('@/pages/CouponsManagementPage'));
 const FreeTrialActivationPage = lazy(() => import('@/pages/FreeTrialActivationPage'));
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
-const SwaggerPage = lazy(() => import('@/pages/SwaggerPage'));
 const EnrichmentSettingsPage = lazy(() => import('@/pages/enrichment/EnrichmentSettingsPage'));
-const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
 const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
@@ -66,7 +64,6 @@ const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
 // ProductRulesPage supprimé - intégré dans /products?tab=rules
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
-const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
 const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
@@ -203,7 +200,7 @@ export function AppRoutes() {
         <Route path="/notifications" element={<ProtectedRoute><ChannableLayout><NotificationsPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Feature Pages */}
-        <Route path="/advanced" element={<ProtectedRoute><ChannableLayout><AdvancedModulesPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/advanced" element={<Navigate to="/dashboard" replace />} />
         <Route path="/monitoring" element={<ProtectedRoute><ChannableLayout><MonitoringPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/rules" element={<Navigate to="/products?tab=rules" replace />} />
         <Route path="/catalog-intelligence" element={<ProtectedRoute><ChannableLayout><CatalogIntelligencePage /></ChannableLayout></ProtectedRoute>} />

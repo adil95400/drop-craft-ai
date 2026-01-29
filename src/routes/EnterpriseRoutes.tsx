@@ -23,7 +23,6 @@ const AdvancedMonitoringPage = lazy(() => import('@/pages/AdvancedMonitoringPage
 const PlatformManagementPage = lazy(() => import('@/pages/PlatformManagementPage'));
 
 // Admin Management
-const ApplicationStatusPage = lazy(() => import('@/pages/ApplicationStatusPage'));
 const TaxManagementPage = lazy(() => import('@/pages/TaxManagementPage'));
 const TeamManagement = lazy(() => import('@/pages/TeamManagement'));
 const InternationalizationPage = lazy(() => import('@/pages/InternationalizationPage'));
@@ -52,7 +51,7 @@ export function EnterpriseRoutes() {
       <Route path="platform" element={<PlatformManagementPage />} />
       
       {/* System Management */}
-      <Route path="status" element={<ApplicationStatusPage />} />
+      <Route path="status" element={<Navigate to="/enterprise/monitoring" replace />} />
       <Route path="tax" element={<TaxManagementPage />} />
       <Route path="team" element={<TeamManagement />} />
       <Route path="i18n" element={<InternationalizationPage />} />
