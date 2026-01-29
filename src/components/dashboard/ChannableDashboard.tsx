@@ -284,7 +284,6 @@ export function ChannableDashboard() {
 
   const renderWidget = (widget: typeof widgets[0]) => {
     const commonProps = {
-      key: widget.id,
       timeRange,
       settings: widget.settings,
       lastRefresh,
@@ -292,37 +291,37 @@ export function ChannableDashboard() {
 
     switch (widget.type) {
       case 'revenue':
-        return <RevenueWidgetChannable {...commonProps} />;
+        return <RevenueWidgetChannable key={widget.id} {...commonProps} />;
       case 'orders':
-        return <OrdersWidgetChannable {...commonProps} />;
+        return <OrdersWidgetChannable key={widget.id} {...commonProps} />;
       case 'customers':
-        return <CustomersWidgetChannable {...commonProps} />;
+        return <CustomersWidgetChannable key={widget.id} {...commonProps} />;
       case 'conversion':
-        return <ConversionWidget {...commonProps} />;
+        return <ConversionWidget key={widget.id} {...commonProps} />;
       case 'topProducts':
-        return <TopProductsWidget {...commonProps} />;
+        return <TopProductsWidget key={widget.id} {...commonProps} />;
       case 'inventory':
-        return <InventoryWidgetAdvanced {...commonProps} />;
+        return <InventoryWidgetAdvanced key={widget.id} {...commonProps} />;
       case 'alerts':
-        return <AlertsWidgetAdvanced {...commonProps} />;
+        return <AlertsWidgetAdvanced key={widget.id} {...commonProps} />;
       case 'traffic':
-        return <TrafficWidget {...commonProps} />;
+        return <TrafficWidget key={widget.id} {...commonProps} />;
       case 'profit':
-        return <ProfitWidget {...commonProps} />;
+        return <ProfitWidget key={widget.id} {...commonProps} />;
       case 'recentActivity':
-        return <RecentActivityWidget {...commonProps} />;
+        return <RecentActivityWidget key={widget.id} {...commonProps} />;
       case 'goals':
-        return <GoalsWidget {...commonProps} />;
+        return <GoalsWidget key={widget.id} {...commonProps} />;
       case 'marketing':
-        return <MarketingWidget {...commonProps} />;
+        return <MarketingWidget key={widget.id} {...commonProps} />;
       case 'shipping':
-        return <ShippingWidget {...commonProps} />;
+        return <ShippingWidget key={widget.id} {...commonProps} />;
       case 'comparison':
-        return <ComparisonWidget {...commonProps} />;
+        return <ComparisonWidget key={widget.id} {...commonProps} />;
       case 'connectedStores':
-        return <ConnectedStoresWidget {...commonProps} />;
+        return <ConnectedStoresWidget key={widget.id} {...commonProps} />;
       case 'marketplaces':
-        return <MarketplacesWidget {...commonProps} />;
+        return <MarketplacesWidget key={widget.id} {...commonProps} />;
       default:
         return null;
     }
