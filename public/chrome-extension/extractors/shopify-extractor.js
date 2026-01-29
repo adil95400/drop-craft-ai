@@ -182,20 +182,58 @@
         };
       }
 
-      const title = document.querySelector('h1.product-title, h1[class*="product"], .product__title')?.textContent?.trim() || '';
-      const brand = document.querySelector('.product__vendor, [class*="vendor"]')?.textContent?.trim() || '';
+      // DOM fallback - 2025 selectors
+      const titleSelectors = [
+        'h1.product-title',
+        'h1[class*="product"]',
+        '.product__title',
+        '[data-product-title]',
+        '[class*="ProductTitle"]'
+      ];
+      let title = '';
+      for (const sel of titleSelectors) {
+        const el = document.querySelector(sel);
+        if (el?.textContent?.trim()) {
+          title = el.textContent.trim();
+          break;
+        }
+      }
       
+      const brandSelectors = [
+        '.product__vendor',
+        '[class*="vendor"]',
+        '[data-product-vendor]',
+        '[class*="ProductVendor"]'
+      ];
+      let brand = '';
+      for (const sel of brandSelectors) {
+        const el = document.querySelector(sel);
+        if (el?.textContent?.trim()) {
+          brand = el.textContent.trim();
+          break;
+        }
+      }
+      
+      const descSelectors = [
+        '.product-description',
+        '.product__description',
+        '[class*="description"]',
+        '[data-product-description]'
+      ];
       let description = '';
-      const descEl = document.querySelector('.product-description, .product__description, [class*="description"]');
-      if (descEl) {
-        description = descEl.textContent?.trim()?.substring(0, 8000) || '';
+      for (const sel of descSelectors) {
+        const descEl = document.querySelector(sel);
+        if (descEl?.textContent?.trim()) {
+          description = descEl.textContent.trim().substring(0, 8000);
+          break;
+        }
       }
 
       return {
         title,
         brand,
         description,
-        sku: document.querySelector('[class*="sku"]')?.textContent?.trim() || ''
+        sku: document.querySelector('[class*="sku"], [data-product-sku]')?.textContent?.trim() || ''
       };
     }
 

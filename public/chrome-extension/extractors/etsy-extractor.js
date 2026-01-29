@@ -105,9 +105,45 @@
       const jsonLD = this.extractFromJsonLD();
       if (jsonLD.title) return jsonLD;
 
-      const titleEl = document.querySelector('h1[data-listing-page-title], h1.wt-text-body-01, [data-buy-box-listing-title]');
-      const shopEl = document.querySelector('[data-shop-name], .wt-text-link-no-underline, [data-shop-info] a');
-      const descEl = document.querySelector('[data-product-details-description-text-content], .wt-text-body-01, .wt-content-toggle__body');
+      // 2025 selectors for Etsy
+      const titleSelectors = [
+        'h1[data-listing-page-title]',
+        'h1.wt-text-body-01',
+        '[data-buy-box-listing-title]',
+        '[data-testid="listing-title"]',
+        'h1[class*="listing-title"]'
+      ];
+      let titleEl = null;
+      for (const sel of titleSelectors) {
+        titleEl = document.querySelector(sel);
+        if (titleEl?.textContent?.trim()) break;
+      }
+      
+      const shopSelectors = [
+        '[data-shop-name]',
+        '.wt-text-link-no-underline',
+        '[data-shop-info] a',
+        '[data-testid="shop-name"]',
+        '[class*="shop-name"] a'
+      ];
+      let shopEl = null;
+      for (const sel of shopSelectors) {
+        shopEl = document.querySelector(sel);
+        if (shopEl?.textContent?.trim()) break;
+      }
+      
+      const descSelectors = [
+        '[data-product-details-description-text-content]',
+        '.wt-text-body-01',
+        '.wt-content-toggle__body',
+        '[data-testid="product-description"]',
+        '[class*="description-text"]'
+      ];
+      let descEl = null;
+      for (const sel of descSelectors) {
+        descEl = document.querySelector(sel);
+        if (descEl?.textContent?.trim()) break;
+      }
 
       return {
         title: titleEl?.textContent?.trim() || '',
@@ -191,21 +227,42 @@
     async extractImages() {
       const images = new Set();
 
-      // Main carousel images
-      document.querySelectorAll('[data-carousel-image] img, .listing-page-image-carousel img, .image-carousel img').forEach(img => {
-        const src = img.dataset?.srcDelay || img.dataset?.src || img.src;
-        if (src && this.isValidImage(src)) {
-          images.add(this.normalizeImageUrl(src));
-        }
-      });
+      // Main carousel images - 2025 selectors
+      const mainImgSelectors = [
+        '[data-carousel-image] img',
+        '.listing-page-image-carousel img',
+        '.image-carousel img',
+        '[data-testid="listing-image"] img',
+        '[class*="ListingGallery"] img',
+        '[class*="image-gallery"] img'
+      ];
+      
+      for (const sel of mainImgSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          const src = img.dataset?.srcDelay || img.dataset?.src || img.dataset?.lazy || img.src;
+          if (src && this.isValidImage(src)) {
+            images.add(this.normalizeImageUrl(src));
+          }
+        });
+      }
 
-      // Thumbnails
-      document.querySelectorAll('[data-carousel-thumbnail] img, .carousel-thumbnail img, .listing-thumb img').forEach(img => {
-        const src = img.dataset?.srcDelay || img.dataset?.src || img.src;
-        if (src && this.isValidImage(src)) {
-          images.add(this.normalizeImageUrl(src));
-        }
-      });
+      // Thumbnails - 2025 selectors
+      const thumbSelectors = [
+        '[data-carousel-thumbnail] img',
+        '.carousel-thumbnail img',
+        '.listing-thumb img',
+        '[data-testid="thumbnail-image"] img',
+        '[class*="CarouselThumbnail"] img'
+      ];
+      
+      for (const sel of thumbSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          const src = img.dataset?.srcDelay || img.dataset?.src || img.dataset?.lazy || img.src;
+          if (src && this.isValidImage(src)) {
+            images.add(this.normalizeImageUrl(src));
+          }
+        });
+      }
 
       // JSON-LD images
       const scripts = document.querySelectorAll('script[type="application/ld+json"]');

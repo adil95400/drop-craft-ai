@@ -186,12 +186,16 @@
     }
 
     extractTitleFromDOM() {
+      // 2025 selectors for Shein
       const selectors = [
         '.product-intro__head-name',
         '[class*="product-name"]',
         '.goods-title',
         'h1[class*="title"]',
         '.product-intro__info h1',
+        '[data-testid="product-title"]',
+        '[class*="ProductTitle"]',
+        '[class*="goodsName"]',
         'h1'
       ];
 
@@ -311,28 +315,40 @@
         });
       }
 
-      // From DOM
+      // From DOM - 2025 selectors
       const imageSelectors = [
         '.product-intro__thumbs-item img',
         '[class*="goods-gallery"] img',
         '.swiper-slide img',
         '[class*="carousel"] img',
-        '.product-intro__head-image img'
+        '.product-intro__head-image img',
+        '[class*="ProductGallery"] img',
+        '[data-testid="product-image"] img',
+        '[class*="productImage"] img'
       ];
 
       for (const sel of imageSelectors) {
         document.querySelectorAll(sel).forEach(img => {
-          const src = img.dataset?.src || img.src;
-          if (src && (src.includes('shein') || src.includes('ltwebstatic'))) {
+          const src = img.dataset?.src || img.dataset?.lazy || img.src;
+          if (src && (src.includes('shein') || src.includes('ltwebstatic') || src.includes('shecdn'))) {
             images.add(this.normalizeImageUrl(src));
           }
         });
       }
 
-      // Main image
-      const mainImg = document.querySelector('.product-intro__main-image img, [class*="main-image"] img');
-      if (mainImg) {
-        images.add(this.normalizeImageUrl(mainImg.dataset?.src || mainImg.src));
+      // Main image - 2025 selectors
+      const mainImgSelectors = [
+        '.product-intro__main-image img',
+        '[class*="main-image"] img',
+        '[data-testid="main-product-image"] img',
+        '[class*="MainImage"] img'
+      ];
+      
+      for (const sel of mainImgSelectors) {
+        const mainImg = document.querySelector(sel);
+        if (mainImg) {
+          images.add(this.normalizeImageUrl(mainImg.dataset?.src || mainImg.dataset?.lazy || mainImg.src));
+        }
       }
 
       return Array.from(images).filter(url => url && url.includes('http')).slice(0, 30);
@@ -405,38 +421,56 @@
         });
       }
 
-      // DOM fallback - Colors
+      // DOM fallback - Colors - 2025 selectors
       if (variants.filter(v => v.type === 'color').length === 0) {
-        document.querySelectorAll('[class*="color-item"], [class*="product-intro__color"] li').forEach(item => {
-          const img = item.querySelector('img');
-          const title = item.getAttribute('aria-label') || item.getAttribute('title');
-          
-          if (title || img) {
-            variants.push({
-              id: `color_${variants.length}`,
-              title: title || 'Color',
-              type: 'color',
-              image: img?.src ? this.normalizeImageUrl(img.src) : null,
-              available: !item.className.includes('disabled')
-            });
-          }
-        });
+        const colorSelectors = [
+          '[class*="color-item"]',
+          '[class*="product-intro__color"] li',
+          '[data-testid="color-swatch"]',
+          '[class*="ColorSwatch"]'
+        ];
+        
+        for (const sel of colorSelectors) {
+          document.querySelectorAll(sel).forEach(item => {
+            const img = item.querySelector('img');
+            const title = item.getAttribute('aria-label') || item.getAttribute('title') || item.dataset?.colorName;
+            
+            if (title || img) {
+              variants.push({
+                id: `color_${variants.length}`,
+                title: title || 'Color',
+                type: 'color',
+                image: img?.src ? this.normalizeImageUrl(img.src) : null,
+                available: !item.className.includes('disabled')
+              });
+            }
+          });
+        }
       }
 
-      // DOM fallback - Sizes
+      // DOM fallback - Sizes - 2025 selectors
       if (variants.filter(v => v.type === 'size').length === 0) {
-        document.querySelectorAll('[class*="size-item"], [class*="product-intro__size"] li').forEach(item => {
-          const title = item.textContent?.trim();
-          
-          if (title) {
-            variants.push({
-              id: `size_${variants.length}`,
-              title: title,
-              type: 'size',
-              available: !item.className.includes('disabled') && !item.className.includes('soldout')
-            });
-          }
-        });
+        const sizeSelectors = [
+          '[class*="size-item"]',
+          '[class*="product-intro__size"] li',
+          '[data-testid="size-option"]',
+          '[class*="SizeOption"]'
+        ];
+        
+        for (const sel of sizeSelectors) {
+          document.querySelectorAll(sel).forEach(item => {
+            const title = item.textContent?.trim();
+            
+            if (title && title.length < 20) {
+              variants.push({
+                id: `size_${variants.length}`,
+                title: title,
+                type: 'size',
+                available: !item.className.includes('disabled') && !item.className.includes('soldout')
+              });
+            }
+          });
+        }
       }
 
       return variants;

@@ -136,30 +136,36 @@
       const jsonLD = this.extractFromJsonLD();
       if (jsonLD.title) return jsonLD;
 
-      // DOM extraction
+      // DOM extraction - 2025 selectors
       const titleSelectors = [
         'h1.x-item-title__mainTitle',
         '[data-testid="x-item-title"]',
         '#itemTitle',
         'h1[itemprop="name"]',
-        '.x-item-title span'
+        '.x-item-title span',
+        '[data-testid="ux-title-text"]',
+        '.ux-textspans--BOLD[role="heading"]',
+        '[class*="item-title"] h1'
       ];
 
       let title = '';
       for (const sel of titleSelectors) {
         const el = document.querySelector(sel);
         if (el?.textContent?.trim()) {
-          title = el.textContent.replace(/^Details about\s*/i, '').trim();
+          title = el.textContent.replace(/^Details about\s*/i, '').replace(/^New Listing\s*/i, '').trim();
           break;
         }
       }
 
-      // Brand/Seller
+      // Brand/Seller - 2025 selectors
       const brandSelectors = [
         '[data-testid="x-store-info"] a',
+        '[data-testid="str-title"]',
         '.x-sellercard-atf__info a',
         '[class*="seller-info"] a',
-        '.x-seller-info a'
+        '.x-seller-info a',
+        '[data-testid="ux-seller-section"] a',
+        '.ux-seller-section a'
       ];
       let brand = '';
       for (const sel of brandSelectors) {
@@ -244,14 +250,17 @@
         } catch (e) {}
       }
 
-      // DOM fallback
+      // DOM fallback - 2025 selectors
       if (price === 0) {
         const priceSelectors = [
           '[data-testid="x-price-primary"] .ux-textspans',
+          '[data-testid="x-bin-price"] .ux-textspans',
           '[itemprop="price"]',
           '#prcIsum',
           '.x-price-primary',
-          '.x-buybox__price-section span'
+          '.x-buybox__price-section span',
+          '[class*="price-primary"] [class*="textspans"]',
+          '.ux-price-wrapper .ux-textspans'
         ];
 
         for (const sel of priceSelectors) {
@@ -304,24 +313,45 @@
     async extractImages() {
       const images = new Set();
 
-      // Main carousel images
-      document.querySelectorAll('.ux-image-carousel img, [data-testid="ux-image-carousel"] img, .ux-image-magnify img').forEach(img => {
-        const src = img.dataset?.src || img.dataset?.zoom || img.src;
-        if (src) {
-          images.add(this.normalizeImageUrl(src));
-        }
-      });
+      // Main carousel images - 2025 selectors
+      const mainImageSelectors = [
+        '.ux-image-carousel img',
+        '[data-testid="ux-image-carousel"] img',
+        '.ux-image-magnify img',
+        '[data-testid="ux-image-grid"] img',
+        '[class*="image-viewer"] img',
+        '.ux-image-carousel-item img'
+      ];
+      
+      for (const sel of mainImageSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          const src = img.dataset?.src || img.dataset?.zoom || img.dataset?.srcset || img.src;
+          if (src) {
+            images.add(this.normalizeImageUrl(src));
+          }
+        });
+      }
 
-      // Thumbnail images
-      document.querySelectorAll('[class*="thumb"] img, .x-photos-thumb img, .ux-image-filmstrip img').forEach(img => {
-        const src = img.dataset?.src || img.src;
-        if (src) {
-          images.add(this.normalizeImageUrl(src));
-        }
-      });
+      // Thumbnail images - 2025 selectors
+      const thumbSelectors = [
+        '[class*="thumb"] img',
+        '.x-photos-thumb img',
+        '.ux-image-filmstrip img',
+        '[data-testid="ux-image-filmstrip"] img',
+        '.filmstrip-item img'
+      ];
+      
+      for (const sel of thumbSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          const src = img.dataset?.src || img.src;
+          if (src) {
+            images.add(this.normalizeImageUrl(src));
+          }
+        });
+      }
 
       // Main large image
-      const mainImg = document.querySelector('#icImg, .ux-image-filmstrip-image img');
+      const mainImg = document.querySelector('#icImg, .ux-image-filmstrip-image img, [data-testid="ux-image-main"] img');
       if (mainImg) {
         images.add(this.normalizeImageUrl(mainImg.dataset?.src || mainImg.src));
       }
@@ -391,31 +421,54 @@
     async extractVariants() {
       const variants = [];
 
-      // Variation selectors
-      document.querySelectorAll('[data-testid*="select"] select option, #msku-sel-1 option').forEach(option => {
-        if (option.value && option.value !== '-1') {
-          variants.push({
-            id: option.value,
-            title: option.textContent.trim(),
-            available: !option.disabled
-          });
-        }
-      });
+      // Variation selectors - 2025 selectors
+      const selectSelectors = [
+        '[data-testid*="select"] select option',
+        '#msku-sel-1 option',
+        '.x-msku__select-box option',
+        '[data-testid="x-msku-evo"] select option'
+      ];
+      
+      for (const sel of selectSelectors) {
+        document.querySelectorAll(sel).forEach(option => {
+          if (option.value && option.value !== '-1' && option.value !== '') {
+            variants.push({
+              id: option.value,
+              title: option.textContent.trim(),
+              available: !option.disabled
+            });
+          }
+        });
+      }
 
-      // Buttons/swatches
-      document.querySelectorAll('.x-variation-value, [class*="variation-item"], .x-msku__swatch-button').forEach(item => {
-        const title = item.getAttribute('aria-label') || item.textContent?.trim();
-        const img = item.querySelector('img');
-        
-        if (title) {
-          variants.push({
-            id: `var_${variants.length}`,
-            title: title,
-            image: img?.src ? this.normalizeImageUrl(img.src) : null,
-            available: !item.className.includes('unavailable') && !item.hasAttribute('disabled')
-          });
-        }
-      });
+      // Buttons/swatches - 2025 selectors
+      const swatchSelectors = [
+        '.x-variation-value',
+        '[class*="variation-item"]',
+        '.x-msku__swatch-button',
+        '[data-testid="x-msku-evo"] button',
+        '.ux-pill-selector button',
+        '[class*="msku-swatch"]'
+      ];
+      
+      for (const sel of swatchSelectors) {
+        document.querySelectorAll(sel).forEach(item => {
+          const title = item.getAttribute('aria-label') || item.getAttribute('title') || item.textContent?.trim();
+          const img = item.querySelector('img');
+          
+          if (title && title.length < 100) {
+            const existing = variants.find(v => v.title === title);
+            if (!existing) {
+              variants.push({
+                id: `var_${variants.length}`,
+                title: title,
+                image: img?.src ? this.normalizeImageUrl(img.src) : null,
+                available: !item.className.includes('unavailable') && !item.hasAttribute('disabled') && !item.classList.contains('ux-pill-selector--disabled')
+              });
+            }
+          }
+        });
+      }
 
       return variants;
     }

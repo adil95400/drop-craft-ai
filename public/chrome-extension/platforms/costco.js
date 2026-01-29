@@ -71,49 +71,98 @@
     extractFromDOM() {
       const data = {};
 
-      // Title
-      const titleEl = document.querySelector('h1[itemprop="name"], .product-title, h1.product-h1-container');
-      if (titleEl) data.title = titleEl.textContent.trim();
-
-      // Price
-      const priceEl = document.querySelector('.price, [data-automation="item-price"]');
-      if (priceEl) {
-        const priceText = priceEl.textContent.replace(/[^0-9.]/g, '');
-        data.price = parseFloat(priceText) || 0;
+      // Title - 2025 selectors
+      const titleSelectors = [
+        'h1[itemprop="name"]',
+        '.product-title',
+        'h1.product-h1-container',
+        '[data-testid="product-title"]',
+        '[class*="ProductName"] h1'
+      ];
+      for (const sel of titleSelectors) {
+        const titleEl = document.querySelector(sel);
+        if (titleEl?.textContent?.trim()) {
+          data.title = titleEl.textContent.trim();
+          break;
+        }
       }
 
-      // Images
-      data.images = [];
-      const imgEls = document.querySelectorAll('.product-image-viewer img, .thumbnail-images img, [data-automation="main-image"] img');
-      imgEls.forEach(img => {
-        let src = img.src || img.dataset.src;
-        if (src) {
-          // Get high-res version by removing resize params
-          src = src.replace(/\?.*/, '').replace(/_\d+\./g, '.');
-          if (!data.images.includes(src)) data.images.push(src);
+      // Price - 2025 selectors
+      const priceSelectors = [
+        '.price',
+        '[data-automation="item-price"]',
+        '[data-testid="product-price"]',
+        '[class*="ProductPrice"]'
+      ];
+      for (const sel of priceSelectors) {
+        const priceEl = document.querySelector(sel);
+        if (priceEl) {
+          const priceText = priceEl.textContent.replace(/[^0-9.]/g, '');
+          data.price = parseFloat(priceText) || 0;
+          if (data.price > 0) break;
         }
-      });
+      }
+
+      // Images - 2025 selectors
+      data.images = [];
+      const imgSelectors = [
+        '.product-image-viewer img',
+        '.thumbnail-images img',
+        '[data-automation="main-image"] img',
+        '[data-testid="product-gallery"] img',
+        '[class*="ProductGallery"] img'
+      ];
+      for (const sel of imgSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          let src = img.src || img.dataset.src || img.dataset.lazy;
+          if (src) {
+            // Get high-res version by removing resize params
+            src = src.replace(/\?.*/, '').replace(/_\d+\./g, '.');
+            if (!data.images.includes(src)) data.images.push(src);
+          }
+        });
+      }
       if (data.images.length) data.image = data.images[0];
 
-      // Rating
-      const ratingEl = document.querySelector('[itemprop="ratingValue"], .ratings-average');
-      if (ratingEl) {
-        data.rating = parseFloat(ratingEl.textContent || ratingEl.content) || 0;
+      // Rating - 2025 selectors
+      const ratingSelectors = ['[itemprop="ratingValue"]', '.ratings-average', '[data-testid="rating"]'];
+      for (const sel of ratingSelectors) {
+        const ratingEl = document.querySelector(sel);
+        if (ratingEl) {
+          data.rating = parseFloat(ratingEl.textContent || ratingEl.content) || 0;
+          if (data.rating > 0) break;
+        }
       }
 
-      // Review count
-      const reviewEl = document.querySelector('[itemprop="reviewCount"], .ratings-count');
-      if (reviewEl) {
-        data.reviewCount = parseInt(reviewEl.textContent.replace(/[^0-9]/g, '')) || 0;
+      // Review count - 2025 selectors
+      const reviewSelectors = ['[itemprop="reviewCount"]', '.ratings-count', '[data-testid="reviews-count"]'];
+      for (const sel of reviewSelectors) {
+        const reviewEl = document.querySelector(sel);
+        if (reviewEl) {
+          data.reviewCount = parseInt(reviewEl.textContent.replace(/[^0-9]/g, '')) || 0;
+          if (data.reviewCount > 0) break;
+        }
       }
 
-      // Brand
-      const brandEl = document.querySelector('[itemprop="brand"], .product-brand');
-      if (brandEl) data.brand = brandEl.textContent.trim();
+      // Brand - 2025 selectors
+      const brandSelectors = ['[itemprop="brand"]', '.product-brand', '[data-testid="brand"]'];
+      for (const sel of brandSelectors) {
+        const brandEl = document.querySelector(sel);
+        if (brandEl?.textContent?.trim()) {
+          data.brand = brandEl.textContent.trim();
+          break;
+        }
+      }
 
-      // Description
-      const descEl = document.querySelector('[itemprop="description"], .product-description');
-      if (descEl) data.description = descEl.textContent.trim().substring(0, 2000);
+      // Description - 2025 selectors
+      const descSelectors = ['[itemprop="description"]', '.product-description', '[data-testid="description"]'];
+      for (const sel of descSelectors) {
+        const descEl = document.querySelector(sel);
+        if (descEl?.textContent?.trim()) {
+          data.description = descEl.textContent.trim().substring(0, 2000);
+          break;
+        }
+      }
 
       return data;
     }
