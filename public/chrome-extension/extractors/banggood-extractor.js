@@ -58,21 +58,58 @@
     }
 
     async extractBasicInfo() {
-      const title = document.querySelector('.product-title h1, .goodsIntro_title, [class*="ProductTitle"]')?.textContent?.trim() || '';
+      // 2025 selectors for Banggood
+      const titleSelectors = [
+        '.product-title h1',
+        '.goodsIntro_title',
+        '[class*="ProductTitle"]',
+        '[data-testid="product-title"]',
+        'h1[class*="title"]'
+      ];
+      let title = '';
+      for (const sel of titleSelectors) {
+        const el = document.querySelector(sel);
+        if (el?.textContent?.trim()) {
+          title = el.textContent.trim();
+          break;
+        }
+      }
       
+      const descSelectors = [
+        '.product-description',
+        '.goodsIntro_content',
+        '[class*="Description"]',
+        '[data-testid="product-description"]'
+      ];
       let description = '';
-      const descEl = document.querySelector('.product-description, .goodsIntro_content, [class*="Description"]');
-      if (descEl) {
-        description = descEl.textContent?.trim()?.substring(0, 8000) || '';
+      for (const sel of descSelectors) {
+        const descEl = document.querySelector(sel);
+        if (descEl?.textContent?.trim()) {
+          description = descEl.textContent.trim().substring(0, 8000);
+          break;
+        }
       }
 
-      const brand = document.querySelector('.product-brand a, .goodsIntro_brand, [class*="Brand"]')?.textContent?.trim() || '';
+      const brandSelectors = [
+        '.product-brand a',
+        '.goodsIntro_brand',
+        '[class*="Brand"]',
+        '[data-testid="product-brand"]'
+      ];
+      let brand = '';
+      for (const sel of brandSelectors) {
+        const el = document.querySelector(sel);
+        if (el?.textContent?.trim()) {
+          brand = el.textContent.trim();
+          break;
+        }
+      }
 
       return {
         title,
         brand,
         description,
-        sku: document.querySelector('.product-sku, .goodsIntro_sku')?.textContent?.replace(/SKU:\s*/i, '')?.trim() || this.productId
+        sku: document.querySelector('.product-sku, .goodsIntro_sku, [data-testid="product-sku"]')?.textContent?.replace(/SKU:\s*/i, '')?.trim() || this.productId
       };
     }
 
@@ -117,26 +154,45 @@
     async extractImages() {
       const images = new Set();
 
-      // Main gallery
-      document.querySelectorAll('.product-gallery img, .goodsIntro_gallery img, [class*="Gallery"] img').forEach(img => {
-        let src = img.dataset.src || img.dataset.lazy || img.src;
-        if (src) {
-          // Get high resolution
-          src = src.replace(/_\d+x\d+/, '').replace(/thumb_/, '').replace(/_S/, '_L');
-          if (src.startsWith('//')) src = 'https:' + src;
-          if (!src.includes('placeholder')) images.add(src);
-        }
-      });
+      // Main gallery - 2025 selectors
+      const gallerySelectors = [
+        '.product-gallery img',
+        '.goodsIntro_gallery img',
+        '[class*="Gallery"] img',
+        '[data-testid="product-gallery"] img',
+        '[class*="ProductImage"] img'
+      ];
+      
+      for (const sel of gallerySelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          let src = img.dataset.src || img.dataset.lazy || img.dataset.original || img.src;
+          if (src) {
+            // Get high resolution
+            src = src.replace(/_\d+x\d+/, '').replace(/thumb_/, '').replace(/_S/, '_L');
+            if (src.startsWith('//')) src = 'https:' + src;
+            if (!src.includes('placeholder') && !src.includes('loading')) images.add(src);
+          }
+        });
+      }
 
-      // Thumbnails
-      document.querySelectorAll('.product-thumbs img, .goodsIntro_thumbs img').forEach(img => {
-        let src = img.dataset.src || img.dataset.lazy || img.src;
-        if (src) {
-          src = src.replace(/_\d+x\d+/, '').replace(/thumb_/, '').replace(/_S/, '_L');
-          if (src.startsWith('//')) src = 'https:' + src;
-          images.add(src);
-        }
-      });
+      // Thumbnails - 2025 selectors
+      const thumbSelectors = [
+        '.product-thumbs img',
+        '.goodsIntro_thumbs img',
+        '[data-testid="thumbnail"] img',
+        '[class*="Thumbnail"] img'
+      ];
+      
+      for (const sel of thumbSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          let src = img.dataset.src || img.dataset.lazy || img.dataset.original || img.src;
+          if (src) {
+            src = src.replace(/_\d+x\d+/, '').replace(/thumb_/, '').replace(/_S/, '_L');
+            if (src.startsWith('//')) src = 'https:' + src;
+            images.add(src);
+          }
+        });
+      }
 
       return Array.from(images).filter(url => url?.includes('http')).slice(0, 50);
     }

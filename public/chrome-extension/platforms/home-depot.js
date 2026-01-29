@@ -73,55 +73,107 @@
     extractFromDOM() {
       const data = {};
 
-      // Title
-      const titleEl = document.querySelector('h1.product-title, .product-details__title, [data-testid="product-title"]');
-      if (titleEl) data.title = titleEl.textContent.trim();
-
-      // Price
-      const priceEl = document.querySelector('.price-format__main-price, [data-testid="price-format"]');
-      if (priceEl) {
-        const priceText = priceEl.textContent.replace(/[^0-9.]/g, '');
-        data.price = parseFloat(priceText) || 0;
-      }
-
-      // Original price
-      const origPriceEl = document.querySelector('.price-format__was-price');
-      if (origPriceEl) {
-        data.originalPrice = parseFloat(origPriceEl.textContent.replace(/[^0-9.]/g, '')) || null;
-      }
-
-      // Images
-      data.images = [];
-      const imgEls = document.querySelectorAll('.mediagallery__image img, [data-testid="media-gallery"] img');
-      imgEls.forEach(img => {
-        const src = img.src || img.dataset.src;
-        if (src && !data.images.includes(src)) {
-          // Get high-res version
-          const hiRes = src.replace(/_\d+\./g, '_1000.');
-          data.images.push(hiRes);
+      // Title - 2025 selectors
+      const titleSelectors = [
+        'h1.product-title',
+        '.product-details__title',
+        '[data-testid="product-title"]',
+        '[class*="ProductTitle"] h1',
+        'h1[class*="product-name"]'
+      ];
+      for (const sel of titleSelectors) {
+        const titleEl = document.querySelector(sel);
+        if (titleEl?.textContent?.trim()) {
+          data.title = titleEl.textContent.trim();
+          break;
         }
-      });
+      }
+
+      // Price - 2025 selectors
+      const priceSelectors = [
+        '.price-format__main-price',
+        '[data-testid="price-format"]',
+        '[class*="ProductPrice"]',
+        '[data-automation="product-price"]'
+      ];
+      for (const sel of priceSelectors) {
+        const priceEl = document.querySelector(sel);
+        if (priceEl) {
+          const priceText = priceEl.textContent.replace(/[^0-9.]/g, '');
+          data.price = parseFloat(priceText) || 0;
+          if (data.price > 0) break;
+        }
+      }
+
+      // Original price - 2025 selectors
+      const origPriceSelectors = ['.price-format__was-price', '[data-testid="was-price"]', '[class*="ComparePrice"]'];
+      for (const sel of origPriceSelectors) {
+        const origPriceEl = document.querySelector(sel);
+        if (origPriceEl) {
+          data.originalPrice = parseFloat(origPriceEl.textContent.replace(/[^0-9.]/g, '')) || null;
+          if (data.originalPrice > 0) break;
+        }
+      }
+
+      // Images - 2025 selectors
+      data.images = [];
+      const imgSelectors = [
+        '.mediagallery__image img',
+        '[data-testid="media-gallery"] img',
+        '[class*="ProductGallery"] img',
+        '[data-automation="product-image"] img'
+      ];
+      for (const sel of imgSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          const src = img.src || img.dataset.src || img.dataset.lazy;
+          if (src && !data.images.includes(src)) {
+            // Get high-res version
+            const hiRes = src.replace(/_\d+\./g, '_1000.');
+            data.images.push(hiRes);
+          }
+        });
+      }
       if (data.images.length) data.image = data.images[0];
 
-      // Rating
-      const ratingEl = document.querySelector('.stars-rating__star-count');
-      if (ratingEl) {
-        data.rating = parseFloat(ratingEl.textContent) || 0;
+      // Rating - 2025 selectors
+      const ratingSelectors = ['.stars-rating__star-count', '[data-testid="rating"]', '[class*="ProductRating"]'];
+      for (const sel of ratingSelectors) {
+        const ratingEl = document.querySelector(sel);
+        if (ratingEl) {
+          data.rating = parseFloat(ratingEl.textContent) || 0;
+          if (data.rating > 0) break;
+        }
       }
 
-      // Review count
-      const reviewEl = document.querySelector('.ratings-reviews__count');
-      if (reviewEl) {
-        data.reviewCount = parseInt(reviewEl.textContent.replace(/[^0-9]/g, '')) || 0;
+      // Review count - 2025 selectors
+      const reviewSelectors = ['.ratings-reviews__count', '[data-testid="reviews-count"]', '[class*="ReviewCount"]'];
+      for (const sel of reviewSelectors) {
+        const reviewEl = document.querySelector(sel);
+        if (reviewEl) {
+          data.reviewCount = parseInt(reviewEl.textContent.replace(/[^0-9]/g, '')) || 0;
+          if (data.reviewCount > 0) break;
+        }
       }
 
-      // Brand
-      const brandEl = document.querySelector('.product-details__brand a, [data-testid="product-brand"]');
-      if (brandEl) data.brand = brandEl.textContent.trim();
+      // Brand - 2025 selectors
+      const brandSelectors = ['.product-details__brand a', '[data-testid="product-brand"]', '[class*="ProductBrand"]'];
+      for (const sel of brandSelectors) {
+        const brandEl = document.querySelector(sel);
+        if (brandEl?.textContent?.trim()) {
+          data.brand = brandEl.textContent.trim();
+          break;
+        }
+      }
 
-      // Description
-      const descEl = document.querySelector('.product-overview__content, [data-testid="product-overview"]');
-      if (descEl) data.description = descEl.textContent.trim().substring(0, 2000);
+      // Description - 2025 selectors
+      const descSelectors = ['.product-overview__content', '[data-testid="product-overview"]', '[class*="ProductDescription"]'];
+      for (const sel of descSelectors) {
+        const descEl = document.querySelector(sel);
+        if (descEl?.textContent?.trim()) {
+          data.description = descEl.textContent.trim().substring(0, 2000);
+          break;
+        }
+      }
 
       return data;
     }

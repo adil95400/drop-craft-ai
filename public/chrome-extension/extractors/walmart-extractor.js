@@ -121,10 +121,46 @@
       const jsonLD = this.extractFromJsonLD();
       if (jsonLD.title) return jsonLD;
 
-      // DOM fallback
-      const titleEl = document.querySelector('[itemprop="name"], h1[class*="prod-title"], h1.prod-ProductTitle');
-      const brandEl = document.querySelector('[itemprop="brand"], [class*="brand-link"], .prod-brandName');
-      const descEl = document.querySelector('[itemprop="description"], .about-desc, .prod-ProductDescription');
+      // DOM fallback - 2025 selectors
+      const titleSelectors = [
+        '[itemprop="name"]',
+        'h1[class*="prod-title"]',
+        'h1.prod-ProductTitle',
+        '[data-testid="product-title"]',
+        'h1[data-automation-id="product-title"]',
+        '[class*="ProductTitle"] h1'
+      ];
+      let titleEl = null;
+      for (const sel of titleSelectors) {
+        titleEl = document.querySelector(sel);
+        if (titleEl?.textContent?.trim()) break;
+      }
+      
+      const brandSelectors = [
+        '[itemprop="brand"]',
+        '[class*="brand-link"]',
+        '.prod-brandName',
+        '[data-testid="product-brand"]',
+        '[class*="ProductBrand"] a'
+      ];
+      let brandEl = null;
+      for (const sel of brandSelectors) {
+        brandEl = document.querySelector(sel);
+        if (brandEl?.textContent?.trim()) break;
+      }
+      
+      const descSelectors = [
+        '[itemprop="description"]',
+        '.about-desc',
+        '.prod-ProductDescription',
+        '[data-testid="product-description"]',
+        '[class*="ProductDescription"]'
+      ];
+      let descEl = null;
+      for (const sel of descSelectors) {
+        descEl = document.querySelector(sel);
+        if (descEl?.textContent?.trim()) break;
+      }
 
       return {
         title: titleEl?.textContent?.trim() || '',
@@ -177,13 +213,16 @@
         if (originalPrice <= price) originalPrice = null;
       }
 
-      // DOM fallback
+      // DOM fallback - 2025 selectors
       if (price === 0) {
         const priceSelectors = [
           '[itemprop="price"]',
           '[data-testid="price-wrap"] [class*="price"]',
           '.price-characteristic',
-          '.prod-PriceHero span'
+          '.prod-PriceHero span',
+          '[data-testid="current-price"]',
+          '[class*="CurrentPrice"]',
+          '[data-automation-id="product-price"] span'
         ];
 
         for (const sel of priceSelectors) {
@@ -194,8 +233,15 @@
           }
         }
 
-        // Original price
-        const originalSelectors = ['.price-old', 'del.price', '[class*="strike"]', '[class*="was-price"]'];
+        // Original price - 2025 selectors
+        const originalSelectors = [
+          '.price-old',
+          'del.price',
+          '[class*="strike"]',
+          '[class*="was-price"]',
+          '[data-testid="list-price"]',
+          '[class*="ComparePrice"]'
+        ];
         for (const sel of originalSelectors) {
           const el = document.querySelector(sel);
           if (el) {
@@ -237,30 +283,42 @@
         });
       }
 
-      // DOM extraction
+      // DOM extraction - 2025 selectors
       const imageSelectors = [
         '[data-testid="hero-image"] img',
         '.prod-hero-image img',
         '[class*="carousel"] img',
-        '[itemprop="image"]'
+        '[itemprop="image"]',
+        '[data-testid="media-thumbnail"] img',
+        '[data-automation-id="product-image"] img',
+        '[class*="ProductImage"] img'
       ];
 
       for (const sel of imageSelectors) {
         document.querySelectorAll(sel).forEach(img => {
-          const src = img.dataset?.src || img.src;
+          const src = img.dataset?.src || img.dataset?.lazy || img.src;
           if (src && this.isValidImage(src)) {
             images.add(this.normalizeImageUrl(src));
           }
         });
       }
 
-      // Thumbnails
-      document.querySelectorAll('[data-testid="vertical-carousel"] img, .prod-alt-image img').forEach(img => {
-        const src = img.dataset?.src || img.src;
-        if (src && this.isValidImage(src)) {
-          images.add(this.normalizeImageUrl(src));
-        }
-      });
+      // Thumbnails - 2025 selectors
+      const thumbSelectors = [
+        '[data-testid="vertical-carousel"] img',
+        '.prod-alt-image img',
+        '[data-testid="media-carousel"] img',
+        '[class*="ImageCarousel"] img'
+      ];
+      
+      for (const sel of thumbSelectors) {
+        document.querySelectorAll(sel).forEach(img => {
+          const src = img.dataset?.src || img.dataset?.lazy || img.src;
+          if (src && this.isValidImage(src)) {
+            images.add(this.normalizeImageUrl(src));
+          }
+        });
+      }
 
       return Array.from(images).filter(url => url && url.includes('http')).slice(0, 30);
     }
