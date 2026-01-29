@@ -7,6 +7,7 @@ import {
   Package, RefreshCw, Globe, ArrowRight, ExternalLink, Key,
   Activity, History, TrendingUp, Clock, AlertCircle, Save, Loader2
 } from 'lucide-react';
+import { generateExtensionZip } from '@/utils/extensionZipGenerator';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -84,13 +85,15 @@ export default function ChromeExtensionPage() {
     }
   }, [isInstalled, searchParams, setSearchParams]);
 
-  // NOTE (stabilisation): distribution "dossier non empaqueté" (sans ZIP) pour éviter les ZIP incomplets.
+  // Download extension ZIP
   const handleDownloadExtension = async () => {
     setIsDownloading(true);
     try {
-      toast.info(
-        "Téléchargement ZIP désactivé (stabilisation). Chargez l'extension non empaquetée depuis le dossier public/chrome-extension."
-      );
+      await generateExtensionZip();
+      toast.success('Extension téléchargée ! Décompressez le ZIP et chargez-le dans Chrome.');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Erreur lors du téléchargement');
     } finally {
       setIsDownloading(false);
     }
