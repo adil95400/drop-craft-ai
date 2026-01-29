@@ -12,7 +12,7 @@ import {
   Plus, ArrowRight, Package, PlugZap, Bell, BarChart2, RefreshCcw, Sparkles 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useRealSuppliers, Supplier } from '@/hooks/useRealSuppliers';
+import { useRealSuppliers, type Supplier } from '@/hooks/useRealSuppliers';
 import { useSupplierRealtime } from '@/hooks/useSupplierRealtime';
 import { useToast } from '@/hooks/use-toast';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
