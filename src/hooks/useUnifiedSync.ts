@@ -1,342 +1,348 @@
-/**
- * Unified Sync Hook
- * Gère la synchronisation entre les différentes sources de données
- */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export interface SyncConfiguration {
-  id: string
-  platform: string
-  integration_id: string
-  is_active: boolean
-  sync_direction: string
-  sync_products: boolean
-  sync_orders: boolean
-  sync_customers: boolean
-  sync_prices: boolean
-  sync_stock: boolean
-  sync_tracking: boolean
-  sync_interval_minutes?: number
-  last_full_sync_at: string | null
-  conflict_resolution: string
-  user_id: string
-  created_at: string
-  updated_at?: string
+  id: string;
+  user_id: string;
+  integration_id: string;
+  platform: string;
+  sync_products: boolean;
+  sync_prices: boolean;
+  sync_stock: boolean;
+  sync_orders: boolean;
+  sync_customers: boolean;
+  sync_tracking: boolean;
+  sync_reviews: boolean;
+  sync_direction: 'import' | 'export' | 'bidirectional';
+  sync_frequency: 'realtime' | '5min' | '15min' | 'hourly' | 'daily';
+  conflict_resolution: 'shopopti_priority' | 'store_priority' | 'newest_wins';
+  is_active: boolean;
+  last_full_sync_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface SyncQueueItem {
-  id: string
-  sync_type: string
-  entity_type: string
-  action: string
-  status: 'pending' | 'processing' | 'completed' | 'failed'
-  priority: number
-  retry_count: number
-  max_retries: number
-  payload: Record<string, any>
-  result: Record<string, any> | null
-  error_message: string | null
-  created_at: string
-  started_at: string | null
-  completed_at: string | null
+export interface UnifiedSyncQueueItem {
+  id: string;
+  user_id: string;
+  sync_type: string;
+  entity_type: string;
+  entity_id: string;
+  action: string;
+  channels: any[];
+  payload: any;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  priority: number;
+  retry_count: number;
+  max_retries: number;
+  error_message: string | null;
+  scheduled_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
 }
 
-export interface SyncLog {
-  id: string
-  sync_type: string
-  platform: string
-  status: 'success' | 'error' | 'partial'
-  records_synced: number
-  items_succeeded: number
-  items_processed: number
-  duration_ms: number
-  error_message: string | null
-  started_at: string
-  completed_at: string
-  created_at: string
+export interface UnifiedSyncLog {
+  id: string;
+  user_id: string;
+  queue_id: string | null;
+  sync_type: string;
+  platform: string;
+  entity_type: string;
+  entity_id: string | null;
+  action: string;
+  status: 'success' | 'failed' | 'partial' | 'skipped';
+  items_processed: number;
+  items_succeeded: number;
+  items_failed: number;
+  duration_ms: number | null;
+  error_details: any;
+  metadata: any;
+  created_at: string;
 }
 
-export interface SyncStats {
-  total_syncs: number
-  successful_syncs: number
-  failed_syncs: number
-  last_sync_at: string | null
-  pending: number
-  processing: number
-  todaySuccess: number
-  todayFailed: number
-  todayPartial: number
-  totalSucceeded: number
-  totalProcessed: number
-  activeIntegrations: number
-  avg_sync_duration_ms: number
-}
-
-// Hook pour récupérer les configurations de sync
+// Hook pour les configurations de sync
 export function useSyncConfigurations() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['sync-configurations'],
+    queryKey: ['sync-configurations', user?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return []
+      if (!user?.id) return [];
 
       const { data, error } = await supabase
         .from('sync_configurations')
-        .select('*')
+        .select(`
+          *,
+          integrations:integration_id (
+            id, platform, store_url, is_active, connection_status
+          )
+        `)
         .eq('user_id', user.id)
-        .order('platform')
+        .order('created_at', { ascending: false });
 
-      if (error) throw error
-      return (data || []) as SyncConfiguration[]
-    }
-  })
-}
-
-// Hook pour récupérer la queue de sync
-export function useUnifiedSyncQueue() {
-  return useQuery({
-    queryKey: ['sync-queue'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return []
-
-      const { data, error } = await supabase
-        .from('sync_queue')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50)
-
-      if (error) throw error
-      return (data || []).map(item => ({
-        ...item,
-        action: item.sync_type || 'sync',
-        entity_type: item.sync_type || 'products',
-        retry_count: item.attempts || 0,
-        max_retries: item.max_attempts || 3
-      })) as SyncQueueItem[]
+      if (error) throw error;
+      return (data || []) as unknown as (SyncConfiguration & { integrations: any })[];
     },
-    refetchInterval: 5000
-  })
+    enabled: !!user?.id,
+  });
 }
 
-// Hook pour récupérer les logs de sync
-export function useUnifiedSyncLogs(limit = 100) {
+// Hook pour la queue de sync
+export function useUnifiedSyncQueue() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['sync-logs', limit],
+    queryKey: ['unified-sync-queue', user?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return []
+      if (!user?.id) return [];
 
       const { data, error } = await supabase
-        .from('sync_logs')
+        .from('unified_sync_queue')
+        .select('*')
+        .eq('user_id', user.id)
+        .in('status', ['pending', 'processing'])
+        .order('priority', { ascending: true })
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      return (data || []) as unknown as UnifiedSyncQueueItem[];
+    },
+    enabled: !!user?.id,
+    refetchInterval: 5000,
+  });
+}
+
+// Hook pour les logs de sync
+export function useUnifiedSyncLogs(limit = 50) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['unified-sync-logs', user?.id, limit],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('unified_sync_logs')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(limit)
+        .limit(limit);
 
-      if (error) throw error
-      return (data || []).map(log => ({
-        ...log,
-        platform: log.sync_type || 'unknown',
-        items_succeeded: log.records_synced || 0,
-        items_processed: log.records_synced || 0,
-        duration_ms: log.completed_at && log.started_at 
-          ? new Date(log.completed_at).getTime() - new Date(log.started_at).getTime()
-          : 0
-      })) as SyncLog[]
-    }
-  })
+      if (error) throw error;
+      return (data || []) as unknown as UnifiedSyncLog[];
+    },
+    enabled: !!user?.id,
+  });
 }
 
-// Hook pour récupérer les statistiques de sync
+// Hook pour les statistiques de sync
 export function useSyncStats() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['sync-stats'],
+    queryKey: ['sync-stats', user?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
+      if (!user?.id) return null;
 
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      // Get queue stats
+      const { data: queueData } = await supabase
+        .from('unified_sync_queue')
+        .select('status')
+        .eq('user_id', user.id);
 
-      const { data: logs } = await supabase
-        .from('sync_logs')
-        .select('*')
+      // Get today's logs
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const { data: logsData } = await supabase
+        .from('unified_sync_logs')
+        .select('status, items_processed, items_succeeded, items_failed')
         .eq('user_id', user.id)
+        .gte('created_at', today.toISOString());
 
-      const { data: queue } = await supabase
-        .from('sync_queue')
-        .select('*')
+      // Get active integrations count
+      const { data: integrationsData } = await supabase
+        .from('integrations')
+        .select('id')
         .eq('user_id', user.id)
+        .eq('is_active', true);
 
-      const { data: configs } = await supabase
-        .from('sync_configurations')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-
-      const allLogs = logs || []
-      const todayLogs = allLogs.filter(l => new Date(l.created_at) >= today)
-      const queueItems = queue || []
+      const queue = queueData || [];
+      const logs = logsData || [];
 
       return {
-        total_syncs: allLogs.length,
-        successful_syncs: allLogs.filter(l => l.status === 'success').length,
-        failed_syncs: allLogs.filter(l => l.status === 'error').length,
-        last_sync_at: allLogs[0]?.created_at || null,
-        pending: queueItems.filter(q => q.status === 'pending').length,
-        processing: queueItems.filter(q => q.status === 'processing').length,
-        todaySuccess: todayLogs.filter(l => l.status === 'success').length,
-        todayFailed: todayLogs.filter(l => l.status === 'error').length,
-        todayPartial: todayLogs.filter(l => l.status === 'partial').length,
-        totalSucceeded: allLogs.reduce((sum, l) => sum + (l.records_synced || 0), 0),
-        totalProcessed: allLogs.reduce((sum, l) => sum + (l.records_synced || 0), 0),
-        activeIntegrations: configs?.length || 0,
-        avg_sync_duration_ms: 0
-      } as SyncStats
-    }
-  })
+        pending: queue.filter(q => q.status === 'pending').length,
+        processing: queue.filter(q => q.status === 'processing').length,
+        todaySuccess: logs.filter(l => l.status === 'success').length,
+        todayFailed: logs.filter(l => l.status === 'failed').length,
+        todayPartial: logs.filter(l => l.status === 'partial').length,
+        totalProcessed: logs.reduce((sum, l) => sum + (l.items_processed || 0), 0),
+        totalSucceeded: logs.reduce((sum, l) => sum + (l.items_succeeded || 0), 0),
+        activeIntegrations: integrationsData?.length || 0,
+      };
+    },
+    enabled: !!user?.id,
+    refetchInterval: 10000,
+  });
 }
 
-// Hook pour déclencher une synchronisation complète
-export function useTriggerFullSync() {
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
+// Mutation pour créer/mettre à jour une configuration de sync
+export function useUpsertSyncConfiguration() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (options?: { force_full_sync?: boolean }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
+    mutationFn: async (config: Partial<SyncConfiguration> & { integration_id: string; platform: string }) => {
+      if (!user?.id) throw new Error('Non authentifié');
 
-      const { data, error } = await supabase.functions.invoke('unified-sync', {
-        body: { 
-          action: 'full_sync', 
+      const { data, error } = await supabase
+        .from('sync_configurations')
+        .upsert({
           user_id: user.id,
-          force: options?.force_full_sync 
-        }
-      })
+          ...config,
+        }, {
+          onConflict: 'user_id,integration_id'
+        })
+        .select()
+        .single();
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-queue'] })
-      queryClient.invalidateQueries({ queryKey: ['sync-logs'] })
-      queryClient.invalidateQueries({ queryKey: ['sync-stats'] })
-      toast({
-        title: 'Synchronisation lancée',
-        description: 'La synchronisation complète a été démarrée.'
-      })
+      queryClient.invalidateQueries({ queryKey: ['sync-configurations'] });
+      toast.success('Configuration de synchronisation mise à jour');
     },
     onError: (error: Error) => {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur de synchronisation',
-        description: error.message
-      })
-    }
-  })
+      toast.error(`Erreur: ${error.message}`);
+    },
+  });
 }
 
-// Hook pour déclencher une synchronisation par module
-export function useTriggerModuleSync() {
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
+// Mutation pour lancer une sync complète
+export function useTriggerFullSync() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (options: { sync_type: string; direction?: string } | string) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
+    mutationFn: async (options?: { 
+      sync_types?: string[]; 
+      platforms?: string[];
+      force_full_sync?: boolean;
+    }) => {
+      if (!user?.id) throw new Error('Non authentifié');
 
-      const syncType = typeof options === 'string' ? options : options.sync_type
-      const direction = typeof options === 'string' ? 'both' : (options.direction || 'both')
-
-      const { data, error } = await supabase.functions.invoke('unified-sync', {
-        body: { 
-          action: 'module_sync', 
-          sync_type: syncType,
-          direction,
-          user_id: user.id 
+      const { data, error } = await supabase.functions.invoke('unified-sync-orchestrator', {
+        body: {
+          user_id: user.id,
+          ...options,
         }
-      })
+      });
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-queue'] })
-      queryClient.invalidateQueries({ queryKey: ['sync-logs'] })
-      queryClient.invalidateQueries({ queryKey: ['sync-stats'] })
-      toast({
-        title: 'Synchronisation lancée',
-        description: 'Le module est en cours de synchronisation.'
-      })
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['unified-sync-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['unified-sync-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['sync-stats'] });
+      toast.success(`Synchronisation lancée: ${data?.results?.length || 0} intégrations`);
     },
     onError: (error: Error) => {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur de synchronisation',
-        description: error.message
-      })
-    }
-  })
+      toast.error(`Erreur de synchronisation: ${error.message}`);
+    },
+  });
 }
 
-// Hook pour annuler un item de la queue
+// Mutation pour sync un module spécifique
+export function useTriggerModuleSync() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ 
+      sync_type, 
+      integration_id,
+      platform,
+      direction 
+    }: { 
+      sync_type: 'products' | 'prices' | 'stock' | 'orders' | 'customers' | 'tracking';
+      integration_id?: string;
+      platform?: string;
+      direction?: 'import' | 'export' | 'bidirectional';
+    }) => {
+      if (!user?.id) throw new Error('Non authentifié');
+
+      const functionMap: Record<string, string> = {
+        'products': 'channel-sync-bidirectional',
+        'prices': 'process-price-sync-queue',
+        'stock': 'sync-stock-to-channels',
+        'orders': 'sync-orders-to-channels',
+        'customers': 'sync-customers-to-channels',
+        'tracking': 'sync-tracking-to-channels',
+      };
+
+      const { data, error } = await supabase.functions.invoke(functionMap[sync_type], {
+        body: {
+          user_id: user.id,
+          integration_id,
+          platform,
+          direction: direction || 'bidirectional',
+          sync_type,
+        }
+      });
+
+      if (error) throw error;
+      
+      // Handle case where function returns success but with no data to sync
+      if (data && !data.success && data.error) {
+        throw new Error(data.error);
+      }
+      
+      return data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['unified-sync-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['unified-sync-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['sync-stats'] });
+      
+      const moduleNames: Record<string, string> = {
+        products: 'Produits',
+        prices: 'Prix',
+        stock: 'Stock',
+        orders: 'Commandes',
+        customers: 'Clients',
+        tracking: 'Tracking',
+      };
+      
+      toast.success(`Sync ${moduleNames[variables.sync_type]} terminée`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`);
+    },
+  });
+}
+
+// Mutation pour annuler un item de la queue
 export function useCancelSyncItem() {
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (itemId: string) => {
       const { error } = await supabase
-        .from('sync_queue')
+        .from('unified_sync_queue')
         .update({ status: 'cancelled' })
-        .eq('id', itemId)
+        .eq('id', itemId);
 
-      if (error) throw error
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-queue'] })
-      toast({
-        title: 'Annulé',
-        description: 'L\'item de synchronisation a été annulé.'
-      })
-    }
-  })
-}
-
-// Hook pour mettre à jour une configuration de sync
-export function useUpsertSyncConfiguration() {
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
-
-  return useMutation({
-    mutationFn: async (config: Partial<SyncConfiguration> & { integration_id: string; platform: string }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { error } = await supabase
-        .from('sync_configurations')
-        .upsert({
-          ...config,
-          user_id: user.id,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,integration_id'
-        })
-
-      if (error) throw error
+      queryClient.invalidateQueries({ queryKey: ['unified-sync-queue'] });
+      toast.success('Synchronisation annulée');
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-configurations'] })
-      toast({
-        title: 'Configuration mise à jour',
-        description: 'Les paramètres de synchronisation ont été enregistrés.'
-      })
-    }
-  })
+  });
 }

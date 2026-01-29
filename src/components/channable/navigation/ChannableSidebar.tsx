@@ -382,32 +382,19 @@ const ChannableFooter = memo(({
         }} exit={prefersReducedMotion ? undefined : {
           opacity: 0,
           x: -10
-        }} className="flex-1 min-w-0">
-              <div 
-                className="cursor-pointer group" 
-                onClick={() => navigate('/dashboard/profile')}
-                onKeyDown={(e) => e.key === 'Enter' && navigate('/dashboard/profile')}
-                tabIndex={0}
-                role="link"
-                aria-label="Voir mon profil"
-              >
-                <p className="text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors">
-                  {profile?.full_name || 'Utilisateur'}
-                </p>
-              </div>
-              <div 
-                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
-                onClick={() => navigate('/dashboard/subscription')}
-                onKeyDown={(e) => e.key === 'Enter' && navigate('/dashboard/subscription')}
-                tabIndex={0}
-                role="link"
-                aria-label="Voir mon abonnement"
-              >
+        }} className="flex-1 min-w-0 cursor-pointer group" onClick={() => navigate('/dashboard/profile')} role="button" aria-label="Voir mon profil">
+              <p className="text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors">
+                {profile?.full_name || 'Utilisateur'}
+              </p>
+              <button onClick={e => {
+            e.stopPropagation();
+            navigate('/dashboard/subscription');
+          }} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity" aria-label="Voir mon abonnement">
                 <Crown className="h-3 w-3 text-amber-500" aria-hidden="true" />
                 <p className="text-[11px] text-muted-foreground/70">
                   {planLabel}
                 </p>
-              </div>
+              </button>
             </motion.div>}
         </AnimatePresence>
         
