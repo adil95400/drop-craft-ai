@@ -10,7 +10,8 @@ export { useAttributeAnalysis, type AttributeIssue, type AttributeStats, type Ma
 export { useCategoryClassification, type ClassificationIssue, type ClassificationMetrics, type CategoryStats, type BrandStats } from './useCategoryClassification'
 export { useVariantAnalysis, type VariantIssue, type VariantStats } from './useVariantAnalysis'
 
-// Phase 2: AI Hooks - Attributes
+// Phase 3: Draft Products Support
+export { useDraftProducts, type DraftProduct, type DraftProductStats } from './useDraftProducts'
 export { 
   useAttributesAIStats, 
   useAttributeRecommendations, 
