@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
 
-const EXTENSION_VERSION = '5.7.0';
+const EXTENSION_VERSION = '5.7.1';
 
 const EXTENSION_FILES = [
   // Core files
@@ -95,6 +95,7 @@ const EXTENSION_FILES = [
   'lib/enhanced-preview.js',
   'lib/extraction-orchestrator.js',
   'lib/extractor-bridge.js',
+  'lib/feedback-system.js',
   'lib/history-manager.js',
   'lib/history-panel.js',
   'lib/import-pipeline.js',
@@ -194,6 +195,9 @@ export async function generateExtensionZip(): Promise<void> {
     'lib/base-extractor.js',
     'lib/platform-detector.js',
     'lib/extractor-bridge.js',
+    'lib/feedback-system.js',
+    'lib/import-pipeline.js',
+    'lib/product-validator.js',
     'extractors/extractor-registry.js',
     'extractors/core-extractor.js',
   ]);
