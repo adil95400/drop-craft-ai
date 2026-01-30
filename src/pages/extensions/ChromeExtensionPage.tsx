@@ -2,6 +2,7 @@
  * Chrome Extension Page - Installation et configuration complète
  */
 import { useState, useEffect } from 'react';
+import { ExtensionTokenGenerator } from '@/components/extensions/ExtensionTokenGenerator';
 import { 
   Chrome, Download, Play, CheckCircle, Settings, Zap, Star,
   Package, RefreshCw, Globe, ArrowRight, ExternalLink, Key,
@@ -364,9 +365,11 @@ export default function ChromeExtensionPage() {
             </p>
             
             <div className="flex flex-wrap gap-3 pt-2">
+              <ExtensionTokenGenerator />
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-cyan-500 to-blue-500"
+                variant="outline"
+                className="border-cyan-500/50"
                 onClick={handleDownloadExtension}
                 disabled={isDownloading}
               >
@@ -375,11 +378,11 @@ export default function ChromeExtensionPage() {
                 ) : (
                   <Download className="h-5 w-5 mr-2" />
                 )}
-                {isDownloading ? 'Téléchargement...' : 'Installer l\'extension'}
+                {isDownloading ? 'Téléchargement...' : 'Télécharger l\'extension'}
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate('/extensions/tutorials')}>
+              <Button variant="ghost" size="lg" onClick={() => navigate('/extensions/tutorials')}>
                 <Play className="h-5 w-5 mr-2" />
-                Voir les tutoriels
+                Tutoriels
               </Button>
             </div>
             

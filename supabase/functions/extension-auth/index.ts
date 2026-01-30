@@ -1,36 +1,39 @@
+// ============================================
+// ShopOpti+ Extension Auth API v2.0
+// Sprint 1: SSO Extension avec JWT, refresh, permissions
+// ============================================
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { handleError, ValidationError, AuthenticationError } from '../_shared/error-handler.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token',
 }
 
-// Input validation helper
+// Validation helpers
 function validateUUID(value: unknown, fieldName: string): string {
   if (!value || typeof value !== 'string') {
-    throw new ValidationError(`${fieldName} is required`)
+    throw new Error(`${fieldName} is required`)
   }
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
   if (!uuidRegex.test(value)) {
-    throw new ValidationError(`Invalid ${fieldName} format`)
+    throw new Error(`Invalid ${fieldName} format`)
   }
   return value
 }
 
-function validateDeviceInfo(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object') {
-    return {}
-  }
-  // Sanitize device info - only allow safe fields
-  const allowedFields = ['browser', 'platform', 'version', 'userAgent']
+function sanitizeDeviceInfo(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object') return {}
+  const allowedFields = ['browser', 'platform', 'version', 'userAgent', 'os', 'screenWidth', 'screenHeight']
   const sanitized: Record<string, unknown> = {}
   for (const key of allowedFields) {
     if (key in (value as Record<string, unknown>)) {
       const fieldValue = (value as Record<string, unknown>)[key]
       if (typeof fieldValue === 'string' && fieldValue.length < 256) {
         sanitized[key] = fieldValue.substring(0, 255)
+      } else if (typeof fieldValue === 'number') {
+        sanitized[key] = fieldValue
       }
     }
   }
@@ -38,24 +41,11 @@ function validateDeviceInfo(value: unknown): Record<string, unknown> {
 }
 
 function sanitizeToken(value: unknown): string | null {
-  if (!value || typeof value !== 'string') {
-    return null
-  }
-  
-  // Trim whitespace first
+  if (!value || typeof value !== 'string') return null
   const trimmed = value.trim()
-  
-  // Tokens can be alphanumeric with dashes and underscores (ext_xxx format)
-  // Also support UUIDs with dashes and timestamps
+  // Support ext_ and ref_ prefixed tokens, plus legacy UUID-timestamp format
   const sanitized = trimmed.replace(/[^a-zA-Z0-9\-_]/g, '')
-  
-  // Min 10 chars for ext_xxx format, max 150 for UUID-timestamp combinations
-  if (sanitized.length < 10 || sanitized.length > 150) {
-    console.log(`[extension-auth] Token length invalid: ${sanitized.length} chars`)
-    return null
-  }
-  
-  console.log(`[extension-auth] Token sanitized successfully: ${sanitized.substring(0, 10)}...`)
+  if (sanitized.length < 10 || sanitized.length > 150) return null
   return sanitized
 }
 
@@ -69,159 +59,175 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    const { action, data } = await req.json()
+    const body = await req.json()
+    const { action, data } = body
 
     if (!action || typeof action !== 'string') {
-      throw new ValidationError('Action is required')
-    }
-
-    // Generate extension token
-    if (action === 'generate_token') {
-      // Validate inputs
-      const userId = validateUUID(data?.userId, 'userId')
-      const deviceInfo = validateDeviceInfo(data?.deviceInfo)
-      
-      // Verify user exists
-      const { data: userExists } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .single()
-      
-      if (!userExists) {
-        throw new AuthenticationError('User not found')
-      }
-      
-      // Generate secure token
-      const token = crypto.randomUUID() + '-' + Date.now()
-      
-      // Store in database
-      const { data: extensionAuth, error } = await supabase
-        .from('extension_auth_tokens')
-        .insert({
-          user_id: userId,
-          token: token,
-          device_info: deviceInfo,
-          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
-          is_active: true
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // Log security event
-      await supabase.from('security_events').insert({
-        user_id: userId,
-        event_type: 'extension_token_created',
-        severity: 'info',
-        description: 'Extension authentication token generated',
-        metadata: { device_info: deviceInfo }
-      })
-
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          token: token,
-          expiresAt: extensionAuth.expires_at
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: 'Action required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Validate extension token
-    if (action === 'validate_token') {
-      const rawToken = req.headers.get('x-extension-token') || data?.token
-      console.log(`[extension-auth] Validating token: ${typeof rawToken === 'string' ? rawToken.substring(0, 15) + '...' : 'null'}`)
+    // ===== GENERATE TOKEN =====
+    if (action === 'generate_token') {
+      const userId = validateUUID(data?.userId, 'userId')
+      const deviceInfo = sanitizeDeviceInfo(data?.deviceInfo)
+      const permissions = data?.permissions || ['import', 'sync', 'logs', 'bulk']
       
-      const token = sanitizeToken(rawToken)
-      
-      if (!token) {
-        console.error('[extension-auth] Token sanitization failed')
-        throw new AuthenticationError('Valid token required - format incorrect')
-      }
-
-      console.log(`[extension-auth] Looking up token in database: ${token.substring(0, 15)}...`)
-      
-      const { data: authData, error } = await supabase
-        .from('extension_auth_tokens')
-        .select('*, profiles(*)')
-        .eq('token', token)
-        .eq('is_active', true)
+      // Verify user exists and get profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, subscription_plan, first_name, last_name, email, avatar_url')
+        .eq('id', userId)
         .single()
-
-      if (error) {
-        console.error('[extension-auth] Database lookup error:', error.message)
-        throw new AuthenticationError('Token not found - please generate a new token from shopopti.io')
+      
+      if (profileError || !profile) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'User not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
       
-      if (!authData) {
-        console.error('[extension-auth] Token not found in database')
-        throw new AuthenticationError('Invalid token - not registered')
-      }
-      
-      console.log(`[extension-auth] Token found for user: ${authData.user_id}`)
-
-      // Check expiration
-      if (new Date(authData.expires_at) < new Date()) {
-        // Deactivate expired token
-        await supabase
-          .from('extension_auth_tokens')
-          .update({ is_active: false })
-          .eq('id', authData.id)
-        
-        throw new AuthenticationError('Token expired')
-      }
-
-      // Update last used
-      await supabase
-        .from('extension_auth_tokens')
-        .update({ 
-          last_used_at: new Date().toISOString(),
-          usage_count: (authData.usage_count || 0) + 1
+      // Generate tokens using DB function
+      const { data: tokenResult, error: tokenError } = await supabase
+        .rpc('generate_extension_token', {
+          p_user_id: userId,
+          p_permissions: permissions,
+          p_device_info: deviceInfo
         })
-        .eq('id', authData.id)
+      
+      if (tokenError) {
+        console.error('[extension-auth] Token generation error:', tokenError)
+        throw new Error('Failed to generate token')
+      }
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
+          token: tokenResult.token,
+          refreshToken: tokenResult.refresh_token,
+          tokenId: tokenResult.token_id,
+          expiresAt: tokenResult.expires_at,
+          refreshExpiresAt: tokenResult.refresh_expires_at,
+          permissions: tokenResult.permissions,
           user: {
-            id: authData.user_id,
-            email: authData.profiles?.email,
-            plan: authData.profiles?.subscription_plan
+            id: userId,
+            email: profile.email,
+            plan: profile.subscription_plan || 'free',
+            firstName: profile.first_name,
+            lastName: profile.last_name,
+            avatarUrl: profile.avatar_url
           }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Revoke token
+    // ===== VALIDATE TOKEN =====
+    if (action === 'validate_token') {
+      const rawToken = req.headers.get('x-extension-token') || data?.token
+      const token = sanitizeToken(rawToken)
+      
+      if (!token) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Valid token required' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Use DB function for fast validation
+      const { data: validationResult, error: validationError } = await supabase
+        .rpc('validate_extension_token', { p_token: token })
+      
+      if (validationError || !validationResult?.success) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: validationResult?.error || 'Invalid or expired token',
+            code: 'TOKEN_INVALID'
+          }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          user: validationResult.user,
+          permissions: validationResult.permissions,
+          expiresAt: validationResult.expires_at
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ===== REFRESH TOKEN =====
+    if (action === 'refresh_token') {
+      const refreshToken = sanitizeToken(data?.refreshToken)
+      
+      if (!refreshToken) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Refresh token required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const { data: refreshResult, error: refreshError } = await supabase
+        .rpc('refresh_extension_token', { p_refresh_token: refreshToken })
+      
+      if (refreshError || !refreshResult?.success) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: refreshResult?.error || 'Invalid refresh token',
+            code: 'REFRESH_FAILED'
+          }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          token: refreshResult.token,
+          expiresAt: refreshResult.expires_at,
+          userId: refreshResult.user_id
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ===== REVOKE TOKEN =====
     if (action === 'revoke_token') {
       const token = sanitizeToken(data?.token)
       
       if (!token) {
-        throw new ValidationError('Valid token required')
+        return new Response(
+          JSON.stringify({ success: false, error: 'Token required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
       
       const { data: tokenData } = await supabase
         .from('extension_auth_tokens')
-        .select('user_id')
+        .select('id, user_id')
         .eq('token', token)
         .single()
 
-      await supabase
-        .from('extension_auth_tokens')
-        .update({ is_active: false })
-        .eq('token', token)
-
-      // Log security event
       if (tokenData) {
+        await supabase
+          .from('extension_auth_tokens')
+          .update({ is_active: false, revoked_at: new Date().toISOString() })
+          .eq('id', tokenData.id)
+
+        // Log security event
         await supabase.from('security_events').insert({
           user_id: tokenData.user_id,
           event_type: 'extension_token_revoked',
           severity: 'info',
-          description: 'Extension authentication token revoked',
-          metadata: {}
+          description: 'Extension token revoked',
+          metadata: { token_id: tokenData.id }
         })
       }
 
@@ -231,10 +237,123 @@ serve(async (req) => {
       )
     }
 
-    throw new ValidationError('Invalid action')
+    // ===== HEARTBEAT =====
+    if (action === 'heartbeat') {
+      const rawToken = req.headers.get('x-extension-token') || data?.token
+      const token = sanitizeToken(rawToken)
+      
+      if (!token) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Token required' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Get token info
+      const { data: tokenInfo } = await supabase
+        .from('extension_auth_tokens')
+        .select('id, user_id')
+        .eq('token', token)
+        .eq('is_active', true)
+        .single()
+
+      if (!tokenInfo) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Invalid token' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const heartbeatData = {
+        user_id: tokenInfo.user_id,
+        token_id: tokenInfo.id,
+        extension_version: data?.version || 'unknown',
+        platform: data?.platform,
+        browser: data?.browser,
+        browser_version: data?.browserVersion,
+        os: data?.os,
+        last_seen_at: new Date().toISOString(),
+        is_active: true
+      }
+
+      // Upsert heartbeat
+      await supabase
+        .from('extension_heartbeats')
+        .upsert(heartbeatData, { onConflict: 'user_id,token_id' })
+        .select()
+
+      // Get user settings for extension
+      const { data: settings } = await supabase
+        .from('user_settings')
+        .select('settings')
+        .eq('user_id', tokenInfo.user_id)
+        .single()
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          serverTime: new Date().toISOString(),
+          settings: settings?.settings?.extension || {},
+          latestVersion: '5.7.1'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ===== LIST TOKENS =====
+    if (action === 'list_tokens') {
+      const userId = validateUUID(data?.userId, 'userId')
+      
+      const { data: tokens, error } = await supabase
+        .from('extension_auth_tokens')
+        .select('id, name, created_at, last_used_at, usage_count, expires_at, is_active, device_info, permissions')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) throw error
+
+      return new Response(
+        JSON.stringify({ success: true, tokens }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ===== REVOKE ALL TOKENS =====
+    if (action === 'revoke_all') {
+      const userId = validateUUID(data?.userId, 'userId')
+      
+      await supabase
+        .from('extension_auth_tokens')
+        .update({ is_active: false, revoked_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('is_active', true)
+
+      // Log security event
+      await supabase.from('security_events').insert({
+        user_id: userId,
+        event_type: 'all_extension_tokens_revoked',
+        severity: 'warning',
+        description: 'All extension tokens revoked',
+        metadata: {}
+      })
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'All tokens revoked' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    return new Response(
+      JSON.stringify({ success: false, error: 'Invalid action' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
-    console.error('Extension auth error:', error)
-    return handleError(error, corsHeaders)
+    console.error('[extension-auth] Error:', error)
+    return new Response(
+      JSON.stringify({ success: false, error: error.message || 'Internal error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 })
