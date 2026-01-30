@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.7.0",
-  "description": "Extension professionnelle dropshipping 100% AutoDS - Import 1-clic, Ads Spy, Auto-Order, Sourcing multi-fournisseurs, Sync multi-boutiques, 45+ plateformes supportées",
+  "version": "5.7.1",
+  "description": "Extension professionnelle dropshipping 100% AutoDS - Import atomique avec validation stricte, Ads Spy, Auto-Order, Sourcing multi-fournisseurs, Sync multi-boutiques, 45+ plateformes supportées",
   
   "permissions": [
     "activeTab",
@@ -107,6 +107,7 @@
         "lib/auto-translation-service.js",
         "lib/extraction-orchestrator.js",
         "lib/import-pipeline.js",
+        "lib/feedback-system.js",
         "lib/pre-import-dialog.js",
         "lib/unified-button-injector.js",
         "lib/bulk-import-queue.js",

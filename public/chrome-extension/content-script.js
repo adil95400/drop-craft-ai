@@ -1,5 +1,6 @@
 // ============================================
-// ShopOpti+ Content Injector v5.7.0 - PROFESSIONAL EDITION
+// ShopOpti+ Content Injector v5.7.1 - PROFESSIONAL EDITION
+// PHASE 1 & 2: Atomic imports + Standardized UX Feedback
 // 100% AutoDS/Cartifind Feature Parity
 // MutationObserver for SPA/infinite scroll
 // Centralized selectors + Supplier search + AI content
@@ -10,7 +11,7 @@
 (function() {
   'use strict';
   
-  const VERSION = '5.7.0';
+  const VERSION = '5.7.1';
   const INJECTED_CLASS = 'shopopti-injected';
   const DEBOUNCE_MS = 300;
   const MAX_REINJECT_ATTEMPTS = 8;
@@ -421,73 +422,59 @@
   async function handleQuickImport(button, url) {
     // Check auth before import
     if (!await ensureAuthenticated()) {
+      if (window.ShopOptiFeedback) {
+        window.ShopOptiFeedback.showFeedback('auth_required');
+      }
       return;
     }
     
     setButtonLoading(button, true);
     
     try {
-      // STRATEGY 1: Use ExtractionOrchestrator (preferred - full pipeline)
-      if (window.ExtractionOrchestrator) {
-        console.log('[ShopOpti+] Using ExtractionOrchestrator for import');
-        
-        const result = await window.ExtractionOrchestrator.extract(url, {
-          targetStores: userStores.map(s => s.id)
-        });
-        
-        // Handle awaiting confirmation (validation warnings)
-        if (result.validation && (result.validation.warnings.length > 0 || result.validation.issues.length > 0)) {
-          setButtonLoading(button, false);
-          
-          // Show pre-import dialog with validation results
-          if (window.ShopOptiPreImportDialog) {
-            const confirmed = await window.ShopOptiPreImportDialog.show(
-              result.product,
-              result.validation
-            );
-            
-            if (confirmed) {
-              setButtonLoading(button, true);
-              const importResult = await window.ExtractionOrchestrator.confirmImport(
-                result.metadata.jobId,
-                { targetStores: userStores.map(s => s.id) }
-              );
-              
-              if (importResult.success) {
-                setButtonSuccess(button);
-                showToast(`✓ Produit importé! (Score: ${result.validation.score}%)`, 'success');
-                syncWithSaaS('product_imported', { productId: importResult.product?.id, url });
-              } else {
-                throw new Error(importResult.error || 'Import échoué');
-              }
-            } else {
-              resetButton(button);
-              return;
-            }
-          } else {
-            // No dialog available, proceed with import
-            const importResult = await sendProductToBackend(result.product, url);
-            setButtonSuccess(button);
-            showToast(`✓ Produit importé! (${result.validation.warnings.length} avertissements)`, 'success');
-            syncWithSaaS('product_imported', { productId: importResult.productId, url });
-          }
-        } else {
-          // No validation issues, import directly
-          const importResult = await sendProductToBackend(result.product, url);
-          setButtonSuccess(button);
-          showToast(`✓ Produit importé! (Score: ${result.validation?.score || 100}%)`, 'success');
-          sendMessage({ type: 'PRODUCT_IMPORTED', productId: importResult.productId });
-          syncWithSaaS('product_imported', { productId: importResult.productId, url });
-        }
-        return;
-      }
-      
-      // STRATEGY 2: Use ShopOptiPipeline (alternative)
+      // PHASE 1+2: Use ShopOptiPipeline (atomic import with strict validation)
       if (window.ShopOptiPipeline) {
+        console.log('[ShopOpti+] Using Pipeline v5.7.1 for atomic import');
+        
         const result = await window.ShopOptiPipeline.processUrl(url, {
           targetStores: userStores.map(s => s.id)
         });
         
+        // PHASE 1: Handle BLOCKED imports (critical data missing)
+        if (result.status === 'blocked') {
+          setButtonError(button);
+          
+          if (window.ShopOptiFeedback) {
+            window.ShopOptiFeedback.importBlocked({
+              criticalMissing: result.validation?.critical?.failed?.map(f => f.field) || [],
+              reason: result.error
+            });
+          } else {
+            showToast(`🚫 Import bloqué: ${result.error}`, 'error');
+          }
+          
+          setTimeout(() => resetButton(button), 3000);
+          return;
+        }
+        
+        // PHASE 1: Handle DRAFT imports (incomplete data)
+        if (result.status === 'drafted') {
+          setButtonSuccess(button);
+          button.querySelector('.shopopti-btn-text').textContent = 'Brouillon créé';
+          
+          if (window.ShopOptiFeedback) {
+            window.ShopOptiFeedback.importDraft({
+              reason: result.message,
+              missingFields: result.validation?.missingFields || []
+            });
+          } else {
+            showToast(`📝 ${result.message}`, 'warning');
+          }
+          
+          syncWithSaaS('product_drafted', { productId: result.product?.id, url });
+          return;
+        }
+        
+        // Handle awaiting confirmation
         if (result.status === 'awaiting_confirmation') {
           setButtonLoading(button, false);
           
@@ -503,7 +490,17 @@
               
               if (importResult.success) {
                 setButtonSuccess(button);
-                showToast(`✓ Produit importé! (Score: ${result.validation.score}%)`, 'success');
+                
+                if (window.ShopOptiFeedback) {
+                  window.ShopOptiFeedback.importSuccess({
+                    score: result.validation?.score,
+                    images: result.product?.images?.length,
+                    variants: result.product?.variants?.length
+                  });
+                } else {
+                  showToast(`✓ Produit importé! (Score: ${result.validation.score}%)`, 'success');
+                }
+                
                 syncWithSaaS('product_imported', { productId: importResult.product?.id, url });
               } else {
                 throw new Error(importResult.error || 'Import échoué');
@@ -514,9 +511,20 @@
             }
           }
         } else if (result.success) {
+          // Full success - product imported
           setButtonSuccess(button);
           const productId = result.product?.id || result.product?.product_id;
-          showToast(`✓ Produit importé! (Score: ${result.validation?.score || 100}%)`, 'success');
+          
+          if (window.ShopOptiFeedback) {
+            window.ShopOptiFeedback.importSuccess({
+              score: result.validation?.score || 100,
+              images: result.product?.images?.length,
+              variants: result.product?.variants?.length
+            });
+          } else {
+            showToast(`✓ Produit importé! (Score: ${result.validation?.score || 100}%)`, 'success');
+          }
+          
           sendMessage({ type: 'PRODUCT_IMPORTED', productId });
           syncWithSaaS('product_imported', { productId, url });
         } else {
@@ -525,7 +533,31 @@
         return;
       }
       
-      // STRATEGY 3: Legacy import fallback
+      // FALLBACK: Use ExtractionOrchestrator
+      if (window.ExtractionOrchestrator) {
+        console.log('[ShopOpti+] Using ExtractionOrchestrator fallback');
+        
+        const result = await window.ExtractionOrchestrator.extract(url, {
+          targetStores: userStores.map(s => s.id)
+        });
+        
+        const importResult = await sendProductToBackend(result.product, url);
+        setButtonSuccess(button);
+        
+        if (window.ShopOptiFeedback) {
+          window.ShopOptiFeedback.importSuccess({
+            score: result.validation?.score || 100,
+            images: result.product?.images?.length
+          });
+        } else {
+          showToast(`✓ Produit importé! (Score: ${result.validation?.score || 100}%)`, 'success');
+        }
+        
+        syncWithSaaS('product_imported', { productId: importResult.productId, url });
+        return;
+      }
+      
+      // LEGACY FALLBACK: Direct API call
       const response = await sendMessage({
         type: 'IMPORT_FROM_URL',
         url,
@@ -539,7 +571,13 @@
       
       if (response.success) {
         setButtonSuccess(button);
-        showToast(`✓ Produit importé!${response.productId ? ` (ID: ${response.productId.substring(0, 8)}...)` : ''}`, 'success');
+        
+        if (window.ShopOptiFeedback) {
+          window.ShopOptiFeedback.success('Produit importé avec succès', { title: 'Import réussi' });
+        } else {
+          showToast(`✓ Produit importé!`, 'success');
+        }
+        
         sendMessage({ type: 'PRODUCT_IMPORTED', productId: response.productId });
         syncWithSaaS('product_imported', { productId: response.productId, url });
       } else {
@@ -549,7 +587,13 @@
     } catch (error) {
       console.error('[ShopOpti+] Import error:', error);
       setButtonError(button);
-      showToast(error.message || 'Erreur lors de l\'import', 'error');
+      
+      if (window.ShopOptiFeedback) {
+        window.ShopOptiFeedback.showFeedback('import_error', { message: error.message });
+      } else {
+        showToast(error.message || 'Erreur lors de l\'import', 'error');
+      }
+      
       setTimeout(() => resetButton(button), 3000);
     }
   }
