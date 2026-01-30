@@ -8,3 +8,6 @@ export { MediaAIPanel } from './MediaAIPanel'
 export { VariantsAIPanel } from './VariantsAIPanel'
 export { BacklogAIPanel } from './BacklogAIPanel'
 export { CatalogHealthAIPanel } from './CatalogHealthAIPanel'
+
+// Phase 3: Draft Products Support
+export { DraftProductsPanel } from './DraftProductsPanel'

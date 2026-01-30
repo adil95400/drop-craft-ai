@@ -1,7 +1,7 @@
 /**
  * ToProcessPage - Backlog intelligent avec données réelles
  * Hub d'exécution: priorisation IA des actions requises
- * Phase 2: Intégration IA
+ * Phase 3: Intégration brouillons importés
  */
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -10,22 +10,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package, Sparkles, Euro, Clock, Brain } from 'lucide-react'
-import { useProductBacklog, BacklogCategory, BacklogItem } from '@/hooks/catalog'
-import { BacklogAIPanel } from '@/components/catalog'
+import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package, Sparkles, Euro, Clock, Brain, FileEdit } from 'lucide-react'
+import { useProductBacklog, BacklogCategory, BacklogItem, useDraftProducts } from '@/hooks/catalog'
+import { BacklogAIPanel, DraftProductsPanel } from '@/components/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
 
 export default function ToProcessPage() {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<BacklogCategory>('all')
-  const [viewMode, setViewMode] = useState<'list' | 'ai'>('ai')
+  const [activeTab, setActiveTab] = useState<BacklogCategory | 'drafts'>('all')
+  const [viewMode, setViewMode] = useState<'list' | 'ai' | 'drafts'>('ai')
   const { backlogItems, counts, totalEstimatedImpact, filterByCategory, isLoading } = useProductBacklog()
+  const { stats: draftStats } = useDraftProducts()
 
-  // Filtrer selon l'onglet actif
+  // Filtrer selon l'onglet actif (seulement pour les catégories backlog, pas drafts)
   const filteredItems = useMemo(() => {
-    return filterByCategory(activeTab).slice(0, 20)
+    if (activeTab === 'drafts') return []
+    return filterByCategory(activeTab as BacklogCategory).slice(0, 20)
   }, [activeTab, filterByCategory])
 
   const getPriorityColor = (priority: string) => {
@@ -46,13 +48,16 @@ export default function ToProcessPage() {
     }
   }
 
+  // Compteur total incluant les brouillons
+  const totalToProcess = counts.total + draftStats.total
+
   return (
     <ChannablePageWrapper
       title="À traiter"
       subtitle="Backlog intelligent"
       description="Actions requises et opportunités triées par priorité IA"
       heroImage="products"
-      badge={{ label: `${counts.total} produits`, variant: counts.critical > 0 ? 'destructive' : 'secondary' }}
+      badge={{ label: `${totalToProcess} produits`, variant: counts.critical > 0 || draftStats.total > 0 ? 'destructive' : 'secondary' }}
       actions={
         <Button onClick={() => navigate('/products')}>
           <Zap className="h-4 w-4 mr-2" />
@@ -60,20 +65,31 @@ export default function ToProcessPage() {
         </Button>
       }
     >
-      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'ai')} className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'ai' | 'drafts')} className="space-y-6">
+        <TabsList className="grid w-full max-w-lg grid-cols-3">
           <TabsTrigger value="ai" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
             Intelligence IA
           </TabsTrigger>
+          <TabsTrigger value="drafts" className="flex items-center gap-2">
+            <FileEdit className="h-4 w-4" />
+            Brouillons
+            {draftStats.total > 0 && (
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5">{draftStats.total}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="list" className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
-            Liste détaillée
+            Liste
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="ai" className="mt-6">
           <BacklogAIPanel />
+        </TabsContent>
+
+        <TabsContent value="drafts" className="mt-6">
+          <DraftProductsPanel />
         </TabsContent>
 
         <TabsContent value="list" className="mt-6">

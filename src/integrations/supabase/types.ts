@@ -5363,6 +5363,7 @@ export type Database = {
           id: string
           image_urls: string[] | null
           import_job_id: string | null
+          import_notes: string | null
           metadata: Json | null
           name: string | null
           original_images: string[] | null
@@ -5395,6 +5396,7 @@ export type Database = {
           id?: string
           image_urls?: string[] | null
           import_job_id?: string | null
+          import_notes?: string | null
           metadata?: Json | null
           name?: string | null
           original_images?: string[] | null
@@ -5427,6 +5429,7 @@ export type Database = {
           id?: string
           image_urls?: string[] | null
           import_job_id?: string | null
+          import_notes?: string | null
           metadata?: Json | null
           name?: string | null
           original_images?: string[] | null
