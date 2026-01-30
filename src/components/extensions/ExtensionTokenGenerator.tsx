@@ -53,12 +53,14 @@ export function ExtensionTokenGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedToken, setGeneratedToken] = useState<GeneratedToken | null>(null);
   const [existingTokens, setExistingTokens] = useState<TokenData[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [copied, setCopied] = useState<'token' | 'refresh' | null>(null);
 
   // Charger les tokens existants
   const loadTokens = async () => {
     if (!user) return;
     setIsLoading(true);
+    setLoadError(null);
     
     try {
       const { data, error } = await supabase.functions.invoke('extension-auth', {
@@ -67,10 +69,14 @@ export function ExtensionTokenGenerator() {
       
       if (error) throw error;
       if (data?.success) {
-        setExistingTokens(data.tokens || []);
+        setExistingTokens(Array.isArray(data.tokens) ? data.tokens : []);
+      } else {
+        throw new Error(data?.error || 'Failed to load tokens');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load tokens:', error);
+      setLoadError(error.message || 'Erreur de chargement');
+      setExistingTokens([]);
     } finally {
       setIsLoading(false);
     }
