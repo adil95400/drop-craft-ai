@@ -78,11 +78,12 @@ serve(async (req) => {
       // Verify user exists and get profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, subscription_plan, first_name, last_name, email, avatar_url')
+        .select('id, subscription_plan, full_name, email, avatar_url')
         .eq('id', userId)
         .single()
       
       if (profileError || !profile) {
+        console.error('[extension-auth] Profile not found for userId:', userId, profileError)
         return new Response(
           JSON.stringify({ success: false, error: 'User not found' }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -115,8 +116,7 @@ serve(async (req) => {
             id: userId,
             email: profile.email,
             plan: profile.subscription_plan || 'free',
-            firstName: profile.first_name,
-            lastName: profile.last_name,
+            fullName: profile.full_name,
             avatarUrl: profile.avatar_url
           }
         }),
