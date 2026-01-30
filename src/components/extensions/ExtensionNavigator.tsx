@@ -99,12 +99,12 @@ const extensionCards: ExtensionCard[] = [
   },
   {
     id: 'browser-extension',
-    title: 'Extension Navigateur v5.7.0',
+    title: 'Extension Navigateur v5.7.1',
     description: 'Extension Chrome pour scraper des produits directement depuis 45+ plateformes',
     icon: <Globe className="w-6 h-6" />,
     route: '/extensions/chrome',
     planRequired: null,
-    badge: 'v5.7.0',
+    badge: 'v5.7.1',
     color: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
     status: 'available'
   },
