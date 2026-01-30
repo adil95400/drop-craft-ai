@@ -4434,11 +4434,19 @@ export type Database = {
           device_info: Json | null
           expires_at: string | null
           id: string
+          ip_address: string | null
           is_active: boolean | null
           last_used_at: string | null
           name: string | null
+          permissions: Json | null
+          refresh_expires_at: string | null
+          refresh_token: string | null
+          revoked_at: string | null
+          revoked_by: string | null
           token: string
+          token_type: string | null
           usage_count: number | null
+          user_agent: string | null
           user_id: string
         }
         Insert: {
@@ -4446,11 +4454,19 @@ export type Database = {
           device_info?: Json | null
           expires_at?: string | null
           id?: string
+          ip_address?: string | null
           is_active?: boolean | null
           last_used_at?: string | null
           name?: string | null
+          permissions?: Json | null
+          refresh_expires_at?: string | null
+          refresh_token?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
           token: string
+          token_type?: string | null
           usage_count?: number | null
+          user_agent?: string | null
           user_id: string
         }
         Update: {
@@ -4458,11 +4474,19 @@ export type Database = {
           device_info?: Json | null
           expires_at?: string | null
           id?: string
+          ip_address?: string | null
           is_active?: boolean | null
           last_used_at?: string | null
           name?: string | null
+          permissions?: Json | null
+          refresh_expires_at?: string | null
+          refresh_token?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
           token?: string
+          token_type?: string | null
           usage_count?: number | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: [
@@ -4511,6 +4535,56 @@ export type Database = {
         }
         Relationships: []
       }
+      extension_heartbeats: {
+        Row: {
+          browser: string | null
+          browser_version: string | null
+          created_at: string | null
+          extension_version: string
+          id: string
+          is_active: boolean | null
+          last_seen_at: string | null
+          os: string | null
+          platform: string | null
+          token_id: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          browser_version?: string | null
+          created_at?: string | null
+          extension_version: string
+          id?: string
+          is_active?: boolean | null
+          last_seen_at?: string | null
+          os?: string | null
+          platform?: string | null
+          token_id?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          browser_version?: string | null
+          created_at?: string | null
+          extension_version?: string
+          id?: string
+          is_active?: boolean | null
+          last_seen_at?: string | null
+          os?: string | null
+          platform?: string | null
+          token_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extension_heartbeats_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "extension_auth_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       extension_jobs: {
         Row: {
           completed_at: string | null
@@ -4557,6 +4631,59 @@ export type Database = {
             columns: ["extension_id"]
             isOneToOne: false
             referencedRelation: "extensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extension_sessions: {
+        Row: {
+          actions_count: number | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_heartbeat: string | null
+          metadata: Json | null
+          page_url: string | null
+          platform: string | null
+          session_end: string | null
+          session_start: string | null
+          token_id: string | null
+          user_id: string
+        }
+        Insert: {
+          actions_count?: number | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_heartbeat?: string | null
+          metadata?: Json | null
+          page_url?: string | null
+          platform?: string | null
+          session_end?: string | null
+          session_start?: string | null
+          token_id?: string | null
+          user_id: string
+        }
+        Update: {
+          actions_count?: number | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_heartbeat?: string | null
+          metadata?: Json | null
+          page_url?: string | null
+          platform?: string | null
+          session_end?: string | null
+          session_start?: string | null
+          token_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extension_sessions_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "extension_auth_tokens"
             referencedColumns: ["id"]
           },
         ]
@@ -11993,6 +12120,10 @@ export type Database = {
       }
       generate_bulk_order_number: { Args: never; Returns: string }
       generate_dispute_number: { Args: never; Returns: string }
+      generate_extension_token: {
+        Args: { p_device_info?: Json; p_permissions?: Json; p_user_id: string }
+        Returns: Json
+      }
       generate_rma_number: { Args: never; Returns: string }
       get_exchange_rate: {
         Args: { p_base: string; p_target: string }
@@ -12020,6 +12151,10 @@ export type Database = {
       }
       is_admin_secure: { Args: never; Returns: boolean }
       is_token_revoked: { Args: { token_id?: string }; Returns: boolean }
+      refresh_extension_token: {
+        Args: { p_refresh_token: string }
+        Returns: Json
+      }
       unlock_stuck_import_jobs: { Args: never; Returns: number }
       validate_api_key: {
         Args: { input_key: string }
@@ -12030,6 +12165,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      validate_extension_token: { Args: { p_token: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
