@@ -1,5 +1,6 @@
 /**
- * ShopOpti+ Bulk Import State Machine v5.7.0
+ * ShopOpti+ Bulk Import State Machine v5.7.1
+ * PHASE 1+2: Atomic imports + Standardized feedback + Report modal
  * Robust state management with local persistence
  * Ensures 100% reliability for bulk imports
  */
@@ -39,7 +40,7 @@
   };
 
   /**
-   * Item states
+   * Item states - PHASE 1 updated
    */
   const ITEM_STATES = {
     PENDING: 'pending',
@@ -47,6 +48,8 @@
     VALIDATING: 'validating',
     IMPORTING: 'importing',
     COMPLETED: 'completed',
+    DRAFTED: 'drafted',      // PHASE 1: Product imported as draft
+    BLOCKED: 'blocked',      // PHASE 1: Import blocked (critical data missing)
     FAILED: 'failed',
     SKIPPED: 'skipped',
     RETRYING: 'retrying'
@@ -62,7 +65,7 @@
    */
   class BulkImportStateMachine {
     constructor() {
-      this.version = '5.7.0';
+      this.version = '5.7.1';
       this.state = STATES.IDLE;
       this.items = [];
       this.results = this.createEmptyResults();
@@ -84,12 +87,14 @@
     }
 
     /**
-     * Create empty results object
+     * Create empty results object - PHASE 1+2 enhanced
      */
     createEmptyResults() {
       return {
         total: 0,
         completed: 0,
+        drafted: 0,        // PHASE 1: Products imported as drafts
+        blocked: 0,        // PHASE 1: Products blocked (critical data missing)
         failed: 0,
         skipped: 0,
         successRate: 0,
@@ -97,6 +102,8 @@
         completedAt: null,
         duration: 0,
         products: [],
+        drafts: [],        // PHASE 1: Drafted product details
+        blockedProducts: [],// PHASE 1: Blocked product details
         errors: []
       };
     }
@@ -279,7 +286,35 @@
           : 0;
 
         this.transitionTo(STATES.COMPLETED);
-        this.emit('completed', this.getReport());
+        
+        const report = this.getReport();
+        this.emit('completed', report);
+        
+        // PHASE 2: Show detailed report with FeedbackSystem
+        this.showBulkReport(report);
+      }
+    }
+
+    /**
+     * PHASE 2: Show bulk import report modal
+     */
+    showBulkReport(report) {
+      if (window.ShopOptiFeedback) {
+        window.ShopOptiFeedback.bulkComplete({
+          total: report.total,
+          successful: report.completed,
+          drafted: report.drafted || 0,
+          blocked: report.blocked || 0,
+          failed: report.failed,
+          products: report.products,
+          drafts: report.drafts || [],
+          blockedProducts: report.blockedProducts || [],
+          errors: report.errors
+        });
+      } else {
+        // Fallback toast
+        const msg = `Import terminé: ${report.completed}/${report.total} réussis`;
+        console.log('[BulkStateMachine]', msg);
       }
     }
 
@@ -300,49 +335,89 @@
           throw new Error('Operation cancelled');
         }
 
-        // Step 1: Extract
-        let extractedData;
+        // PHASE 1: Use Pipeline with atomic import logic
+        let result;
         if (window.ShopOptiPipeline) {
-          const result = await window.ShopOptiPipeline.processUrl(item.url, {
+          result = await window.ShopOptiPipeline.processUrl(item.url, {
             skipConfirmation: true,
             signal: this.abortController?.signal
           });
+          
+          // PHASE 1: Handle blocked imports (critical data missing)
+          if (result.status === 'blocked') {
+            item.state = ITEM_STATES.BLOCKED;
+            item.error = result.error || 'Données critiques manquantes';
+            item.blockedReason = result.validation?.importDecision?.details || [];
+            item.extractionTime = Date.now() - startTime;
+            item.updatedAt = new Date().toISOString();
+            
+            this.results.blocked = (this.results.blocked || 0) + 1;
+            this.results.blockedProducts = this.results.blockedProducts || [];
+            this.results.blockedProducts.push({
+              url: item.url,
+              reason: item.error,
+              details: item.blockedReason
+            });
+            
+            this.emit('item_blocked', { item, progress: this.getProgress() });
+            return;
+          }
+          
+          // PHASE 1: Handle draft imports (incomplete data)
+          if (result.status === 'drafted') {
+            item.state = ITEM_STATES.DRAFTED;
+            item.result = result.product;
+            item.draftReason = result.message || 'Données incomplètes';
+            item.extractionTime = Date.now() - startTime;
+            item.updatedAt = new Date().toISOString();
+            
+            this.results.drafted = (this.results.drafted || 0) + 1;
+            this.results.drafts = this.results.drafts || [];
+            this.results.drafts.push({
+              url: item.url,
+              product: result.product,
+              reason: item.draftReason
+            });
+            
+            this.emit('item_drafted', { item, progress: this.getProgress() });
+            return;
+          }
+          
           if (!result.success) throw new Error(result.error || 'Extraction failed');
-          extractedData = result.product;
+          
+          // Successful import
+          item.state = ITEM_STATES.COMPLETED;
+          item.result = result.product;
+          item.qualityScore = result.validation?.score;
+          item.extractionTime = Date.now() - startTime;
+          item.updatedAt = new Date().toISOString();
+
+          this.results.completed++;
+          this.results.products.push({
+            url: item.url,
+            product: result.product,
+            qualityScore: item.qualityScore,
+            extractionTime: item.extractionTime
+          });
+          
         } else if (window.ShopOptiAPI) {
-          extractedData = await window.ShopOptiAPI.importFromUrl(item.url);
+          // Fallback to direct API
+          const extractedData = await window.ShopOptiAPI.importFromUrl(item.url);
+          
+          item.state = ITEM_STATES.COMPLETED;
+          item.result = extractedData;
+          item.extractionTime = Date.now() - startTime;
+          item.updatedAt = new Date().toISOString();
+
+          this.results.completed++;
+          this.results.products.push({
+            url: item.url,
+            product: extractedData,
+            extractionTime: item.extractionTime
+          });
         } else {
           throw new Error('No import API available');
         }
-
-        // Step 2: Validate
-        item.state = ITEM_STATES.VALIDATING;
-        if (window.ShopOptiQualityScorer) {
-          const scoreReport = window.ShopOptiQualityScorer.calculate(extractedData, extractedData.platform);
-          item.qualityScore = scoreReport.score;
-          
-          if (!scoreReport.canImport) {
-            throw new Error(`Quality score too low: ${scoreReport.score}%`);
-          }
-        }
-
-        // Step 3: Import
-        item.state = ITEM_STATES.IMPORTING;
-        // Import is handled by the pipeline
-
-        // Success
-        item.state = ITEM_STATES.COMPLETED;
-        item.result = extractedData;
-        item.extractionTime = Date.now() - startTime;
-        item.updatedAt = new Date().toISOString();
-
-        this.results.completed++;
-        this.results.products.push({
-          url: item.url,
-          product: extractedData,
-          qualityScore: item.qualityScore,
-          extractionTime: item.extractionTime
-        });
 
       } catch (error) {
         item.error = error.message;
@@ -665,6 +740,6 @@
     window.BULK_IMPORT_ITEM_STATES = ITEM_STATES;
   }
 
-  console.log('[ShopOpti+] BulkImportStateMachine v5.7.0 loaded');
+  console.log('[ShopOpti+] BulkImportStateMachine v5.7.1 loaded - Phase 1+2 Atomic Imports');
 
 })();
