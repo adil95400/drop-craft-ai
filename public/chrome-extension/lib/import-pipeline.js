@@ -1,7 +1,8 @@
 /**
- * ShopOpti+ Import Pipeline v5.7.0
+ * ShopOpti+ Import Pipeline v5.7.1
  * Orchestrates the complete import flow with atomic transactions
- * Ensures: Extract → Validate → Normalize → Confirm → Import
+ * PHASE 1: Strict validation - products with missing critical data are BLOCKED or DRAFTED
+ * Ensures: Extract → Validate → Normalize → Confirm → Import (or Draft)
  */
 
 (function() {
@@ -15,7 +16,10 @@
     NORMALIZING: 'normalizing',
     AWAITING_CONFIRMATION: 'awaiting_confirmation',
     IMPORTING: 'importing',
+    IMPORTING_AS_DRAFT: 'importing_as_draft',
     COMPLETED: 'completed',
+    COMPLETED_AS_DRAFT: 'completed_as_draft',
+    BLOCKED: 'blocked',
     FAILED: 'failed',
     CANCELLED: 'cancelled'
   };
@@ -26,6 +30,8 @@
     PROGRESS: 'pipeline:progress',
     VALIDATION_RESULT: 'pipeline:validation_result',
     IMPORT_COMPLETE: 'pipeline:import_complete',
+    IMPORT_BLOCKED: 'pipeline:import_blocked',
+    IMPORT_DRAFTED: 'pipeline:import_drafted',
     ERROR: 'pipeline:error'
   };
 
@@ -43,6 +49,7 @@
 
     /**
      * Main entry point - process a product URL
+     * PHASE 1: Enforces atomic import with strict validation
      * @param {string} url - Product URL to import
      * @param {Object} options - Import options
      * @returns {Promise<Object>} Import result
@@ -53,7 +60,9 @@
         url,
         options,
         startTime: Date.now(),
-        steps: []
+        steps: [],
+        normalizedData: null,
+        validationReport: null
       };
 
       try {
@@ -72,14 +81,18 @@
         // Step 3: Normalize
         this.setState(PIPELINE_STATES.NORMALIZING);
         const normalizedData = this.normalize(rawData, platform);
+        this.currentJob.normalizedData = normalizedData;
         this.logStep('normalized', { fieldsCount: Object.keys(normalizedData).length });
 
-        // Step 4: Validate
+        // Step 4: Validate with STRICT rules (Phase 1)
         this.setState(PIPELINE_STATES.VALIDATING);
         const validationReport = this.validate(normalizedData);
+        this.currentJob.validationReport = validationReport;
+        
         this.logStep('validated', { 
           score: validationReport.score,
-          canImport: validationReport.canImport 
+          canImport: validationReport.canImport,
+          decision: validationReport.importDecision?.action || 'unknown'
         });
 
         // Emit validation result for UI
@@ -89,22 +102,49 @@
           requiresConfirmation: !validationReport.canImport || validationReport.warnings.length > 0
         });
 
-        // Step 5: Check if import is blocked
+        // PHASE 1 DECISION LOGIC
+
+        // Case 1: BLOCKED - Critical data missing (title, price, or images)
         if (!validationReport.canImport) {
-          this.setState(PIPELINE_STATES.FAILED);
-          return {
+          this.setState(PIPELINE_STATES.BLOCKED);
+          
+          const blockResult = {
             success: false,
-            error: 'Données critiques manquantes',
+            status: 'blocked',
+            error: validationReport.importDecision.reason,
+            details: validationReport.importDecision.details,
             validation: validationReport,
-            product: normalizedData
+            product: normalizedData,
+            job: this.currentJob
           };
+
+          this.emit(PIPELINE_EVENTS.IMPORT_BLOCKED, blockResult);
+          
+          // Log for debugging
+          console.error('[Pipeline] IMPORT BLOCKED:', {
+            url,
+            platform,
+            reason: validationReport.importDecision.reason,
+            missingCritical: validationReport.critical.failed.map(f => f.field)
+          });
+
+          return blockResult;
         }
 
-        // Step 6: Await confirmation if there are warnings
+        // Case 2: DRAFT - Important data missing or low score
+        if (validationReport.shouldBeDraft && !options.forceFull) {
+          // Import as draft with explicit flag
+          return await this.executeImport(normalizedData, validationReport, {
+            ...options,
+            status: 'draft',
+            backlogReason: validationReport.importDecision.reason
+          });
+        }
+
+        // Case 3: Await confirmation if there are warnings and not skipping
         if (validationReport.warnings.length > 0 && !options.skipConfirmation) {
           this.setState(PIPELINE_STATES.AWAITING_CONFIRMATION);
           
-          // Return awaiting state - UI will call confirmImport() or cancelImport()
           return {
             success: true,
             status: 'awaiting_confirmation',
@@ -114,7 +154,7 @@
           };
         }
 
-        // Step 7: Import
+        // Case 4: Full import - all critical data present
         return await this.executeImport(normalizedData, validationReport, options);
 
       } catch (error) {
@@ -142,15 +182,6 @@
         throw new Error('Aucune confirmation en attente');
       }
 
-      const lastValidation = this.currentJob.steps.find(s => s.type === 'validated');
-      const lastNormalized = this.currentJob.steps.find(s => s.type === 'normalized');
-
-      if (!lastValidation || !lastNormalized) {
-        throw new Error('Données de validation manquantes');
-      }
-
-      // We need to re-get the normalized data and validation
-      // This is a simplified version - in production, store in job
       return await this.executeImport(
         this.currentJob.normalizedData,
         this.currentJob.validationReport,
@@ -172,48 +203,68 @@
 
     /**
      * Execute the actual import to backend
+     * PHASE 1: Supports 'draft' status for incomplete products
      */
     async executeImport(normalizedData, validationReport, options) {
-      this.setState(PIPELINE_STATES.IMPORTING);
-      this.emit(PIPELINE_EVENTS.PROGRESS, { step: 'importing', progress: 80 });
+      const isDraft = options.status === 'draft';
+      
+      this.setState(isDraft ? PIPELINE_STATES.IMPORTING_AS_DRAFT : PIPELINE_STATES.IMPORTING);
+      this.emit(PIPELINE_EVENTS.PROGRESS, { step: 'importing', progress: 80, isDraft });
 
       try {
-        // Prepare payload
+        // Prepare payload with explicit status
         const payload = {
-          product: normalizedData,
+          product: {
+            ...normalizedData,
+            // PHASE 1: Explicit status based on validation
+            status: isDraft ? 'draft' : (options.autoPublish ? 'active' : 'draft'),
+            // Track why it was drafted
+            import_notes: isDraft ? options.backlogReason : null,
+            needs_review: isDraft || validationReport.shouldBeBacklogged
+          },
           validation: {
             score: validationReport.score,
-            missingFields: validationReport.missingFields
+            missingFields: validationReport.missingFields,
+            decision: validationReport.importDecision,
+            backlogReasons: validationReport.backlogReasons || []
           },
           options: {
             enrichWithAI: options.enrichWithAI || false,
             targetStores: options.targetStores || [],
-            autoOptimize: options.autoOptimize || false
+            autoOptimize: options.autoOptimize || false,
+            isDraft: isDraft
           }
         };
 
         // Send to backend with retry
         const result = await this.sendToBackend(payload);
 
-        this.setState(PIPELINE_STATES.COMPLETED);
+        const finalState = isDraft ? PIPELINE_STATES.COMPLETED_AS_DRAFT : PIPELINE_STATES.COMPLETED;
+        this.setState(finalState);
+        
         this.logStep('imported', { 
           productId: result.product_id,
+          status: isDraft ? 'draft' : 'active',
           duration: Date.now() - this.currentJob.startTime 
         });
 
-        this.emit(PIPELINE_EVENTS.IMPORT_COMPLETE, {
+        const importResult = {
           success: true,
+          status: isDraft ? 'drafted' : 'imported',
           product: result,
           validation: validationReport,
-          job: this.currentJob
-        });
-
-        return {
-          success: true,
-          product: result,
-          validation: validationReport,
-          job: this.currentJob
+          job: this.currentJob,
+          message: isDraft 
+            ? `Produit créé en brouillon → À traiter (${options.backlogReason})`
+            : 'Produit importé avec succès'
         };
+
+        this.emit(
+          isDraft ? PIPELINE_EVENTS.IMPORT_DRAFTED : PIPELINE_EVENTS.IMPORT_COMPLETE, 
+          importResult
+        );
+
+        return importResult;
 
       } catch (error) {
         this.setState(PIPELINE_STATES.FAILED);
@@ -300,7 +351,7 @@
     }
 
     /**
-     * Validate normalized data
+     * Validate normalized data using strict Phase 1 rules
      */
     validate(normalizedData) {
       this.emit(PIPELINE_EVENTS.PROGRESS, { step: 'validating', progress: 60 });
@@ -309,17 +360,33 @@
         return window.ShopOptiValidator.validate(normalizedData);
       }
 
-      // Basic fallback validation
+      // Strict fallback validation (Phase 1 compliant)
       const hasTitle = normalizedData.title && normalizedData.title.length >= 3;
       const hasPrice = typeof normalizedData.price === 'number' && normalizedData.price > 0;
+      const hasImages = Array.isArray(normalizedData.images) && normalizedData.images.length > 0;
+
+      const canImport = hasTitle && hasPrice && hasImages;
+      const errors = [];
+      
+      if (!hasTitle) errors.push('Titre manquant ou trop court');
+      if (!hasPrice) errors.push('Prix invalide');
+      if (!hasImages) errors.push('Aucune image disponible');
 
       return {
-        isValid: hasTitle && hasPrice,
-        canImport: hasTitle && hasPrice,
-        score: (hasTitle ? 50 : 0) + (hasPrice ? 50 : 0),
+        isValid: canImport,
+        canImport: canImport,
+        shouldBeDraft: false,
+        shouldBeBacklogged: false,
+        backlogReasons: [],
+        score: (hasTitle ? 33 : 0) + (hasPrice ? 34 : 0) + (hasImages ? 33 : 0),
         warnings: [],
-        errors: hasTitle && hasPrice ? [] : ['Titre ou prix manquant'],
-        missingFields: []
+        errors: errors,
+        missingFields: errors,
+        importDecision: {
+          action: canImport ? 'import' : 'block',
+          reason: canImport ? 'Données critiques présentes' : 'Données critiques manquantes',
+          details: errors
+        }
       };
     }
 
@@ -357,16 +424,19 @@
     }
 
     /**
-     * Process multiple URLs (bulk import)
+     * Process multiple URLs (bulk import) with Phase 1 compliance
      */
     async processBulk(urls, options = {}) {
       const results = {
         total: urls.length,
         successful: 0,
+        drafted: 0,
+        blocked: 0,
         failed: 0,
-        skipped: 0,
         products: [],
-        errors: []
+        drafts: [],
+        errors: [],
+        blockedProducts: []
       };
 
       const concurrency = options.concurrency || 2;
@@ -380,8 +450,20 @@
           const promise = this.processUrl(url, { ...options, skipConfirmation: true })
             .then(result => {
               if (result.success) {
-                results.successful++;
-                results.products.push(result.product);
+                if (result.status === 'drafted') {
+                  results.drafted++;
+                  results.drafts.push(result.product);
+                } else {
+                  results.successful++;
+                  results.products.push(result.product);
+                }
+              } else if (result.status === 'blocked') {
+                results.blocked++;
+                results.blockedProducts.push({ 
+                  url, 
+                  reason: result.error,
+                  details: result.details 
+                });
               } else {
                 results.failed++;
                 results.errors.push({ url, error: result.error });
@@ -393,11 +475,18 @@
             })
             .finally(() => {
               active.delete(promise);
+              const processed = results.successful + results.drafted + results.blocked + results.failed;
               this.emit(PIPELINE_EVENTS.PROGRESS, {
                 step: 'bulk_import',
-                progress: Math.round(((results.successful + results.failed) / results.total) * 100),
-                current: results.successful + results.failed,
-                total: results.total
+                progress: Math.round((processed / results.total) * 100),
+                current: processed,
+                total: results.total,
+                stats: {
+                  successful: results.successful,
+                  drafted: results.drafted,
+                  blocked: results.blocked,
+                  failed: results.failed
+                }
               });
             });
           
@@ -410,7 +499,32 @@
         }
       }
 
+      // Generate final summary
+      results.summary = this.generateBulkSummary(results);
+      
       return results;
+    }
+
+    /**
+     * Generate human-readable bulk import summary
+     */
+    generateBulkSummary(results) {
+      const lines = [];
+      
+      if (results.successful > 0) {
+        lines.push(`✅ ${results.successful} produit(s) importé(s) avec succès`);
+      }
+      if (results.drafted > 0) {
+        lines.push(`📝 ${results.drafted} produit(s) créé(s) en brouillon (données incomplètes)`);
+      }
+      if (results.blocked > 0) {
+        lines.push(`🚫 ${results.blocked} produit(s) bloqué(s) (données critiques manquantes)`);
+      }
+      if (results.failed > 0) {
+        lines.push(`❌ ${results.failed} erreur(s) technique(s)`);
+      }
+
+      return lines.join('\n');
     }
 
     // ==================== Utility Methods ====================
@@ -480,8 +594,14 @@
     }
 
     isProcessing() {
-      return ![PIPELINE_STATES.IDLE, PIPELINE_STATES.COMPLETED, PIPELINE_STATES.FAILED, PIPELINE_STATES.CANCELLED]
-        .includes(this.state);
+      return ![
+        PIPELINE_STATES.IDLE, 
+        PIPELINE_STATES.COMPLETED, 
+        PIPELINE_STATES.COMPLETED_AS_DRAFT,
+        PIPELINE_STATES.BLOCKED,
+        PIPELINE_STATES.FAILED, 
+        PIPELINE_STATES.CANCELLED
+      ].includes(this.state);
     }
   }
 
@@ -498,5 +618,5 @@
     window.ImportPipeline = ImportPipeline;
   }
 
-  console.log('[ShopOpti+] ImportPipeline v5.7.0 loaded');
+  console.log('[ShopOpti+] ImportPipeline v5.7.1 loaded - Phase 1 Atomic Import');
 })();
