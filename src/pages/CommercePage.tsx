@@ -10,13 +10,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { useRealAnalytics } from '@/hooks/useRealAnalytics';
-import { useRealCustomers } from '@/hooks/useRealCustomers';
+import { useCustomersUnified } from '@/hooks/unified';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function CommercePage() {
   const { analytics, isLoading: analyticsLoading } = useRealAnalytics();
-  const { stats: customerStats } = useRealCustomers();
+  const { stats: customerStats } = useCustomersUnified();
   
   const { data: orders = [], isLoading: ordersLoading, refetch } = useQuery({
     queryKey: ['commerce-orders'],

@@ -30,7 +30,20 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { CreateSupplierData, Supplier } from '@/hooks/useSuppliers'
+import { UnifiedSupplier } from '@/hooks/unified'
+
+type Supplier = UnifiedSupplier
+type CreateSupplierData = {
+  name: string
+  supplier_type: 'api' | 'email' | 'csv' | 'xml' | 'ftp'
+  country?: string | null
+  sector?: string | null
+  logo_url?: string | null
+  website?: string | null
+  description?: string | null
+  api_endpoint?: string | null
+  sync_frequency?: 'daily' | 'weekly' | 'manual' | 'hourly'
+}
 import { useTranslation } from 'react-i18next'
 
 const supplierSchema = z.object({

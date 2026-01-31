@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useIntegrations, IntegrationTemplate } from "@/hooks/useIntegrations";
+import { useIntegrationsUnified, IntegrationTemplate } from "@/hooks/unified";
 import { logError } from "@/utils/consoleCleanup";
 import { ShoppingCart, Key, Globe, Settings, CheckCircle, AlertTriangle } from "lucide-react";
 

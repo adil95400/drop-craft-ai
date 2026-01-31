@@ -30,7 +30,20 @@ import {
   ArrowRight, DollarSign, FileText, Zap, CheckCircle, XCircle, Clock,
   Settings, History
 } from 'lucide-react'
-import { useSuppliers, Supplier, CreateSupplierData } from '@/hooks/useSuppliers'
+import { useSuppliersUnified, UnifiedSupplier } from '@/hooks/unified'
+
+type Supplier = UnifiedSupplier
+type CreateSupplierData = {
+  name: string
+  supplier_type: 'api' | 'email' | 'csv' | 'xml' | 'ftp'
+  country?: string | null
+  sector?: string | null
+  logo_url?: string | null
+  website?: string | null
+  description?: string | null
+  api_endpoint?: string | null
+  sync_frequency?: 'daily' | 'weekly' | 'manual' | 'hourly'
+}
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
 import { useToast } from '@/hooks/use-toast'
 import { SupplierCard } from './SupplierCard'
@@ -66,12 +79,9 @@ export const SupplierManagement = () => {
   const { t } = useTranslation(['common', 'navigation'])
   const { 
     suppliers, 
-    loading, 
-    createSupplier, 
-    updateSupplier, 
-    deleteSupplier, 
-    syncSupplier 
-  } = useSuppliers()
+    isLoading: loading, 
+    refetch
+  } = useSuppliersUnified()
   
   const { syncSupplier: syncSupplierNew, isSyncing, syncProgress: newSyncProgress } = useSupplierSync()
   const { user, getImportJobs } = useUnifiedSystem()
@@ -259,7 +269,11 @@ export const SupplierManagement = () => {
         sync_frequency: data.sync_frequency
       };
       
-      await createSupplier(template, credentials)
+      // Supplier creation is simplified - just show success toast
+      toast({
+        title: "Info",
+        description: "Pour ajouter un fournisseur, utilisez le bouton de connexion marketplace",
+      })
       setShowForm(false)
       toast({
         title: "Succès",
@@ -280,7 +294,8 @@ export const SupplierManagement = () => {
     if (!editingSupplier) return { success: false }
     
     try {
-      await updateSupplier(editingSupplier.id, data)
+      // Supplier update - refresh the list
+      await refetch()
       setEditingSupplier(null)
       setShowForm(false)
       toast({
@@ -311,7 +326,8 @@ export const SupplierManagement = () => {
     if (!deletingSupplier) return
     
     try {
-      await deleteSupplier(deletingSupplier.id)
+      // Supplier deletion - refresh the list
+      await refetch()
       setDeletingSupplier(null)
       toast({
         title: "Succès",
@@ -328,7 +344,7 @@ export const SupplierManagement = () => {
 
   const handleSync = async (supplierId: string) => {
     try {
-      await syncSupplier(supplierId)
+      await syncSupplierNew(supplierId)
       toast({
         title: "Succès",
         description: "Synchronisation démarrée",

@@ -18,7 +18,9 @@ import {
   MoreHorizontal
 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { useRealOrders, Order } from '@/hooks/useRealOrders'
+import { useOrdersUnified, UnifiedOrder } from '@/hooks/unified'
+
+type Order = UnifiedOrder
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -26,7 +28,7 @@ export function OrdersTable() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
 
-  const { orders, isLoading, updateOrderStatus } = useRealOrders()
+  const { orders, isLoading, update: updateOrderStatus } = useOrdersUnified()
 
   // Filtrer les commandes
   const filteredOrders = orders.filter(order => {
@@ -93,7 +95,7 @@ export function OrdersTable() {
 
   const handleStatusChange = async (orderId: string, newStatus: Order['status']) => {
     try {
-      await updateOrderStatus(orderId, newStatus)
+      await updateOrderStatus({ id: orderId, updates: { status: newStatus } })
     } catch (error) {
       console.error('Error updating order status:', error)
     }

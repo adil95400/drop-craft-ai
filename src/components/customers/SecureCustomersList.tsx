@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, Eye, EyeOff } from "lucide-react";
-import { useRealCustomers } from '@/hooks/useRealCustomers';
+import { useCustomersUnified } from '@/hooks/unified';
 import { useSecureAdmin } from '@/hooks/useSecureAdmin';
 
 export const SecureCustomersList = () => {
   const [showSensitiveData, setShowSensitiveData] = useState(false);
-  const { customers, isLoading } = useRealCustomers();
+  const { customers, isLoading } = useCustomersUnified();
   const { isAdmin, logAdminAccess } = useSecureAdmin();
 
   const handleToggleSensitiveData = async () => {

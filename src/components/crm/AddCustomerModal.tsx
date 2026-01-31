@@ -22,7 +22,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Customer } from '@/hooks/useRealCustomers'
+import { UnifiedCustomer } from '@/hooks/unified'
+
+type Customer = UnifiedCustomer
 
 const customerSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),

@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useIntegrations, IntegrationTemplate } from "@/hooks/useIntegrations";
+import { useIntegrationsUnified, IntegrationTemplate } from "@/hooks/unified";
 import { logError } from "@/utils/consoleCleanup";
 import { ShoppingCart, Key, Globe, Settings, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -19,7 +19,7 @@ interface WooCommerceConfigDialogProps {
 
 export const WooCommerceConfigDialog = ({ open, onOpenChange }: WooCommerceConfigDialogProps) => {
   const { toast } = useToast();
-  const { addIntegration, isAdding } = useIntegrations();
+  const { addIntegration, isAdding } = useIntegrationsUnified();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     storeUrl: "",
@@ -44,24 +44,23 @@ export const WooCommerceConfigDialog = ({ open, onOpenChange }: WooCommerceConfi
 
     try {
       await addIntegration({
-        id: "woocommerce",
-        name: "WooCommerce",
-        description: "Intégration WooCommerce",
-        category: "ecommerce",
-        logo: '🟣',
-        color: 'bg-purple-500',
-        features: [],
-        setupSteps: [],
-        status: 'available',
-        icon: ShoppingCart,
-        premium: false,
-        rating: 4.8,
-        installs: 2500
-      } as IntegrationTemplate, {
-        platform_url: formData.storeUrl,
-        connection_status: 'connected',
-        is_active: true,
-        sync_frequency: formData.syncFrequency,
+        template: {
+          id: "woocommerce",
+          name: "WooCommerce",
+          description: "Intégration WooCommerce",
+          category: "ecommerce",
+          logo: '🟣',
+          color: 'bg-purple-500',
+          features: [],
+          setupSteps: [],
+          status: 'available'
+        } as IntegrationTemplate,
+        config: {
+          platform_url: formData.storeUrl,
+          connection_status: 'connected',
+          is_active: true,
+          sync_frequency: formData.syncFrequency
+        },
         credentials: {
           store_url: formData.storeUrl,
           consumer_key: formData.consumerKey,

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { useIntegrations } from "@/hooks/useIntegrations";
+import { useIntegrationsUnified } from "@/hooks/unified";
 import { logError } from '@/utils/consoleCleanup';
 import { 
   Settings, 
