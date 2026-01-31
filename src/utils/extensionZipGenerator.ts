@@ -73,13 +73,16 @@ const EXTENSION_FILES = [
   'CHANGELOG.md',
   
   // ==========================================
-  // LIBRARY FILES v5.7.2 (Phase A/B/C + Security)
+  // LIBRARY FILES v5.7.2 (Phase A/B/C + Security + AI)
   // IMPORTANT: Must match manifest.json references
   // ==========================================
   'lib/logger.js',
   'lib/feature-flags.js',
   'lib/storage-manager.js',
+  'lib/encrypted-storage.js',
   'lib/security.js',
+  'lib/onboarding-system.js',
+  'lib/ai-predictive-search.js',
   'lib/dynamic-loader.js',
   'lib/advanced-reviews-ui.js',
   'lib/ai-content-service.js',
