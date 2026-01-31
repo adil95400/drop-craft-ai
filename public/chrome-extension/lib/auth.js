@@ -1,12 +1,12 @@
 // ============================================
-// ShopOpti+ Extension Authentication Module v5.7.1
+// ShopOpti+ Extension Authentication Module v5.7.2
 // Sprint 1: SSO avec JWT, refresh automatique, permissions
 // ============================================
 
 const ShopOptiAuth = {
   API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
   APP_URL: 'https://shopopti.io',
-  VERSION: '5.7.1',
+  VERSION: '5.7.2',
   
   // State
   isAuthenticated: false,

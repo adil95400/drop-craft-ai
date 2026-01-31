@@ -1,17 +1,18 @@
 // ============================================
-// ShopOpti+ Content Injector v5.7.1 - PROFESSIONAL EDITION
+// ShopOpti+ Content Injector v5.7.2 - PROFESSIONAL EDITION
 // PHASE 1 & 2: Atomic imports + Standardized UX Feedback
 // 100% AutoDS/Cartifind Feature Parity
 // MutationObserver for SPA/infinite scroll
 // Centralized selectors + Supplier search + AI content
 // ALWAYS SHOW BUTTONS - Auth check on action
 // Full Sync with ShopOpti SaaS
+// SECURITY FIX v5.7.2: XSS protection via textContent
 // ============================================
 
 (function() {
   'use strict';
   
-  const VERSION = '5.7.1';
+  const VERSION = '5.7.2';
   const INJECTED_CLASS = 'shopopti-injected';
   const DEBOUNCE_MS = 300;
   const MAX_REINJECT_ATTEMPTS = 8;
@@ -717,38 +718,57 @@
   // BUTTON STATE HELPERS
   // ============================================
   
+  // SECURITY: Safe DOM manipulation helpers to prevent XSS
+  function createSafeElement(tag, className, textContent) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (textContent) el.textContent = textContent;
+    return el;
+  }
+  
   function setButtonLoading(button, loading, text = 'Import...') {
     const btn = button.querySelector ? button.querySelector('.shopopti-main-btn') || button : button;
     btn.disabled = loading;
     if (loading) {
-      btn.innerHTML = `<span class="shopopti-spinner"></span><span class="shopopti-btn-text">${text}</span>`;
+      btn.innerHTML = ''; // Clear first
+      btn.appendChild(createSafeElement('span', 'shopopti-spinner'));
+      btn.appendChild(createSafeElement('span', 'shopopti-btn-text', text));
     }
   }
   
   function setButtonSuccess(button) {
     const btn = button.querySelector ? button.querySelector('.shopopti-main-btn') || button : button;
     btn.classList.add('shopopti-success');
-    btn.innerHTML = `<span class="shopopti-icon-check">✓</span><span class="shopopti-btn-text">Importé!</span>`;
+    btn.innerHTML = ''; // Clear first
+    btn.appendChild(createSafeElement('span', 'shopopti-icon-check', '✓'));
+    btn.appendChild(createSafeElement('span', 'shopopti-btn-text', 'Importé!'));
   }
   
   function setButtonError(button) {
     const btn = button.querySelector ? button.querySelector('.shopopti-main-btn') || button : button;
     btn.classList.add('shopopti-error');
-    btn.innerHTML = `<span class="shopopti-icon-error">✗</span><span class="shopopti-btn-text">Erreur</span>`;
+    btn.innerHTML = ''; // Clear first
+    btn.appendChild(createSafeElement('span', 'shopopti-icon-error', '✗'));
+    btn.appendChild(createSafeElement('span', 'shopopti-btn-text', 'Erreur'));
   }
   
   function resetButton(button, text = 'Import ShopOpti+') {
     const btn = button.querySelector ? button.querySelector('.shopopti-main-btn') || button : button;
     btn.disabled = false;
     btn.classList.remove('shopopti-success', 'shopopti-error');
-    btn.innerHTML = `
-      <svg class="shopopti-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      <span class="shopopti-btn-text">${text}</span>
-    `;
+    btn.innerHTML = ''; // Clear first
+    
+    // SVG icon (static, safe)
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'shopopti-icon');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.innerHTML = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>';
+    
+    btn.appendChild(svg);
+    btn.appendChild(createSafeElement('span', 'shopopti-btn-text', text));
   }
   
   // ============================================
@@ -781,7 +801,12 @@
     
     const toast = document.createElement('div');
     toast.className = `shopopti-toast shopopti-toast-${type}`;
-    toast.innerHTML = `<span>${message}</span>`;
+    
+    // SECURITY: Use textContent to prevent XSS injection
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    toast.appendChild(messageSpan);
+    
     document.body.appendChild(toast);
     
     requestAnimationFrame(() => toast.classList.add('show'));
