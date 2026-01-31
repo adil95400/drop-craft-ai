@@ -8,7 +8,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle, XCircle, Loader2, AlertTriangle, Zap, ExternalLink } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import type { Integration } from '@/hooks/useIntegrations'
+import type { UnifiedIntegration } from '@/hooks/unified'
+
+type Integration = UnifiedIntegration
 
 interface AutoConfigWizardProps {
   open: boolean

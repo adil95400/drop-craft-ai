@@ -20,7 +20,9 @@ import {
   Calendar,
   Loader2
 } from 'lucide-react'
-import { Supplier } from '@/hooks/useSuppliers'
+import { UnifiedSupplier } from '@/hooks/unified'
+
+type Supplier = UnifiedSupplier
 import { useTranslation } from 'react-i18next'
 
 interface SupplierCardProps {

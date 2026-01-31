@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
-import { useIntegrationsData } from '@/hooks/useIntegrationsData'
+import { useIntegrationsUnified } from '@/hooks/unified'
 import { 
   ChannablePageLayout,
   ChannableHeroSection,

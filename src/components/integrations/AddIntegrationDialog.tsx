@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Store, ShoppingCart, CreditCard, Megaphone } from 'lucide-react';
-import { useIntegrations, Integration, IntegrationTemplate } from '@/hooks/useIntegrations';
+import { useIntegrationsUnified, UnifiedIntegration, IntegrationTemplate } from '@/hooks/unified';
+
+type Integration = UnifiedIntegration;
 import { logError } from '@/utils/consoleCleanup';
 const platformCategories = {
   ecommerce: {
@@ -122,7 +124,7 @@ export const AddIntegrationDialog = () => {
   });
   const {
     createIntegration
-  } = useIntegrations();
+  } = useIntegrationsUnified();
   const handleCreate = async () => {
     if (!selectedPlatform) return;
     const platform = platformCategories[selectedCategory].platforms.find(p => p.name === selectedPlatform);

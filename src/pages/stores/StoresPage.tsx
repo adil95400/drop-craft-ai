@@ -1,13 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useIntegrationsData } from '@/hooks/useIntegrationsData'
+import { useIntegrationsUnified } from '@/hooks/unified'
 import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus'
 import { Store, Plus, RefreshCw, Settings, Unplug, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function StoresPage() {
-  const { integrations, loading, refetch, syncIntegration, disconnectIntegration } = useIntegrationsData()
+  const { integrations, isLoading: loading, refetch, sync: syncIntegration, disconnect: disconnectIntegration } = useIntegrationsUnified()
 
   const handleSync = async (integrationId: string) => {
     await syncIntegration(integrationId)

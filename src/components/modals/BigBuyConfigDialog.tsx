@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useIntegrations, IntegrationTemplate } from "@/hooks/useIntegrations";
+import { useIntegrationsUnified, IntegrationTemplate } from "@/hooks/unified";
 import { logError } from "@/utils/consoleCleanup";
 import { ShoppingCart, Key, Globe, Settings, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -19,7 +19,7 @@ interface BigBuyConfigDialogProps {
 
 export const BigBuyConfigDialog = ({ open, onOpenChange }: BigBuyConfigDialogProps) => {
   const { toast } = useToast();
-  const { addIntegration, isAdding } = useIntegrations();
+  const { addIntegration, isAdding } = useIntegrationsUnified();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     apiKey: "",
@@ -44,27 +44,26 @@ export const BigBuyConfigDialog = ({ open, onOpenChange }: BigBuyConfigDialogPro
 
     try {
       await addIntegration({
-        id: "bigbuy",
-        name: "BigBuy", 
-        description: "Intégration BigBuy - Grossiste européen",
-        category: "ecommerce",
-        logo: '🏪',
-        color: 'bg-blue-500',
-        features: [],
-        setupSteps: [],
-        status: 'available',
-        icon: ShoppingCart,
-        premium: false,
-        rating: 4.5,
-        installs: 1200
-      } as IntegrationTemplate, {
-        platform_url: formData.testMode ? "https://api-test.bigbuy.eu" : "https://api.bigbuy.eu",
-        connection_status: 'connected',
-        is_active: true,
-        sync_frequency: formData.syncFrequency,
+        template: {
+          id: "bigbuy",
+          name: "BigBuy", 
+          description: "Intégration BigBuy - Grossiste européen",
+          category: "ecommerce",
+          logo: '🏪',
+          color: 'bg-blue-500',
+          features: [],
+          setupSteps: [],
+          status: 'available'
+        } as IntegrationTemplate,
+        config: {
+          platform_url: formData.testMode ? "https://api-test.bigbuy.eu" : "https://api.bigbuy.eu",
+          connection_status: 'connected',
+          is_active: true,
+          sync_frequency: formData.syncFrequency
+        },
         credentials: {
           api_key: formData.apiKey,
-          test_mode: formData.testMode,
+          test_mode: String(formData.testMode),
           language: formData.language
         }
       });

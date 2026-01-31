@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useIntegrations, IntegrationTemplate } from "@/hooks/useIntegrations";
+import { useIntegrationsUnified, IntegrationTemplate } from "@/hooks/unified";
 import { logError } from "@/utils/consoleCleanup";
 import { ShoppingBag, Key, Globe, Settings, CheckCircle } from "lucide-react";
 
@@ -19,7 +19,7 @@ interface ShopifyConfigDialogProps {
 
 export const ShopifyConfigDialog = ({ open, onOpenChange }: ShopifyConfigDialogProps) => {
   const { toast } = useToast();
-  const { addIntegration, isAdding } = useIntegrations();
+  const { addIntegration, isAdding } = useIntegrationsUnified();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     shopDomain: "",
@@ -44,20 +44,23 @@ export const ShopifyConfigDialog = ({ open, onOpenChange }: ShopifyConfigDialogP
 
     try {
       await addIntegration({
-        id: "shopify",
-        name: "Shopify",
-        description: "Intégration Shopify",
-        category: "ecommerce",
-        logo: '🛍️',
-        color: 'bg-green-500',
-        features: [],
-        setupSteps: [],
-        status: 'available'
-      } as IntegrationTemplate, {
-        platform_url: `https://${formData.shopDomain}.myshopify.com`,
-        connection_status: 'connected',
-        is_active: true,
-        sync_frequency: formData.syncFrequency,
+        template: {
+          id: "shopify",
+          name: "Shopify",
+          description: "Intégration Shopify",
+          category: "ecommerce",
+          logo: '🛍️',
+          color: 'bg-green-500',
+          features: [],
+          setupSteps: [],
+          status: 'available'
+        } as IntegrationTemplate,
+        config: {
+          platform_url: `https://${formData.shopDomain}.myshopify.com`,
+          connection_status: 'connected',
+          is_active: true,
+          sync_frequency: formData.syncFrequency
+        },
         credentials: {
           access_token: formData.accessToken,
           shop_domain: formData.shopDomain

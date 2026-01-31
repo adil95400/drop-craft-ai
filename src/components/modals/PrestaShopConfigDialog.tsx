@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useIntegrations } from "@/hooks/useIntegrations";
+import { useIntegrationsUnified, IntegrationTemplate } from "@/hooks/unified";
 import { logError } from "@/utils/consoleCleanup";
 import { ShoppingCart, Key, Globe, Settings, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -19,7 +19,7 @@ interface PrestaShopConfigDialogProps {
 
 export const PrestaShopConfigDialog = ({ open, onOpenChange }: PrestaShopConfigDialogProps) => {
   const { toast } = useToast();
-  const { addIntegration, isAdding } = useIntegrations();
+  const { addIntegration, isAdding } = useIntegrationsUnified();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     shopUrl: "",
@@ -83,24 +83,23 @@ export const PrestaShopConfigDialog = ({ open, onOpenChange }: PrestaShopConfigD
 
     try {
       await addIntegration({
-        id: "prestashop",
-        name: "PrestaShop",
-        description: "Intégration PrestaShop",
-        category: "ecommerce",
-        logo: '🏬',
-        color: 'bg-blue-500',
-        features: [],
-        setupSteps: [],
-        status: 'available',
-        icon: '🏬',
-        premium: false,
-        rating: 4.5,
-        installs: 1000
-      }, {
-        platform_url: formData.shopUrl,
-        connection_status: 'connected',
-        is_active: true,
-        sync_frequency: formData.syncFrequency,
+        template: {
+          id: "prestashop",
+          name: "PrestaShop",
+          description: "Intégration PrestaShop",
+          category: "ecommerce",
+          logo: '🏬',
+          color: 'bg-blue-500',
+          features: [],
+          setupSteps: [],
+          status: 'available'
+        } as IntegrationTemplate,
+        config: {
+          platform_url: formData.shopUrl,
+          connection_status: 'connected',
+          is_active: true,
+          sync_frequency: formData.syncFrequency
+        },
         credentials: {
           api_key: formData.apiKey,
           shop_url: formData.shopUrl

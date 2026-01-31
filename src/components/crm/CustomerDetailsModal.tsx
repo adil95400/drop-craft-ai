@@ -22,7 +22,9 @@ import {
   MessageCircle,
   PhoneCall
 } from 'lucide-react'
-import { Customer } from '@/hooks/useRealCustomers'
+import { UnifiedCustomer } from '@/hooks/unified'
+
+type Customer = UnifiedCustomer
 
 interface CustomerDetailsModalProps {
   isOpen: boolean

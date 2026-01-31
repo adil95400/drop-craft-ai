@@ -20,7 +20,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { usePriceSyncQueue, usePriceSyncLogs, usePriceSyncStats } from '@/hooks/usePriceSync';
-import { useIntegrations } from '@/hooks/useIntegrations';
+import { useIntegrationsUnified } from '@/hooks/unified';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -38,7 +38,7 @@ export function PriceSyncPanel() {
   const { data: stats, isLoading: statsLoading } = usePriceSyncStats();
   const { data: queue } = usePriceSyncQueue();
   const { data: logs } = usePriceSyncLogs(30);
-  const integrationsResult = useIntegrations();
+  const integrationsResult = useIntegrationsUnified();
 
   // Filter connected stores - check multiple possible field names
   const connectedStores = integrationsResult?.integrations?.filter((i: any) => 

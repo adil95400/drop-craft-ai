@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Mail, Send, Users, TrendingUp, Clock, Plus, Eye, Loader2, MoreHorizontal, Edit, Trash2, Play, Pause } from 'lucide-react';
 import { useMarketingCampaigns } from '@/hooks/useMarketingCampaigns';
-import { useRealCustomers } from '@/hooks/useRealCustomers';
+import { useCustomersUnified } from '@/hooks/unified';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 
 const EmailMarketingPage: React.FC = () => {
   const { campaigns, isLoading, createCampaign, updateCampaign, deleteCampaign, isCreating } = useMarketingCampaigns();
-  const { stats: customerStats } = useRealCustomers();
+  const { stats: customerStats } = useCustomersUnified();
   const { templates } = useEmailTemplates();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newCampaign, setNewCampaign] = useState({ name: '', type: 'email' as const });

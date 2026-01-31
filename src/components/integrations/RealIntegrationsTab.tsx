@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { useIntegrations } from '@/hooks/useIntegrations';
+import { useIntegrationsUnified } from '@/hooks/unified';
 import { IntegrationCard } from './IntegrationCard';
 import { AddIntegrationDialog } from './AddIntegrationDialog';
 import { Search, RefreshCw, TrendingUp, Zap, AlertCircle, BarChart3, Clock, CheckCircle2, Activity, Globe, Database } from 'lucide-react';
