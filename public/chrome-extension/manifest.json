@@ -91,6 +91,10 @@
         "*://*.etsy.com/*"
       ],
       "js": [
+        "lib/logger.js",
+        "lib/feature-flags.js",
+        "lib/storage-manager.js",
+        "lib/security.js",
         "lib/remote-selectors.js",
         "lib/retry-manager.js",
         "lib/supplier-fallback.js",
@@ -115,6 +119,7 @@
         "lib/quick-import-mode.js",
         "lib/enhanced-preview.js",
         "lib/simplified-popup-ui.js",
+        "lib/dynamic-loader.js",
         "extractors/core-extractor.js",
         "extractors/extractor-registry.js",
         "extractors/amazon-extractor.js",

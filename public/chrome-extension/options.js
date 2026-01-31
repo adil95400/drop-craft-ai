@@ -1,8 +1,9 @@
-// ShopOpti+ Chrome Extension - Options Script v5.7.1
+// ShopOpti+ Chrome Extension - Options Script v5.7.2
+// P0/P1 Security Hardening - XSS Prevention
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.7.1';
+const VERSION = '5.7.2';
 
 const DEFAULT_SETTINGS = {
   apiUrl: API_URL,
@@ -527,10 +528,15 @@ async function testConnection() {
   const btn = getElement('testConnection');
   if (!btn) return;
   
-  const originalContent = btn.innerHTML;
+  const originalText = btn.textContent;
   
   try {
-    btn.innerHTML = '<span class="spinner"></span> Test...';
+    // SECURITY: Avoid innerHTML - use safe DOM construction
+    btn.textContent = '';
+    const spinner = document.createElement('span');
+    spinner.className = 'spinner';
+    btn.appendChild(spinner);
+    btn.appendChild(document.createTextNode(' Test...'));
     btn.disabled = true;
     
     const token = getElementValue('extensionToken', '');
@@ -559,22 +565,26 @@ async function testConnection() {
     console.error('[ShopOpti+] Connection test error:', error);
     showNotification(`Échec: ${error.message}`, 'error');
   } finally {
-    btn.innerHTML = originalContent;
+    btn.textContent = originalText;
     btn.disabled = false;
   }
 }
 
+// SAFE: Using textContent only - no innerHTML XSS risk
 function showNotification(message, type = 'info') {
   document.querySelectorAll('.notification').forEach(n => n.remove());
 
   const icons = {
     success: '✅',
     error: '❌',
-    info: 'ℹ️'
+    info: 'ℹ️',
+    warning: '⚠️'
   };
 
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
+  
+  // SECURITY: Use textContent to prevent XSS
   notification.textContent = `${icons[type] || ''} ${message}`;
 
   document.body.appendChild(notification);

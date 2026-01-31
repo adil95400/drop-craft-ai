@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
 
-const EXTENSION_VERSION = '5.7.1';
+const EXTENSION_VERSION = '5.7.2';
 
 const EXTENSION_FILES = [
   // Core files
@@ -15,7 +15,6 @@ const EXTENSION_FILES = [
   'options.js',
   'content-script.js',
   'content.css',
-  'content.js',
   'auth.html',
   'auth.js',
   
@@ -24,7 +23,6 @@ const EXTENSION_FILES = [
   'bulk-import-v5.js',
   'bulk-selector.js',
   'grabber.js',
-  'injected.js',
   
   // Automation & fulfillment
   'auto-order.js',
@@ -75,9 +73,14 @@ const EXTENSION_FILES = [
   'CHANGELOG.md',
   
   // ==========================================
-  // LIBRARY FILES v5.7.0 (Phase A/B/C)
+  // LIBRARY FILES v5.7.2 (Phase A/B/C + Security)
   // IMPORTANT: Must match manifest.json references
   // ==========================================
+  'lib/logger.js',
+  'lib/feature-flags.js',
+  'lib/storage-manager.js',
+  'lib/security.js',
+  'lib/dynamic-loader.js',
   'lib/advanced-reviews-ui.js',
   'lib/ai-content-service.js',
   'lib/api-client.js',
@@ -115,7 +118,6 @@ const EXTENSION_FILES = [
   'lib/remote-selectors.js',
   'lib/retry-manager.js',
   'lib/review-translator.js',
-  'lib/security.js',
   'lib/selectors-config.js',
   'lib/session-manager.js',
   'lib/shipping-extractor.js',
@@ -134,7 +136,7 @@ const EXTENSION_FILES = [
   'lib/variant-mapper.js',
 
   // ==========================================
-  // EXTRACTORS v5.7.0 (17+ platforms)
+  // EXTRACTORS v5.7.2 (17+ platforms)
   // ==========================================
   'extractors/core-extractor.js',
   'extractors/extractor-registry.js',
