@@ -19,7 +19,7 @@ interface AmazonConfigDialogProps {
 
 export const AmazonConfigDialog = ({ open, onOpenChange }: AmazonConfigDialogProps) => {
   const { toast } = useToast();
-  const { addIntegration, isAdding } = useIntegrations();
+  const { addIntegration, isAdding } = useIntegrationsUnified();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     accessToken: "",
@@ -67,24 +67,27 @@ export const AmazonConfigDialog = ({ open, onOpenChange }: AmazonConfigDialogPro
 
     try {
       await addIntegration({
-        id: "amazon",
-        name: "Amazon",
-        description: "Intégration Amazon SP-API",
-        category: "marketplace",
-        logo: '📦',
-        color: 'bg-orange-500',
-        features: [],
-        setupSteps: [],
-        status: 'available',
-        icon: ShoppingCart,
-        premium: false,
-        rating: 4.2,
-        installs: 850
-      } as IntegrationTemplate, {
-        platform_url: `https://sellingpartnerapi-${formData.region.toLowerCase()}.amazon.com`,
-        connection_status: 'connected',
-        is_active: true,
-        sync_frequency: formData.syncFrequency,
+        template: {
+          id: "amazon",
+          name: "Amazon",
+          description: "Intégration Amazon SP-API",
+          category: "marketplace",
+          logo: '📦',
+          color: 'bg-orange-500',
+          features: [],
+          setupSteps: [],
+          status: 'available',
+          icon: ShoppingCart,
+          premium: false,
+          rating: 4.2,
+          installs: 850
+        } as IntegrationTemplate, 
+        config: {
+          platform_url: `https://sellingpartnerapi-${formData.region.toLowerCase()}.amazon.com`,
+          connection_status: 'connected',
+          is_active: true,
+          sync_frequency: formData.syncFrequency
+        },
         credentials: {
           access_token: formData.accessToken,
           refresh_token: formData.refreshToken,

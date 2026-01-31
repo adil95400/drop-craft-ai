@@ -150,16 +150,19 @@ export const AddIntegrationDialog = () => {
         credentials: Object.keys(credentials).length > 0 ? credentials : undefined
       };
       await createIntegration({
-        id: selectedPlatform,
-        name: selectedPlatform,
-        description: `Intégration ${selectedPlatform}`,
-        category: selectedCategory,
-        logo: '🔗',
-        color: 'bg-blue-500',
-        features: [],
-        setupSteps: [],
-        status: 'available'
-      } as IntegrationTemplate, integration);
+        template: {
+          id: selectedPlatform,
+          name: selectedPlatform,
+          description: `Intégration ${selectedPlatform}`,
+          category: selectedCategory,
+          logo: '🔗',
+          color: 'bg-blue-500',
+          features: [],
+          setupSteps: [],
+          status: 'available'
+        } as IntegrationTemplate, 
+        config: integration
+      });
       setIsOpen(false);
       setSelectedPlatform('');
       setFormData({

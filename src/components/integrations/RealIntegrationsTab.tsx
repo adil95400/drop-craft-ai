@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 export const RealIntegrationsTab = () => {
-  const { integrations, syncLogs, loading, fetchIntegrations } = useIntegrations();
+  const { integrations, syncLogs, isLoading: loading, refetch: fetchIntegrations } = useIntegrationsUnified();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const { toast } = useToast();

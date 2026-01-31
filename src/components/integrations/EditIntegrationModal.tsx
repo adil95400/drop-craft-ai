@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { useRealIntegrations } from '@/hooks/useRealIntegrations'
+import { useIntegrationsUnified } from '@/hooks/unified'
 import { useToast } from '@/hooks/use-toast'
 
 interface EditIntegrationModalProps {
@@ -23,7 +23,7 @@ export const EditIntegrationModal = ({ integration }: EditIntegrationModalProps)
     sync_frequency: integration.sync_frequency || 'daily'
   })
 
-  const { updateIntegration, isUpdating } = useRealIntegrations()
+  const { updateIntegration, isUpdating } = useIntegrationsUnified()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {

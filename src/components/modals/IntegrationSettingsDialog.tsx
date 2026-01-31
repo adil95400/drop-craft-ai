@@ -34,7 +34,7 @@ interface IntegrationSettingsDialogProps {
 
 export const IntegrationSettingsDialog = ({ open, onOpenChange, integration }: IntegrationSettingsDialogProps) => {
   const { toast } = useToast();
-  const { updateIntegration, deleteIntegration, syncIntegration, isUpdating, isDeleting, isSyncing } = useIntegrations();
+  const { updateIntegration, deleteIntegration, sync: syncIntegration, isUpdating, isDeleting, isSyncing } = useIntegrationsUnified();
   const [activeTab, setActiveTab] = useState("settings");
   const [settings, setSettings] = useState({
     is_active: true,

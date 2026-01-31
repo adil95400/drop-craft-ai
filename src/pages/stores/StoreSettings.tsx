@@ -2,10 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Settings, Trash2, Edit } from 'lucide-react'
-import { useRealIntegrations } from '@/hooks/useRealIntegrations'
+import { useIntegrationsUnified } from '@/hooks/unified'
 
 export function StoreSettings() {
-  const { integrations, isLoading } = useRealIntegrations()
+  const { integrations, isLoading } = useIntegrationsUnified()
 
   if (isLoading) {
     return (

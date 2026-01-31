@@ -20,7 +20,7 @@ import {
   ExternalLink,
   Download
 } from 'lucide-react'
-import { useRealIntegrations } from '@/hooks/useRealIntegrations'
+import { useIntegrationsUnified } from '@/hooks/unified'
 import { useToast } from '@/hooks/use-toast'
 import { EditIntegrationModal } from './EditIntegrationModal'
 
@@ -37,7 +37,7 @@ export const IntegrationsTable = () => {
     isTesting,
     isSyncing,
     isDeleting
-  } = useRealIntegrations()
+  } = useIntegrationsUnified()
   const { toast } = useToast()
 
   const filteredIntegrations = integrations.filter(integration =>

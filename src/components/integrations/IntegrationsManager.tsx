@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertCircle, CheckCircle2, Clock, ShoppingCart, Globe, Package, Zap, Settings, Plus, Trash2, Eye, RefreshCw, Palette } from 'lucide-react';
-import { useRealIntegrations, type Integration } from '@/hooks/useRealIntegrations';
+import { useIntegrationsUnified, type UnifiedIntegration as Integration } from '@/hooks/unified';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -34,7 +34,7 @@ export const IntegrationsManager = () => {
     isTesting,
     isUpdating,
     isDeleting
-  } = useRealIntegrations();
+  } = useIntegrationsUnified();
 
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);

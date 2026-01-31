@@ -142,7 +142,7 @@ export const EnhancedIntegrationsHub: React.FC = () => {
   const [connectionDialog, setConnectionDialog] = useState<{ open: boolean; template?: IntegrationTemplate }>({ open: false })
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const { toast } = useToast()
-  const { integrations, loading, connectIntegration, disconnectIntegration } = useIntegrations()
+  const { integrations, isLoading: loading, createIntegration: connectIntegration, deleteIntegration: disconnectIntegration } = useIntegrationsUnified()
 
   const categories = ['all', 'Marketing', 'Analytics', 'Payment', 'Communication', 'AI', 'Automation', 'Security']
 
@@ -174,7 +174,7 @@ export const EnhancedIntegrationsHub: React.FC = () => {
     if (!connectionDialog.template) return
     
     try {
-      const success = await connectIntegration(connectionDialog.template, credentials)
+      const success = await connectIntegration({ template: connectionDialog.template, credentials })
       if (success) {
         setConnectionDialog({ open: false })
         setCredentials({})

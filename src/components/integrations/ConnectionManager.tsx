@@ -76,7 +76,7 @@ export const ConnectionManager = () => {
     isAdding, 
     isUpdating, 
     isDeleting 
-  } = useRealIntegrations()
+  } = useIntegrationsUnified()
   const { toast } = useToast()
   
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
