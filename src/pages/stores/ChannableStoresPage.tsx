@@ -54,7 +54,7 @@ const platformLogos: Record<string, string> = {
 
 export default function ChannableStoresPage() {
   const navigate = useNavigate()
-  const { integrations, loading, refetch, syncIntegration, disconnectIntegration } = useIntegrationsData()
+  const { integrations, isLoading: loading, refetch, sync: syncIntegration, disconnect: disconnectIntegration } = useIntegrationsUnified()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
 

@@ -70,7 +70,7 @@ export default function StoresPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={refetch} className="gap-2">
+          <Button variant="outline" onClick={() => refetch()} className="gap-2">
             <RefreshCw className="w-4 h-4" />
             Actualiser
           </Button>

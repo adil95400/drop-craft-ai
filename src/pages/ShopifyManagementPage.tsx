@@ -4,14 +4,14 @@ import { ShoppingBag, RefreshCw, AlertCircle, CheckCircle2, Clock, ArrowLeft } f
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useRealIntegrations } from '@/hooks/useRealIntegrations'
+import { useIntegrationsUnified } from '@/hooks/unified'
 import { useShopifySync } from '@/hooks/useShopifySync'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 
 const ShopifyManagementPage = () => {
   const navigate = useNavigate()
-  const { integrations, syncProducts, isSyncingProducts, testConnection, isTesting } = useRealIntegrations()
+  const { integrations, syncProducts, isSyncingProducts, testConnection, isTesting } = useIntegrationsUnified()
   const { configs, logs, isSyncing, triggerSync } = useShopifySync()
   const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null)
 
@@ -23,7 +23,7 @@ const ShopifyManagementPage = () => {
     if (!shopifyIntegration) return
     
     setSelectedIntegration(shopifyIntegration.id)
-    syncProducts({ integrationId: shopifyIntegration.id })
+    syncProducts(shopifyIntegration.id)
   }
 
   const handleTestConnection = async () => {

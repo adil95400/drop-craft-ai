@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { useAdvancedSync, ProductVariant } from '@/hooks/useAdvancedSync'
-import { useRealIntegrations } from '@/hooks/useRealIntegrations'
+import { useIntegrationsUnified } from '@/hooks/unified'
 import { Loader2, Plus, RefreshCw, Settings, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -17,7 +17,7 @@ export const AdvancedSyncInterface = () => {
   const { 
     integrations, 
     connectedIntegrations 
-  } = useRealIntegrations()
+  } = useIntegrationsUnified()
   
   const {
     createProductWithVariants,

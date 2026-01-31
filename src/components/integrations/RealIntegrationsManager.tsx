@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { AlertCircle, CheckCircle, Clock, RefreshCw, Trash2, TestTube } from 'lucide-react'
-import { useRealIntegrations } from '@/hooks/useRealIntegrations'
+import { useIntegrationsUnified } from '@/hooks/unified'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export function RealIntegrationsManager() {
@@ -28,7 +28,7 @@ export function RealIntegrationsManager() {
     isSyncingOrders,
     isTesting,
     isDeleting
-  } = useRealIntegrations()
+  } = useIntegrationsUnified()
 
   const [shopifyData, setShopifyData] = useState({ shopDomain: '', accessToken: '' })
   const [aliexpressData, setAliexpressData] = useState({ apiKey: '', apiSecret: '' })
@@ -47,8 +47,8 @@ export function RealIntegrationsManager() {
 
   const handleShopifyConnect = () => {
     connectShopify({
-      shopDomain: shopifyData.shopDomain,
-      accessToken: shopifyData.accessToken
+      shop_domain: shopifyData.shopDomain,
+      access_token: shopifyData.accessToken
     })
   }
 
@@ -320,10 +320,7 @@ export function RealIntegrationsManager() {
                   <CardContent>
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => syncProducts({ 
-                          integrationId: integration.id, 
-                          platform: integration.platform_name 
-                        })}
+                        onClick={() => syncProducts(integration.id)}
                         disabled={isSyncingProducts}
                       >
                         <RefreshCw className="w-4 h-4 mr-1" />
@@ -331,10 +328,7 @@ export function RealIntegrationsManager() {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => syncOrders({ 
-                          integrationId: integration.id, 
-                          platform: integration.platform_name 
-                        })}
+                        onClick={() => syncOrders(integration.id)}
                         disabled={isSyncingOrders}
                       >
                         <RefreshCw className="w-4 h-4 mr-1" />

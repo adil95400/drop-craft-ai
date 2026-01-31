@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useRealIntegrations } from "@/hooks/useRealIntegrations"
+import { useIntegrationsUnified } from "@/hooks/unified"
 import { BarChart3, TrendingUp, Activity, Download } from "lucide-react"
 
 export const IntegrationAnalytics = () => {
-  const { integrations, isLoading } = useRealIntegrations()
+  const { integrations, isLoading } = useIntegrationsUnified()
 
   if (isLoading) {
     return <div className="p-4">Chargement des analytics...</div>

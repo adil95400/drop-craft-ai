@@ -18,7 +18,7 @@ import {
   CheckCircle,
   ExternalLink
 } from 'lucide-react'
-import { useRealIntegrations } from '@/hooks/useRealIntegrations'
+import { useIntegrationsUnified } from '@/hooks/unified'
 import { useToast } from '@/hooks/use-toast'
 
 const integrationTypes = {
@@ -81,7 +81,7 @@ export const CreateIntegrationForm = () => {
     }
   })
 
-  const { addIntegration, isAdding } = useRealIntegrations()
+  const { addIntegration, isAdding } = useIntegrationsUnified()
   const { toast } = useToast()
 
   const handleTypeSelect = (type: string) => {
@@ -129,7 +129,7 @@ export const CreateIntegrationForm = () => {
         )
       }
 
-      await addIntegration(integrationData)
+      await addIntegration({ template: { id: selectedPlatform, name: formData.platform_name }, config: integrationData })
       
       // Reset form
       setSelectedType('')

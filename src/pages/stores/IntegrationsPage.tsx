@@ -11,7 +11,7 @@ import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
 import { useSyncLogs } from '@/hooks/useSyncLogs'
 import { AutoConfigWizard } from '@/components/integrations/AutoConfigWizard'
 import { SyncStatusInline } from './components/SyncStatusInline'
-import type { Integration } from '@/hooks/useIntegrations'
+import type { UnifiedIntegration as Integration } from '@/hooks/unified'
 
 export default function IntegrationsPage() {
   const navigate = useNavigate()

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { useRealIntegrations } from "@/hooks/useRealIntegrations"
+import { useIntegrationsUnified } from "@/hooks/unified"
 import { useToast } from "@/hooks/use-toast"
 import { 
   Activity, 
@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { logError, logAction } from '@/utils/consoleCleanup';
 
 export const IntegrationHealthMonitor = () => {
-  const { integrations, isLoading, testConnection } = useRealIntegrations()
+  const { integrations, isLoading, testConnection } = useIntegrationsUnified()
   const { toast } = useToast()
   const [healthData, setHealthData] = useState<Record<string, any>>({})
   const [isMonitoring, setIsMonitoring] = useState(false)
