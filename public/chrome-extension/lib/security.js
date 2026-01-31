@@ -1,11 +1,12 @@
 // ============================================
-// ShopOpti+ Security Module v5.1.0
+// ShopOpti+ Security Module v5.7.2
 // Message validation, URL whitelist, sanitization
 // Chrome Web Store Compliant - Manifest V3
+// SECURITY FIX v5.7.2: Added XSS-safe DOM helpers
 // ============================================
 
 const ShopOptiSecurity = {
-  VERSION: '5.1.0',
+  VERSION: '5.7.2',
 
   // ============================================
   // ALLOWED DOMAINS FOR API & SCRAPING
@@ -224,6 +225,7 @@ const ShopOptiSecurity = {
 
   // ============================================
   // SAFE DOM CREATION
+  // SECURITY FIX v5.7.2: XSS-safe element creation
   // ============================================
   createElement(tag, attributes = {}, textContent = null) {
     const el = document.createElement(tag);
@@ -247,10 +249,53 @@ const ShopOptiSecurity = {
     }
     
     if (textContent !== null) {
-      el.textContent = textContent;
+      el.textContent = textContent; // SAFE: textContent auto-escapes HTML
     }
     
     return el;
+  },
+  
+  /**
+   * Create a safe text element (span, div, p, etc.) with escaped content
+   * SECURITY: Always use this instead of innerHTML when displaying user data
+   */
+  createSafeTextElement(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text) el.textContent = text;
+    return el;
+  },
+  
+  /**
+   * Safely set content of an existing element
+   * SECURITY: Replaces innerHTML usage with textContent
+   */
+  setElementText(element, text) {
+    if (!element) return;
+    element.textContent = text || '';
+  },
+  
+  /**
+   * Create a safe toast/notification element
+   * SECURITY: All user-provided content is escaped via textContent
+   */
+  createSafeNotification(message, options = {}) {
+    const container = document.createElement('div');
+    container.className = options.className || 'shopopti-notification';
+    
+    if (options.icon) {
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'notification-icon';
+      iconSpan.textContent = options.icon;
+      container.appendChild(iconSpan);
+    }
+    
+    const textSpan = document.createElement('span');
+    textSpan.className = 'notification-text';
+    textSpan.textContent = message; // SAFE
+    container.appendChild(textSpan);
+    
+    return container;
   },
 
   // ============================================

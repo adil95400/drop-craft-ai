@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.7.1",
+  "version": "5.7.2",
   "description": "Extension professionnelle dropshipping 100% AutoDS - Import atomique avec validation stricte, Ads Spy, Auto-Order, Sourcing multi-fournisseurs, Sync multi-boutiques, 45+ plateformes supportées",
   
   "permissions": [
@@ -174,13 +174,30 @@
     {
       "resources": [
         "content.css",
-        "icons/*.png",
-        "import-overlay-v2.js",
-        "bulk-import-v5.js",
-        "extractors/*.js",
-        "lib/*.js"
+        "icons/*.png"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "*://*.amazon.com/*",
+        "*://*.amazon.fr/*",
+        "*://*.amazon.de/*",
+        "*://*.amazon.co.uk/*",
+        "*://*.amazon.es/*",
+        "*://*.amazon.it/*",
+        "*://*.amazon.ca/*",
+        "*://*.amazon.co.jp/*",
+        "*://*.aliexpress.com/*",
+        "*://*.aliexpress.fr/*",
+        "*://*.aliexpress.us/*",
+        "*://*.ebay.com/*",
+        "*://*.ebay.fr/*",
+        "*://*.ebay.de/*",
+        "*://*.ebay.co.uk/*",
+        "*://*.temu.com/*",
+        "*://*.shein.com/*",
+        "*://*.shein.fr/*",
+        "*://*.etsy.com/*",
+        "*://*.shopopti.io/*"
+      ]
     }
   ]
 }

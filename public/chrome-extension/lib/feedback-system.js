@@ -1,7 +1,8 @@
 /**
- * ShopOpti+ Feedback System v5.7.1
+ * ShopOpti+ Feedback System v5.7.2
  * Standardized UX feedback for all import operations
  * PHASE 2: Clear, consistent feedback with explicit success/failure states
+ * SECURITY FIX v5.7.2: XSS-safe DOM manipulation (no innerHTML with user data)
  */
 
 (function() {
@@ -553,13 +554,14 @@
 
     /**
      * Show a toast notification
+     * SECURITY: Uses safe DOM manipulation instead of innerHTML to prevent XSS
      */
     showToast(message, type = 'info', options = {}) {
       const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
       const feedbackType = FEEDBACK_TYPES[type] || FEEDBACK_TYPES.info;
       const duration = options.duration || this.defaultDuration;
 
-      // Create toast element
+      // Create toast element safely
       const toast = document.createElement('div');
       toast.className = 'shopopti-toast';
       toast.id = id;
@@ -568,48 +570,65 @@
       toast.style.color = feedbackType.textColor;
       toast.style.position = 'relative';
 
-      let actionsHtml = '';
-      if (options.actions && options.actions.length > 0) {
-        actionsHtml = `
-          <div class="shopopti-toast-actions">
-            ${options.actions.map(action => `
-              <button class="shopopti-toast-action ${action.primary ? 'primary' : ''}" data-action="${action.id}">
-                ${action.label}
-              </button>
-            `).join('')}
-          </div>
-        `;
+      // Icon (safe - from predefined constants)
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'shopopti-toast-icon';
+      iconSpan.textContent = feedbackType.icon;
+      toast.appendChild(iconSpan);
+
+      // Content container
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'shopopti-toast-content';
+
+      // Title (if provided - sanitized)
+      if (options.title) {
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'shopopti-toast-title';
+        titleDiv.textContent = options.title; // SAFE: textContent escapes HTML
+        contentDiv.appendChild(titleDiv);
       }
 
-      toast.innerHTML = `
-        <span class="shopopti-toast-icon">${feedbackType.icon}</span>
-        <div class="shopopti-toast-content">
-          ${options.title ? `<div class="shopopti-toast-title">${options.title}</div>` : ''}
-          <div class="shopopti-toast-message">${message}</div>
-          ${actionsHtml}
-        </div>
-        <button class="shopopti-toast-close" aria-label="Fermer">×</button>
-        <div class="shopopti-toast-progress" style="width: 100%;"></div>
-      `;
+      // Message (sanitized)
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'shopopti-toast-message';
+      messageDiv.textContent = message; // SAFE: textContent escapes HTML
+      contentDiv.appendChild(messageDiv);
 
-      // Handle close button
-      toast.querySelector('.shopopti-toast-close').addEventListener('click', () => {
-        this.dismissToast(id);
-      });
-
-      // Handle action buttons
-      if (options.actions) {
-        toast.querySelectorAll('.shopopti-toast-action').forEach(btn => {
+      // Actions (if provided)
+      if (options.actions && options.actions.length > 0) {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'shopopti-toast-actions';
+        
+        options.actions.forEach(action => {
+          const btn = document.createElement('button');
+          btn.className = `shopopti-toast-action ${action.primary ? 'primary' : ''}`;
+          btn.dataset.action = action.id;
+          btn.textContent = action.label; // SAFE: textContent
           btn.addEventListener('click', () => {
-            const actionId = btn.dataset.action;
-            const action = options.actions.find(a => a.id === actionId);
-            if (action && action.onClick) {
-              action.onClick();
-            }
+            if (action.onClick) action.onClick();
             this.dismissToast(id);
           });
+          actionsDiv.appendChild(btn);
         });
+        
+        contentDiv.appendChild(actionsDiv);
       }
+
+      toast.appendChild(contentDiv);
+
+      // Close button
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'shopopti-toast-close';
+      closeBtn.setAttribute('aria-label', 'Fermer');
+      closeBtn.textContent = '×';
+      closeBtn.addEventListener('click', () => this.dismissToast(id));
+      toast.appendChild(closeBtn);
+
+      // Progress bar
+      const progressBar = document.createElement('div');
+      progressBar.className = 'shopopti-toast-progress';
+      progressBar.style.width = '100%';
+      toast.appendChild(progressBar);
 
       // Limit number of toasts
       while (this.activeToasts.size >= this.maxToasts) {
@@ -625,7 +644,6 @@
       this.activeToasts.set(id, toast);
 
       // Animate progress bar
-      const progressBar = toast.querySelector('.shopopti-toast-progress');
       progressBar.style.transition = `width ${duration}ms linear`;
       requestAnimationFrame(() => {
         progressBar.style.width = '0%';
@@ -665,6 +683,7 @@
 
     /**
      * Show bulk import report modal
+     * SECURITY: Uses safe DOM manipulation to prevent XSS
      */
     showBulkReport(results) {
       // Remove existing report
@@ -692,105 +711,163 @@
         headerTitle = 'Import partiel';
       }
 
-      // Build details list
-      let detailsHtml = '';
-      
-      if (results.blockedProducts && results.blockedProducts.length > 0) {
-        detailsHtml += `
-          <div class="shopopti-bulk-report-details-title">Produits bloqués (${results.blockedProducts.length})</div>
-          ${results.blockedProducts.slice(0, 5).map(p => `
-            <div class="shopopti-bulk-report-item">
-              <span class="shopopti-bulk-report-item-icon blocked">🚫</span>
-              <span class="shopopti-bulk-report-item-text">${this.truncateUrl(p.url)}</span>
-              <span class="shopopti-bulk-report-item-reason">${p.reason || 'Données critiques manquantes'}</span>
-            </div>
-          `).join('')}
-        `;
-      }
-
-      if (results.errors && results.errors.length > 0) {
-        detailsHtml += `
-          <div class="shopopti-bulk-report-details-title">Erreurs (${results.errors.length})</div>
-          ${results.errors.slice(0, 5).map(e => `
-            <div class="shopopti-bulk-report-item">
-              <span class="shopopti-bulk-report-item-icon error">❌</span>
-              <span class="shopopti-bulk-report-item-text">${this.truncateUrl(e.url)}</span>
-              <span class="shopopti-bulk-report-item-reason">${e.error || 'Erreur technique'}</span>
-            </div>
-          `).join('')}
-        `;
-      }
-
+      // Create overlay
       const overlay = document.createElement('div');
       overlay.className = 'shopopti-bulk-report-overlay';
-      overlay.innerHTML = `
-        <div class="shopopti-bulk-report">
-          <div class="shopopti-bulk-report-header">
-            <div class="shopopti-bulk-report-header-icon" style="background: ${headerBg}; color: white;">
-              ${headerIcon}
-            </div>
-            <div class="shopopti-bulk-report-header-text">
-              <h3>${headerTitle}</h3>
-              <p>${total} produit(s) traité(s)</p>
-            </div>
-          </div>
-          
-          <div class="shopopti-bulk-report-stats">
-            <div class="shopopti-bulk-report-stat success">
-              <div class="shopopti-bulk-report-stat-value">${successful}</div>
-              <div class="shopopti-bulk-report-stat-label">Importés</div>
-            </div>
-            <div class="shopopti-bulk-report-stat draft">
-              <div class="shopopti-bulk-report-stat-value">${drafted}</div>
-              <div class="shopopti-bulk-report-stat-label">Brouillons</div>
-            </div>
-            <div class="shopopti-bulk-report-stat blocked">
-              <div class="shopopti-bulk-report-stat-value">${blocked}</div>
-              <div class="shopopti-bulk-report-stat-label">Bloqués</div>
-            </div>
-            <div class="shopopti-bulk-report-stat error">
-              <div class="shopopti-bulk-report-stat-value">${failed}</div>
-              <div class="shopopti-bulk-report-stat-label">Erreurs</div>
-            </div>
-          </div>
-          
-          ${detailsHtml ? `<div class="shopopti-bulk-report-details">${detailsHtml}</div>` : ''}
-          
-          <div class="shopopti-bulk-report-footer">
-            ${drafted > 0 ? `
-              <button class="shopopti-bulk-report-btn secondary" data-action="view-drafts">
-                Voir les brouillons
-              </button>
-            ` : ''}
-            <button class="shopopti-bulk-report-btn primary" data-action="close">
-              Fermer
-            </button>
-          </div>
-        </div>
-      `;
 
-      // Event handlers
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          overlay.remove();
+      // Create report container
+      const report = document.createElement('div');
+      report.className = 'shopopti-bulk-report';
+
+      // Header
+      const header = document.createElement('div');
+      header.className = 'shopopti-bulk-report-header';
+
+      const headerIconEl = document.createElement('div');
+      headerIconEl.className = 'shopopti-bulk-report-header-icon';
+      headerIconEl.style.background = headerBg;
+      headerIconEl.style.color = 'white';
+      headerIconEl.textContent = headerIcon;
+
+      const headerTextEl = document.createElement('div');
+      headerTextEl.className = 'shopopti-bulk-report-header-text';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = headerTitle;
+
+      const p = document.createElement('p');
+      p.textContent = `${total} produit(s) traité(s)`;
+
+      headerTextEl.appendChild(h3);
+      headerTextEl.appendChild(p);
+      header.appendChild(headerIconEl);
+      header.appendChild(headerTextEl);
+      report.appendChild(header);
+
+      // Stats grid
+      const statsGrid = document.createElement('div');
+      statsGrid.className = 'shopopti-bulk-report-stats';
+
+      const statsData = [
+        { value: successful, label: 'Importés', type: 'success' },
+        { value: drafted, label: 'Brouillons', type: 'draft' },
+        { value: blocked, label: 'Bloqués', type: 'blocked' },
+        { value: failed, label: 'Erreurs', type: 'error' }
+      ];
+
+      statsData.forEach(stat => {
+        const statDiv = document.createElement('div');
+        statDiv.className = `shopopti-bulk-report-stat ${stat.type}`;
+
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'shopopti-bulk-report-stat-value';
+        valueDiv.textContent = stat.value;
+
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'shopopti-bulk-report-stat-label';
+        labelDiv.textContent = stat.label;
+
+        statDiv.appendChild(valueDiv);
+        statDiv.appendChild(labelDiv);
+        statsGrid.appendChild(statDiv);
+      });
+
+      report.appendChild(statsGrid);
+
+      // Details section (blocked/errors)
+      const hasDetails = (results.blockedProducts?.length > 0) || (results.errors?.length > 0);
+      if (hasDetails) {
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'shopopti-bulk-report-details';
+
+        // Blocked products
+        if (results.blockedProducts?.length > 0) {
+          const blockedTitle = document.createElement('div');
+          blockedTitle.className = 'shopopti-bulk-report-details-title';
+          blockedTitle.textContent = `Produits bloqués (${results.blockedProducts.length})`;
+          detailsDiv.appendChild(blockedTitle);
+
+          results.blockedProducts.slice(0, 5).forEach(prod => {
+            const item = this.createReportItem('blocked', '🚫', this.truncateUrl(prod.url), prod.reason || 'Données critiques manquantes');
+            detailsDiv.appendChild(item);
+          });
         }
-      });
 
-      overlay.querySelector('[data-action="close"]').addEventListener('click', () => {
-        overlay.remove();
-      });
+        // Errors
+        if (results.errors?.length > 0) {
+          const errorsTitle = document.createElement('div');
+          errorsTitle.className = 'shopopti-bulk-report-details-title';
+          errorsTitle.textContent = `Erreurs (${results.errors.length})`;
+          detailsDiv.appendChild(errorsTitle);
 
-      const viewDraftsBtn = overlay.querySelector('[data-action="view-drafts"]');
-      if (viewDraftsBtn) {
+          results.errors.slice(0, 5).forEach(err => {
+            const item = this.createReportItem('error', '❌', this.truncateUrl(err.url), err.error || 'Erreur technique');
+            detailsDiv.appendChild(item);
+          });
+        }
+
+        report.appendChild(detailsDiv);
+      }
+
+      // Footer
+      const footer = document.createElement('div');
+      footer.className = 'shopopti-bulk-report-footer';
+
+      if (drafted > 0) {
+        const viewDraftsBtn = document.createElement('button');
+        viewDraftsBtn.className = 'shopopti-bulk-report-btn secondary';
+        viewDraftsBtn.dataset.action = 'view-drafts';
+        viewDraftsBtn.textContent = 'Voir les brouillons';
         viewDraftsBtn.addEventListener('click', () => {
           window.open('https://shopopti.io/products/backlog', '_blank');
           overlay.remove();
         });
+        footer.appendChild(viewDraftsBtn);
       }
 
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'shopopti-bulk-report-btn primary';
+      closeBtn.dataset.action = 'close';
+      closeBtn.textContent = 'Fermer';
+      closeBtn.addEventListener('click', () => overlay.remove());
+      footer.appendChild(closeBtn);
+
+      report.appendChild(footer);
+      overlay.appendChild(report);
+
+      // Click outside to close
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+      });
+
       document.body.appendChild(overlay);
-      
       return overlay;
+    }
+
+    /**
+     * Helper to create a report item (used by showBulkReport)
+     * SECURITY: Uses textContent for all user-provided data
+     */
+    createReportItem(type, icon, text, reason) {
+      const item = document.createElement('div');
+      item.className = 'shopopti-bulk-report-item';
+
+      const iconSpan = document.createElement('span');
+      iconSpan.className = `shopopti-bulk-report-item-icon ${type}`;
+      iconSpan.textContent = icon;
+
+      const textSpan = document.createElement('span');
+      textSpan.className = 'shopopti-bulk-report-item-text';
+      textSpan.textContent = text; // SAFE
+
+      const reasonSpan = document.createElement('span');
+      reasonSpan.className = 'shopopti-bulk-report-item-reason';
+      reasonSpan.textContent = reason; // SAFE
+
+      item.appendChild(iconSpan);
+      item.appendChild(textSpan);
+      item.appendChild(reasonSpan);
+      return item;
     }
 
     /**

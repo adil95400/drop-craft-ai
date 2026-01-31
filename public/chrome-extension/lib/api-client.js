@@ -1,5 +1,5 @@
 // ============================================
-// ShopOpti+ API Client v5.7.0
+// ShopOpti+ API Client v5.7.2
 // Handles all backend API calls with authentication
 // ============================================
 
