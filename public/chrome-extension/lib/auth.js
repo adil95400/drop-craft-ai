@@ -74,72 +74,16 @@ const ShopOptiAuth = {
   },
   
   /**
-   * Login with email/password (legacy - redirects to web auth)
+   * Login with email/password - DEPRECATED
+   * Redirects to secure web-based OAuth flow instead
+   * @deprecated Use loginWithOAuth() instead for PKCE-based authentication
    */
   async login(email, password) {
-    try {
-      // Authenticate with Supabase Auth first
-      const authResponse = await fetch(`${this.API_URL.replace('/functions/v1', '')}/auth/v1/token?grant_type=password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXdja3pybXFlY3d3cnN3d3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxNjY0NDEsImV4cCI6MjA4MTc0MjQ0MX0.jhrwOY7-tKeNF54E3Ec6yRzjmTW8zJyKuE9R4rvi41I'
-        },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const authData = await authResponse.json();
-      
-      if (!authResponse.ok || authData.error) {
-        throw new Error(authData.error_description || authData.error?.message || 'Identifiants invalides');
-      }
-      
-      // Generate extension token
-      const tokenResponse = await fetch(`${this.API_URL}/extension-auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authData.access_token}`
-        },
-        body: JSON.stringify({
-          action: 'generate_token',
-          data: {
-            userId: authData.user.id,
-            deviceInfo: this.getDeviceInfo(),
-            permissions: ['import', 'sync', 'logs', 'bulk']
-          }
-        })
-      });
-      
-      const tokenData = await tokenResponse.json();
-      
-      if (!tokenResponse.ok || !tokenData.success) {
-        throw new Error(tokenData.error || 'Échec génération token extension');
-      }
-      
-      // Store credentials
-      await this.saveSession({
-        token: tokenData.token,
-        refreshToken: tokenData.refreshToken,
-        expiresAt: tokenData.expiresAt,
-        refreshExpiresAt: tokenData.refreshExpiresAt,
-        permissions: tokenData.permissions,
-        user: {
-          id: authData.user.id,
-          email: authData.user.email,
-          plan: tokenData.user?.plan || 'free',
-          firstName: tokenData.user?.firstName,
-          lastName: tokenData.user?.lastName,
-          avatarUrl: tokenData.user?.avatarUrl
-        }
-      });
-      
-      return { success: true, user: this.user };
-      
-    } catch (error) {
-      console.error('[ShopOpti+ Auth] Login error:', error);
-      return { success: false, error: error.message };
-    }
+    console.warn('[ShopOpti+ Auth] Direct password login is deprecated. Redirecting to secure OAuth flow.');
+    
+    // Instead of handling credentials, redirect to web auth
+    // This prevents credential exposure in the extension
+    return this.loginWithOAuth();
   },
   
   /**
