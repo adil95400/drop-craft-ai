@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
   "version": "5.7.2",
-  "description": "Extension professionnelle dropshipping 100% AutoDS - Import atomique avec validation stricte, Ads Spy, Auto-Order, Sourcing multi-fournisseurs, Sync multi-boutiques, 45+ plateformes supportées",
+  "description": "Extension professionnelle dropshipping - Import atomique, IA prédictive type Nexus AI, Onboarding guidé, Stockage chiffré, Ads Spy, Auto-Order, 45+ plateformes",
   
   "permissions": [
     "activeTab",
@@ -94,7 +94,10 @@
         "lib/logger.js",
         "lib/feature-flags.js",
         "lib/storage-manager.js",
+        "lib/encrypted-storage.js",
         "lib/security.js",
+        "lib/onboarding-system.js",
+        "lib/ai-predictive-search.js",
         "lib/remote-selectors.js",
         "lib/retry-manager.js",
         "lib/supplier-fallback.js",
