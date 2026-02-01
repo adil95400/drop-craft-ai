@@ -3,58 +3,64 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { authenticateUser } from '../_shared/secure-auth.ts'
 import { secureUpdate, secureDelete } from '../_shared/db-helpers.ts'
 import { handleError, ValidationError } from '../_shared/error-handler.ts'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 serve(async (req) => {
-  console.log('Order Management Function called:', req.method, req.url)
-
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   try {
     const supabase = createClient(supabaseUrl, supabaseKey)
+    
+    // 1. Auth obligatoire - userId provient du token uniquement
     const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
+
+    // 2. Rate limiting
+    const rateCheck = await checkRateLimit(supabase, userId, 'order_management', RATE_LIMITS.API_GENERAL)
+    if (!rateCheck.allowed) {
+      return createRateLimitResponse(rateCheck, corsHeaders)
+    }
     
     const url = new URL(req.url)
     const action = url.searchParams.get('action') || 'list'
     
-    console.log(`Order management action: ${action}`)
+    console.log(`[SECURE] Order management action: ${action} by user ${userId}`)
 
     switch (action) {
       case 'list':
-        return await listOrders(supabase, user.id, req)
+        return await listOrders(supabase, userId, req, corsHeaders)
       
       case 'get':
-        return await getOrder(supabase, user.id, req)
+        return await getOrder(supabase, userId, req, corsHeaders)
       
       case 'create':
-        return await createOrder(supabase, user.id, req)
+        return await createOrder(supabase, userId, req, corsHeaders)
       
       case 'update':
-        return await updateOrder(supabase, user.id, req)
+        return await updateOrder(supabase, userId, req, corsHeaders)
       
       case 'delete':
-        return await deleteOrder(supabase, user.id, req)
+        return await deleteOrder(supabase, userId, req, corsHeaders)
       
       case 'update_status':
-        return await updateOrderStatus(supabase, user.id, req)
+        return await updateOrderStatus(supabase, userId, req, corsHeaders)
       
       case 'bulk_update':
-        return await bulkUpdateOrders(supabase, user.id, req)
+        return await bulkUpdateOrders(supabase, userId, req, corsHeaders)
       
       case 'export':
-        return await exportOrders(supabase, user.id, req)
+        return await exportOrders(supabase, userId, req, corsHeaders)
       
       case 'stats':
-        return await getOrderStats(supabase, user.id)
+        return await getOrderStats(supabase, userId, corsHeaders)
       
       default:
         return new Response(
@@ -64,21 +70,22 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Error in order-management:', error)
-    return handleError(error, corsHeaders)
+    return handleError(error, getSecureCorsHeaders(req))
   }
 })
 
-async function listOrders(supabase: any, userId: string, req: Request) {
+async function listOrders(supabase: any, userId: string, req: Request, corsHeaders: Record<string, string>) {
   const url = new URL(req.url)
   const status = url.searchParams.get('status')
   const limit = parseInt(url.searchParams.get('limit') || '50')
   const offset = parseInt(url.searchParams.get('offset') || '0')
   const search = url.searchParams.get('search')
 
+  // SECURE: Always scope to user_id
   let query = supabase
     .from('orders')
     .select('*, customer:customers(name, email)', { count: 'exact' })
-    .eq('user_id', userId)
+    .eq('user_id', userId) // CRITICAL: scope to user
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
@@ -87,7 +94,7 @@ async function listOrders(supabase: any, userId: string, req: Request) {
   }
 
   if (search) {
-    query = query.or(`order_number.ilike.%${search}%,customer_id.ilike.%${search}%`)
+    query = query.or(`order_number.ilike.%${search}%`)
   }
 
   const { data, error, count } = await query
@@ -96,17 +103,6 @@ async function listOrders(supabase: any, userId: string, req: Request) {
     console.error('Error listing orders:', error)
     throw error
   }
-
-  // Log activity
-  await supabase
-    .from('activity_logs')
-    .insert({
-      user_id: userId,
-      action: 'orders_list',
-      description: `Listed ${data?.length || 0} orders`,
-      entity_type: 'order',
-      metadata: { status, limit, offset, search }
-    })
 
   return new Response(
     JSON.stringify({
@@ -120,7 +116,7 @@ async function listOrders(supabase: any, userId: string, req: Request) {
   )
 }
 
-async function getOrder(supabase: any, userId: string, req: Request) {
+async function getOrder(supabase: any, userId: string, req: Request, corsHeaders: Record<string, string>) {
   const url = new URL(req.url)
   const orderId = url.searchParams.get('id')
 
@@ -128,11 +124,12 @@ async function getOrder(supabase: any, userId: string, req: Request) {
     throw new ValidationError('Order ID is required')
   }
 
+  // SECURE: scope to user_id
   const { data, error } = await supabase
     .from('orders')
     .select('*, customer:customers(*), items:order_items(*)')
     .eq('id', orderId)
-    .eq('user_id', userId)
+    .eq('user_id', userId) // CRITICAL: scope to user
     .single()
 
   if (error) {
@@ -153,7 +150,7 @@ async function getOrder(supabase: any, userId: string, req: Request) {
   )
 }
 
-async function createOrder(supabase: any, userId: string, req: Request) {
+async function createOrder(supabase: any, userId: string, req: Request, corsHeaders: Record<string, string>) {
   const body = await req.json()
   const {
     customer_id,
@@ -164,33 +161,39 @@ async function createOrder(supabase: any, userId: string, req: Request) {
     notes
   } = body
 
-  // Validate required fields
   if (!customer_id || !items || items.length === 0) {
     throw new ValidationError('Customer ID and items are required')
   }
 
-  // Calculate totals
-  let subtotal = 0
-  let tax = 0
-  let shipping = 0
+  // SECURITY: Verify customer belongs to user
+  const { data: customer, error: customerError } = await supabase
+    .from('customers')
+    .select('id')
+    .eq('id', customer_id)
+    .eq('user_id', userId) // CRITICAL: verify ownership
+    .single()
 
-  for (const item of items) {
-    const itemTotal = item.price * item.quantity
-    subtotal += itemTotal
+  if (customerError || !customer) {
+    throw new ValidationError('Customer not found or unauthorized')
   }
 
-  tax = subtotal * 0.20 // 20% TVA
-  shipping = subtotal > 100 ? 0 : 9.99 // Free shipping over 100€
+  // Calculate totals
+  let subtotal = 0
+  for (const item of items) {
+    subtotal += item.price * item.quantity
+  }
+
+  const tax = subtotal * 0.20
+  const shipping = subtotal > 100 ? 0 : 9.99
   const total = subtotal + tax + shipping
 
-  // Generate order number
   const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
 
-  // Create order
+  // Create order - SECURE: user_id from token only
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
-      user_id: userId,
+      user_id: userId, // CRITICAL: from token only
       customer_id,
       order_number: orderNumber,
       status: 'pending',
@@ -214,10 +217,10 @@ async function createOrder(supabase: any, userId: string, req: Request) {
     throw orderError
   }
 
-  // Create order items
+  // Create order items - SECURE: user_id from token only
   const orderItems = items.map((item: any) => ({
     order_id: order.id,
-    user_id: userId,
+    user_id: userId, // CRITICAL: from token only
     product_id: item.product_id,
     product_name: item.name,
     quantity: item.quantity,
@@ -232,36 +235,19 @@ async function createOrder(supabase: any, userId: string, req: Request) {
 
   if (itemsError) {
     console.error('Error creating order items:', itemsError)
-    // Rollback order
-    await supabase.from('orders').delete().eq('id', order.id)
+    await supabase.from('orders').delete().eq('id', order.id).eq('user_id', userId)
     throw itemsError
   }
 
-  // Update customer stats
-  await supabase
-    .from('customers')
-    .update({
-      total_orders: supabase.raw('total_orders + 1'),
-      total_spent: supabase.raw(`total_spent + ${total}`),
-      last_order_date: new Date().toISOString()
-    })
-    .eq('id', customer_id)
-
   // Log activity
-  await supabase
-    .from('activity_logs')
-    .insert({
-      user_id: userId,
-      action: 'order_created',
-      description: `Created order ${orderNumber}`,
-      entity_type: 'order',
-      entity_id: order.id,
-      metadata: {
-        order_number: orderNumber,
-        total_amount: total,
-        items_count: items.length
-      }
-    })
+  await supabase.from('activity_logs').insert({
+    user_id: userId,
+    action: 'order_created',
+    description: `Created order ${orderNumber}`,
+    entity_type: 'order',
+    entity_id: order.id,
+    metadata: { order_number: orderNumber, total_amount: total, items_count: items.length }
+  })
 
   return new Response(
     JSON.stringify({
@@ -273,7 +259,7 @@ async function createOrder(supabase: any, userId: string, req: Request) {
   )
 }
 
-async function updateOrder(supabase: any, userId: string, req: Request) {
+async function updateOrder(supabase: any, userId: string, req: Request, corsHeaders: Record<string, string>) {
   const body = await req.json()
   const { order_id, updates } = body
 
@@ -288,30 +274,22 @@ async function updateOrder(supabase: any, userId: string, req: Request) {
 
   updates.updated_at = new Date().toISOString()
 
-  const { data, error } = await secureUpdate(
-    supabase,
-    'orders',
-    order_id,
-    updates,
-    userId
-  )
+  // SECURE: secureUpdate verifies user_id
+  const { data, error } = await secureUpdate(supabase, 'orders', order_id, updates, userId)
 
   if (error) {
     console.error('Error updating order:', error)
     throw error
   }
 
-  // Log activity
-  await supabase
-    .from('activity_logs')
-    .insert({
-      user_id: userId,
-      action: 'order_updated',
-      description: `Updated order ${order_id}`,
-      entity_type: 'order',
-      entity_id: order_id,
-      metadata: { updates }
-    })
+  await supabase.from('activity_logs').insert({
+    user_id: userId,
+    action: 'order_updated',
+    description: `Updated order ${order_id}`,
+    entity_type: 'order',
+    entity_id: order_id,
+    metadata: { updates }
+  })
 
   return new Response(
     JSON.stringify({
@@ -323,7 +301,7 @@ async function updateOrder(supabase: any, userId: string, req: Request) {
   )
 }
 
-async function deleteOrder(supabase: any, userId: string, req: Request) {
+async function deleteOrder(supabase: any, userId: string, req: Request, corsHeaders: Record<string, string>) {
   const url = new URL(req.url)
   const orderId = url.searchParams.get('id')
 
@@ -331,25 +309,23 @@ async function deleteOrder(supabase: any, userId: string, req: Request) {
     throw new ValidationError('Order ID is required')
   }
 
-  // Delete order items first
+  // Delete order items first - SCOPED to user
   await supabase
     .from('order_items')
     .delete()
     .eq('order_id', orderId)
+    .eq('user_id', userId) // CRITICAL: scope to user
 
-  // Delete order
+  // SECURE: secureDelete verifies user_id
   await secureDelete(supabase, 'orders', orderId, userId)
 
-  // Log activity
-  await supabase
-    .from('activity_logs')
-    .insert({
-      user_id: userId,
-      action: 'order_deleted',
-      description: `Deleted order ${orderId}`,
-      entity_type: 'order',
-      entity_id: orderId
-    })
+  await supabase.from('activity_logs').insert({
+    user_id: userId,
+    action: 'order_deleted',
+    description: `Deleted order ${orderId}`,
+    entity_type: 'order',
+    entity_id: orderId
+  })
 
   return new Response(
     JSON.stringify({
@@ -360,7 +336,7 @@ async function deleteOrder(supabase: any, userId: string, req: Request) {
   )
 }
 
-async function updateOrderStatus(supabase: any, userId: string, req: Request) {
+async function updateOrderStatus(supabase: any, userId: string, req: Request, corsHeaders: Record<string, string>) {
   const body = await req.json()
   const { order_id, status, tracking_number } = body
 
@@ -387,30 +363,22 @@ async function updateOrderStatus(supabase: any, userId: string, req: Request) {
     updates.delivered_at = new Date().toISOString()
   }
 
-  const { data, error } = await secureUpdate(
-    supabase,
-    'orders',
-    order_id,
-    updates,
-    userId
-  )
+  // SECURE: secureUpdate verifies user_id
+  const { data, error } = await secureUpdate(supabase, 'orders', order_id, updates, userId)
 
   if (error) {
     console.error('Error updating order status:', error)
     throw error
   }
 
-  // Log activity
-  await supabase
-    .from('activity_logs')
-    .insert({
-      user_id: userId,
-      action: 'order_status_updated',
-      description: `Updated order status to ${status}`,
-      entity_type: 'order',
-      entity_id: order_id,
-      metadata: { status, tracking_number }
-    })
+  await supabase.from('activity_logs').insert({
+    user_id: userId,
+    action: 'order_status_updated',
+    description: `Updated order status to ${status}`,
+    entity_type: 'order',
+    entity_id: order_id,
+    metadata: { status, tracking_number }
+  })
 
   return new Response(
     JSON.stringify({
@@ -422,7 +390,7 @@ async function updateOrderStatus(supabase: any, userId: string, req: Request) {
   )
 }
 
-async function bulkUpdateOrders(supabase: any, userId: string, req: Request) {
+async function bulkUpdateOrders(supabase: any, userId: string, req: Request, corsHeaders: Record<string, string>) {
   const body = await req.json()
   const { order_ids, updates } = body
 
@@ -437,6 +405,7 @@ async function bulkUpdateOrders(supabase: any, userId: string, req: Request) {
 
   for (const orderId of order_ids) {
     try {
+      // SECURE: secureUpdate verifies user_id
       await secureUpdate(supabase, 'orders', orderId, updates, userId)
       results.success.push(orderId)
     } catch (error) {
@@ -457,15 +426,16 @@ async function bulkUpdateOrders(supabase: any, userId: string, req: Request) {
   )
 }
 
-async function exportOrders(supabase: any, userId: string, req: Request) {
+async function exportOrders(supabase: any, userId: string, req: Request, corsHeaders: Record<string, string>) {
   const url = new URL(req.url)
   const format = url.searchParams.get('format') || 'csv'
   const status = url.searchParams.get('status')
 
+  // SECURE: Always scope to user_id
   let query = supabase
     .from('orders')
     .select('*, customer:customers(name, email)')
-    .eq('user_id', userId)
+    .eq('user_id', userId) // CRITICAL: scope to user
     .order('created_at', { ascending: false })
 
   if (status) {
@@ -499,59 +469,54 @@ async function exportOrders(supabase: any, userId: string, req: Request) {
   }
 }
 
-async function getOrderStats(supabase: any, userId: string) {
-  // Get orders from last 30 days
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-
+async function getOrderStats(supabase: any, userId: string, corsHeaders: Record<string, string>) {
+  // SECURE: All queries scoped to user_id
   const { data: orders, error } = await supabase
     .from('orders')
-    .select('*')
-    .eq('user_id', userId)
-    .gte('created_at', thirtyDaysAgo)
+    .select('status, total_amount, created_at')
+    .eq('user_id', userId) // CRITICAL: scope to user
 
-  if (error) {
-    console.error('Error getting order stats:', error)
-    throw error
-  }
+  if (error) throw error
 
   const stats = {
     total_orders: orders?.length || 0,
     total_revenue: orders?.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) || 0,
-    avg_order_value: orders?.length > 0 
-      ? orders.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) / orders.length 
-      : 0,
-    by_status: {
-      pending: orders?.filter((o: any) => o.status === 'pending').length || 0,
-      processing: orders?.filter((o: any) => o.status === 'processing').length || 0,
-      shipped: orders?.filter((o: any) => o.status === 'shipped').length || 0,
-      delivered: orders?.filter((o: any) => o.status === 'delivered').length || 0,
-      cancelled: orders?.filter((o: any) => o.status === 'cancelled').length || 0
-    }
+    by_status: {} as Record<string, number>,
+    recent_30_days: 0
   }
 
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  orders?.forEach((order: any) => {
+    stats.by_status[order.status] = (stats.by_status[order.status] || 0) + 1
+    if (new Date(order.created_at) > thirtyDaysAgo) {
+      stats.recent_30_days++
+    }
+  })
+
   return new Response(
-    JSON.stringify({
-      success: true,
-      stats
-    }),
+    JSON.stringify({ success: true, stats }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
 }
 
 function convertToCSV(data: any[]): string {
-  if (data.length === 0) return ''
-
-  const headers = ['Order Number', 'Customer', 'Status', 'Total', 'Date']
-  const rows = data.map(order => [
-    order.order_number,
-    order.customer?.name || 'N/A',
-    order.status,
-    `${order.total_amount} ${order.currency}`,
-    new Date(order.created_at).toLocaleDateString()
-  ])
-
-  return [
+  if (!data || data.length === 0) return ''
+  
+  const headers = Object.keys(data[0])
+  const csvRows = [
     headers.join(','),
-    ...rows.map(row => row.join(','))
-  ].join('\n')
+    ...data.map(row =>
+      headers.map(header => {
+        const value = row[header]
+        if (value === null || value === undefined) return ''
+        const str = typeof value === 'object' ? JSON.stringify(value) : String(value)
+        return str.includes(',') || str.includes('"') 
+          ? `"${str.replace(/"/g, '""')}"` 
+          : str
+      }).join(',')
+    )
+  ]
+  return csvRows.join('\n')
 }
