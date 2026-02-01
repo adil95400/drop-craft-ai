@@ -174,8 +174,33 @@ export type ContactFormInput = z.infer<typeof contactFormSchema>;
 // HELPER FUNCTIONS
 // ============================================
 
+export type ValidationResult<T> = 
+  | { success: true; data: T }
+  | { success: false; errors: z.ZodError['errors'] };
+
 /**
- * Validate data against a schema and return typed result
+ * Validate data against a schema
+ */
+export function validate<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown
+): ValidationResult<T> {
+  const result = schema.safeParse(data);
+  
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  
+  // Use 'in' check for TypeScript narrowing
+  if ('error' in result) {
+    return { success: false, errors: result.error.errors };
+  }
+  
+  return { success: false, errors: [] };
+}
+
+/**
+ * Validate data against a schema and return typed result (legacy)
  * @param schema Zod schema to validate against
  * @param data Data to validate
  * @returns Validation result with parsed data or errors
@@ -196,6 +221,31 @@ export function validateData<T extends z.ZodType>(
     }
     return { success: false, error: 'Validation failed' };
   }
+}
+
+/**
+ * Get first error message for a field
+ */
+export function getFieldError(
+  errors: z.ZodError['errors'],
+  field: string
+): string | undefined {
+  const error = errors.find(e => e.path.join('.') === field);
+  return error?.message;
+}
+
+/**
+ * Convert Zod errors to a simple object
+ */
+export function errorsToObject(errors: z.ZodError['errors']): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const error of errors) {
+    const key = error.path.join('.');
+    if (!result[key]) {
+      result[key] = error.message;
+    }
+  }
+  return result;
 }
 
 /**
@@ -227,4 +277,36 @@ export function validateUrl(url: string): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Strip HTML tags from string
+ */
+export function stripHtml(input: string): string {
+  return input.replace(/<[^>]+>/g, '').trim();
+}
+
+/**
+ * Escape HTML special characters
+ */
+export function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Check for potential XSS patterns
+ */
+export function containsXss(input: string): boolean {
+  const xssPatterns = [
+    /<script/i,
+    /javascript:/i,
+    /on\w+\s*=/i,
+    /data:/i,
+  ];
+  return xssPatterns.some(pattern => pattern.test(input));
 }
