@@ -77,6 +77,7 @@ const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const SEOManagerPage = lazy(() => import('@/pages/SEOManager'));
 const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
 const RankTracker = lazy(() => import('@/pages/RankTracker'));
+const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -251,6 +252,10 @@ export function AppRoutes() {
         <Route path="/guides/getting-started" element={<GettingStartedPage />} />
         <Route path="/academy" element={<AcademyHomePage />} />
         <Route path="/academy/course/:id" element={<AcademyHomePage />} />
+        
+        {/* Documentation Routes */}
+        <Route path="/help-center/documentation/:moduleSlug" element={<ProtectedRoute><ChannableLayout><DocumentationPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/help-center/documentation" element={<ProtectedRoute><ChannableLayout><DocumentationPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/support" element={<ProtectedRoute><ChannableLayout><SupportMainPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Legacy redirects consolidés */}
