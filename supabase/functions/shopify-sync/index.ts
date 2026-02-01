@@ -1,78 +1,120 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { getCorsHeaders, handleCorsPreflightRequest } from '../_shared/secure-cors.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+/**
+ * Shopify Sync - Enterprise-Safe
+ * 
+ * Security:
+ * - JWT authentication required
+ * - Rate limiting per user
+ * - User data scoping
+ * - Integration ownership verification
+ */
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  const corsHeaders = getCorsHeaders(req)
+  
+  const preflightResponse = handleCorsPreflightRequest(req, corsHeaders)
+  if (preflightResponse) return preflightResponse
 
   try {
-    const { integrationId, type = 'products' } = await req.json()
-    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Récupérer l'intégration depuis store_integrations
+    // Authenticate user
+    const { user } = await authenticateUser(req, supabaseClient)
+    const userId = user.id
+
+    // Rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabaseClient,
+      userId,
+      'shopify_sync',
+      RATE_LIMITS.SYNC
+    )
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult, corsHeaders)
+    }
+
+    const { integrationId, type = 'products' } = await req.json()
+
+    if (!integrationId) {
+      return new Response(
+        JSON.stringify({ error: 'integrationId is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Get integration - VERIFY OWNERSHIP
     const { data: integration, error: integrationError } = await supabaseClient
       .from('store_integrations')
       .select('*')
       .eq('id', integrationId)
+      .eq('user_id', userId) // CRITICAL: Verify ownership
       .single()
 
     if (integrationError || !integration) {
-      throw new Error('Intégration non trouvée')
+      return new Response(
+        JSON.stringify({ error: 'Intégration non trouvée ou non autorisée' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Les credentials sont stockés directement dans l'intégration
     const credentials = integration.credentials || {}
     
     if (!credentials.access_token || !credentials.shop_domain) {
-      console.error('Credentials manquants:', credentials)
-      throw new Error('Credentials Shopify manquants. Veuillez configurer votre boutique Shopify d\'abord.')
+      console.error('Credentials manquants:', { hasToken: !!credentials.access_token, hasDomain: !!credentials.shop_domain })
+      return new Response(
+        JSON.stringify({ error: 'Credentials Shopify manquants. Veuillez configurer votre boutique Shopify d\'abord.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     const shopifyDomain = credentials.shop_domain
     const accessToken = credentials.access_token
 
-    if (!shopifyDomain || !accessToken) {
-      throw new Error('Configuration Shopify incomplète')
-    }
-
-    console.log(`Synchronisation ${type} pour ${shopifyDomain}`)
+    console.log(`Synchronisation ${type} pour ${shopifyDomain} (user: ${userId})`)
 
     if (type === 'products') {
-      return await syncProducts(supabaseClient, integration, shopifyDomain, accessToken)
+      return await syncProducts(supabaseClient, integration, shopifyDomain, accessToken, userId, corsHeaders)
     } else if (type === 'orders') {
-      return await syncOrders(supabaseClient, integration, shopifyDomain, accessToken)
+      return await syncOrders(supabaseClient, integration, shopifyDomain, accessToken, userId, corsHeaders)
     }
 
-    throw new Error('Type de synchronisation non supporté')
+    return new Response(
+      JSON.stringify({ error: 'Type de synchronisation non supporté' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
     console.error('Erreur:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: (error as Error).message }),
       { 
-        status: 400,
+        status: error instanceof Error && error.message.includes('Unauthorized') ? 401 : 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }
 })
 
-async function syncProducts(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string) {
+async function syncProducts(
+  supabaseClient: any, 
+  integration: any, 
+  shopifyDomain: string, 
+  accessToken: string,
+  userId: string,
+  corsHeaders: Record<string, string>
+) {
   let allProducts: any[] = []
   let nextPageInfo = null
   let hasNextPage = true
 
-  // Récupérer tous les produits via pagination
   while (hasNextPage) {
     const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
     
@@ -90,7 +132,6 @@ async function syncProducts(supabaseClient: any, integration: any, shopifyDomain
     const data = await response.json()
     allProducts = allProducts.concat(data.products || [])
 
-    // Vérifier s'il y a une page suivante
     const linkHeader = response.headers.get('Link')
     if (linkHeader && linkHeader.includes('rel="next"')) {
       const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
@@ -103,9 +144,9 @@ async function syncProducts(supabaseClient: any, integration: any, shopifyDomain
 
   console.log(`Récupéré ${allProducts.length} produits de Shopify`)
 
-  // Transformer et insérer les produits
+  // Transform and insert products - SCOPED TO USER
   const productsToInsert = allProducts.map(product => ({
-    user_id: integration.user_id,
+    user_id: userId, // CRITICAL: Always use authenticated userId
     name: product.title,
     description: product.body_html || '',
     price: parseFloat(product.variants?.[0]?.price || '0'),
@@ -127,7 +168,7 @@ async function syncProducts(supabaseClient: any, integration: any, shopifyDomain
     }
   }))
 
-  // Upsert des produits (mise à jour si existe, création sinon)
+  // Upsert products with user scope
   for (const product of productsToInsert) {
     const { error } = await supabaseClient
       .from('products')
@@ -141,7 +182,7 @@ async function syncProducts(supabaseClient: any, integration: any, shopifyDomain
     }
   }
 
-  // Mettre à jour le statut de l'intégration
+  // Update integration status - SCOPED TO USER
   await supabaseClient
     .from('store_integrations')
     .update({ 
@@ -150,6 +191,7 @@ async function syncProducts(supabaseClient: any, integration: any, shopifyDomain
       product_count: productsToInsert.length
     })
     .eq('id', integration.id)
+    .eq('user_id', userId) // Verify ownership again
 
   return new Response(
     JSON.stringify({ 
@@ -161,12 +203,18 @@ async function syncProducts(supabaseClient: any, integration: any, shopifyDomain
   )
 }
 
-async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string) {
+async function syncOrders(
+  supabaseClient: any, 
+  integration: any, 
+  shopifyDomain: string, 
+  accessToken: string,
+  userId: string,
+  corsHeaders: Record<string, string>
+) {
   let allOrders: any[] = []
   let nextPageInfo = null
   let hasNextPage = true
 
-  // Récupérer toutes les commandes des 30 derniers jours
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
@@ -187,7 +235,6 @@ async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: 
     const data = await response.json()
     allOrders = allOrders.concat(data.orders || [])
 
-    // Pagination
     const linkHeader = response.headers.get('Link')
     if (linkHeader && linkHeader.includes('rel="next"')) {
       const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
@@ -200,16 +247,15 @@ async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: 
 
   console.log(`Récupéré ${allOrders.length} commandes de Shopify`)
 
-  // Transformer et insérer les commandes
   for (const order of allOrders) {
-    // Créer ou récupérer le client
+    // Create or get customer - SCOPED TO USER
     let customer_id = null
     if (order.customer) {
       const { data: existingCustomer } = await supabaseClient
         .from('customers')
         .select('id')
         .eq('email', order.customer.email)
-        .eq('user_id', integration.user_id)
+        .eq('user_id', userId) // CRITICAL: Scope to user
         .single()
 
       if (existingCustomer) {
@@ -218,7 +264,7 @@ async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: 
         const { data: newCustomer, error: customerError } = await supabaseClient
           .from('customers')
           .insert({
-            user_id: integration.user_id,
+            user_id: userId, // CRITICAL: Always use authenticated userId
             name: `${order.customer.first_name} ${order.customer.last_name}`,
             email: order.customer.email,
             phone: order.customer.phone,
@@ -233,7 +279,6 @@ async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: 
       }
     }
 
-    // Mapper le statut Shopify vers notre système
     const mapShopifyStatus = (shopifyStatus: string, fulfillmentStatus: string) => {
       if (shopifyStatus === 'cancelled') return 'cancelled'
       if (fulfillmentStatus === 'fulfilled') return 'delivered'
@@ -243,7 +288,7 @@ async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: 
     }
 
     const orderToInsert = {
-      user_id: integration.user_id,
+      user_id: userId, // CRITICAL: Always use authenticated userId
       customer_id,
       order_number: order.order_number.toString(),
       status: mapShopifyStatus(order.financial_status, order.fulfillment_status),
@@ -271,7 +316,6 @@ async function syncOrders(supabaseClient: any, integration: any, shopifyDomain: 
       updated_at: order.updated_at
     }
 
-    // Upsert de la commande
     const { error } = await supabaseClient
       .from('orders')
       .upsert(orderToInsert, { 

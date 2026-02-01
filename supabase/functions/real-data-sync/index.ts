@@ -1,34 +1,62 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { getCorsHeaders, handleCorsPreflightRequest } from '../_shared/secure-cors.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+/**
+ * Real Data Sync - Enterprise-Safe
+ * 
+ * Security:
+ * - JWT authentication required
+ * - Rate limiting per user
+ * - User data scoping
+ * - CORS allowlist
+ */
 
 interface SyncRequest {
   platforms: string[]
   syncType: 'products' | 'orders' | 'inventory' | 'all'
   batchSize?: number
-  userId?: string
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  const corsHeaders = getCorsHeaders(req)
+  
+  const preflightResponse = handleCorsPreflightRequest(req, corsHeaders)
+  if (preflightResponse) return preflightResponse
 
   try {
-    const { platforms, syncType, batchSize = 100, userId }: SyncRequest = await req.json()
-    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    console.log(`Starting real-time sync for platforms: ${platforms.join(', ')}`)
-    
-    const results: any[] = []
+    // Authenticate user
+    const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
+
+    // Rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabase, 
+      userId, 
+      'real_data_sync', 
+      RATE_LIMITS.SYNC
+    )
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult, corsHeaders)
+    }
+
+    const { platforms, syncType, batchSize = 100 }: SyncRequest = await req.json()
+
+    if (!platforms || !Array.isArray(platforms) || platforms.length === 0) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'platforms array is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log(`Starting real-time sync for platforms: ${platforms.join(', ')} for user: ${userId}`)
     
     // Parallel sync for all platforms
     const syncPromises = platforms.map(async (platform) => {
@@ -72,22 +100,22 @@ serve(async (req) => {
         return {
           platform,
           status: 'error',
-          error: error.message
+          error: (error as Error).message
         }
       }
     })
 
     const syncResults = await Promise.all(syncPromises)
     
-    // Log sync activity
+    // Log sync activity - SCOPED TO USER
     await supabase
       .from('activity_logs')
       .insert({
-        user_id: userId || 'system',
+        user_id: userId,
         action: 'real_time_sync',
         description: `Synchronized data from ${platforms.join(', ')}`,
         entity_type: 'sync',
-        metadata: {
+        details: {
           platforms,
           sync_type: syncType,
           results: syncResults,
@@ -112,35 +140,59 @@ serve(async (req) => {
     console.error('Real-time sync error:', error)
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: (error as Error).message
     }), {
-      status: 500,
+      status: error instanceof Error && error.message.includes('Unauthorized') ? 401 : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
 })
 
-async function syncAliExpressData(supabase: any, syncType: string, batchSize: number, userId?: string) {
+async function syncAliExpressData(supabase: any, syncType: string, batchSize: number, userId: string) {
   const apiKey = Deno.env.get('ALIEXPRESS_API_KEY')
   if (!apiKey) throw new Error('AliExpress API key not configured')
 
+  // Invoke with authenticated context - the child function handles its own auth
   const { data, error } = await supabase.functions.invoke('aliexpress-integration', {
     body: {
-      importType: 'trending_products',
-      filters: { limit: batchSize },
-      userId: userId || 'sync'
+      action: 'search_products',
+      keywords: 'trending',
+      limit: batchSize
     }
   })
 
   if (error) throw error
   
+  // Import products - SCOPED TO USER
+  const products = data?.products || []
+  let imported = 0
+  
+  for (const product of products.slice(0, batchSize)) {
+    const { error: insertError } = await supabase
+      .from('imported_products')
+      .upsert({
+        user_id: userId,
+        external_id: product.id || product.external_id,
+        name: product.title || product.name,
+        description: product.description,
+        price: product.price,
+        cost_price: product.original_price || product.cost_price,
+        supplier_name: 'AliExpress',
+        image_urls: product.images || [],
+        status: 'draft',
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'external_id,user_id' })
+    
+    if (!insertError) imported++
+  }
+  
   return {
-    imported_products: data.data?.imported_count || 0,
-    total_processed: data.data?.total_products || 0
+    imported_products: imported,
+    total_processed: products.length
   }
 }
 
-async function syncBigBuyData(supabase: any, syncType: string, batchSize: number, userId?: string) {
+async function syncBigBuyData(supabase: any, syncType: string, batchSize: number, userId: string) {
   const apiKey = Deno.env.get('BIGBUY_API_KEY')
   if (!apiKey) throw new Error('BigBuy API key not configured')
 
@@ -159,12 +211,13 @@ async function syncBigBuyData(supabase: any, syncType: string, batchSize: number
   const products = await response.json()
   const batch = products.slice(0, batchSize)
 
-  // Import to catalog
+  // Import to catalog - SCOPED TO USER
   let imported = 0
   for (const product of batch) {
     const { error } = await supabase
       .from('catalog_products')
       .upsert({
+        user_id: userId,
         external_id: product.id.toString(),
         name: product.name,
         description: product.description,
@@ -175,7 +228,7 @@ async function syncBigBuyData(supabase: any, syncType: string, batchSize: number
         category: product.category?.name,
         stock_quantity: product.stock || 0,
         availability_status: product.stock > 0 ? 'in_stock' : 'out_of_stock'
-      }, { onConflict: 'external_id,supplier_id' })
+      }, { onConflict: 'external_id,user_id' })
 
     if (!error) imported++
   }
@@ -186,11 +239,12 @@ async function syncBigBuyData(supabase: any, syncType: string, batchSize: number
   }
 }
 
-async function syncShopifyData(supabase: any, syncType: string, batchSize: number, userId?: string) {
-  // Get active Shopify integrations
+async function syncShopifyData(supabase: any, syncType: string, batchSize: number, userId: string) {
+  // Get active Shopify integrations - SCOPED TO USER
   const { data: integrations } = await supabase
     .from('integrations')
     .select('*')
+    .eq('user_id', userId)
     .eq('platform_name', 'shopify')
     .eq('is_active', true)
 
@@ -221,7 +275,7 @@ async function syncShopifyData(supabase: any, syncType: string, batchSize: numbe
   }
 }
 
-async function syncAmazonData(supabase: any, syncType: string, batchSize: number, userId?: string) {
+async function syncAmazonData(supabase: any, syncType: string, batchSize: number, userId: string) {
   const apiKey = Deno.env.get('AMAZON_ACCESS_KEY_ID')
   const secretKey = Deno.env.get('AMAZON_SECRET_ACCESS_KEY')
   
@@ -230,7 +284,6 @@ async function syncAmazonData(supabase: any, syncType: string, batchSize: number
   }
 
   // Amazon SP-API integration would go here
-  // For now, return placeholder data
   return {
     imported_products: 0,
     total_processed: 0,
