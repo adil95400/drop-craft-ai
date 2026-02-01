@@ -1,11 +1,12 @@
 /**
- * P1.1 - Unified Edge Function Wrapper
+ * P1.1 + P1.3 - Unified Edge Function Wrapper
  * MANDATORY for all client-facing functions
  * 
  * Features:
  * - Auth (JWT or extension token)
+ * - Scope-based authorization (P1.3)
  * - Input validation (Zod)
- * - Rate limiting
+ * - Rate limiting (global + per-scope)
  * - Secure CORS
  * - Error handling with structured logging
  * - Correlation ID for observability
@@ -14,6 +15,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from './secure-cors.ts'
+import { validateTokenScopes, logScopeUsage, checkScopeRateLimit, type ScopeConfig } from './scope-middleware.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
@@ -26,6 +28,8 @@ export interface AuthenticatedUser {
   email?: string
   role: 'user' | 'admin'
   plan: string
+  tokenId?: string        // P1.3: Token ID for scope tracking
+  scopes?: string[]       // P1.3: Granted scopes
 }
 
 export interface EdgeContext<T = unknown> {
@@ -35,6 +39,7 @@ export interface EdgeContext<T = unknown> {
   input: T
   correlationId: string
   req: Request
+  hasScope: (scope: string) => boolean  // P1.3: Helper to check scopes
 }
 
 export interface EdgeFunctionConfig<TInput = unknown> {
@@ -43,6 +48,11 @@ export interface EdgeFunctionConfig<TInput = unknown> {
   requireAdmin?: boolean          // Default: false
   allowExtensionToken?: boolean   // Default: false
   allowAnonymous?: boolean        // Default: false (for webhooks)
+  
+  // P1.3: Scope requirements for extension tokens
+  requiredScopes?: string[]       // Scopes required for this endpoint
+  requireAllScopes?: boolean      // If true, all scopes required. Default: true
+  logScopeUsage?: boolean         // Log scope access for audit. Default: true
   
   // Validation
   inputSchema?: z.ZodSchema<TInput>
@@ -99,10 +109,12 @@ async function checkRateLimit(
 
 class AuthError extends Error {
   status: number
-  constructor(message: string, status = 401) {
+  code?: string
+  constructor(message: string, status = 401, code?: string) {
     super(message)
     this.name = 'AuthError'
     this.status = status
+    this.code = code
   }
 }
 
@@ -121,6 +133,21 @@ class RateLimitError extends Error {
     super(message)
     this.name = 'RateLimitError'
     this.remaining = remaining
+  }
+}
+
+// P1.3: Scope authorization error
+class ScopeError extends Error {
+  status = 403
+  code = 'INSUFFICIENT_SCOPES'
+  missingScopes: string[]
+  grantedScopes: string[]
+  
+  constructor(message: string, missingScopes: string[], grantedScopes: string[]) {
+    super(message)
+    this.name = 'ScopeError'
+    this.missingScopes = missingScopes
+    this.grantedScopes = grantedScopes
   }
 }
 
@@ -173,7 +200,12 @@ async function authenticateJWT(req: Request): Promise<{
   }
 }
 
-async function authenticateExtensionToken(req: Request): Promise<{
+// P1.3: Enhanced extension token auth with scope validation
+async function authenticateExtensionToken(
+  req: Request,
+  requiredScopes?: string[],
+  requireAllScopes = true
+): Promise<{
   user: AuthenticatedUser
   userClient: ReturnType<typeof createClient>
   adminClient: ReturnType<typeof createClient>
@@ -184,27 +216,40 @@ async function authenticateExtensionToken(req: Request): Promise<{
     throw new AuthError('Extension token required')
   }
   
-  const sanitized = extensionToken.trim().replace(/[^a-zA-Z0-9\-_]/g, '')
+  // Sanitize token - allow base64 characters including + / =
+  const sanitized = extensionToken.trim().replace(/[^a-zA-Z0-9\-_+=/]/g, '')
   if (sanitized.length < 10 || sanitized.length > 150) {
     throw new AuthError('Invalid extension token format')
   }
   
-  const adminClient = createClient(supabaseUrl, supabaseServiceKey)
-  
-  const { data: result, error } = await adminClient.rpc('validate_extension_token', { 
-    p_token: sanitized 
+  // P1.3: Use scope-aware validation
+  const scopeResult = await validateTokenScopes(sanitized, {
+    requiredScopes: requiredScopes || [],
+    requireAll: requireAllScopes,
+    logUsage: true
   })
   
-  if (error || !result?.success || !result?.user?.id) {
-    throw new AuthError('Invalid or expired extension token')
+  if (!scopeResult.valid) {
+    if (scopeResult.code === 'INSUFFICIENT_SCOPES') {
+      throw new ScopeError(
+        scopeResult.error || 'Insufficient scopes',
+        scopeResult.missingScopes,
+        scopeResult.grantedScopes
+      )
+    }
+    throw new AuthError(scopeResult.error || 'Invalid extension token', 401, scopeResult.code)
   }
+  
+  const adminClient = createClient(supabaseUrl, supabaseServiceKey)
   
   return {
     user: {
-      id: result.user.id,
-      email: result.user.email,
+      id: scopeResult.userId!,
+      email: scopeResult.userEmail,
       role: 'user',
-      plan: result.user.plan || 'free'
+      plan: scopeResult.userPlan || 'free',
+      tokenId: scopeResult.tokenId,
+      scopes: scopeResult.grantedScopes
     },
     userClient: adminClient, // Extension tokens use admin client with manual isolation
     adminClient
@@ -246,10 +291,31 @@ export function createEdgeFunction<TInput = unknown>(
           userClient = auth.userClient
           adminClient = auth.adminClient
         } else if (extensionToken && config.allowExtensionToken) {
-          const auth = await authenticateExtensionToken(req)
+          // P1.3: Pass required scopes to extension token auth
+          const auth = await authenticateExtensionToken(
+            req,
+            config.requiredScopes,
+            config.requireAllScopes !== false
+          )
           user = auth.user
           userClient = auth.userClient
           adminClient = auth.adminClient
+          
+          // P1.3: Log scope usage if enabled
+          if (config.logScopeUsage !== false && user.tokenId && config.requiredScopes?.length) {
+            const primaryScope = config.requiredScopes[0]
+            const action = req.url.split('/').pop() || 'unknown'
+            await logScopeUsage(
+              user.tokenId,
+              user.id,
+              primaryScope,
+              action,
+              true,
+              undefined,
+              { correlationId, method: req.method },
+              req.headers.get('x-forwarded-for') || undefined
+            )
+          }
         } else {
           throw new AuthError('Authentication required')
         }
@@ -261,7 +327,7 @@ export function createEdgeFunction<TInput = unknown>(
       } else {
         // Anonymous access
         userClient = createClient(supabaseUrl, supabaseAnonKey)
-        user = { id: 'anonymous', role: 'user', plan: 'free' }
+        user = { id: 'anonymous', role: 'user', plan: 'free', scopes: [] }
       }
       
       // ===== Rate Limiting =====
@@ -292,13 +358,21 @@ export function createEdgeFunction<TInput = unknown>(
       }
       
       // ===== Execute Handler =====
+      // ===== Execute Handler =====
+      // P1.3: Add hasScope helper for runtime scope checks
+      const hasScope = (scope: string): boolean => {
+        if (!user?.scopes) return false
+        return user.scopes.includes(scope)
+      }
+      
       const ctx: EdgeContext<TInput> = {
         user: user!,
         userClient: userClient!,
         adminClient,
         input,
         correlationId,
-        req
+        req,
+        hasScope  // P1.3: Runtime scope checker
       }
       
       const response = await handler(ctx)
@@ -316,6 +390,7 @@ export function createEdgeFunction<TInput = unknown>(
       
       let status = 500
       let message = 'Internal server error'
+      let extra: Record<string, unknown> = {}
       const headers: Record<string, string> = {
         ...corsHeaders,
         'Content-Type': 'application/json',
@@ -325,6 +400,14 @@ export function createEdgeFunction<TInput = unknown>(
       if (error instanceof AuthError) {
         status = error.status
         message = error.message
+      } else if (error instanceof ScopeError) {
+        status = 403
+        message = error.message
+        extra = {
+          code: 'INSUFFICIENT_SCOPES',
+          missing_scopes: error.missingScopes,
+          granted_scopes: error.grantedScopes
+        }
       } else if (error instanceof ValidationError) {
         status = 400
         message = error.message
@@ -335,7 +418,7 @@ export function createEdgeFunction<TInput = unknown>(
       }
       
       return new Response(
-        JSON.stringify({ success: false, error: message, correlationId }),
+        JSON.stringify({ success: false, error: message, correlationId, ...extra }),
         { status, headers }
       )
     }
@@ -379,5 +462,8 @@ export function createWebhookHandler(
   }
 }
 
-// ============= Export schemas =============
+// ============= Export schemas and utilities =============
 export { z }
+
+// Re-export scope utilities for convenience
+export { SCOPE_PRESETS, type ScopeConfig } from './scope-middleware.ts'
