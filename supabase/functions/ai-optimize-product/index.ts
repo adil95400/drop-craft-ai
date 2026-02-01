@@ -1,15 +1,24 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { getCorsHeaders, handleCorsPreflightRequest } from '../_shared/secure-cors.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+/**
+ * AI Optimize Product - Enterprise-Safe
+ * 
+ * Security:
+ * - JWT authentication required
+ * - Rate limiting per user
+ * - Product ownership verification
+ * - User data scoping
+ */
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+  const corsHeaders = getCorsHeaders(req)
+  
+  const preflightResponse = handleCorsPreflightRequest(req, corsHeaders)
+  if (preflightResponse) return preflightResponse
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -17,15 +26,33 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    const { productId, userId, mode = 'full' } = await req.json()
+    // Authenticate user
+    const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
 
-    if (!productId || !userId) {
-      throw new Error('productId and userId are required')
+    // Rate limit - AI operations are expensive
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      userId,
+      'ai_optimize_product',
+      { maxRequests: 20, windowMinutes: 60 } // 20 AI optimizations per hour
+    )
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult, corsHeaders)
+    }
+
+    const { productId, mode = 'full' } = await req.json()
+
+    if (!productId) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'productId is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     console.log(`AI Optimizing product ${productId} for user ${userId} (mode: ${mode})`)
 
-    // Fetch product
+    // Fetch product - VERIFY OWNERSHIP
     const [productsResult, importedResult] = await Promise.all([
       supabase.from('products').select('*').eq('id', productId).eq('user_id', userId).maybeSingle(),
       supabase.from('imported_products').select('*').eq('id', productId).eq('user_id', userId).maybeSingle()
@@ -35,7 +62,10 @@ serve(async (req) => {
     const table = productsResult.data ? 'products' : 'imported_products'
 
     if (!product) {
-      throw new Error('Product not found')
+      return new Response(
+        JSON.stringify({ success: false, error: 'Product not found or not authorized' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Build AI prompt based on mode
@@ -151,16 +181,16 @@ Format as JSON with keys: title, description, tags, recommendedPrice, seoDescrip
       }
     }
 
-    // Update product
+    // Update product - SCOPED TO USER
     const { error: updateError } = await supabase
       .from(table)
       .update(updates)
       .eq('id', productId)
-      .eq('user_id', userId)
+      .eq('user_id', userId) // CRITICAL: Verify ownership
 
     if (updateError) throw updateError
 
-    // Log activity
+    // Log activity - SCOPED TO USER
     await supabase
       .from('activity_logs')
       .insert({
@@ -169,7 +199,7 @@ Format as JSON with keys: title, description, tags, recommendedPrice, seoDescrip
         entity_type: 'product',
         entity_id: productId,
         description: `Product optimized by Lovable AI (${mode} mode)`,
-        metadata: { original: product, optimized, mode }
+        details: { original: { name: product.name, price: product.price }, optimized, mode }
       })
 
     return new Response(
@@ -186,8 +216,11 @@ Format as JSON with keys: title, description, tags, recommendedPrice, seoDescrip
   } catch (error) {
     console.error('Error in ai-optimize-product:', error)
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      JSON.stringify({ success: false, error: (error as Error).message }),
+      { 
+        status: error instanceof Error && error.message.includes('Unauthorized') ? 401 : 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     )
   }
 })

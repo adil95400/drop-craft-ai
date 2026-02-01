@@ -1,70 +1,97 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { getCorsHeaders, handleCorsPreflightRequest } from '../_shared/secure-cors.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+/**
+ * Track Package - Enterprise-Safe
+ * 
+ * Security:
+ * - JWT authentication required
+ * - Rate limiting per user
+ * - User data scoping for DB lookups
+ */
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const corsHeaders = getCorsHeaders(req)
+  
+  const preflightResponse = handleCorsPreflightRequest(req, corsHeaders)
+  if (preflightResponse) return preflightResponse
 
   try {
-    const { tracking_number, carrier, provider = '17track' } = await req.json();
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    if (!tracking_number) {
-      throw new Error("Tracking number is required");
+    // Authenticate user
+    const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
+
+    // Rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      userId,
+      'track_package',
+      RATE_LIMITS.API_GENERAL
+    )
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult, corsHeaders)
     }
 
-    console.log(`Tracking package: ${tracking_number} with ${provider}`);
+    const { tracking_number, carrier, provider = '17track' } = await req.json()
 
-    let trackingInfo;
+    if (!tracking_number) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Tracking number is required" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log(`Tracking package: ${tracking_number} with ${provider} for user: ${userId}`)
+
+    let trackingInfo
 
     switch (provider) {
       case '17track':
-        trackingInfo = await track17Track(tracking_number, carrier);
-        break;
+        trackingInfo = await track17Track(tracking_number, carrier)
+        break
       case 'aftership':
-        trackingInfo = await trackAfterShip(tracking_number, carrier);
-        break;
+        trackingInfo = await trackAfterShip(tracking_number, carrier)
+        break
       case 'trackingmore':
-        trackingInfo = await trackTrackingMore(tracking_number, carrier);
-        break;
+        trackingInfo = await trackTrackingMore(tracking_number, carrier)
+        break
       default:
-        // Try database lookup for historical data
-        trackingInfo = await lookupDatabaseTracking(tracking_number);
+        // Try database lookup for historical data - SCOPED TO USER
+        trackingInfo = await lookupDatabaseTracking(supabase, tracking_number, userId)
     }
 
     return new Response(JSON.stringify(trackingInfo), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
   } catch (error) {
-    console.error("Package tracking error:", error);
+    console.error("Package tracking error:", error)
     return new Response(JSON.stringify({ 
       success: false,
-      error: error.message,
+      error: (error as Error).message,
       tracking_number: null 
     }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      status: error instanceof Error && error.message.includes('Unauthorized') ? 401 : 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
   }
-});
+})
 
-async function lookupDatabaseTracking(trackingNumber: string) {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
-
-  // Check orders table for tracking info
+async function lookupDatabaseTracking(supabase: any, trackingNumber: string, userId: string) {
+  // Check orders table for tracking info - SCOPED TO USER
   const { data: order } = await supabase
     .from('orders')
     .select('id, tracking_number, shipping_carrier, shipping_status, updated_at')
     .eq('tracking_number', trackingNumber)
-    .single();
+    .eq('user_id', userId) // CRITICAL: Scope to user
+    .single()
 
   if (order) {
     return {
@@ -78,7 +105,7 @@ async function lookupDatabaseTracking(trackingNumber: string) {
       provider: 'database',
       last_updated: order.updated_at,
       source: 'internal'
-    };
+    }
   }
 
   return {
@@ -86,20 +113,20 @@ async function lookupDatabaseTracking(trackingNumber: string) {
     tracking_number: trackingNumber,
     error: 'No tracking information found. Please configure tracking API keys (SEVENTEENTRACK_API_KEY or AFTERSHIP_API_KEY) for live tracking.',
     provider: 'none'
-  };
+  }
 }
 
 async function track17Track(trackingNumber: string, carrier?: string) {
-  const apiKey = Deno.env.get('SEVENTEENTRACK_API_KEY');
+  const apiKey = Deno.env.get('SEVENTEENTRACK_API_KEY')
   
   if (!apiKey) {
-    console.log('17TRACK API key not configured');
+    console.log('17TRACK API key not configured')
     return {
       success: false,
       tracking_number: trackingNumber,
       error: 'SEVENTEENTRACK_API_KEY not configured. Please add this secret to enable live tracking.',
       provider: '17TRACK'
-    };
+    }
   }
 
   try {
@@ -111,25 +138,25 @@ async function track17Track(trackingNumber: string, carrier?: string) {
       },
       body: JSON.stringify([{
         number: trackingNumber,
-        carrier: carrier || 0, // 0 for auto-detect
+        carrier: carrier || 0,
       }]),
-    });
+    })
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`17Track API error: ${response.status}`, errorText);
+      const errorText = await response.text()
+      console.error(`17Track API error: ${response.status}`, errorText)
       return {
         success: false,
         tracking_number: trackingNumber,
         error: `17Track API error: ${response.status}`,
         provider: '17TRACK'
-      };
+      }
     }
 
-    const data = await response.json();
+    const data = await response.json()
     
     if (data.dat && data.dat.length > 0) {
-      const track = data.dat[0];
+      const track = data.dat[0]
       return {
         success: true,
         tracking_number: trackingNumber,
@@ -144,7 +171,7 @@ async function track17Track(trackingNumber: string, carrier?: string) {
         })),
         provider: '17TRACK',
         last_updated: new Date().toISOString(),
-      };
+      }
     }
 
     return {
@@ -152,34 +179,33 @@ async function track17Track(trackingNumber: string, carrier?: string) {
       tracking_number: trackingNumber,
       error: 'No tracking data returned from 17Track',
       provider: '17TRACK'
-    };
+    }
   } catch (error) {
-    console.error('17Track API error:', error);
+    console.error('17Track API error:', error)
     return {
       success: false,
       tracking_number: trackingNumber,
-      error: error.message,
+      error: (error as Error).message,
       provider: '17TRACK'
-    };
+    }
   }
 }
 
 async function trackAfterShip(trackingNumber: string, carrier?: string) {
-  const apiKey = Deno.env.get('AFTERSHIP_API_KEY');
+  const apiKey = Deno.env.get('AFTERSHIP_API_KEY')
   
   if (!apiKey) {
-    console.log('AfterShip API key not configured');
+    console.log('AfterShip API key not configured')
     return {
       success: false,
       tracking_number: trackingNumber,
       error: 'AFTERSHIP_API_KEY not configured. Please add this secret to enable live tracking.',
       provider: 'AfterShip'
-    };
+    }
   }
 
   try {
-    // First, try to get existing tracking
-    let trackingData = null;
+    let trackingData = null
     
     const getResponse = await fetch(
       `https://api.aftership.com/v4/trackings/${carrier || 'auto-detect'}/${trackingNumber}`,
@@ -189,13 +215,12 @@ async function trackAfterShip(trackingNumber: string, carrier?: string) {
           'Content-Type': 'application/json',
         },
       }
-    );
+    )
 
     if (getResponse.ok) {
-      const getData = await getResponse.json();
-      trackingData = getData.data?.tracking;
+      const getData = await getResponse.json()
+      trackingData = getData.data?.tracking
     } else if (getResponse.status === 404) {
-      // Create tracking if it doesn't exist
       const createResponse = await fetch('https://api.aftership.com/v4/trackings', {
         method: 'POST',
         headers: {
@@ -208,11 +233,11 @@ async function trackAfterShip(trackingNumber: string, carrier?: string) {
             slug: carrier || 'auto-detect',
           }
         }),
-      });
+      })
 
       if (createResponse.ok) {
-        const createData = await createResponse.json();
-        trackingData = createData.data?.tracking;
+        const createData = await createResponse.json()
+        trackingData = createData.data?.tracking
       }
     }
 
@@ -231,7 +256,7 @@ async function trackAfterShip(trackingNumber: string, carrier?: string) {
         })),
         provider: 'AfterShip',
         last_updated: trackingData.updated_at,
-      };
+      }
     }
 
     return {
@@ -239,29 +264,29 @@ async function trackAfterShip(trackingNumber: string, carrier?: string) {
       tracking_number: trackingNumber,
       error: 'Unable to track package with AfterShip',
       provider: 'AfterShip'
-    };
+    }
   } catch (error) {
-    console.error('AfterShip API error:', error);
+    console.error('AfterShip API error:', error)
     return {
       success: false,
       tracking_number: trackingNumber,
-      error: error.message,
+      error: (error as Error).message,
       provider: 'AfterShip'
-    };
+    }
   }
 }
 
 async function trackTrackingMore(trackingNumber: string, carrier?: string) {
-  const apiKey = Deno.env.get('TRACKINGMORE_API_KEY');
+  const apiKey = Deno.env.get('TRACKINGMORE_API_KEY')
   
   if (!apiKey) {
-    console.log('TrackingMore API key not configured');
+    console.log('TrackingMore API key not configured')
     return {
       success: false,
       tracking_number: trackingNumber,
       error: 'TRACKINGMORE_API_KEY not configured. Please add this secret to enable live tracking.',
       provider: 'TrackingMore'
-    };
+    }
   }
 
   try {
@@ -272,10 +297,10 @@ async function trackTrackingMore(trackingNumber: string, carrier?: string) {
           'Tracking-Api-Key': apiKey,
         },
       }
-    );
+    )
 
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json()
       
       return {
         success: true,
@@ -291,24 +316,24 @@ async function trackTrackingMore(trackingNumber: string, carrier?: string) {
         })),
         provider: 'TrackingMore',
         last_updated: data.data?.updated_at || new Date().toISOString(),
-      };
+      }
     }
 
-    const errorData = await response.json().catch(() => ({}));
+    const errorData = await response.json().catch(() => ({}))
     return {
       success: false,
       tracking_number: trackingNumber,
       error: errorData.meta?.message || `TrackingMore API error: ${response.status}`,
       provider: 'TrackingMore'
-    };
+    }
   } catch (error) {
-    console.error('TrackingMore API error:', error);
+    console.error('TrackingMore API error:', error)
     return {
       success: false,
       tracking_number: trackingNumber,
-      error: error.message,
+      error: (error as Error).message,
       provider: 'TrackingMore'
-    };
+    }
   }
 }
 
@@ -321,7 +346,7 @@ function mapTrackingStatus(status: string): string {
     '35': 'out_for_delivery',
     '40': 'delivered',
     '50': 'exception',
-  };
+  }
   
-  return statusMap[status] || 'unknown';
+  return statusMap[status] || 'unknown'
 }
