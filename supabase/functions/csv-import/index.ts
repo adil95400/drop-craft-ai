@@ -3,18 +3,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 import { parse } from "https://deno.land/std@0.181.0/encoding/csv.ts"
 import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
 import { secureBatchInsert, logDatabaseOperation } from '../_shared/db-helpers.ts'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { createRateLimitResponse } from '../_shared/rate-limit.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   const startTime = Date.now()
@@ -23,34 +22,41 @@ serve(async (req) => {
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
-    // Enhanced authentication with security logging
+    // 1. Auth obligatoire - userId provient du token uniquement
     const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
     
-    // Rate limiting: max 10 imports per hour
-    await checkRateLimit(supabase, user.id, 'csv_import', 10, 60)
+    // 2. Rate limiting: max 10 imports per hour
+    const rateCheck = await checkRateLimit(supabase, userId, 'csv_import', 10, 60)
+    if (!rateCheck) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Max 10 imports per hour.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
     
-    console.log('[CSV-IMPORT] Authenticated user:', { user_id: user.id })
+    console.log('[CSV-IMPORT] Authenticated user:', { user_id: userId })
 
-    // Support new format (rows array) or old format (csv_content/file_url)
-    const { rows, csv_content, file_url, field_mapping = {}, columnMapping = {}, config = {}, userId } = await req.json()
+    // 3. Parse input - IGNORING userId from body, using token only
+    const { rows, csv_content, file_url, field_mapping = {}, columnMapping = {}, config = {} } = await req.json()
     
     if (!rows && !csv_content && !file_url) {
       throw new Error('CSV rows, content or file URL is required')
     }
 
     console.log('[CSV-IMPORT] Starting CSV import', { 
-      user_id: userId || user.id,
+      user_id: userId, // SECURE: from token only
       has_rows: !!rows,
       has_content: !!csv_content,
       has_url: !!file_url,
       rows_count: rows?.length
     })
 
-    // Create import job
+    // Create import job - SECURE: user_id from token only
     const { data: job, error: jobError } = await supabase
       .from('import_jobs')
       .insert({
-        user_id: userId || user.id,
+        user_id: userId, // CRITICAL: from token only
         source_type: 'csv',
         source_url: file_url || null,
         configuration: { field_mapping: columnMapping || field_mapping, ...config },
@@ -62,7 +68,6 @@ serve(async (req) => {
 
     if (jobError) {
       console.warn('[CSV-IMPORT] Failed to create job, continuing without job tracking', jobError)
-      // Continue without job tracking
     } else {
       jobId = job.id
       console.log('[CSV-IMPORT] Created job', { job_id: jobId })
@@ -81,24 +86,17 @@ serve(async (req) => {
         csvData = await response.text()
       }
 
-      // Detect delimiter if not specified
       const delimiter = config.delimiter || detectDelimiter(csvData)
       
-      console.log('[CSV-IMPORT] Parsing CSV', { 
-        delimiter,
-        size: csvData.length 
-      })
+      console.log('[CSV-IMPORT] Parsing CSV', { delimiter, size: csvData.length })
 
-      // Parse CSV
       records = parse(csvData, {
         skipFirstRow: config.skipFirstRow !== false,
         separator: delimiter,
         columns: config.columns || undefined
       })
 
-      console.log('[CSV-IMPORT] Parsed CSV', { 
-        records_count: records.length 
-      })
+      console.log('[CSV-IMPORT] Parsed CSV', { records_count: records.length })
     }
 
     // Update total rows if job exists
@@ -110,6 +108,7 @@ serve(async (req) => {
           updated_at: new Date().toISOString()
         })
         .eq('id', jobId)
+        .eq('user_id', userId) // SECURE: scope to user
     }
 
     // Map and insert products in batches
@@ -121,7 +120,7 @@ serve(async (req) => {
     const createdIds: string[] = []
     const mapping = columnMapping || field_mapping
 
-    // Get existing SKUs for duplicate checking
+    // Get existing SKUs for duplicate checking - SCOPED to user
     const checkDuplicates = config.ignoreDuplicates || config.updateExisting
     let existingSkus = new Set<string>()
     
@@ -129,7 +128,7 @@ serve(async (req) => {
       const { data: existingProducts } = await supabase
         .from('imported_products')
         .select('sku')
-        .eq('user_id', userId || user.id)
+        .eq('user_id', userId) // CRITICAL: scope to user
       existingProducts?.forEach((p: any) => existingSkus.add(p.sku))
     }
 
@@ -138,13 +137,12 @@ serve(async (req) => {
       const productsToInsert: any[] = []
       const productsToUpdate: any[] = []
       
-      // Map records to product schema
       batch.forEach((record: any, batchIndex: number) => {
         const rowNumber = i + batchIndex + 1
         
         try {
           const product: any = {
-            user_id: userId || user.id,
+            user_id: userId, // CRITICAL: from token only
             status: config.status || 'draft',
             review_status: 'pending',
             source_url: 'csv_import'
@@ -157,7 +155,7 @@ serve(async (req) => {
           // Apply field mapping
           for (const [csvField, productField] of Object.entries(mapping)) {
             if (record[csvField] !== undefined && record[csvField] !== null && record[csvField] !== '') {
-              product[productField] = record[csvField]
+              product[productField as string] = record[csvField]
             }
           }
 
@@ -197,7 +195,6 @@ serve(async (req) => {
             return
           }
 
-          // Check duplicates
           const isDuplicate = existingSkus.has(product.sku)
           
           if (isDuplicate && config.ignoreDuplicates && !config.updateExisting) {
@@ -239,11 +236,7 @@ serve(async (req) => {
 
       // Insert new products
       if (productsToInsert.length > 0) {
-        console.log('[CSV-IMPORT] Inserting batch', { 
-          start: i,
-          count: productsToInsert.length,
-          total: records.length
-        })
+        console.log('[CSV-IMPORT] Inserting batch', { start: i, count: productsToInsert.length })
 
         const { data: inserted, error: insertError } = await supabase
           .from('imported_products')
@@ -253,36 +246,27 @@ serve(async (req) => {
         if (insertError) {
           console.error('[CSV-IMPORT] Batch insert error', insertError.message)
           errorCount += productsToInsert.length
-          errors.push({
-            row: i,
-            message: `Erreur d'insertion batch: ${insertError.message}`
-          })
+          errors.push({ row: i, message: `Erreur d'insertion batch: ${insertError.message}` })
         } else {
           successCount += inserted?.length || 0
           inserted?.forEach((p: any) => createdIds.push(p.id))
         }
       }
 
-      // Update existing products
+      // Update existing products - SCOPED to user
       if (productsToUpdate.length > 0) {
-        console.log('[CSV-IMPORT] Updating batch', { 
-          count: productsToUpdate.length
-        })
+        console.log('[CSV-IMPORT] Updating batch', { count: productsToUpdate.length })
         
         for (const product of productsToUpdate) {
           const { error: updateError } = await supabase
             .from('imported_products')
             .update(product)
-            .eq('user_id', userId || user.id)
+            .eq('user_id', userId) // CRITICAL: scope to user
             .eq('sku', product.sku)
 
           if (updateError) {
             errorCount++
-            errors.push({
-              row: i,
-              sku: product.sku,
-              message: `Erreur de mise à jour: ${updateError.message}`
-            })
+            errors.push({ row: i, sku: product.sku, message: `Erreur de mise à jour: ${updateError.message}` })
           } else {
             successCount++
           }
@@ -300,6 +284,7 @@ serve(async (req) => {
             updated_at: new Date().toISOString()
           })
           .eq('id', jobId)
+          .eq('user_id', userId) // SECURE: scope to user
       }
     }
 
@@ -321,12 +306,13 @@ serve(async (req) => {
           updated_at: new Date().toISOString()
         })
         .eq('id', jobId)
+        .eq('user_id', userId) // SECURE: scope to user
     }
 
     // Log activity and database operation
-    await logDatabaseOperation(supabase, userId || user.id, 'insert', 'imported_products', successCount)
+    await logDatabaseOperation(supabase, userId, 'insert', 'imported_products', successCount)
     
-    await logSecurityEvent(supabase, userId || user.id, 'csv_import_completed', 'info', {
+    await logSecurityEvent(supabase, userId, 'csv_import_completed', 'info', {
       total_rows: records.length,
       success_count: successCount,
       error_count: errorCount,
@@ -336,7 +322,7 @@ serve(async (req) => {
     })
     
     await supabase.from('activity_logs').insert({
-      user_id: userId || user.id,
+      user_id: userId, // CRITICAL: from token only
       action: 'product_import',
       description: `Import CSV: ${successCount} produits importés`,
       entity_type: 'product',
@@ -366,23 +352,17 @@ serve(async (req) => {
         successCount,
         errorCount,
         skippedCount,
-        errors: errors.slice(0, 100), // Limit error list
+        errors: errors.slice(0, 100),
         duration,
         createdIds,
         job_id: jobId
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
   } catch (error) {
     const executionTime = Date.now() - startTime
-    console.error('[CSV-IMPORT] Error', { 
-      error: error.message,
-      job_id: jobId 
-    })
+    console.error('[CSV-IMPORT] Error', { error: error.message, job_id: jobId })
 
     if (jobId) {
       try {
@@ -408,10 +388,7 @@ serve(async (req) => {
         job_id: jobId,
         execution_time_ms: executionTime
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
+      { headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
     )
   }
 })

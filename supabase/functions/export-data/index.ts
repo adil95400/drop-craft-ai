@@ -1,15 +1,31 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { createRateLimitResponse } from '../_shared/rate-limit.ts'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+// Input validation schemas
+const ExportTypeSchema = z.enum(['products', 'orders', 'customers', 'suppliers', 'imported_products'])
+const FormatSchema = z.enum(['csv', 'json'])
+const FiltersSchema = z.object({
+  ids: z.array(z.string().uuid()).optional(),
+  status: z.string().optional(),
+  date_from: z.string().optional(),
+  date_to: z.string().optional(),
+}).optional()
+
+const ExportRequestSchema = z.object({
+  type: ExportTypeSchema,
+  format: FormatSchema.default('csv'),
+  filters: FiltersSchema,
+})
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   try {
@@ -18,68 +34,78 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Enhanced authentication
+    // 1. Auth obligatoire - userId provient du token uniquement
     const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
     
-    // Rate limiting: max 20 exports per hour
-    await checkRateLimit(supabase, user.id, 'data_export', 20, 60)
+    // 2. Rate limiting: max 20 exports per hour
+    const rateCheck = await checkRateLimit(supabase, userId, 'data_export', 20, 60)
+    if (!rateCheck) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Max 20 exports per hour.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
-    const { type, format = 'csv', filters = {} } = await req.json()
+    // 3. Parse and validate input
+    const body = await req.json()
+    const parseResult = ExportRequestSchema.safeParse(body)
+    
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid request',
+          details: parseResult.error.flatten()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
-    console.log('Export data:', { type, format, user_id: user.id })
+    const { type, format, filters } = parseResult.data
+
+    console.log('[SECURE] Export data:', { type, format, user_id: userId })
 
     let data
-    let tableName
+    let tableName = type
 
-    switch (type) {
-      case 'products':
-        tableName = 'imported_products'
-        const { data: products, error: productsError } = await supabase
-          .from('imported_products')
-          .select('*')
-          .eq('user_id', user.id)
-        
-        if (productsError) throw productsError
-        data = products
-        break
-
-      case 'orders':
-        tableName = 'orders'
-        const { data: orders, error: ordersError } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', user.id)
-        
-        if (ordersError) throw ordersError
-        data = orders
-        break
-
-      case 'customers':
-        tableName = 'customers'
-        const { data: customers, error: customersError } = await supabase
-          .from('customers')
-          .select('*')
-          .eq('user_id', user.id)
-        
-        if (customersError) throw customersError
-        data = customers
-        break
-
-      default:
-        throw new Error(`Unknown export type: ${type}`)
+    // Map type to actual table name
+    if (type === 'products') {
+      tableName = 'imported_products'
     }
 
-    // Appliquer les filtres si nécessaire
-    if (filters.ids && Array.isArray(filters.ids)) {
-      data = data.filter((item: any) => filters.ids.includes(item.id))
+    // Build query - ALWAYS SCOPED by user_id
+    let query = supabase
+      .from(tableName)
+      .select('*')
+      .eq('user_id', userId) // CRITICAL: scope to user
+
+    // Apply filters
+    if (filters?.status) {
+      query = query.eq('status', filters.status)
+    }
+    if (filters?.date_from) {
+      query = query.gte('created_at', filters.date_from)
+    }
+    if (filters?.date_to) {
+      query = query.lte('created_at', filters.date_to)
     }
 
-    // Générer le fichier selon le format
+    const { data: queryData, error: queryError } = await query
+
+    if (queryError) throw queryError
+    data = queryData
+
+    // Apply ID filter if specified
+    if (filters?.ids && Array.isArray(filters.ids)) {
+      data = data.filter((item: any) => filters.ids!.includes(item.id))
+    }
+
+    // Generate file based on format
     let fileContent: string
     let contentType: string
 
     if (format === 'csv') {
-      // Générer CSV
       if (!data || data.length === 0) {
         throw new Error('No data to export')
       }
@@ -108,14 +134,14 @@ serve(async (req) => {
     }
 
     // Log security event and activity
-    await logSecurityEvent(supabase, user.id, 'data_export', 'info', {
+    await logSecurityEvent(supabase, userId, 'data_export', 'info', {
       type,
       format,
       count: data.length
     })
     
     await supabase.from('activity_logs').insert({
-      user_id: user.id,
+      user_id: userId, // CRITICAL: from token only
       action: 'data_exported',
       description: `Export ${type} (${format})`,
       entity_type: type,
@@ -135,8 +161,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: false, error: error.message }),
+      { status: 400, headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' } }
     )
   }
 })

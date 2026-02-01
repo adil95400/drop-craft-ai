@@ -1,14 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+// Input validation schemas
+const ActionSchema = z.enum([
+  'fetch_products', 'get_products', 'get_categories', 
+  'import_products', 'fetch_inventory', 'get_stock', 
+  'fetch_pricing', 'create_order'
+])
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   try {
@@ -17,9 +25,33 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { action, api_key, ...data } = await req.json()
+    // 1. Auth obligatoire - userId provient du token uniquement
+    const { user } = await authenticateUser(req, supabaseClient)
+    const userId = user.id
 
-    // Validate API key is provided
+    // 2. Rate limiting
+    const rateCheck = await checkRateLimit(supabaseClient, userId, 'bigbuy_integration', RATE_LIMITS.API_GENERAL)
+    if (!rateCheck.allowed) {
+      return createRateLimitResponse(rateCheck, corsHeaders)
+    }
+
+    // 3. Parse and validate input - IGNORING userId from body
+    const body = await req.json()
+    const { action, api_key, ...data } = body
+
+    const actionResult = ActionSchema.safeParse(action)
+    if (!actionResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: `Action not supported: ${action}`,
+          supported_actions: ['fetch_products', 'get_categories', 'fetch_inventory', 'fetch_pricing', 'create_order', 'import_products']
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate API key
     const bigbuyApiKey = api_key || Deno.env.get('BIGBUY_API_KEY')
     
     if (!bigbuyApiKey) {
@@ -32,53 +64,50 @@ serve(async (req) => {
       )
     }
 
+    console.log(`[SECURE] BigBuy action: ${action} by user ${userId}`)
+
     switch (action) {
       case 'fetch_products':
       case 'get_products':
-        return await getBigBuyProducts(bigbuyApiKey, data, supabaseClient)
+        return await getBigBuyProducts(bigbuyApiKey, data, supabaseClient, corsHeaders)
       
       case 'get_categories':
-        return await getBigBuyCategories(bigbuyApiKey)
+        return await getBigBuyCategories(bigbuyApiKey, corsHeaders)
       
       case 'import_products':
-        return await importBigBuyProducts(bigbuyApiKey, data, supabaseClient)
+        return await importBigBuyProducts(bigbuyApiKey, data, supabaseClient, userId, corsHeaders)
       
       case 'fetch_inventory':
       case 'get_stock':
-        return await getBigBuyStock(bigbuyApiKey, data)
+        return await getBigBuyStock(bigbuyApiKey, data, corsHeaders)
       
       case 'fetch_pricing':
-        return await getBigBuyPricing(bigbuyApiKey, data)
+        return await getBigBuyPricing(bigbuyApiKey, data, corsHeaders)
       
       case 'create_order':
-        return await createBigBuyOrder(bigbuyApiKey, data, supabaseClient)
+        return await createBigBuyOrder(bigbuyApiKey, data, supabaseClient, userId, corsHeaders)
       
       default:
         return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: `Action not supported: ${action}`,
-            supported_actions: ['fetch_products', 'get_categories', 'fetch_inventory', 'fetch_pricing', 'create_order', 'import_products']
-          }),
+          JSON.stringify({ success: false, error: `Unknown action: ${action}` }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
   } catch (error) {
     console.error('Erreur BigBuy integration:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: false, error: error.message }),
+      { status: 500, headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' } }
     )
   }
 })
 
-async function getBigBuyProducts(apiKey: string, params: any, supabase: any) {
+async function getBigBuyProducts(apiKey: string, params: any, supabase: any, corsHeaders: Record<string, string>) {
   try {
-    const { limit = 100, page = 1, category_id, supplier_id } = params
+    const { limit = 100, page = 1, category_id } = params
     
     console.log(`🔍 Fetching BigBuy products: limit=${limit}, page=${page}, category=${category_id || 'all'}`)
 
-    // Build query parameters
     const queryParams = new URLSearchParams({
       page: page.toString(),
       pageSize: limit.toString()
@@ -88,7 +117,6 @@ async function getBigBuyProducts(apiKey: string, params: any, supabase: any) {
       queryParams.append('categoryId', category_id.toString())
     }
 
-    // Real BigBuy API call with pagination
     const response = await fetch(`https://api.bigbuy.eu/rest/catalog/products.json?${queryParams}`, {
       method: 'GET',
       headers: {
@@ -105,7 +133,6 @@ async function getBigBuyProducts(apiKey: string, params: any, supabase: any) {
 
     const data = await response.json()
     
-    // Transform BigBuy products to our format
     const transformedProducts = data.map((product: any) => ({
       external_id: product.id?.toString(),
       sku: product.sku,
@@ -121,10 +148,7 @@ async function getBigBuyProducts(apiKey: string, params: any, supabase: any) {
       brand: product.brand?.name,
       weight: product.weight,
       dimensions: product.dimensions,
-      supplier: {
-        name: 'BigBuy',
-        sku: product.sku
-      }
+      supplier: { name: 'BigBuy', sku: product.sku }
     }))
 
     console.log(`✅ Retrieved ${transformedProducts.length} BigBuy products`)
@@ -143,16 +167,13 @@ async function getBigBuyProducts(apiKey: string, params: any, supabase: any) {
   } catch (error) {
     console.error('❌ getBigBuyProducts error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message 
-      }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 }
 
-async function getBigBuyCategories(apiKey: string) {
+async function getBigBuyCategories(apiKey: string, corsHeaders: Record<string, string>) {
   try {
     console.log('📁 Fetching BigBuy categories')
 
@@ -165,41 +186,39 @@ async function getBigBuyCategories(apiKey: string) {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`❌ BigBuy API Error (${response.status}):`, errorText)
       throw new Error(`BigBuy API Error: ${response.status}`)
     }
 
     const data = await response.json()
-    
     console.log(`✅ Retrieved ${data.length} BigBuy categories`)
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        categories: data,
-        total: data.length
-      }),
+      JSON.stringify({ success: true, categories: data, total: data.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('❌ getBigBuyCategories error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message 
-      }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 }
 
-async function importBigBuyProducts(apiKey: string, productData: any, supabase: any) {
+async function importBigBuyProducts(
+  apiKey: string, 
+  productData: any, 
+  supabase: any, 
+  userId: string, 
+  corsHeaders: Record<string, string>
+) {
   try {
-    const { products, user_id } = productData
+    const { products } = productData
     let imported = 0
 
     for (const product of products) {
       const catalogProduct = {
+        user_id: userId, // CRITICAL: from token only
         external_id: product.id.toString(),
         name: product.name,
         description: product.description,
@@ -232,6 +251,15 @@ async function importBigBuyProducts(apiKey: string, productData: any, supabase: 
       if (!error) imported++
     }
 
+    // Log activity - SECURE: user_id from token only
+    await supabase.from('activity_logs').insert({
+      user_id: userId,
+      action: 'bigbuy_import',
+      description: `Imported ${imported} products from BigBuy`,
+      entity_type: 'import',
+      metadata: { imported, total: products.length }
+    })
+
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -243,13 +271,13 @@ async function importBigBuyProducts(apiKey: string, productData: any, supabase: 
     )
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 }
 
-async function getBigBuyStock(apiKey: string, data: any) {
+async function getBigBuyStock(apiKey: string, data: any, corsHeaders: Record<string, string>) {
   try {
     const { product_ids } = data
     
@@ -269,14 +297,11 @@ async function getBigBuyStock(apiKey: string, data: any) {
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`❌ BigBuy API Error (${response.status}):`, errorText)
       throw new Error(`BigBuy API Error: ${response.status}`)
     }
 
     const stockData = await response.json()
     
-    // Transform to standard format
     const inventory = stockData.map((item: any) => ({
       product_id: item.id?.toString() || item.productId?.toString(),
       stock: item.stock || 0,
@@ -286,26 +311,19 @@ async function getBigBuyStock(apiKey: string, data: any) {
     console.log(`✅ Retrieved stock data for ${inventory.length} products`)
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        inventory,
-        total: inventory.length
-      }),
+      JSON.stringify({ success: true, inventory, total: inventory.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('❌ getBigBuyStock error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message 
-      }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 }
 
-async function getBigBuyPricing(apiKey: string, data: any) {
+async function getBigBuyPricing(apiKey: string, data: any, corsHeaders: Record<string, string>) {
   try {
     const { product_ids } = data
     
@@ -315,8 +333,6 @@ async function getBigBuyPricing(apiKey: string, data: any) {
 
     console.log(`💰 Fetching pricing for ${product_ids.length} BigBuy products`)
 
-    // BigBuy doesn't have a separate pricing endpoint, we fetch full product data
-    // and extract pricing information
     const productPromises = product_ids.slice(0, 20).map(async (productId: string) => {
       const response = await fetch(`https://api.bigbuy.eu/rest/catalog/product/${productId}.json`, {
         method: 'GET',
@@ -337,7 +353,6 @@ async function getBigBuyPricing(apiKey: string, data: any) {
     const products = await Promise.all(productPromises)
     const validProducts = products.filter(p => p !== null)
     
-    // Transform to pricing format
     const pricing = validProducts.map((product: any) => ({
       product_id: product.id?.toString(),
       retail_price: parseFloat(product.retailPrice || 0),
@@ -350,28 +365,27 @@ async function getBigBuyPricing(apiKey: string, data: any) {
     console.log(`✅ Retrieved pricing for ${pricing.length} products`)
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        pricing,
-        total: pricing.length
-      }),
+      JSON.stringify({ success: true, pricing, total: pricing.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('❌ getBigBuyPricing error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message 
-      }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 }
 
-async function createBigBuyOrder(apiKey: string, orderData: any, supabase: any) {
+async function createBigBuyOrder(
+  apiKey: string, 
+  orderData: any, 
+  supabase: any, 
+  userId: string, 
+  corsHeaders: Record<string, string>
+) {
   try {
-    console.log('📦 Creating BigBuy order')
+    console.log(`[SECURE] Creating BigBuy order for user ${userId}`)
 
     const response = await fetch('https://api.bigbuy.eu/rest/orders', {
       method: 'POST',
@@ -384,37 +398,34 @@ async function createBigBuyOrder(apiKey: string, orderData: any, supabase: any) 
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`❌ BigBuy API Error (${response.status}):`, errorText)
       throw new Error(`BigBuy API Error: ${response.status}`)
     }
 
     const order = await response.json()
     
+    // Log activity - SECURE: user_id from token only
+    await supabase.from('activity_logs').insert({
+      user_id: userId,
+      action: 'bigbuy_order_created',
+      description: `Created BigBuy order ${order.id || 'N/A'}`,
+      entity_type: 'order',
+      metadata: { order_id: order.id }
+    })
+
     console.log(`✅ BigBuy order created: ${order.id || 'N/A'}`)
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        order,
-        message: 'BigBuy order created successfully'
-      }),
+      JSON.stringify({ success: true, order, message: 'BigBuy order created successfully' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('❌ createBigBuyOrder error:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message 
-      }),
+      JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 }
-
-// Mock functions removed - now using real BigBuy API
-// All requests require BIGBUY_API_KEY to be configured
-// See README.md for setup instructions
 
 function calculateProfitMargin(retailPrice: number, wholesalePrice: number): number {
   if (wholesalePrice === 0) return 0

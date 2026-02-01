@@ -1,52 +1,91 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Input validation schemas
+const ActionSchema = z.enum(['check_prices', 'create_monitor', 'get_monitors', 'delete_monitor'])
+
+const CreateMonitorSchema = z.object({
+  productId: z.string().uuid(),
+  supplierUrl: z.string().url().optional(),
+  checkFrequency: z.number().int().min(15).max(1440).default(60), // 15 min to 24h
+  alertThreshold: z.number().min(0.1).max(100).default(5.0), // percentage
+  alertOnIncrease: z.boolean().default(true),
+  alertOnDecrease: z.boolean().default(true),
+})
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightSecure(req)
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    const { action, monitoringId } = await req.json();
+    // 1. Auth obligatoire - userId provient du token uniquement
+    const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
+
+    // 2. Rate limiting
+    const rateCheck = await checkRateLimit(supabase, userId, 'price_monitor', RATE_LIMITS.API_GENERAL)
+    if (!rateCheck.allowed) {
+      return createRateLimitResponse(rateCheck, corsHeaders)
+    }
+
+    // 3. Parse input
+    const body = await req.json()
+    const { action, monitoringId } = body
+
+    const actionResult = ActionSchema.safeParse(action)
+    if (!actionResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid action',
+          valid_actions: ['check_prices', 'create_monitor', 'get_monitors', 'delete_monitor']
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (action === 'check_prices') {
-      // Récupérer tous les moniteurs actifs ou un spécifique
-      const query = supabase
+      // Get only user's monitors - SCOPED by user_id
+      let query = supabase
         .from('price_monitoring')
         .select('*')
-        .eq('is_active', true);
+        .eq('user_id', userId) // CRITICAL: scope to user
+        .eq('is_active', true)
 
       if (monitoringId) {
-        query.eq('id', monitoringId);
+        query = query.eq('id', monitoringId)
       } else {
-        // Vérifier uniquement ceux qui doivent être vérifiés maintenant
-        query.or(`last_checked_at.is.null,last_checked_at.lt.${new Date(Date.now() - 60 * 60 * 1000).toISOString()}`);
+        query = query.or(`last_checked_at.is.null,last_checked_at.lt.${new Date(Date.now() - 60 * 60 * 1000).toISOString()}`)
       }
 
-      const { data: monitors, error: fetchError } = await query.limit(50);
+      const { data: monitors, error: fetchError } = await query.limit(50)
 
-      if (fetchError) throw fetchError;
+      if (fetchError) throw fetchError
 
-      console.log(`Checking prices for ${monitors?.length || 0} products`);
+      console.log(`[SECURE] Checking prices for ${monitors?.length || 0} products for user ${userId}`)
 
-      const results = [];
+      const results = []
       for (const monitor of monitors || []) {
         try {
-          // Simuler le scraping du prix (en production, utiliser un vrai scraper)
-          const newPrice = monitor.current_price * (0.95 + Math.random() * 0.1);
-          const priceChange = newPrice - monitor.current_price;
-          const changePercentage = (priceChange / monitor.current_price) * 100;
+          // Simulate price scraping (in production, use real scraper)
+          const newPrice = monitor.current_price * (0.95 + Math.random() * 0.1)
+          const priceChange = newPrice - monitor.current_price
+          const changePercentage = monitor.current_price > 0 
+            ? (priceChange / monitor.current_price) * 100 
+            : 0
 
-          // Mettre à jour le monitoring
+          // Update monitoring - SCOPED by user_id
           await supabase
             .from('price_monitoring')
             .update({
@@ -56,9 +95,10 @@ serve(async (req) => {
               last_checked_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
-            .eq('id', monitor.id);
+            .eq('id', monitor.id)
+            .eq('user_id', userId) // CRITICAL: scope to user
 
-          // Enregistrer l'historique si changement significatif
+          // Record history if significant change
           if (Math.abs(changePercentage) >= monitor.alert_threshold_percentage) {
             await supabase
               .from('price_history')
@@ -69,9 +109,9 @@ serve(async (req) => {
                 new_price: newPrice,
                 price_change: priceChange,
                 change_percentage: changePercentage
-              });
+              })
 
-            // Créer une alerte si nécessaire
+            // Create alert if needed
             if (
               (changePercentage > 0 && monitor.alert_on_increase) ||
               (changePercentage < 0 && monitor.alert_on_decrease)
@@ -79,7 +119,7 @@ serve(async (req) => {
               await supabase
                 .from('activity_logs')
                 .insert({
-                  user_id: monitor.user_id,
+                  user_id: userId, // CRITICAL: from token only
                   action: 'price_alert',
                   entity_type: 'price_monitoring',
                   entity_id: monitor.id,
@@ -90,7 +130,7 @@ serve(async (req) => {
                     change: priceChange,
                     percentage: changePercentage
                   }
-                });
+                })
             }
           }
 
@@ -100,14 +140,14 @@ serve(async (req) => {
             old_price: monitor.current_price,
             new_price: newPrice,
             change_percentage: changePercentage
-          });
+          })
         } catch (error) {
-          console.error(`Error checking price for monitor ${monitor.id}:`, error);
+          console.error(`Error checking price for monitor ${monitor.id}:`, error)
           results.push({
             id: monitor.id,
             success: false,
             error: error.message
-          });
+          })
         }
       }
 
@@ -117,55 +157,108 @@ serve(async (req) => {
           checked: results.length,
           results
         }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
     }
 
     if (action === 'create_monitor') {
-      const { userId, productId, supplierUrl, checkFrequency, alertThreshold } = await req.json();
+      const parseResult = CreateMonitorSchema.safeParse(body)
+      if (!parseResult.success) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Invalid monitor data', details: parseResult.error.flatten() }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const { productId, supplierUrl, checkFrequency, alertThreshold, alertOnIncrease, alertOnDecrease } = parseResult.data
+
+      // Verify product belongs to user - SECURITY CHECK
+      const { data: product, error: productError } = await supabase
+        .from('imported_products')
+        .select('id, price')
+        .eq('id', productId)
+        .eq('user_id', userId) // CRITICAL: verify ownership
+        .single()
+
+      if (productError || !product) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Product not found or unauthorized' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
       const { data, error } = await supabase
         .from('price_monitoring')
         .insert({
-          user_id: userId,
+          user_id: userId, // CRITICAL: from token only
           product_id: productId,
           supplier_url: supplierUrl,
-          current_price: 0,
-          check_frequency_minutes: checkFrequency || 60,
-          alert_threshold_percentage: alertThreshold || 5.0
+          current_price: product.price || 0,
+          check_frequency_minutes: checkFrequency,
+          alert_threshold_percentage: alertThreshold,
+          alert_on_increase: alertOnIncrease,
+          alert_on_decrease: alertOnDecrease
         })
         .select()
-        .single();
+        .single()
 
-      if (error) throw error;
+      if (error) throw error
 
       return new Response(
         JSON.stringify({ success: true, monitor: data }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    if (action === 'get_monitors') {
+      // SECURE: scope to user_id
+      const { data: monitors, error } = await supabase
+        .from('price_monitoring')
+        .select('*, product:imported_products(name, sku, image_url)')
+        .eq('user_id', userId) // CRITICAL: scope to user
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (error) throw error
+
+      return new Response(
+        JSON.stringify({ success: true, monitors }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    if (action === 'delete_monitor') {
+      if (!monitoringId) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'monitoringId required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // SECURE: scope delete to user_id
+      const { error } = await supabase
+        .from('price_monitoring')
+        .delete()
+        .eq('id', monitoringId)
+        .eq('user_id', userId) // CRITICAL: scope to user
+
+      if (error) throw error
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
     }
 
     return new Response(
       JSON.stringify({ error: 'Invalid action' }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
-      }
-    );
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    )
   } catch (error) {
-    console.error('Price monitor error:', error);
+    console.error('Price monitor error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
-    );
+      JSON.stringify({ success: false, error: error.message }),
+      { headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
+    )
   }
-});
+})

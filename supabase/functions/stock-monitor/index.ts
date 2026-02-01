@@ -1,57 +1,94 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Input validation schemas
+const ActionSchema = z.enum(['check_stock', 'create_alert', 'get_alerts', 'delete_alert'])
+
+const CreateAlertSchema = z.object({
+  productId: z.string().uuid(),
+  supplierUrl: z.string().url().optional(),
+  alertThreshold: z.number().int().min(0).max(10000).default(10),
+  checkFrequency: z.number().int().min(5).max(1440).default(30), // 5 min to 24h
+})
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightSecure(req)
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    const { action, alertId } = await req.json();
+    // 1. Auth obligatoire - userId provient du token uniquement
+    const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
+
+    // 2. Rate limiting
+    const rateCheck = await checkRateLimit(supabase, userId, 'stock_monitor', RATE_LIMITS.API_GENERAL)
+    if (!rateCheck.allowed) {
+      return createRateLimitResponse(rateCheck, corsHeaders)
+    }
+
+    // 3. Parse input
+    const body = await req.json()
+    const { action, alertId } = body
+
+    const actionResult = ActionSchema.safeParse(action)
+    if (!actionResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid action',
+          valid_actions: ['check_stock', 'create_alert', 'get_alerts', 'delete_alert']
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (action === 'check_stock') {
-      const query = supabase
+      // Get only user's alerts - SCOPED by user_id
+      let query = supabase
         .from('stock_alerts')
         .select('*')
-        .eq('is_active', true);
+        .eq('user_id', userId) // CRITICAL: scope to user
+        .eq('is_active', true)
 
       if (alertId) {
-        query.eq('id', alertId);
+        query = query.eq('id', alertId)
       } else {
-        query.or(`last_checked_at.is.null,last_checked_at.lt.${new Date(Date.now() - 30 * 60 * 1000).toISOString()}`);
+        query = query.or(`last_checked_at.is.null,last_checked_at.lt.${new Date(Date.now() - 30 * 60 * 1000).toISOString()}`)
       }
 
-      const { data: alerts, error: fetchError } = await query.limit(50);
+      const { data: alerts, error: fetchError } = await query.limit(50)
 
-      if (fetchError) throw fetchError;
+      if (fetchError) throw fetchError
 
-      console.log(`Checking stock for ${alerts?.length || 0} products`);
+      console.log(`[SECURE] Checking stock for ${alerts?.length || 0} products for user ${userId}`)
 
-      const results = [];
+      const results = []
       for (const alert of alerts || []) {
         try {
-          // Simuler la vérification du stock (en production, scraper le site)
-          const newStock = Math.floor(Math.random() * 100);
-          let stockStatus = 'in_stock';
+          // Simulate stock check (in production, scrape the supplier site)
+          const newStock = Math.floor(Math.random() * 100)
+          let stockStatus = 'in_stock'
           
           if (newStock === 0) {
-            stockStatus = 'out_of_stock';
+            stockStatus = 'out_of_stock'
           } else if (newStock <= alert.alert_threshold) {
-            stockStatus = 'low_stock';
+            stockStatus = 'low_stock'
           }
 
-          const stockChanged = newStock !== alert.current_stock;
+          const stockChanged = newStock !== alert.current_stock
 
-          // Mettre à jour l'alerte
+          // Update alert - SCOPED by user_id
           await supabase
             .from('stock_alerts')
             .update({
@@ -61,14 +98,15 @@ serve(async (req) => {
               last_checked_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
-            .eq('id', alert.id);
+            .eq('id', alert.id)
+            .eq('user_id', userId) // CRITICAL: scope to user
 
-          // Créer une notification si changement critique
+          // Create notification if critical change
           if (stockChanged && (stockStatus === 'out_of_stock' || stockStatus === 'low_stock')) {
             await supabase
               .from('activity_logs')
               .insert({
-                user_id: alert.user_id,
+                user_id: userId, // CRITICAL: from token only
                 action: 'stock_alert',
                 entity_type: 'stock_alert',
                 entity_id: alert.id,
@@ -79,26 +117,31 @@ serve(async (req) => {
                   status: stockStatus,
                   threshold: alert.alert_threshold
                 }
-              });
+              })
 
-            // Déclencher auto-order si règle configurée
+            // Check for auto-order rules - SCOPED by user_id
             const { data: rules } = await supabase
               .from('auto_order_rules')
               .select('*')
               .eq('product_id', alert.product_id)
+              .eq('user_id', userId) // CRITICAL: scope to user
               .eq('is_enabled', true)
-              .single();
+              .single()
 
             if (rules && newStock <= rules.min_stock_trigger) {
-              console.log(`Triggering auto-order for product ${alert.product_id}`);
+              console.log(`[SECURE] Triggering auto-order for product ${alert.product_id} for user ${userId}`)
               
+              // Call auto-order with user context
               await supabase.functions.invoke('auto-order-processor', {
                 body: {
                   action: 'create_order',
                   ruleId: rules.id,
                   reason: 'low_stock_trigger'
+                },
+                headers: {
+                  Authorization: req.headers.get('Authorization') || ''
                 }
-              });
+              })
             }
           }
 
@@ -109,14 +152,14 @@ serve(async (req) => {
             current_stock: newStock,
             status: stockStatus,
             changed: stockChanged
-          });
+          })
         } catch (error) {
-          console.error(`Error checking stock for alert ${alert.id}:`, error);
+          console.error(`Error checking stock for alert ${alert.id}:`, error)
           results.push({
             id: alert.id,
             success: false,
             error: error.message
-          });
+          })
         }
       }
 
@@ -126,54 +169,105 @@ serve(async (req) => {
           checked: results.length,
           results
         }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
     }
 
     if (action === 'create_alert') {
-      const { userId, productId, supplierUrl, alertThreshold, checkFrequency } = await req.json();
+      const parseResult = CreateAlertSchema.safeParse(body)
+      if (!parseResult.success) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Invalid alert data', details: parseResult.error.flatten() }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const { productId, supplierUrl, alertThreshold, checkFrequency } = parseResult.data
+
+      // Verify product belongs to user - SECURITY CHECK
+      const { data: product, error: productError } = await supabase
+        .from('imported_products')
+        .select('id')
+        .eq('id', productId)
+        .eq('user_id', userId) // CRITICAL: verify ownership
+        .single()
+
+      if (productError || !product) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Product not found or unauthorized' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
       const { data, error } = await supabase
         .from('stock_alerts')
         .insert({
-          user_id: userId,
+          user_id: userId, // CRITICAL: from token only
           product_id: productId,
           supplier_url: supplierUrl,
-          alert_threshold: alertThreshold || 10,
-          check_frequency_minutes: checkFrequency || 30
+          alert_threshold: alertThreshold,
+          check_frequency_minutes: checkFrequency
         })
         .select()
-        .single();
+        .single()
 
-      if (error) throw error;
+      if (error) throw error
 
       return new Response(
         JSON.stringify({ success: true, alert: data }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    if (action === 'get_alerts') {
+      // SECURE: scope to user_id
+      const { data: alerts, error } = await supabase
+        .from('stock_alerts')
+        .select('*, product:imported_products(name, sku, image_url)')
+        .eq('user_id', userId) // CRITICAL: scope to user
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (error) throw error
+
+      return new Response(
+        JSON.stringify({ success: true, alerts }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    if (action === 'delete_alert') {
+      if (!alertId) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'alertId required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // SECURE: scope delete to user_id
+      const { error } = await supabase
+        .from('stock_alerts')
+        .delete()
+        .eq('id', alertId)
+        .eq('user_id', userId) // CRITICAL: scope to user
+
+      if (error) throw error
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
     }
 
     return new Response(
       JSON.stringify({ error: 'Invalid action' }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
-      }
-    );
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    )
   } catch (error) {
-    console.error('Stock monitor error:', error);
+    console.error('Stock monitor error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
-    );
+      JSON.stringify({ success: false, error: error.message }),
+      { headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' }, status: 500 }
+    )
   }
-});
+})
