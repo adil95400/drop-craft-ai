@@ -1,17 +1,26 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
 /**
- * Real carrier tracking fetch from multiple carriers
- * Supports: Colissimo, Chronopost, UPS, DHL, FedEx, Mondial Relay
+ * Carrier Tracking Fetch - Secure Implementation
+ * P1.1: Auth obligatoire, rate limiting, validation Zod, scoping user_id
  */
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
+
+const CarrierSchema = z.enum([
+  'colissimo', 'chronopost', 'ups', 'dhl', 'fedex', 'mondial_relay'
+])
+
+const RequestSchema = z.object({
+  carrier: CarrierSchema,
+  trackingNumber: z.string().min(5).max(50).regex(/^[a-zA-Z0-9-_]+$/),
+})
+
 Deno.serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   try {
@@ -20,13 +29,37 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { carrier, trackingNumber, userId } = await req.json()
-
-    if (!carrier || !trackingNumber || !userId) {
-      throw new Error('Missing required parameters')
+    // 1. Auth obligatoire - userId provient du token uniquement
+    const { user } = await authenticateUser(req, supabaseClient)
+    const userId = user.id
+    
+    // 2. Rate limiting: max 60 tracking fetches per hour
+    const rateCheck = await checkRateLimit(supabaseClient, userId, 'carrier_tracking', 60, 60)
+    if (!rateCheck) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Max 60 tracking requests per hour.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    console.log(`Fetching tracking for ${carrier} - ${trackingNumber}`)
+    // 3. Parse and validate input - IGNORING userId from body
+    const body = await req.json()
+    const parseResult = RequestSchema.safeParse(body)
+    
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid request',
+          details: parseResult.error.flatten()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { carrier, trackingNumber } = parseResult.data
+
+    console.log(`[SECURE] Fetching tracking for ${carrier} - ${trackingNumber} for user ${userId}`)
 
     let trackingData: any = null
 
@@ -60,7 +93,7 @@ Deno.serve(async (req) => {
         throw new Error(`Unsupported carrier: ${carrier}`)
     }
 
-    // Update fulfillment_shipments with tracking data
+    // Update fulfillment_shipments with tracking data - SCOPED to user
     const { error: updateError } = await supabaseClient
       .from('fulfillment_shipments')
       .update({
@@ -70,11 +103,17 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString()
       })
       .eq('tracking_number', trackingNumber)
-      .eq('user_id', userId)
+      .eq('user_id', userId) // CRITICAL: scope to user
 
     if (updateError) {
       console.error('Error updating shipment:', updateError)
     }
+
+    // Log security event
+    await logSecurityEvent(supabaseClient, userId, 'carrier_tracking_fetch', 'info', {
+      carrier,
+      trackingNumber
+    })
 
     return new Response(
       JSON.stringify({
@@ -88,7 +127,7 @@ Deno.serve(async (req) => {
     console.error('Error fetching tracking:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      { headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' }, status: 400 }
     )
   }
 })
@@ -145,7 +184,6 @@ async function fetchChronopostTracking(trackingNumber: string) {
 
   const xmlText = await response.text()
   
-  // Parse XML response (simplified)
   return {
     carrier: 'chronopost',
     trackingNumber,
@@ -164,7 +202,6 @@ async function fetchUPSTracking(trackingNumber: string) {
     throw new Error('UPS credentials not configured')
   }
 
-  // Get OAuth token
   const tokenResponse = await fetch('https://onlinetools.ups.com/security/v1/oauth/token', {
     method: 'POST',
     headers: {
@@ -176,7 +213,6 @@ async function fetchUPSTracking(trackingNumber: string) {
 
   const { access_token } = await tokenResponse.json()
 
-  // Fetch tracking
   const trackingResponse = await fetch(
     `https://onlinetools.ups.com/api/track/v1/details/${trackingNumber}`,
     {
@@ -238,7 +274,6 @@ async function fetchFedExTracking(trackingNumber: string) {
     throw new Error('FedEx credentials not configured')
   }
 
-  // Get OAuth token
   const tokenResponse = await fetch('https://apis.fedex.com/oauth/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -247,7 +282,6 @@ async function fetchFedExTracking(trackingNumber: string) {
 
   const { access_token } = await tokenResponse.json()
 
-  // Fetch tracking
   const trackingResponse = await fetch('https://apis.fedex.com/track/v1/trackingnumbers', {
     method: 'POST',
     headers: {

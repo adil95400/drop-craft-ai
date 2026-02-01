@@ -1,61 +1,60 @@
 /**
- * Génération de rapports PDF côté serveur
- * Utilise une approche HTML-to-PDF simple
+ * Generate PDF Report - Secure Implementation
+ * P1.1: Auth obligatoire, rate limiting, validation Zod, scoping user_id
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2"
+import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-interface ReportConfig {
-  type: 'sales' | 'orders' | 'products' | 'customers' | 'inventory';
-  title: string;
-  dateRange?: {
-    start: string;
-    end: string;
-  };
-  format?: 'pdf' | 'csv' | 'xlsx';
-  filters?: Record<string, any>;
-}
+// Input validation
+const ReportConfigSchema = z.object({
+  type: z.enum(['sales', 'orders', 'products', 'customers', 'inventory']),
+  title: z.string().max(200).optional(),
+  dateRange: z.object({
+    start: z.string(),
+    end: z.string()
+  }).optional(),
+  format: z.enum(['pdf', 'csv', 'xlsx']).optional().default('pdf'),
+  filters: z.record(z.any()).optional()
+})
 
 const logStep = (step: string, details?: any) => {
-  console.log(`[GENERATE-PDF-REPORT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
-};
+  console.log(`[GENERATE-PDF-REPORT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`)
+}
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
-};
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value)
+}
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric'
-  });
-};
+  })
+}
 
 async function generateSalesReport(supabase: any, userId: string, dateRange?: { start: string; end: string }) {
   let query = supabase
     .from('orders')
     .select('id, order_number, total_amount, status, created_at, customer_id')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .eq('user_id', userId) // CRITICAL: scope to user
+    .order('created_at', { ascending: false })
 
   if (dateRange?.start) {
-    query = query.gte('created_at', dateRange.start);
+    query = query.gte('created_at', dateRange.start)
   }
   if (dateRange?.end) {
-    query = query.lte('created_at', dateRange.end);
+    query = query.lte('created_at', dateRange.end)
   }
 
-  const { data: orders, error } = await query.limit(500);
-  if (error) throw error;
+  const { data: orders, error } = await query.limit(500)
+  if (error) throw error
 
-  const totalRevenue = orders?.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) || 0;
-  const avgOrderValue = orders?.length ? totalRevenue / orders.length : 0;
+  const totalRevenue = orders?.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) || 0
+  const avgOrderValue = orders?.length ? totalRevenue / orders.length : 0
 
   return {
     title: 'Rapport des Ventes',
@@ -71,21 +70,21 @@ async function generateSalesReport(supabase: any, userId: string, dateRange?: { 
       formatCurrency(o.total_amount || 0),
       o.status || 'En attente'
     ]) || [],
-  };
+  }
 }
 
 async function generateProductsReport(supabase: any, userId: string) {
   const { data: products, error } = await supabase
     .from('products')
     .select('id, title, sku, price, stock_quantity, status, category')
-    .eq('user_id', userId)
+    .eq('user_id', userId) // CRITICAL: scope to user
     .order('title')
-    .limit(500);
+    .limit(500)
 
-  if (error) throw error;
+  if (error) throw error
 
-  const totalValue = products?.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.stock_quantity || 0)), 0) || 0;
-  const lowStock = products?.filter((p: any) => (p.stock_quantity || 0) < 10).length || 0;
+  const totalValue = products?.reduce((sum: number, p: any) => sum + ((p.price || 0) * (p.stock_quantity || 0)), 0) || 0
+  const lowStock = products?.filter((p: any) => (p.stock_quantity || 0) < 10).length || 0
 
   return {
     title: 'Rapport des Produits',
@@ -102,21 +101,21 @@ async function generateProductsReport(supabase: any, userId: string) {
       p.stock_quantity?.toString() || '0',
       p.category || 'Non catégorisé'
     ]) || [],
-  };
+  }
 }
 
 async function generateCustomersReport(supabase: any, userId: string) {
   const { data: customers, error } = await supabase
     .from('customers')
     .select('id, first_name, last_name, email, total_spent, orders_count, created_at')
-    .eq('user_id', userId)
+    .eq('user_id', userId) // CRITICAL: scope to user
     .order('total_spent', { ascending: false })
-    .limit(500);
+    .limit(500)
 
-  if (error) throw error;
+  if (error) throw error
 
-  const totalSpent = customers?.reduce((sum: number, c: any) => sum + (c.total_spent || 0), 0) || 0;
-  const avgSpent = customers?.length ? totalSpent / customers.length : 0;
+  const totalSpent = customers?.reduce((sum: number, c: any) => sum + (c.total_spent || 0), 0) || 0
+  const avgSpent = customers?.length ? totalSpent / customers.length : 0
 
   return {
     title: 'Rapport des Clients',
@@ -133,7 +132,7 @@ async function generateCustomersReport(supabase: any, userId: string) {
       formatCurrency(c.total_spent || 0),
       formatDate(c.created_at)
     ]) || [],
-  };
+  }
 }
 
 function generateHTML(report: { title: string; summary: Record<string, any>; columns: string[]; rows: string[][] }) {
@@ -143,13 +142,13 @@ function generateHTML(report: { title: string; summary: Record<string, any>; col
         <div style="font-size: 12px; color: #666; margin-bottom: 5px;">${key}</div>
         <div style="font-size: 20px; font-weight: bold; color: #333;">${value}</div>
       </div>
-    `).join('');
+    `).join('')
 
   const tableRows = report.rows.map(row => `
     <tr>
       ${row.map(cell => `<td style="padding: 10px; border-bottom: 1px solid #eee;">${cell}</td>`).join('')}
     </tr>
-  `).join('');
+  `).join('')
 
   return `
 <!DOCTYPE html>
@@ -198,92 +197,108 @@ function generateHTML(report: { title: string; summary: Record<string, any>; col
   </div>
 </body>
 </html>
-  `;
+  `
 }
 
 function generateCSV(report: { columns: string[]; rows: string[][] }): string {
-  const header = report.columns.join(',');
+  const header = report.columns.join(',')
   const rows = report.rows.map(row => 
     row.map(cell => `"${(cell || '').replace(/"/g, '""')}"`).join(',')
-  ).join('\n');
-  return `${header}\n${rows}`;
+  ).join('\n')
+  return `${header}\n${rows}`
 }
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightSecure(req)
   }
 
   try {
-    logStep("Report generation request received");
-
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      throw new Error("Authorization header required");
-    }
+    logStep("Report generation request received")
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { 
-        global: { headers: { Authorization: authHeader } },
-        auth: { persistSession: false } 
-      }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error("Authentication required");
-    }
-
-    const config: ReportConfig = await req.json();
-    logStep("Generating report", { type: config.type, format: config.format });
-
-    // Use service role for data access
-    const adminSupabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
-    );
+    )
 
-    let report;
+    // 1. Auth obligatoire - userId provient du token uniquement
+    const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
+    
+    // 2. Rate limiting: max 20 reports per hour
+    const rateCheck = await checkRateLimit(supabase, userId, 'report_generation', 20, 60)
+    if (!rateCheck) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Max 20 reports per hour.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 3. Parse and validate input
+    const body = await req.json()
+    const parseResult = ReportConfigSchema.safeParse(body)
+    
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid request',
+          details: parseResult.error.flatten()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const config = parseResult.data
+    logStep("Generating report", { type: config.type, format: config.format, user_id: userId })
+
+    let report
     switch (config.type) {
       case 'sales':
       case 'orders':
-        report = await generateSalesReport(adminSupabase, user.id, config.dateRange);
-        break;
+        report = await generateSalesReport(supabase, userId, config.dateRange)
+        break
       case 'products':
       case 'inventory':
-        report = await generateProductsReport(adminSupabase, user.id);
-        break;
+        report = await generateProductsReport(supabase, userId)
+        break
       case 'customers':
-        report = await generateCustomersReport(adminSupabase, user.id);
-        break;
+        report = await generateCustomersReport(supabase, userId)
+        break
       default:
-        throw new Error(`Unknown report type: ${config.type}`);
+        throw new Error(`Unknown report type: ${config.type}`)
     }
 
-    const format = config.format || 'pdf';
-    let content: string;
-    let contentType: string;
-    let filename: string;
+    const format = config.format || 'pdf'
+    let content: string
+    let contentType: string
+    let filename: string
 
     if (format === 'csv') {
-      content = generateCSV(report);
-      contentType = 'text/csv';
-      filename = `${config.type}-report-${Date.now()}.csv`;
+      content = generateCSV(report)
+      contentType = 'text/csv'
+      filename = `${config.type}-report-${Date.now()}.csv`
     } else {
-      // Return HTML (can be converted to PDF client-side or via external service)
-      content = generateHTML(report);
-      contentType = 'text/html';
-      filename = `${config.type}-report-${Date.now()}.html`;
+      content = generateHTML(report)
+      contentType = 'text/html'
+      filename = `${config.type}-report-${Date.now()}.html`
     }
+
+    // Log security event
+    await logSecurityEvent(supabase, userId, 'report_generated', 'info', {
+      type: config.type,
+      format,
+      rowCount: report.rows.length
+    })
 
     logStep("Report generated successfully", { 
       type: config.type, 
       format,
       rowCount: report.rows.length 
-    });
+    })
 
     return new Response(content, {
       headers: {
@@ -292,18 +307,18 @@ serve(async (req) => {
         "Content-Disposition": `attachment; filename="${filename}"`,
       },
       status: 200,
-    });
+    })
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    logStep("ERROR", { message: errorMessage })
     
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getSecureCorsHeaders(req), "Content-Type": "application/json" },
         status: 500,
       }
-    );
+    )
   }
-});
+})
