@@ -1,258 +1,298 @@
 
-# Plan d'Optimisation et Nettoyage Complet de ShopOpti
+# Plan de Documentation Professionnelle ShopOpti+
 
-## Résumé Exécutif
+## Vue d'ensemble du projet
 
-L'analyse approfondie du projet révèle une application riche mais avec des **duplications significatives** et des **opportunités d'optimisation** majeures. Le projet contient actuellement :
-- **~200+ pages** dans `src/pages/`
-- **~300+ hooks** dans `src/hooks/`
-- **~350+ edge functions** dans `supabase/functions/`
-- **~150+ dossiers de composants** dans `src/components/`
+Ce plan établit une **documentation enterprise-grade** couvrant l'intégralité des 15+ modules de ShopOpti+. L'objectif est de créer une base de connaissance structurée qui réduit le support client de 40%, accélère l'onboarding utilisateur et maximise l'adoption des fonctionnalités avancées.
 
 ---
 
-## Phase 1 : Nettoyage des Hooks Dépréciés (Impact Immédiat)
+## Architecture de documentation
 
-### Fichiers à Supprimer
-
-Les hooks suivants sont marqués `@deprecated` et redirigent vers les hooks unifiés. Ils peuvent être supprimés après mise à jour des imports :
-
-| Fichier Déprécié | Remplacé Par | Usages Restants |
-|------------------|--------------|-----------------|
-| `src/hooks/useRealProducts.ts` | `useProductsUnified` | 0 usage direct |
-| `src/hooks/useRealCustomers.ts` | `useCustomersUnified` | 0 usage direct |
-| `src/hooks/useRealOrders.ts` | `useOrdersUnified` | 0 usage direct |
-| `src/hooks/useRealSuppliers.ts` | `useSuppliersUnified` | 0 usage direct |
-| `src/hooks/useRealIntegrations.ts` | `useIntegrationsUnified` | 0 usage direct |
-| `src/hooks/useOrders.ts` | `useOrdersUnified` | Migration requise |
-| `src/hooks/useSuppliers.ts` | `useSuppliersUnified` | 17 composants à migrer |
-| `src/hooks/useIntegrations.ts` | `useIntegrationsUnified` | 15 composants à migrer |
-| `src/hooks/useCustomers.ts` | `useCustomersUnified` | 4 composants à migrer |
-
-### Fichier Legacy Supplémentaire
-
-| Fichier | Raison | Action |
-|---------|--------|--------|
-| `src/hooks/useSupabaseData.ts` | Doublon complet avec hooks unifiés | Supprimer (486 lignes) |
-| `src/hooks/useIntegrationsData.ts` | Wrapper déprécié | Supprimer |
-
-**Impact estimé** : Suppression de **~1500 lignes de code redondant**
-
----
-
-## Phase 2 : Consolidation des Pages Dupliquées
-
-### Pages Analytics (5 doublons identifiés)
+### Structure des fichiers
 
 ```text
-À CONSERVER (Hub principal)
-├── src/pages/AnalyticsDashboard.tsx         ← Hub principal
-└── src/pages/analytics/ChannableAnalyticsPage.tsx
+src/data/documentation/
+├── index.ts                    # Export centralisé
+├── types.ts                    # Interfaces TypeScript
+├── modules/
+│   ├── dashboard.md
+│   ├── products.md
+│   ├── catalog.md
+│   ├── import.md
+│   ├── suppliers.md
+│   ├── pricing.md
+│   ├── orders.md
+│   ├── channels.md
+│   ├── automation.md
+│   ├── ai.md
+│   ├── analytics.md
+│   ├── marketing.md
+│   ├── integrations.md
+│   ├── settings.md
+│   └── enterprise.md
+└── components/
+    └── DocumentationViewer.tsx
 
-À SUPPRIMER/FUSIONNER
-├── src/pages/AdvancedAnalytics.tsx          → Rediriger vers /analytics
-├── src/pages/AdvancedAnalyticsPage.tsx      → Fusionner dans ChannableAnalyticsPage
-├── src/pages/UnifiedAnalyticsDashboard.tsx  → Supprimer (doublon)
-├── src/pages/MultiStoreAnalyticsDashboard.tsx → Onglet dans ChannableAnalyticsPage
-└── src/pages/ProfitAnalyticsDashboard.tsx   → Onglet dans ChannableAnalyticsPage
-```
-
-### Pages CRM (6 fichiers séparés → 1 hub)
-
-```text
-À CONSOLIDER dans /marketing/crm (hub avec tabs)
-├── src/pages/CRM.tsx           → Base
-├── src/pages/CRMLeads.tsx      → Tab "Leads"
-├── src/pages/CRMCalls.tsx      → Tab "Appels"
-├── src/pages/CRMEmails.tsx     → Tab "Emails"
-├── src/pages/CRMCalendar.tsx   → Tab "Calendrier"
-└── src/pages/CRMActivity.tsx   → Tab "Activité"
-```
-
-### Pages Import (4 pages → 1 hub avec tabs)
-
-```text
-À CONSOLIDER dans /import
-├── src/pages/import/ImportHubPage.tsx  ← Hub principal (existe déjà)
-├── /import/advanced   → Tab "Avancé"
-├── /import/simplified → Supprimer (redondant)
-└── /import/shopify    → Tab "Shopify"
+src/pages/documentation/
+├── DocumentationHub.tsx        # Hub principal
+└── ModuleDocPage.tsx          # Page dynamique par module
 ```
 
 ---
 
-## Phase 3 : Nettoyage des Composants Dupliqués
+## Modules à documenter (15 modules)
 
-### Composants Analytics
+### 1. Dashboard & Vue d'ensemble
+- **Route**: `/dashboard`
+- **Fonctionnalités**: KPIs temps réel, Command Center, alertes prioritaires, actions rapides
+- **Niveau cible**: Débutant → Avancé
 
-| Doublon | Original | Action |
-|---------|----------|--------|
-| `src/components/dashboard/AdvancedAnalytics.tsx` | `src/components/analytics/AdvancedAnalyticsDashboard.tsx` | Fusionner |
-| `src/components/analytics/AdvancedAnalytics.tsx` | Même composant | Supprimer |
+### 2. Gestion des Produits
+- **Routes**: `/products`, `/products/audit`, `/products/scoring`
+- **Fonctionnalités**: Catalogue Channable-style, édition en masse, scoring qualité, règles de prix
+- **Niveau cible**: Débutant → Expert (agences)
 
-### Navigation Mobile
+### 3. Catalogue (Hub d'exécution)
+- **Routes**: `/catalog/to-process`, `/catalog/variants`, `/catalog/media`, `/catalog/health`
+- **Fonctionnalités**: Backlog, variantes, médias, attributs, catégories, santé catalogue
+- **Niveau cible**: Intermédiaire → Avancé
 
-| Fichier | Statut | Action |
-|---------|--------|--------|
-| `src/components/layout/MobileNav.tsx` | Doublon | Déjà supprimé ✓ |
-| `src/components/mobile/MobileNav.tsx` | Principal | Conserver |
+### 4. Import Pro
+- **Routes**: `/import/*`
+- **Fonctionnalités**: CSV/XML/JSON, URL scraping, plateformes (Shopify, Amazon, AliExpress), IA génération, orchestrateur unifié
+- **Niveau cible**: Débutant → Expert
 
----
+### 5. Fournisseurs & Sourcing B2B
+- **Routes**: `/suppliers/*`
+- **Fonctionnalités**: Connecteurs B2B (AliExpress, CJ, 1688), comparateur fiabilité, catalogue unifié, moteur avancé
+- **Niveau cible**: Intermédiaire → Expert
 
-## Phase 4 : Optimisation des Edge Functions
+### 6. Tarification & Repricing
+- **Routes**: `/pricing/*`
+- **Fonctionnalités**: Règles de prix, repricing automatique, veille concurrence, optimisation IA
+- **Niveau cible**: Intermédiaire → Avancé
 
-### Analyse des Edge Functions
+### 7. Commandes & Fulfillment
+- **Routes**: `/orders/*`
+- **Fonctionnalités**: Centre commandes, auto-order, transporteurs, suivi, retours, automatisation expédition
+- **Niveau cible**: Débutant → Avancé
 
-Le projet contient **350+ edge functions**. Beaucoup partagent des fonctionnalités similaires :
+### 8. Boutiques & Canaux
+- **Routes**: `/stores-channels/*`
+- **Fonctionnalités**: Hub multicanal (24+ plateformes), connexion Shopify/WooCommerce/Amazon/eBay, synchronisation bidirectionnelle
+- **Niveau cible**: Intermédiaire → Expert
 
-```text
-Doublons Potentiels Identifiés:
-├── ai-content-generator + ai-content-secure + ai-marketing-content
-├── ai-optimizer + ai-product-optimizer + ai-price-optimizer
-├── supplier-sync + supplier-sync-engine + supplier-unified-sync
-├── stock-sync-realtime + stock-sync-cross-marketplace + stock-auto-update
-├── tracking-sync + tracking-automation + sync-all-tracking
-└── extension-import-product + extension-one-click-import + extension-processor
-```
+### 9. Automatisation & Workflows
+- **Routes**: `/automation/*`
+- **Fonctionnalités**: Studio automation, workflow builder, règles conditionnelles, IA automation
+- **Niveau cible**: Avancé → Expert
 
-### Recommandations
+### 10. Intelligence Artificielle
+- **Routes**: `/ai/*`
+- **Fonctionnalités**: Optimisation IA, génération contenu, assistant, réécriture, catalogue intelligent
+- **Niveau cible**: Débutant → Avancé
 
-1. **Consolider** les fonctions AI en 3 catégories : `ai-content`, `ai-pricing`, `ai-automation`
-2. **Unifier** les fonctions sync en `unified-sync-*`
-3. **Centraliser** les fonctions extension en `extension-hub`
+### 11. Analytics & Business Intelligence
+- **Routes**: `/analytics/*`
+- **Fonctionnalités**: Dashboard unifié, analytics prédictive, intelligence client, veille concurrentielle, rapports
+- **Niveau cible**: Intermédiaire → Expert
 
----
+### 12. Marketing & CRM
+- **Routes**: `/marketing/*`
+- **Fonctionnalités**: CRM complet, SEO manager, ads, email/SMS, abandon panier, fidélité, coupons
+- **Niveau cible**: Intermédiaire → Avancé
 
-## Phase 5 : Optimisation des Performances
+### 13. Intégrations & API
+- **Routes**: `/integrations/*`
+- **Fonctionnalités**: Hub Channable-style, extensions Chrome, API developer, documentation technique
+- **Niveau cible**: Avancé → Expert
 
-### Configuration React Query (déjà en place)
+### 14. Paramètres & Configuration
+- **Routes**: `/settings/*`
+- **Fonctionnalités**: Profil, API keys, facturation, sécurité, équipe
+- **Niveau cible**: Débutant → Intermédiaire
 
-Le fichier `src/config/performanceOptimizations.ts` définit les bonnes stratégies. À appliquer uniformément :
-
-```typescript
-// Stratégies de cache par type
-CACHE_STRATEGIES = {
-  static: { staleTime: 1h, gcTime: 24h },      // Catégories, configs
-  user: { staleTime: 5min, gcTime: 30min },    // Profil, préférences
-  transactional: { staleTime: 2min, gcTime: 10min }, // Produits, commandes
-  realtime: { staleTime: 30s, refetchInterval: 30s } // Stocks, notifications
-}
-```
-
-### Lazy Loading des Routes
-
-Les routes sont déjà correctement configurées avec `lazy()`. Vérifier que toutes les pages lourdes utilisent ce pattern.
-
----
-
-## Phase 6 : Nettoyage des Imports et Exports
-
-### Fichiers de Barrel à Nettoyer
-
-| Fichier | Problème | Action |
-|---------|----------|--------|
-| `src/hooks/index.ts` | Non existant | Créer barrel central |
-| `src/components/index.ts` | Non existant | Créer barrel par domaine |
-| `src/services/index.ts` | Non existant | Créer barrel services |
-
----
-
-## Plan d'Implémentation
-
-### Étape 1 : Suppression Sécurisée des Hooks Dépréciés (Estimé: 15 min)
-
-1. Mettre à jour les 17 composants utilisant `useSuppliers` → `useSuppliersUnified`
-2. Mettre à jour les 15 composants utilisant `useIntegrations` → `useIntegrationsUnified`
-3. Supprimer les 9 fichiers de wrappers dépréciés
-4. Supprimer `useSupabaseData.ts`
-
-### Étape 2 : Consolidation Pages Analytics (Estimé: 20 min)
-
-1. Créer `ChannableAnalyticsPage` avec système d'onglets
-2. Ajouter redirections depuis anciennes URLs
-3. Supprimer les 4 pages dupliquées
-
-### Étape 3 : Hub CRM Unifié (Estimé: 15 min)
-
-1. Créer `CRMHubPage.tsx` avec tabs dynamiques
-2. Intégrer les 5 sous-pages comme onglets
-3. Mettre à jour les routes
-
-### Étape 4 : Nettoyage Final (Estimé: 10 min)
-
-1. Supprimer composants analytics dupliqués
-2. Vérifier les imports cassés
-3. Tester les redirections
+### 15. Enterprise & Administration
+- **Routes**: `/enterprise/*`
+- **Fonctionnalités**: Multi-tenant, monitoring, conformité, gestion plateforme
+- **Niveau cible**: Expert (administrateurs)
 
 ---
 
-## Résultats Attendus
+## Structure de chaque guide
 
-| Métrique | Avant | Après | Amélioration |
-|----------|-------|-------|--------------|
-| Fichiers hooks | 300+ | ~250 | -17% |
-| Pages dupliquées | ~15 | 0 | -100% |
-| Lignes de code | ~150K | ~140K | -7% |
-| Temps de build | - | - | -5-10% estimé |
-| Avertissements console | Nombreux | 0 | -100% |
+Chaque documentation de module suivra cette structure standardisée en Markdown :
 
----
+```markdown
+# [Nom du Module]
 
-## Détails Techniques : Fichiers à Modifier
+## Vue d'ensemble
+### À quoi sert ce module
+### Quand l'utiliser
+### Pour quel type d'utilisateur
+### Prérequis
 
-### Composants à Migrer vers Hooks Unifiés
+## Cas d'usage concrets
+### Débutant
+### Avancé  
+### Agence / Gros volume
 
-```
-src/components/modals/BigBuyConfigDialog.tsx
-src/components/modals/PrestaShopConfigDialog.tsx
-src/components/modals/WooCommerceConfigDialog.tsx
-src/components/modals/IntegrationSettingsDialog.tsx
-src/components/modals/AmazonConfigDialog.tsx
-src/components/integrations/EnhancedIntegrationsHub.tsx
-src/components/integrations/RealIntegrationsTab.tsx
-src/components/price-rules/PriceSyncPanel.tsx
-src/components/suppliers/SupplierManagement.tsx
-src/pages/stores/StoresPage.tsx
-```
+## Guide pas-à-pas
+### Étape 1: [Action]
+### Étape 2: [Action]
+...
 
-### Routes à Ajouter/Modifier
+## Bonnes pratiques
+### Optimisations recommandées
+### Pièges à éviter
 
-```typescript
-// Dans src/routes/AnalyticsRoutes.tsx
-<Route path="multi-store" element={<Navigate to="/analytics?tab=multi-store" />} />
-<Route path="profit" element={<Navigate to="/analytics?tab=profit" />} />
+## Erreurs fréquentes & solutions
+| Symptôme | Cause | Solution |
 
-// Dans src/routes/MarketingRoutes.tsx
-<Route path="crm" element={<CRMHubPage />} />
-<Route path="crm/leads" element={<Navigate to="/marketing/crm?tab=leads" />} />
-<Route path="crm/calls" element={<Navigate to="/marketing/crm?tab=calls" />} />
+## Conseils d'expert
+### Stratégies des vendeurs performants
+### Ce qui différencie ShopOpti+
+
+## Call-to-value
+### Pourquoi cette fonctionnalité est clé pour scaler
+### Métriques d'impact business
 ```
 
 ---
 
-## Fichiers à Supprimer (Liste Complète)
+## Implémentation technique
 
-```bash
-# Hooks dépréciés
-rm src/hooks/useRealProducts.ts
-rm src/hooks/useRealCustomers.ts
-rm src/hooks/useRealOrders.ts
-rm src/hooks/useRealSuppliers.ts
-rm src/hooks/useRealIntegrations.ts
-rm src/hooks/useOrders.ts
-rm src/hooks/useSuppliers.ts
-rm src/hooks/useIntegrations.ts
-rm src/hooks/useCustomers.ts
-rm src/hooks/useSupabaseData.ts
-rm src/hooks/useIntegrationsData.ts
+### Phase 1: Infrastructure (Fichiers à créer)
 
-# Pages dupliquées (après création des hubs)
-rm src/pages/AdvancedAnalytics.tsx
-rm src/pages/UnifiedAnalyticsDashboard.tsx
+1. **Types TypeScript** (`src/data/documentation/types.ts`)
+   - Interface `ModuleDocumentation`
+   - Interface `GuideSection`
+   - Interface `FAQ`
+   - Interface `TroubleshootingItem`
 
-# Composants dupliqués
-rm src/components/dashboard/AdvancedAnalytics.tsx
-rm src/components/analytics/AdvancedAnalytics.tsx
-```
+2. **Données des 15 modules** (`src/data/documentation/modules/*.ts`)
+   - Export structuré pour chaque module
+   - Contenu Markdown intégré
+   - Métadonnées (niveau, temps lecture, tags)
 
-Ce plan garantit une **réduction significative de la dette technique** tout en maintenant la **compatibilité descendante** via des redirections appropriées.
+3. **Index centralisé** (`src/data/documentation/index.ts`)
+   - Export de tous les modules
+   - Fonctions de recherche
+   - Catégorisation par plan (Standard/Pro/Ultra Pro)
+
+### Phase 2: Composants UI
+
+4. **Hub Documentation** (`src/pages/documentation/DocumentationHub.tsx`)
+   - Navigation par catégorie
+   - Recherche full-text
+   - Filtres par niveau/plan
+   - Cards interactives
+
+5. **Viewer Documentation** (`src/components/documentation/DocumentationViewer.tsx`)
+   - Rendu Markdown optimisé
+   - Table des matières dynamique
+   - Navigation inter-sections
+   - Feedback utilisateur (utile/non utile)
+
+6. **Composants auxiliaires**
+   - `StepByStepGuide.tsx` - Affichage étapes numérotées
+   - `TroubleshootingTable.tsx` - Table symptôme/cause/solution
+   - `ExpertTips.tsx` - Section conseils différenciés
+   - `CallToValue.tsx` - Bloc de valeur business
+
+### Phase 3: Routes & Navigation
+
+7. **Nouvelles routes** (`src/routes/DocumentationRoutes.tsx`)
+   - `/documentation` - Hub principal
+   - `/documentation/:moduleId` - Page module
+   - `/documentation/:moduleId/:section` - Section spécifique
+
+8. **Intégration navigation**
+   - Ajout dans le menu principal
+   - Liens contextuels depuis chaque module
+   - Bouton "?" dans chaque page
+
+---
+
+## Contenu détaillé par module
+
+### Module 1: Dashboard
+
+**Vue d'ensemble:**
+- Centre de pilotage business avec KPIs en temps réel
+- Actions prioritaires recommandées par l'IA
+- Vue consolidée de tous les indicateurs clés
+
+**Cas d'usage:**
+- Débutant: Comprendre ses métriques de base (CA, commandes, marge)
+- Avancé: Analyser les tendances et anticiper les actions
+- Agence: Piloter plusieurs comptes depuis une vue unifiée
+
+**Pas-à-pas:**
+1. Accéder au dashboard via `/dashboard`
+2. Personnaliser les widgets affichés
+3. Configurer les alertes prioritaires
+4. Interpréter le score de santé catalogue
+
+### Module 2: Import Pro
+
+**Vue d'ensemble:**
+- Orchestrateur unifié pour tous types d'imports
+- 8+ sources supportées (CSV, URL, plateformes)
+- Enrichissement IA automatique
+
+**Cas d'usage:**
+- Débutant: Importer 10 produits depuis une URL AliExpress
+- Avancé: Configurer un flux CSV automatisé avec mapping personnalisé
+- Agence: Importer 10 000+ produits avec validation par lots
+
+**Pas-à-pas:**
+1. Choisir la source d'import
+2. Configurer le mapping des champs
+3. Activer l'enrichissement IA (optionnel)
+4. Valider et lancer l'import
+5. Surveiller la progression en temps réel
+
+### Module 3: Sourcing B2B
+
+**Vue d'ensemble:**
+- Connexion directe aux grossistes (AliExpress, CJ, 1688, Alibaba)
+- Scoring de fiabilité multi-critères
+- Comparateur de marges nettes en temps réel
+
+**Cas d'usage:**
+- Débutant: Connecter son premier fournisseur
+- Avancé: Comparer 5 fournisseurs pour optimiser les marges
+- Agence: Gérer un portefeuille multi-fournisseurs avec SLA
+
+**Erreurs fréquentes:**
+| Symptôme | Cause | Solution |
+|----------|-------|----------|
+| Connexion échoue | API key invalide | Régénérer les credentials dans le dashboard fournisseur |
+| Produits non synchronisés | Rate limiting atteint | Attendre 1h ou upgrader le plan |
+| Marges incorrectes | Frais non configurés | Ajouter les frais Stripe/plateforme dans les paramètres |
+
+---
+
+## Estimation technique
+
+- **Fichiers à créer**: 25+
+- **Lignes de code estimées**: 8 000+ (dont 6 000+ de contenu Markdown)
+- **Temps d'implémentation**: 4-6 sprints
+- **Phases de livraison**:
+  1. Infrastructure + 5 premiers modules (Dashboard, Products, Import, Suppliers, Orders)
+  2. 5 modules suivants (Pricing, Channels, Automation, AI, Analytics)
+  3. 5 derniers modules (Marketing, Integrations, Settings, Catalog, Enterprise)
+  4. Polish UI + recherche + feedback
+
+---
+
+## Prochaines étapes
+
+1. **Valider la structure** proposée
+2. **Prioriser les modules** (les 5 plus critiques d'abord)
+3. **Implémenter l'infrastructure** (types, composants base)
+4. **Rédiger les contenus** module par module
+5. **Intégrer dans le Help Center** existant
+
