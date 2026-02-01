@@ -1,114 +1,136 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+/**
+ * Import Products - Secure Edge Function
+ * SECURITY: JWT authentication + input validation + user scoping
+ */
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { corsHeaders } from '../_shared/cors.ts';
+import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
+import { parseJsonValidated, z } from '../_shared/validators.ts';
+import { checkRateLimit } from '../_shared/rate-limiter.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const ImportSchema = z.object({
+  source: z.enum(['url', 'csv', 'supplier']),
+  data: z.object({
+    url: z.string().url().max(2000).optional(),
+    csvData: z.array(z.record(z.any())).max(1000).optional(),
+    supplier: z.string().max(100).optional(),
+    mapping: z.record(z.string().max(100)).optional(),
+    config: z.record(z.any()).optional()
+  })
+});
 
-interface ImportRequest {
-  source: 'url' | 'csv' | 'supplier'
-  data: {
-    url?: string
-    csvData?: any[]
-    supplier?: string
-    mapping?: Record<string, string>
-    config?: Record<string, any>
-  }
-}
-
-serve(async (req) => {
-  console.log('Import products function called')
-  
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
-    // Get auth user
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('Authorization header required')
+serve(
+  withErrorHandler(async (req) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
     }
 
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) {
-      console.error('Auth error:', authError)
-      throw new Error('Invalid authorization')
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // SECURITY: Authenticate user via JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new ValidationError('Authorization required');
     }
 
-    const { source, data }: ImportRequest = await req.json()
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: authError } = await supabase.auth.getUser(token);
     
-    console.log(`Starting ${source} import for user ${user.id}`)
+    if (authError || !userData.user) {
+      throw new ValidationError('Invalid authentication');
+    }
+    
+    const userId = userData.user.id;
+    console.log(`[IMPORT-PRODUCTS] User ${userId} starting import`);
 
-    // Create import job record
+    // SECURITY: Rate limiting - 10 imports per hour
+    const rateLimitOk = await checkRateLimit(
+      supabase,
+      `import_products:${userId}`,
+      10,
+      3600000
+    );
+    if (!rateLimitOk) {
+      throw new ValidationError('Too many import requests. Please try again later.');
+    }
+
+    // Validate input
+    const { source, data } = await parseJsonValidated(req, ImportSchema);
+
+    // SECURITY: Validate URL if provided
+    if (source === 'url' && data.url) {
+      const url = new URL(data.url);
+      const blockedHosts = ['localhost', '127.0.0.1', '0.0.0.0', 'internal', 'metadata'];
+      if (blockedHosts.some(h => url.hostname.includes(h))) {
+        throw new ValidationError('Invalid URL');
+      }
+    }
+
+    // Create import job record scoped to user
     const { data: importJob, error: jobError } = await supabase
       .from('import_jobs')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         source_platform: source,
         job_type: 'import',
         status: 'processing',
         started_at: new Date().toISOString()
       })
       .select()
-      .single()
+      .single();
 
     if (jobError) {
-      console.error('Job creation error:', jobError)
-      throw new Error(`Failed to create import job: ${jobError.message}`)
+      console.error('Job creation error:', jobError);
+      throw new Error('Failed to create import job');
     }
 
-    let importedProducts: any[] = []
-
-    // Process based on source type with timeout protection
-    const timeoutMs = 25000 // 25 seconds to stay under edge function limits
+    let importedProducts: any[] = [];
+    const timeoutMs = 25000;
     
     try {
       const importPromise = (async () => {
         switch (source) {
           case 'url':
-            return await importFromURL(data.url!, data.config)
+            return await importFromURL(data.url!, data.config);
           case 'csv':
-            return await importFromCSV(data.csvData!, data.mapping!)
+            return await importFromCSV(data.csvData!, data.mapping!);
           case 'supplier':
-            return await importFromSupplier(data.supplier!, data.config)
+            return await importFromSupplier(data.supplier!, data.config);
           default:
-            throw new Error(`Unsupported import source: ${source}`)
+            throw new Error(`Unsupported import source: ${source}`);
         }
-      })()
+      })();
 
       importedProducts = await Promise.race([
         importPromise,
         new Promise<any[]>((_, reject) => 
           setTimeout(() => reject(new Error('Import timeout')), timeoutMs)
         )
-      ])
+      ]);
     } catch (error) {
-      console.error('Import processing error:', error)
+      console.error('Import processing error:', error);
       
-      // Update job as failed
       await supabase
         .from('import_jobs')
         .update({
           status: 'failed',
-          error_log: [error.message],
+          error_log: [(error as Error).message],
           completed_at: new Date().toISOString()
         })
         .eq('id', importJob.id)
+        .eq('user_id', userId); // Double-check user ownership
       
-      throw error
+      throw error;
     }
 
-    // Save imported products to products table
+    // SECURITY: All products scoped to authenticated user
     if (importedProducts.length > 0) {
       const productsToInsert = importedProducts.map(product => ({
-        user_id: user.id,
+        user_id: userId, // CRITICAL: Always set user_id
         title: (product.name || 'Produit sans nom').substring(0, 500),
         description: (product.description || '').substring(0, 5000),
         price: Math.min(parseFloat(product.price) || 0, 999999.99),
@@ -120,19 +142,19 @@ serve(async (req) => {
         images: Array.isArray(product.images) ? product.images.slice(0, 10) : [],
         tags: product.tags || [`${source}-import`],
         status: 'draft',
-      }))
+      }));
 
       const { error: insertError } = await supabase
         .from('products')
-        .insert(productsToInsert)
+        .insert(productsToInsert);
 
       if (insertError) {
-        console.error('Insert error:', insertError)
-        throw new Error(`Failed to save products: ${insertError.message}`)
+        console.error('Insert error:', insertError);
+        throw new Error('Failed to save products');
       }
     }
 
-    // Update import job as completed
+    // Update import job with ownership check
     await supabase
       .from('import_jobs')
       .update({
@@ -143,8 +165,9 @@ serve(async (req) => {
         completed_at: new Date().toISOString()
       })
       .eq('id', importJob.id)
+      .eq('user_id', userId);
 
-    console.log(`Import completed: ${importedProducts.length} products imported`)
+    console.log(`[IMPORT-PRODUCTS] User ${userId} imported ${importedProducts.length} products`);
 
     return new Response(JSON.stringify({
       success: true,
@@ -153,106 +176,94 @@ serve(async (req) => {
       message: `${importedProducts.length} produits importés avec succès`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
-
-  } catch (error) {
-    console.error('Import error:', error)
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message || 'Unknown error'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
-  }
-})
+    });
+  }, corsHeaders)
+);
 
 async function importFromURL(url: string, config: any = {}): Promise<any[]> {
   try {
-    console.log(`Fetching URL: ${url}`)
+    console.log(`[IMPORT-PRODUCTS] Fetching URL`);
     
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout for fetch
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
       signal: controller.signal
-    })
+    });
     
-    clearTimeout(timeoutId)
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch URL: ${response.status}`)
+      throw new Error(`Failed to fetch URL: ${response.status}`);
     }
 
-    const content = await response.text()
-    const products: any[] = []
+    const content = await response.text();
+    const products: any[] = [];
     
     // Look for JSON-LD structured data
-    const jsonLdMatches = content.match(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/gis)
+    const jsonLdMatches = content.match(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/gis);
     
     if (jsonLdMatches) {
-      for (const match of jsonLdMatches.slice(0, 5)) { // Limit to 5 matches
+      for (const match of jsonLdMatches.slice(0, 5)) {
         try {
-          const jsonContent = match.replace(/<script[^>]*>|<\/script>/gi, '')
-          const data = JSON.parse(jsonContent)
+          const jsonContent = match.replace(/<script[^>]*>|<\/script>/gi, '');
+          const data = JSON.parse(jsonContent);
           
           if (data['@type'] === 'Product') {
             products.push({
-              name: data.name,
-              description: data.description?.substring(0, 2000),
+              name: (data.name || '').slice(0, 200),
+              description: (data.description || '').slice(0, 2000),
               price: data.offers?.price || 0,
               currency: data.offers?.priceCurrency || 'EUR',
               images: Array.isArray(data.image) ? data.image.slice(0, 5) : [data.image].filter(Boolean),
-              category: data.category || 'Divers',
+              category: (data.category || 'Divers').slice(0, 100),
               sku: data.sku || data.productID,
               supplier_url: url,
               supplier_name: new URL(url).hostname.replace('www.', '')
-            })
+            });
           }
         } catch (e) {
-          console.warn('Error parsing JSON-LD:', e)
+          console.warn('Error parsing JSON-LD');
         }
       }
     }
 
-    // If no structured data, create basic product from page
     if (products.length === 0) {
-      const titleMatch = content.match(/<title[^>]*>(.*?)<\/title>/i)
-      const title = titleMatch ? titleMatch[1].trim() : 'Produit importé'
+      const titleMatch = content.match(/<title[^>]*>(.*?)<\/title>/i);
+      const title = titleMatch ? titleMatch[1].trim() : 'Produit importé';
       
-      const priceMatches = content.match(/[\$€£¥]\s*\d+(?:[.,]\d{2})?/g)
-      const price = priceMatches ? parseFloat(priceMatches[0].replace(/[^\d.,]/g, '').replace(',', '.')) : 0
+      const priceMatches = content.match(/[\$€£¥]\s*\d+(?:[.,]\d{2})?/g);
+      const price = priceMatches ? parseFloat(priceMatches[0].replace(/[^\d.,]/g, '').replace(',', '.')) : 0;
       
       products.push({
         name: title.substring(0, 200),
-        description: `Produit importé depuis ${url}`,
+        description: `Produit importé`,
         price,
         currency: 'EUR',
         images: [],
         category: 'Divers',
         supplier_url: url,
         supplier_name: new URL(url).hostname.replace('www.', '')
-      })
+      });
     }
 
-    console.log(`Extracted ${products.length} products from URL`)
-    return products
+    return products;
     
   } catch (error) {
-    console.error('URL import error:', error)
-    return []
+    console.error('URL import error:', error);
+    return [];
   }
 }
 
 async function importFromCSV(csvData: any[], mapping: Record<string, string>): Promise<any[]> {
   if (!csvData || !Array.isArray(csvData)) {
-    return []
+    return [];
   }
   
-  return csvData.slice(0, 1000).map((row, index) => ({ // Limit to 1000 products
+  return csvData.slice(0, 1000).map((row, index) => ({
     name: row[mapping?.name] || `Produit ${index + 1}`,
     description: row[mapping?.description] || '',
     price: parseFloat(row[mapping?.price]) || 0,
@@ -262,13 +273,10 @@ async function importFromCSV(csvData: any[], mapping: Record<string, string>): P
     category: row[mapping?.category] || 'Divers',
     images: row[mapping?.images] ? [row[mapping?.images]] : [],
     supplier_name: 'Import CSV'
-  }))
+  }));
 }
 
 async function importFromSupplier(supplier: string, config: any = {}): Promise<any[]> {
-  console.log(`Importing from supplier: ${supplier}`)
-  
-  // This would be replaced with actual supplier API calls
-  // For now, return empty array to indicate no mock data
-  return []
+  console.log(`[IMPORT-PRODUCTS] Importing from supplier: ${supplier}`);
+  return [];
 }

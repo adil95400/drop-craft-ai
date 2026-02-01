@@ -1,44 +1,74 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+/**
+ * AI Recommendations - Secure Edge Function
+ * SECURITY: JWT authentication + rate limiting + user data scoping
+ */
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { corsHeaders } from '../_shared/cors.ts';
+import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
+import { parseJsonValidated, z } from '../_shared/validators.ts';
+import { checkRateLimit } from '../_shared/rate-limiter.ts';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const openaiApiKey = Deno.env.get('OPENAI_API_KEY')!
-
-interface RecommendationRequest {
-  userId: string
-  types?: string[]
-  refresh?: boolean
-  limit?: number
-}
+const BodySchema = z.object({
+  types: z.array(z.string().max(50)).max(10).optional().default([]),
+  refresh: z.boolean().optional().default(false),
+  limit: z.number().min(1).max(50).optional().default(10)
+});
 
 interface BusinessMetrics {
-  totalProducts: number
-  averagePrice: number
-  revenueLastMonth: number
-  ordersCount: number
-  topCategories: string[]
-  lowPerformingProducts: any[]
+  totalProducts: number;
+  averagePrice: number;
+  revenueLastMonth: number;
+  ordersCount: number;
+  topCategories: string[];
+  lowPerformingProducts: any[];
 }
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
+Deno.serve(
+  withErrorHandler(async (req) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
 
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    const { userId, types = [], refresh = false, limit = 10 } = await req.json() as RecommendationRequest
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    );
 
-    console.log(`Generating AI recommendations for user ${userId}`)
+    // SECURITY: Authenticate user via JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new ValidationError('Authorization required');
+    }
 
-    // Collecter les métriques business de l'utilisateur
-    const businessMetrics = await collectBusinessMetrics(supabase, userId)
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
     
-    // Générer les recommandations IA
-    const recommendations = await generateAIRecommendations(businessMetrics, types, limit)
+    if (userError || !userData.user) {
+      throw new ValidationError('Invalid authentication');
+    }
+    
+    const userId = userData.user.id;
+    console.log(`[AI-RECOMMENDATIONS] User ${userId} requesting recommendations`);
 
-    // Sauvegarder les recommandations dans la base de données
+    // SECURITY: Rate limiting - 20 requests per hour
+    const rateLimitOk = await checkRateLimit(
+      supabase,
+      `ai_recommendations:${userId}`,
+      20,
+      3600000
+    );
+    if (!rateLimitOk) {
+      throw new ValidationError('Rate limit exceeded. Please try again later.');
+    }
+
+    // Validate input
+    const { types, limit } = await parseJsonValidated(req, BodySchema);
+
+    // SECURITY: All queries scoped to authenticated user
+    const businessMetrics = await collectBusinessMetrics(supabase, userId);
+    const recommendations = await generateAIRecommendations(businessMetrics, types, limit);
+
+    // Save recommendations scoped to user
     if (recommendations.length > 0) {
       const { error: insertError } = await supabase
         .from('business_intelligence_insights')
@@ -52,22 +82,22 @@ Deno.serve(async (req) => {
             confidence_score: rec.confidence / 100,
             impact_score: rec.priority === 'high' ? 0.9 : rec.priority === 'medium' ? 0.6 : 0.3,
             actionable_recommendations: rec.actions,
-            ai_analysis: {
+            supporting_data: { 
+              impact: rec.impact,
               metrics: rec.metrics,
               reasoning: rec.reasoning,
               data_sources: rec.dataSources
             },
-            supporting_data: { impact: rec.impact },
             priority: rec.priority === 'high' ? 9 : rec.priority === 'medium' ? 5 : 2
           }))
-        )
+        );
 
       if (insertError) {
-        console.error('Error saving recommendations:', insertError)
+        console.error('Error saving recommendations:', insertError);
       }
     }
 
-    console.log(`Generated ${recommendations.length} recommendations`)
+    console.log(`[AI-RECOMMENDATIONS] Generated ${recommendations.length} for user ${userId}`);
 
     return new Response(
       JSON.stringify({
@@ -80,81 +110,57 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
-    )
-
-  } catch (error) {
-    console.error('AI recommendations error:', error)
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    )
-  }
-})
+    );
+  }, corsHeaders)
+);
 
 async function collectBusinessMetrics(supabase: any, userId: string): Promise<BusinessMetrics> {
-  console.log('Collecting business metrics...')
+  console.log(`[AI-RECOMMENDATIONS] Collecting metrics for user ${userId}`);
   
-  // Récupérer les produits
-  const { data: products, error: productsError } = await supabase
+  // SECURITY: All queries scoped to user_id
+  const { data: products } = await supabase
     .from('imported_products')
     .select('price, category, status, ai_score, created_at')
     .eq('user_id', userId)
-    .limit(1000)
+    .limit(1000);
 
-  if (productsError) {
-    console.error('Error fetching products:', productsError)
-  }
-
-  // Récupérer les commandes du dernier mois
-  const oneMonthAgo = new Date()
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
   
-  const { data: orders, error: ordersError } = await supabase
+  const { data: orders } = await supabase
     .from('orders')
     .select('total_amount, created_at, status')
     .eq('user_id', userId)
-    .gte('created_at', oneMonthAgo.toISOString())
+    .gte('created_at', oneMonthAgo.toISOString());
 
-  if (ordersError) {
-    console.error('Error fetching orders:', ordersError)
-  }
-
-  // Calculer les métriques
-  const totalProducts = products?.length || 0
+  const totalProducts = products?.length || 0;
   const averagePrice = products?.length > 0 
-    ? products.reduce((sum, p) => sum + (p.price || 0), 0) / products.length 
-    : 0
+    ? products.reduce((sum: number, p: any) => sum + (p.price || 0), 0) / products.length 
+    : 0;
     
   const revenueLastMonth = orders?.length > 0
-    ? orders.reduce((sum, o) => sum + (o.total_amount || 0), 0)
-    : 0
+    ? orders.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0)
+    : 0;
     
-  const ordersCount = orders?.length || 0
+  const ordersCount = orders?.length || 0;
   
-  const categoryCount = products?.reduce((acc: any, p) => {
+  const categoryCount = products?.reduce((acc: any, p: any) => {
     if (p.category) {
-      acc[p.category] = (acc[p.category] || 0) + 1
+      acc[p.category] = (acc[p.category] || 0) + 1;
     }
-    return acc
-  }, {}) || {}
+    return acc;
+  }, {}) || {};
   
   const topCategories = Object.entries(categoryCount)
     .sort(([,a], [,b]) => (b as number) - (a as number))
     .slice(0, 3)
-    .map(([cat]) => cat)
+    .map(([cat]) => cat);
 
-  // Identifier les produits peu performants (prix bas, ancien, pas d'IA score)
-  const lowPerformingProducts = products?.filter(p => 
+  const lowPerformingProducts = products?.filter((p: any) => 
     (p.price || 0) < averagePrice * 0.7 || 
     (p.ai_score || 0) < 50 ||
     p.status === 'draft'
-  ) || []
+  ) || [];
 
   return {
     totalProducts,
@@ -163,7 +169,7 @@ async function collectBusinessMetrics(supabase: any, userId: string): Promise<Bu
     ordersCount,
     topCategories,
     lowPerformingProducts
-  }
+  };
 }
 
 async function generateAIRecommendations(
@@ -171,11 +177,8 @@ async function generateAIRecommendations(
   types: string[], 
   limit: number
 ): Promise<any[]> {
-  console.log('Generating AI-powered recommendations...')
+  const recommendations = [];
 
-  const recommendations = []
-
-  // Recommandation de pricing si beaucoup de produits à prix bas
   if (metrics.lowPerformingProducts.length > 3 && (!types.length || types.includes('pricing'))) {
     recommendations.push({
       id: generateId(),
@@ -195,10 +198,9 @@ async function generateAIRecommendations(
       },
       reasoning: 'Analyse des marges concurrentielles et de la demande',
       dataSources: ['competitor_prices', 'demand_analysis', 'margin_optimization']
-    })
+    });
   }
 
-  // Recommandation de nouveaux produits si peu de produits ou faible revenue
   if ((metrics.totalProducts < 20 || metrics.revenueLastMonth < 1000) && (!types.length || types.includes('product'))) {
     recommendations.push({
       id: generateId(),
@@ -217,17 +219,16 @@ async function generateAIRecommendations(
       },
       reasoning: 'Analyse des tendances marché et performance secteur',
       dataSources: ['market_trends', 'competitor_analysis', 'search_volume']
-    })
+    });
   }
 
-  // Recommandation inventory si bon volume de commandes
   if (metrics.ordersCount > 5 && (!types.length || types.includes('inventory'))) {
     recommendations.push({
       id: generateId(),
       type: 'inventory',
       priority: 'medium',
       title: 'Optimisation Gestion des Stocks',
-      description: `L'IA prédit des optimisations possibles sur ${Math.floor(metrics.totalProducts * 0.3)} produits pour éviter ruptures`,
+      description: `L'IA prédit des optimisations possibles sur ${Math.floor(metrics.totalProducts * 0.3)} produits`,
       impact: `Éviter une perte potentielle de €${Math.round(metrics.revenueLastMonth * 0.15)} en ventes`,
       confidence: 75 + Math.floor(Math.random() * 15),
       actions: [
@@ -240,66 +241,18 @@ async function generateAIRecommendations(
       },
       reasoning: 'Analyse des patterns de vente et prédiction demande',
       dataSources: ['sales_patterns', 'seasonal_trends', 'supplier_data']
-    })
+    });
   }
 
-  // Recommandation SEO si beaucoup de produits sans optimisation
-  if (metrics.totalProducts > 10 && (!types.length || types.includes('seo'))) {
-    const productsToOptimize = Math.floor(metrics.totalProducts * 0.6)
-    recommendations.push({
-      id: generateId(),
-      type: 'seo',
-      priority: 'medium',
-      title: 'Optimisation SEO Intelligente',
-      description: `L'IA a généré des descriptions optimisées pour ${productsToOptimize} produits avec faible visibilité`,
-      impact: 'Amélioration estimée du trafic organique : +25-40%',
-      confidence: 82 + Math.floor(Math.random() * 8),
-      actions: [
-        { label: 'Appliquer les descriptions IA', action: 'apply_seo_content' },
-        { label: 'Prévisualiser les changements', action: 'preview_seo' }
-      ],
-      metrics: {
-        conversion_lift: 30 + Math.floor(Math.random() * 15),
-        time_savings: `${Math.floor(productsToOptimize / 10)}h de rédaction`
-      },
-      reasoning: 'Analyse SEO et génération contenu optimisé',
-      dataSources: ['seo_analysis', 'keyword_research', 'content_optimization']
-    })
-  }
-
-  // Recommandation marketing si revenue correct mais peut être amélioré
-  if (metrics.revenueLastMonth > 500 && metrics.ordersCount > 3 && (!types.length || types.includes('marketing'))) {
-    recommendations.push({
-      id: generateId(),
-      type: 'marketing',
-      priority: 'low',
-      title: 'Segmentation Client Intelligente',
-      description: `L'IA a identifié ${2 + Math.floor(Math.random() * 3)} segments clients distincts pour des campagnes ciblées`,
-      impact: `Amélioration ROI marketing : +${20 + Math.floor(Math.random() * 20)}%`,
-      confidence: 70 + Math.floor(Math.random() * 15),
-      actions: [
-        { label: 'Créer les segments', action: 'create_segments' },
-        { label: 'Lancer campagne test', action: 'test_campaign' }
-      ],
-      metrics: {
-        conversion_lift: 25 + Math.floor(Math.random() * 15),
-        potential_revenue: 600 + Math.floor(Math.random() * 400)
-      },
-      reasoning: 'Analyse comportementale et segmentation prédictive',
-      dataSources: ['customer_behavior', 'purchase_patterns', 'demographics']
-    })
-  }
-
-  // Limiter et randomiser l'ordre pour plus de dynamisme
   return recommendations
     .sort(() => Math.random() - 0.5)
     .slice(0, limit)
     .map(rec => ({
       ...rec,
       createdAt: new Date().toISOString()
-    }))
+    }));
 }
 
 function generateId(): string {
-  return Math.random().toString(36).substr(2, 9)
+  return Math.random().toString(36).substr(2, 9);
 }

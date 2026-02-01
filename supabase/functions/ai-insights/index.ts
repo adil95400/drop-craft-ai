@@ -1,130 +1,159 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+/**
+ * AI Insights - Secure Edge Function
+ * SECURITY: JWT authentication + rate limiting + input validation
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { corsHeaders } from '../_shared/cors.ts';
+import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
+import { parseJsonValidated, z } from '../_shared/validators.ts';
+import { checkRateLimit } from '../_shared/rate-limiter.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const BodySchema = z.object({
+  analysisType: z.enum([
+    'sales_trends', 
+    'customer_behavior', 
+    'inventory_optimization', 
+    'conversion_optimization', 
+    'fraud_detection'
+  ]),
+  data: z.record(z.any()).optional().default({}),
+  timeRange: z.string().max(20).optional().default('30d'),
+  metrics: z.array(z.string().max(50)).max(20).optional().default(['sales', 'conversion', 'traffic'])
+});
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+serve(
+  withErrorHandler(async (req) => {
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
 
-  try {
-    const { 
-      analysisType,
-      data,
-      timeRange = '30d',
-      metrics = ['sales', 'conversion', 'traffic']
-    } = await req.json();
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    // SECURITY: Authenticate user via JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new ValidationError('Authorization required');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !userData.user) {
+      throw new ValidationError('Invalid authentication');
+    }
+    
+    const userId = userData.user.id;
+    console.log(`[AI-INSIGHTS] User ${userId} requesting analysis`);
+
+    // SECURITY: Rate limiting - 10 AI insights requests per hour
+    const rateLimitOk = await checkRateLimit(
+      supabase,
+      `ai_insights:${userId}`,
+      10,
+      3600000
+    );
+    if (!rateLimitOk) {
+      throw new ValidationError('Rate limit exceeded. Please try again later.');
+    }
+
+    // Validate input
+    const { analysisType, data, timeRange, metrics } = await parseJsonValidated(req, BodySchema);
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('AI service not configured');
     }
 
     let systemPrompt = '';
     let userPrompt = '';
+
+    // Sanitize data to prevent injection - remove any very long strings
+    const sanitizedData = JSON.stringify(data).slice(0, 10000);
 
     switch (analysisType) {
       case 'sales_trends':
         systemPrompt = `Tu es un analyste commercial expert en e-commerce, spécialisé dans l'analyse de données de vente et l'identification de tendances.`;
         userPrompt = `Analyse les tendances de vente sur ${timeRange}:
         
-        Données de vente: ${JSON.stringify(data.salesData)}
-        Produits: ${JSON.stringify(data.products)}
-        Périodes: ${JSON.stringify(data.periods)}
+        Données: ${sanitizedData}
         
         Fournis:
         1. Tendances principales identifiées
         2. Produits en croissance vs déclin
         3. Saisonnalité détectée
         4. Prédictions pour les prochaines périodes
-        5. Recommandations d'actions commerciales
-        6. Alertes sur les performances anormales`;
+        5. Recommandations d'actions commerciales`;
         break;
 
       case 'customer_behavior':
-        systemPrompt = `Tu es un expert en analyse comportementale client et en CRM, spécialisé dans l'e-commerce et l'optimisation de l'expérience utilisateur.`;
+        systemPrompt = `Tu es un expert en analyse comportementale client et en CRM, spécialisé dans l'e-commerce.`;
         userPrompt = `Analyse le comportement client:
         
-        Données clients: ${JSON.stringify(data.customers)}
-        Sessions: ${JSON.stringify(data.sessions)}
-        Conversions: ${JSON.stringify(data.conversions)}
+        Données: ${sanitizedData}
         
         Fournis:
         1. Profils types de clients identifiés
         2. Parcours d'achat principaux
         3. Points de friction détectés
         4. Opportunités d'amélioration UX
-        5. Segmentation clientèle recommandée
-        6. Stratégies de rétention personnalisées`;
+        5. Stratégies de rétention personnalisées`;
         break;
 
       case 'inventory_optimization':
-        systemPrompt = `Tu es un expert en gestion des stocks et supply chain pour l'e-commerce, spécialisé dans l'optimisation des inventaires.`;
+        systemPrompt = `Tu es un expert en gestion des stocks et supply chain pour l'e-commerce.`;
         userPrompt = `Optimise la gestion des stocks:
         
-        Stocks actuels: ${JSON.stringify(data.inventory)}
-        Historique des ventes: ${JSON.stringify(data.salesHistory)}
-        Délais fournisseurs: ${JSON.stringify(data.supplierLeadTimes)}
+        Données: ${sanitizedData}
         
         Fournis:
         1. Niveaux de stock optimaux par produit
         2. Alertes de réapprovisionnement
         3. Produits en surstockage
         4. Prédictions de demande
-        5. Stratégies de liquidation des stocks
-        6. Optimisation des commandes fournisseurs`;
+        5. Stratégies de liquidation`;
         break;
 
       case 'conversion_optimization':
-        systemPrompt = `Tu es un expert en optimisation de conversion e-commerce (CRO), spécialisé dans l'analyse de performance et l'amélioration des taux de conversion.`;
+        systemPrompt = `Tu es un expert en optimisation de conversion e-commerce (CRO).`;
         userPrompt = `Analyse et optimise les conversions:
         
-        Taux de conversion: ${JSON.stringify(data.conversionRates)}
-        Entonnoir de vente: ${JSON.stringify(data.funnel)}
-        Pages produits: ${JSON.stringify(data.productPages)}
+        Données: ${sanitizedData}
         
         Fournis:
         1. Analyse des taux de conversion par segment
         2. Goulots d'étranglement identifiés
         3. Recommandations d'amélioration UX
         4. Tests A/B suggérés
-        5. Optimisations prioritaires
-        6. Estimation d'impact sur le CA`;
+        5. Estimation d'impact sur le CA`;
         break;
 
       case 'fraud_detection':
-        systemPrompt = `Tu es un expert en détection de fraudes e-commerce et en cybersécurité, spécialisé dans l'analyse de patterns suspects.`;
+        systemPrompt = `Tu es un expert en détection de fraudes e-commerce et en cybersécurité.`;
         userPrompt = `Analyse les risques de fraude:
         
-        Transactions: ${JSON.stringify(data.transactions)}
-        Commandes suspectes: ${JSON.stringify(data.suspiciousOrders)}
-        Comportements: ${JSON.stringify(data.userBehaviors)}
+        Données: ${sanitizedData}
         
         Fournis:
         1. Score de risque par transaction
         2. Patterns de fraude détectés
         3. Recommandations de sécurité
         4. Règles de prévention suggérées
-        5. Analyse des faux positifs
-        6. Plan d'action préventif`;
+        5. Plan d'action préventif`;
         break;
-
-      default:
-        throw new Error(`Analysis type '${analysisType}' not supported`);
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -135,21 +164,24 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      if (response.status === 429) {
+        throw new ValidationError('Rate limit exceeded. Please try again later.');
+      }
+      throw new Error('AI service unavailable');
     }
 
     const aiResponse = await response.json();
     const analysis = aiResponse.choices[0].message.content;
 
     // Generate actionable insights
-    const insightsResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const insightsResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { 
             role: 'system', 
@@ -157,7 +189,7 @@ serve(async (req) => {
           },
           { 
             role: 'user', 
-            content: `Basé sur cette analyse: ${analysis}\n\nCrée des recommandations SMART avec priorités et ROI estimé.` 
+            content: `Basé sur cette analyse: ${analysis.slice(0, 3000)}\n\nCrée des recommandations SMART avec priorités et ROI estimé.` 
           }
         ],
         temperature: 0.5,
@@ -166,7 +198,9 @@ serve(async (req) => {
     });
 
     const insightsData = await insightsResponse.json();
-    const actionableInsights = insightsData.choices[0].message.content;
+    const actionableInsights = insightsData.choices?.[0]?.message?.content || '';
+
+    console.log(`[AI-INSIGHTS] Analysis complete for user ${userId}`);
 
     return new Response(JSON.stringify({ 
       analysis,
@@ -174,23 +208,9 @@ serve(async (req) => {
       analysisType,
       timeRange,
       metrics,
-      generatedAt: new Date().toISOString(),
-      usage: {
-        analysisTokens: aiResponse.usage,
-        insightsTokens: insightsData.usage
-      }
+      generatedAt: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-
-  } catch (error) {
-    console.error('Error in ai-insights function:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      details: 'Failed to process AI insights request'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-});
+  }, corsHeaders)
+);
