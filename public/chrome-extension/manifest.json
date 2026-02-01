@@ -94,6 +94,8 @@
         "lib/logger.js",
         "lib/feature-flags.js",
         "lib/storage-manager.js",
+        "lib/secure-dom-builder.js",
+        "lib/offline-queue.js",
         "lib/encrypted-storage.js",
         "lib/security.js",
         "lib/onboarding-system.js",
@@ -142,6 +144,7 @@
         "extractors/wish-extractor.js",
         "extractors/homedepot-extractor.js",
         "extractors/tiktok-extractor.js",
+        "bulk-import-v5-secure.js",
         "advanced-scraper.js",
         "content-script.js"
       ],
