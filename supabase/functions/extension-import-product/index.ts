@@ -1,154 +1,174 @@
+/**
+ * Extension Import Product - Secured Implementation
+ * P0.1: Token authentication with proper validation
+ * P0.4: Secure CORS with allowlist
+ * P0.5: Input validation and sanitization
+ */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { getSecureCorsHeaders, isAllowedOrigin } from '../_shared/secure-cors.ts'
+import { z } from 'https://esm.sh/zod@3.22.4'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-}
+// Comprehensive input validation schema
+const VariantSchema = z.object({
+  id: z.string().max(100).optional(),
+  sku: z.string().max(100).optional(),
+  title: z.string().max(200).optional(),
+  price: z.number().min(0).max(1000000).optional(),
+  compareAtPrice: z.number().min(0).max(1000000).optional(),
+  available: z.boolean().optional(),
+  option1: z.string().max(100).optional(),
+  option2: z.string().max(100).optional(),
+  option3: z.string().max(100).optional(),
+  image: z.string().url().max(2000).optional(),
+  inventory_quantity: z.number().int().min(0).max(1000000).optional()
+});
 
-interface ImportProductRequest {
-  product: {
-    external_id?: string
-    title: string
-    description?: string
-    descriptionHtml?: string
-    price: number
-    salePrice?: number
-    costPrice?: number
-    compareAtPrice?: number
-    currency?: string
-    sku?: string
-    vendor?: string
-    brand?: string
-    productType?: string
-    category?: string
-    tags?: string[]
-    images?: string[]
-    videos?: { url: string; type?: string }[]
-    variants?: {
-      id?: string
-      sku?: string
-      title?: string
-      price?: number
-      compareAtPrice?: number
-      available?: boolean
-      option1?: string
-      option2?: string
-      option3?: string
-      image?: string
-      inventory_quantity?: number
-    }[]
-    options?: { name: string; values: string[] }[]
-    available?: boolean
-    url: string
-    platform: string
-    source?: string
-    metadata?: Record<string, unknown>
-    // Sync tracking
-    stockStatus?: string
-    stockQuantity?: number
-    inStock?: boolean
-    shippingInfo?: Record<string, unknown>
-    specifications?: Record<string, unknown>
-  }
-  options?: {
-    targetStore?: string
-    status?: 'draft' | 'active' | 'archived'
-    applyRules?: boolean
-  }
-}
+const ProductSchema = z.object({
+  external_id: z.string().max(200).optional(),
+  title: z.string().min(1).max(500),
+  description: z.string().max(10000).optional(),
+  descriptionHtml: z.string().max(20000).optional(),
+  price: z.number().min(0).max(1000000),
+  salePrice: z.number().min(0).max(1000000).optional(),
+  costPrice: z.number().min(0).max(1000000).optional(),
+  compareAtPrice: z.number().min(0).max(1000000).optional(),
+  currency: z.string().length(3).optional(),
+  sku: z.string().max(100).optional(),
+  vendor: z.string().max(200).optional(),
+  brand: z.string().max(200).optional(),
+  productType: z.string().max(100).optional(),
+  category: z.string().max(100).optional(),
+  tags: z.array(z.string().max(50)).max(20).optional(),
+  images: z.array(z.string().url().max(2000)).max(20).optional(),
+  videos: z.array(z.object({
+    url: z.string().url().max(2000),
+    type: z.string().max(50).optional()
+  })).max(5).optional(),
+  variants: z.array(VariantSchema).max(100).optional(),
+  options: z.array(z.object({
+    name: z.string().max(50),
+    values: z.array(z.string().max(100)).max(100)
+  })).max(3).optional(),
+  available: z.boolean().optional(),
+  url: z.string().url().max(2000),
+  platform: z.string().max(50),
+  source: z.string().max(50).optional(),
+  metadata: z.record(z.unknown()).optional(),
+  stockStatus: z.string().max(50).optional(),
+  stockQuantity: z.number().int().min(0).max(1000000).optional(),
+  inStock: z.boolean().optional(),
+  shippingInfo: z.record(z.unknown()).optional(),
+  specifications: z.record(z.unknown()).optional()
+});
+
+const InputSchema = z.object({
+  product: ProductSchema,
+  options: z.object({
+    targetStore: z.string().max(100).optional(),
+    status: z.enum(['draft', 'active', 'archived']).optional(),
+    applyRules: z.boolean().optional()
+  }).optional()
+});
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req);
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    const origin = req.headers.get('Origin');
+    if (!origin || !isAllowedOrigin(origin)) {
+      return new Response(null, { status: 403 });
+    }
+    return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    // Validate token
-    const token = req.headers.get('x-extension-token')?.replace(/[^a-zA-Z0-9-_]/g, '')
+    // Validate extension token
+    const rawToken = req.headers.get('x-extension-token');
+    const token = rawToken?.replace(/[^a-zA-Z0-9\-_]/g, '');
 
-    if (!token || token.length < 10) {
+    if (!token || token.length < 10 || token.length > 150) {
       return new Response(
         JSON.stringify({ success: false, error: 'Token d\'extension requis' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    // Verify token
-    const { data: authData, error: tokenError } = await supabase
-      .from('extension_auth_tokens')
-      .select('id, user_id, expires_at')
-      .eq('token', token)
-      .eq('is_active', true)
-      .single()
+    // Verify token - use RPC for secure validation
+    const { data: validationResult, error: tokenError } = await supabase
+      .rpc('validate_extension_token', { p_token: token });
 
-    if (tokenError || !authData) {
+    if (tokenError || !validationResult?.success) {
       return new Response(
         JSON.stringify({ success: false, error: 'Token invalide ou expiré' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    // Check expiration
-    if (authData.expires_at && new Date(authData.expires_at) < new Date()) {
+    const userId = validationResult.user?.id;
+    if (!userId) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Token expiré' }),
+        JSON.stringify({ success: false, error: 'User ID not found in token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    const userId = authData.user_id
-
-    // Parse request
-    const { product, options }: ImportProductRequest = await req.json()
-
-    if (!product || !product.title) {
+    // Parse and validate input
+    const body = await req.json();
+    const parseResult = InputSchema.safeParse(body);
+    
+    if (!parseResult.success) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Données produit manquantes' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Données produit invalides',
+          details: parseResult.error.issues.slice(0, 5).map(i => `${i.path.join('.')}: ${i.message}`)
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
+
+    const { product, options } = parseResult.data;
 
     console.log('[extension-import-product] Importing:', {
       title: product.title.substring(0, 50),
       platform: product.platform,
       price: product.price,
-      variants: product.variants?.length || 0
-    })
+      variants: product.variants?.length || 0,
+      userId: userId.slice(0, 8)
+    });
 
     // Get user's import rules if applyRules is true
-    let importRules = null
+    let importRules = null;
     if (options?.applyRules) {
       const { data: rules } = await supabase
         .from('user_settings')
         .select('import_rules')
         .eq('user_id', userId)
-        .single()
+        .single();
 
-      importRules = rules?.import_rules
+      importRules = rules?.import_rules;
     }
 
     // Apply pricing rules
-    let finalPrice = product.salePrice || product.price
-    let costPrice = product.costPrice || product.price
+    let finalPrice = product.salePrice || product.price;
+    let costPrice = product.costPrice || product.price;
 
     if (importRules?.pricing?.enabled) {
-      const markup = importRules.pricing.markupValue || 30
+      const markup = importRules.pricing.markupValue || 30;
       if (importRules.pricing.markupType === 'percentage') {
-        finalPrice = costPrice * (1 + markup / 100)
+        finalPrice = costPrice * (1 + markup / 100);
       } else {
-        finalPrice = costPrice + markup
+        finalPrice = costPrice + markup;
       }
 
-      // Round to nearest
       if (importRules.pricing.roundToNearest) {
-        const nearest = importRules.pricing.roundToNearest
-        finalPrice = Math.ceil(finalPrice) - (1 - nearest)
+        const nearest = importRules.pricing.roundToNearest;
+        finalPrice = Math.ceil(finalPrice) - (1 - nearest);
       }
     }
 
@@ -156,7 +176,7 @@ serve(async (req) => {
     const cleanImages = (product.images || [])
       .filter(img => img && typeof img === 'string' && img.length > 20)
       .map(img => img.replace(/_\d+x\d*\./, '.').replace(/\?.*$/, ''))
-      .slice(0, 20)
+      .slice(0, 20);
 
     // Process variants
     const variants = (product.variants || []).map(v => ({
@@ -171,7 +191,7 @@ serve(async (req) => {
       option3: v.option3,
       image: v.image,
       inventory_quantity: v.inventory_quantity
-    }))
+    }));
 
     // Create product source record for sync tracking
     const { data: sourceRecord, error: sourceError } = await supabase
@@ -192,13 +212,13 @@ serve(async (req) => {
         sync_status: 'synced'
       })
       .select()
-      .single()
+      .single();
 
     if (sourceError) {
-      console.error('[extension-import-product] Source record error:', sourceError)
+      console.error('[extension-import-product] Source record error:', sourceError);
     }
 
-    // Insert into imported_products
+    // Insert into imported_products - scoped to user
     const { data: importedProduct, error: productError } = await supabase
       .from('imported_products')
       .insert({
@@ -238,10 +258,10 @@ serve(async (req) => {
         }
       })
       .select()
-      .single()
+      .single();
 
     if (productError) {
-      console.error('[extension-import-product] Product insert error:', productError)
+      console.error('[extension-import-product] Product insert error:', productError);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -249,7 +269,7 @@ serve(async (req) => {
           code: productError.code
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     // Update product source with product ID
@@ -257,7 +277,7 @@ serve(async (req) => {
       await supabase
         .from('product_sources')
         .update({ product_id: importedProduct.id })
-        .eq('id', sourceRecord.id)
+        .eq('id', sourceRecord.id);
     }
 
     // Log activity
@@ -274,18 +294,9 @@ serve(async (req) => {
         rules_applied: !!importRules
       },
       source_url: product.url
-    })
+    });
 
-    // Update token usage
-    await supabase
-      .from('extension_auth_tokens')
-      .update({
-        last_used_at: new Date().toISOString(),
-        usage_count: supabase.rpc('increment', { x: 1 })
-      })
-      .eq('id', authData.id)
-
-    console.log('[extension-import-product] Success:', importedProduct.id)
+    console.log('[extension-import-product] Success:', importedProduct.id);
 
     return new Response(
       JSON.stringify({
@@ -300,13 +311,13 @@ serve(async (req) => {
         rules_applied: !!importRules
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
 
   } catch (error) {
-    console.error('[extension-import-product] Error:', error)
+    console.error('[extension-import-product] Error:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   }
-})
+});
