@@ -1088,6 +1088,78 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          action_category: string
+          actor_email: string | null
+          actor_ip: string | null
+          actor_type: string
+          actor_user_agent: string | null
+          changed_fields: string[] | null
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_name: string | null
+          resource_type: string | null
+          session_id: string | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          action_category: string
+          actor_email?: string | null
+          actor_ip?: string | null
+          actor_type?: string
+          actor_user_agent?: string | null
+          changed_fields?: string[] | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_name?: string | null
+          resource_type?: string | null
+          session_id?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          action_category?: string
+          actor_email?: string | null
+          actor_ip?: string | null
+          actor_type?: string
+          actor_user_agent?: string | null
+          changed_fields?: string[] | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_name?: string | null
+          resource_type?: string | null
+          session_id?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       auto_order_queue: {
         Row: {
           created_at: string
@@ -12400,7 +12472,16 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      audit_log_summary: {
+        Row: {
+          action_category: string | null
+          event_count: number | null
+          log_date: string | null
+          severity: string | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_get_all_users: {
@@ -12435,6 +12516,7 @@ export type Database = {
         Args: { customer_id_param: string }
         Returns: boolean
       }
+      cleanup_expired_audit_logs: { Args: never; Returns: number }
       cleanup_old_translation_cache: {
         Args: { days_old?: number }
         Returns: number
@@ -12446,6 +12528,22 @@ export type Database = {
           p_to_currency: string
         }
         Returns: number
+      }
+      create_audit_log: {
+        Args: {
+          p_action: string
+          p_action_category: string
+          p_actor_type?: string
+          p_description?: string
+          p_metadata?: Json
+          p_new_values?: Json
+          p_old_values?: Json
+          p_resource_id?: string
+          p_resource_name?: string
+          p_resource_type?: string
+          p_severity?: string
+        }
+        Returns: string
       }
       evaluate_feature_flag: {
         Args: { p_context?: Json; p_flag_key: string; p_user_id?: string }
@@ -12476,6 +12574,7 @@ export type Database = {
             Returns: Json
           }
       generate_rma_number: { Args: never; Returns: string }
+      get_audit_statistics: { Args: { p_days?: number }; Returns: Json }
       get_exchange_rate: {
         Args: { p_base: string; p_target: string }
         Returns: number
@@ -12492,6 +12591,32 @@ export type Database = {
           total_translated: number
           usage_date: string
           user_id: string
+        }[]
+      }
+      get_user_audit_trail: {
+        Args: {
+          p_category?: string
+          p_from_date?: string
+          p_limit?: number
+          p_offset?: number
+          p_severity?: string
+          p_to_date?: string
+          p_user_id?: string
+        }
+        Returns: {
+          action: string
+          action_category: string
+          actor_email: string
+          actor_type: string
+          changed_fields: string[]
+          created_at: string
+          description: string
+          id: string
+          metadata: Json
+          resource_id: string
+          resource_name: string
+          resource_type: string
+          severity: string
         }[]
       }
       get_user_feature_flags: {
