@@ -86,6 +86,11 @@ export default function SupplierRoutes() {
       <Route path=":supplierId/import" element={<SupplierImportPage />} />
       <Route path=":supplierId/feeds" element={<ChannableFeedManager />} />
       <Route path=":supplierId/edit" element={<CreateSupplier />} />
+      
+      {/* B2B Sourcing - New routes */}
+      <Route path="b2b" element={<AdvancedSupplierEnginePage />} />
+      <Route path="b2b/connect" element={<AdvancedSupplierEnginePage />} />
+      <Route path="b2b/compare" element={<AdvancedSupplierEnginePage />} />
     </Routes>
   )
 }

@@ -170,6 +170,16 @@ export function AppRoutes() {
         <Route path="/import/*" element={<ProtectedRoute><ChannableLayout><ImportRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/feeds/*" element={<ProtectedRoute><ChannableLayout><FeedRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/suppliers/*" element={<ProtectedRoute><ChannableLayout><SupplierRoutes /></ChannableLayout></ProtectedRoute>} />
+        
+        {/* French aliases for suppliers - Routes françaises */}
+        <Route path="/fournisseurs" element={<Navigate to="/suppliers" replace />} />
+        <Route path="/fournisseurs/moteur" element={<Navigate to="/suppliers/engine" replace />} />
+        <Route path="/fournisseurs/catalogue" element={<Navigate to="/suppliers/catalog" replace />} />
+        <Route path="/fournisseurs/mes-fournisseurs" element={<Navigate to="/suppliers/my" replace />} />
+        <Route path="/fournisseurs/analytics" element={<Navigate to="/suppliers/analytics" replace />} />
+        <Route path="/fournisseurs/b2b" element={<Navigate to="/suppliers/b2b" replace />} />
+        <Route path="/fournisseurs/*" element={<Navigate to="/suppliers" replace />} />
+        
         <Route path="/stores-channels/*" element={<ProtectedRoute><ChannableLayout><ChannelRoutes /></ChannableLayout></ProtectedRoute>} />
         <Route path="/channels/*" element={<ProtectedRoute><ChannableLayout><ChannelRoutes /></ChannableLayout></ProtectedRoute>} />
         {/* Fulfillment - Redirection vers /orders/fulfillment */}

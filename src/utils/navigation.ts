@@ -73,7 +73,15 @@ export class NavigationService {
       '/marketing', '/marketing/crm', '/marketing/seo',
       '/integrations', '/integrations/support', '/integrations/academy', '/integrations/extensions',
       '/admin', '/settings',
-      '/tools/intelligence'
+      '/tools/intelligence',
+      // Suppliers / Fournisseurs routes
+      '/suppliers', '/suppliers/catalog', '/suppliers/engine', '/suppliers/my',
+      '/suppliers/analytics', '/suppliers/settings', '/suppliers/feeds',
+      '/suppliers/variant-mapping', '/suppliers/create', '/suppliers/add',
+      '/suppliers/bts/import',
+      // French aliases
+      '/fournisseurs', '/fournisseurs/moteur', '/fournisseurs/catalogue',
+      '/fournisseurs/mes-fournisseurs', '/fournisseurs/analytics'
     ];
 
     return validPaths.includes(path) || 
@@ -84,6 +92,8 @@ export class NavigationService {
            path.startsWith('/marketing/') || 
            path.startsWith('/integrations/') ||
            path.startsWith('/admin/') ||
-           path.startsWith('/settings/');
+           path.startsWith('/settings/') ||
+           path.startsWith('/suppliers/') ||
+           path.startsWith('/fournisseurs/');
   }
 }
