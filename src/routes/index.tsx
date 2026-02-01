@@ -256,6 +256,16 @@ export function AppRoutes() {
         {/* Documentation Routes */}
         <Route path="/help-center/documentation/:moduleSlug" element={<ProtectedRoute><ChannableLayout><DocumentationPage /></ChannableLayout></ProtectedRoute>} />
         <Route path="/help-center/documentation" element={<ProtectedRoute><ChannableLayout><DocumentationPage /></ChannableLayout></ProtectedRoute>} />
+        <Route path="/help-center" element={<ProtectedRoute><ChannableLayout><DocumentationPage /></ChannableLayout></ProtectedRoute>} />
+        
+        {/* French aliases for Help Center */}
+        <Route path="/centre-d-aide/documentation/:moduleSlug" element={<Navigate to={`/help-center/documentation`} replace />} />
+        <Route path="/centre-d-aide/documentation" element={<Navigate to="/help-center/documentation" replace />} />
+        <Route path="/centre-d-aide" element={<Navigate to="/help-center" replace />} />
+        <Route path="/centre d'aide/documentation/:moduleSlug" element={<Navigate to="/help-center/documentation" replace />} />
+        <Route path="/centre d'aide/documentation" element={<Navigate to="/help-center/documentation" replace />} />
+        <Route path="/centre d'aide" element={<Navigate to="/help-center" replace />} />
+        
         <Route path="/support" element={<ProtectedRoute><ChannableLayout><SupportMainPage /></ChannableLayout></ProtectedRoute>} />
         
         {/* Legacy redirects consolidés */}
