@@ -1,83 +1,92 @@
 /**
- * Quota Check API - SECURED
+ * Quota Check API - ENTERPRISE SECURED v2.0
  * P0.2 Fix: JWT authentication required, userId from JWT only
  * P0.4 Fix: Restricted CORS origins
+ * P0.5 Fix: quotaKey strict allowlist, rate limiting, no userId in body
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from '../_shared/secure-cors.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
+import { handleError, ValidationError, AuthenticationError } from '../_shared/error-handler.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-// Rate limiting in-memory store
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT_WINDOW_MS = 60000 // 1 minute
-const RATE_LIMIT_MAX = 30 // 30 requests per minute
+// Strict CORS allowlist
+const ALLOWED_ORIGINS = [
+  'https://shopopti.io',
+  'https://www.shopopti.io',
+  'https://app.shopopti.io',
+  'https://drop-craft-ai.lovable.app',
+]
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-    return true
-  }
-  
-  if (entry.count >= RATE_LIMIT_MAX) {
-    return false
-  }
-  
-  entry.count++
-  return true
+// Lovable preview URL pattern
+const LOVABLE_PREVIEW_PATTERN = /^https:\/\/[a-z0-9-]+--[a-f0-9-]+\.lovable\.app$/
+
+function isAllowedOrigin(origin: string): boolean {
+  if (ALLOWED_ORIGINS.includes(origin)) return true
+  if (LOVABLE_PREVIEW_PATTERN.test(origin)) return true
+  // Extension origin from env
+  const extensionOrigin = Deno.env.get('EXTENSION_ORIGIN')
+  if (extensionOrigin && origin === extensionOrigin) return true
+  return false
 }
 
-/**
- * Verify JWT and get authenticated user
- */
-async function verifyJwtAuth(req: Request): Promise<{ userId: string } | null> {
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader) return null
-  
-  const token = authHeader.replace('Bearer ', '')
-  if (!token || token === authHeader || token.length < 20) return null
-  
-  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } }
-  })
-  
-  const { data: { user }, error } = await userClient.auth.getUser(token)
-  
-  if (error || !user) return null
-  
-  return { userId: user.id }
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('Origin') || ''
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token',
+    'Access-Control-Max-Age': '86400',
+  }
+  if (origin && isAllowedOrigin(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin
+    headers['Access-Control-Allow-Credentials'] = 'true'
+  }
+  return headers
 }
+
+// P0.5 FIX: Strict allowlist of quota keys
+const ALLOWED_QUOTA_KEYS = new Set([
+  'import_url',
+  'import_bulk',
+  'import_product',
+  'import_reviews',
+  'ai_optimize',
+  'ai_description',
+  'ai_seo',
+  'ai_translation',
+  'competitor_analyze',
+  'supplier_sync',
+  'stock_sync',
+  'order_automation',
+  'pdf_export',
+  'api_calls',
+])
 
 /**
  * Validate extension token as fallback auth
  */
-async function verifyExtensionToken(req: Request): Promise<{ userId: string } | null> {
+async function verifyExtensionToken(req: Request, supabase: any): Promise<{ userId: string } | null> {
   const extensionToken = req.headers.get('x-extension-token')
   if (!extensionToken) return null
-  
+
   const sanitized = extensionToken.trim().replace(/[^a-zA-Z0-9\-_]/g, '')
   if (sanitized.length < 10 || sanitized.length > 150) return null
-  
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
-  
+
   const { data: result, error } = await supabase
     .rpc('validate_extension_token', { p_token: sanitized })
-  
+
   if (error || !result?.success || !result?.user?.id) return null
-  
+
   return { userId: result.user.id }
 }
 
 Deno.serve(async (req) => {
-  const corsHeaders = getSecureCorsHeaders(req)
-  
-  // Handle CORS preflight with origin check
+  const corsHeaders = getCorsHeaders(req)
+
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     const origin = req.headers.get('Origin')
     if (!origin || !isAllowedOrigin(origin)) {
@@ -86,142 +95,195 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Only POST allowed
+  if (req.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Method not allowed' }),
+      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
   try {
-    // Rate limiting
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown'
-    if (!checkRateLimit(ip)) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // 1) Authentication: Try JWT first, then extension token
+    let userId: string | null = null
+
+    try {
+      const authResult = await authenticateUser(req, supabase)
+      userId = authResult.user.id
+    } catch {
+      // Try extension token fallback
+      const extAuth = await verifyExtensionToken(req, supabase)
+      if (extAuth) {
+        userId = extAuth.userId
+      }
     }
-    
-    // P0.2 FIX: Authentication required
-    let authResult = await verifyJwtAuth(req)
-    
-    // Fallback to extension token
-    if (!authResult) {
-      authResult = await verifyExtensionToken(req)
+
+    if (!userId) {
+      throw new AuthenticationError('Authentication required')
     }
-    
-    if (!authResult) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Authentication required',
-          code: 'AUTH_REQUIRED'
-        }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+
+    // 2) Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      userId,
+      'check_quota',
+      RATE_LIMITS.API_GENERAL
+    )
+
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult, corsHeaders)
     }
-    
-    // P0.2 FIX: userId comes from authenticated token, NOT from request body
-    const userId = authResult.userId
-    
-    const body = await req.json()
-    const { quotaKey, incrementBy = 0 } = body
-    
-    // Validate quotaKey
-    if (!quotaKey || typeof quotaKey !== 'string' || quotaKey.length > 100) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid quota key' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+
+    // 3) Parse and validate input
+    const body = await req.json().catch(() => null)
+    if (!body || typeof body !== 'object') {
+      throw new ValidationError('Invalid JSON body')
     }
-    
+
+    // P0.5 CRITICAL: Reject any userId in body
+    if ('userId' in body || 'user_id' in body) {
+      // Log security event
+      await supabase.from('security_events').insert({
+        user_id: userId,
+        event_type: 'security_violation_attempt',
+        severity: 'critical',
+        description: 'Attempt to pass userId in check-quota body',
+        metadata: { blocked: true }
+      })
+      throw new ValidationError('Do not send userId in request body')
+    }
+
+    const quotaKey = body.quotaKey
+    const incrementBy = body.incrementBy ?? 0
+    const consume = body.consume ?? false
+
+    // Validate quotaKey against strict allowlist
+    if (typeof quotaKey !== 'string' || !ALLOWED_QUOTA_KEYS.has(quotaKey)) {
+      throw new ValidationError(`Invalid quotaKey. Allowed: ${Array.from(ALLOWED_QUOTA_KEYS).join(', ')}`)
+    }
+
     // Validate incrementBy
-    const safeIncrement = Math.min(Math.max(0, parseInt(String(incrementBy)) || 0), 100)
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    if (typeof incrementBy !== 'number' || !Number.isFinite(incrementBy) || incrementBy < 0 || incrementBy > 1000) {
+      throw new ValidationError('incrementBy must be a number between 0 and 1000')
+    }
 
-    console.log(`[check-quota] Checking quota for authenticated user ${userId}, quota: ${quotaKey}, increment: ${safeIncrement}`)
+    // Validate consume flag
+    if (typeof consume !== 'boolean') {
+      throw new ValidationError('consume must be a boolean')
+    }
 
-    // Use the database function to check quota
+    console.log(`[check-quota] Checking quota for user ${userId}, key: ${quotaKey}, increment: ${incrementBy}`)
+
+    // 4) Check quota using RPC (safer than direct query)
     const { data: canProceed, error: checkError } = await supabase.rpc('check_quota', {
       user_id_param: userId,
       quota_key_param: quotaKey
     })
 
     if (checkError) {
-      console.error('[check-quota] Error checking quota:', checkError)
+      console.error('[check-quota] RPC error:', checkError)
       throw new Error('Failed to check quota')
     }
 
-    // If incrementBy is provided and quota check passes, increment the quota
-    if (safeIncrement > 0 && canProceed) {
-      const { error: incrementError } = await supabase.rpc('increment_quota', {
-        user_id_param: userId,
-        quota_key_param: quotaKey,
-        increment_by: safeIncrement
-      })
-
-      if (incrementError) {
-        console.error('[check-quota] Error incrementing quota:', incrementError)
-        throw new Error('Failed to increment quota')
-      }
-
-      console.log(`[check-quota] Quota incremented successfully for ${quotaKey}`)
-    }
-
-    // Get current quota status
-    const { data: quotaData, error: quotaError } = await supabase
+    // 5) Get current quota status
+    const { data: quotaData } = await supabase
       .from('user_quotas')
       .select('current_count, reset_date')
       .eq('user_id', userId)
       .eq('quota_key', quotaKey)
       .maybeSingle()
 
-    if (quotaError) {
-      console.error('[check-quota] Error fetching quota data:', quotaError)
-    }
+    const currentCount = quotaData?.current_count ?? 0
 
-    // Get quota limit from plan
-    const { data: profile, error: profileError } = await supabase
+    // 6) Get quota limit from plan
+    const { data: profile } = await supabase
       .from('profiles')
       .select('subscription_plan')
       .eq('id', userId)
       .single()
 
     let limit = null
-    if (!profileError && profile) {
-      const { data: limitData, error: limitError } = await supabase
+    if (profile) {
+      const { data: limitData } = await supabase
         .from('plans_limits')
         .select('limit_value')
         .eq('plan', profile.subscription_plan || 'free')
         .eq('limit_key', quotaKey)
         .maybeSingle()
 
-      if (!limitError && limitData) {
+      if (limitData) {
         limit = limitData.limit_value
       }
     }
+
+    // 7) Consume quota if requested and allowed
+    if (consume && incrementBy > 0) {
+      const newCount = currentCount + incrementBy
+
+      // Check if would exceed limit
+      if (limit !== null && limit > 0 && newCount > limit) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            canProceed: false,
+            allowed: false,
+            currentCount,
+            limit,
+            quotaKey,
+            reason: 'Quota would be exceeded'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Increment quota atomically
+      const { error: incrementError } = await supabase.rpc('increment_quota', {
+        user_id_param: userId,
+        quota_key_param: quotaKey,
+        increment_by: incrementBy
+      })
+
+      if (incrementError) {
+        console.error('[check-quota] Increment error:', incrementError)
+        throw new Error('Failed to increment quota')
+      }
+
+      console.log(`[check-quota] Quota consumed: ${quotaKey} +${incrementBy}`)
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          canProceed: true,
+          allowed: true,
+          currentCount: newCount,
+          limit,
+          quotaKey,
+          consumed: incrementBy,
+          resetDate: quotaData?.reset_date
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check-only mode
+    const allowed = limit === null || limit === 0 || currentCount + incrementBy <= limit
 
     return new Response(
       JSON.stringify({
         success: true,
         canProceed,
-        currentCount: quotaData?.current_count || 0,
+        allowed,
+        currentCount,
         limit,
-        resetDate: quotaData?.reset_date,
-        quotaKey
+        quotaKey,
+        resetDate: quotaData?.reset_date
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('[check-quota] Error:', error)
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message
-      }),
-      {
-        headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' },
-        status: 400,
-      }
-    )
+    return handleError(error, corsHeaders)
   }
 })
