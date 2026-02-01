@@ -3561,6 +3561,42 @@ export type Database = {
           },
         ]
       }
+      cron_execution_logs: {
+        Row: {
+          correlation_id: string | null
+          created_at: string
+          cron_name: string
+          duration_ms: number | null
+          error_message: string | null
+          executed_at: string
+          id: string
+          metadata: Json | null
+          status: string
+        }
+        Insert: {
+          correlation_id?: string | null
+          created_at?: string
+          cron_name: string
+          duration_ms?: number | null
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+        }
+        Update: {
+          correlation_id?: string | null
+          created_at?: string
+          cron_name?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+        }
+        Relationships: []
+      }
       currency_settings: {
         Row: {
           auto_convert_prices: boolean | null
