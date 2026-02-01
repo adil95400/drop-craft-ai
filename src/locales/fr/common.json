@@ -160,5 +160,53 @@
     "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
     "offlineMode": "Vous êtes en mode hors ligne",
     "backOnline": "Connexion rétablie"
+  },
+  "import": {
+    "title": "Import de produits",
+    "success": "Import réussi",
+    "failed": "Import échoué",
+    "partial": "Import partiel",
+    "cancelled": "Import annulé",
+    "cancelledDesc": "L'import a été annulé",
+    "noProducts": "Aucun produit à importer",
+    "productsImported": "{{count}} produits importés",
+    "partialDesc": "{{success}} réussis, {{failed}} échecs",
+    "jobStarted": "Import démarré",
+    "jobStartedDesc": "{{count}} produits en cours d'import",
+    "activeJobs": "Imports en cours",
+    "noActiveJobs": "Aucun import en cours",
+    "products": "produits",
+    "failedCount": "{{count}} échecs",
+    "enrichedProducts": "{{count}} produits enrichis par IA",
+    "eta": "Temps restant estimé: {{time}}",
+    "progress": "Progression de l'import",
+    "statistics": "Statistiques d'import",
+    "processed": "Traités",
+    "successful": "Réussis",
+    "status": {
+      "idle": "En attente",
+      "detecting": "Détection...",
+      "validating": "Validation...",
+      "processing": "Import en cours...",
+      "enriching": "Enrichissement IA...",
+      "completed": "Terminé",
+      "failed": "Échoué",
+      "partial": "Partiel"
+    },
+    "sources": {
+      "csv": "Fichier CSV",
+      "json": "Fichier JSON",
+      "excel": "Fichier Excel",
+      "url": "Import par URL",
+      "api": "API externe",
+      "extension": "Extension Chrome",
+      "feed": "Flux de données"
+    },
+    "options": {
+      "batchSize": "Taille des lots",
+      "concurrency": "Imports parallèles",
+      "autoEnrich": "Enrichissement IA automatique",
+      "enrichFields": "Champs à enrichir"
+    }
   }
 }
