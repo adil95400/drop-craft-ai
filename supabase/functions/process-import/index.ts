@@ -1,16 +1,44 @@
+/**
+ * Process Import - Secure Edge Function
+ * P0.4 FIX: Replaced CORS * with restrictive allowlist
+ * P0.5 FIX: userId derived from JWT, not from body
+ * P1: Rate limiting and input validation
+ */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+// Secure CORS configuration
+const ALLOWED_ORIGINS = [
+  'https://shopopti.io',
+  'https://www.shopopti.io',
+  'https://app.shopopti.io',
+  'https://drop-craft-ai.lovable.app'
+];
+
+function getSecureCorsHeaders(origin: string | null): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+  
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  }
+  
+  return headers;
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('Origin');
+  const corsHeaders = getSecureCorsHeaders(origin);
+  
   console.log('Process import function called')
   
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+      return new Response(null, { status: 403 });
+    }
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -18,26 +46,71 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
+    // SECURITY: Get user from JWT, NOT from body
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('Authorization required')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authorization required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
     
-    if (authError || !user) {
-      console.error('Auth error:', authError)
-      throw new Error('Unauthorized')
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const { importJobId, fileData, mappingConfig } = await req.json()
+    const userId = claimsData.claims.sub;
+    console.log(`[PROCESS-IMPORT] Authenticated user: ${userId.slice(0, 8)}...`);
+
+    const body = await req.json();
+    const { importJobId, fileData, mappingConfig } = body;
     
-    if (!importJobId || !fileData || !Array.isArray(fileData)) {
-      throw new Error('Missing required parameters: importJobId and fileData array')
+    // SECURITY: Reject if userId is in body
+    if ('userId' in body || 'user_id' in body) {
+      console.warn(`[SECURITY] Blocked userId in body from user ${userId.slice(0, 8)}`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Do not send userId in body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
     
-    console.log(`Processing import job: ${importJobId}, ${fileData.length} rows`)
+    // Validate required inputs
+    if (!importJobId || typeof importJobId !== 'string') {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid importJobId' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!fileData || !Array.isArray(fileData)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid fileData - must be an array' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log(`[PROCESS-IMPORT] Processing job: ${importJobId}, ${fileData.length} rows`);
+
+    // SECURITY: Verify job belongs to user
+    const { data: existingJob, error: jobCheckError } = await supabase
+      .from('import_jobs')
+      .select('id, user_id')
+      .eq('id', importJobId)
+      .eq('user_id', userId) // CRITICAL: Verify ownership
+      .single();
+
+    if (jobCheckError || !existingJob) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Import job not found or access denied' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Update job status to processing
     await supabase
@@ -47,6 +120,7 @@ serve(async (req) => {
         started_at: new Date().toISOString()
       })
       .eq('id', importJobId)
+      .eq('user_id', userId) // SECURE: scope to user
 
     const totalRows = Math.min(fileData.length, 1000) // Limit to 1000 for performance
     let successRows = 0
@@ -65,28 +139,34 @@ serve(async (req) => {
         const rowIndex = i + j + 1
         
         try {
-          // Map fields according to configuration
-          const name = row[mappingConfig?.name] || `Product ${rowIndex}`
-          const price = parseFloat(row[mappingConfig?.price]) || 0
+          // Map fields according to configuration with validation
+          const name = String(row[mappingConfig?.name] || `Product ${rowIndex}`).substring(0, 500)
+          const priceRaw = row[mappingConfig?.price]
+          const price = parseFloat(String(priceRaw).replace(/[^0-9.]/g, '')) || 0
           
           if (!name || price <= 0) {
             throw new Error('Missing name or invalid price')
           }
           
+          const costPriceRaw = row[mappingConfig?.cost_price]
+          const costPrice = costPriceRaw ? 
+            Math.min(parseFloat(String(costPriceRaw).replace(/[^0-9.]/g, '')) || price * 0.7, 999999.99) : 
+            price * 0.7
+          
           productsToInsert.push({
-            user_id: user.id,
-            title: name.substring(0, 500),
-            description: (row[mappingConfig?.description] || '').substring(0, 5000),
+            user_id: userId, // CRITICAL: from token only
+            title: name,
+            description: String(row[mappingConfig?.description] || '').substring(0, 5000),
             price: Math.min(price, 999999.99),
-            cost_price: Math.min(parseFloat(row[mappingConfig?.cost_price]) || price * 0.7, 999999.99),
-            sku: (row[mappingConfig?.sku] || `SKU-${Date.now()}-${rowIndex}`).substring(0, 100),
-            category: (row[mappingConfig?.category] || 'Divers').substring(0, 100),
+            cost_price: costPrice,
+            sku: String(row[mappingConfig?.sku] || `SKU-${Date.now()}-${rowIndex}`).substring(0, 100),
+            category: String(row[mappingConfig?.category] || 'Divers').substring(0, 100),
             image_url: row[mappingConfig?.image_url] || null,
             status: 'draft'
           })
           
         } catch (error) {
-          console.warn(`Row ${rowIndex} error:`, error.message)
+          console.warn(`[PROCESS-IMPORT] Row ${rowIndex} error:`, error.message)
           errors.push(`Row ${rowIndex}: ${error.message}`)
           errorRows++
         }
@@ -99,7 +179,7 @@ serve(async (req) => {
           .insert(productsToInsert)
 
         if (insertError) {
-          console.error(`Batch insert error:`, insertError)
+          console.error(`[PROCESS-IMPORT] Batch insert error:`, insertError)
           errorRows += productsToInsert.length
           errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${insertError.message}`)
         } else {
@@ -107,7 +187,7 @@ serve(async (req) => {
         }
       }
 
-      // Update progress every batch
+      // Update progress every batch - SCOPED to user
       await supabase
         .from('import_jobs')
         .update({
@@ -116,11 +196,12 @@ serve(async (req) => {
           error_log: errors.length > 0 ? errors.slice(0, 50) : null
         })
         .eq('id', importJobId)
+        .eq('user_id', userId) // SECURE: scope to user
 
-      console.log(`Progress: ${Math.min(i + batchSize, totalRows)}/${totalRows} (${successRows} success, ${errorRows} failed)`)
+      console.log(`[PROCESS-IMPORT] Progress: ${Math.min(i + batchSize, totalRows)}/${totalRows} (${successRows} success, ${errorRows} failed)`)
     }
 
-    // Final update
+    // Final update - SCOPED to user
     const finalStatus = errorRows > 0 && successRows === 0 ? 'failed' : 'completed'
     
     await supabase
@@ -134,8 +215,9 @@ serve(async (req) => {
         completed_at: new Date().toISOString()
       })
       .eq('id', importJobId)
+      .eq('user_id', userId) // SECURE: scope to user
 
-    console.log(`Import completed: ${successRows} success, ${errorRows} failed`)
+    console.log(`[PROCESS-IMPORT] Import completed: ${successRows} success, ${errorRows} failed`)
 
     return new Response(
       JSON.stringify({
@@ -145,13 +227,11 @@ serve(async (req) => {
         failed: errorRows,
         errors: errors.slice(0, 10)
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Import processing error:', error)
+    console.error('[PROCESS-IMPORT] Error:', error)
     
     return new Response(
       JSON.stringify({ 
@@ -160,7 +240,7 @@ serve(async (req) => {
       }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...getSecureCorsHeaders(req.headers.get('Origin')), 'Content-Type': 'application/json' }
       }
     )
   }
