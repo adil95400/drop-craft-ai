@@ -1,19 +1,39 @@
+/**
+ * Stripe Webhook Handler - Secure Edge Function
+ * SECURITY: Uses signature verification (not JWT)
+ * P0.4 FIX: Webhooks don't need CORS * since they're server-to-server
+ */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
+// Webhooks are server-to-server, no CORS needed for browsers
+// But we still handle OPTIONS for any edge cases
+const webhookHeaders = {
+  'Content-Type': 'application/json',
 };
 
 const logStep = (step: string, details?: any) => {
-  console.log(`[STRIPE-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
+  const safeDetails = details ? { ...details } : undefined;
+  // Don't log sensitive data
+  if (safeDetails?.customer_email) {
+    safeDetails.customer_email = '***@***';
+  }
+  console.log(`[STRIPE-WEBHOOK] ${step}${safeDetails ? ` - ${JSON.stringify(safeDetails)}` : ''}`);
 };
 
 serve(async (req) => {
+  // Webhooks shouldn't receive browser CORS preflight, but handle just in case
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 204 });
+  }
+
+  // Only accept POST
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: webhookHeaders,
+    });
   }
 
   try {
@@ -22,8 +42,14 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
     
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
-    if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET not configured");
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not configured");
+      throw new Error("Stripe not configured");
+    }
+    if (!webhookSecret) {
+      logStep("ERROR: STRIPE_WEBHOOK_SECRET not configured");
+      throw new Error("Webhook secret not configured");
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const supabase = createClient(
@@ -32,8 +58,15 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    // CRITICAL SECURITY: Verify Stripe signature
     const signature = req.headers.get("stripe-signature");
-    if (!signature) throw new Error("No stripe-signature header");
+    if (!signature) {
+      logStep("SECURITY: Missing stripe-signature header");
+      return new Response(JSON.stringify({ error: "Missing signature" }), {
+        status: 401,
+        headers: webhookHeaders,
+      });
+    }
 
     const body = await req.text();
     logStep("Verifying webhook signature");
@@ -42,20 +75,20 @@ serve(async (req) => {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
-      logStep("Webhook signature verification failed", { error: err.message });
-      return new Response(JSON.stringify({ error: "Webhook signature verification failed" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      logStep("SECURITY: Webhook signature verification failed");
+      return new Response(JSON.stringify({ error: "Invalid signature" }), {
+        status: 401,
+        headers: webhookHeaders,
       });
     }
 
-    logStep("Event type", { type: event.type });
+    logStep("Event verified", { type: event.type });
 
     // Handle different event types
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        logStep("Checkout completed", { sessionId: session.id, customer: session.customer });
+        logStep("Checkout completed", { sessionId: session.id?.slice(0, 10) });
 
         if (session.mode === "subscription" && session.subscription) {
           const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
@@ -79,7 +112,7 @@ serve(async (req) => {
               .maybeSingle();
 
             if (profileError) {
-              logStep("Error finding profile", { error: profileError });
+              logStep("Error finding profile", { error: profileError.message });
             } else if (profiles) {
               const { error: updateError } = await supabase
                 .from('profiles')
@@ -92,9 +125,9 @@ serve(async (req) => {
                 .eq('id', profiles.id);
 
               if (updateError) {
-                logStep("Error updating profile", { error: updateError });
+                logStep("Error updating profile", { error: updateError.message });
               } else {
-                logStep("Profile updated successfully", { userId: profiles.id, plan });
+                logStep("Profile updated successfully", { plan });
               }
             }
           }
@@ -104,7 +137,7 @@ serve(async (req) => {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        logStep("Subscription updated", { subscriptionId: subscription.id, status: subscription.status });
+        logStep("Subscription updated", { status: subscription.status });
 
         const customer = await stripe.customers.retrieve(subscription.customer as string);
         if ('email' in customer && customer.email) {
@@ -135,7 +168,7 @@ serve(async (req) => {
               })
               .eq('id', profiles.id);
 
-            logStep("Profile updated", { userId: profiles.id, plan, status });
+            logStep("Profile updated", { plan, status });
           }
         }
         break;
@@ -143,7 +176,7 @@ serve(async (req) => {
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        logStep("Subscription cancelled", { subscriptionId: subscription.id });
+        logStep("Subscription cancelled");
 
         const customer = await stripe.customers.retrieve(subscription.customer as string);
         if ('email' in customer && customer.email) {
@@ -163,7 +196,7 @@ serve(async (req) => {
               })
               .eq('id', profiles.id);
 
-            logStep("Profile downgraded to standard", { userId: profiles.id });
+            logStep("Profile downgraded to standard");
           }
         }
         break;
@@ -171,7 +204,7 @@ serve(async (req) => {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        logStep("Payment failed", { invoiceId: invoice.id });
+        logStep("Payment failed");
         
         // Could send notification to user here
         break;
@@ -182,15 +215,15 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: webhookHeaders,
       status: 200,
     });
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ error: "Webhook processing failed" }), {
+      headers: webhookHeaders,
       status: 500,
     });
   }

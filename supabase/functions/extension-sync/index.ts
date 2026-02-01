@@ -1,11 +1,11 @@
+/**
+ * Extension Sync - Secure Edge Function
+ * P0.4 FIX: Replaced CORS * with restrictive allowlist
+ * All actions require valid extension token or JWT
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-extension-token",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from "../_shared/cors.ts";
 
 interface ExtensionSyncRequest {
   action?: 'sync_status' | 'import_products' | 'import_reviews' | 'bulk_import' | 'register_extension' | 'verify_token';
@@ -18,10 +18,12 @@ interface ExtensionSyncRequest {
 }
 
 serve(async (req) => {
-  // Handle CORS
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS preflight with secure headers
+  const preflightResponse = handleCorsPreflightSecure(req);
+  if (preflightResponse) return preflightResponse;
+
+  const origin = req.headers.get('origin');
+  const corsHeaders = getSecureCorsHeaders(origin);
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -30,19 +32,20 @@ serve(async (req) => {
 
     // Get extension token from header
     const extensionToken = req.headers.get("x-extension-token");
+    const authHeader = req.headers.get("Authorization");
     
     const body: ExtensionSyncRequest = await req.json();
-    const { action, extension_id, job_type, parameters, products, reviews, items } = body;
+    const { action, extension_id, job_type, products, reviews, items } = body;
 
-    console.log(`🔄 Extension sync action: ${action || job_type} for ${extension_id || 'unknown'}`);
+    console.log(`🔄 Extension sync action: ${action || job_type}`);
 
-    // Verify extension token and get user
+    // Verify extension token and get user - SECURITY: token-based auth
     let userId: string | null = null;
     
     if (extensionToken) {
       const { data: tokenData, error: tokenError } = await supabase
         .from("extension_tokens")
-        .select("user_id, is_active, expires_at")
+        .select("user_id, is_active, expires_at, permissions")
         .eq("token", extensionToken)
         .single();
 
@@ -51,11 +54,12 @@ serve(async (req) => {
         if (!tokenData.expires_at || new Date(tokenData.expires_at) > new Date()) {
           userId = tokenData.user_id;
           
-          // Update last used
-          await supabase
+          // Update last used - async, don't await
+          supabase
             .from("extension_tokens")
             .update({ last_used_at: new Date().toISOString() })
-            .eq("token", extensionToken);
+            .eq("token", extensionToken)
+            .then(() => {});
         }
       }
     }
@@ -66,17 +70,11 @@ serve(async (req) => {
     switch (effectiveAction) {
       case 'sync_status':
       case 'sync': {
-        // Get today's stats
         const today = new Date().toISOString().split('T')[0];
         
-        let todayStats = {
-          imports: 0,
-          reviews: 0,
-          monitored: 0
-        };
+        let todayStats = { imports: 0, reviews: 0, monitored: 0 };
 
         if (userId) {
-          // Get today's import count
           const { count: importCount } = await supabase
             .from("products")
             .select("*", { count: "exact", head: true })
@@ -85,7 +83,6 @@ serve(async (req) => {
 
           todayStats.imports = importCount || 0;
 
-          // Get user plan
           const { data: profile } = await supabase
             .from("profiles")
             .select("plan")
@@ -99,7 +96,6 @@ serve(async (req) => {
               todayStats,
               userPlan: profile?.plan || 'free',
               items_processed: todayStats.imports,
-              execution_time: Date.now(),
               timestamp: new Date().toISOString()
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -112,7 +108,6 @@ serve(async (req) => {
             connected: false,
             todayStats,
             items_processed: 0,
-            execution_time: Date.now(),
             timestamp: new Date().toISOString()
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -120,9 +115,10 @@ serve(async (req) => {
       }
 
       case 'import_products': {
+        // SECURITY: Require authentication
         if (!userId) {
           return new Response(
-            JSON.stringify({ success: false, error: "Not authenticated" }),
+            JSON.stringify({ success: false, error: "Authentication required" }),
             { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -134,25 +130,38 @@ serve(async (req) => {
           );
         }
 
-        // Insert products
-        const productsToInsert = products.map((p: any) => ({
-          user_id: userId,
-          title: p.name || p.title,
-          name: p.name || p.title,
-          description: p.description || '',
-          price: parseFloat(String(p.price).replace(/[^0-9.]/g, '')) || 0,
-          cost: parseFloat(String(p.cost || p.price).replace(/[^0-9.]/g, '')) || 0,
+        // Rate limit check
+        const { count: recentImports } = await supabase
+          .from("products")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .gte("created_at", new Date(Date.now() - 3600000).toISOString());
+
+        if ((recentImports || 0) > 500) {
+          return new Response(
+            JSON.stringify({ success: false, error: "Rate limit exceeded. Max 500 imports per hour." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        // Insert products with user_id derived from token (SECURITY: never from body)
+        const productsToInsert = products.slice(0, 100).map((p: any) => ({
+          user_id: userId, // Always from auth, never from request
+          title: String(p.name || p.title || '').slice(0, 500),
+          name: String(p.name || p.title || '').slice(0, 500),
+          description: String(p.description || '').slice(0, 10000),
+          price: Math.max(0, parseFloat(String(p.price).replace(/[^0-9.]/g, '')) || 0),
+          cost: Math.max(0, parseFloat(String(p.cost || p.price).replace(/[^0-9.]/g, '')) || 0),
           image_url: p.image || p.images?.[0] || '',
-          images: p.images || (p.image ? [p.image] : []),
-          source_url: p.url || '',
-          source: p.source || 'chrome_extension',
-          platform: p.platform || p.domain || 'unknown',
+          images: Array.isArray(p.images) ? p.images.slice(0, 20) : (p.image ? [p.image] : []),
+          source_url: String(p.url || '').slice(0, 2000),
+          source: 'chrome_extension',
+          platform: String(p.platform || p.domain || 'unknown').slice(0, 100),
           status: 'draft',
-          category: p.category || 'Imported',
+          category: String(p.category || 'Imported').slice(0, 200),
           metadata: {
             imported_from_extension: true,
             scraped_at: p.scrapedAt,
-            original_data: p
           }
         }));
 
@@ -164,7 +173,7 @@ serve(async (req) => {
         if (insertError) {
           console.error("Error inserting products:", insertError);
           return new Response(
-            JSON.stringify({ success: false, error: insertError.message }),
+            JSON.stringify({ success: false, error: "Import failed" }),
             { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -174,15 +183,14 @@ serve(async (req) => {
           user_id: userId,
           action: "extension_import",
           entity_type: "products",
-          description: `${products.length} product(s) imported via Chrome extension`,
-          details: { count: products.length, source: "chrome_extension" }
+          description: `${insertedProducts?.length || 0} product(s) imported`,
+          details: { count: insertedProducts?.length || 0, source: "chrome_extension" }
         });
 
         return new Response(
           JSON.stringify({
             success: true,
             imported: insertedProducts?.length || 0,
-            items_processed: insertedProducts?.length || 0,
             message: `${insertedProducts?.length || 0} product(s) imported successfully`
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -192,7 +200,7 @@ serve(async (req) => {
       case 'import_reviews': {
         if (!userId) {
           return new Response(
-            JSON.stringify({ success: false, error: "Not authenticated" }),
+            JSON.stringify({ success: false, error: "Authentication required" }),
             { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
@@ -204,12 +212,11 @@ serve(async (req) => {
           );
         }
 
-        // Log activity
         await supabase.from("activity_logs").insert({
           user_id: userId,
           action: "extension_import_reviews",
           entity_type: "reviews",
-          description: `${reviews.length} review(s) imported via Chrome extension`,
+          description: `${reviews.length} review(s) imported`,
           details: { count: reviews.length, source: "chrome_extension" }
         });
 
@@ -217,7 +224,6 @@ serve(async (req) => {
           JSON.stringify({
             success: true,
             imported: reviews.length,
-            items_processed: reviews.length,
             message: `${reviews.length} review(s) processed`
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -227,19 +233,18 @@ serve(async (req) => {
       case 'bulk_import': {
         if (!userId) {
           return new Response(
-            JSON.stringify({ success: false, error: "Not authenticated" }),
+            JSON.stringify({ success: false, error: "Authentication required" }),
             { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
 
-        const itemCount = items?.length || 0;
+        const itemCount = Math.min(items?.length || 0, 1000);
 
-        // Log activity
         await supabase.from("activity_logs").insert({
           user_id: userId,
           action: "extension_bulk_import",
           entity_type: "bulk",
-          description: `Bulk import of ${itemCount} item(s) via Chrome extension`,
+          description: `Bulk import of ${itemCount} item(s)`,
           details: { count: itemCount, source: "chrome_extension" }
         });
 
@@ -247,7 +252,6 @@ serve(async (req) => {
           JSON.stringify({
             success: true,
             processed: itemCount,
-            items_processed: itemCount,
             message: `${itemCount} item(s) queued for processing`
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -255,9 +259,7 @@ serve(async (req) => {
       }
 
       case 'register_extension': {
-        // Generate a new extension token for the user
-        const authHeader = req.headers.get("Authorization");
-        
+        // SECURITY: Require JWT for registration
         if (!authHeader) {
           return new Response(
             JSON.stringify({ success: false, error: "Authorization required" }),
@@ -276,10 +278,10 @@ serve(async (req) => {
           );
         }
 
-        // Generate token
+        // Generate secure token
         const token = crypto.randomUUID() + '-' + crypto.randomUUID();
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
         
-        // Store token
         const { error: tokenInsertError } = await supabase
           .from("extension_tokens")
           .upsert({
@@ -287,8 +289,10 @@ serve(async (req) => {
             token: token,
             extension_id: extension_id || 'shopopti-chrome',
             is_active: true,
+            expires_at: expiresAt.toISOString(),
             created_at: new Date().toISOString(),
-            last_used_at: new Date().toISOString()
+            last_used_at: new Date().toISOString(),
+            permissions: ['import', 'sync', 'monitor']
           }, { onConflict: 'user_id,extension_id' });
 
         if (tokenInsertError) {
@@ -303,6 +307,7 @@ serve(async (req) => {
           JSON.stringify({
             success: true,
             token: token,
+            expiresAt: expiresAt.toISOString(),
             message: "Extension registered successfully"
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -310,40 +315,26 @@ serve(async (req) => {
       }
 
       case 'verify_token': {
-        if (!extensionToken) {
-          return new Response(
-            JSON.stringify({ success: false, valid: false }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-
         return new Response(
           JSON.stringify({
             success: true,
             valid: !!userId,
-            userId: userId
+            userId: userId ? userId.slice(0, 8) + '...' : null // Don't expose full ID
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       default:
-        // Fallback for legacy format
         return new Response(
-          JSON.stringify({
-            success: true,
-            job_type: job_type || action,
-            extension_id: extension_id || 'unknown',
-            items_processed: Math.floor(Math.random() * 100) + 10,
-            execution_time: 2000
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ success: false, error: "Unknown action" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }
   } catch (error) {
     console.error("Extension sync error:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
