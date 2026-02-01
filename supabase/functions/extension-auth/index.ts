@@ -1,15 +1,16 @@
-// ============================================
-// ShopOpti+ Extension Auth API v2.0
-// Sprint 1: SSO Extension avec JWT, refresh, permissions
-// ============================================
+/**
+ * ShopOpti+ Extension Auth API v3.0 - SECURED
+ * P0.1 Fix: JWT authentication required for token generation
+ * P0.4 Fix: Restricted CORS origins
+ */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from '../_shared/secure-cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token',
-}
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 // Validation helpers
 function validateUUID(value: unknown, fieldName: string): string {
@@ -43,20 +44,51 @@ function sanitizeDeviceInfo(value: unknown): Record<string, unknown> {
 function sanitizeToken(value: unknown): string | null {
   if (!value || typeof value !== 'string') return null
   const trimmed = value.trim()
-  // Support ext_ and ref_ prefixed tokens, plus legacy UUID-timestamp format
   const sanitized = trimmed.replace(/[^a-zA-Z0-9\-_]/g, '')
   if (sanitized.length < 10 || sanitized.length > 150) return null
   return sanitized
 }
 
+/**
+ * CRITICAL: Verify JWT and get authenticated user
+ * P0.1 Fix: Token generation now requires valid JWT
+ */
+async function verifyJwtAuth(req: Request): Promise<{ userId: string; email?: string } | null> {
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader) return null
+  
+  const token = authHeader.replace('Bearer ', '')
+  if (!token || token === authHeader || token.length < 20) return null
+  
+  // Create client with user's auth context
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } }
+  })
+  
+  // CRITICAL: Verify the JWT token
+  const { data: { user }, error } = await userClient.auth.getUser(token)
+  
+  if (error || !user) {
+    console.warn('[extension-auth] JWT verification failed:', error?.message)
+    return null
+  }
+  
+  return { userId: user.id, email: user.email }
+}
+
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
+  // CORS preflight with origin check
   if (req.method === 'OPTIONS') {
+    const origin = req.headers.get('Origin')
+    if (!origin || !isAllowedOrigin(origin)) {
+      return new Response(null, { status: 403 })
+    }
     return new Response(null, { headers: corsHeaders })
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   try {
     const body = await req.json()
@@ -70,8 +102,24 @@ serve(async (req) => {
     }
 
     // ===== GENERATE TOKEN =====
+    // P0.1 FIX: Requires JWT authentication - userId from JWT, not from body
     if (action === 'generate_token') {
-      const userId = validateUUID(data?.userId, 'userId')
+      // CRITICAL: Verify JWT first
+      const authResult = await verifyJwtAuth(req)
+      
+      if (!authResult) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Authentication required. Please sign in first.',
+            code: 'AUTH_REQUIRED'
+          }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      // Use authenticated user's ID, NOT from request body
+      const userId = authResult.userId
       const deviceInfo = sanitizeDeviceInfo(data?.deviceInfo)
       const permissions = data?.permissions || ['import', 'sync', 'logs', 'bulk']
       
@@ -85,7 +133,7 @@ serve(async (req) => {
       if (profileError || !profile) {
         console.error('[extension-auth] Profile not found for userId:', userId, profileError)
         return new Response(
-          JSON.stringify({ success: false, error: 'User not found' }),
+          JSON.stringify({ success: false, error: 'User profile not found' }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
@@ -102,6 +150,15 @@ serve(async (req) => {
         console.error('[extension-auth] Token generation error:', tokenError)
         throw new Error('Failed to generate token')
       }
+
+      // Log successful token generation
+      await supabase.from('security_events').insert({
+        user_id: userId,
+        event_type: 'extension_token_generated_secure',
+        severity: 'info',
+        description: 'Extension token generated via authenticated request',
+        metadata: { device_info: deviceInfo }
+      })
 
       return new Response(
         JSON.stringify({
@@ -136,7 +193,6 @@ serve(async (req) => {
         )
       }
 
-      // Use DB function for fast validation
       const { data: validationResult, error: validationError } = await supabase
         .rpc('validate_extension_token', { p_token: token })
       
@@ -199,9 +255,17 @@ serve(async (req) => {
     }
 
     // ===== REVOKE TOKEN =====
+    // P0.1 FIX: Requires JWT to revoke tokens
     if (action === 'revoke_token') {
-      const token = sanitizeToken(data?.token)
+      const authResult = await verifyJwtAuth(req)
+      if (!authResult) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentication required' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
       
+      const token = sanitizeToken(data?.token)
       if (!token) {
         return new Response(
           JSON.stringify({ success: false, error: 'Token required' }),
@@ -209,19 +273,19 @@ serve(async (req) => {
         )
       }
       
+      // Verify token belongs to authenticated user
       const { data: tokenData } = await supabase
         .from('extension_auth_tokens')
         .select('id, user_id')
         .eq('token', token)
         .single()
 
-      if (tokenData) {
+      if (tokenData && tokenData.user_id === authResult.userId) {
         await supabase
           .from('extension_auth_tokens')
           .update({ is_active: false, revoked_at: new Date().toISOString() })
           .eq('id', tokenData.id)
 
-        // Log security event
         await supabase.from('security_events').insert({
           user_id: tokenData.user_id,
           event_type: 'extension_token_revoked',
@@ -229,6 +293,11 @@ serve(async (req) => {
           description: 'Extension token revoked',
           metadata: { token_id: tokenData.id }
         })
+      } else if (tokenData) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Cannot revoke token belonging to another user' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
 
       return new Response(
@@ -249,7 +318,6 @@ serve(async (req) => {
         )
       }
 
-      // Get token info
       const { data: tokenInfo } = await supabase
         .from('extension_auth_tokens')
         .select('id, user_id')
@@ -276,13 +344,11 @@ serve(async (req) => {
         is_active: true
       }
 
-      // Upsert heartbeat
       await supabase
         .from('extension_heartbeats')
         .upsert(heartbeatData, { onConflict: 'user_id,token_id' })
         .select()
 
-      // Get user settings for extension
       const { data: settings } = await supabase
         .from('user_settings')
         .select('settings')
@@ -301,13 +367,21 @@ serve(async (req) => {
     }
 
     // ===== LIST TOKENS =====
+    // P0.1 FIX: Requires JWT - only list own tokens
     if (action === 'list_tokens') {
-      const userId = validateUUID(data?.userId, 'userId')
+      const authResult = await verifyJwtAuth(req)
+      if (!authResult) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentication required' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
       
+      // Only list tokens for authenticated user
       const { data: tokens, error } = await supabase
         .from('extension_auth_tokens')
         .select('id, name, created_at, last_used_at, usage_count, expires_at, is_active, device_info, permissions')
-        .eq('user_id', userId)
+        .eq('user_id', authResult.userId)
         .order('created_at', { ascending: false })
         .limit(10)
 
@@ -320,21 +394,27 @@ serve(async (req) => {
     }
 
     // ===== REVOKE ALL TOKENS =====
+    // P0.1 FIX: Requires JWT - only revoke own tokens
     if (action === 'revoke_all') {
-      const userId = validateUUID(data?.userId, 'userId')
+      const authResult = await verifyJwtAuth(req)
+      if (!authResult) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentication required' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
       
       await supabase
         .from('extension_auth_tokens')
         .update({ is_active: false, revoked_at: new Date().toISOString() })
-        .eq('user_id', userId)
+        .eq('user_id', authResult.userId)
         .eq('is_active', true)
 
-      // Log security event
       await supabase.from('security_events').insert({
-        user_id: userId,
+        user_id: authResult.userId,
         event_type: 'all_extension_tokens_revoked',
         severity: 'warning',
-        description: 'All extension tokens revoked',
+        description: 'All extension tokens revoked by user',
         metadata: {}
       })
 

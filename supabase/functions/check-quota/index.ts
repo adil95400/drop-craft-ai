@@ -1,27 +1,140 @@
+/**
+ * Quota Check API - SECURED
+ * P0.2 Fix: JWT authentication required, userId from JWT only
+ * P0.4 Fix: Restricted CORS origins
+ */
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from '../_shared/secure-cors.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-interface QuotaCheckRequest {
-  userId: string
-  quotaKey: string
-  incrementBy?: number
+// Rate limiting in-memory store
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT_WINDOW_MS = 60000 // 1 minute
+const RATE_LIMIT_MAX = 30 // 30 requests per minute
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
+    return true
+  }
+  
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return false
+  }
+  
+  entry.count++
+  return true
+}
+
+/**
+ * Verify JWT and get authenticated user
+ */
+async function verifyJwtAuth(req: Request): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader) return null
+  
+  const token = authHeader.replace('Bearer ', '')
+  if (!token || token === authHeader || token.length < 20) return null
+  
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } }
+  })
+  
+  const { data: { user }, error } = await userClient.auth.getUser(token)
+  
+  if (error || !user) return null
+  
+  return { userId: user.id }
+}
+
+/**
+ * Validate extension token as fallback auth
+ */
+async function verifyExtensionToken(req: Request): Promise<{ userId: string } | null> {
+  const extensionToken = req.headers.get('x-extension-token')
+  if (!extensionToken) return null
+  
+  const sanitized = extensionToken.trim().replace(/[^a-zA-Z0-9\-_]/g, '')
+  if (sanitized.length < 10 || sanitized.length > 150) return null
+  
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  
+  const { data: result, error } = await supabase
+    .rpc('validate_extension_token', { p_token: sanitized })
+  
+  if (error || !result?.success || !result?.user?.id) return null
+  
+  return { userId: result.user.id }
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+  const corsHeaders = getSecureCorsHeaders(req)
+  
+  // Handle CORS preflight with origin check
   if (req.method === 'OPTIONS') {
+    const origin = req.headers.get('Origin')
+    if (!origin || !isAllowedOrigin(origin)) {
+      return new Response(null, { status: 403 })
+    }
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    // Rate limiting
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown'
+    if (!checkRateLimit(ip)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
     
-    const { userId, quotaKey, incrementBy = 0 } = await req.json() as QuotaCheckRequest
+    // P0.2 FIX: Authentication required
+    let authResult = await verifyJwtAuth(req)
+    
+    // Fallback to extension token
+    if (!authResult) {
+      authResult = await verifyExtensionToken(req)
+    }
+    
+    if (!authResult) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Authentication required',
+          code: 'AUTH_REQUIRED'
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // P0.2 FIX: userId comes from authenticated token, NOT from request body
+    const userId = authResult.userId
+    
+    const body = await req.json()
+    const { quotaKey, incrementBy = 0 } = body
+    
+    // Validate quotaKey
+    if (!quotaKey || typeof quotaKey !== 'string' || quotaKey.length > 100) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid quota key' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Validate incrementBy
+    const safeIncrement = Math.min(Math.max(0, parseInt(String(incrementBy)) || 0), 100)
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    console.log(`Checking quota for user ${userId}, quota: ${quotaKey}, increment: ${incrementBy}`)
+    console.log(`[check-quota] Checking quota for authenticated user ${userId}, quota: ${quotaKey}, increment: ${safeIncrement}`)
 
     // Use the database function to check quota
     const { data: canProceed, error: checkError } = await supabase.rpc('check_quota', {
@@ -30,24 +143,24 @@ Deno.serve(async (req) => {
     })
 
     if (checkError) {
-      console.error('Error checking quota:', checkError)
+      console.error('[check-quota] Error checking quota:', checkError)
       throw new Error('Failed to check quota')
     }
 
     // If incrementBy is provided and quota check passes, increment the quota
-    if (incrementBy > 0 && canProceed) {
-      const { data: incrementResult, error: incrementError } = await supabase.rpc('increment_quota', {
+    if (safeIncrement > 0 && canProceed) {
+      const { error: incrementError } = await supabase.rpc('increment_quota', {
         user_id_param: userId,
         quota_key_param: quotaKey,
-        increment_by: incrementBy
+        increment_by: safeIncrement
       })
 
       if (incrementError) {
-        console.error('Error incrementing quota:', incrementError)
+        console.error('[check-quota] Error incrementing quota:', incrementError)
         throw new Error('Failed to increment quota')
       }
 
-      console.log(`Quota incremented successfully for ${quotaKey}`)
+      console.log(`[check-quota] Quota incremented successfully for ${quotaKey}`)
     }
 
     // Get current quota status
@@ -59,13 +172,13 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (quotaError) {
-      console.error('Error fetching quota data:', quotaError)
+      console.error('[check-quota] Error fetching quota data:', quotaError)
     }
 
     // Get quota limit from plan
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('plan')
+      .select('subscription_plan')
       .eq('id', userId)
       .single()
 
@@ -74,7 +187,7 @@ Deno.serve(async (req) => {
       const { data: limitData, error: limitError } = await supabase
         .from('plans_limits')
         .select('limit_value')
-        .eq('plan', profile.plan)
+        .eq('plan', profile.subscription_plan || 'free')
         .eq('limit_key', quotaKey)
         .maybeSingle()
 
@@ -99,14 +212,14 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Quota check error:', error)
+    console.error('[check-quota] Error:', error)
     return new Response(
       JSON.stringify({
         success: false,
         error: error.message
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' },
         status: 400,
       }
     )
