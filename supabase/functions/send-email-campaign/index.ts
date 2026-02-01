@@ -1,82 +1,101 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+/**
+ * Send Email Campaign - Secure Implementation
+ * P1.1: Auth obligatoire, rate limiting, validation Zod, scoping user_id
+ */
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-interface EmailCampaignRequest {
-  campaignId?: string;
-  to?: string | string[];
-  subject: string;
-  body: string;
-  segment?: string;
-  sendNow?: boolean;
-}
+const RequestSchema = z.object({
+  campaignId: z.string().uuid().optional(),
+  to: z.union([z.string().email(), z.array(z.string().email()).max(500)]).optional(),
+  subject: z.string().min(1).max(200),
+  body: z.string().min(1).max(50000),
+  segment: z.enum(['all', 'vip', 'new', 'inactive']).optional(),
+  sendNow: z.boolean().optional().default(true)
+})
 
 serve(async (req) => {
+  const corsHeaders = getSecureCorsHeaders(req)
+  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightSecure(req)
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
-    // Get user from Authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
+    // 1. Auth obligatoire - userId provient du token uniquement
+    const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
+    
+    // 2. Rate limiting: max 10 campaigns per hour
+    const rateCheck = await checkRateLimit(supabase, userId, 'email_campaign', 10, 60)
+    if (!rateCheck) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Max 10 email campaigns per hour.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // 3. Parse and validate input
+    const body = await req.json()
+    const parseResult = RequestSchema.safeParse(body)
     
-    if (authError || !user) {
-      throw new Error('Invalid authentication');
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid request',
+          details: parseResult.error.flatten()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    const { campaignId, to, subject, body, segment, sendNow }: EmailCampaignRequest = await req.json();
+    const { campaignId, to, subject, body: emailBody, segment, sendNow } = parseResult.data
     
-    console.log(`Processing email campaign for user ${user.id}`);
+    console.log(`[SECURE] Processing email campaign for user ${userId}`)
 
-    let recipients: string[] = [];
+    let recipients: string[] = []
 
     // Get recipients based on segment or direct list
     if (to) {
-      recipients = Array.isArray(to) ? to : [to];
+      recipients = Array.isArray(to) ? to : [to]
     } else if (segment) {
-      // Fetch contacts from CRM based on segment
+      // Fetch contacts from CRM based on segment - SCOPED to user
       let query = supabase
         .from('crm_contacts')
         .select('email')
-        .eq('user_id', user.id)
+        .eq('user_id', userId) // CRITICAL: scope to user
         .eq('status', 'active')
-        .not('email', 'is', null);
+        .not('email', 'is', null)
 
       if (segment === 'vip') {
-        query = query.gte('total_spent', 1000);
+        query = query.gte('total_spent', 1000)
       } else if (segment === 'new') {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        query = query.gte('created_at', thirtyDaysAgo.toISOString());
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        query = query.gte('created_at', thirtyDaysAgo.toISOString())
       } else if (segment === 'inactive') {
-        const ninetyDaysAgo = new Date();
-        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-        query = query.lte('last_activity_at', ninetyDaysAgo.toISOString());
+        const ninetyDaysAgo = new Date()
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+        query = query.lte('last_activity_at', ninetyDaysAgo.toISOString())
       }
 
-      const { data: contacts, error: contactsError } = await query;
+      const { data: contacts, error: contactsError } = await query
       
       if (contactsError) {
-        console.error('Error fetching contacts:', contactsError);
-        throw new Error('Failed to fetch contacts');
+        console.error('Error fetching contacts:', contactsError)
+        throw new Error('Failed to fetch contacts')
       }
 
-      recipients = contacts?.map(c => c.email).filter(Boolean) || [];
+      recipients = contacts?.map((c: any) => c.email).filter(Boolean) || []
     }
 
     if (recipients.length === 0) {
@@ -86,19 +105,18 @@ serve(async (req) => {
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      })
     }
 
-    console.log(`Sending to ${recipients.length} recipients`);
+    console.log(`Sending to ${recipients.length} recipients`)
 
     // Send emails using Resend API (or fallback to logging)
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    const results: { email: string; success: boolean; error?: string }[] = [];
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    const results: { email: string; success: boolean; error?: string }[] = []
 
     for (const email of recipients) {
       try {
         if (resendApiKey) {
-          // Real email sending via Resend
           const response = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
@@ -109,33 +127,31 @@ serve(async (req) => {
               from: 'ShopOpti <noreply@shopopti.io>',
               to: email,
               subject: subject,
-              html: formatEmailHtml(body)
+              html: formatEmailHtml(emailBody)
             })
-          });
+          })
 
           if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText);
+            const errorText = await response.text()
+            throw new Error(errorText)
           }
 
-          results.push({ email, success: true });
+          results.push({ email, success: true })
         } else {
           // Fallback: Log email (development mode)
-          console.log(`[DEV] Email would be sent to: ${email}`);
-          console.log(`[DEV] Subject: ${subject}`);
-          console.log(`[DEV] Body: ${body.substring(0, 200)}...`);
-          results.push({ email, success: true });
+          console.log(`[DEV] Email would be sent to: ${email}`)
+          results.push({ email, success: true })
         }
       } catch (error) {
-        console.error(`Failed to send to ${email}:`, error);
-        results.push({ email, success: false, error: error.message });
+        console.error(`Failed to send to ${email}:`, error)
+        results.push({ email, success: false, error: error.message })
       }
     }
 
-    // Update campaign status if campaignId provided
+    // Update campaign status if campaignId provided - SCOPED to user
     if (campaignId) {
-      const successCount = results.filter(r => r.success).length;
-      const failCount = results.filter(r => !r.success).length;
+      const successCount = results.filter(r => r.success).length
+      const failCount = results.filter(r => !r.success).length
 
       await supabase
         .from('automated_campaigns')
@@ -149,14 +165,15 @@ serve(async (req) => {
             sent_at: new Date().toISOString()
           }
         })
-        .eq('id', campaignId);
+        .eq('id', campaignId)
+        .eq('user_id', userId) // CRITICAL: scope to user
     }
 
-    // Log the campaign execution
+    // Log the campaign execution - SCOPED to user
     await supabase
       .from('activity_logs')
       .insert({
-        user_id: user.id,
+        user_id: userId, // CRITICAL: from token only
         action: 'email_campaign_sent',
         entity_type: 'campaign',
         entity_id: campaignId,
@@ -167,7 +184,14 @@ serve(async (req) => {
           success_count: results.filter(r => r.success).length,
           fail_count: results.filter(r => !r.success).length
         }
-      });
+      })
+
+    // Log security event
+    await logSecurityEvent(supabase, userId, 'email_campaign_sent', 'info', {
+      campaign_id: campaignId,
+      recipients_count: recipients.length,
+      success_count: results.filter(r => r.success).length
+    })
 
     return new Response(JSON.stringify({
       success: true,
@@ -177,18 +201,18 @@ serve(async (req) => {
       results
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    })
 
   } catch (error) {
-    console.error('Email campaign error:', error);
+    console.error('Email campaign error:', error)
     return new Response(JSON.stringify({
       error: error.message || 'Internal server error'
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+      headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' }
+    })
   }
-});
+})
 
 function formatEmailHtml(body: string): string {
   return `
@@ -219,5 +243,5 @@ function formatEmailHtml(body: string): string {
   </div>
 </body>
 </html>
-  `;
+  `
 }

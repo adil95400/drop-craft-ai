@@ -1,18 +1,48 @@
+/**
+ * Bulk Import Products - Secure Implementation
+ * P1.1: Auth obligatoire, rate limiting, validation Zod, scoping user_id
+ */
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
+import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-interface BulkImportRequest {
-  products: any[]
-  source: 'supplier' | 'csv' | 'url' | 'shopify'
-  options?: {
-    auto_optimize?: boolean
-    auto_publish?: boolean
-    target_store?: string
-  }
-}
+// Input validation
+const ProductSchema = z.object({
+  name: z.string().max(500).optional(),
+  title: z.string().max(500).optional(),
+  product_name: z.string().max(500).optional(),
+  description: z.string().max(10000).optional(),
+  price: z.union([z.string(), z.number()]).optional(),
+  cost_price: z.union([z.string(), z.number()]).optional(),
+  sku: z.string().max(100).optional(),
+  id: z.string().max(100).optional(),
+  image_url: z.string().url().optional().or(z.string().max(0)),
+  images: z.array(z.string()).max(20).optional(),
+  category: z.string().max(200).optional(),
+  brand: z.string().max(200).optional(),
+  stock_quantity: z.union([z.string(), z.number()]).optional(),
+  supplier: z.string().max(200).optional(),
+  supplier_name: z.string().max(200).optional(),
+  tags: z.array(z.string()).max(30).optional(),
+  weight: z.union([z.string(), z.number()]).optional(),
+  source_url: z.string().url().optional(),
+  url: z.string().url().optional(),
+}).passthrough()
+
+const BulkImportSchema = z.object({
+  products: z.array(ProductSchema).min(1).max(1000),
+  source: z.enum(['supplier', 'csv', 'url', 'shopify', 'api']),
+  options: z.object({
+    auto_optimize: z.boolean().optional(),
+    auto_publish: z.boolean().optional(),
+    target_store: z.string().optional(),
+  }).optional()
+})
 
 // Platform detection
 function detectPlatform(url: string): { platform: string; productId: string | null } {
@@ -41,7 +71,6 @@ async function scrapeProductUrl(url: string, userId: string, supabase: any): Pro
   console.log(`📡 Scraping URL: ${url}`)
   
   try {
-    // Call quick-import-url edge function for full scraping
     const { data, error } = await supabase.functions.invoke('quick-import-url', {
       body: {
         url,
@@ -60,7 +89,7 @@ async function scrapeProductUrl(url: string, userId: string, supabase: any): Pro
       throw new Error(data?.error || 'Scraping failed')
     }
     
-    console.log(`✅ Scraped: ${data.data?.name || 'Unknown'} - ${data.summary?.images || 0} images, ${data.summary?.variants || 0} variants, ${data.summary?.videos || 0} videos`)
+    console.log(`✅ Scraped: ${data.data?.name || 'Unknown'}`)
     
     return {
       success: true,
@@ -77,42 +106,52 @@ async function scrapeProductUrl(url: string, userId: string, supabase: any): Pro
 }
 
 Deno.serve(async (req) => {
-  console.log('Bulk import function called')
+  const corsHeaders = getSecureCorsHeaders(req)
   
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return handleCorsPreflightSecure(req)
   }
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('Missing authorization header')
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
+    // 1. Auth obligatoire - userId provient du token uniquement
+    const { user } = await authenticateUser(req, supabase)
+    const userId = user.id
     
-    if (authError || !user) {
-      console.error('Auth error:', authError)
-      throw new Error('Unauthorized')
+    // 2. Rate limiting: max 5 bulk imports per hour
+    const rateCheck = await checkRateLimit(supabase, userId, 'bulk_import', 5, 60)
+    if (!rateCheck) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Max 5 bulk imports per hour.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    const { products, source, options }: BulkImportRequest = await req.json()
-
-    if (!products || !Array.isArray(products) || products.length === 0) {
-      throw new Error('No products provided')
+    // 3. Parse and validate input
+    const body = await req.json()
+    const parseResult = BulkImportSchema.safeParse(body)
+    
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid request',
+          details: parseResult.error.flatten()
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    console.log(`Starting bulk import of ${products.length} products from ${source} for user ${user.id}`)
+    const { products, source, options } = parseResult.data
 
-    // Create import job
+    console.log(`[SECURE] Starting bulk import of ${products.length} products from ${source} for user ${userId}`)
+
+    // Create import job - SECURE: user_id from token only
     const { data: job, error: jobError } = await supabase
       .from('import_jobs')
       .insert({
-        user_id: user.id,
+        user_id: userId, // CRITICAL: from token only
         source_platform: source,
         job_type: 'bulk_import',
         status: 'processing',
@@ -138,7 +177,6 @@ Deno.serve(async (req) => {
 
     // Process differently based on source type
     if (source === 'url') {
-      // URL-based import: scrape each URL using quick-import-url
       console.log('🔗 Processing URL-based bulk import with full scraping')
       
       for (let i = 0; i < products.length; i++) {
@@ -152,7 +190,7 @@ Deno.serve(async (req) => {
         }
         
         try {
-          const result = await scrapeProductUrl(sourceUrl, user.id, supabase)
+          const result = await scrapeProductUrl(sourceUrl, userId, supabase)
           
           if (result.success) {
             succeeded++
@@ -166,7 +204,7 @@ Deno.serve(async (req) => {
           errors.push(`Product ${i + 1}: ${error.message}`)
         }
         
-        // Update job progress
+        // Update job progress - SCOPED to user
         await supabase
           .from('import_jobs')
           .update({
@@ -175,6 +213,7 @@ Deno.serve(async (req) => {
             error_log: errors.length > 0 ? errors : null
           })
           .eq('id', jobId)
+          .eq('user_id', userId) // SECURE: scope to user
         
         // Rate limiting between requests
         if (i < products.length - 1) {
@@ -190,11 +229,11 @@ Deno.serve(async (req) => {
         
         try {
           const mappedProducts = batch.map((product, idx) => {
-            const price = parseFloat(product.price || '0') || 0
-            const costPrice = parseFloat(product.cost_price || '0') || price * 0.6
+            const price = parseFloat(String(product.price || '0')) || 0
+            const costPrice = parseFloat(String(product.cost_price || '0')) || price * 0.6
             
             return {
-              user_id: user.id,
+              user_id: userId, // CRITICAL: from token only
               title: (product.name || product.title || `Product ${i + idx + 1}`).substring(0, 500),
               description: (product.description || '').substring(0, 5000),
               price: Math.min(price, 999999.99),
@@ -203,11 +242,11 @@ Deno.serve(async (req) => {
               category: (product.category || 'Imported').substring(0, 100),
               image_url: product.image_url || (Array.isArray(product.images) ? product.images[0] : null),
               images: Array.isArray(product.images) ? product.images.slice(0, 10) : [],
-              stock_quantity: Math.min(parseInt(product.stock_quantity || '0') || 0, 999999),
+              stock_quantity: Math.min(parseInt(String(product.stock_quantity || '0')) || 0, 999999),
               status: 'draft',
               tags: Array.isArray(product.tags) ? product.tags.slice(0, 20) : [],
               supplier: product.supplier_name || product.supplier || source,
-              weight: Math.min(parseFloat(product.weight || '0') || 0, 9999),
+              weight: Math.min(parseFloat(String(product.weight || '0')) || 0, 9999),
             }
           })
 
@@ -230,7 +269,7 @@ Deno.serve(async (req) => {
           errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error.message}`)
         }
 
-        // Update job progress every batch
+        // Update job progress - SCOPED to user
         await supabase
           .from('import_jobs')
           .update({
@@ -239,13 +278,14 @@ Deno.serve(async (req) => {
             error_log: errors.length > 0 ? errors : null
           })
           .eq('id', jobId)
+          .eq('user_id', userId) // SECURE: scope to user
 
         console.log(`Progress: ${i + batch.length}/${products.length} (${succeeded} success, ${failed} failed)`)
       }
     }
 
-    // Mark job as completed
-    const finalStatus = failed > 0 && succeeded === 0 ? 'failed' : failed > 0 ? 'completed' : 'completed'
+    // Mark job as completed - SCOPED to user
+    const finalStatus = failed > 0 && succeeded === 0 ? 'failed' : 'completed'
     
     await supabase
       .from('import_jobs')
@@ -257,6 +297,16 @@ Deno.serve(async (req) => {
         error_log: errors.length > 0 ? errors : null
       })
       .eq('id', jobId)
+      .eq('user_id', userId) // SECURE: scope to user
+
+    // Log security event
+    await logSecurityEvent(supabase, userId, 'bulk_import_completed', 'info', {
+      job_id: jobId,
+      source,
+      total: products.length,
+      succeeded,
+      failed
+    })
 
     console.log(`Bulk import completed: ${succeeded} succeeded, ${failed} failed`)
 
@@ -283,7 +333,7 @@ Deno.serve(async (req) => {
         error: error.message || 'Unknown error occurred'
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getSecureCorsHeaders(req), 'Content-Type': 'application/json' },
         status: 400
       }
     )
