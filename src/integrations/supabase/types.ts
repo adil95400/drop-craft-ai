@@ -4671,6 +4671,81 @@ export type Database = {
           },
         ]
       }
+      extension_scope_usage_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          request_metadata: Json | null
+          scope_name: string
+          success: boolean | null
+          token_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          request_metadata?: Json | null
+          scope_name: string
+          success?: boolean | null
+          token_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          request_metadata?: Json | null
+          scope_name?: string
+          success?: boolean | null
+          token_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      extension_scopes: {
+        Row: {
+          category: Database["public"]["Enums"]["extension_scope_category"]
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          is_sensitive: boolean | null
+          min_plan: string | null
+          rate_limit_per_hour: number | null
+          scope_name: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["extension_scope_category"]
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          is_sensitive?: boolean | null
+          min_plan?: string | null
+          rate_limit_per_hour?: number | null
+          scope_name: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["extension_scope_category"]
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_sensitive?: boolean | null
+          min_plan?: string | null
+          rate_limit_per_hour?: number | null
+          scope_name?: string
+        }
+        Relationships: []
+      }
       extension_sessions: {
         Row: {
           actions_count: number | null
@@ -4717,6 +4792,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "extension_sessions_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "extension_auth_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extension_token_scopes: {
+        Row: {
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          last_used_at: string | null
+          scope_id: string
+          token_id: string
+          usage_count: number | null
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          last_used_at?: string | null
+          scope_id: string
+          token_id: string
+          usage_count?: number | null
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          last_used_at?: string | null
+          scope_id?: string
+          token_id?: string
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extension_token_scopes_scope_id_fkey"
+            columns: ["scope_id"]
+            isOneToOne: false
+            referencedRelation: "extension_scopes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extension_token_scopes_token_id_fkey"
             columns: ["token_id"]
             isOneToOne: false
             referencedRelation: "extension_auth_tokens"
@@ -12156,15 +12279,29 @@ export type Database = {
       }
       generate_bulk_order_number: { Args: never; Returns: string }
       generate_dispute_number: { Args: never; Returns: string }
-      generate_extension_token: {
-        Args: { p_device_info?: Json; p_permissions?: Json; p_user_id: string }
-        Returns: Json
-      }
+      generate_extension_token:
+        | {
+            Args: {
+              p_device_info?: Json
+              p_permissions?: Json
+              p_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_device_info?: Json
+              p_permissions?: string[]
+              p_user_id: string
+            }
+            Returns: Json
+          }
       generate_rma_number: { Args: never; Returns: string }
       get_exchange_rate: {
         Args: { p_base: string; p_target: string }
         Returns: number
       }
+      get_scope_rate_limit: { Args: { p_scope_name: string }; Returns: number }
       get_translation_usage_summary: {
         Args: { p_user_id?: string }
         Returns: {
@@ -12178,6 +12315,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      grant_token_scopes: {
+        Args: {
+          p_expires_at?: string
+          p_granted_by: string
+          p_scope_names: string[]
+          p_token_id: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -12187,9 +12333,26 @@ export type Database = {
       }
       is_admin_secure: { Args: never; Returns: boolean }
       is_token_revoked: { Args: { token_id?: string }; Returns: boolean }
+      log_scope_usage: {
+        Args: {
+          p_action: string
+          p_error_message?: string
+          p_ip_address?: string
+          p_metadata?: Json
+          p_scope_name: string
+          p_success?: boolean
+          p_token_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       refresh_extension_token: {
         Args: { p_refresh_token: string }
         Returns: Json
+      }
+      token_has_scope: {
+        Args: { p_scope_name: string; p_token_id: string }
+        Returns: boolean
       }
       unlock_stuck_import_jobs: { Args: never; Returns: number }
       validate_api_key: {
@@ -12202,10 +12365,22 @@ export type Database = {
         }[]
       }
       validate_extension_token: { Args: { p_token: string }; Returns: Json }
+      validate_token_with_scopes: {
+        Args: { p_required_scopes?: string[]; p_token: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
       content_role: "viewer" | "writer" | "editor" | "publisher" | "admin"
+      extension_scope_category:
+        | "products"
+        | "orders"
+        | "sync"
+        | "analytics"
+        | "settings"
+        | "ai"
+        | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -12335,6 +12510,15 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       content_role: ["viewer", "writer", "editor", "publisher", "admin"],
+      extension_scope_category: [
+        "products",
+        "orders",
+        "sync",
+        "analytics",
+        "settings",
+        "ai",
+        "admin",
+      ],
     },
   },
 } as const

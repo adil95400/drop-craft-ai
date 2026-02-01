@@ -1,92 +1,167 @@
 /**
  * Unified Import - Secure Edge Function
  * P0.4 FIX: Replaced CORS * with restrictive allowlist
- * Already uses authenticateUser for P0.5 compliance
+ * P1.3: Scope-based authorization with granular permissions
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { authenticateUser } from '../_shared/secure-auth.ts'
+import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
 import { secureBatchInsert } from '../_shared/db-helpers.ts'
-import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts'
+import { SCOPE_PRESETS } from '../_shared/scope-middleware.ts'
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+// Input schema for import operations
+const ImportInputSchema = z.object({
+  endpoint: z.enum(['csv', 'xml-json', 'url', 'ftp', 'bulk']).optional(),
+  products: z.array(z.object({
+    name: z.string().optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    price: z.union([z.string(), z.number()]).optional(),
+    cost_price: z.union([z.string(), z.number()]).optional(),
+    sku: z.string().optional(),
+    category: z.string().optional(),
+    stock_quantity: z.union([z.string(), z.number()]).optional(),
+    stock: z.union([z.string(), z.number()]).optional(),
+    quantity: z.union([z.string(), z.number()]).optional(),
+    status: z.enum(['active', 'draft']).optional(),
+    image_url: z.string().optional(),
+  })).optional(),
+  format: z.enum(['json', 'xml', 'csv']).optional(),
+  data: z.any().optional(),
+  url: z.string().url().optional(),
+  bulk: z.boolean().optional(),
+}).refine(
+  data => data.products || data.data || data.url,
+  { message: 'At least one of products, data, or url is required' }
+)
 
-serve(async (req) => {
-  console.log('Unified Import Function called:', req.method)
+type ImportInput = z.infer<typeof ImportInputSchema>
 
-  // Handle CORS preflight with secure headers
-  const preflightResponse = handleCorsPreflightSecure(req);
-  if (preflightResponse) return preflightResponse;
+// Determine required scopes based on operation
+function getRequiredScopes(input: ImportInput): string[] {
+  // Bulk operations require premium scope
+  if (input.bulk || (input.products && input.products.length > 50)) {
+    return SCOPE_PRESETS.PRODUCT_BULK
+  }
+  // Standard import
+  return SCOPE_PRESETS.PRODUCT_IMPORT
+}
 
-  const origin = req.headers.get('origin');
-  const corsHeaders = getSecureCorsHeaders(origin);
-
-  try {
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    const { user } = await authenticateUser(req, supabase)
+// Create the edge function with scope-based authorization
+const handler = createEdgeFunction<ImportInput>(
+  {
+    requireAuth: true,
+    allowExtensionToken: true,
+    // P1.3: Base scopes - additional checks done in handler for bulk
+    requiredScopes: ['products:read', 'products:import'],
+    requireAllScopes: true,
+    logScopeUsage: true,
+    inputSchema: ImportInputSchema,
+    rateLimit: {
+      maxRequests: 30,
+      windowMinutes: 60,
+      action: 'unified_import'
+    }
+  },
+  async (ctx) => {
+    const { user, adminClient, input, correlationId, hasScope } = ctx
     
-    const url = new URL(req.url)
-    const endpoint = url.pathname.split('/').pop()
-    const body = await req.json()
-
-    console.log('Processing import endpoint:', endpoint, 'for user:', user.id.slice(0, 8))
-
+    console.log(`[${correlationId}] Import request from user ${user.id.slice(0, 8)}`)
+    console.log(`[${correlationId}] User scopes:`, user.scopes)
+    
+    // P1.3: Check if bulk scope is needed for large imports
+    const productCount = input.products?.length || 0
+    if (productCount > 50 && !hasScope('products:bulk')) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Bulk import requires "products:bulk" scope. Upgrade your plan or reduce import size.',
+          code: 'BULK_SCOPE_REQUIRED',
+          max_without_bulk: 50,
+          attempted: productCount
+        }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Route to appropriate handler
+    const endpoint = input.endpoint || 'csv'
+    
     switch (endpoint) {
       case 'csv':
-        return await handleCSVImport(supabase, body, user.id, corsHeaders)
+        return await handleCSVImport(adminClient, input, user.id, correlationId)
       
       case 'xml-json':
-        return await handleXMLJSONImport(supabase, body, user.id, corsHeaders)
+        return await handleXMLJSONImport(adminClient, input, user.id, correlationId)
       
       case 'url':
-        return await handleURLImport(supabase, body, user.id, corsHeaders)
+        return await handleURLImport(adminClient, input, user.id, correlationId)
+      
+      case 'bulk':
+        // Extra scope check for explicit bulk endpoint
+        if (!hasScope('products:bulk')) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'Bulk import requires "products:bulk" scope',
+              code: 'INSUFFICIENT_SCOPES'
+            }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          )
+        }
+        return await handleBulkImport(adminClient, input, user.id, correlationId)
       
       case 'ftp':
-        return await handleFTPImport(supabase, body, user.id, corsHeaders)
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'FTP import not yet implemented - use CSV or URL import instead' 
+          }),
+          { status: 501, headers: { 'Content-Type': 'application/json' } }
+        )
       
       default:
         return new Response(
-          JSON.stringify({ error: 'Unknown import endpoint' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ success: false, error: 'Unknown import endpoint' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
         )
     }
-  } catch (error) {
-    console.error('Error in unified import:', error)
-    
-    // Don't expose internal errors
-    const isAuthError = error instanceof Error && error.message.includes('Authorization')
-    return new Response(
-      JSON.stringify({ 
-        error: isAuthError ? error.message : 'Import failed',
-      }),
-      { status: isAuthError ? 401 : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
   }
-})
+)
 
-async function handleCSVImport(supabase: any, body: any, userId: string, corsHeaders: Record<string, string>) {
-  const { products } = body
+serve(handler)
+
+// ============= Import Handlers =============
+
+async function handleCSVImport(
+  supabase: any, 
+  input: ImportInput, 
+  userId: string, 
+  correlationId: string
+) {
+  const products = input.products || []
   
-  if (!products || !Array.isArray(products)) {
-    throw new Error('Invalid products data')
+  if (products.length === 0) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'No products to import' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 
   // Rate limit: max 1000 products per import
   const limitedProducts = products.slice(0, 1000)
-  console.log(`Importing ${limitedProducts.length} products from CSV`)
+  console.log(`[${correlationId}] Importing ${limitedProducts.length} products from CSV`)
 
   const validProducts = limitedProducts.map(p => ({
-    name: String(p.name || 'Sans nom').slice(0, 500),
+    name: String(p.name || p.title || 'Sans nom').slice(0, 500),
     description: String(p.description || '').slice(0, 10000),
-    price: Math.max(0, parseFloat(p.price) || 0),
-    cost_price: Math.max(0, parseFloat(p.cost_price) || 0),
+    price: Math.max(0, parseFloat(String(p.price)) || 0),
+    cost_price: Math.max(0, parseFloat(String(p.cost_price)) || 0),
     sku: String(p.sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`).slice(0, 100),
     category: String(p.category || 'Autre').slice(0, 200),
-    stock_quantity: Math.max(0, parseInt(p.stock_quantity) || 0),
+    stock_quantity: Math.max(0, parseInt(String(p.stock_quantity || p.stock || p.quantity)) || 0),
     status: p.status === 'active' || p.status === 'draft' ? p.status : 'active',
     image_url: p.image_url || null,
-    user_id: userId // Always from auth
+    user_id: userId
   }))
 
   const result = await secureBatchInsert(supabase, 'products', validProducts, userId)
@@ -101,26 +176,34 @@ async function handleCSVImport(supabase: any, body: any, userId: string, corsHea
         timestamp: new Date().toISOString()
       }
     }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    { headers: { 'Content-Type': 'application/json' } }
   )
 }
 
-async function handleXMLJSONImport(supabase: any, body: any, userId: string, corsHeaders: Record<string, string>) {
-  const { format, data: importData } = body
+async function handleXMLJSONImport(
+  supabase: any, 
+  input: ImportInput, 
+  userId: string, 
+  correlationId: string
+) {
+  const { format, data: importData } = input
   
-  console.log(`Processing ${format} import`)
+  console.log(`[${correlationId}] Processing ${format} import`)
 
   let products = []
   
   if (format === 'json') {
     products = Array.isArray(importData) ? importData : [importData]
   } else if (format === 'xml') {
-    throw new Error('XML parsing not yet implemented')
+    return new Response(
+      JSON.stringify({ success: false, error: 'XML parsing not yet implemented' }),
+      { status: 501, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 
   const limitedProducts = products.slice(0, 1000)
 
-  const validProducts = limitedProducts.map(p => ({
+  const validProducts = limitedProducts.map((p: any) => ({
     name: String(p.name || p.title || 'Sans nom').slice(0, 500),
     description: String(p.description || '').slice(0, 10000),
     price: Math.max(0, parseFloat(p.price) || 0),
@@ -136,7 +219,7 @@ async function handleXMLJSONImport(supabase: any, body: any, userId: string, cor
   return new Response(
     JSON.stringify({
       success: true,
-      message: `${format.toUpperCase()} import completed`,
+      message: `${(format || 'JSON').toUpperCase()} import completed`,
       data: {
         format,
         recordsProcessed: products.length,
@@ -144,28 +227,26 @@ async function handleXMLJSONImport(supabase: any, body: any, userId: string, cor
         timestamp: new Date().toISOString()
       }
     }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    { headers: { 'Content-Type': 'application/json' } }
   )
 }
 
-async function handleURLImport(supabase: any, body: any, userId: string, corsHeaders: Record<string, string>) {
-  const { url } = body
+async function handleURLImport(
+  supabase: any, 
+  input: ImportInput, 
+  userId: string, 
+  correlationId: string
+) {
+  const { url } = input
   
-  if (!url || typeof url !== 'string') {
-    throw new Error('Valid URL is required')
+  if (!url) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Valid URL is required' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 
-  // Basic URL validation
-  try {
-    const parsedUrl = new URL(url)
-    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-      throw new Error('Only HTTP/HTTPS URLs allowed')
-    }
-  } catch {
-    throw new Error('Invalid URL format')
-  }
-
-  console.log(`Importing from URL for user ${userId.slice(0, 8)}`)
+  console.log(`[${correlationId}] Importing from URL for user ${userId.slice(0, 8)}`)
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 30000) // 30s timeout
@@ -178,14 +259,17 @@ async function handleURLImport(supabase: any, body: any, userId: string, corsHea
     clearTimeout(timeout)
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch data from URL: ${response.status}`)
+      return new Response(
+        JSON.stringify({ success: false, error: `Failed to fetch data from URL: ${response.status}` }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
     }
 
     const data = await response.json()
     const products = Array.isArray(data) ? data : [data]
     const limitedProducts = products.slice(0, 500)
 
-    const validProducts = limitedProducts.map(p => ({
+    const validProducts = limitedProducts.map((p: any) => ({
       name: String(p.name || p.title || 'Sans nom').slice(0, 500),
       description: String(p.description || '').slice(0, 10000),
       price: Math.max(0, parseFloat(p.price) || 0),
@@ -208,14 +292,63 @@ async function handleURLImport(supabase: any, body: any, userId: string, corsHea
           timestamp: new Date().toISOString()
         }
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     clearTimeout(timeout)
-    throw error
+    const message = error instanceof Error ? error.message : 'URL fetch failed'
+    return new Response(
+      JSON.stringify({ success: false, error: message }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    )
   }
 }
 
-async function handleFTPImport(supabase: any, body: any, userId: string, corsHeaders: Record<string, string>) {
-  throw new Error('FTP import not yet implemented - use CSV or URL import instead')
+async function handleBulkImport(
+  supabase: any, 
+  input: ImportInput, 
+  userId: string, 
+  correlationId: string
+) {
+  const products = input.products || []
+  
+  // Bulk import can handle up to 5000 products
+  const limitedProducts = products.slice(0, 5000)
+  console.log(`[${correlationId}] BULK importing ${limitedProducts.length} products`)
+
+  const validProducts = limitedProducts.map(p => ({
+    name: String(p.name || p.title || 'Sans nom').slice(0, 500),
+    description: String(p.description || '').slice(0, 10000),
+    price: Math.max(0, parseFloat(String(p.price)) || 0),
+    cost_price: Math.max(0, parseFloat(String(p.cost_price)) || 0),
+    sku: String(p.sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`).slice(0, 100),
+    category: String(p.category || 'Autre').slice(0, 200),
+    stock_quantity: Math.max(0, parseInt(String(p.stock_quantity || p.stock || p.quantity)) || 0),
+    status: p.status === 'active' || p.status === 'draft' ? p.status : 'active',
+    image_url: p.image_url || null,
+    user_id: userId
+  }))
+
+  // Batch insert in chunks of 500
+  const batchSize = 500
+  let totalImported = 0
+  
+  for (let i = 0; i < validProducts.length; i += batchSize) {
+    const batch = validProducts.slice(i, i + batchSize)
+    const result = await secureBatchInsert(supabase, 'products', batch, userId)
+    totalImported += result.length
+  }
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: 'Bulk import completed',
+      data: {
+        recordsProcessed: products.length,
+        recordsImported: totalImported,
+        timestamp: new Date().toISOString()
+      }
+    }),
+    { headers: { 'Content-Type': 'application/json' } }
+  )
 }
