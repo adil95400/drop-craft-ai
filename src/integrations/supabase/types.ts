@@ -4985,6 +4985,181 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flag_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          flag_id: string | null
+          flag_key: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          new_value: Json | null
+          old_value: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          flag_id?: string | null
+          flag_key: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          flag_id?: string | null
+          flag_key?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_flag_audit_log_flag_id_fkey"
+            columns: ["flag_id"]
+            isOneToOne: false
+            referencedRelation: "feature_flags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_flag_evaluations: {
+        Row: {
+          context: Json | null
+          evaluated_at: string
+          flag_key: string
+          id: string
+          is_enabled: boolean
+          user_id: string
+        }
+        Insert: {
+          context?: Json | null
+          evaluated_at?: string
+          flag_key: string
+          id?: string
+          is_enabled: boolean
+          user_id: string
+        }
+        Update: {
+          context?: Json | null
+          evaluated_at?: string
+          flag_key?: string
+          id?: string
+          is_enabled?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feature_flag_overrides: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          flag_id: string
+          id: string
+          is_enabled: boolean
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          flag_id: string
+          id?: string
+          is_enabled: boolean
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          flag_id?: string
+          id?: string
+          is_enabled?: boolean
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_flag_overrides_flag_id_fkey"
+            columns: ["flag_id"]
+            isOneToOne: false
+            referencedRelation: "feature_flags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feature_flags: {
+        Row: {
+          allowed_user_ids: string[] | null
+          blocked_user_ids: string[] | null
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_enabled: boolean
+          is_public: boolean
+          key: string
+          metadata: Json | null
+          min_plan: string
+          name: string
+          rollout_percentage: number | null
+          updated_at: string
+        }
+        Insert: {
+          allowed_user_ids?: string[] | null
+          blocked_user_ids?: string[] | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_enabled?: boolean
+          is_public?: boolean
+          key: string
+          metadata?: Json | null
+          min_plan?: string
+          name: string
+          rollout_percentage?: number | null
+          updated_at?: string
+        }
+        Update: {
+          allowed_user_ids?: string[] | null
+          blocked_user_ids?: string[] | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_enabled?: boolean
+          is_public?: boolean
+          key?: string
+          metadata?: Json | null
+          min_plan?: string
+          name?: string
+          rollout_percentage?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feed_generations: {
         Row: {
           completed_at: string | null
@@ -12272,6 +12447,10 @@ export type Database = {
         }
         Returns: number
       }
+      evaluate_feature_flag: {
+        Args: { p_context?: Json; p_flag_key: string; p_user_id?: string }
+        Returns: boolean
+      }
       export_user_data: { Args: never; Returns: Json }
       generate_api_key: {
         Args: { key_name: string; key_scopes?: string[] }
@@ -12313,6 +12492,15 @@ export type Database = {
           total_translated: number
           usage_date: string
           user_id: string
+        }[]
+      }
+      get_user_feature_flags: {
+        Args: { p_user_id?: string }
+        Returns: {
+          category: string
+          flag_key: string
+          is_enabled: boolean
+          metadata: Json
         }[]
       }
       grant_token_scopes: {
