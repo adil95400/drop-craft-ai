@@ -90,5 +90,53 @@
     "confirmDelete": "¿Está seguro de que desea eliminar?",
     "offlineMode": "Está en modo sin conexión",
     "backOnline": "Conexión restablecida"
+  },
+  "import": {
+    "title": "Importación de productos",
+    "success": "Importación exitosa",
+    "failed": "Importación fallida",
+    "partial": "Importación parcial",
+    "cancelled": "Importación cancelada",
+    "cancelledDesc": "La importación fue cancelada",
+    "noProducts": "No hay productos para importar",
+    "productsImported": "{{count}} productos importados",
+    "partialDesc": "{{success}} exitosos, {{failed}} fallidos",
+    "jobStarted": "Importación iniciada",
+    "jobStartedDesc": "{{count}} productos importándose",
+    "activeJobs": "Importaciones activas",
+    "noActiveJobs": "Sin importaciones activas",
+    "products": "productos",
+    "failedCount": "{{count}} fallos",
+    "enrichedProducts": "{{count}} productos enriquecidos por IA",
+    "eta": "Tiempo restante estimado: {{time}}",
+    "progress": "Progreso de importación",
+    "statistics": "Estadísticas de importación",
+    "processed": "Procesados",
+    "successful": "Exitosos",
+    "status": {
+      "idle": "Inactivo",
+      "detecting": "Detectando...",
+      "validating": "Validando...",
+      "processing": "Importando...",
+      "enriching": "Enriquecimiento IA...",
+      "completed": "Completado",
+      "failed": "Fallido",
+      "partial": "Parcial"
+    },
+    "sources": {
+      "csv": "Archivo CSV",
+      "json": "Archivo JSON",
+      "excel": "Archivo Excel",
+      "url": "Importación por URL",
+      "api": "API externa",
+      "extension": "Extensión Chrome",
+      "feed": "Fuente de datos"
+    },
+    "options": {
+      "batchSize": "Tamaño de lote",
+      "concurrency": "Importaciones paralelas",
+      "autoEnrich": "Enriquecimiento IA automático",
+      "enrichFields": "Campos a enriquecer"
+    }
   }
 }

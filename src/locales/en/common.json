@@ -90,5 +90,53 @@
     "confirmDelete": "Are you sure you want to delete?",
     "offlineMode": "You are in offline mode",
     "backOnline": "Connection restored"
+  },
+  "import": {
+    "title": "Product Import",
+    "success": "Import successful",
+    "failed": "Import failed",
+    "partial": "Partial import",
+    "cancelled": "Import cancelled",
+    "cancelledDesc": "The import was cancelled",
+    "noProducts": "No products to import",
+    "productsImported": "{{count}} products imported",
+    "partialDesc": "{{success}} successful, {{failed}} failed",
+    "jobStarted": "Import started",
+    "jobStartedDesc": "{{count}} products being imported",
+    "activeJobs": "Active imports",
+    "noActiveJobs": "No active imports",
+    "products": "products",
+    "failedCount": "{{count}} failures",
+    "enrichedProducts": "{{count}} products enriched by AI",
+    "eta": "Estimated time remaining: {{time}}",
+    "progress": "Import progress",
+    "statistics": "Import statistics",
+    "processed": "Processed",
+    "successful": "Successful",
+    "status": {
+      "idle": "Idle",
+      "detecting": "Detecting...",
+      "validating": "Validating...",
+      "processing": "Importing...",
+      "enriching": "AI Enrichment...",
+      "completed": "Completed",
+      "failed": "Failed",
+      "partial": "Partial"
+    },
+    "sources": {
+      "csv": "CSV File",
+      "json": "JSON File",
+      "excel": "Excel File",
+      "url": "URL Import",
+      "api": "External API",
+      "extension": "Chrome Extension",
+      "feed": "Data Feed"
+    },
+    "options": {
+      "batchSize": "Batch size",
+      "concurrency": "Parallel imports",
+      "autoEnrich": "Auto AI enrichment",
+      "enrichFields": "Fields to enrich"
+    }
   }
 }

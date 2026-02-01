@@ -52,7 +52,8 @@ export { ScheduleFormDialog } from './ScheduleFormDialog';
 export { ImportAnalytics } from './ImportAnalytics';
 export { ImportPerformanceMonitor } from './ImportPerformanceMonitor';
 export { ImportStatistics } from './ImportStatistics';
-export { RealTimeImportMonitor } from './RealTimeImportMonitor';
+export { RealtimeImportMonitor } from './RealtimeImportMonitor';
+export { ImportProgressIndicator } from './ImportProgressIndicator';
 
 // Configuration & Templates
 export { ImportConfigModal } from './ImportConfigModal';
