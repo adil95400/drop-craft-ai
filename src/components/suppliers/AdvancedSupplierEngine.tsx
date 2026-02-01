@@ -59,6 +59,13 @@ import {
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 
+// B2B Sourcing Components
+import { B2BSupplierConnectCard } from './B2BSupplierConnectCard';
+import { SupplierReliabilityCard } from './SupplierReliabilityCard';
+import { SupplierComparisonPanel } from './SupplierComparisonPanel';
+import { useB2BSupplierConnector, B2B_SUPPLIERS, type B2BSupplierId } from '@/hooks/suppliers/useB2BSupplierConnector';
+import { useSupplierReliability } from '@/hooks/suppliers/useSupplierReliability';
+
 interface EngineStats {
   totalProducts: number;
   activeSuppliers: number;
@@ -129,6 +136,11 @@ export function AdvancedSupplierEngine() {
     { id: '3', type: 'competitive', value: 10, name: 'Prix compétitif', active: false },
     { id: '4', type: 'dynamic', value: 25, name: 'IA dynamique', active: false }
   ]);
+
+  // B2B Sourcing hooks
+  const b2bConnector = useB2BSupplierConnector();
+  const supplierReliability = useSupplierReliability();
+  const [selectedB2BSuppliers, setSelectedB2BSuppliers] = useState<string[]>([]);
 
   useEffect(() => {
     loadEngineStats();
@@ -356,10 +368,14 @@ export function AdvancedSupplierEngine() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Vue d'ensemble</span>
+          </TabsTrigger>
+          <TabsTrigger value="b2b" className="gap-2">
+            <Globe className="h-4 w-4" />
+            <span className="hidden sm:inline">B2B Sourcing</span>
           </TabsTrigger>
           <TabsTrigger value="import" className="gap-2">
             <Upload className="h-4 w-4" />
@@ -508,6 +524,109 @@ export function AdvancedSupplierEngine() {
             <Button className="h-auto py-4 flex-col gap-2" variant="outline">
               <Target className="h-6 w-6" />
               <span>Trouver Gagnants</span>
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* B2B Sourcing Tab */}
+        <TabsContent value="b2b" className="space-y-6">
+          {/* B2B Suppliers Connection */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-primary" />
+                  Connecteurs B2B
+                </CardTitle>
+                <CardDescription>
+                  Connectez-vous aux principaux fournisseurs dropshipping B2B
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-4">
+                    {Object.entries(B2B_SUPPLIERS).map(([key, supplier]) => (
+                      <B2BSupplierConnectCard
+                        key={key}
+                        supplierId={key as B2BSupplierId}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Supplier Reliability */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  Fiabilité Fournisseurs
+                </CardTitle>
+                <CardDescription>
+                  Score de fiabilité basé sur 5 critères clés
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-4">
+                    {supplierReliability.reliabilityData && supplierReliability.reliabilityData.length > 0 ? (
+                      supplierReliability.reliabilityData.map((data) => (
+                        <SupplierReliabilityCard
+                          key={data.supplierId}
+                          data={data}
+                        />
+                      ))
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Shield className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                        <p>Connectez des fournisseurs pour voir leurs scores de fiabilité</p>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Supplier Comparison */}
+          <SupplierComparisonPanel />
+
+          {/* B2B Quick Actions */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Button 
+              className="h-auto py-4 flex-col gap-2" 
+              variant="outline"
+              onClick={() => {
+                b2bConnector.searchProducts({ query: 'trending products' });
+                toast({ title: 'Recherche lancée', description: 'Analyse des produits tendance...' });
+              }}
+            >
+              <TrendingUp className="h-6 w-6 text-primary" />
+              <span>Produits Tendance</span>
+              <span className="text-xs text-muted-foreground">Analyse IA</span>
+            </Button>
+            <Button 
+              className="h-auto py-4 flex-col gap-2" 
+              variant="outline"
+              onClick={() => {
+                // Refresh reliability data
+                toast({ title: 'Actualisation...', description: 'Mise à jour des scores en cours' });
+              }}
+            >
+              <Star className="h-6 w-6 text-yellow-500" />
+              <span>Actualiser Scores</span>
+              <span className="text-xs text-muted-foreground">Fiabilité</span>
+            </Button>
+            <Button className="h-auto py-4 flex-col gap-2" variant="outline">
+              <Truck className="h-6 w-6" />
+              <span>Délais Livraison</span>
+              <span className="text-xs text-muted-foreground">Comparatif</span>
+            </Button>
+            <Button className="h-auto py-4 flex-col gap-2" variant="outline">
+              <DollarSign className="h-6 w-6" />
+              <span>Meilleurs Prix</span>
+              <span className="text-xs text-muted-foreground">Par catégorie</span>
             </Button>
           </div>
         </TabsContent>
