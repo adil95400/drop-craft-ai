@@ -1,8 +1,9 @@
 /**
- * Centre d'aide et support client
+ * Centre d'aide et support client - Version Pro avec Documentation intégrée
  */
 
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,8 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { 
   Search, MessageCircle, Book, Video, Phone, Mail, 
-  ExternalLink, Star, ThumbsUp, Clock, Users, Zap
+  ExternalLink, Star, ThumbsUp, Clock, Users, Zap, BookOpen, ArrowRight
 } from 'lucide-react'
+import { DocumentationHub } from '@/components/documentation'
 
 interface FAQItem {
   id: string
@@ -123,9 +125,10 @@ const GUIDES: GuideItem[] = [
 const CATEGORIES = ['Tous', 'Import', 'Synchronisation', 'Analytics', 'IA', 'Gestion']
 
 export function HelpCenter() {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Tous')
-  const [selectedTab, setSelectedTab] = useState('faq')
+  const [selectedTab, setSelectedTab] = useState('documentation')
 
   const filteredFAQ = FAQ_ITEMS.filter(item => {
     const matchesSearch = item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -295,10 +298,41 @@ export function HelpCenter() {
 
       {/* Contenu principal */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="documentation" className="gap-1">
+            <BookOpen className="h-4 w-4" />
+            Documentation Pro
+          </TabsTrigger>
           <TabsTrigger value="faq">Questions fréquentes</TabsTrigger>
           <TabsTrigger value="guides">Guides & Tutoriels</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="documentation" className="space-y-4">
+          <Card className="bg-gradient-to-r from-primary/10 to-transparent border-primary/20">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold">Documentation Professionnelle</p>
+                  <p className="text-sm text-muted-foreground">15 modules • Guides complets • Niveau débutant à expert</p>
+                </div>
+              </div>
+              <Button onClick={() => navigate('/help-center/documentation')} className="gap-2">
+                Accéder
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+          <DocumentationHub onSelectModule={(moduleId) => {
+            const { ALL_DOCUMENTATION } = require('@/data/documentation')
+            const module = ALL_DOCUMENTATION.find((m: any) => m.id === moduleId)
+            if (module) {
+              navigate(`/help-center/documentation/${module.slug}`)
+            }
+          }} />
+        </TabsContent>
 
         <TabsContent value="faq" className="space-y-4">
           <Card>
