@@ -37,8 +37,8 @@ export function PricingRoutes() {
       <Route path="optimization" element={<PriceOptimizationPage />} />
       
       {/* Legacy redirects */}
-      <Route path="automation" element={<Navigate to="/pricing" replace />} />
-      <Route path="dynamic" element={<Navigate to="/pricing/repricing" replace />} />
+      <Route path="automation" element={<Navigate to="/pricing-manager" replace />} />
+      <Route path="dynamic" element={<Navigate to="/pricing-manager/repricing" replace />} />
     </Routes>
   );
 }

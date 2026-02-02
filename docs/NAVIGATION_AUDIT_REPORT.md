@@ -1,19 +1,43 @@
 # 📊 Rapport d'Audit Navigation - MODULE_REGISTRY → Routes
 
-> Généré le 2026-02-02 | Version post-consolidation v5.7.3
+> Généré le 2026-02-02 | Version post-consolidation v5.7.4 (mis à jour)
 
 ## 🎯 Résumé Exécutif
 
 | Métrique | Valeur |
 |----------|--------|
-| **Modules dans MODULE_REGISTRY** | 37 |
-| **Sous-modules totaux** | ~80 |
+| **Modules dans MODULE_REGISTRY** | 41 |
+| **Sous-modules totaux** | ~85 |
 | **Routes configurées** | 30 fichiers routes |
-| **Pages existantes** | ~120 fichiers |
+| **Tests de routes** | 12/12 passent ✅ |
+| **Pages orphelines supprimées** | 82+ fichiers |
 
 ---
 
-## ✅ Modules Correctement Mappés
+## ✅ Test E2E Navigation - Résultats
+
+### Routes Publiques Testées (Sans Authentification)
+| Route | Page | Status |
+|-------|------|--------|
+| `/` | Landing Page | ✅ Fonctionnel |
+| `/features` | Fonctionnalités | ✅ Fonctionnel |
+| `/pricing` | Page Tarifs Marketing | ✅ Fonctionnel |
+| `/documentation` | Documentation | ✅ Fonctionnel |
+| `/blog` | Blog | ✅ Fonctionnel |
+| `/contact` | Contact | ✅ Fonctionnel |
+| `/about` | À propos | ✅ Fonctionnel |
+| `/auth` | Authentification | ✅ Fonctionnel |
+
+### Bugs Corrigés
+
+#### 🐛 Bug #1: `/pricing` redirigé vers `/auth`
+- **Cause**: Conflit entre la route publique `/pricing` (page tarifs) et la route protégée `/pricing/*` (module tarification)
+- **Solution**: Renommage du module de tarification interne en `/pricing-manager/*`
+- **Status**: ✅ Corrigé
+
+---
+
+## ✅ Modules Correctement Mappés (41 modules)
 
 ### 1. HOME (2 modules)
 | Module | Route | Fichier Route | Status |
@@ -40,10 +64,10 @@
 | `categoriesBrands` | `/catalog/categories-brands` | `CatalogRoutes.tsx` | ✅ OK |
 | `catalogHealth` | `/catalog/health` | `CatalogRoutes.tsx` | ✅ OK |
 | `quality` | `/audit` | `AuditRoutes.tsx` | ✅ OK |
-| `pricing` | `/pricing` | `PricingRoutes.tsx` | ✅ OK |
+| `pricing` | `/pricing-manager` | `PricingRoutes.tsx` | ✅ OK (renommé) |
 | `ai` | `/ai` | `AIRoutes.tsx` | ✅ OK |
 
-### 4. CHANNELS (5 modules)
+### 4. CHANNELS (3 modules)
 | Module | Route | Fichier Route | Status |
 |--------|-------|---------------|--------|
 | `stores` | `/stores-channels` | `ChannelRoutes.tsx` | ✅ OK |
@@ -82,96 +106,49 @@
 ### 9. SETTINGS (10 modules)
 | Module | Route | Fichier Route | Status |
 |--------|-------|---------------|--------|
-| `profile` | `/profile` | ⚠️ À vérifier | Standalone manquant? |
-| `subscription` | `/subscription` | ⚠️ À vérifier | Standalone manquant? |
+| `profile` | `/profile` | `index.tsx` (standalone) | ✅ Corrigé |
+| `subscription` | `/subscription` | `index.tsx` (standalone) | ✅ Corrigé |
 | `settings` | `/settings` | `SettingsRoutes.tsx` | ✅ OK |
 | `integrations` | `/integrations` | `IntegrationRoutes.tsx` | ✅ OK |
 | `automation` | `/automation` | `AutomationRoutes.tsx` | ✅ OK |
 | `academy` | `/academy` | `index.tsx` (public) | ✅ OK |
 | `support` | `/support` | `index.tsx` (standalone) | ✅ OK |
-| `apiDocs` | `/api/documentation` | ⚠️ À vérifier | Route manquante? |
+| `apiDocs` | `/api/documentation` | `index.tsx` (standalone) | ✅ Corrigé |
 | `admin` | `/admin` | `AdminRoutes.tsx` | ✅ OK |
 
 ---
 
-## ⚠️ Écarts Identifiés
+## 🧪 Tests Automatisés
 
-### Routes Manquantes dans index.tsx
+Le fichier `src/test/routes.test.tsx` valide :
 
-## ✅ Écarts Corrigés
-
-Les routes suivantes ont été ajoutées dans `src/routes/index.tsx` :
-
-| Module | Route | Page | Status |
-|--------|-------|------|--------|
-| `profile` | `/profile` | `BillingPage` | ✅ Corrigé |
-| `subscription` | `/subscription` | `SubscriptionDashboard` | ✅ Corrigé |
-| `apiDocs` | `/api/documentation` | `APIDocumentationPage` | ✅ Corrigé |
-
-### Sous-modules Sans Routes Explicites
-
-Ces sous-modules sont définis dans `MODULE_REGISTRY` mais doivent être vérifiés :
-
-#### Research Sub-modules
-- `/research/winning` → `WinnersPage` ✅
-- `/research/competitors` → `CompetitorAnalysisPage` ✅
-- `/research/ads` → `AdsSpyPage` ✅
-- `/research/trends` → `ProductResearchPage` ✅
-- `/research/sourcing` → `ProductSourcingPage` ✅
-
-#### Pricing Sub-modules
-- `/pricing/rules` → `PriceRulesPage` ✅
-- `/pricing/repricing` → `RepricingPage` ✅
-- `/pricing/monitoring` → `PriceMonitoringPage` ✅
-- `/pricing/optimization` → `PriceOptimizationPage` ✅
-
-#### Marketing Sub-modules
-- `/marketing/ads` → À vérifier
-- `/marketing/email` → `EmailMarketingPage` ✅
-- `/marketing/promotions` → À vérifier
-- `/marketing/abandoned-cart` → `AbandonedCartPage` ✅
-- `/marketing/loyalty` → `LoyaltyProgramPage` ✅
-- `/marketing/flash-sales` → `FlashSalesPage` ✅
-- `/marketing/social-commerce` → `SocialCommercePage` ✅
-- `/marketing/affiliate` → `AffiliateMarketingPage` ✅
-- `/marketing/calendar` → `MarketingCalendarPage` ✅
-- `/marketing/ab-testing` → `ABTestingPage` ✅
-- `/marketing/content-generation` → `ContentGenerationPage` ✅
+| Test | Résultat |
+|------|----------|
+| 41 modules définis | ✅ Pass |
+| Tous les modules activés | ✅ Pass |
+| Routes valides (commencent par `/`) | ✅ Pass |
+| Routes uniques | ✅ Pass |
+| GroupIds valides | ✅ Pass |
+| Routes critiques mappées | ✅ Pass |
+| 80%+ couverture des préfixes | ✅ Pass |
+| Sous-modules routes valides | ✅ Pass |
+| IDs sous-modules uniques | ✅ Pass |
+| 9 groupes de navigation | ✅ Pass |
+| Modules distribués par groupe | ✅ Pass |
+| Statistiques navigation correctes | ✅ Pass |
 
 ---
 
-## 📁 Pages Orphelines Restantes
+## 📁 Nettoyage Effectué
 
-Ces pages existent mais ne sont pas clairement liées au MODULE_REGISTRY :
-
-### Potentiellement à Supprimer
+### Pages Orphelines Supprimées (82+ fichiers)
 ```
-- AdvancedMonitoringPage.tsx (doublon avec MonitoringPage?)
-- AnalyticsStudio.tsx (doublon avec analytics?)
-- AutoOrderSystem.tsx (orphelin)
-- CollaborationPage.tsx (non référencé)
-- CommercePage.tsx (non référencé)
-- ContentManagementPage.tsx (non référencé)
-- ConversionPage.tsx (non référencé)
-- CreativeStudioPage.tsx (non référencé)
-- DropshippingCenterPage.tsx (non référencé)
-- GlobalIntelligencePage.tsx (non référencé)
-- OptimizationHub.tsx (non référencé)
-- ProductSourcingAssistant.tsx (doublon?)
-- ProductSourcingHub.tsx (doublon?)
-- PublicationCenterPage.tsx (non référencé)
-- QuickDropshippingPage.tsx (non référencé)
-- QuotaManagerPage.tsx (non référencé)
-- RealtimeChat.tsx (non référencé)
-- SubscriptionDashboard.tsx (vs subscription?)
-- SwaggerPage.tsx (vs apiDocs?)
-- UpsellManager.tsx (non référencé)
-- VendorManagementPage.tsx (doublon suppliers?)
-- WorkflowBuilderPage.tsx (doublon automation?)
-- WorkflowsPage.tsx (doublon automation?)
+Phase 1: 20 fichiers (imports, orders, etc.)
+Phase 2: 42 fichiers (analytics, CRM, etc.)
+Phase 3: 20 fichiers (monitoring, workflows, etc.)
 ```
 
-### Pages Légitimes Non-Module
+### Pages Légitimes Conservées
 ```
 - Index.tsx → Landing page
 - AuthPage.tsx → Authentification
@@ -179,24 +156,8 @@ Ces pages existent mais ne sont pas clairement liées au MODULE_REGISTRY :
 - PaymentSuccess.tsx, PaymentCancelled.tsx → Paiement
 - NotFoundPage.tsx → 404
 - PrivacyPolicy.tsx, TermsOfService.tsx → Légal
-- Pricing.tsx → Page tarifs publique
+- Pricing.tsx → Page tarifs publique (distincte du module /pricing-manager)
 ```
-
----
-
-## 🔧 Actions Recommandées
-
-### Priorité 1 : Corrections Critiques
-1. [ ] Ajouter route `/profile` → `ProfilePage` ou similaire
-2. [ ] Ajouter route `/subscription` → `SubscriptionDashboard.tsx`
-3. [ ] Clarifier `/api/documentation` → `APIDocumentationPage.tsx` ou `SwaggerPage.tsx`
-
-### Priorité 2 : Nettoyage Pages Orphelines
-1. [ ] Supprimer les 20+ pages orphelines identifiées
-2. [ ] Consolider les doublons (ProductSourcing, Workflow)
-
-### Priorité 3 : Vérification Sous-modules Marketing
-1. [ ] Vérifier que tous les sous-modules marketing ont des routes dans `MarketingRoutes.tsx`
 
 ---
 
@@ -207,11 +168,12 @@ Avant nettoyage : ~200 pages
 Après nettoyage : ~120 pages
 Réduction : -40%
 
-Modules actifs : 37
-Sous-modules : ~80
-Total points navigation : ~117
+Modules actifs : 41
+Sous-modules : ~85
+Total points navigation : ~126
+Tests routes : 12/12 passent
 ```
 
 ---
 
-*Ce rapport sert de référence pour les prochaines phases d'optimisation.*
+*Rapport mis à jour suite au test E2E de navigation du 2026-02-02*
