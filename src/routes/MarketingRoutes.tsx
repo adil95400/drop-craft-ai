@@ -22,7 +22,7 @@ const AffiliateMarketingPage = lazy(() => import('@/pages/AffiliateMarketingPage
 const EmailMarketingPage = lazy(() => import('@/pages/EmailMarketingPage'));
 const FlashSalesPage = lazy(() => import('@/pages/FlashSalesPage'));
 const LoyaltyProgramPage = lazy(() => import('@/pages/LoyaltyProgramPage'));
-const CouponManagementPage = lazy(() => import('@/pages/CouponManagementPage'));
+const CouponsManagementPage = lazy(() => import('@/pages/CouponsManagementPage'));
 const MarketingCalendarPage = lazy(() => import('@/pages/MarketingCalendarPage'));
 const SocialCommercePage = lazy(() => import('@/pages/SocialCommercePage'));
 const CreativeStudioPage = lazy(() => import('@/pages/CreativeStudioPage'));
@@ -62,7 +62,7 @@ export function MarketingRoutes() {
       <Route path="email" element={<EmailMarketingPage />} />
       <Route path="flash-sales" element={<FlashSalesPage />} />
       <Route path="loyalty" element={<LoyaltyProgramPage />} />
-      <Route path="coupons" element={<CouponManagementPage />} />
+      <Route path="coupons" element={<CouponsManagementPage />} />
       <Route path="calendar" element={<MarketingCalendarPage />} />
       <Route path="social-commerce" element={<SocialCommercePage />} />
       <Route path="creative-studio" element={<CreativeStudioPage />} />

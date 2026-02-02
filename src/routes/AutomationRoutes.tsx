@@ -9,9 +9,8 @@ import { lazy } from 'react';
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const AutomationStudio = lazy(() => import('@/pages/AutomationStudio'));
 
-// Fulfillment & Phase 2 Marketplace
-const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
-const AutoFulfillmentDashboard = lazy(() => import('@/pages/AutoFulfillmentDashboard'));
+// Fulfillment & Phase 2 Marketplace - Using FulfillmentDashboardPage as main
+const FulfillmentDashboardPage = lazy(() => import('@/pages/FulfillmentDashboardPage'));
 const DynamicRepricingPage = lazy(() => import('@/pages/DynamicRepricingPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
@@ -25,9 +24,8 @@ const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssis
 // Unified Sync
 const UnifiedSyncDashboard = lazy(() => import('@/components/sync/UnifiedSyncDashboard'));
 
-// Advanced Automation
+// Advanced Automation - Using WorkflowBuilderPage as main workflow editor
 const WorkflowBuilderPage = lazy(() => import('@/pages/WorkflowBuilderPage'));
-const WorkflowEditorPage = lazy(() => import('@/pages/WorkflowEditorPage'));
 const PriceOptimizationPage = lazy(() => import('@/pages/PriceOptimizationPage'));
 const PricingAutomationPage = lazy(() => import('@/pages/PricingAutomationPage'));
 const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendationsPage'));
@@ -49,8 +47,8 @@ export function AutomationRoutes() {
       <Route path="ai-studio" element={<ContentGenerationPage />} />
       
       {/* Auto-Fulfillment */}
-      <Route path="fulfillment" element={<AutoFulfillmentPage />} />
-      <Route path="fulfillment/dashboard" element={<AutoFulfillmentDashboard />} />
+      <Route path="fulfillment" element={<FulfillmentDashboardPage />} />
+      <Route path="fulfillment/dashboard" element={<FulfillmentDashboardPage />} />
       
       {/* Phase 2 - Marketplace Avancée */}
       <Route path="repricing" element={<DynamicRepricingPage />} />
@@ -66,7 +64,7 @@ export function AutomationRoutes() {
       
       {/* Advanced Automation */}
       <Route path="workflow-builder" element={<WorkflowBuilderPage />} />
-      <Route path="workflow-editor" element={<WorkflowEditorPage />} />
+      <Route path="workflow-editor" element={<WorkflowBuilderPage />} />
       <Route path="price-optimization" element={<PriceOptimizationPage />} />
       <Route path="pricing-automation" element={<PricingAutomationPage />} />
       <Route path="recommendations" element={<ProductRecommendationsPage />} />

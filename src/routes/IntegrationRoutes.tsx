@@ -23,11 +23,10 @@ const ChromeExtensionConfigPage = lazy(() => import('@/pages/ChromeExtensionConf
 // API - Using existing documentation page
 const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
 
-// Support & Learning
-const Support = lazy(() => import('@/pages/Support'));
+// Support & Learning - Using SupportMainPage as consolidated support
+const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
 const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
 const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
-const LiveChatSupportPage = lazy(() => import('@/pages/LiveChatSupportPage'));
 
 // Sync Configuration
 const SyncConfigPage = lazy(() => import('@/pages/SyncConfigPage'));
@@ -71,8 +70,8 @@ export function IntegrationRoutes() {
       <Route path="api/documentation" element={<APIDocumentationPage />} />
       
       {/* Support & Learning */}
-      <Route path="support" element={<Support />} />
-      <Route path="support/live-chat" element={<LiveChatSupportPage />} />
+      <Route path="support" element={<SupportMainPage />} />
+      <Route path="support/live-chat" element={<SupportMainPage />} />
       <Route path="academy" element={<AcademyPage />} />
       <Route path="academy/course/:id" element={<CourseDetailPage />} />
       
