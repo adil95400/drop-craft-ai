@@ -77,6 +77,11 @@ const Reports = lazy(() => import('@/pages/Reports'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
 
+// Profile & Subscription (Settings group)
+const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
+const BillingPage = lazy(() => import('@/pages/BillingPage'));
+const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
+
 // Loading component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -198,6 +203,11 @@ export function AppRoutes() {
           <Route path="/repricing" element={<Protected><RepricingPage /></Protected>} />
           <Route path="/enrichment" element={<Protected><EnrichmentSettingsPage /></Protected>} />
           <Route path="/reports" element={<Protected><Reports /></Protected>} />
+          
+          {/* Profile & Subscription (Settings group) */}
+          <Route path="/profile" element={<Protected><BillingPage /></Protected>} />
+          <Route path="/subscription" element={<Protected><SubscriptionDashboard /></Protected>} />
+          <Route path="/api/documentation" element={<Protected><APIDocumentationPage /></Protected>} />
           
           {/* Ads Spy */}
           <Route path="/ads-spy" element={<Protected><AdsSpyPage /></Protected>} />
