@@ -23,6 +23,7 @@ const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitori
 const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
 const DocumentationPage = lazy(() => import('@/pages/public/DocumentationPage'));
 const TestimonialsPage = lazy(() => import('@/pages/public/TestimonialsPage'));
+const ChangelogPage = lazy(() => import('@/pages/public/ChangelogPage'));
 const Integrations = lazy(() => import('@/pages/integrations/ChannableStyleIntegrationsPage'));
 
 // Feature pages
@@ -54,6 +55,7 @@ export function PublicRoutes() {
       <Route path="documentation" element={<DocumentationPage />} />
       <Route path="docs" element={<DocumentationPage />} />
       <Route path="blog" element={<BlogPage />} />
+      <Route path="changelog" element={<ChangelogPage />} />
       <Route path="testimonials" element={<TestimonialsPage />} />
       <Route path="integrations" element={<Integrations />} />
       
@@ -77,7 +79,6 @@ export function PublicRoutes() {
       
       {/* Legacy redirects */}
       <Route path="guides" element={<Navigate to="/documentation" replace />} />
-      <Route path="changelog" element={<Navigate to="/blog" replace />} />
       <Route path="community" element={<Navigate to="/blog" replace />} />
       <Route path="webinars" element={<Navigate to="/academy" replace />} />
       <Route path="company" element={<Navigate to="/about" replace />} />
