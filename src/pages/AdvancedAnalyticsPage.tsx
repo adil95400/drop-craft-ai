@@ -1,15 +1,31 @@
 /**
  * Page Analytics Avancés avec design Channable premium
+ * OPTIMISÉ: Lazy loading des tabs pour réduire le bundle initial
  */
+import { lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CustomReportsBuilder } from '@/components/analytics/CustomReportsBuilder';
-import { TeamManager } from '@/components/teams/TeamManager';
-import { KPIsDashboard } from '@/components/analytics/KPIsDashboard';
-import { ActivityLog } from '@/components/analytics/ActivityLog';
-import { BarChart, Users, Target, Activity, TrendingUp, Sparkles, Download, Filter } from 'lucide-react';
+import { BarChart, Users, Target, Activity, TrendingUp, Sparkles, Download, Loader2 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy load heavy tab components (~50KB each with recharts)
+const CustomReportsBuilder = lazy(() => import('@/components/analytics/CustomReportsBuilder').then(m => ({ default: m.CustomReportsBuilder })));
+const TeamManager = lazy(() => import('@/components/teams/TeamManager').then(m => ({ default: m.TeamManager })));
+const KPIsDashboard = lazy(() => import('@/components/analytics/KPIsDashboard').then(m => ({ default: m.KPIsDashboard })));
+const ActivityLog = lazy(() => import('@/components/analytics/ActivityLog').then(m => ({ default: m.ActivityLog })));
+
+const TabSkeleton = () => (
+  <div className="space-y-4">
+    <Skeleton className="h-10 w-full" />
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <Skeleton className="h-32" />
+      <Skeleton className="h-32" />
+      <Skeleton className="h-32" />
+    </div>
+  </div>
+);
 
 export default function AdvancedAnalyticsPage() {
   return (
@@ -80,19 +96,27 @@ export default function AdvancedAnalyticsPage() {
           transition={{ delay: 0.2 }}
         >
           <TabsContent value="reports" className="space-y-6 mt-0">
-            <CustomReportsBuilder />
+            <Suspense fallback={<TabSkeleton />}>
+              <CustomReportsBuilder />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="kpis" className="space-y-6 mt-0">
-            <KPIsDashboard />
+            <Suspense fallback={<TabSkeleton />}>
+              <KPIsDashboard />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="teams" className="space-y-6 mt-0">
-            <TeamManager />
+            <Suspense fallback={<TabSkeleton />}>
+              <TeamManager />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-6 mt-0">
-            <ActivityLog />
+            <Suspense fallback={<TabSkeleton />}>
+              <ActivityLog />
+            </Suspense>
           </TabsContent>
         </motion.div>
       </Tabs>
