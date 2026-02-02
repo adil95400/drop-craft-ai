@@ -38,7 +38,7 @@ const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProduct
 // Product Module Routes
 const ProductAuditPage = lazy(() => import('@/pages/products/ProductAuditPage'));
 const ProductResearchPageNew = lazy(() => import('@/pages/products/ProductResearchPage'));
-const ProductIntelligencePage = lazy(() => import('@/pages/ProductIntelligencePage'));
+const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const ProductSourcingPage = lazy(() => import('@/pages/products/ProductSourcingPage'));
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
 const ProductScoringPage = lazy(() => import('@/pages/products/ProductScoringPage'));
@@ -60,7 +60,7 @@ export function ProductRoutes() {
       <Route path="rules" element={<Navigate to="/products?tab=rules" replace />} />
       <Route path="audit" element={<ProductAuditPage />} />
       <Route path="research" element={<ProductResearchPageNew />} />
-      <Route path="intelligence" element={<ProductIntelligencePage />} />
+      <Route path="intelligence" element={<PredictiveAnalyticsPage />} />
       <Route path="sourcing" element={<ProductSourcingPage />} />
       <Route path="price-rules" element={<PriceRulesPage />} />
       <Route path="scoring" element={<ProductScoringPage />} />

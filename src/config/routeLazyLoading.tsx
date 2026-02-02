@@ -11,8 +11,8 @@ export const LazyModernProductsPage = lazyWithRetry(() => import('@/pages/produc
 export const LazyModernOrdersPage = lazyWithRetry(() => import('@/pages/orders/OrdersCenterPage'));
 export const LazyModernCustomersPage = lazyWithRetry(() => import('@/pages/CustomersPage'));
 export const LazyAdvancedAnalyticsPage = lazyWithRetry(() => import('@/pages/AdvancedAnalyticsPage'));
-export const LazyBusinessIntelligencePage = lazyWithRetry(() => import('@/pages/BusinessIntelligencePage'));
-export const LazyAnalyticsStudio = lazyWithRetry(() => import('@/pages/AnalyticsStudio'));
+export const LazyBusinessIntelligencePage = lazyWithRetry(() => import('@/pages/AdvancedAnalyticsPage'));
+export const LazyAnalyticsStudio = lazyWithRetry(() => import('@/pages/AdvancedAnalyticsPage'));
 export const LazyAutomationPage = lazyWithRetry(() => import('@/pages/AutomationPage'));
 export const LazyAutomationStudio = lazyWithRetry(() => import('@/pages/AutomationStudio'));
 export const LazyCrmPage = lazyWithRetry(() => import('@/pages/CrmPage'));

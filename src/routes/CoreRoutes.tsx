@@ -23,7 +23,7 @@ const StockManagement = lazy(() => import('@/pages/stock/StockManagementPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const ProductsMainPage = lazy(() => import('@/pages/products/ProductsMainPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
-const WorkflowsPage = lazy(() => import('@/pages/WorkflowsPage'));
+const WorkflowBuilderAdvanced = lazy(() => import('@/pages/automation/WorkflowBuilderPage'));
 const APIManagementPage = lazy(() => import('@/pages/APIManagementPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
@@ -50,7 +50,7 @@ export function CoreRoutes() {
       <Route path="analytics" element={<AnalyticsDashboard />} />
       <Route path="products" element={<ProductsMainPage />} />
       <Route path="ai-insights" element={<PredictiveAnalyticsPage />} />
-      <Route path="workflows" element={<WorkflowsPage />} />
+      <Route path="workflows" element={<WorkflowBuilderAdvanced />} />
       <Route path="api" element={<APIManagementPage />} />
       <Route path="billing" element={<BillingPage />} />
       <Route path="academy" element={<AcademyPage />} />
