@@ -49,46 +49,21 @@ const About = () => {
   ];
 
   const stats = [
-    { icon: Users, value: "10K+", label: "Clients Actifs" },
-    { icon: Globe, value: "50+", label: "Pays Couverts" },
-    { icon: TrendingUp, value: "€15M+", label: "CA Généré" },
-    { icon: Award, value: "98%", label: "Satisfaction" }
+    { icon: Users, value: "Beta", label: "Programme Pilote" },
+    { icon: Globe, value: "24+", label: "Plateformes Intégrées" },
+    { icon: TrendingUp, value: "IA", label: "Propulsé par l'IA" },
+    { icon: Award, value: "2025", label: "Lancement Officiel" }
   ];
 
-  const team = [
-    {
-      name: "Alexandre Martin",
-      role: "CEO & Co-fondateur",
-      bio: "10 ans d'expérience en e-commerce et IA",
-      avatar: "AM"
-    },
-    {
-      name: "Sophie Dubois",
-      role: "CTO",
-      bio: "Ex-Google, experte en machine learning",
-      avatar: "SD"
-    },
-    {
-      name: "Lucas Bernard",
-      role: "Head of Product",
-      bio: "15 ans dans le SaaS B2B",
-      avatar: "LB"
-    },
-    {
-      name: "Emma Laurent",
-      role: "VP Engineering",
-      bio: "Architecte cloud et systèmes distribués",
-      avatar: "EL"
-    }
-  ];
+  // Team section removed - will be added when real team is ready to be public
 
   return (
     <PublicLayout>
       <SEO
-        title="À Propos de ShopOpti+ | Plateforme E-commerce IA Leader en France"
-        description="Découvrez l'histoire de ShopOpti+, notre mission de révolutionner le dropshipping avec l'IA, et l'équipe d'experts qui développent les solutions e-commerce de demain. +10K clients actifs."
+        title="À Propos de ShopOpti+ | Plateforme E-commerce IA Nouvelle Génération"
+        description="Découvrez ShopOpti+, la plateforme d'automatisation e-commerce propulsée par l'IA. Mission : démocratiser le dropshipping intelligent pour les entrepreneurs ambitieux."
         path="/about"
-        keywords="équipe ShopOpti, histoire entreprise, mission dropshipping IA, fondateurs e-commerce, startup française"
+        keywords="ShopOpti, plateforme dropshipping IA, automatisation e-commerce, startup française, SaaS e-commerce"
       />
       <OrganizationSchema />
 
@@ -201,42 +176,37 @@ const About = () => {
           </div>
         </section>
 
-        {/* Team Section */}
+        {/* Why ShopOpti Section - Replacing fake team */}
         <section className="py-16 px-6 bg-muted/20">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <Badge variant="secondary" className="mb-4">
-                <Users className="w-4 h-4 mr-2" />
-                Notre Équipe
+                <Zap className="w-4 h-4 mr-2" />
+                Pourquoi ShopOpti+
               </Badge>
               <h2 className="text-4xl font-bold mb-4">
-                Les <span className="text-primary">experts</span> derrière ShopOpti+
+                Conçu pour les <span className="text-primary">entrepreneurs ambitieux</span>
               </h2>
               <p className="text-xl text-muted-foreground">
-                Une équipe passionnée par l'innovation et le succès de nos clients
+                Une plateforme pensée pour ceux qui veulent automatiser et scaler
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {team.map((member, index) => (
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { icon: Brain, title: "IA Intégrée", desc: "Génération automatique de fiches produit, descriptions SEO et images optimisées" },
+                { icon: Zap, title: "Automatisation Totale", desc: "Importation, synchronisation des stocks et passage de commandes en 1 clic" },
+                { icon: Shield, title: "Fiabilité Enterprise", desc: "Infrastructure cloud robuste, données sécurisées, support prioritaire" }
+              ].map((feature, index) => (
                 <Card key={index} className="border-border bg-card text-center hover:shadow-lg transition-all duration-300">
                   <CardHeader>
-                    <div className="mx-auto w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mb-4 text-white text-xl font-bold">
-                      {member.avatar}
+                    <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4">
+                      <feature.icon className="h-8 w-8 text-white" />
                     </div>
-                    <CardTitle className="text-lg">{member.name}</CardTitle>
-                    <Badge variant="outline" className="w-fit mx-auto">{member.role}</Badge>
+                    <CardTitle className="text-lg">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">{member.bio}</p>
-                    <div className="flex justify-center gap-3">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Linkedin className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Twitter className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <p className="text-sm text-muted-foreground">{feature.desc}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -255,10 +225,10 @@ const About = () => {
             
             <div className="space-y-8">
               {[
-                { year: "2022", title: "Création", desc: "Lancement de ShopOpti+ avec l'idée de démocratiser l'IA pour l'e-commerce" },
-                { year: "2023", title: "Croissance", desc: "Atteinte des 5 000 utilisateurs et levée de fonds Seed de 2M€" },
-                { year: "2024", title: "Expansion", desc: "10K+ clients actifs, intégration de 99+ fournisseurs internationaux" },
-                { year: "2025", title: "Innovation", desc: "Lancement de l'IA générative pour l'optimisation automatique des catalogues" }
+                { year: "2024", title: "Conception", desc: "Naissance de l'idée : automatiser le dropshipping avec l'IA pour les entrepreneurs" },
+                { year: "Q1 2025", title: "Développement", desc: "Construction de la plateforme : intégrations multi-sources, IA générative, synchronisation temps réel" },
+                { year: "Q2 2025", title: "Beta Privée", desc: "Programme pilote avec utilisateurs sélectionnés, itérations produit intensives" },
+                { year: "2025", title: "Lancement", desc: "Ouverture officielle avec support Shopify, 24+ plateformes et IA intégrée" }
               ].map((milestone, index) => (
                 <div key={index} className="flex gap-6 items-start">
                   <div className="flex-shrink-0 w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold">
@@ -281,8 +251,8 @@ const About = () => {
               Prêt à faire partie de l'<span className="text-primary">aventure</span> ?
             </h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Rejoignez les milliers d'entrepreneurs qui transforment leur business 
-              avec ShopOpti+. L'avenir de l'e-commerce commence maintenant.
+              Rejoignez notre programme Beta et soyez parmi les premiers à transformer 
+              votre business avec l'IA. L'avenir de l'e-commerce commence maintenant.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
