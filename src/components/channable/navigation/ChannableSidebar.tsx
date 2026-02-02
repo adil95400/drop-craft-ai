@@ -14,7 +14,7 @@ import shopoptiLogo from "@/assets/logo.svg";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronRight, Search, Star, Lock, Crown, Package, Settings, HelpCircle, User } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarRail, useSidebar, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarRail, useSidebar, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuAction } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -145,8 +145,8 @@ const ChannableNavItem = memo(({
     duration: 0.2,
     ease: "easeOut"
   }}>
-      <SidebarMenuItem>
-        <SidebarMenuButton onClick={() => hasSubModules ? onSubToggle() : hasAccess && onNavigate(module.route)} tooltip={collapsed ? module.name : undefined} className={cn("w-full rounded-xl transition-all duration-200 group/item relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50", isActive ? `bg-gradient-to-r ${groupColor?.gradient || 'from-primary to-primary/80'} text-white shadow-lg shadow-primary/20` : "hover:bg-sidebar-accent/50 dark:hover:bg-sidebar-accent/30", !hasAccess && "opacity-40 cursor-not-allowed")} aria-current={isActive ? "page" : undefined} aria-disabled={!hasAccess} aria-expanded={hasSubModules ? isSubOpen : undefined}>
+      <SidebarMenuItem className="group/menu-item">
+        <SidebarMenuButton onClick={() => hasSubModules ? onSubToggle() : hasAccess && onNavigate(module.route)} tooltip={collapsed ? module.name : undefined} className={cn("w-full rounded-xl transition-all duration-200 relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 peer/menu-button", isActive ? `bg-gradient-to-r ${groupColor?.gradient || 'from-primary to-primary/80'} text-white shadow-lg shadow-primary/20` : "hover:bg-sidebar-accent/50 dark:hover:bg-sidebar-accent/30", !hasAccess && "opacity-40 cursor-not-allowed")} aria-current={isActive ? "page" : undefined} aria-disabled={!hasAccess} aria-expanded={hasSubModules ? isSubOpen : undefined}>
           {/* Active indicator glow */}
           {isActive && <motion.div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" initial={prefersReducedMotion ? false : {
           opacity: 0
@@ -163,7 +163,7 @@ const ChannableNavItem = memo(({
                 {module.name}
               </span>
               
-              <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
+              <div className="flex items-center gap-1.5 ml-2 flex-shrink-0 pr-6">
                 {!hasAccess && <Lock className="h-3 w-3 text-muted-foreground/60" aria-label="Accès restreint" />}
                 
                 {module.badge && <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-bold border-0 uppercase tracking-wide", module.badge === 'pro' && "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-sm", module.badge === 'new' && "bg-gradient-to-r from-emerald-500/90 to-green-500/90 text-white shadow-sm", module.badge === 'beta' && "bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white shadow-sm")}>
@@ -171,16 +171,25 @@ const ChannableNavItem = memo(({
                   </Badge>}
                 
                 {hasSubModules && <ChevronRight className={cn("h-3.5 w-3.5 transition-transform duration-200", isActive ? "text-white/70" : "text-muted-foreground/60", isSubOpen && "rotate-90")} aria-hidden="true" />}
-                
-                <button onClick={e => {
-              e.stopPropagation();
-              onFavoriteToggle();
-            }} className={cn("h-5 w-5 flex items-center justify-center rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50", "opacity-0 group-hover/item:opacity-100", isFavorite && "opacity-100")} aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"} aria-pressed={isFavorite}>
-                  <Star className={cn("h-3 w-3 transition-all", isFavorite ? "fill-amber-400 text-amber-400 drop-shadow-sm" : isActive ? "text-white/60 hover:text-amber-300" : "text-muted-foreground/50 hover:text-amber-500")} aria-hidden="true" />
-                </button>
               </div>
             </div>}
         </SidebarMenuButton>
+        
+        {/* Favorite action - using SidebarMenuAction to avoid button nesting */}
+        {!collapsed && (
+          <SidebarMenuAction
+            onClick={(e) => {
+              e.stopPropagation();
+              onFavoriteToggle();
+            }}
+            showOnHover={!isFavorite}
+            className={cn(isFavorite && "opacity-100")}
+            aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+            aria-pressed={isFavorite}
+          >
+            <Star className={cn("h-3 w-3 transition-all", isFavorite ? "fill-amber-400 text-amber-400 drop-shadow-sm" : isActive ? "text-white/60 hover:text-amber-300" : "text-muted-foreground/50 hover:text-amber-500")} aria-hidden="true" />
+          </SidebarMenuAction>
+        )}
       </SidebarMenuItem>
       
       {/* Sous-menus avec animation fluide */}
@@ -382,19 +391,32 @@ const ChannableFooter = memo(({
         }} exit={prefersReducedMotion ? undefined : {
           opacity: 0,
           x: -10
-        }} className="flex-1 min-w-0 cursor-pointer group" onClick={() => navigate('/dashboard/profile')} role="button" aria-label="Voir mon profil">
-              <p className="text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors">
-                {profile?.full_name || 'Utilisateur'}
-              </p>
-              <button onClick={e => {
-            e.stopPropagation();
-            navigate('/dashboard/subscription');
-          }} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity" aria-label="Voir mon abonnement">
+        }} className="flex-1 min-w-0">
+              <div 
+                className="cursor-pointer group" 
+                onClick={() => navigate('/dashboard/profile')}
+                role="button" 
+                tabIndex={0}
+                aria-label="Voir mon profil"
+                onKeyDown={(e) => e.key === 'Enter' && navigate('/dashboard/profile')}
+              >
+                <p className="text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors">
+                  {profile?.full_name || 'Utilisateur'}
+                </p>
+              </div>
+              <div 
+                onClick={() => navigate('/dashboard/subscription')} 
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer" 
+                role="button"
+                tabIndex={0}
+                aria-label="Voir mon abonnement"
+                onKeyDown={(e) => e.key === 'Enter' && navigate('/dashboard/subscription')}
+              >
                 <Crown className="h-3 w-3 text-amber-500" aria-hidden="true" />
                 <p className="text-[11px] text-muted-foreground/70">
                   {planLabel}
                 </p>
-              </button>
+              </div>
             </motion.div>}
         </AnimatePresence>
         

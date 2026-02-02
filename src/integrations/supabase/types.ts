@@ -8952,6 +8952,39 @@ export type Database = {
         }
         Relationships: []
       }
+      quota_usage: {
+        Row: {
+          created_at: string
+          current_usage: number
+          id: string
+          period_end: string
+          period_start: string
+          quota_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_usage?: number
+          id?: string
+          period_end?: string
+          period_start?: string
+          quota_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_usage?: number
+          id?: string
+          period_end?: string
+          period_start?: string
+          quota_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       rate_limit_tracking: {
         Row: {
           created_at: string
@@ -12516,6 +12549,10 @@ export type Database = {
         Args: { customer_id_param: string }
         Returns: boolean
       }
+      check_user_quota: {
+        Args: { p_increment?: number; p_quota_key: string; p_user_id: string }
+        Returns: Json
+      }
       cleanup_expired_audit_logs: { Args: never; Returns: number }
       cleanup_old_translation_cache: {
         Args: { days_old?: number }
@@ -12643,6 +12680,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_user_quota: {
+        Args: { p_increment?: number; p_quota_key: string; p_user_id: string }
+        Returns: Json
       }
       is_admin_secure: { Args: never; Returns: boolean }
       is_token_revoked: { Args: { token_id?: string }; Returns: boolean }
