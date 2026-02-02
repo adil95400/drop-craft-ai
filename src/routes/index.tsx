@@ -159,7 +159,7 @@ export function AppRoutes() {
           {/* Automation & AI */}
           <Route path="/automation/*" element={<Protected><AutomationRoutes /></Protected>} />
           <Route path="/ai/*" element={<Protected><AIRoutes /></Protected>} />
-          <Route path="/pricing/*" element={<Protected><PricingRoutes /></Protected>} />
+          <Route path="/pricing-manager/*" element={<Protected><PricingRoutes /></Protected>} />
           <Route path="/rewrite/*" element={<Protected><RewriteRoutes /></Protected>} />
           
           {/* Marketing */}
