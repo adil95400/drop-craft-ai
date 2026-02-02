@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Zap, List, Activity, Plus, Play, Pause, Trash2, RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Zap, List, Activity, Plus, Play, Pause, Trash2, RefreshCw, CheckCircle2, XCircle, Clock, FlaskConical, LayoutTemplate } from 'lucide-react';
 import { useAutomationWorkflows, useAutomationStats } from '@/hooks/useAutomationRealData';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+
+// Lazy load enterprise components
+const WorkflowSandbox = lazy(() => import('@/components/automation/WorkflowSandbox').then(m => ({ default: m.WorkflowSandbox })));
+const WorkflowTemplates = lazy(() => import('@/components/automation/WorkflowTemplates').then(m => ({ default: m.WorkflowTemplates })));
 
 export default function AutomationPage() {
   const [activeTab, setActiveTab] = useState('list');
@@ -112,21 +116,26 @@ export default function AutomationPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="w-full max-w-md grid grid-cols-3 h-auto">
+          <TabsList className="w-full max-w-2xl grid grid-cols-5 h-auto">
             <TabsTrigger value="list" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
               <List className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Automations</span>
-              <span className="xs:hidden">Auto</span>
+              <span className="hidden sm:inline">Automations</span>
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
+              <LayoutTemplate className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Templates</span>
             </TabsTrigger>
             <TabsTrigger value="builder" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
               <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Créer</span>
-              <span className="xs:hidden">+</span>
+              <span className="hidden sm:inline">Créer</span>
+            </TabsTrigger>
+            <TabsTrigger value="sandbox" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
+              <FlaskConical className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Sandbox</span>
             </TabsTrigger>
             <TabsTrigger value="activity" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
               <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Activité</span>
-              <span className="xs:hidden">Log</span>
+              <span className="hidden sm:inline">Activité</span>
             </TabsTrigger>
           </TabsList>
 
@@ -232,6 +241,12 @@ export default function AutomationPage() {
             )}
           </TabsContent>
 
+          <TabsContent value="templates" className="space-y-6">
+            <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+              <WorkflowTemplates />
+            </Suspense>
+          </TabsContent>
+
           <TabsContent value="builder" className="space-y-6">
             <Card>
               <CardHeader>
@@ -266,6 +281,12 @@ export default function AutomationPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="sandbox" className="space-y-6">
+            <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+              <WorkflowSandbox />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-6">
