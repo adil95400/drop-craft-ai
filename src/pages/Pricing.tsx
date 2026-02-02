@@ -141,7 +141,7 @@ const Pricing = () => {
                     </Button>
                     
                     <p className="text-xs text-center text-muted-foreground">
-                      Sans carte bancaire • Annulable à tout moment
+                      Carte bancaire requise après l'essai • Annulable à tout moment
                     </p>
                   </CardContent>
                 </Card>
