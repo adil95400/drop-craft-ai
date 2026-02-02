@@ -3,7 +3,7 @@
  */
 import { memo, useCallback } from 'react'
 import { ChevronRight, Star, Lock } from 'lucide-react'
-import { SidebarMenuItem, SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
+import { SidebarMenuItem, SidebarMenuButton, SidebarMenuAction, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
@@ -137,14 +137,14 @@ export const SidebarNavItem = memo<SidebarNavItemProps>(({
 
   // Item simple
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem className="group/menu-item">
       <SidebarMenuButton
         onClick={handleNavigate}
         tooltip={collapsed ? name : undefined}
         isActive={isActive}
         disabled={!hasAccess}
         className={cn(
-          "w-full group/item",
+          "w-full peer/menu-button",
           "hover:bg-sidebar-accent/60",
           isActive && "bg-primary text-primary-foreground",
           !hasAccess && "opacity-40 cursor-not-allowed"
@@ -161,29 +161,29 @@ export const SidebarNavItem = memo<SidebarNavItemProps>(({
             <div className="flex items-center gap-1 flex-shrink-0">
               {!hasAccess && <Lock className="h-3 w-3" />}
               {PlanBadge}
-              {isFavorite !== undefined && onFavoriteToggle && (
-                <button
-                  onClick={handleFavoriteClick}
-                  className={cn(
-                    "h-4 w-4 flex items-center justify-center rounded",
-                    "opacity-0 group-hover/item:opacity-100 transition-opacity",
-                    isFavorite && "opacity-100"
-                  )}
-                >
-                  <Star 
-                    className={cn(
-                      "h-3 w-3",
-                      isFavorite 
-                        ? "fill-warning text-warning" 
-                        : "text-muted-foreground hover:text-warning"
-                    )}
-                  />
-                </button>
-              )}
             </div>
           </div>
         )}
       </SidebarMenuButton>
+      
+      {/* Favorite action - using SidebarMenuAction to avoid button nesting */}
+      {!collapsed && isFavorite !== undefined && onFavoriteToggle && (
+        <SidebarMenuAction
+          onClick={handleFavoriteClick}
+          showOnHover={!isFavorite}
+          className={cn(isFavorite && "opacity-100")}
+          aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+        >
+          <Star 
+            className={cn(
+              "h-3 w-3",
+              isFavorite 
+                ? "fill-warning text-warning" 
+                : "text-muted-foreground hover:text-warning"
+            )}
+          />
+        </SidebarMenuAction>
+      )}
     </SidebarMenuItem>
   )
 })
