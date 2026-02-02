@@ -24,6 +24,7 @@ const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
 const DocumentationPage = lazy(() => import('@/pages/public/DocumentationPage'));
 const TestimonialsPage = lazy(() => import('@/pages/public/TestimonialsPage'));
 const ChangelogPage = lazy(() => import('@/pages/public/ChangelogPage'));
+const StatusPage = lazy(() => import('@/pages/public/StatusPage'));
 const Integrations = lazy(() => import('@/pages/integrations/ChannableStyleIntegrationsPage'));
 
 // Feature pages
@@ -56,6 +57,7 @@ export function PublicRoutes() {
       <Route path="docs" element={<DocumentationPage />} />
       <Route path="blog" element={<BlogPage />} />
       <Route path="changelog" element={<ChangelogPage />} />
+      <Route path="status" element={<StatusPage />} />
       <Route path="testimonials" element={<TestimonialsPage />} />
       <Route path="integrations" element={<Integrations />} />
       

@@ -2,3 +2,4 @@
 export { OrderFulfillmentPanel } from './OrderFulfillmentPanel';
 export { BatchLabelGenerator } from './BatchLabelGenerator';
 export { TrackingTimeline } from './TrackingTimeline';
+export { AutoOrderVerification } from './AutoOrderVerification';
