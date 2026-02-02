@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   Link2, Search, Package, ImageIcon, Loader2, CheckCircle2, AlertCircle, 
   Sparkles, ShoppingCart, Plus, Trash2, X, Zap, Globe, Camera,
-  TrendingUp, Clock, ArrowRight, Upload, History, Eye, Edit
+  TrendingUp, Clock, ArrowRight, Upload, History, Eye, Edit, Calculator
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -27,6 +27,7 @@ import { motion } from 'framer-motion'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
 import { ProductPreviewEditModal } from '@/components/import/ProductPreviewEditModal'
+import { ProfitCalculator } from '@/components/import/ProfitCalculator'
 
 // Hook pour préférences réduites
 const useReducedMotion = () => {
@@ -417,6 +418,16 @@ export default function AutoDSImportPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Profit Calculator */}
+          {successfulUrls.length > 0 && successfulUrls[0].preview && (
+            <ProfitCalculator
+              purchasePrice={successfulUrls[0].preview.price}
+              suggestedPrice={successfulUrls[0].preview.suggested_price}
+              currency={successfulUrls[0].preview.currency || 'EUR'}
+              onPriceChange={(price) => setPriceMultiplier(price / successfulUrls[0].preview!.price)}
+            />
+          )}
 
           {/* URL Queue */}
           {queuedUrls.length > 0 && (
