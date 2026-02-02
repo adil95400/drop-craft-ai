@@ -11,8 +11,7 @@ const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegratio
 const ShopifyDiagnostic = lazy(() => import('@/pages/ShopifyDiagnostic'));
 const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage'));
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
-const StockManagementDashboard = lazy(() => import('@/pages/StockManagementDashboard'));
-const AnalyticsDashboard = lazy(() => import('@/pages/AnalyticsDashboard'));
+const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 
 export function ChannelRoutes() {
   return (
@@ -27,8 +26,8 @@ export function ChannelRoutes() {
       <Route path="shopify-diagnostic" element={<ShopifyDiagnostic />} />
       <Route path="shopify-management" element={<ShopifyManagementPage />} />
       <Route path="sync" element={<StoreSyncDashboard />} />
-      <Route path="stock-intelligence" element={<StockManagementDashboard />} />
-      <Route path="analytics" element={<AnalyticsDashboard />} />
+      <Route path="stock-intelligence" element={<Navigate to="/stock" replace />} />
+      <Route path="analytics" element={<AdvancedAnalyticsPage />} />
     </Routes>
   );
 }

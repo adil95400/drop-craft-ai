@@ -29,7 +29,6 @@ const BulkImportPage = lazy(() => import('@/pages/import/BulkImportPage'))
 const MultiStoreImportPage = lazy(() => import('@/pages/import/MultiStoreImportPage'))
 const SearchAllSuppliersPage = lazy(() => import('@/pages/import/SearchAllSuppliersPage'))
 const ShopifyImportHub = lazy(() => import('@/pages/import/ShopifyImportHub'))
-const AliExpressImportPageLegacy = lazy(() => import('@/pages/import/AliExpressImportPage'))
 
 // IA & Génération
 const AIGenerationPage = lazy(() => import('@/pages/import/AIGenerationPage'))
@@ -76,7 +75,7 @@ export function ImportRoutes() {
       <Route path="multi-store" element={<MultiStoreImportPage />} />
       <Route path="search-suppliers" element={<SearchAllSuppliersPage />} />
       <Route path="shopify-hub" element={<ShopifyImportHub />} />
-      <Route path="aliexpress-legacy" element={<AliExpressImportPageLegacy />} />
+      <Route path="aliexpress-legacy" element={<Navigate to="/import/aliexpress" replace />} />
       
       {/* IA & Génération */}
       <Route path="ai-generation" element={<AIGenerationPage />} />

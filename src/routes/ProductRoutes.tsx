@@ -8,17 +8,14 @@ import { lazy } from 'react';
 
 // Products
 const ChannableProductsPage = lazy(() => import('@/pages/products/ChannableProductsPage'));
-const EnhancedCatalog = lazy(() => import('@/pages/products/EnhancedCatalog'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
 
 // Import - Redirects to /import module
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'));
 
-// Winners & Research
-const WinnersPage = lazy(() => import('@/pages/WinnersPage'));
-const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
-const AdsSpyPage = lazy(() => import('@/pages/AdsSpyPage'));
+// Winners & Research - Redirect to /research module
+const ProductResearchPageNew = lazy(() => import('@/pages/products/ProductResearchPage'));
 const MarketplaceCampaignsPage = lazy(() => import('@/pages/MarketplaceCampaignsPage'));
 
 // Tools
@@ -29,7 +26,6 @@ const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage
 // Product Management - Using catalog variants page
 const CatalogVariantsPage = lazy(() => import('@/pages/catalog/VariantsPage'));
 const WarehouseManagement = lazy(() => import('@/pages/WarehouseManagement'));
-const DropshippingCenterPage = lazy(() => import('@/pages/DropshippingCenterPage'));
 const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 
 // Advanced Products
@@ -37,7 +33,6 @@ const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProduct
 
 // Product Module Routes
 const ProductAuditPage = lazy(() => import('@/pages/products/ProductAuditPage'));
-const ProductResearchPageNew = lazy(() => import('@/pages/products/ProductResearchPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const ProductSourcingPage = lazy(() => import('@/pages/products/ProductSourcingPage'));
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
@@ -50,7 +45,7 @@ export function ProductRoutes() {
     <Routes>
       {/* Products Management */}
       <Route index element={<ChannableProductsPage />} />
-      <Route path="enhanced-catalog" element={<EnhancedCatalog />} />
+      <Route path="enhanced-catalog" element={<Navigate to="/products" replace />} />
       <Route path="publish" element={<ProductPublishing />} />
       <Route path="catalogue" element={<Navigate to="/products" replace />} />
       <Route path="advanced" element={<AdvancedProductsPage />} />
@@ -78,11 +73,11 @@ export function ProductRoutes() {
       {/* Suppliers - Redirect to dedicated module */}
       <Route path="suppliers/*" element={<Navigate to="/suppliers" replace />} />
       
-      {/* Product Research & Marketplace */}
-      <Route path="winners" element={<WinnersPage />} />
-      <Route path="ads-spy" element={<AdsSpyPage />} />
+      {/* Product Research & Marketplace - Redirect to /research */}
+      <Route path="winners" element={<Navigate to="/research/winning" replace />} />
+      <Route path="ads-spy" element={<Navigate to="/research/ads" replace />} />
       <Route path="marketplace-campaigns" element={<MarketplaceCampaignsPage />} />
-      <Route path="research-legacy" element={<ProductResearchPage />} />
+      <Route path="research-legacy" element={<Navigate to="/research" replace />} />
       
       {/* Tools */}
       <Route path="profit-calculator" element={<ProfitCalculatorPage />} />
@@ -92,7 +87,7 @@ export function ProductRoutes() {
       {/* Product Management - variants uses catalog page */}
       <Route path="variants" element={<CatalogVariantsPage />} />
       <Route path="warehouse" element={<WarehouseManagement />} />
-      <Route path="dropshipping-center" element={<DropshippingCenterPage />} />
+      <Route path="dropshipping-center" element={<Navigate to="/suppliers" replace />} />
       <Route path="vendors" element={<VendorManagementPage />} />
       
       {/* Legacy redirects */}
