@@ -78,3 +78,4 @@ export { SupplierComparisonTable } from './SupplierComparisonTable';
 // Advanced Import Features
 export { UnifiedImportWizard } from './UnifiedImportWizard';
 export { ImportRollbackManager } from './ImportRollbackManager';
+export { ProfitCalculator } from './ProfitCalculator';

@@ -13,10 +13,11 @@ import { toast } from 'sonner';
 import { 
   ArrowLeft, Package, User, MapPin, CreditCard, 
   Truck, Calendar, Mail, Phone, FileText, Printer,
-  Box, Timer, Split
+  Box, Timer, Split, MapPinned
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { OrderFulfillmentPanel } from '@/components/orders/OrderFulfillmentPanel';
+import { TrackingTimeline } from '@/components/orders/TrackingTimeline';
 
 export default function OrderDetail() {
   const { id } = useParams();
@@ -197,6 +198,10 @@ export default function OrderDetail() {
             <TabsTrigger value="details" className="gap-2">
               <Package className="h-4 w-4" />
               Détails
+            </TabsTrigger>
+            <TabsTrigger value="tracking" className="gap-2">
+              <MapPinned className="h-4 w-4" />
+              Suivi colis
             </TabsTrigger>
             <TabsTrigger value="fulfillment" className="gap-2">
               <Truck className="h-4 w-4" />
@@ -393,6 +398,14 @@ export default function OrderDetail() {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="tracking">
+            <TrackingTimeline
+              trackingNumber={order.tracking_number || undefined}
+              carrier={order.carrier || undefined}
+              orderStatus={order.status}
+            />
           </TabsContent>
 
           <TabsContent value="fulfillment">

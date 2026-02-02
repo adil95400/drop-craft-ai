@@ -20,6 +20,7 @@ import {
 } from '@/components/channable';
 import { ChannableStat, ChannableQuickAction } from '@/components/channable/types';
 import { useToast } from '@/hooks/use-toast';
+import { PDFExportButton } from '@/components/reports/PDFExportButton';
 
 export default function ReportsPage() {
   const { toast } = useToast();
@@ -128,6 +129,29 @@ export default function ReportsPage() {
       }}
       actions={
         <div className="flex gap-2">
+          <PDFExportButton
+            title="Rapport Analytics ShopOpti"
+            subtitle={`Période: ${dateRange} jours`}
+            data={[
+              { 
+                metric: 'Revenus', 
+                value: (stats?.revenue || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }),
+                trend: stats?.revenueChange ? `${stats.revenueChange > 0 ? '+' : ''}${stats.revenueChange}%` : 'N/A'
+              },
+              { metric: 'Commandes', value: stats?.orders || 0, trend: 'N/A' },
+              { metric: 'Produits', value: stats?.products || 0, trend: 'N/A' },
+              { metric: 'Clients', value: stats?.customers || 0, trend: 'N/A' },
+            ]}
+            columns={[
+              { key: 'metric', label: 'Métrique' },
+              { key: 'value', label: 'Valeur' },
+              { key: 'trend', label: 'Évolution' },
+            ]}
+            summary={[
+              { label: 'Période analysée', value: `${dateRange} jours` },
+              { label: 'Date du rapport', value: new Date().toLocaleDateString('fr-FR') },
+            ]}
+          />
           <Button onClick={handleGenerateReport} className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Générer rapport
