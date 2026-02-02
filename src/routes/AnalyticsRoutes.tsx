@@ -1,6 +1,7 @@
 /**
  * Routes Analytics - Reports, Intelligence, Insights
  * Module complet avec données réelles et BI avancée
+ * Consolidé - Suppressions des imports orphelins
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -11,8 +12,7 @@ const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const UnifiedAnalyticsDashboard = lazy(() => import('@/pages/UnifiedAnalyticsDashboard'));
 
-// Intelligence
-const AIIntelligencePage = lazy(() => import('@/pages/AIIntelligencePage'));
+// Intelligence - Using existing pages
 const CustomerIntelligencePage = lazy(() => import('@/pages/CustomerIntelligencePage'));
 const GlobalIntelligencePage = lazy(() => import('@/pages/GlobalIntelligencePage'));
 
@@ -47,8 +47,8 @@ export function AnalyticsRoutes() {
       <Route path="real-data" element={<RealDataAnalyticsPage />} />
       <Route path="bi" element={<BusinessIntelligencePage />} />
       
-      {/* Intelligence */}
-      <Route path="ai-intelligence" element={<AIIntelligencePage />} />
+      {/* Intelligence - Redirect ai-intelligence to predictive */}
+      <Route path="ai-intelligence" element={<PredictiveAnalyticsPage />} />
       <Route path="customer-intelligence" element={<CustomerIntelligencePage />} />
       <Route path="global-intelligence" element={<GlobalIntelligencePage />} />
       

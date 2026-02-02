@@ -1,24 +1,16 @@
 /**
  * Routes Marketing - CRM, SEO, Ads, Campaigns
+ * Consolidé - Utilise pages existantes uniquement
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-// Marketing
-const MarketingPage = lazy(() => import('@/pages/MarketingAutomation'));
+// Marketing - Using consolidated CrmPage as main marketing page
+const CrmPage = lazy(() => import('@/pages/CrmPage'));
 const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
 
-// CRM
-const CRM = lazy(() => import('@/pages/CRM'));
-const CRMLeads = lazy(() => import('@/pages/CRMLeads'));
-const CRMActivity = lazy(() => import('@/pages/CRMActivity'));
-const CRMEmails = lazy(() => import('@/pages/CRMEmails'));
-const CRMCalls = lazy(() => import('@/pages/CRMCalls'));
-const CRMCalendar = lazy(() => import('@/pages/CRMCalendar'));
-
-// SEO
-const SEOManagerPage = lazy(() => import('@/pages/SEOManager'));
-const SEO = lazy(() => import('@/pages/SEO'));
+// SEO - Use SEOManagerPage only
+const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
 
 // Ads
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
@@ -44,21 +36,21 @@ const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
 export function MarketingRoutes() {
   return (
     <Routes>
-      {/* Marketing Overview */}
-      <Route index element={<MarketingPage />} />
+      {/* Marketing Overview - CrmPage consolidé */}
+      <Route index element={<CrmPage />} />
       <Route path="promotions" element={<PromotionsAutomationPage />} />
       
-      {/* CRM */}
-      <Route path="crm" element={<CRM />} />
-      <Route path="crm/leads" element={<CRMLeads />} />
-      <Route path="crm/activity" element={<CRMActivity />} />
-      <Route path="crm/emails" element={<CRMEmails />} />
-      <Route path="crm/calls" element={<CRMCalls />} />
-      <Route path="crm/calendar" element={<CRMCalendar />} />
+      {/* CRM - Toutes les routes CRM redirigent vers CrmPage consolidé */}
+      <Route path="crm" element={<CrmPage />} />
+      <Route path="crm/leads" element={<CrmPage />} />
+      <Route path="crm/activity" element={<CrmPage />} />
+      <Route path="crm/emails" element={<CrmPage />} />
+      <Route path="crm/calls" element={<CrmPage />} />
+      <Route path="crm/calendar" element={<CrmPage />} />
       
       {/* SEO */}
       <Route path="seo" element={<SEOManagerPage />} />
-      <Route path="seo/tools" element={<SEO />} />
+      <Route path="seo/tools" element={<SEOManagerPage />} />
       
       {/* Ads */}
       <Route path="ads" element={<AdsManagerPage />} />
