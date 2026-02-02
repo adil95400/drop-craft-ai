@@ -1,8 +1,8 @@
 /**
  * Routes Enterprise - Admin, Multi-tenant, Security, Monitoring
- * Consolidé - Suppression des pages dupliquées
+ * Consolidé - Redirections gérées par LegacyRedirectHandler
  */
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Admin
