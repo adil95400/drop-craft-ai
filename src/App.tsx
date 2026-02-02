@@ -24,6 +24,7 @@ const UnifiedAuthProvider = lazy(() =>
 // Lazy load heavy components to reduce initial bundle
 const PWAInstallBanner = lazy(() => import('@/components/mobile/PWAInstallBanner').then(m => ({ default: m.PWAInstallBanner })));
 const FeedbackWidget = lazy(() => import('@/components/feedback/FeedbackWidget').then(m => ({ default: m.FeedbackWidget })));
+const UpdateNotification = lazy(() => import('@/components/pwa/UpdateNotification').then(m => ({ default: m.UpdateNotification })));
 const MobileGlobalOptimizer = lazy(() => import('@/components/mobile/MobileGlobalOptimizer').then(m => ({ default: m.MobileGlobalOptimizer })));
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour').then(m => ({ default: m.OnboardingTour })));
 const NotificationProvider = lazy(() => import('@/components/notifications/NotificationService').then(m => ({ default: m.NotificationProvider })));
@@ -85,6 +86,11 @@ const AppContent = memo(() => {
         <SonnerToaster position="top-right" />
         <Suspense fallback={null}>
           <PWAInstallBanner />
+        </Suspense>
+        
+        {/* Notification de mise à jour PWA */}
+        <Suspense fallback={null}>
+          <UpdateNotification />
         </Suspense>
         
         {/* Onboarding tour for new users */}
