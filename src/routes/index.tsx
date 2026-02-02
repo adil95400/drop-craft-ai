@@ -61,8 +61,8 @@ const CouponsManagementPage = lazy(() => import('@/pages/CouponsManagementPage')
 const FreeTrialActivationPage = lazy(() => import('@/pages/FreeTrialActivationPage'));
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
 const EnrichmentSettingsPage = lazy(() => import('@/pages/enrichment/EnrichmentSettingsPage'));
-const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
-const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'));
+const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
+const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
 const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
@@ -194,8 +194,8 @@ export function AppRoutes() {
           {/* Feature Pages */}
           <Route path="/sync-manager" element={<Protected><SyncManagerPage /></Protected>} />
           <Route path="/reviews" element={<Protected><AvisPositifUltraPro /></Protected>} />
-          <Route path="/advanced" element={<Protected><AdvancedModulesPage /></Protected>} />
-          <Route path="/monitoring" element={<Protected><MonitoringPage /></Protected>} />
+          <Route path="/advanced" element={<Protected><AdvancedAnalyticsPage /></Protected>} />
+          <Route path="/monitoring" element={<Protected><PerformanceMonitoringPage /></Protected>} />
           <Route path="/catalog-intelligence" element={<Protected><CatalogIntelligencePage /></Protected>} />
           <Route path="/coupons" element={<Protected><CouponsManagementPage /></Protected>} />
           <Route path="/trial" element={<Protected><FreeTrialActivationPage /></Protected>} />

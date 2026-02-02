@@ -16,7 +16,7 @@ const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 
 // Monitoring
 const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
-const AdvancedMonitoringPage = lazy(() => import('@/pages/AdvancedMonitoringPage'));
+const AdvancedMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
 
 // Platform
 const PlatformManagementPage = lazy(() => import('@/pages/PlatformManagementPage'));

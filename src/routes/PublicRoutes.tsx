@@ -19,7 +19,7 @@ const FAQ = lazy(() => import('@/pages/FAQ'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const About = lazy(() => import('@/pages/About'));
-const EnterpriseObservability = lazy(() => import('@/pages/EnterpriseObservability'));
+const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
 const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
 const DocumentationPage = lazy(() => import('@/pages/public/DocumentationPage'));
 const TestimonialsPage = lazy(() => import('@/pages/public/TestimonialsPage'));
@@ -73,7 +73,7 @@ export function PublicRoutes() {
       <Route path="payment/cancelled" element={<PaymentCancelled />} />
       
       {/* Enterprise */}
-      <Route path="enterprise/observability" element={<EnterpriseObservability />} />
+      <Route path="enterprise/observability" element={<PerformanceMonitoringPage />} />
       
       {/* Legacy redirects */}
       <Route path="guides" element={<Navigate to="/documentation" replace />} />

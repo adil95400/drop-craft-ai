@@ -8,13 +8,8 @@ import { lazy } from 'react';
 
 // Analytics
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
-const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const UnifiedAnalyticsDashboard = lazy(() => import('@/pages/UnifiedAnalyticsDashboard'));
-
-// Intelligence - Using existing pages
-const CustomerIntelligencePage = lazy(() => import('@/pages/CustomerIntelligencePage'));
-const GlobalIntelligencePage = lazy(() => import('@/pages/GlobalIntelligencePage'));
 
 // Competitive
 const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage'));
@@ -26,9 +21,7 @@ const Reports = lazy(() => import('@/pages/Reports'));
 const ProfitAnalyticsDashboard = lazy(() => import('@/pages/ProfitAnalyticsDashboard'));
 
 // Advanced Analytics
-const BusinessIntelligencePage = lazy(() => import('@/pages/BusinessIntelligencePage'));
 const CustomerSegmentationPage = lazy(() => import('@/pages/CustomerSegmentationPage'));
-const ProductIntelligencePage = lazy(() => import('@/pages/ProductIntelligencePage'));
 const AdvancedAnalyticsDashboardPage = lazy(() => import('@/pages/analytics/AdvancedAnalyticsPage'));
 
 // Real Data Analytics
@@ -40,17 +33,17 @@ export function AnalyticsRoutes() {
       {/* Analytics Overview */}
       <Route index element={<AdvancedAnalyticsPage />} />
       <Route path="unified" element={<UnifiedAnalyticsDashboard />} />
-      <Route path="studio" element={<AnalyticsStudio />} />
+      <Route path="studio" element={<AdvancedAnalyticsPage />} />
       <Route path="predictive" element={<PredictiveAnalyticsPage />} />
       
       {/* Real Data Analytics */}
       <Route path="real-data" element={<RealDataAnalyticsPage />} />
-      <Route path="bi" element={<BusinessIntelligencePage />} />
+      <Route path="bi" element={<AdvancedAnalyticsPage />} />
       
-      {/* Intelligence - Redirect ai-intelligence to predictive */}
+      {/* Intelligence - Redirect to predictive */}
       <Route path="ai-intelligence" element={<PredictiveAnalyticsPage />} />
-      <Route path="customer-intelligence" element={<CustomerIntelligencePage />} />
-      <Route path="global-intelligence" element={<GlobalIntelligencePage />} />
+      <Route path="customer-intelligence" element={<PredictiveAnalyticsPage />} />
+      <Route path="global-intelligence" element={<PredictiveAnalyticsPage />} />
       
       {/* Competitive Analysis */}
       <Route path="competitive" element={<CompetitorAnalysisPage />} />
@@ -64,9 +57,9 @@ export function AnalyticsRoutes() {
       
       {/* Advanced Analytics */}
       <Route path="advanced" element={<AdvancedAnalyticsDashboardPage />} />
-      <Route path="business-intelligence" element={<BusinessIntelligencePage />} />
+      <Route path="business-intelligence" element={<AdvancedAnalyticsPage />} />
       <Route path="customer-segmentation" element={<CustomerSegmentationPage />} />
-      <Route path="product-intelligence" element={<ProductIntelligencePage />} />
+      <Route path="product-intelligence" element={<PredictiveAnalyticsPage />} />
       <Route path="advanced-dashboard" element={<AdvancedAnalyticsDashboardPage />} />
       
       {/* Legacy redirects */}

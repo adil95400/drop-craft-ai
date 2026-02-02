@@ -25,7 +25,7 @@ const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssis
 const UnifiedSyncDashboard = lazy(() => import('@/components/sync/UnifiedSyncDashboard'));
 
 // Advanced Automation - Using WorkflowBuilderPage as main workflow editor
-const WorkflowBuilderPage = lazy(() => import('@/pages/WorkflowBuilderPage'));
+const WorkflowBuilderPage = lazy(() => import('@/pages/automation/WorkflowBuilderPage'));
 const PriceOptimizationPage = lazy(() => import('@/pages/PriceOptimizationPage'));
 const PricingAutomationPage = lazy(() => import('@/pages/PricingAutomationPage'));
 const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendationsPage'));
