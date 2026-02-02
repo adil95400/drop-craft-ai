@@ -1,6 +1,6 @@
 /**
  * Configuration Stripe centralisée
- * Prix réels configurés dans Stripe Dashboard
+ * Prix réels configurés dans Stripe Dashboard (29€/49€/99€)
  */
 
 export type StripePlanType = 'standard' | 'pro' | 'ultra_pro';
@@ -30,8 +30,8 @@ export const STRIPE_CONFIG = {
   plans: {
     standard: {
       name: 'Standard',
-      priceId: 'price_1S7KZaFdyZLEbAYa8kA9hCUb',
-      productId: 'prod_T3RS5DA7XYPWBP',
+      priceId: 'price_1SwUB8FdyZLEbAYasNL2RWyn',
+      productId: 'prod_TuImodwMnB71NS',
       price: 29,
       currency: 'EUR',
       interval: 'month',
@@ -52,8 +52,8 @@ export const STRIPE_CONFIG = {
     } as StripePlan,
     pro: {
       name: 'Pro',
-      priceId: 'price_1S7Ka5FdyZLEbAYaszKu4XDM',
-      productId: 'prod_T3RTReiXnCg9hy',
+      priceId: 'price_1SwUBEFdyZLEbAYaBInbPnb7',
+      productId: 'prod_TuImFSanPs0svj',
       price: 49,
       currency: 'EUR',
       interval: 'month',
@@ -102,8 +102,8 @@ export const STRIPE_CONFIG = {
   } as Record<StripePlanType, StripePlan>,
   // Product to plan mapping for subscription checks
   productToPlan: {
-    'prod_T3RS5DA7XYPWBP': 'standard',
-    'prod_T3RTReiXnCg9hy': 'pro',
+    'prod_TuImodwMnB71NS': 'standard',
+    'prod_TuImFSanPs0svj': 'pro',
     'prod_T3RTMipVwUA7Ud': 'ultra_pro'
   } as Record<string, StripePlanType>
 };
