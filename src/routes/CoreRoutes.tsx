@@ -1,8 +1,9 @@
 /**
  * Routes Core - Dashboard, Stores, Orders, Customers
  * Consolidé - Suppression des pages dupliquées
+ * Redirections gérées par LegacyRedirectHandler
  */
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Dashboard
@@ -47,7 +48,6 @@ const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 
 // Subscription - Consolidated to SubscriptionDashboard
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
-const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 
 // Onboarding
 const OnboardingHubPage = lazy(() => import('@/pages/onboarding/OnboardingHubPage'));
@@ -59,18 +59,6 @@ export function CoreRoutes() {
       <Route index element={<DashboardHome />} />
       <Route path="profile" element={<Profile />} />
       <Route path="settings" element={<Settings />} />
-      
-      {/* Legacy dashboard redirects */}
-      <Route path="super" element={<Navigate to="/dashboard" replace />} />
-      <Route path="classic" element={<Navigate to="/dashboard" replace />} />
-      
-      {/* Stores Management - Redirect to new unified channel hub */}
-      <Route path="stores/*" element={<Navigate to="/stores-channels" replace />} />
-      
-      {/* Orders & Customers - Now handled by dedicated routes, keeping redirects for compatibility */}
-      <Route path="orders/*" element={<Navigate to="/orders" replace />} />
-      <Route path="orders-center" element={<Navigate to="/orders/center" replace />} />
-      <Route path="customers/*" element={<Navigate to="/customers" replace />} />
       
       {/* Module E: AI Store Builder */}
       <Route path="store/builder" element={<AIStoreBuilderHub />} />
@@ -98,14 +86,11 @@ export function CoreRoutes() {
       <Route path="analytics" element={<AnalyticsDashboard />} />
       <Route path="products" element={<ProductsMainPage />} />
       
-      {/* Suppliers - Redirect to /suppliers module */}
-      <Route path="suppliers/*" element={<Navigate to="/suppliers" replace />} />
-      
       {/* AI & Automation */}
       <Route path="ai-insights" element={<AIInsightsPage />} />
       <Route path="workflows" element={<WorkflowsPage />} />
       
-      {/* Settings & Management - Now handled by SettingsRoutes, keeping redirects */}
+      {/* Settings & Management */}
       <Route path="api" element={<APIManagementPage />} />
       <Route path="billing" element={<BillingPage />} />
       
@@ -116,15 +101,8 @@ export function CoreRoutes() {
       {/* Onboarding */}
       <Route path="onboarding" element={<OnboardingHubPage />} />
       
-      {/* Subscription & Notifications - Consolidated */}
+      {/* Subscription & Notifications */}
       <Route path="subscription" element={<SubscriptionDashboard />} />
-      <Route path="notifications" element={<NotificationsPage />} />
-      
-      {/* Returns - redirect to /orders/returns */}
-      <Route path="returns" element={<Navigate to="/orders/returns" replace />} />
-      
-      {/* Settings (accessible from sidebar) */}
-      <Route path="parametres" element={<Navigate to="/settings" replace />} />
     </Routes>
   );
 }

@@ -59,41 +59,28 @@ export class NavigationService {
   }
 
   static isValidPath(path: string): boolean {
-    // Define valid paths - uniformized without /dashboard/ prefix
-    const validPaths = [
-      '/', '/auth', '/dashboard',
-      '/products', '/products/import', '/products/import/quick', '/products/import/advanced', '/products/import/manage',
-      '/products/catalogue', '/products/inventory-predictor',
-      // Nouveau groupe Catalogue - Hub d'exécution
-      '/catalog/to-process', '/catalog/variants', '/catalog/media', 
-      '/catalog/attributes', '/catalog/categories-brands', '/catalog/health',
-      '/orders', '/customers', '/marketplace-sync',
-      '/analytics', '/analytics/advanced',
-      '/automation', '/automation/ai-hub', '/automation/stock-sync',
-      '/marketing', '/marketing/crm', '/marketing/seo',
-      '/integrations', '/integrations/support', '/integrations/academy', '/integrations/extensions',
-      '/admin', '/settings',
-      '/tools/intelligence',
-      // Suppliers / Fournisseurs routes
-      '/suppliers', '/suppliers/catalog', '/suppliers/engine', '/suppliers/my',
-      '/suppliers/analytics', '/suppliers/settings', '/suppliers/feeds',
-      '/suppliers/variant-mapping', '/suppliers/create', '/suppliers/add',
-      '/suppliers/bts/import',
-      // French aliases
-      '/fournisseurs', '/fournisseurs/moteur', '/fournisseurs/catalogue',
-      '/fournisseurs/mes-fournisseurs', '/fournisseurs/analytics'
+    // Valid route prefixes (modules)
+    const validPrefixes = [
+      '/dashboard', '/products', '/catalog', '/orders', '/customers',
+      '/stores-channels', '/channels', '/import', '/suppliers', '/feeds',
+      '/analytics', '/audit', '/research', '/automation', '/ai', '/pricing',
+      '/rewrite', '/marketing', '/tools', '/stock', '/integrations',
+      '/extensions', '/settings', '/enterprise', '/admin', '/help-center'
     ];
-
-    return validPaths.includes(path) || 
-           path.startsWith('/products/') || 
-           path.startsWith('/catalog/') ||
-           path.startsWith('/orders/') || 
-           path.startsWith('/customers/') ||
-           path.startsWith('/marketing/') || 
-           path.startsWith('/integrations/') ||
-           path.startsWith('/admin/') ||
-           path.startsWith('/settings/') ||
-           path.startsWith('/suppliers/') ||
-           path.startsWith('/fournisseurs/');
+    
+    // Exact valid paths
+    const validExact = [
+      '/', '/auth', '/store', '/academy', '/pwa-install',
+      '/sync-manager', '/reviews', '/advanced', '/monitoring',
+      '/catalog-intelligence', '/coupons', '/trial', '/ab-testing',
+      '/repricing', '/enrichment', '/reports', '/ads-spy',
+      '/page-builder', '/support', '/sitemap', '/notifications'
+    ];
+    
+    // Check exact match
+    if (validExact.includes(path)) return true;
+    
+    // Check prefix match
+    return validPrefixes.some(prefix => path.startsWith(prefix));
   }
 }
