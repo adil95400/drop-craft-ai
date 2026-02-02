@@ -82,7 +82,7 @@ const PricingPage = () => {
     },
     {
       question: "Que se passe-t-il après la période d'essai ?",
-      answer: "Après les 14 jours d'essai gratuit, vous pouvez choisir de continuer avec un abonnement payant ou rester sur le plan gratuit. Aucune carte bancaire requise pour l'essai."
+      answer: "Après les 14 jours d'essai gratuit, vous pouvez choisir de continuer avec un abonnement payant ou rester sur le plan gratuit. Une carte bancaire est requise lors du paiement après l'essai."
     },
     {
       question: "Puis-je annuler mon abonnement ?",
@@ -94,7 +94,7 @@ const PricingPage = () => {
     <PublicLayout>
       <Helmet>
         <title>Tarifs - ShopOpti</title>
-        <meta name="description" content="Découvrez nos plans tarifaires adaptés à tous les besoins. Essai gratuit 14 jours sans carte bancaire." />
+        <meta name="description" content="Découvrez nos plans tarifaires adaptés à tous les besoins. Essai gratuit 14 jours." />
       </Helmet>
 
       <div className="min-h-screen">
@@ -175,7 +175,7 @@ const PricingPage = () => {
             <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-success" />
-                <span>Sans carte bancaire pour l'essai</span>
+                <span>14 jours d'essai gratuit</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-success" />
@@ -210,38 +210,38 @@ const PricingPage = () => {
             <div className="text-center space-y-4 mb-12">
               <Badge className="px-4 py-2 bg-success/10 text-success border-success/20">
                 <Users className="h-4 w-4 mr-2" />
-                +15 000 e-commerçants satisfaits
+                Programme Beta actif
               </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold">Ce que disent nos clients</h2>
+              <h2 className="text-3xl md:text-4xl font-bold">Ce que disent nos premiers utilisateurs</h2>
               <p className="text-lg text-muted-foreground">
-                Des résultats concrets et mesurables
+                Retours des beta-testeurs
               </p>
             </div>
             
             <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
               <TestimonialCard
-                name="Sophie Martin"
-                role="Fondatrice"
+                name="Sophie M."
+                role="Beta-testeuse"
                 company="BelleMode.fr"
                 rating={5}
-                text="ShopOpti a transformé ma boutique. En 3 mois, j'ai doublé mon chiffre d'affaires tout en divisant mon temps de gestion par 3. L'automatisation IA est bluffante."
-                metrics={{ label: "CA en 3 mois", value: "+142%" }}
+                text="L'automatisation IA est vraiment impressionnante. J'ai pu tester l'import de produits et la synchronisation multi-boutiques sans problème."
+                metrics={{ label: "Phase", value: "Beta" }}
               />
               <TestimonialCard
-                name="Marc Dubois"
-                role="CEO"
+                name="Marc D."
+                role="Beta-testeur"
                 company="TechDrop"
                 rating={5}
-                text="Le meilleur investissement pour mon dropshipping. L'import automatique depuis 15+ fournisseurs et l'optimisation des prix m'ont permis de passer à l'échelle rapidement."
-                metrics={{ label: "Temps économisé", value: "25h/sem" }}
+                text="Interface intuitive et l'import automatique depuis plusieurs fournisseurs fonctionne parfaitement. Hâte de voir la version finale !"
+                metrics={{ label: "Phase", value: "Beta" }}
               />
               <TestimonialCard
-                name="Julie Chen"
-                role="Manager"
+                name="Julie C."
+                role="Beta-testeuse"
                 company="MultiStores Pro"
                 rating={5}
-                text="Je gère 8 boutiques avec ShopOpti. La centralisation et l'IA prédictive m'ont permis d'augmenter mes marges de 38% sans effort supplémentaire."
-                metrics={{ label: "Marge nette", value: "+38%" }}
+                text="La centralisation et les analytics sont exactement ce dont j'avais besoin. Le support répond rapidement aux retours."
+                metrics={{ label: "Phase", value: "Beta" }}
               />
             </div>
           </div>

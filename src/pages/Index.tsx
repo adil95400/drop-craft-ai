@@ -12,6 +12,7 @@ import { StickyCtaBar } from "@/components/landing/StickyCtaBar";
 import { LiveDemoPreview } from "@/components/landing/LiveDemoPreview";
 import { TestimonialsWithPhotos } from "@/components/landing/TestimonialsWithPhotos";
 import { InteractiveDemo } from "@/components/landing/InteractiveDemo";
+import { TrustedBySection } from "@/components/landing/TrustedBySection";
 // Hero images in public folder for LCP discovery
 const heroImage = "/images/hero-automation.jpg";
 const heroImageSm = "/images/hero-automation-sm.jpg";
@@ -66,7 +67,7 @@ const HeroSection = () => {
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 pt-4 text-xs sm:text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-success flex-shrink-0" />
-                <span>Sans carte bancaire</span>
+                <span>14 jours gratuits</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-success flex-shrink-0" />
@@ -122,13 +123,13 @@ const HeroSection = () => {
   );
 };
 
-// Stats Section
+// Stats Section - Beta-appropriate metrics
 const StatsSection = () => {
   const stats = [
+    { value: "24+", label: "Plateformes supportées", icon: Globe },
     { value: "99+", label: "Fournisseurs connectés", icon: Users },
-    { value: "10M+", label: "Produits disponibles", icon: Package },
-    { value: "15k+", label: "Utilisateurs actifs", icon: TrendingUp },
-    { value: "98%", label: "Satisfaction client", icon: Star },
+    { value: "IA", label: "Optimisation intelligente", icon: Sparkles },
+    { value: "2025", label: "Lancement officiel", icon: Rocket },
   ];
   
   return (
@@ -675,6 +676,7 @@ const Index = () => {
 
       <main>
         <HeroSection />
+        <TrustedBySection />
         <StatsSection />
         <InteractiveDemo />
         <LiveDemoPreview />
