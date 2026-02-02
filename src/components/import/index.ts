@@ -74,3 +74,7 @@ export { MultiStoreUrlImport } from './MultiStoreUrlImport';
 // Supplier Search
 export { SupplierSearchForm } from './SupplierSearchForm';
 export { SupplierComparisonTable } from './SupplierComparisonTable';
+
+// Advanced Import Features
+export { UnifiedImportWizard } from './UnifiedImportWizard';
+export { ImportRollbackManager } from './ImportRollbackManager';

@@ -24,6 +24,8 @@ import { ExtensionActivityFeed } from '@/components/extensions/ExtensionActivity
 import { ExtensionSyncStatus } from '@/components/extensions/ExtensionSyncStatus';
 import { ExtensionImportHistoryTable } from '@/components/extensions/ExtensionImportHistoryTable';
 import { QuickConnectTokenModal } from '@/components/extensions/QuickConnectTokenModal';
+import { ExtensionRemoteControl } from '@/components/extensions/ExtensionRemoteControl';
+import { ExtensionBidirectionalSync } from '@/components/extensions/ExtensionBidirectionalSync';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
@@ -470,7 +472,7 @@ export default function ChromeExtensionPage() {
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-3xl grid-cols-6">
+        <TabsList className="grid w-full max-w-4xl grid-cols-8">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <Chrome className="h-4 w-4" />
             <span className="hidden sm:inline">Aperçu</span>
@@ -478,6 +480,14 @@ export default function ChromeExtensionPage() {
           <TabsTrigger value="sync" className="flex items-center gap-1">
             <RefreshCw className="h-4 w-4" />
             <span className="hidden sm:inline">Sync</span>
+          </TabsTrigger>
+          <TabsTrigger value="remote" className="flex items-center gap-1">
+            <Zap className="h-4 w-4" />
+            <span className="hidden sm:inline">Pilotage</span>
+          </TabsTrigger>
+          <TabsTrigger value="bidirectional" className="flex items-center gap-1">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Bidir.</span>
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-1">
             <Settings className="h-4 w-4" />
@@ -719,6 +729,16 @@ export default function ChromeExtensionPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Remote Control Tab */}
+        <TabsContent value="remote" className="space-y-6">
+          <ExtensionRemoteControl />
+        </TabsContent>
+
+        {/* Bidirectional Sync Tab */}
+        <TabsContent value="bidirectional" className="space-y-6">
+          <ExtensionBidirectionalSync />
         </TabsContent>
 
         {/* Auth Tab */}
