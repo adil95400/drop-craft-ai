@@ -1,8 +1,8 @@
 /**
  * Routes Enterprise - Admin, Multi-tenant, Security, Monitoring
- * Consolidé - Redirections gérées par LegacyRedirectHandler
+ * Consolidé v6.0 - Nettoyage fichiers orphelins
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Admin
@@ -22,7 +22,6 @@ const AdvancedMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringP
 const PlatformManagementPage = lazy(() => import('@/pages/PlatformManagementPage'));
 
 // Admin Management
-const ApplicationStatusPage = lazy(() => import('@/pages/ApplicationStatusPage'));
 const TaxManagementPage = lazy(() => import('@/pages/TaxManagementPage'));
 const CollaborationPage = lazy(() => import('@/pages/CollaborationPage'));
 const InternationalizationPage = lazy(() => import('@/pages/InternationalizationPage'));
@@ -50,8 +49,8 @@ export function EnterpriseRoutes() {
       {/* Platform */}
       <Route path="platform" element={<PlatformManagementPage />} />
       
-      {/* System Management */}
-      <Route path="status" element={<ApplicationStatusPage />} />
+      {/* System Management - status redirects to public /status */}
+      <Route path="status" element={<Navigate to="/status" replace />} />
       <Route path="tax" element={<TaxManagementPage />} />
       <Route path="team" element={<CollaborationPage />} />
       <Route path="i18n" element={<InternationalizationPage />} />
