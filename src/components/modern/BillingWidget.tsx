@@ -28,10 +28,10 @@ export function BillingWidget() {
   const getPlanConfig = () => {
     if (!subscription?.subscribed) {
       return {
-        name: 'Standard',
+        name: 'Gratuit',
         color: 'bg-gray-100 text-gray-800',
         icon: Star,
-        description: 'Plan gratuit'
+        description: 'Essai limité'
       }
     }
     
