@@ -2,7 +2,8 @@
  * Dashboard style Channable avec hero image et design premium
  * Version complète avec données RÉELLES depuis la base de données
  * 
- * Optimisations appliquées:
+ * OPTIMISÉ v5.7.4:
+ * - Lazy loading des widgets (recharts ~100KB non chargé initialement)
  * - Quick Stats dynamiques avec données réelles
  * - Support prefers-reduced-motion
  * - Accessibilité WCAG 2.1 AA
@@ -10,7 +11,7 @@
  * - Raccourcis clavier (R = refresh, E = edit)
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -19,6 +20,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   ChannablePageLayout,
@@ -40,22 +42,6 @@ import { DashboardWidgetWrapper } from './DashboardWidgetWrapper';
 import { TimeRangeSelector } from './TimeRangeSelector';
 import { WidgetLibrary } from './WidgetLibrary';
 import { SmartAlertsChannable } from './SmartAlertsChannable';
-import { RevenueWidgetChannable } from './widgets/RevenueWidgetChannable';
-import { OrdersWidgetChannable } from './widgets/OrdersWidgetChannable';
-import { CustomersWidgetChannable } from './widgets/CustomersWidgetChannable';
-import { ConversionWidget } from './widgets/ConversionWidget';
-import { TopProductsWidget } from './widgets/TopProductsWidget';
-import { InventoryWidgetAdvanced } from './widgets/InventoryWidgetAdvanced';
-import { AlertsWidgetAdvanced } from './widgets/AlertsWidgetAdvanced';
-import { TrafficWidget } from './widgets/TrafficWidget';
-import { ProfitWidget } from './widgets/ProfitWidget';
-import { RecentActivityWidget } from './widgets/RecentActivityWidget';
-import { GoalsWidget } from './widgets/GoalsWidget';
-import { MarketingWidget } from './widgets/MarketingWidget';
-import { ShippingWidget } from './widgets/ShippingWidget';
-import { ComparisonWidget } from './widgets/ComparisonWidget';
-import { ConnectedStoresWidget } from './widgets/ConnectedStoresWidget';
-import { MarketplacesWidget } from './widgets/MarketplacesWidget';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { ChannableQuickAction } from '@/components/channable/types';
@@ -68,8 +54,40 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
-// Import du WelcomeWidget
+// Lazy load ALL widgets (each pulls in recharts ~100KB)
+const RevenueWidgetChannable = lazy(() => import('./widgets/RevenueWidgetChannable').then(m => ({ default: m.RevenueWidgetChannable })));
+const OrdersWidgetChannable = lazy(() => import('./widgets/OrdersWidgetChannable').then(m => ({ default: m.OrdersWidgetChannable })));
+const CustomersWidgetChannable = lazy(() => import('./widgets/CustomersWidgetChannable').then(m => ({ default: m.CustomersWidgetChannable })));
+const ConversionWidget = lazy(() => import('./widgets/ConversionWidget').then(m => ({ default: m.ConversionWidget })));
+const TopProductsWidget = lazy(() => import('./widgets/TopProductsWidget').then(m => ({ default: m.TopProductsWidget })));
+const InventoryWidgetAdvanced = lazy(() => import('./widgets/InventoryWidgetAdvanced').then(m => ({ default: m.InventoryWidgetAdvanced })));
+const AlertsWidgetAdvanced = lazy(() => import('./widgets/AlertsWidgetAdvanced').then(m => ({ default: m.AlertsWidgetAdvanced })));
+const TrafficWidget = lazy(() => import('./widgets/TrafficWidget').then(m => ({ default: m.TrafficWidget })));
+const ProfitWidget = lazy(() => import('./widgets/ProfitWidget').then(m => ({ default: m.ProfitWidget })));
+const RecentActivityWidget = lazy(() => import('./widgets/RecentActivityWidget').then(m => ({ default: m.RecentActivityWidget })));
+const GoalsWidget = lazy(() => import('./widgets/GoalsWidget').then(m => ({ default: m.GoalsWidget })));
+const MarketingWidget = lazy(() => import('./widgets/MarketingWidget').then(m => ({ default: m.MarketingWidget })));
+const ShippingWidget = lazy(() => import('./widgets/ShippingWidget').then(m => ({ default: m.ShippingWidget })));
+const ComparisonWidget = lazy(() => import('./widgets/ComparisonWidget').then(m => ({ default: m.ComparisonWidget })));
+const ConnectedStoresWidget = lazy(() => import('./widgets/ConnectedStoresWidget').then(m => ({ default: m.ConnectedStoresWidget })));
+const MarketplacesWidget = lazy(() => import('./widgets/MarketplacesWidget').then(m => ({ default: m.MarketplacesWidget })));
+
+// Import du WelcomeWidget (lightweight, no charts)
 import { WelcomeWidget } from './WelcomeWidget';
+
+// Widget loading skeleton
+const WidgetSkeleton = () => (
+  <Card className="h-full min-h-[200px]">
+    <CardContent className="p-4 space-y-3">
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-5 w-16" />
+      </div>
+      <Skeleton className="h-8 w-24" />
+      <Skeleton className="h-[120px] w-full" />
+    </CardContent>
+  </Card>
+);
 
 // Composant de carte statistique premium avec support reduced-motion
 interface QuickStatCardProps {
@@ -290,42 +308,51 @@ export function ChannableDashboard() {
       lastRefresh,
     };
 
-    switch (widget.type) {
-      case 'revenue':
-        return <RevenueWidgetChannable {...commonProps} />;
-      case 'orders':
-        return <OrdersWidgetChannable {...commonProps} />;
-      case 'customers':
-        return <CustomersWidgetChannable {...commonProps} />;
-      case 'conversion':
-        return <ConversionWidget {...commonProps} />;
-      case 'topProducts':
-        return <TopProductsWidget {...commonProps} />;
-      case 'inventory':
-        return <InventoryWidgetAdvanced {...commonProps} />;
-      case 'alerts':
-        return <AlertsWidgetAdvanced {...commonProps} />;
-      case 'traffic':
-        return <TrafficWidget {...commonProps} />;
-      case 'profit':
-        return <ProfitWidget {...commonProps} />;
-      case 'recentActivity':
-        return <RecentActivityWidget {...commonProps} />;
-      case 'goals':
-        return <GoalsWidget {...commonProps} />;
-      case 'marketing':
-        return <MarketingWidget {...commonProps} />;
-      case 'shipping':
-        return <ShippingWidget {...commonProps} />;
-      case 'comparison':
-        return <ComparisonWidget {...commonProps} />;
-      case 'connectedStores':
-        return <ConnectedStoresWidget {...commonProps} />;
-      case 'marketplaces':
-        return <MarketplacesWidget {...commonProps} />;
-      default:
-        return null;
-    }
+    // Wrap each widget in Suspense for lazy loading
+    const getWidgetComponent = () => {
+      switch (widget.type) {
+        case 'revenue':
+          return <RevenueWidgetChannable {...commonProps} />;
+        case 'orders':
+          return <OrdersWidgetChannable {...commonProps} />;
+        case 'customers':
+          return <CustomersWidgetChannable {...commonProps} />;
+        case 'conversion':
+          return <ConversionWidget {...commonProps} />;
+        case 'topProducts':
+          return <TopProductsWidget {...commonProps} />;
+        case 'inventory':
+          return <InventoryWidgetAdvanced {...commonProps} />;
+        case 'alerts':
+          return <AlertsWidgetAdvanced {...commonProps} />;
+        case 'traffic':
+          return <TrafficWidget {...commonProps} />;
+        case 'profit':
+          return <ProfitWidget {...commonProps} />;
+        case 'recentActivity':
+          return <RecentActivityWidget {...commonProps} />;
+        case 'goals':
+          return <GoalsWidget {...commonProps} />;
+        case 'marketing':
+          return <MarketingWidget {...commonProps} />;
+        case 'shipping':
+          return <ShippingWidget {...commonProps} />;
+        case 'comparison':
+          return <ComparisonWidget {...commonProps} />;
+        case 'connectedStores':
+          return <ConnectedStoresWidget {...commonProps} />;
+        case 'marketplaces':
+          return <MarketplacesWidget {...commonProps} />;
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <Suspense fallback={<WidgetSkeleton />}>
+        {getWidgetComponent()}
+      </Suspense>
+    );
   };
 
   const getWidgetColSpan = (size: string) => {
