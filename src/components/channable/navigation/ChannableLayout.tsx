@@ -6,7 +6,7 @@ import React from 'react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { ChannableSidebar } from './ChannableSidebar'
 import { ChannableHeader } from './ChannableHeader'
-import { InteractiveOnboarding } from '@/components/onboarding/InteractiveOnboarding'
+import { OnboardingModal } from '@/components/onboarding/UnifiedOnboarding'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 import { cn } from '@/lib/utils'
@@ -30,7 +30,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
           </div>
         </main>
         <MobileNav />
-        <InteractiveOnboarding />
+        <OnboardingModal />
       </div>
     )
   }
@@ -53,7 +53,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
         </SidebarInset>
       </div>
       
-      <InteractiveOnboarding />
+      <OnboardingModal />
     </SidebarProvider>
   )
 }

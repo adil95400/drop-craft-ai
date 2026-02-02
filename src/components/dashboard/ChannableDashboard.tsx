@@ -72,8 +72,10 @@ const ComparisonWidget = lazy(() => import('./widgets/ComparisonWidget').then(m 
 const ConnectedStoresWidget = lazy(() => import('./widgets/ConnectedStoresWidget').then(m => ({ default: m.ConnectedStoresWidget })));
 const MarketplacesWidget = lazy(() => import('./widgets/MarketplacesWidget').then(m => ({ default: m.MarketplacesWidget })));
 
-// Import du WelcomeWidget (lightweight, no charts)
-import { WelcomeWidget } from './WelcomeWidget';
+// Import du système d'onboarding unifié
+import { OnboardingWidget, OnboardingModal } from '@/components/onboarding/UnifiedOnboarding';
+import { DashboardEmptyState } from './DashboardEmptyState';
+import { useDashboardEmptyState } from '@/hooks/useDashboardEmptyState';
 
 // Widget loading skeleton
 const WidgetSkeleton = () => (
@@ -186,6 +188,9 @@ export function ChannableDashboard() {
 
   // Utiliser les données RÉELLES
   const { stats: dashboardStats, rawStats, activityEvents, syncEvents, healthMetrics, isLoading: dataLoading } = useRealDashboardData();
+  
+  // Vérifier si le dashboard doit afficher l'état vide
+  const { isEmpty: showEmptyState, isLoading: emptyStateLoading } = useDashboardEmptyState();
   const prefersReducedMotion = useReducedMotion();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -415,10 +420,21 @@ export function ChannableDashboard() {
         </>
       }
     >
-      {/* Welcome Widget for new users */}
-      <WelcomeWidget />
+      {/* Modal d'onboarding pour premier login */}
+      <OnboardingModal />
 
-      {/* Quick Stats Grid Premium - DONNÉES DYNAMIQUES */}
+      {/* État vide si pas de données */}
+      {showEmptyState && !emptyStateLoading ? (
+        <>
+          <OnboardingWidget />
+          <DashboardEmptyState />
+        </>
+      ) : (
+        <>
+          {/* Widget d'onboarding compact */}
+          <OnboardingWidget />
+
+          {/* Quick Stats Grid Premium - DONNÉES DYNAMIQUES */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label="Statistiques rapides">
         <QuickStatCard
           label="Chiffre d'affaires"
@@ -625,6 +641,8 @@ export function ChannableDashboard() {
           )}
         </div>
       </div>
+        </>
+      )}
 
       {/* Widget Library Dialog */}
       <WidgetLibrary open={showWidgetLibrary} onOpenChange={setShowWidgetLibrary} />
