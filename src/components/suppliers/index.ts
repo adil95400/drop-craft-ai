@@ -9,3 +9,6 @@ export { SupplierSyncManager } from './SupplierSyncManager';
 export { B2BSupplierConnectCard } from './B2BSupplierConnectCard';
 export { SupplierReliabilityCard } from './SupplierReliabilityCard';
 export { SupplierComparisonPanel } from './SupplierComparisonPanel';
+
+// Scoring & Evaluation
+export { SupplierScoring } from './SupplierScoring';
