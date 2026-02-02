@@ -78,7 +78,7 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   'FlaskConical': FlaskConical,
 } as const
 
-// Static group colors - externalized to prevent recreation on every render
+// Static group colors - 6 groupes consolidés
 export const GROUP_COLORS: Partial<Record<NavGroupId, { 
   bg: string
   text: string
@@ -95,14 +95,6 @@ export const GROUP_COLORS: Partial<Record<NavGroupId, {
     icon: 'text-blue-500',
     gradient: 'from-blue-500 to-cyan-500'
   },
-  sources: { 
-    bg: 'bg-violet-500/8', 
-    text: 'text-violet-600 dark:text-violet-400', 
-    accent: 'hover:bg-violet-500/12', 
-    border: 'border-violet-500/20',
-    icon: 'text-violet-500',
-    gradient: 'from-violet-500 to-purple-500'
-  },
   catalog: { 
     bg: 'bg-emerald-500/8', 
     text: 'text-emerald-600 dark:text-emerald-400', 
@@ -111,7 +103,15 @@ export const GROUP_COLORS: Partial<Record<NavGroupId, {
     icon: 'text-emerald-500',
     gradient: 'from-emerald-500 to-teal-500'
   },
-  channels: { 
+  sourcing: { 
+    bg: 'bg-violet-500/8', 
+    text: 'text-violet-600 dark:text-violet-400', 
+    accent: 'hover:bg-violet-500/12', 
+    border: 'border-violet-500/20',
+    icon: 'text-violet-500',
+    gradient: 'from-violet-500 to-purple-500'
+  },
+  sales: { 
     bg: 'bg-orange-500/8', 
     text: 'text-orange-600 dark:text-orange-400', 
     accent: 'hover:bg-orange-500/12', 
@@ -119,23 +119,7 @@ export const GROUP_COLORS: Partial<Record<NavGroupId, {
     icon: 'text-orange-500',
     gradient: 'from-orange-500 to-amber-500'
   },
-  orders: { 
-    bg: 'bg-rose-500/8', 
-    text: 'text-rose-600 dark:text-rose-400', 
-    accent: 'hover:bg-rose-500/12', 
-    border: 'border-rose-500/20',
-    icon: 'text-rose-500',
-    gradient: 'from-rose-500 to-pink-500'
-  },
-  marketing: { 
-    bg: 'bg-pink-500/8', 
-    text: 'text-pink-600 dark:text-pink-400', 
-    accent: 'hover:bg-pink-500/12', 
-    border: 'border-pink-500/20',
-    icon: 'text-pink-500',
-    gradient: 'from-pink-500 to-rose-500'
-  },
-  insights: { 
+  performance: { 
     bg: 'bg-cyan-500/8', 
     text: 'text-cyan-600 dark:text-cyan-400', 
     accent: 'hover:bg-cyan-500/12', 
@@ -143,15 +127,7 @@ export const GROUP_COLORS: Partial<Record<NavGroupId, {
     icon: 'text-cyan-500',
     gradient: 'from-cyan-500 to-blue-500'
   },
-  tools: { 
-    bg: 'bg-amber-500/8', 
-    text: 'text-amber-600 dark:text-amber-400', 
-    accent: 'hover:bg-amber-500/12', 
-    border: 'border-amber-500/20',
-    icon: 'text-amber-500',
-    gradient: 'from-amber-500 to-yellow-500'
-  },
-  settings: { 
+  config: { 
     bg: 'bg-slate-500/8', 
     text: 'text-slate-600 dark:text-slate-400', 
     accent: 'hover:bg-slate-500/12', 

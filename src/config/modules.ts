@@ -1,14 +1,16 @@
 import type { PlanType } from '@/lib/unified-plan-system';
 
 /**
- * Navigation optimisée - Style professionnel Channable/Lengow
- * 7 groupes principaux - Structure claire sans doublons
+ * Navigation PRO consolidée - 6 groupes essentiels
+ * Structure: 1 fonctionnalité = 1 endroit clair
  * 
- * OPTIMISATIONS APPLIQUÉES:
- * - Suppression des doublons (returns, emailMarketing, flashSales, etc.)
- * - Fusion des modules similaires (Pricing, IA, Qualité, Veille)
- * - Réorganisation cohérente des groupes
- * - Navigation -35% plus légère
+ * ARCHITECTURE:
+ * - Accueil: Dashboard & Notifications
+ * - Catalogue: Zone d'EXÉCUTION quotidienne (Produits, Backlog, Variantes, Médias)
+ * - Sourcing: Données ENTRANTES (Import, Fournisseurs, Veille)
+ * - Ventes: Données SORTANTES (Boutiques, Commandes, Automatisation)
+ * - Performance: ANALYSE & DIAGNOSTIC (Analytics, Tarification, Qualité)
+ * - Configuration: Paramètres, IA, Intégrations
  */
 
 // =============================================================================
@@ -17,20 +19,18 @@ import type { PlanType } from '@/lib/unified-plan-system';
 
 export type NavGroupId =
   | 'home'        // Dashboard & Accueil
-  | 'sources'     // Import & Fournisseurs (données entrantes)
-  | 'catalog'     // Produits & Règles (gestion catalogue)
-  | 'channels'    // Boutiques & Feeds (données sortantes)
-  | 'orders'      // Commandes & Clients
-  | 'marketing'   // Marketing & CRM
-  | 'insights'    // Analytics & Intelligence
-  | 'tools'       // Outils & Calculateurs
-  | 'settings';   // Configuration & Admin
+  | 'catalog'     // Produits & Exécution (zone pilote quotidienne)
+  | 'sourcing'    // Import & Fournisseurs (données entrantes)
+  | 'sales'       // Boutiques & Commandes (données sortantes)
+  | 'performance' // Analytics & Diagnostic
+  | 'config';     // Configuration & Admin
 
 export interface NavGroupConfig {
   id: NavGroupId;
   label: string;
   icon: string;
   order: number;
+  description?: string;
 }
 
 export interface SubModule {
@@ -60,19 +60,16 @@ export interface ModuleConfig {
 }
 
 // =============================================================================
-// GROUPES DE NAVIGATION (7 groupes - Style Channable)
+// GROUPES DE NAVIGATION (6 groupes consolidés - Structure PRO)
 // =============================================================================
 
 export const NAV_GROUPS: NavGroupConfig[] = [
-  { id: 'home', label: 'Accueil', icon: 'Home', order: 1 },
-  { id: 'sources', label: 'Sources', icon: 'Upload', order: 2 },
-  { id: 'catalog', label: 'Catalogue', icon: 'Package', order: 3 },
-  { id: 'channels', label: 'Canaux', icon: 'Store', order: 4 },
-  { id: 'orders', label: 'Commandes', icon: 'ShoppingCart', order: 5 },
-  { id: 'marketing', label: 'Marketing', icon: 'Megaphone', order: 6 },
-  { id: 'insights', label: 'Insights', icon: 'BarChart3', order: 7 },
-  { id: 'tools', label: 'Outils', icon: 'Wrench', order: 8 },
-  { id: 'settings', label: 'Paramètres', icon: 'Settings', order: 9 },
+  { id: 'home', label: 'Accueil', icon: 'Home', order: 1, description: 'Vue d\'ensemble' },
+  { id: 'catalog', label: 'Catalogue', icon: 'Package', order: 2, description: 'Gestion produits' },
+  { id: 'sourcing', label: 'Sourcing', icon: 'Truck', order: 3, description: 'Import & Fournisseurs' },
+  { id: 'sales', label: 'Ventes', icon: 'ShoppingCart', order: 4, description: 'Boutiques & Commandes' },
+  { id: 'performance', label: 'Performance', icon: 'BarChart3', order: 5, description: 'Analytics & Audit' },
+  { id: 'config', label: 'Configuration', icon: 'Settings', order: 6, description: 'Paramètres & Outils' },
 ];
 
 // =============================================================================
@@ -114,7 +111,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 2. SOURCES - Import de données & Fournisseurs (4 modules)
+  // 2. SOURCING - Import & Fournisseurs (données entrantes)
   // ═══════════════════════════════════════════════════════════════════════════
   
   import: {
@@ -128,7 +125,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Importer des produits',
     category: 'product',
     order: 1,
-    groupId: 'sources'
+    groupId: 'sourcing'
   },
   
   suppliers: {
@@ -142,7 +139,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Connectez vos fournisseurs',
     category: 'product',
     order: 2,
-    groupId: 'sources',
+    groupId: 'sourcing',
     subModules: [
       { id: 'suppliers-overview', name: 'Vue d\'ensemble', route: '/suppliers', icon: 'LayoutDashboard', description: 'Dashboard fournisseurs', features: ['overview'], order: 1 },
       { id: 'suppliers-catalog', name: 'Catalogue Unifié', route: '/suppliers/catalog', icon: 'Package', description: 'Tous les produits', features: ['catalog'], order: 2 },
@@ -163,7 +160,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Veille produits et concurrence',
     category: 'analytics',
     order: 3,
-    groupId: 'sources',
+    groupId: 'sourcing',
     badge: 'pro',
     subModules: [
       { id: 'research-winning', name: 'Produits Gagnants', route: '/research/winning', icon: 'Trophy', description: 'Découvrir les gagnants', features: ['winning-products'], order: 1 },
@@ -186,7 +183,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Extensions navigateur et outils',
     category: 'integrations',
     order: 4,
-    groupId: 'sources'
+    groupId: 'sourcing'
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -301,7 +298,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 3b. CATALOG - Modules Diagnostic & Automatisation (séparés du hub exécution)
+  // PERFORMANCE - Modules Diagnostic & Analyse
   // ═══════════════════════════════════════════════════════════════════════════
   
   // Module FUSIONNÉ: Qualité & Audit (diagnostic, pas exécution)
@@ -316,7 +313,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Diagnostic et contrôle qualité',
     category: 'product',
     order: 10,
-    groupId: 'insights',
+    groupId: 'performance',
     subModules: [
       { id: 'quality-dashboard', name: 'Dashboard', route: '/audit', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'quality-products', name: 'Audit Produits', route: '/audit/products', icon: 'Package', description: 'Auditer les produits', features: ['products'], order: 2 },
@@ -340,7 +337,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Gestion et optimisation des prix',
     category: 'automation',
     order: 11,
-    groupId: 'insights',
+    groupId: 'performance',
     subModules: [
       { id: 'pricing-hub', name: 'Hub Tarification', route: '/pricing-manager', icon: 'LayoutDashboard', description: 'Vue d\'ensemble et KPIs', features: ['overview', 'kpis'], order: 1 },
       { id: 'pricing-rules', name: 'Règles de Prix', route: '/pricing-manager/rules', icon: 'GitBranch', description: 'Règles statiques (markup, marge, arrondi)', features: ['rules'], order: 2 },
@@ -350,7 +347,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     ]
   },
 
-  // Module Intelligence IA (transversal - génération, assistance)
+  // Module Intelligence IA (transversal - dans config)
   ai: {
     id: 'ai',
     name: 'Intelligence IA',
@@ -362,7 +359,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Outils IA transversaux',
     category: 'automation',
     order: 12,
-    groupId: 'tools',
+    groupId: 'config',
     badge: 'pro',
     subModules: [
       { id: 'ai-optimization', name: 'Optimisation', route: '/ai/optimization', icon: 'Sparkles', description: 'Optimisation IA', features: ['optimization'], order: 1 },
@@ -373,7 +370,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 4. CHANNELS - Boutiques & Exports (5 modules)
+  // 4. SALES - Boutiques, Commandes & Exports (données sortantes)
   // ═══════════════════════════════════════════════════════════════════════════
   
   stores: {
@@ -387,7 +384,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Gérer vos boutiques',
     category: 'core',
     order: 1,
-    groupId: 'channels',
+    groupId: 'sales',
     subModules: [
       { id: 'stores-hub', name: 'Hub', route: '/stores-channels', icon: 'Store', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'stores-shopify', name: 'Shopify', route: '/import/shopify', icon: 'Store', description: 'Import depuis Shopify', features: ['shopify'], order: 2 },
@@ -408,7 +405,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Exports vers Google, Meta...',
     category: 'product',
     order: 2,
-    groupId: 'channels',
+    groupId: 'sales',
     subModules: [
       { id: 'feeds-manager', name: 'Gestion', route: '/feeds', icon: 'Rss', description: 'Créer et gérer', features: ['feed-creation'], order: 1 },
       { id: 'feeds-optimization', name: 'Optimisation', route: '/feeds/optimization', icon: 'TrendingUp', description: 'Optimiser les feeds', features: ['optimization'], order: 2 },
@@ -416,30 +413,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'feeds-categories', name: 'Catégories', route: '/feeds/categories', icon: 'Layers', description: 'Mapping catégories', features: ['mapping'], order: 4 },
     ]
   },
-  
-  // Fulfillment supprimé ici - maintenant sous-module de orders (voir orders.subModules)
 
-  // tiktokShop module supprimé
-
-  multiChannel: {
-    id: 'multiChannel',
-    name: 'Multi-Canal',
-    icon: 'Layers',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/integrations/multi-channel',
-    features: ['multi-channel-sync', 'unified-inventory'],
-    description: 'Gestion multi-canal unifiée',
-    category: 'integrations',
-    order: 5,
-    groupId: 'channels',
-    badge: 'pro'
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 5. ORDERS - Commandes & Clients (5 modules)
-  // ═══════════════════════════════════════════════════════════════════════════
-  
   orders: {
     id: 'orders',
     name: 'Commandes',
@@ -450,8 +424,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['order-management', 'tracking', 'returns', 'fulfillment'],
     description: 'Gérer les commandes et expéditions',
     category: 'core',
-    order: 1,
-    groupId: 'orders',
+    order: 3,
+    groupId: 'sales',
     subModules: [
       { id: 'orders-all', name: 'Toutes les commandes', route: '/orders', icon: 'ShoppingCart', description: 'Liste complète', features: ['list'], order: 1 },
       { id: 'orders-create', name: 'Créer', route: '/orders/create', icon: 'Plus', description: 'Nouvelle commande', features: ['create'], order: 2 },
@@ -470,8 +444,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['customer-management', 'segmentation'],
     description: 'Base clients',
     category: 'customer',
-    order: 2,
-    groupId: 'orders',
+    order: 4,
+    groupId: 'sales',
     subModules: [
       { id: 'customers-all', name: 'Tous les clients', route: '/customers', icon: 'Users', description: 'Liste clients', features: ['list'], order: 1 },
       { id: 'customers-segmentation', name: 'Segmentation', route: '/customers/segmentation', icon: 'PieChart', description: 'Segmenter les clients', features: ['segmentation'], order: 2 },
@@ -484,22 +458,17 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Boxes',
     enabled: true,
     minPlan: 'standard',
-    route: '/stock',
-    features: ['stock-management', 'alerts', 'predictions'],
-    description: 'Gestion des stocks',
+    route: '/inventory',
+    features: ['stock-alerts', 'restock'],
+    description: 'Gestion du stock',
     category: 'product',
-    order: 3,
-    groupId: 'orders',
-    subModules: [
-      { id: 'stock-management', name: 'Gestion', route: '/stock', icon: 'Boxes', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'stock-alerts', name: 'Alertes', route: '/stock/alerts', icon: 'Bell', description: 'Alertes stock', features: ['alerts'], order: 2 },
-      { id: 'stock-predictions', name: 'Prédictions', route: '/stock/predictions', icon: 'Brain', description: 'Prédictions IA', features: ['predictions'], order: 3 },
-    ]
+    order: 5,
+    groupId: 'sales'
   },
-  
+
   reviews: {
     id: 'reviews',
-    name: 'Avis clients',
+    name: 'Avis',
     icon: 'Star',
     enabled: true,
     minPlan: 'standard',
@@ -507,14 +476,36 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['review-management'],
     description: 'Gérer les avis',
     category: 'customer',
-    order: 4,
-    groupId: 'orders'
+    order: 6,
+    groupId: 'sales'
+  },
+
+  automation: {
+    id: 'automation',
+    name: 'Automatisation',
+    icon: 'Zap',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/automation',
+    features: ['workflows', 'triggers'],
+    description: 'Workflows automatisés',
+    category: 'automation',
+    order: 7,
+    groupId: 'sales',
+    badge: 'pro',
+    subModules: [
+      { id: 'automation-hub', name: 'Hub', route: '/automation', icon: 'Zap', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'automation-workflows', name: 'Workflows', route: '/automation/workflows', icon: 'Workflow', description: 'Créer des workflows', features: ['workflows'], order: 2 },
+      { id: 'automation-triggers', name: 'Déclencheurs', route: '/automation/triggers', icon: 'Play', description: 'Gérer les triggers', features: ['triggers'], order: 3 },
+      { id: 'automation-studio', name: 'Studio', route: '/automation/studio', icon: 'Palette', description: 'Studio automation', features: ['studio'], order: 4 },
+      { id: 'automation-ai-hub', name: 'AI Hub', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub IA', features: ['ai'], order: 5 },
+    ]
   },
 
   // shipping supprimé - fusionné avec orders.subModules (fulfillment)
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 6. INSIGHTS - Analytics & Intelligence (6 modules)
+  // 5. PERFORMANCE - Analytics & Intelligence
   // ═══════════════════════════════════════════════════════════════════════════
   
   analytics: {
@@ -528,7 +519,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Tableaux de bord et rapports',
     category: 'analytics',
     order: 1,
-    groupId: 'insights',
+    groupId: 'performance',
     subModules: [
       { id: 'analytics-dashboard', name: 'Dashboard', route: '/analytics', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'analytics-advanced', name: 'Avancé', route: '/analytics/advanced', icon: 'TrendingUp', description: 'Analytics avancés', features: ['advanced'], order: 2 },
@@ -549,8 +540,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['campaigns', 'email', 'promotions', 'abandoned-cart', 'loyalty'],
     description: 'Campagnes marketing',
     category: 'customer',
-    order: 1,
-    groupId: 'marketing',
+    order: 2,
+    groupId: 'performance',
     badge: 'pro',
     subModules: [
       { id: 'marketing-dashboard', name: 'Dashboard', route: '/marketing', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
@@ -578,8 +569,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['leads', 'pipeline', 'contacts'],
     description: 'Gestion relation client',
     category: 'customer',
-    order: 2,
-    groupId: 'marketing',
+    order: 3,
+    groupId: 'performance',
     badge: 'pro',
     subModules: [
       { id: 'crm-dashboard', name: 'Dashboard', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
@@ -601,8 +592,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['seo-audit', 'keywords', 'rankings'],
     description: 'Optimisation référencement',
     category: 'analytics',
-    order: 3,
-    groupId: 'marketing',
+    order: 4,
+    groupId: 'performance',
     subModules: [
       { id: 'seo-manager', name: 'Manager', route: '/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
       { id: 'seo-keywords', name: 'Mots-clés', route: '/seo/keywords', icon: 'Key', description: 'Recherche mots-clés', features: ['keywords'], order: 2 },
@@ -621,13 +612,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Rapports et exports',
     category: 'analytics',
     order: 5,
-    groupId: 'insights'
+    groupId: 'performance'
   },
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // 7. TOOLS - Outils & Calculateurs (4 modules)
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Outils intégrés dans config
   profitCalculator: {
     id: 'profitCalculator',
     name: 'Calculateur Profits',
@@ -638,56 +626,12 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['profit-calculation', 'margins', 'roi-analysis'],
     description: 'Calculez vos marges et rentabilité',
     category: 'analytics',
-    order: 1,
-    groupId: 'tools'
-  },
-
-  bulkContent: {
-    id: 'bulkContent',
-    name: 'Création en Masse',
-    icon: 'Images',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/tools/bulk-content',
-    features: ['bulk-videos', 'bulk-images', 'ai-generation'],
-    description: 'Génération en masse de vidéos et images IA',
-    category: 'automation',
-    order: 2,
-    groupId: 'tools',
-    badge: 'pro',
-  },
-
-  schemaGenerator: {
-    id: 'schemaGenerator',
-    name: 'Générateur Schema',
-    icon: 'Code',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/tools/schema-generator',
-    features: ['schema-org', 'seo-markup', 'structured-data'],
-    description: 'Créez des données structurées Schema.org',
-    category: 'customer',
-    order: 3,
-    groupId: 'tools'
-  },
-
-  dropshippingIntelligence: {
-    id: 'dropshippingIntelligence',
-    name: 'Intelligence IA',
-    icon: 'Brain',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/tools/intelligence',
-    features: ['stock-predictions', 'price-optimization', 'ab-testing', 'margin-analysis', 'restock-alerts', 'demand-forecast'],
-    description: 'Prédictions de stock, alertes et optimisation automatique des marges',
-    category: 'automation',
-    order: 4,
-    groupId: 'tools',
-    badge: 'pro',
+    order: 20,
+    groupId: 'config'
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 8. SETTINGS - Configuration & Administration (10 modules)
+  // 6. CONFIG - Configuration & Administration
   // ═══════════════════════════════════════════════════════════════════════════
   
   profile: {
@@ -701,7 +645,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Gérer votre profil',
     category: 'system',
     order: 0,
-    groupId: 'settings'
+    groupId: 'config'
   },
 
   subscription: {
@@ -715,7 +659,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Gérer votre abonnement',
     category: 'system',
     order: 0.5,
-    groupId: 'settings'
+    groupId: 'config'
   },
   
   settings: {
@@ -729,7 +673,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Configuration générale',
     category: 'system',
     order: 1,
-    groupId: 'settings',
+    groupId: 'config',
     subModules: [
       { id: 'settings-general', name: 'Général', route: '/settings', icon: 'Settings', description: 'Paramètres généraux', features: ['general'], order: 1 },
       { id: 'settings-api', name: 'API', route: '/settings/api', icon: 'Key', description: 'Gestion API', features: ['api'], order: 2 },
@@ -749,29 +693,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'APIs et connecteurs',
     category: 'integrations',
     order: 2,
-    groupId: 'settings'
-  },
-  
-  automation: {
-    id: 'automation',
-    name: 'Automatisation',
-    icon: 'Zap',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/automation',
-    features: ['workflows', 'triggers'],
-    description: 'Workflows automatisés',
-    category: 'automation',
-    order: 3,
-    groupId: 'settings',
-    badge: 'pro',
-    subModules: [
-      { id: 'automation-hub', name: 'Hub', route: '/automation', icon: 'Zap', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'automation-workflows', name: 'Workflows', route: '/automation/workflows', icon: 'Workflow', description: 'Créer des workflows', features: ['workflows'], order: 2 },
-      { id: 'automation-triggers', name: 'Déclencheurs', route: '/automation/triggers', icon: 'Play', description: 'Gérer les triggers', features: ['triggers'], order: 3 },
-      { id: 'automation-studio', name: 'Studio', route: '/automation/studio', icon: 'Palette', description: 'Studio automation', features: ['studio'], order: 4 },
-      { id: 'automation-ai-hub', name: 'AI Hub', route: '/automation/ai-hub', icon: 'Brain', description: 'Hub IA', features: ['ai'], order: 5 },
-    ]
+    groupId: 'config'
   },
   
   academy: {
@@ -785,7 +707,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Formation et tutoriels',
     category: 'learning',
     order: 5,
-    groupId: 'settings'
+    groupId: 'config'
   },
   
   support: {
@@ -799,7 +721,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Aide et assistance',
     category: 'system',
     order: 6,
-    groupId: 'settings'
+    groupId: 'config'
   },
 
   apiDocs: {
@@ -813,7 +735,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Documentation API',
     category: 'integrations',
     order: 7,
-    groupId: 'settings',
+    groupId: 'config',
     badge: 'pro'
   },
   
@@ -828,7 +750,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Administration système',
     category: 'enterprise',
     order: 8,
-    groupId: 'settings',
+    groupId: 'config',
     badge: 'ultra',
     subModules: [
       { id: 'admin-panel', name: 'Panel', route: '/admin', icon: 'Shield', description: 'Administration', features: ['admin'], order: 1 },
