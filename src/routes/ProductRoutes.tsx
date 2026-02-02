@@ -51,10 +51,16 @@ export function ProductRoutes() {
       {/* Products Management */}
       <Route index element={<ChannableProductsPage />} />
       <Route path="enhanced-catalog" element={<EnhancedCatalog />} />
-      <Route path=":id" element={<ProductDetailsPage />} />
       <Route path="publish" element={<ProductPublishing />} />
       <Route path="catalogue" element={<Navigate to="/products" replace />} />
       <Route path="advanced" element={<AdvancedProductsPage />} />
+      
+      {/* Import - Redirect to dedicated module (before :id to prevent conflict) */}
+      <Route path="import" element={<Navigate to="/import" replace />} />
+      <Route path="import/*" element={<Navigate to="/import" replace />} />
+      
+      {/* Dynamic product ID route (must be after specific routes) */}
+      <Route path=":id" element={<ProductDetailsPage />} />
       
       {/* Product Module Structure */}
       <Route path="rules" element={<Navigate to="/products?tab=rules" replace />} />
@@ -67,8 +73,7 @@ export function ProductRoutes() {
       <Route path="ai-content" element={<AIContentPage />} />
       <Route path="image-audit" element={<ImageAuditPage />} />
       
-      {/* Import - Redirect to dedicated module */}
-      <Route path="import/*" element={<Navigate to="/import" replace />} />
+      {/* Import redirect already defined above */}
       
       {/* Suppliers - Redirect to dedicated module */}
       <Route path="suppliers/*" element={<Navigate to="/suppliers" replace />} />
