@@ -7,7 +7,7 @@
  * - Gestionnaire de redirections centralisé (LegacyRedirectHandler)
  * - Structure claire et maintenable
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 
@@ -71,8 +71,6 @@ const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
-const RepricingPage = lazy(() => import('@/pages/RepricingPage'));
-const AdsSpyPage = lazy(() => import('@/pages/AdsSpyPage'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
@@ -200,7 +198,7 @@ export function AppRoutes() {
           <Route path="/coupons" element={<Protected><CouponsManagementPage /></Protected>} />
           <Route path="/trial" element={<Protected><FreeTrialActivationPage /></Protected>} />
           <Route path="/ab-testing" element={<Protected><ABTestingPage /></Protected>} />
-          <Route path="/repricing" element={<Protected><RepricingPage /></Protected>} />
+          <Route path="/repricing" element={<Navigate to="/pricing-manager/repricing" replace />} />
           <Route path="/enrichment" element={<Protected><EnrichmentSettingsPage /></Protected>} />
           <Route path="/reports" element={<Protected><Reports /></Protected>} />
           
@@ -209,9 +207,9 @@ export function AppRoutes() {
           <Route path="/subscription" element={<Protected><SubscriptionDashboard /></Protected>} />
           <Route path="/api/documentation" element={<Protected><APIDocumentationPage /></Protected>} />
           
-          {/* Ads Spy */}
-          <Route path="/ads-spy" element={<Protected><AdsSpyPage /></Protected>} />
-          <Route path="/ads-spy/*" element={<Protected><AdsSpyPage /></Protected>} />
+          {/* Ads Spy - redirect to research */}
+          <Route path="/ads-spy" element={<Navigate to="/research/ads" replace />} />
+          <Route path="/ads-spy/*" element={<Navigate to="/research/ads" replace />} />
           
           {/* Page Builder */}
           <Route path="/page-builder" element={<Protected><PageBuilderPage /></Protected>} />

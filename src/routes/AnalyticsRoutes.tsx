@@ -9,12 +9,10 @@ import { lazy } from 'react';
 // Analytics
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
-const UnifiedAnalyticsDashboard = lazy(() => import('@/pages/UnifiedAnalyticsDashboard'));
 
 // Competitive
 const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage'));
 const CompetitiveComparisonPage = lazy(() => import('@/pages/competitive/CompetitiveComparisonPage'));
-const PriceMonitoringPage = lazy(() => import('@/pages/PriceMonitoringPage'));
 
 // Reports
 const Reports = lazy(() => import('@/pages/Reports'));
@@ -32,7 +30,7 @@ export function AnalyticsRoutes() {
     <Routes>
       {/* Analytics Overview */}
       <Route index element={<AdvancedAnalyticsPage />} />
-      <Route path="unified" element={<UnifiedAnalyticsDashboard />} />
+      <Route path="unified" element={<AdvancedAnalyticsPage />} />
       <Route path="studio" element={<AdvancedAnalyticsPage />} />
       <Route path="predictive" element={<PredictiveAnalyticsPage />} />
       
@@ -49,7 +47,7 @@ export function AnalyticsRoutes() {
       <Route path="competitive" element={<CompetitorAnalysisPage />} />
       <Route path="competitor-analysis" element={<CompetitorAnalysisPage />} />
       <Route path="competitive-comparison" element={<CompetitiveComparisonPage />} />
-      <Route path="price-monitoring" element={<PriceMonitoringPage />} />
+      <Route path="price-monitoring" element={<Navigate to="/pricing-manager/monitoring" replace />} />
       
       {/* Reports */}
       <Route path="reports" element={<Reports />} />
