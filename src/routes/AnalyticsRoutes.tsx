@@ -1,7 +1,7 @@
 /**
  * Routes Analytics - Reports, Intelligence, Insights
  * Module complet avec données réelles et BI avancée
- * Consolidé - Suppressions des imports orphelins
+ * Consolidé v6.0 - Nettoyage fichiers orphelins
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -12,7 +12,6 @@ const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPa
 
 // Competitive
 const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage'));
-const CompetitiveComparisonPage = lazy(() => import('@/pages/competitive/CompetitiveComparisonPage'));
 
 // Reports
 const Reports = lazy(() => import('@/pages/Reports'));
@@ -46,7 +45,7 @@ export function AnalyticsRoutes() {
       {/* Competitive Analysis */}
       <Route path="competitive" element={<CompetitorAnalysisPage />} />
       <Route path="competitor-analysis" element={<CompetitorAnalysisPage />} />
-      <Route path="competitive-comparison" element={<CompetitiveComparisonPage />} />
+      <Route path="competitive-comparison" element={<CompetitorAnalysisPage />} />
       <Route path="price-monitoring" element={<Navigate to="/pricing-manager/monitoring" replace />} />
       
       {/* Reports */}
