@@ -19,27 +19,35 @@ export default function ShopifyDiagnostic() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
-      // Check store_integrations first
-      const { data: storeData } = await supabase
+      // Check store_integrations first (use maybeSingle to avoid PGRST116 errors)
+      const { data: storeData, error: storeError } = await supabase
         .from('store_integrations')
         .select('*')
         .eq('user_id', user.id)
         .eq('platform', 'shopify')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
+
+      if (storeError) {
+        console.error('store_integrations query error:', storeError);
+      }
 
       if (storeData) return { ...storeData, source: 'store_integrations' };
 
-      // Fallback to integrations table
+      // Fallback to integrations table (use maybeSingle)
       const { data: integrationData, error } = await supabase
         .from('integrations')
         .select('*')
         .eq('user_id', user.id)
         .eq('platform', 'shopify')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) {
+        console.error('integrations query error:', error);
+        throw error;
+      }
+      
       return integrationData ? { ...integrationData, source: 'integrations' } : null;
     },
   });
