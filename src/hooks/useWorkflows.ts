@@ -67,12 +67,27 @@ export function useExecuteWorkflow() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ workflowId, inputData }: { workflowId: string; inputData?: Record<string, any> }) => 
-      WorkflowService.executeWorkflow(workflowId, inputData),
-    onSuccess: () => {
+    mutationFn: async ({ workflowId, inputData }: { workflowId: string; inputData?: Record<string, any> }) => {
+      // Use the real workflow-executor edge function
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.functions.invoke('workflow-executor', {
+        body: {
+          workflowId,
+          triggerData: inputData,
+          manualExecution: true
+        }
+      });
+
+      if (error) throw new Error(error.message);
+      if (!data?.success) throw new Error(data?.error || 'Workflow execution failed');
+      
+      return data;
+    },
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['workflow-executions'] });
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
-      toast.success('Workflow démarré');
+      toast.success(`Workflow exécuté en ${(data.executionTime / 1000).toFixed(1)}s`);
     },
     onError: (error: Error) => {
       toast.error(`Erreur: ${error.message}`);

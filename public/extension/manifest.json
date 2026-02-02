@@ -1,0 +1,139 @@
+{
+  "manifest_version": 3,
+  "name": "ShopOpti+ Pro",
+  "short_name": "ShopOpti+",
+  "version": "5.7.3",
+  "description": "Importez des produits depuis AliExpress, Amazon, eBay et 15+ marketplaces en 1 clic vers ShopOpti",
+  "author": "ShopOpti Team",
+  "homepage_url": "https://drop-craft-ai.lovable.app",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "contextMenus",
+    "notifications",
+    "alarms"
+  ],
+
+  "host_permissions": [
+    "https://*.aliexpress.com/*",
+    "https://*.amazon.com/*",
+    "https://*.amazon.fr/*",
+    "https://*.amazon.de/*",
+    "https://*.amazon.co.uk/*",
+    "https://*.amazon.es/*",
+    "https://*.amazon.it/*",
+    "https://*.ebay.com/*",
+    "https://*.ebay.fr/*",
+    "https://*.ebay.de/*",
+    "https://*.ebay.co.uk/*",
+    "https://*.walmart.com/*",
+    "https://*.temu.com/*",
+    "https://*.shein.com/*",
+    "https://*.etsy.com/*",
+    "https://*.banggood.com/*",
+    "https://*.dhgate.com/*",
+    "https://*.1688.com/*",
+    "https://*.taobao.com/*",
+    "https://*.wish.com/*",
+    "https://*.gearbest.com/*",
+    "https://*.cjdropshipping.com/*",
+    "https://*.alibaba.com/*",
+    "https://*.made-in-china.com/*",
+    "https://*.costco.com/*",
+    "https://*.homedepot.com/*",
+    "https://*.drop-craft-ai.lovable.app/*",
+    "https://jsmwckzrmqecwwrswwrz.supabase.co/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.aliexpress.com/*",
+        "https://*.amazon.com/*",
+        "https://*.amazon.fr/*",
+        "https://*.amazon.de/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.ebay.com/*",
+        "https://*.ebay.fr/*",
+        "https://*.walmart.com/*",
+        "https://*.temu.com/*",
+        "https://*.shein.com/*",
+        "https://*.etsy.com/*",
+        "https://*.banggood.com/*",
+        "https://*.cjdropshipping.com/*"
+      ],
+      "js": ["content/dynamic-loader.js"],
+      "css": ["content/shopopti-styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    },
+    "default_title": "ShopOpti+ Pro"
+  },
+
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/extractors/*.js",
+        "lib/*.js",
+        "assets/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "MacCtrl+Shift+O"
+      },
+      "description": "Ouvrir ShopOpti+ Pro"
+    },
+    "quick_import": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+I",
+        "mac": "MacCtrl+Shift+I"
+      },
+      "description": "Import rapide du produit actuel"
+    }
+  },
+
+  "externally_connectable": {
+    "matches": [
+      "https://drop-craft-ai.lovable.app/*",
+      "https://*-preview--*.lovable.app/*"
+    ]
+  }
+}
