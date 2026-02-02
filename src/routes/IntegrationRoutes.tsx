@@ -1,6 +1,7 @@
 /**
  * Routes Integrations - APIs, Marketplace, Extensions (consolidées)
  * Style Channable - Hub d'intégrations multicanal moderne
+ * Consolidé - Imports orphelins supprimés
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -19,8 +20,7 @@ const ExtensionsHub = lazy(() => import('@/pages/extensions/ExtensionsHub'));
 const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 const ChromeExtensionConfigPage = lazy(() => import('@/pages/ChromeExtensionConfigPage'));
 
-// API
-const APIDeveloperPage = lazy(() => import('@/pages/APIDeveloperPage'));
+// API - Using existing documentation page
 const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
 
 // Support & Learning
@@ -66,8 +66,8 @@ export function IntegrationRoutes() {
       <Route path="extensions/api" element={<ExtensionAPIPage />} />
       <Route path="extensions/chrome-config" element={<ChromeExtensionConfigPage />} />
       
-      {/* API */}
-      <Route path="api/developer" element={<APIDeveloperPage />} />
+      {/* API - Redirect developer to documentation */}
+      <Route path="api/developer" element={<APIDocumentationPage />} />
       <Route path="api/documentation" element={<APIDocumentationPage />} />
       
       {/* Support & Learning */}

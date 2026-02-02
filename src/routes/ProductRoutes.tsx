@@ -1,6 +1,7 @@
 /**
  * Routes Products - Catalogue, Import, Winners
  * Suppliers routes are handled separately in SupplierRoutes.tsx
+ * Consolidé - Imports orphelins supprimés
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -25,8 +26,8 @@ const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPage'));
 const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
 
-// Product Management
-const ProductVariants = lazy(() => import('@/pages/ProductVariants'));
+// Product Management - Using catalog variants page
+const CatalogVariantsPage = lazy(() => import('@/pages/catalog/VariantsPage'));
 const WarehouseManagement = lazy(() => import('@/pages/WarehouseManagement'));
 const DropshippingCenterPage = lazy(() => import('@/pages/DropshippingCenterPage'));
 const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
@@ -35,7 +36,6 @@ const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProductsPage'));
 
 // Product Module Routes
-// ProductRulesPage supprimé - intégré dans /products?tab=rules
 const ProductAuditPage = lazy(() => import('@/pages/products/ProductAuditPage'));
 const ProductResearchPageNew = lazy(() => import('@/pages/products/ProductResearchPage'));
 const ProductIntelligencePage = lazy(() => import('@/pages/ProductIntelligencePage'));
@@ -84,8 +84,8 @@ export function ProductRoutes() {
       <Route path="bulk-content" element={<BulkContentCreationPage />} />
       <Route path="inventory-predictor" element={<InventoryPredictorPage />} />
       
-      {/* Product Management */}
-      <Route path="variants" element={<ProductVariants />} />
+      {/* Product Management - variants uses catalog page */}
+      <Route path="variants" element={<CatalogVariantsPage />} />
       <Route path="warehouse" element={<WarehouseManagement />} />
       <Route path="dropshipping-center" element={<DropshippingCenterPage />} />
       <Route path="vendors" element={<VendorManagementPage />} />

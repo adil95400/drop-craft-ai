@@ -1,5 +1,6 @@
 /**
  * Routes Automation - Workflows, AI, Auto-fulfillment
+ * Consolidé - Imports orphelins supprimés
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -7,11 +8,6 @@ import { lazy } from 'react';
 // Automation
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const AutomationStudio = lazy(() => import('@/pages/AutomationStudio'));
-const AIAutomationHub = lazy(() => import('@/pages/AIAutomationHub'));
-
-// AI Tools
-const AIPage = lazy(() => import('@/pages/AIPage'));
-const AIStudio = lazy(() => import('@/pages/AIStudio'));
 
 // Fulfillment & Phase 2 Marketplace
 const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
@@ -35,8 +31,10 @@ const WorkflowEditorPage = lazy(() => import('@/pages/WorkflowEditorPage'));
 const PriceOptimizationPage = lazy(() => import('@/pages/PriceOptimizationPage'));
 const PricingAutomationPage = lazy(() => import('@/pages/PricingAutomationPage'));
 const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendationsPage'));
-const DynamicPricing = lazy(() => import('@/pages/DynamicPricing'));
 const WorkflowBuilderAdvanced = lazy(() => import('@/pages/automation/WorkflowBuilderPage'));
+
+// Content Generation (replaces AI Studio references)
+const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 
 export function AutomationRoutes() {
   return (
@@ -44,11 +42,11 @@ export function AutomationRoutes() {
       {/* Automation */}
       <Route index element={<AutomationPage />} />
       <Route path="studio" element={<AutomationStudio />} />
-      <Route path="ai-hub" element={<AIAutomationHub />} />
+      <Route path="ai-hub" element={<AutomationPage />} />
       
-      {/* AI Tools */}
-      <Route path="ai" element={<AIPage />} />
-      <Route path="ai-studio" element={<AIStudio />} />
+      {/* AI Tools - Redirect to content generation */}
+      <Route path="ai" element={<ContentGenerationPage />} />
+      <Route path="ai-studio" element={<ContentGenerationPage />} />
       
       {/* Auto-Fulfillment */}
       <Route path="fulfillment" element={<AutoFulfillmentPage />} />
@@ -56,6 +54,7 @@ export function AutomationRoutes() {
       
       {/* Phase 2 - Marketplace Avancée */}
       <Route path="repricing" element={<DynamicRepricingPage />} />
+      <Route path="dynamic-pricing" element={<DynamicRepricingPage />} />
       <Route path="promotions" element={<PromotionsAutomationPage />} />
       
       {/* Optimization */}
@@ -71,7 +70,6 @@ export function AutomationRoutes() {
       <Route path="price-optimization" element={<PriceOptimizationPage />} />
       <Route path="pricing-automation" element={<PricingAutomationPage />} />
       <Route path="recommendations" element={<ProductRecommendationsPage />} />
-      <Route path="dynamic-pricing" element={<DynamicPricing />} />
       <Route path="workflows" element={<WorkflowBuilderAdvanced />} />
       
       {/* Legacy redirects */}

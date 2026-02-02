@@ -1,15 +1,19 @@
 import { Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { ModuleGuard } from '@/components/common/ModuleGuard';
-
 import { Skeleton } from '@/components/ui/skeleton';
+
+/**
+ * Module Routes - Lazy loading des modules protégés par plan
+ * Consolidé - Imports orphelins supprimés
+ */
 
 // Lazy loading des modules pour optimiser le bundle
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const CrmPage = lazy(() => import('@/pages/CrmPage'));
 const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
-const AIPage = lazy(() => import('@/pages/AIPage'));
+const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const IntegrationsPage = lazy(() => import('@/pages/integrations/ChannableStyleIntegrationsPage'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
@@ -70,7 +74,7 @@ export function ModuleRoutes() {
           path="/ai" 
           element={
             <ModuleGuard moduleId="ai">
-              <AIPage />
+              <ContentGenerationPage />
             </ModuleGuard>
           } 
         />
