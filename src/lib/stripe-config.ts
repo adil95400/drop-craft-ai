@@ -32,7 +32,7 @@ export const STRIPE_CONFIG = {
       name: 'Standard',
       priceId: 'price_1S7KZaFdyZLEbAYa8kA9hCUb',
       productId: 'prod_T3RS5DA7XYPWBP',
-      price: 19,
+      price: 29,
       currency: 'EUR',
       interval: 'month',
       features: [
@@ -54,7 +54,7 @@ export const STRIPE_CONFIG = {
       name: 'Pro',
       priceId: 'price_1S7Ka5FdyZLEbAYaszKu4XDM',
       productId: 'prod_T3RTReiXnCg9hy',
-      price: 29,
+      price: 49,
       currency: 'EUR',
       interval: 'month',
       popular: true,
