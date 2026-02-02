@@ -391,6 +391,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'stores-connect', name: 'Connecter', route: '/stores-channels/connect', icon: 'Plug', description: 'Ajouter une boutique', features: ['oauth'], order: 3 },
       { id: 'stores-sync', name: 'Synchronisation', route: '/stores-channels/sync', icon: 'RefreshCw', description: 'État des syncs', features: ['sync-status'], order: 4 },
       { id: 'stores-analytics', name: 'Analytics', route: '/stores-channels/analytics', icon: 'BarChart3', description: 'Performances', features: ['analytics'], order: 5 },
+      { id: 'stores-diagnostic', name: 'Diagnostic Shopify', route: '/stores-channels/shopify-diagnostic', icon: 'Stethoscope', description: 'Tester et diagnostiquer Shopify', features: ['diagnostic'], order: 6 },
     ]
   },
   
