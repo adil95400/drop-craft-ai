@@ -13,7 +13,7 @@ import {
   Search, Filter, Package, Truck, CheckCircle2,
   Clock, AlertCircle, Download, RefreshCw, Eye, 
   Plus, DollarSign, TrendingUp, Sparkles, ChevronLeft, ChevronRight,
-  Calendar, MapPin, Loader2, Store
+  Calendar, MapPin, Loader2, Store, Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { useShopifyOrderImport } from '@/hooks/useShopifyOrderImport';
+import { AutoOrderDashboard } from '@/components/orders/AutoOrderDashboard';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -216,6 +217,8 @@ export default function OrdersCenterPage() {
   
   // Shopify order import
   const { integrations, importOrders, isImporting } = useShopifyOrderImport();
+
+  const [activeMainTab, setActiveMainTab] = useState<'orders' | 'auto-order'>('orders');
 
   useEffect(() => {
     loadOrders();
@@ -491,23 +494,41 @@ export default function OrdersCenterPage() {
         </>
       }
     >
-      {/* Stats Grid */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
-        <StatCard icon={Package} label="Total" value={statusCounts.all} trend="+12%" color="primary" />
-        <StatCard icon={Clock} label="En attente" value={statusCounts.pending} color="warning" />
-        <StatCard icon={Package} label="Traitement" value={statusCounts.processing} color="primary" />
-        <StatCard icon={Truck} label="Expédiées" value={statusCounts.shipped} color="primary" />
-        <StatCard icon={DollarSign} label="CA Total" value={`${totalRevenue.toFixed(0)}€`} trend="+25%" color="success" />
-      </div>
+      {/* Main Tabs: Orders vs Auto-Order */}
+      <Tabs value={activeMainTab} onValueChange={(v) => setActiveMainTab(v as 'orders' | 'auto-order')} className="mb-6">
+        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="orders" className="gap-2">
+            <Package className="w-4 h-4" />
+            Commandes
+          </TabsTrigger>
+          <TabsTrigger value="auto-order" className="gap-2">
+            <Zap className="w-4 h-4" />
+            Auto-Order
+            <Badge variant="secondary" className="ml-1 text-xs">PRO</Badge>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Search & Filter */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4">
+        <TabsContent value="auto-order" className="mt-6">
+          <AutoOrderDashboard />
+        </TabsContent>
+
+        <TabsContent value="orders" className="mt-6 space-y-6">
+          {/* Stats Grid */}
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
+            <StatCard icon={Package} label="Total" value={statusCounts.all} trend="+12%" color="primary" />
+            <StatCard icon={Clock} label="En attente" value={statusCounts.pending} color="warning" />
+            <StatCard icon={Package} label="Traitement" value={statusCounts.processing} color="primary" />
+            <StatCard icon={Truck} label="Expédiées" value={statusCounts.shipped} color="primary" />
+            <StatCard icon={DollarSign} label="CA Total" value={`${totalRevenue.toFixed(0)}€`} trend="+25%" color="success" />
+          </div>
+          {/* Search & Filter */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -575,16 +596,16 @@ export default function OrdersCenterPage() {
               </Select>
             </div>
           </CardContent>
-        </Card>
-      </motion.div>
+            </Card>
+          </motion.div>
 
-      {/* Orders List */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <Tabs defaultValue="all" onValueChange={setStatusFilter} className="space-y-4">
+          {/* Orders List */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Tabs defaultValue="all" onValueChange={setStatusFilter} className="space-y-4">
           <TabsList className="bg-muted/50 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
             <TabsTrigger value="all" className="rounded-lg px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               Toutes ({statusCounts.all})
@@ -703,9 +724,11 @@ export default function OrdersCenterPage() {
                 )}
               </>
             )}
-          </TabsContent>
-        </Tabs>
-      </motion.div>
+            </TabsContent>
+            </Tabs>
+          </motion.div>
+        </TabsContent>
+      </Tabs>
     </ChannablePageWrapper>
   );
 }

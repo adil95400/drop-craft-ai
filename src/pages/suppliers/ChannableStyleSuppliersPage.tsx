@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Plus, ArrowRight, Package, PlugZap, Bell, BarChart2, RefreshCcw, Sparkles 
+  Plus, ArrowRight, Package, PlugZap, Bell, BarChart2, RefreshCcw, Sparkles, Search 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRealSuppliers, type Supplier } from '@/hooks/useRealSuppliers';
@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { AdvancedSupplierAnalytics } from '@/components/suppliers/AdvancedSupplierAnalytics';
 import { SupplierSyncManager } from '@/components/suppliers/SupplierSyncManager';
+import { CJAliExpressSearchPanel } from '@/components/suppliers/CJAliExpressSearchPanel';
 
 // Modular components
 import { SupplierGridCard } from '@/components/suppliers/SupplierGridCard';
@@ -42,7 +43,7 @@ export default function ChannableStyleSuppliersPage() {
   const [selectedShippingZone, setSelectedShippingZone] = useState('all');
   const [sortBy, setSortBy] = useState<'popular' | 'name' | 'rating' | 'products'>('popular');
   const [selectedDefinition, setSelectedDefinition] = useState<SupplierDefinition | null>(null);
-  const [activeTab, setActiveTab] = useState<'catalog' | 'analytics' | 'sync'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'search' | 'analytics' | 'sync'>('catalog');
   
   // Realtime hook
   const { activeJobs, unreadNotifications, markAllAsRead } = useSupplierRealtime();
@@ -130,10 +131,14 @@ export default function ChannableStyleSuppliersPage() {
     >
       {/* Navigation Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-6">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="catalog" className="gap-2">
             <Package className="w-4 h-4" />
             <span className="hidden sm:inline">Catalogue</span>
+          </TabsTrigger>
+          <TabsTrigger value="search" className="gap-2">
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline">Recherche API</span>
           </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
             <BarChart2 className="w-4 h-4" />
@@ -235,6 +240,10 @@ export default function ChannableStyleSuppliersPage() {
               <Button onClick={handleResetFilters}>Réinitialiser les filtres</Button>
             </div>
           )}
+        </TabsContent>
+        
+        <TabsContent value="search" className="mt-6">
+          <CJAliExpressSearchPanel />
         </TabsContent>
         
         <TabsContent value="analytics" className="mt-6">
