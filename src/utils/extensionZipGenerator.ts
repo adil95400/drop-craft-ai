@@ -21,6 +21,7 @@ const EXTENSION_FILES = [
   // Import system
   'import-overlay-v2.js',
   'bulk-import-v5.js',
+  'bulk-import-v5-secure.js',
   'bulk-selector.js',
   'grabber.js',
   
