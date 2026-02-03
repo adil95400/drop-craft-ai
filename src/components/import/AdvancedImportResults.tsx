@@ -35,7 +35,8 @@ import {
   MoreHorizontal,
   RefreshCw
 } from 'lucide-react';
-import { useImportUltraPro, type ImportedProduct } from '@/hooks/useImportUltraPro';
+import { useImportProducts } from '@/hooks/useImportProducts';
+import type { ImportedProduct } from '@/types/import';
 import { BulkActionsPanel } from './BulkActionsPanel';
 import { ProductQuickEdit } from './ProductQuickEdit';
 import { ProductActions } from './ProductActions';
@@ -44,7 +45,7 @@ import { ImportPublishOptions } from './ImportPublishOptions';
 import { ImportedProductDetailModal } from './ImportedProductDetailModal';
 
 export const AdvancedImportResults = () => {
-  const { importedProducts, isLoadingProducts } = useImportUltraPro();
+  const { importedProducts, isLoadingProducts } = useImportProducts();
   
   // State for pagination, filtering, and selection
   const [currentPage, setCurrentPage] = useState(1);

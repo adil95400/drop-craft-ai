@@ -24,8 +24,8 @@ import {
   AlertTriangle,
   ExternalLink
 } from 'lucide-react'
-import { useExtensions } from '@/hooks/useExtensions'
-import { useImportUltraPro } from '@/hooks/useImportUltraPro'
+import { useExtensions } from '@/hooks/useExtensions';
+import { useImportProducts } from '@/hooks/useImportProducts';
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
@@ -138,7 +138,7 @@ export const ExtensionsImportInterface = ({
     isStartingJob
   } = useExtensions()
 
-  const { importedProducts } = useImportUltraPro()
+  const { importedProducts } = useImportProducts()
 
   // Filtrer les extensions recommandées selon la méthode d'import
   const getRecommendedExtensions = () => {

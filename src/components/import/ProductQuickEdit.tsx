@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Save, X, Calculator } from 'lucide-react';
-import { ImportedProduct } from '@/hooks/useImportUltraPro';
+import type { ImportedProduct } from '@/types/import';
 
 interface ProductQuickEditProps {
   product: ImportedProduct;
