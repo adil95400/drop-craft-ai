@@ -164,7 +164,8 @@ export function ComparisonWidget({ settings }: ComparisonWidgetProps) {
                 <Legend 
                   iconType="circle" 
                   iconSize={8}
-                  formatter={(value) => value === 'current' ? 'Actuel' : 'Précédent'}
+                  wrapperStyle={{ fontSize: '10px' }}
+                  formatter={(value: string) => <span>{value === 'current' ? 'Actuel' : 'Précédent'}</span>}
                 />
                 <Bar dataKey="previous" fill="hsl(var(--muted-foreground))" opacity={0.5} radius={[4, 4, 0, 0]} />
                 <Bar dataKey="current" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
