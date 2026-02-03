@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { OrderFulfillmentPanel } from '@/components/orders/OrderFulfillmentPanel';
-import { TrackingTimeline } from '@/components/orders/TrackingTimeline';
+import { TrackingTimeline } from '@/components/tracking';
 
 export default function OrderDetail() {
   const { id } = useParams();

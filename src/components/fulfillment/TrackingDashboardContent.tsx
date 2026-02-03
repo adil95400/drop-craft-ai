@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRealtimeTracking, TrackingInfo } from '@/hooks/useRealtimeTracking';
 import { TrackingList } from '@/components/tracking/TrackingList';
-import { TrackingTimeline } from '@/components/tracking/TrackingTimeline';
+import { TrackingTimeline } from '@/components/tracking';
 import { TrackingStatsCards, DeliveryRateCard } from '@/components/tracking/TrackingStatsCards';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
