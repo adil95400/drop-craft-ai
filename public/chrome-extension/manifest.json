@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.7.2",
-  "description": "Extension professionnelle dropshipping - Import atomique, IA prédictive type Nexus AI, Onboarding guidé, Stockage chiffré, Ads Spy, Auto-Order, 45+ plateformes",
+  "version": "5.8.0",
+  "description": "Extension professionnelle dropshipping - Import atomique, Gateway unifié, IA prédictive, Onboarding guidé, Stockage chiffré, Ads Spy, Auto-Order, 45+ plateformes",
   
   "permissions": [
     "activeTab",
