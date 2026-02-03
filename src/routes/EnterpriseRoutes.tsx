@@ -5,8 +5,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-// Admin
-const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+// Admin - consolidated to AdminPanel
+const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 // Multi-tenant - Using MultiTenantManagementPage as main
 const MultiTenantManagementPage = lazy(() => import('@/pages/MultiTenantManagementPage'));

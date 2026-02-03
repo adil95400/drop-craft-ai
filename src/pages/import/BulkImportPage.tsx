@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
-import { BulkImportUltraPro } from '@/components/import/BulkImportUltraPro'
+import { BulkZipImport } from '@/components/import/BulkZipImport'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -148,7 +148,7 @@ export default function BulkImportPage() {
       </div>
 
       {/* Import Component */}
-      <BulkImportUltraPro onSuccess={loadJobs} />
+      <BulkZipImport />
 
       {/* Recent Jobs */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">

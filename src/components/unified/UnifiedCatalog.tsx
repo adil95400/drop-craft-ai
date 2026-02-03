@@ -30,7 +30,7 @@ import { useProductsUnified, UnifiedProduct } from '@/hooks/unified'
 export type Product = UnifiedProduct
 
 // Import des composants existants
-import { CatalogUltraProInterface } from '@/components/catalog/CatalogUltraProInterface'
+import { AdvancedProductCatalog } from '@/components/catalog/AdvancedProductCatalog'
 import { ProductCard } from '@/components/catalog/ProductCard'
 
 export function UnifiedCatalog() {
@@ -299,7 +299,7 @@ export function UnifiedCatalog() {
                 ))}
               </div>
             ),
-            ultra_pro: <CatalogUltraProInterface />
+            ultra_pro: <AdvancedProductCatalog />
           })}
         </TabsContent>
 
