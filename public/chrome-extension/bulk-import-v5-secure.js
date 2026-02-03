@@ -1,5 +1,5 @@
 // ============================================================================
-// SHOPOPTI+ - BULK IMPORT v5.8.0 (XSS-SECURE)
+// SHOPOPTI+ - BULK IMPORT v5.8.1 (XSS-SECURE)
 // Professional multi-product import with secure DOM construction
 // ============================================================================
 
