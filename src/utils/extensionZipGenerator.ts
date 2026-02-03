@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
 
-const EXTENSION_VERSION = '5.7.2';
+const EXTENSION_VERSION = '5.8.1';
 
 const EXTENSION_FILES = [
   // Core files
@@ -73,12 +73,17 @@ const EXTENSION_FILES = [
   'CHANGELOG.md',
   
   // ==========================================
-  // LIBRARY FILES v5.7.2 (Phase A/B/C + Security + AI)
+  // LIBRARY FILES v5.8.1 (Enterprise Gateway + Phase A/B/C + Security + AI)
   // IMPORTANT: Must match manifest.json references
   // ==========================================
   'lib/logger.js',
+  'lib/gateway-client.js',
+  'lib/action-logger.js',
+  'lib/deep-links.js',
   'lib/feature-flags.js',
   'lib/storage-manager.js',
+  'lib/secure-dom-builder.js',
+  'lib/offline-queue.js',
   'lib/encrypted-storage.js',
   'lib/security.js',
   'lib/onboarding-system.js',
@@ -139,7 +144,7 @@ const EXTENSION_FILES = [
   'lib/variant-mapper.js',
 
   // ==========================================
-  // EXTRACTORS v5.7.2 (17+ platforms)
+  // EXTRACTORS v5.8.1 (17+ platforms)
   // ==========================================
   'extractors/core-extractor.js',
   'extractors/extractor-registry.js',

@@ -75,7 +75,7 @@ export default function ChromeExtensionPage() {
   
   // Handle extension install callback
   const isInstalled = searchParams.get('installed') === 'true';
-  const extensionVersion = searchParams.get('v') || '4.3.10';
+  const extensionVersion = searchParams.get('v') || '5.8.1';
   const [showWelcomeModal, setShowWelcomeModal] = useState(isInstalled);
 
   // Clear URL params after showing modal
@@ -351,7 +351,7 @@ export default function ChromeExtensionPage() {
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-2">
               <Badge className="bg-cyan-500">Extension Chrome</Badge>
-              <Badge variant="outline">v5.7.1</Badge>
+              <Badge variant="outline">v5.8.1</Badge>
               <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Sync SaaS

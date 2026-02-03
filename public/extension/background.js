@@ -1,6 +1,6 @@
 /**
  * ShopOpti+ Pro - Background Service Worker
- * Version: 5.7.3
+ * Version: 5.8.1
  * 
  * Handles:
  * - Authentication via JWT tokens
@@ -179,7 +179,7 @@ async function handleMessage(message, sender) {
 
     // Health check
     case 'ping':
-      return { success: true, version: '5.7.3', timestamp: Date.now() };
+      return { success: true, version: '5.8.1', timestamp: Date.now() };
 
     default:
       return { success: false, error: `Unknown action: ${action}` };
@@ -222,7 +222,7 @@ async function handleLogin(credentials) {
       action: 'generate_token',
       device_info: {
         browser: 'chrome',
-        version: '5.7.3',
+        version: '5.8.1',
         platform: navigator.platform
       }
     }, data.access_token);
