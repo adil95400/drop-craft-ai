@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Key, Lock, Monitor, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { SecurityBadge, SecurityFooterBar } from "@/components/ui/security-badge";
 
 export function SecurityTab() {
   const [passwordData, setPasswordData] = useState({
@@ -70,12 +71,15 @@ export function SecurityTab() {
       {/* Security Overview */}
       <Card className="border-border bg-card shadow-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Shield className="h-4 w-4 text-primary" />
-            </div>
-            Sécurité du Compte
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Shield className="h-4 w-4 text-primary" />
+              </div>
+              Sécurité du Compte
+            </CardTitle>
+            <SecurityBadge level="high" variant="default" />
+          </div>
           <CardDescription>Protégez votre compte avec des mesures de sécurité avancées</CardDescription>
         </CardHeader>
         <CardContent>
@@ -240,6 +244,9 @@ export function SecurityTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Security Footer */}
+      <SecurityFooterBar />
     </div>
   );
 }

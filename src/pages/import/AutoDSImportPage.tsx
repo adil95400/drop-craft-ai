@@ -28,6 +28,8 @@ import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
 import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
 import { ProductPreviewEditModal } from '@/components/import/ProductPreviewEditModal'
 import { ProfitCalculator } from '@/components/import/ProfitCalculator'
+import { ImportSuccessAnimation } from '@/components/ui/import-success-animation'
+import { useImportSuccessAnimation } from '@/hooks/useImportSuccessAnimation'
 
 // Hook pour préférences réduites
 const useReducedMotion = () => {
@@ -75,6 +77,17 @@ export default function AutoDSImportPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const reducedMotion = useReducedMotion()
+
+  // Success Animation Hook
+  const {
+    isVisible: showSuccessAnim,
+    productCount: successProductCount,
+    productName: successProductName,
+    showSuccessAnimation,
+    hideSuccessAnimation,
+    handleViewProducts,
+    handleContinueImport,
+  } = useImportSuccessAnimation()
 
   // URL Import State
   const [urlInput, setUrlInput] = useState('')
@@ -201,7 +214,8 @@ export default function AutoDSImportPage() {
     for (const item of toImport) {
       await importFromUrl(item)
     }
-    toast.success(`${toImport.length} produit${toImport.length > 1 ? 's' : ''} importé${toImport.length > 1 ? 's' : ''}`)
+    // Show celebration animation instead of just toast
+    showSuccessAnimation(toImport.length, toImport[0]?.preview?.title)
   }
 
   const removeFromUrlQueue = (id: string) => {
@@ -293,12 +307,8 @@ export default function AutoDSImportPage() {
       if (error) throw error
       if (!data.success) throw new Error(data.error)
       
-      toast.success(`${data.imported} produit${data.imported > 1 ? 's' : ''} importé${data.imported > 1 ? 's' : ''}`, {
-        action: {
-          label: 'Voir',
-          onClick: () => navigate('/products')
-        }
-      })
+      // Show celebration animation
+      showSuccessAnimation(data.imported, imageProductInfo.name)
 
       queuedImages.forEach(img => {
         if (img.file) URL.revokeObjectURL(img.preview)
@@ -767,6 +777,16 @@ export default function AutoDSImportPage() {
         product={selectedProductForPreview?.preview || null}
         onConfirmImport={handleConfirmImportFromModal}
         isImporting={isImportingFromModal}
+      />
+
+      {/* Success Animation */}
+      <ImportSuccessAnimation
+        isVisible={showSuccessAnim}
+        productCount={successProductCount}
+        productName={successProductName}
+        onViewProducts={handleViewProducts}
+        onContinue={handleContinueImport}
+        onClose={hideSuccessAnimation}
       />
     </ChannablePageLayout>
   )

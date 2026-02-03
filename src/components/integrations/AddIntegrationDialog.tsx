@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Plus, Store, ShoppingCart, CreditCard, Megaphone } from 'lucide-react';
 import { useIntegrationsUnified, UnifiedIntegration, IntegrationTemplate } from '@/hooks/unified';
+import { TrustIndicators } from '@/components/ui/security-badge';
 
 type Integration = UnifiedIntegration;
 import { logError } from '@/utils/consoleCleanup';
@@ -331,6 +332,11 @@ export const AddIntegrationDialog = () => {
 
               <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
                 <strong>💡 Astuce:</strong> Vous pourrez tester et configurer cette intégration après l'avoir créée.
+              </div>
+
+              {/* Trust indicators for sensitive forms */}
+              <div className="pt-2 border-t border-border">
+                <TrustIndicators className="justify-center" />
               </div>
             </div>}
         </div>

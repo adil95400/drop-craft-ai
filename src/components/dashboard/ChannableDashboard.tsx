@@ -53,6 +53,7 @@ import {
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTabletLayout } from './TabletOptimizedDashboard';
 
 // Lazy load ALL widgets (each pulls in recharts ~100KB)
 const RevenueWidgetChannable = lazy(() => import('./widgets/RevenueWidgetChannable').then(m => ({ default: m.RevenueWidgetChannable })));
@@ -185,6 +186,9 @@ export function ChannableDashboard() {
     reorderWidgets,
     resetToDefaults,
   } = useDashboardConfig();
+
+  // Tablet layout optimization
+  const { isTablet, gridColumns, showCompactView, cardPadding } = useTabletLayout();
 
   // Utiliser les données RÉELLES
   const { stats: dashboardStats, rawStats, activityEvents, syncEvents, healthMetrics, isLoading: dataLoading } = useRealDashboardData();
@@ -536,17 +540,27 @@ export function ChannableDashboard() {
             </span>
           </div>
 
-          {/* Widgets Grid */}
+          {/* Widgets Grid - Tablet optimized */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={enabledWidgets.map(w => w.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={cn(
+                "grid gap-4",
+                // Responsive columns with tablet optimization
+                "grid-cols-1",
+                "md:grid-cols-2",
+                isTablet ? "md:gap-5" : "lg:grid-cols-3"
+              )}>
                 {enabledWidgets.map((widget, index) => (
                   <motion.div 
                     key={widget.id} 
-                    className={cn(getWidgetColSpan(widget.size))}
-                    initial={{ opacity: 0, y: 20 }}
+                    className={cn(
+                      getWidgetColSpan(widget.size),
+                      // Enhanced touch targets on tablet
+                      isTablet && "min-h-[180px]"
+                    )}
+                    initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    transition={{ duration: prefersReducedMotion ? 0 : 0.3, delay: prefersReducedMotion ? 0 : index * 0.05 }}
                   >
                     <DashboardWidgetWrapper
                       widget={widget}
