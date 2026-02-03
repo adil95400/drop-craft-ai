@@ -15,7 +15,7 @@ const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage
 
 // Reports
 const Reports = lazy(() => import('@/pages/Reports'));
-const ProfitAnalyticsDashboard = lazy(() => import('@/pages/ProfitAnalyticsDashboard'));
+const ProfitDashboard = lazy(() => import('@/pages/analytics/ProfitDashboard'));
 
 // Advanced Analytics
 const CustomerSegmentationPage = lazy(() => import('@/pages/CustomerSegmentationPage'));
@@ -50,7 +50,7 @@ export function AnalyticsRoutes() {
       
       {/* Reports */}
       <Route path="reports" element={<Reports />} />
-      <Route path="profit-analytics" element={<ProfitAnalyticsDashboard />} />
+      <Route path="profit-analytics" element={<ProfitDashboard />} />
       
       {/* Advanced Analytics */}
       <Route path="advanced" element={<AdvancedAnalyticsDashboardPage />} />

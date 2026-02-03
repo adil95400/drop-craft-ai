@@ -10,7 +10,7 @@ const DashboardHome = lazy(() => import('@/pages/Dashboard'));
 const ProfilePage = lazy(() => import('@/pages/stores/StoreDashboard'));
 const SettingsPage = lazy(() => import('@/pages/stores/StoreDashboard'));
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
-const MarketplaceSyncDashboard = lazy(() => import('@/pages/MarketplaceSyncDashboard'));
+const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
 const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
@@ -41,7 +41,7 @@ export function CoreRoutes() {
       <Route path="pod" element={<PrintOnDemandHub />} />
       <Route path="research/intelligence" element={<CompetitiveIntelligenceHub />} />
       <Route path="sync-manager" element={<SyncManagerPage />} />
-      <Route path="marketplace-sync" element={<MarketplaceSyncDashboard />} />
+      <Route path="marketplace-sync" element={<StoreSyncDashboard />} />
       <Route path="multi-store" element={<StoreDashboard />} />
       <Route path="notifications" element={<NotificationsPage />} />
       <Route path="stock" element={<StockManagement />} />
