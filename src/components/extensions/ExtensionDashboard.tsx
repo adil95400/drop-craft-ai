@@ -1,7 +1,9 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Activity, TrendingDown, Package, Bell } from 'lucide-react'
+import { Activity, TrendingDown, Package, Bell, History, ExternalLink } from 'lucide-react'
+import { ExtensionActivityLog } from './ExtensionActivityLog'
+import { Button } from '@/components/ui/button'
 
 export function ExtensionDashboard() {
   return (
@@ -52,13 +54,22 @@ export function ExtensionDashboard() {
         </Card>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue="activity" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="activity">
+            <History className="h-4 w-4 mr-2" />
+            Historique Actions
+          </TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="monitoring">Price Monitoring</TabsTrigger>
           <TabsTrigger value="stock">Stock Alerts</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
+
+        {/* P1: Extension Activity History (visible in SaaS) */}
+        <TabsContent value="activity" className="space-y-4">
+          <ExtensionActivityLog />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
           <Card>
@@ -68,7 +79,13 @@ export function ExtensionDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">
-                Install and connect the Chrome Extension to view analytics
+                <p>Install and connect the Chrome Extension to view analytics</p>
+                <Button variant="outline" className="mt-4" asChild>
+                  <a href="/extensions/chrome" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Get Extension Token
+                  </a>
+                </Button>
               </div>
             </CardContent>
           </Card>

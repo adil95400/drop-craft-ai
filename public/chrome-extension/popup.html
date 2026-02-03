@@ -320,7 +320,7 @@
       </div>
     </div>
 
-    <!-- Main Actions -->
+    <!-- Main Actions - P1: UX Reduction (3 actions max visible) -->
     <section class="actions-section">
       <h3 class="section-title">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -328,8 +328,10 @@
         </svg>
         Actions Rapides
       </h3>
-      <div class="actions-grid">
-        <!-- Import Dropdown -->
+      
+      <!-- Primary Actions (3 max visible) -->
+      <div class="actions-grid actions-primary">
+        <!-- 1. Import 1-Click (Primary) -->
         <div class="action-dropdown-container">
           <button id="importPageBtn" class="action-card primary">
             <div class="action-icon-wrapper">
@@ -364,6 +366,66 @@
           </div>
         </div>
         
+        <!-- 2. AI Optimize -->
+        <button id="aiOptimizeBtn" class="action-card">
+          <div class="action-icon-wrapper purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="m2 17 10 5 10-5"/>
+              <path d="m2 12 10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <span class="action-title">Optimiser IA</span>
+            <span class="action-desc">Titre & Description</span>
+          </div>
+          <div class="action-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+        </button>
+        
+        <!-- 3. Open Dashboard -->
+        <button id="openDashboardBtn" class="action-card">
+          <div class="action-icon-wrapper blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <span class="action-title">Dashboard</span>
+            <span class="action-desc">Ouvrir ShopOpti</span>
+          </div>
+          <div class="action-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </div>
+        </button>
+      </div>
+      
+      <!-- Advanced Actions Toggle -->
+      <button id="toggleAdvancedBtn" class="toggle-advanced-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="19" cy="12" r="1"/>
+          <circle cx="5" cy="12" r="1"/>
+        </svg>
+        <span>Actions avancées</span>
+        <svg class="toggle-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      
+      <!-- Advanced Actions (Hidden by default) -->
+      <div id="advancedActionsPanel" class="actions-grid actions-advanced hidden">
         <button id="importAllBtn" class="action-card">
           <div class="action-icon-wrapper blue">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -376,12 +438,6 @@
             <span class="action-title">Import Multiple</span>
             <span class="action-desc">Tous les produits</span>
           </div>
-          <div class="action-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </div>
         </button>
         
         <button id="importReviewsBtn" class="action-card">
@@ -393,12 +449,6 @@
           <div class="action-content">
             <span class="action-title">Importer Avis</span>
             <span class="action-desc">Copier les reviews</span>
-          </div>
-          <div class="action-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
           </div>
         </button>
         
@@ -413,11 +463,33 @@
             <span class="action-title">Surveiller Prix</span>
             <span class="action-desc">Alertes temps réel</span>
           </div>
-          <div class="action-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
+        </button>
+        
+        <button id="compareSupplierBtn" class="action-card">
+          <div class="action-icon-wrapper orange">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
+          </div>
+          <div class="action-content">
+            <span class="action-title">Comparer Fournisseurs</span>
+            <span class="action-desc">Trouver le meilleur prix</span>
+          </div>
+        </button>
+        
+        <button id="viewHistoryBtn" class="action-card">
+          <div class="action-icon-wrapper gray">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="action-content">
+            <span class="action-title">Historique</span>
+            <span class="action-desc">Voir les imports</span>
           </div>
         </button>
       </div>
