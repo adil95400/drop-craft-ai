@@ -21,15 +21,12 @@ export { FeedURLImporter } from './FeedURLImporter';
 // Bulk & Batch Operations
 export { BulkActionsPanel } from './BulkActionsPanel';
 export { BulkImportProgress } from './BulkImportProgress';
-export { BulkImportUltraPro } from './BulkImportUltraPro';
 export { BulkZipImport } from './BulkZipImport';
 
 // Product Management
 export { ResponsiveImportedProductsTable } from './ResponsiveImportedProductsTable';
 export { ProductPreviewEditModal } from './ProductPreviewEditModal';
 export { ProductQuickEdit } from './ProductQuickEdit';
-export { ProductOptimizer } from './ProductOptimizer';
-export { PriceOptimizer } from './PriceOptimizer';
 
 // Validation & Processing
 export { ProductImportValidator } from './ProductImportValidator';
@@ -44,7 +41,6 @@ export { AdvancedImportResults } from './AdvancedImportResults';
 export { AdvancedMapping } from './AdvancedMapping';
 
 // Scheduling & Automation
-export { ScheduledImportsUltraPro } from './ScheduledImportsUltraPro';
 export { AutomationRules } from './AutomationRules';
 export { ScheduleFormDialog } from './ScheduleFormDialog';
 

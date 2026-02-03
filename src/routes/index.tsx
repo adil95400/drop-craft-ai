@@ -48,7 +48,6 @@ import { ToolsRoutes } from './ToolsRoutes';
 
 // Pages directes (lazy loaded)
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
-const AvisPositifUltraPro = lazy(() => import('@/pages/AvisPositifUltraPro'));
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
 const BulkOrdersPage = lazy(() => import('@/pages/orders/BulkOrdersPage'));
 const ShopifyStore = lazy(() => import('@/pages/ShopifyStore'));
@@ -191,7 +190,7 @@ export function AppRoutes() {
           
           {/* Feature Pages */}
           <Route path="/sync-manager" element={<Protected><SyncManagerPage /></Protected>} />
-          <Route path="/reviews" element={<Protected><AvisPositifUltraPro /></Protected>} />
+          <Route path="/reviews" element={<Navigate to="/marketing/crm" replace />} />
           <Route path="/advanced" element={<Protected><AdvancedAnalyticsPage /></Protected>} />
           <Route path="/monitoring" element={<Protected><PerformanceMonitoringPage /></Protected>} />
           <Route path="/catalog-intelligence" element={<Protected><CatalogIntelligencePage /></Protected>} />
