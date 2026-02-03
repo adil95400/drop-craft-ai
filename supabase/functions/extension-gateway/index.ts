@@ -39,6 +39,7 @@ import { handleAIAction } from './actions/ai-optimize.ts'
 import { handleSyncAction } from './actions/sync.ts'
 import { handleUtilityAction } from './actions/utility.ts'
 import { handleScrapeAction } from './actions/scrape.ts'
+import { handleAnalyzeAction } from './actions/analyze.ts'
 
 // =============================================================================
 // CONFIGURATION
@@ -312,6 +313,9 @@ Deno.serve(async (req: Request) => {
         break
       case 'scrape':
         result = await handleScrapeAction(action, payload, ctx)
+        break
+      case 'analyze':
+        result = await handleAnalyzeAction(action, payload, ctx)
         break
       default:
         result = { success: false, error: { code: 'UNKNOWN_HANDLER', message: 'Handler not found' } }

@@ -1,18 +1,17 @@
 // ============================================
-// ShopOpti+ Content Injector v5.7.2 - PROFESSIONAL EDITION
+// ShopOpti+ Content Injector v5.8.1 - ENTERPRISE EDITION
 // PHASE 1 & 2: Atomic imports + Standardized UX Feedback
-// 100% AutoDS/Cartifind Feature Parity
+// Enterprise Gateway v2.1 Integration
 // MutationObserver for SPA/infinite scroll
 // Centralized selectors + Supplier search + AI content
 // ALWAYS SHOW BUTTONS - Auth check on action
-// Full Sync with ShopOpti SaaS
-// SECURITY FIX v5.7.2: XSS protection via textContent
+// Full Sync with ShopOpti SaaS via Gateway
 // ============================================
 
 (function() {
   'use strict';
   
-  const VERSION = '5.7.2';
+  const VERSION = '5.8.1';
   const INJECTED_CLASS = 'shopopti-injected';
   const DEBOUNCE_MS = 300;
   const MAX_REINJECT_ATTEMPTS = 8;
@@ -29,6 +28,7 @@
   let observer = null;
   let syncedSettings = null;
   let userStores = [];
+  let gatewayClient = null;
   
   // ============================================
   // CENTRALIZED SELECTORS (dynamically loaded)
@@ -1575,6 +1575,15 @@
     // Inject styles first - ALWAYS
     injectStyles();
     
+    // Initialize Gateway Client (Enterprise v2.1)
+    if (typeof ShopOptiGateway !== 'undefined') {
+      gatewayClient = ShopOptiGateway;
+      await gatewayClient.init().catch(e => console.warn('[ShopOpti+] Gateway init error:', e));
+      console.log('[ShopOpti+] Gateway Client v2.0 initialized');
+    } else {
+      console.warn('[ShopOpti+] Gateway Client not available, using legacy API');
+    }
+    
     // Initialize remote selectors for dynamic updates (non-blocking)
     initRemoteSelectors().catch(e => console.warn('[ShopOpti+] Remote selectors init error:', e));
     
@@ -1612,7 +1621,7 @@
       }
     }, 3000);
     
-    console.log(`[ShopOpti+ v${VERSION}] Ready on ${currentPlatform}`);
+    console.log(`[ShopOpti+ v${VERSION}] Ready on ${currentPlatform} with Enterprise Gateway v2.1`);
   }
   
   // Start immediately
