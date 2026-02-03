@@ -303,6 +303,15 @@ class ShopOptiPopup {
     this.bindClick('importAllBtn', () => this.importAllProducts());
     this.bindClick('importReviewsBtn', () => this.importReviews());
     this.bindClick('priceMonitorBtn', () => this.startPriceMonitor());
+    
+    // P1: New primary actions
+    this.bindClick('aiOptimizeBtn', () => this.aiOptimizeCurrent());
+    this.bindClick('openDashboardBtn', () => this.openDeepLink('dashboard'));
+    this.bindClick('compareSupplierBtn', () => this.compareSuppliers());
+    this.bindClick('viewHistoryBtn', () => this.openDeepLink('extensionHistory'));
+    
+    // P1: Advanced actions toggle
+    this.bindClick('toggleAdvancedBtn', () => this.toggleAdvancedActions());
 
     // Import dropdown
     this.bindClick('importDropdownToggle', (e) => {
@@ -1200,11 +1209,7 @@ class ShopOptiPopup {
   }
 
   openDashboard() {
-    if (this.isExtensionRuntime()) {
-      this.chrome.tabs.create({ url: `${this.APP_URL}/dashboard` });
-    } else {
-      window.open(`${this.APP_URL}/dashboard`, '_blank');
-    }
+    this.openDeepLink('dashboard');
   }
 
   openAuth() {
@@ -1213,6 +1218,161 @@ class ShopOptiPopup {
     } else {
       window.open(`${this.APP_URL}/auth`, '_blank');
     }
+  }
+
+  // ============================================
+  // P1: DEEP LINKS - Navigate from extension to SaaS
+  // ============================================
+  openDeepLink(route, params = {}) {
+    const routes = {
+      dashboard: '/dashboard',
+      products: '/products',
+      productDetail: (id) => `/products?id=${id}`,
+      extensionDashboard: '/extensions',
+      extensionSettings: '/extensions/chrome',
+      extensionHistory: '/extensions/history',
+      importHistory: '/import/history',
+      importConfig: '/import/config',
+      settings: '/settings',
+      help: '/help',
+      changelog: '/changelog',
+    };
+
+    let path = routes[route];
+    if (typeof path === 'function') {
+      path = path(params.id);
+    }
+    
+    if (!path) {
+      console.warn('[ShopOpti+] Unknown deep link route:', route);
+      path = '/dashboard';
+    }
+
+    // Build URL with tracking params
+    const url = new URL(`${this.APP_URL}${path}`);
+    url.searchParams.set('ref', 'extension');
+    url.searchParams.set('v', this.VERSION);
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (key !== 'id' && value != null) {
+        url.searchParams.set(key, String(value));
+      }
+    });
+
+    if (this.isExtensionRuntime()) {
+      this.chrome.tabs.create({ url: url.toString() });
+    } else {
+      window.open(url.toString(), '_blank');
+    }
+    
+    this.showToast('Ouverture de ShopOpti...', 'info');
+  }
+
+  // ============================================
+  // P1: TOGGLE ADVANCED ACTIONS
+  // ============================================
+  toggleAdvancedActions() {
+    const panel = document.getElementById('advancedActionsPanel');
+    const btn = document.getElementById('toggleAdvancedBtn');
+    
+    if (panel && btn) {
+      const isHidden = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !isHidden);
+      btn.classList.toggle('expanded', isHidden);
+      
+      // Animate chevron
+      const chevron = btn.querySelector('.toggle-chevron');
+      if (chevron) {
+        chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+      
+      // Save preference
+      if (this.isExtensionRuntime()) {
+        this.chrome.storage.local.set({ advancedActionsExpanded: isHidden });
+      }
+    }
+  }
+
+  // ============================================
+  // P1: AI OPTIMIZE CURRENT PAGE
+  // ============================================
+  async aiOptimizeCurrent() {
+    if (!this.isConnected) {
+      this.showToast('Connectez-vous pour utiliser l\'IA', 'warning');
+      return;
+    }
+
+    if (!this.currentPlatform) {
+      this.showToast('Naviguez vers une page produit', 'warning');
+      return;
+    }
+
+    this.showToast('Optimisation IA en cours...', 'info');
+    
+    try {
+      // Get current product data
+      const productData = await this.sendToBackground({
+        type: 'SCRAPE_PRODUCT',
+        url: this.currentTab?.url
+      });
+
+      if (!productData?.success || !productData.product) {
+        throw new Error('Impossible d\'extraire le produit');
+      }
+
+      // Call AI optimization via gateway
+      const response = await fetch(`${this.API_URL}/extension-gateway`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': this.extensionToken,
+          'x-extension-version': this.VERSION
+        },
+        body: JSON.stringify({
+          action: 'AI_OPTIMIZE_FULL',
+          version: this.VERSION,
+          payload: {
+            product: productData.product,
+            language: 'fr'
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Erreur d\'optimisation');
+      }
+
+      this.showToast('✓ Optimisation IA terminée!', 'success');
+      
+      // Show optimized content preview
+      if (data.result?.optimized) {
+        console.log('[ShopOpti+] AI Optimized:', data.result.optimized);
+      }
+      
+    } catch (error) {
+      console.error('[ShopOpti+] AI optimize error:', error);
+      this.showToast(error.message || 'Erreur d\'optimisation IA', 'error');
+    }
+  }
+
+  // ============================================
+  // COMPARE SUPPLIERS
+  // ============================================
+  async compareSuppliers() {
+    if (!this.currentPlatform || !this.currentTab?.url) {
+      this.showToast('Naviguez vers une page produit', 'warning');
+      return;
+    }
+    
+    this.showToast('Recherche de fournisseurs...', 'info');
+    
+    // Open supplier comparison in SaaS
+    this.openDeepLink('products', { 
+      action: 'compare',
+      source_url: this.currentTab.url 
+    });
   }
 
   async disconnect() {

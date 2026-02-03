@@ -66,6 +66,7 @@ const ACTION_CONFIG: Record<string, {
   'CHECK_VERSION': { rateLimit: { maxRequests: 100, windowMinutes: 60 }, requiresToken: false, handler: 'utility' },
   'GET_SETTINGS': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   'LOG_ANALYTICS': { rateLimit: { maxRequests: 100, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
+  'LOG_ACTION': { rateLimit: { maxRequests: 200, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
 }
 
 // =============================================================================
@@ -514,6 +515,31 @@ async function handleUtilityAction(
       event_data: eventData,
       source_url: payload.url
     }).catch(() => {})
+
+    return { success: true }
+  }
+
+  // LOG_ACTION - Log extension action to SaaS for visibility
+  if (action === 'LOG_ACTION' && userId) {
+    const actionType = (payload.action_type as string) || 'UNKNOWN'
+    const actionStatus = (payload.action_status as string) || 'success'
+
+    const { error } = await supabase.from('extension_action_logs').insert({
+      user_id: userId,
+      action_type: actionType,
+      action_status: actionStatus,
+      platform: payload.platform || null,
+      product_title: payload.product_title ? String(payload.product_title).substring(0, 500) : null,
+      product_url: payload.product_url || null,
+      product_id: payload.product_id || null,
+      metadata: payload.metadata || {},
+      extension_version: extensionVersion
+    })
+
+    if (error) {
+      console.error('[Gateway] LOG_ACTION error:', error)
+      return { success: false, error: 'Failed to log action' }
+    }
 
     return { success: true }
   }

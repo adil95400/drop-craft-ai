@@ -4509,6 +4509,48 @@ export type Database = {
         }
         Relationships: []
       }
+      extension_action_logs: {
+        Row: {
+          action_status: string
+          action_type: string
+          created_at: string
+          extension_version: string | null
+          id: string
+          metadata: Json | null
+          platform: string | null
+          product_id: string | null
+          product_title: string | null
+          product_url: string | null
+          user_id: string
+        }
+        Insert: {
+          action_status?: string
+          action_type: string
+          created_at?: string
+          extension_version?: string | null
+          id?: string
+          metadata?: Json | null
+          platform?: string | null
+          product_id?: string | null
+          product_title?: string | null
+          product_url?: string | null
+          user_id: string
+        }
+        Update: {
+          action_status?: string
+          action_type?: string
+          created_at?: string
+          extension_version?: string | null
+          id?: string
+          metadata?: Json | null
+          platform?: string | null
+          product_id?: string | null
+          product_title?: string | null
+          product_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       extension_analytics: {
         Row: {
           created_at: string
