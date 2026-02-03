@@ -28,7 +28,7 @@ const UpdateNotification = lazy(() => import('@/components/pwa/UpdateNotificatio
 const MobileGlobalOptimizer = lazy(() => import('@/components/mobile/MobileGlobalOptimizer').then(m => ({ default: m.MobileGlobalOptimizer })));
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour').then(m => ({ default: m.OnboardingTour })));
 const NotificationProvider = lazy(() => import('@/components/notifications/NotificationService').then(m => ({ default: m.NotificationProvider })));
-const ChatSupportWidget = lazy(() => import('@/components/support/ChatSupportWidget').then(m => ({ default: m.ChatSupportWidget })));
+const GlobalAIAssistant = lazy(() => import('@/components/ai/GlobalAIAssistant').then(m => ({ default: m.GlobalAIAssistant })));
 
 // Lazy load modal systems (pulls in many dialog components with supabase/heavy deps)
 const GlobalModals = lazy(() => import('@/components/GlobalModals').then(m => ({ default: m.GlobalModals })));
@@ -103,9 +103,9 @@ const AppContent = memo(() => {
           <FeedbackWidget />
         </Suspense>
         
-        {/* Chat support widget */}
+        {/* Global AI Assistant with Lovable AI */}
         <Suspense fallback={null}>
-          <ChatSupportWidget />
+          <GlobalAIAssistant />
         </Suspense>
         
       </MobileGlobalOptimizer>
