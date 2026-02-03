@@ -58,7 +58,7 @@ const CreateNotification = lazy(() => import('@/pages/notifications/CreateNotifi
 const CouponsManagementPage = lazy(() => import('@/pages/CouponsManagementPage'));
 const FreeTrialActivationPage = lazy(() => import('@/pages/FreeTrialActivationPage'));
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
-const EnrichmentSettingsPage = lazy(() => import('@/pages/enrichment/EnrichmentSettingsPage'));
+// EnrichmentSettingsPage removed - functionality consolidated
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
@@ -199,7 +199,7 @@ export function AppRoutes() {
           <Route path="/trial" element={<Protected><FreeTrialActivationPage /></Protected>} />
           <Route path="/ab-testing" element={<Protected><ABTestingPage /></Protected>} />
           <Route path="/repricing" element={<Navigate to="/pricing-manager/repricing" replace />} />
-          <Route path="/enrichment" element={<Protected><EnrichmentSettingsPage /></Protected>} />
+          <Route path="/enrichment" element={<Navigate to="/catalog/attributes" replace />} />
           <Route path="/reports" element={<Protected><Reports /></Protected>} />
           
           {/* Profile & Subscription (Settings group) */}

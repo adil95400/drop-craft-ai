@@ -4,8 +4,10 @@
  */
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
-import { Chrome, Play, Sparkles } from 'lucide-react'
+import { Chrome, Play, Sparkles, LayoutDashboard } from 'lucide-react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useState } from 'react'
 import { 
   ExtensionQuickNav,
   ExtensionFeatures,
@@ -13,9 +15,11 @@ import {
   ExtensionTestimonials,
   ExtensionCTA
 } from './components'
+import { ExtensionConnectionHub } from '@/components/extensions/ExtensionConnectionHub'
 
 export default function ExtensionsHub() {
   const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'overview'>('dashboard')
 
   return (
     <ChannablePageWrapper
@@ -44,42 +48,59 @@ export default function ExtensionsHub() {
         </div>
       }
     >
-      <div className="space-y-8">
-        {/* Quick Features Overview */}
-        <section>
-          <ExtensionFeatures variant="compact" />
-        </section>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="dashboard" className="gap-2">
+            <LayoutDashboard className="h-4 w-4" />
+            Tableau de bord
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Fonctionnalités
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Supported Platforms */}
-        <section>
-          <ExtensionPlatforms />
-        </section>
+        <TabsContent value="dashboard">
+          <ExtensionConnectionHub />
+        </TabsContent>
 
-        {/* Detailed Features */}
-        <section>
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            Fonctionnalités avancées
-          </h2>
-          <ExtensionFeatures variant="detailed" />
-        </section>
+        <TabsContent value="overview" className="space-y-8">
+          {/* Quick Features Overview */}
+          <section>
+            <ExtensionFeatures variant="compact" />
+          </section>
 
-        {/* Testimonials */}
-        <section>
-          <ExtensionTestimonials />
-        </section>
+          {/* Supported Platforms */}
+          <section>
+            <ExtensionPlatforms />
+          </section>
 
-        {/* Quick Navigation to other extensions */}
-        <section>
-          <h2 className="text-xl font-bold mb-4">Outils & Extensions</h2>
-          <ExtensionQuickNav />
-        </section>
+          {/* Detailed Features */}
+          <section>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Fonctionnalités avancées
+            </h2>
+            <ExtensionFeatures variant="detailed" />
+          </section>
 
-        {/* Final CTA */}
-        <section>
-          <ExtensionCTA />
-        </section>
-      </div>
+          {/* Testimonials */}
+          <section>
+            <ExtensionTestimonials />
+          </section>
+
+          {/* Quick Navigation to other extensions */}
+          <section>
+            <h2 className="text-xl font-bold mb-4">Outils & Extensions</h2>
+            <ExtensionQuickNav />
+          </section>
+
+          {/* Final CTA */}
+          <section>
+            <ExtensionCTA />
+          </section>
+        </TabsContent>
+      </Tabs>
     </ChannablePageWrapper>
   )
 }

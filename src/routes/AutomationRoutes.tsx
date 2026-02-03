@@ -18,8 +18,7 @@ const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssis
 // Unified Sync
 const UnifiedSyncDashboard = lazy(() => import('@/components/sync/UnifiedSyncDashboard'));
 
-// Advanced Automation - Using WorkflowBuilderPage as main workflow editor
-const WorkflowBuilderPage = lazy(() => import('@/pages/automation/WorkflowBuilderPage'));
+// Advanced Automation - Using AutomationPage for workflows
 const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendationsPage'));
 
 // Content Generation (replaces AI Studio references)
@@ -57,12 +56,12 @@ export function AutomationRoutes() {
       <Route path="sourcing-assistant" element={<ProductSourcingAssistant />} />
       
       {/* Advanced Automation */}
-      <Route path="workflow-builder" element={<WorkflowBuilderPage />} />
-      <Route path="workflow-editor" element={<WorkflowBuilderPage />} />
+      <Route path="workflow-builder" element={<AutomationPage />} />
+      <Route path="workflow-editor" element={<AutomationPage />} />
       <Route path="price-optimization" element={<Navigate to="/pricing-manager/optimization" replace />} />
       <Route path="pricing-automation" element={<Navigate to="/pricing-manager" replace />} />
       <Route path="recommendations" element={<ProductRecommendationsPage />} />
-      <Route path="workflows" element={<WorkflowBuilderPage />} />
+      <Route path="workflows" element={<AutomationPage />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/automation" replace />} />
