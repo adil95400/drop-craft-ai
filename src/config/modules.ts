@@ -57,6 +57,8 @@ export interface ModuleConfig {
   order: number;
   groupId: NavGroupId;
   badge?: 'new' | 'beta' | 'pro' | 'ultra';
+  /** Module en développement - affiché grisé dans la sidebar */
+  comingSoon?: boolean;
 }
 
 // =============================================================================
@@ -130,13 +132,13 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   
   suppliers: {
     id: 'suppliers',
-    name: 'Fournisseurs',
+    name: 'Fournisseurs & Canaux',
     icon: 'Truck',
     enabled: true,
     minPlan: 'standard',
     route: '/suppliers',
-    features: ['supplier-management', 'dropshipping', 'catalog-sync'],
-    description: 'Connectez vos fournisseurs',
+    features: ['supplier-management', 'dropshipping', 'catalog-sync', 'marketplace-connect'],
+    description: 'Fournisseurs, dropshipping et connexions marketplace',
     category: 'product',
     order: 2,
     groupId: 'sourcing',
@@ -145,6 +147,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'suppliers-catalog', name: 'Catalogue Unifié', route: '/suppliers/catalog', icon: 'Package', description: 'Tous les produits', features: ['catalog'], order: 2 },
       { id: 'suppliers-engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', description: 'Auto-import & fulfillment', features: ['advanced'], order: 3 },
       { id: 'suppliers-my', name: 'Mes Fournisseurs', route: '/suppliers/my', icon: 'Truck', description: 'Fournisseurs connectés', features: ['list'], order: 4 },
+      { id: 'suppliers-marketplaces', name: 'Marketplaces', route: '/suppliers/marketplaces', icon: 'Store', description: 'Connecter Amazon, eBay, etc.', features: ['marketplaces'], order: 5 },
     ]
   },
 
@@ -570,16 +573,15 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['leads', 'pipeline', 'contacts'],
     description: 'Gestion relation client',
     category: 'customer',
-    order: 3,
-    groupId: 'performance',
+    order: 8, // Positionné après Automatisation dans Ventes
+    groupId: 'sales', // Déplacé de 'performance' vers 'sales' pour cohérence
     badge: 'pro',
     subModules: [
       { id: 'crm-dashboard', name: 'Dashboard', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
       { id: 'crm-leads', name: 'Leads', route: '/crm/leads', icon: 'UserPlus', description: 'Gestion des leads', features: ['leads'], order: 2 },
-      { id: 'crm-emails', name: 'Emails', route: '/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 3 },
-      { id: 'crm-activity', name: 'Activité', route: '/marketing/crm/activity', icon: 'Activity', description: 'Historique activité', features: ['activity'], order: 4 },
-      { id: 'crm-calls', name: 'Appels', route: '/marketing/crm/calls', icon: 'Phone', description: 'Gestion appels', features: ['calls'], order: 5 },
-      { id: 'crm-calendar', name: 'Calendrier', route: '/marketing/crm/calendar', icon: 'Calendar', description: 'Calendrier CRM', features: ['calendar'], order: 6 },
+      { id: 'crm-pipeline', name: 'Pipeline', route: '/crm/pipeline', icon: 'GitBranch', description: 'Pipeline de ventes', features: ['pipeline'], order: 3 },
+      { id: 'crm-emails', name: 'Emails', route: '/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 4 },
+      { id: 'crm-scoring', name: 'Lead Scoring', route: '/crm/scoring', icon: 'Target', description: 'Notation des leads', features: ['scoring'], order: 5 },
     ]
   },
 
