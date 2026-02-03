@@ -135,6 +135,8 @@ const ChannableNavItem = memo(({
   const prefersReducedMotion = useReducedMotion();
   const Icon = ICON_MAP[module.icon] || Package;
   const hasSubModules = subModules.length > 0;
+  const isComingSoon = module.comingSoon === true;
+  const isClickable = hasAccess && !isComingSoon;
   return <motion.div initial={prefersReducedMotion ? false : {
     opacity: 0,
     x: -8
@@ -146,7 +148,7 @@ const ChannableNavItem = memo(({
     ease: "easeOut"
   }}>
       <SidebarMenuItem className="group/menu-item">
-        <SidebarMenuButton onClick={() => hasSubModules ? onSubToggle() : hasAccess && onNavigate(module.route)} tooltip={collapsed ? module.name : undefined} className={cn("w-full rounded-xl transition-all duration-200 relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 peer/menu-button", isActive ? `bg-gradient-to-r ${groupColor?.gradient || 'from-primary to-primary/80'} text-white shadow-lg shadow-primary/20` : "hover:bg-sidebar-accent/50 dark:hover:bg-sidebar-accent/30", !hasAccess && "opacity-40 cursor-not-allowed")} aria-current={isActive ? "page" : undefined} aria-disabled={!hasAccess} aria-expanded={hasSubModules ? isSubOpen : undefined}>
+        <SidebarMenuButton onClick={() => hasSubModules ? onSubToggle() : isClickable && onNavigate(module.route)} tooltip={collapsed ? module.name : undefined} className={cn("w-full rounded-xl transition-all duration-200 relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 peer/menu-button", isActive ? `bg-gradient-to-r ${groupColor?.gradient || 'from-primary to-primary/80'} text-white shadow-lg shadow-primary/20` : "hover:bg-sidebar-accent/50 dark:hover:bg-sidebar-accent/30", (!hasAccess || isComingSoon) && "opacity-40 cursor-not-allowed")} aria-current={isActive ? "page" : undefined} aria-disabled={!isClickable} aria-expanded={hasSubModules ? isSubOpen : undefined}>
           {/* Active indicator glow */}
           {isActive && <motion.div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" initial={prefersReducedMotion ? false : {
           opacity: 0
@@ -164,9 +166,15 @@ const ChannableNavItem = memo(({
               </span>
               
               <div className="flex items-center gap-1.5 ml-2 flex-shrink-0 pr-6">
-                {!hasAccess && <Lock className="h-3 w-3 text-muted-foreground/60" aria-label="Accès restreint" />}
+                {isComingSoon && (
+                  <Badge className="text-[8px] px-1 py-0 h-3.5 font-bold border-0 uppercase tracking-wide bg-muted text-muted-foreground">
+                    Bientôt
+                  </Badge>
+                )}
                 
-                {module.badge && <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-bold border-0 uppercase tracking-wide", module.badge === 'pro' && "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-sm", module.badge === 'new' && "bg-gradient-to-r from-emerald-500/90 to-green-500/90 text-white shadow-sm", module.badge === 'beta' && "bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white shadow-sm")}>
+                {!hasAccess && !isComingSoon && <Lock className="h-3 w-3 text-muted-foreground/60" aria-label="Accès restreint" />}
+                
+                {module.badge && !isComingSoon && <Badge className={cn("text-[9px] px-1.5 py-0 h-4 font-bold border-0 uppercase tracking-wide", module.badge === 'pro' && "bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white shadow-sm", module.badge === 'new' && "bg-gradient-to-r from-emerald-500/90 to-green-500/90 text-white shadow-sm", module.badge === 'beta' && "bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white shadow-sm")}>
                     {module.badge}
                   </Badge>}
                 
