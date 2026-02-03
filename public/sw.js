@@ -1,6 +1,10 @@
 // Service Worker pour PWA ShopOpti - Mise à jour automatique intelligente
-// VERSION AUTO-INCREMENTÉE À CHAQUE BUILD
-const CACHE_VERSION = '3.0.0-' + Date.now();
+// IMPORTANT: Le navigateur ne met à jour le SW que si le fichier sw.js change.
+// -> Incrémentez SW_SCRIPT_VERSION à chaque release pour forcer le refresh.
+const SW_SCRIPT_VERSION = '3.0.1';
+
+// VERSION AUTO-INCREMENTÉE À CHAQUE ACTIVATION
+const CACHE_VERSION = `${SW_SCRIPT_VERSION}-` + Date.now();
 const STATIC_CACHE = `shopopti-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `shopopti-dynamic-v${CACHE_VERSION}`;
 const API_CACHE = `shopopti-api-v${CACHE_VERSION}`;
