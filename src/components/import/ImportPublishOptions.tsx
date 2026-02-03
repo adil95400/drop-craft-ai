@@ -28,7 +28,7 @@ import {
   Share2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { ImportedProduct } from '@/hooks/useImportUltraPro';
+import type { ImportedProduct } from '@/types/import';
 
 interface ImportPublishOptionsProps {
   isOpen: boolean;

@@ -33,7 +33,7 @@ import {
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ImportedProduct } from '@/hooks/useImportUltraPro';
+import type { ImportedProduct } from '@/types/import';
 
 interface ProductActionsProps {
   product: ImportedProduct;

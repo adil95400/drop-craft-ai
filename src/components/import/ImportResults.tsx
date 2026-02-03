@@ -18,10 +18,10 @@ import {
   Database,
   ExternalLink
 } from 'lucide-react';
-import { useImportUltraPro } from '@/hooks/useImportUltraPro';
+import { useImportProducts } from '@/hooks/useImportProducts';
 
 export const ImportResults = () => {
-  const { importedProducts } = useImportUltraPro();
+  const { importedProducts } = useImportProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 

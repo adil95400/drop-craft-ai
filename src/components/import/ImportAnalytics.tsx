@@ -22,10 +22,10 @@ import {
   Users,
   Globe
 } from 'lucide-react'
-import { useImportUltraPro } from '@/hooks/useImportUltraPro'
+import { useImportProducts } from '@/hooks/useImportProducts';
 
 export const ImportAnalytics = () => {
-  const { importedProducts, aiJobs, scheduledImports } = useImportUltraPro()
+  const { importedProducts, aiJobs, scheduledImports } = useImportProducts();
   const [timeRange, setTimeRange] = useState('7d')
   const [selectedMetric, setSelectedMetric] = useState('imports')
 
