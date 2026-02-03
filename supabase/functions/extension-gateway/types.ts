@@ -94,7 +94,7 @@ export interface ActionConfig {
   rateLimit: { maxRequests: number; windowMinutes: number }
   requiresToken: boolean
   requiredScope?: string
-  handler: 'auth' | 'import' | 'ai' | 'sync' | 'utility' | 'scrape'
+  handler: 'auth' | 'import' | 'ai' | 'sync' | 'utility' | 'scrape' | 'analyze'
 }
 
 export const ACTION_CONFIG: Record<string, ActionConfig> = {
@@ -127,6 +127,11 @@ export const ACTION_CONFIG: Record<string, ActionConfig> = {
   'LOG_ANALYTICS': { rateLimit: { maxRequests: 100, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   'LOG_ACTION': { rateLimit: { maxRequests: 200, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   'CHECK_QUOTA': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
+  
+  // Analyze actions
+  'ANALYZE_PRODUCT': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'analyze:product', handler: 'analyze' },
+  'ANALYZE_COMPETITORS': { rateLimit: { maxRequests: 20, windowMinutes: 60 }, requiresToken: true, requiredScope: 'analyze:competitors', handler: 'analyze' },
+  'ANALYZE_MARKET': { rateLimit: { maxRequests: 15, windowMinutes: 60 }, requiresToken: true, requiredScope: 'analyze:market', handler: 'analyze' },
 }
 
 // Write actions that require idempotency

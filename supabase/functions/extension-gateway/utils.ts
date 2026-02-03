@@ -259,22 +259,26 @@ export async function logEvent(
 ): Promise<void> {
   const durationMs = Date.now() - ctx.startTime
 
-  await supabase.from('extension_events').insert({
-    user_id: ctx.userId || '00000000-0000-0000-0000-000000000000',
-    action,
-    platform: metadata.platform || null,
-    status,
-    error_code: errorCode,
-    error_message: errorMessage,
-    duration_ms: durationMs,
-    request_id: ctx.requestId,
-    extension_id: ctx.extensionId,
-    extension_version: ctx.extensionVersion,
-    metadata: {
-      ...metadata,
-      idempotency_key: ctx.idempotencyKey,
-    },
-  }).catch(e => console.error('[Gateway] Log event error:', e))
+  try {
+    await supabase.from('extension_events').insert({
+      user_id: ctx.userId || '00000000-0000-0000-0000-000000000000',
+      action,
+      platform: metadata.platform || null,
+      status,
+      error_code: errorCode,
+      error_message: errorMessage,
+      duration_ms: durationMs,
+      request_id: ctx.requestId,
+      extension_id: ctx.extensionId,
+      extension_version: ctx.extensionVersion,
+      metadata: {
+        ...metadata,
+        idempotency_key: ctx.idempotencyKey,
+      },
+    })
+  } catch (e) {
+    console.error('[Gateway] Log event error:', e)
+  }
 }
 
 // =============================================================================
