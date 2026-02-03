@@ -1,8 +1,8 @@
-import type { LucideIcon } from 'lucide-react';
-
 /**
- * Catégories de modules pour une organisation claire de l'interface
+ * Catégories de modules consolidées - Architecture 6 pôles
+ * Aligné avec NAV_GROUPS dans modules.ts
  */
+
 export interface ModuleCategory {
   id: string;
   name: string;
@@ -11,69 +11,52 @@ export interface ModuleCategory {
   description: string;
 }
 
+/**
+ * 6 pôles de navigation essentiels
+ * Structure: 1 fonctionnalité = 1 endroit clair
+ */
 export const MODULE_CATEGORIES: Record<string, ModuleCategory> = {
-  core: {
-    id: 'core',
-    name: 'Core Business',
-    icon: 'Building',
+  home: {
+    id: 'home',
+    name: 'Accueil',
+    icon: 'Home',
     order: 1,
-    description: 'Fonctionnalités essentielles de gestion'
+    description: 'Dashboard & Vue d\'ensemble'
   },
-  product: {
-    id: 'product',
-    name: 'Gestion Produits',
+  catalog: {
+    id: 'catalog',
+    name: 'Catalogue',
     icon: 'Package',
     order: 2,
-    description: 'Catalogue, import et gestion des produits'
+    description: 'Gestion produits & Exécution quotidienne'
   },
-  learning: {
-    id: 'learning',
-    name: 'Formation',
-    icon: 'GraduationCap',
+  sourcing: {
+    id: 'sourcing',
+    name: 'Sourcing',
+    icon: 'Truck',
     order: 3,
-    description: 'Ressources de formation et apprentissage'
+    description: 'Import, Fournisseurs & Veille'
   },
-  analytics: {
-    id: 'analytics',
-    name: 'Analytics & Insights',
-    icon: 'BarChart3',
+  sales: {
+    id: 'sales',
+    name: 'Ventes',
+    icon: 'ShoppingCart',
     order: 4,
-    description: 'Analyses et rapports avancés'
+    description: 'Boutiques, Commandes & Clients'
   },
-  automation: {
-    id: 'automation',
-    name: 'Automation & Tools',
-    icon: 'Zap',
+  performance: {
+    id: 'performance',
+    name: 'Performance',
+    icon: 'BarChart3',
     order: 5,
-    description: 'Automatisation et outils de productivité'
+    description: 'Analytics, Audit & Marketing'
   },
-  customer: {
-    id: 'customer',
-    name: 'Relations Clients',
-    icon: 'Users',
-    order: 6,
-    description: 'CRM et optimisation SEO'
-  },
-  enterprise: {
-    id: 'enterprise',
-    name: 'Enterprise',
-    icon: 'Building2',
-    order: 7,
-    description: 'Fonctionnalités enterprise avancées'
-  },
-  integrations: {
-    id: 'integrations',
-    name: 'Intégrations',
-    icon: 'Plug',
-    order: 8,
-    description: 'Connecteurs et APIs externes'
-  },
-  system: {
-    id: 'system',
-    name: 'Système',
+  config: {
+    id: 'config',
+    name: 'Configuration',
     icon: 'Settings',
-    order: 9,
-    description: 'Monitoring et administration système'
+    order: 6,
+    description: 'Paramètres, IA & Administration'
   }
 };
 
@@ -92,18 +75,32 @@ export function getAllCategories(): ModuleCategory[] {
 }
 
 /**
+ * Mapping des anciennes catégories vers les nouveaux pôles
+ */
+const LEGACY_CATEGORY_MAP: Record<string, string> = {
+  core: 'home',
+  product: 'catalog',
+  learning: 'config',
+  analytics: 'performance',
+  automation: 'sales',
+  customer: 'sales',
+  enterprise: 'config',
+  integrations: 'sourcing',
+  system: 'config'
+};
+
+/**
+ * Convertir une ancienne catégorie vers le nouveau pôle
+ */
+export function mapLegacyCategory(legacyCategory: string): string {
+  return LEGACY_CATEGORY_MAP[legacyCategory] || 'config';
+}
+
+/**
  * Obtenir les catégories pour un plan spécifique
  */
 export function getCategoriesForPlan(plan: 'standard' | 'pro' | 'ultra_pro'): ModuleCategory[] {
-  const planCategoryMap: Record<string, string[]> = {
-    standard: ['core', 'product', 'learning'],
-    pro: ['core', 'product', 'learning', 'analytics', 'automation', 'customer'],
-    ultra_pro: ['core', 'product', 'learning', 'analytics', 'automation', 'customer', 'enterprise', 'integrations', 'system']
-  };
-
-  const categoryIds = planCategoryMap[plan] || [];
-  return categoryIds
-    .map(id => MODULE_CATEGORIES[id])
-    .filter(Boolean)
-    .sort((a, b) => a.order - b.order);
+  // Tous les plans ont accès aux 6 pôles de base
+  // La restriction se fait au niveau des modules individuels
+  return getAllCategories();
 }

@@ -34,7 +34,6 @@ import { EnterpriseRoutes } from './EnterpriseRoutes';
 import { SettingsRoutes } from './SettingsRoutes';
 import { ExtensionRoutes } from './ExtensionRoutes';
 import { AuditRoutes } from './AuditRoutes';
-import { RewriteRoutes } from './RewriteRoutes';
 import { StockRoutes } from './StockRoutes';
 import { ImportRoutes } from './ImportRoutes';
 import { FeedRoutes } from './FeedRoutes';
@@ -157,10 +156,12 @@ export function AppRoutes() {
           <Route path="/automation/*" element={<Protected><AutomationRoutes /></Protected>} />
           <Route path="/ai/*" element={<Protected><AIRoutes /></Protected>} />
           <Route path="/pricing-manager/*" element={<Protected><PricingRoutes /></Protected>} />
-          <Route path="/rewrite/*" element={<Protected><RewriteRoutes /></Protected>} />
           
-          {/* Marketing */}
+          {/* Marketing, SEO & CRM */}
           <Route path="/marketing/*" element={<Protected><MarketingRoutes /></Protected>} />
+          <Route path="/seo/*" element={<Navigate to="/marketing/seo" replace />} />
+          <Route path="/crm/*" element={<Navigate to="/marketing/crm" replace />} />
+          <Route path="/inventory/*" element={<Navigate to="/stock" replace />} />
           
           {/* Tools & Utilities */}
           <Route path="/tools/*" element={<Protected><ToolsRoutes /></Protected>} />
