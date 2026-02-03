@@ -2,15 +2,9 @@
  * ShopOpti+ Extension Gateway - ENTERPRISE API v2.1
  * 
  * Single entry point for ALL extension operations with modular action handlers.
- * 
- * Architecture:
- * - index.ts: Request validation, auth, anti-replay, idempotency, routing
- * - types.ts: Shared types, schemas, error codes
- * - utils.ts: Shared utilities (CORS, validation, DB helpers)
- * - actions/*.ts: Isolated handlers per action category
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { createClient } from "@supabase/supabase-js"
 
 // Import shared modules
 import { 
@@ -25,7 +19,6 @@ import {
 
 import {
   getCorsHeaders,
-  isAllowedOrigin,
   isVersionSupported,
   isValidUUID,
   sanitizeToken,

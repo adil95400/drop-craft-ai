@@ -3,7 +3,7 @@
  * Handles CHECK_VERSION, GET_SETTINGS, LOG_*, CHECK_QUOTA actions
  */
 
-import { z } from 'https://esm.sh/zod@3.22.4'
+import { z } from "zod"
 import { GatewayContext, HandlerResult, CURRENT_EXTENSION_VERSION, MIN_EXTENSION_VERSION, GATEWAY_VERSION } from '../types.ts'
 import { compareVersions } from '../utils.ts'
 

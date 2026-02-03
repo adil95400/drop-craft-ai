@@ -3,7 +3,7 @@
  * Handles SYNC_STOCK and SYNC_PRICE actions
  */
 
-import { z } from 'https://esm.sh/zod@3.22.4'
+import { z } from "zod"
 import { GatewayContext, HandlerResult } from '../types.ts'
 
 // =============================================================================

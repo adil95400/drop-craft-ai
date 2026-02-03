@@ -3,7 +3,7 @@
  * Central type definitions for all handlers
  */
 
-import { z } from 'https://esm.sh/zod@3.22.4'
+import { z } from "zod"
 
 // =============================================================================
 // CONFIGURATION CONSTANTS
