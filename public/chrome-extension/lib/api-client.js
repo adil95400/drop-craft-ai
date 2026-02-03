@@ -6,7 +6,8 @@
 const ShopOptiAPI = {
   API_URL: 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1',
   GATEWAY_ENDPOINT: 'extension-gateway',
-  VERSION: '5.8.0',
+  VERSION: '5.8.1',
+  MIN_VERSION: '5.7.0',
   
   /**
    * Get auth headers from ShopOptiAuth

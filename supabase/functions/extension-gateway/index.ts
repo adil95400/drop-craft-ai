@@ -18,9 +18,9 @@ import { z } from 'https://esm.sh/zod@3.22.4'
 // CONFIGURATION
 // =============================================================================
 
-const GATEWAY_VERSION = '1.0.0'
+const GATEWAY_VERSION = '1.1.0'
 const MIN_EXTENSION_VERSION = '5.7.0'
-const CURRENT_EXTENSION_VERSION = '5.7.3'
+const CURRENT_EXTENSION_VERSION = '5.8.1'
 
 // Allowed origins (Chrome extension + web app)
 const ALLOWED_ORIGINS = [
