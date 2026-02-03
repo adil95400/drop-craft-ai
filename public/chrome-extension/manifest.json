@@ -1,20 +1,22 @@
 {
   "manifest_version": 3,
   "name": "ShopOpti+ - Dropshipping Pro",
-  "version": "5.8.0",
-  "description": "Extension professionnelle dropshipping - Import atomique, Gateway unifié, IA prédictive, Onboarding guidé, Stockage chiffré, Ads Spy, Auto-Order, 45+ plateformes",
+  "version": "5.8.1",
+  "description": "Extension dropshipping pro - Gateway unifié, IA optimisation, Import 1-clic, Analyse concurrents, 45+ plateformes. Permissions minimales.",
   
   "permissions": [
     "activeTab",
     "storage",
-    "scripting",
     "alarms",
     "notifications"
   ],
   
   "host_permissions": [
     "*://*.shopopti.io/*",
-    "*://*.supabase.co/*",
+    "*://*.supabase.co/*"
+  ],
+  
+  "optional_host_permissions": [
     "*://*.amazon.com/*",
     "*://*.amazon.fr/*",
     "*://*.amazon.de/*",
@@ -33,10 +35,7 @@
     "*://*.temu.com/*",
     "*://*.shein.com/*",
     "*://*.shein.fr/*",
-    "*://*.etsy.com/*"
-  ],
-  
-  "optional_host_permissions": [
+    "*://*.etsy.com/*",
     "*://*.walmart.com/*",
     "*://*.wish.com/*",
     "*://*.banggood.com/*",
