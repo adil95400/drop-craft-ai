@@ -4685,6 +4685,54 @@ export type Database = {
         }
         Relationships: []
       }
+      extension_events: {
+        Row: {
+          action: string
+          created_at: string | null
+          duration_ms: number | null
+          error_code: string | null
+          error_message: string | null
+          extension_id: string | null
+          extension_version: string | null
+          id: string
+          metadata: Json | null
+          platform: string | null
+          request_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          duration_ms?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          extension_id?: string | null
+          extension_version?: string | null
+          id?: string
+          metadata?: Json | null
+          platform?: string | null
+          request_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          duration_ms?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          extension_id?: string | null
+          extension_version?: string | null
+          id?: string
+          metadata?: Json | null
+          platform?: string | null
+          request_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       extension_heartbeats: {
         Row: {
           browser: string | null
@@ -4784,6 +4832,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      extension_requests: {
+        Row: {
+          action: string
+          created_at: string | null
+          extension_id: string
+          id: string
+          ip_address: string | null
+          request_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          extension_id: string
+          id?: string
+          ip_address?: string | null
+          request_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          extension_id?: string
+          id?: string
+          ip_address?: string | null
+          request_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       extension_scope_usage_log: {
         Row: {
@@ -5825,6 +5906,45 @@ export type Database = {
           revoked_at?: string | null
           updated_at?: string
           user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      idempotency_keys: {
+        Row: {
+          action: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          idempotency_key: string
+          response_data: Json | null
+          response_hash: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key: string
+          response_data?: Json | null
+          response_hash?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string
+          response_data?: Json | null
+          response_hash?: string | null
+          status?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -12596,6 +12716,7 @@ export type Database = {
         Returns: Json
       }
       cleanup_expired_audit_logs: { Args: never; Returns: number }
+      cleanup_extension_records: { Args: never; Returns: undefined }
       cleanup_old_translation_cache: {
         Args: { days_old?: number }
         Returns: number
