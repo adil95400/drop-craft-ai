@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -41,14 +41,26 @@ import {
   TrendingUp,
   Tag,
   Workflow,
-  Shield
+  Shield,
+  LayoutDashboard,
+  AlertCircle,
+  Layers,
+  Image,
+  FolderTree,
+  HeartPulse,
+  DollarSign,
+  Eye,
+  Puzzle,
+  FileText,
+  Clock
 } from 'lucide-react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
+import { NAV_GROUPS, MODULE_REGISTRY, type ModuleConfig, type NavGroupId } from '@/config/modules';
 
-// Map des icônes
+// Map des icônes - enrichie pour tous les modules
 const iconMap: Record<string, React.ComponentType<any>> = {
   'Home': Home,
   'BarChart3': BarChart3,
@@ -82,144 +94,85 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'Search': Search,
   'Shield': Shield,
   'Sparkles': Sparkles,
+  'LayoutDashboard': LayoutDashboard,
+  'Bell': Bell,
+  'AlertCircle': AlertCircle,
+  'Layers': Layers,
+  'Image': Image,
+  'FolderTree': FolderTree,
+  'HeartPulse': HeartPulse,
+  'DollarSign': DollarSign,
+  'Eye': Eye,
+  'Puzzle': Puzzle,
+  'FileText': FileText,
+  'Clock': Clock,
 };
-
-// Navigation groups simplifiée et toujours visible
-const mobileNavGroups = [
-  {
-    id: 'overview',
-    label: 'Vue d\'ensemble',
-    icon: 'Home',
-    items: [
-      { id: 'dashboard', name: 'Dashboard', route: '/dashboard', icon: 'BarChart3', minPlan: 'standard' },
-      { id: 'stores', name: 'Mes Boutiques', route: '/stores-channels', icon: 'Store', minPlan: 'standard' },
-    ]
-  },
-  {
-    id: 'products',
-    label: 'Produits',
-    icon: 'Package',
-    items: [
-      { id: 'products', name: 'Catalogue', route: '/products', icon: 'Package', minPlan: 'standard' },
-      { id: 'winners', name: 'Winning Products', route: '/products/winners', icon: 'Trophy', minPlan: 'standard' },
-      { id: 'audit', name: 'Audit Qualité', route: '/audit', icon: 'CheckCircle', minPlan: 'pro' },
-      { id: 'marketplace', name: 'Marketplace IA', route: '/products/global-marketplace', icon: 'Sparkles', minPlan: 'standard' },
-    ]
-  },
-  {
-    id: 'suppliers',
-    label: 'Fournisseurs',
-    icon: 'Truck',
-    items: [
-      { id: 'suppliers', name: 'Fournisseurs', route: '/suppliers', icon: 'Truck', minPlan: 'standard' },
-      { id: 'catalog', name: 'Catalogue', route: '/suppliers/catalog', icon: 'Package', minPlan: 'standard' },
-      { id: 'engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', minPlan: 'pro' },
-      { id: 'premium-suppliers', name: 'Premium', route: '/suppliers/premium', icon: 'Crown', minPlan: 'pro' },
-    ]
-  },
-  {
-    id: 'import',
-    label: 'Import & Flux',
-    icon: 'Upload',
-    items: [
-      { id: 'import', name: 'Hub Import', route: '/import', icon: 'Upload', minPlan: 'standard' },
-      { id: 'import-quick', name: 'Import Rapide', route: '/import/quick', icon: 'Zap', minPlan: 'standard' },
-      { id: 'feeds', name: 'Feeds', route: '/feeds', icon: 'Rss', minPlan: 'pro' },
-    ]
-  },
-  {
-    id: 'orders',
-    label: 'Commandes',
-    icon: 'ShoppingCart',
-    items: [
-      { id: 'orders', name: 'Commandes', route: '/orders', icon: 'ShoppingCart', minPlan: 'standard' },
-      { id: 'fulfillment', name: 'Fulfillment', route: '/orders/fulfillment', icon: 'Truck', minPlan: 'pro' },
-      { id: 'returns', name: 'Retours', route: '/orders/returns', icon: 'RotateCcw', minPlan: 'standard' },
-      { id: 'tracking', name: 'Tracking', route: '/orders/tracking', icon: 'MapPin', minPlan: 'standard' },
-    ]
-  },
-  {
-    id: 'customers',
-    label: 'Clients',
-    icon: 'Users',
-    items: [
-      { id: 'customers', name: 'Clients', route: '/customers', icon: 'Users', minPlan: 'standard' },
-      { id: 'reviews', name: 'Avis Clients', route: '/reviews', icon: 'Star', minPlan: 'standard' },
-    ]
-  },
-  {
-    id: 'marketing',
-    label: 'Marketing',
-    icon: 'Megaphone',
-    items: [
-      { id: 'marketing', name: 'Marketing', route: '/marketing', icon: 'Megaphone', minPlan: 'standard' },
-      { id: 'coupons', name: 'Coupons', route: '/coupons', icon: 'Tag', minPlan: 'standard' },
-    ]
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: 'BarChart3',
-    items: [
-      { id: 'analytics', name: 'Analytics', route: '/analytics', icon: 'BarChart3', minPlan: 'standard' },
-      { id: 'monitoring', name: 'Monitoring', route: '/monitoring', icon: 'TrendingUp', minPlan: 'pro' },
-    ]
-  },
-  {
-    id: 'ai',
-    label: 'Intelligence IA',
-    icon: 'Bot',
-    items: [
-      { id: 'ai-assistant', name: 'Assistant IA', route: '/ai-assistant', icon: 'Bot', minPlan: 'standard' },
-      { id: 'ai-studio', name: 'Studio IA', route: '/ai-studio', icon: 'Brain', minPlan: 'pro' },
-    ]
-  },
-  {
-    id: 'automation',
-    label: 'Automation',
-    icon: 'Zap',
-    items: [
-      { id: 'automation', name: 'Automations', route: '/automation', icon: 'Workflow', minPlan: 'standard' },
-      { id: 'stock', name: 'Stock', route: '/stock', icon: 'Boxes', minPlan: 'standard' },
-    ]
-  },
-  {
-    id: 'settings',
-    label: 'Paramètres',
-    icon: 'Settings',
-    items: [
-      { id: 'settings', name: 'Paramètres', route: '/settings', icon: 'Settings', minPlan: 'standard' },
-      { id: 'integrations', name: 'Intégrations', route: '/integrations', icon: 'Plug', minPlan: 'standard' },
-      { id: 'extensions', name: 'Extensions', route: '/extensions', icon: 'Plug', minPlan: 'pro' },
-    ]
-  },
-  {
-    id: 'support',
-    label: 'Support',
-    icon: 'LifeBuoy',
-    items: [
-      { id: 'support', name: 'Support', route: '/support', icon: 'LifeBuoy', minPlan: 'standard' },
-      { id: 'academy', name: 'Academy', route: '/academy', icon: 'GraduationCap', minPlan: 'standard' },
-    ]
-  }
-];
 
 interface MobileNavProps {
   notifications?: number;
+}
+
+/**
+ * Génère les groupes de navigation mobile à partir de NAV_GROUPS et MODULE_REGISTRY
+ * Architecture alignée avec les 6 pôles de navigation
+ */
+function useMobileNavGroups() {
+  return useMemo(() => {
+    // Grouper les modules par groupId
+    const modulesByGroup: Record<NavGroupId, ModuleConfig[]> = {
+      home: [],
+      catalog: [],
+      sourcing: [],
+      sales: [],
+      performance: [],
+      config: [],
+    };
+
+    // Remplir les groupes avec les modules
+    Object.values(MODULE_REGISTRY).forEach(module => {
+      if (module.enabled && modulesByGroup[module.groupId]) {
+        modulesByGroup[module.groupId].push(module);
+      }
+    });
+
+    // Trier les modules par order dans chaque groupe
+    Object.keys(modulesByGroup).forEach(groupId => {
+      modulesByGroup[groupId as NavGroupId].sort((a, b) => a.order - b.order);
+    });
+
+    // Construire la structure de navigation
+    return NAV_GROUPS.map(group => ({
+      id: group.id,
+      label: group.label,
+      icon: group.icon,
+      items: modulesByGroup[group.id].map(module => ({
+        id: module.id,
+        name: module.name,
+        route: module.route,
+        icon: module.icon,
+        minPlan: module.minPlan,
+        badge: module.badge,
+        comingSoon: module.comingSoon,
+      }))
+    })).filter(group => group.items.length > 0);
+  }, []);
 }
 
 export function MobileNav({ notifications = 0 }: MobileNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openGroups, setOpenGroups] = useState<string[]>(['overview', 'products']);
+  const [openGroups, setOpenGroups] = useState<string[]>(['home', 'catalog']);
   const { effectivePlan, hasPlan } = useUnifiedPlan();
+  
+  // Utiliser la configuration dynamique
+  const mobileNavGroups = useMobileNavGroups();
 
   const bottomNavItems = [
     { icon: Home, label: 'Accueil', path: '/dashboard', color: 'text-blue-500' },
-    { icon: Package, label: 'Produits', path: '/products', color: 'text-green-500' },
-    { icon: ShoppingCart, label: 'Commandes', path: '/orders', color: 'text-orange-500' },
-    { icon: BarChart3, label: 'Analytics', path: '/analytics', color: 'text-purple-500' }
+    { icon: Package, label: 'Catalogue', path: '/products', color: 'text-green-500' },
+    { icon: ShoppingCart, label: 'Ventes', path: '/orders', color: 'text-orange-500' },
+    { icon: BarChart3, label: 'Performance', path: '/analytics', color: 'text-purple-500' }
   ];
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
@@ -237,7 +190,8 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
     return true;
   };
 
-  const handleNavigate = (path: string, minPlan: string) => {
+  const handleNavigate = (path: string, minPlan: string, comingSoon?: boolean) => {
+    if (comingSoon) return; // Ne pas naviguer vers les modules coming soon
     if (canAccessPlan(minPlan)) {
       navigate(path);
       setSidebarOpen(false);
@@ -336,7 +290,7 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
                   </div>
                 </div>
 
-                {/* Navigation Groups */}
+                {/* Navigation Groups - Dynamique depuis NAV_GROUPS */}
                 <ScrollArea className="flex-1 py-2">
                   <div className="px-2 space-y-1">
                     {mobileNavGroups.map(group => {
@@ -373,19 +327,20 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
                                 const ItemIcon = iconMap[item.icon] || Settings;
                                 const active = isActive(item.route);
                                 const hasAccess = canAccessPlan(item.minPlan);
+                                const isComingSoon = item.comingSoon;
 
                                 return (
                                   <button
                                     key={item.id}
-                                    onClick={() => handleNavigate(item.route, item.minPlan)}
-                                    disabled={!hasAccess}
+                                    onClick={() => handleNavigate(item.route, item.minPlan, isComingSoon)}
+                                    disabled={!hasAccess || isComingSoon}
                                     className={cn(
                                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left",
                                       active 
                                         ? "bg-primary text-primary-foreground shadow-md" 
-                                        : hasAccess
+                                        : hasAccess && !isComingSoon
                                           ? "hover:bg-accent active:scale-[0.98]"
-                                          : "opacity-50"
+                                          : "opacity-40 cursor-not-allowed"
                                     )}
                                   >
                                     <ItemIcon className={cn(
@@ -400,7 +355,22 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
                                         {item.name}
                                       </span>
                                     </div>
-                                    {!hasAccess && (
+                                    
+                                    {/* Badges */}
+                                    {isComingSoon && (
+                                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-muted/50">
+                                        Bientôt
+                                      </Badge>
+                                    )}
+                                    {!isComingSoon && item.badge && (
+                                      <Badge 
+                                        variant={item.badge === 'new' ? 'default' : 'secondary'} 
+                                        className="text-[9px] px-1.5 py-0"
+                                      >
+                                        {item.badge.toUpperCase()}
+                                      </Badge>
+                                    )}
+                                    {!hasAccess && !isComingSoon && (
                                       <div className="flex items-center gap-1">
                                         <Lock className="h-3 w-3 text-muted-foreground" />
                                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
@@ -448,16 +418,16 @@ export function MobileHeader() {
     >
       <div className="flex items-center justify-between px-4 py-3 gap-3">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-white" />
+          <div className="w-9 h-9 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+            <ShoppingCart className="h-4 w-4 text-white" />
           </div>
           <div>
             <h1 className="font-bold text-base bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">ShopOpti+</h1>
-            <p className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase">Premium Platform</p>
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Premium</span>
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -469,11 +439,10 @@ export function MobileHeader() {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative h-9 w-9"
+            className="h-9 w-9 relative"
             onClick={() => navigate('/notifications')}
           >
             <Bell className="h-4 w-4" />
-            <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></div>
           </Button>
         </div>
       </div>
@@ -481,37 +450,4 @@ export function MobileHeader() {
   );
 }
 
-export function MobileQuickActions() {
-  const quickActions = [
-    { icon: Upload, label: 'Importer', description: 'Nouveaux produits', color: 'bg-blue-500', path: '/import' },
-    { icon: Bot, label: 'IA Insights', description: 'Recommandations', color: 'bg-purple-500', path: '/ai-assistant' },
-    { icon: BarChart3, label: 'Analytics', description: 'Temps réel', color: 'bg-green-500', path: '/analytics' },
-    { icon: Users, label: 'Clients', description: 'Gestion', color: 'bg-orange-500', path: '/customers' }
-  ];
-
-  return (
-    <div className="p-4">
-      <h3 className="font-semibold mb-3 text-sm text-muted-foreground">Actions rapides</h3>
-      <div className="grid grid-cols-2 gap-3">
-        {quickActions.map((action) => {
-          const Icon = action.icon;
-          return (
-            <Link key={action.path} to={action.path}>
-              <div className="border rounded-lg p-3 hover:shadow-md transition-shadow bg-card">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center`}>
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm">{action.label}</h4>
-                    <p className="text-xs text-muted-foreground truncate">{action.description}</p>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+export default MobileNav;

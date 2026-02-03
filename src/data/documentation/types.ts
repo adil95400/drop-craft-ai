@@ -146,70 +146,54 @@ export interface DocumentationCategory {
   order: number;
 }
 
-// Constantes pour les catégories
+// Constantes pour les catégories - Alignées avec les 6 pôles de navigation
 export const DOCUMENTATION_CATEGORIES: DocumentationCategory[] = [
   {
     id: 'core',
-    name: 'Tableau de Bord',
-    description: 'Centre de pilotage et vue d\'ensemble',
-    icon: 'LayoutDashboard',
-    modules: ['dashboard'],
+    name: 'Accueil',
+    description: 'Dashboard et vue d\'ensemble',
+    icon: 'Home',
+    modules: ['dashboard', 'notifications'],
     order: 1
   },
   {
     id: 'catalog',
-    name: 'Gestion du Catalogue',
-    description: 'Produits, import et qualité',
+    name: 'Catalogue',
+    description: 'Gestion des produits et exécution quotidienne',
     icon: 'Package',
-    modules: ['products', 'catalog', 'import'],
+    modules: ['products', 'toProcess', 'variants', 'catalogMedia', 'attributes', 'categoriesBrands', 'catalogHealth'],
     order: 2
   },
   {
     id: 'sourcing',
-    name: 'Sourcing & Fournisseurs',
-    description: 'Approvisionnement B2B et gestion fournisseurs',
+    name: 'Sourcing',
+    description: 'Import, fournisseurs et veille',
     icon: 'Truck',
-    modules: ['suppliers'],
+    modules: ['import', 'suppliers', 'research', 'extensions'],
     order: 3
   },
   {
     id: 'sales',
-    name: 'Ventes & Commandes',
-    description: 'Tarification, commandes et canaux',
+    name: 'Ventes',
+    description: 'Boutiques, commandes et clients',
     icon: 'ShoppingCart',
-    modules: ['pricing', 'orders', 'channels'],
+    modules: ['stores', 'orders', 'customers', 'crm', 'marketing'],
     order: 4
   },
   {
-    id: 'marketing',
-    name: 'Marketing & CRM',
-    description: 'Acquisition, fidélisation et communication',
-    icon: 'Megaphone',
-    modules: ['marketing'],
+    id: 'analytics',
+    name: 'Performance',
+    description: 'Analytics, audit et optimisation',
+    icon: 'BarChart3',
+    modules: ['analytics', 'quality', 'pricing'],
     order: 5
   },
   {
-    id: 'analytics',
-    name: 'Analytics & BI',
-    description: 'Analyses, rapports et intelligence business',
-    icon: 'BarChart3',
-    modules: ['analytics'],
-    order: 6
-  },
-  {
-    id: 'automation',
-    name: 'Automatisation & IA',
-    description: 'Workflows automatisés et intelligence artificielle',
-    icon: 'Zap',
-    modules: ['automation', 'ai'],
-    order: 7
-  },
-  {
     id: 'enterprise',
-    name: 'Enterprise & Configuration',
-    description: 'Intégrations, paramètres et administration',
-    icon: 'Building2',
-    modules: ['integrations', 'settings', 'enterprise'],
-    order: 8
+    name: 'Configuration',
+    description: 'Paramètres, IA et administration',
+    icon: 'Settings',
+    modules: ['settings', 'integrations', 'ai', 'academy', 'support'],
+    order: 6
   }
 ];
