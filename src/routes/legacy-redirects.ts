@@ -1,130 +1,78 @@
 /**
  * Mapping des anciennes routes vers les nouvelles
- * Utilisé pour maintenir la compatibilité avec les anciens liens
+ * Consolidé v7.0 - Réduction de 128 à ~40 redirects essentiels
  */
 export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
-  // Dashboard variants
+  // Dashboard - Toutes les variantes vers /dashboard
   '/dashboard-super': '/dashboard',
   '/dashboard-classic': '/dashboard',
-  '/dashboard-ultra-pro': '/dashboard',
   
-  // Products
+  // Products - Consolidation catalogue
   '/catalogue': '/products/catalogue',
-  '/catalogue-ultra-pro': '/products/catalogue',
-  '/catalogue-ultra-pro-advanced': '/products/catalogue',
   '/my-products': '/products',
   
-  // Import - All import routes redirect to products/import
+  // Import - Vers /products/import
   '/import': '/products/import',
   '/import/quick': '/products/import/quick',
   '/import/advanced': '/products/import/advanced',
-  '/import/manage': '/products/import/manage',
-  '/import/manage/products': '/products/import/manage/products',
-  '/import/manage/history': '/products/import/manage/history',
-  '/import-advanced': '/products/import/advanced',
-  '/import-ultra-pro': '/products/import/advanced',
   
   // Orders - Routes uniformisées
-  '/orders-ultra-pro': '/orders',
   '/orders-center': '/orders/center',
   '/dashboard/orders': '/orders',
-  '/dashboard/orders/center': '/orders/center',
-  '/dashboard/orders/returns': '/orders/returns',
-  '/dashboard/orders/shipping': '/orders/fulfillment',
-  
-  // Fulfillment - Redirige vers /orders/fulfillment
   '/fulfillment': '/orders/fulfillment',
-  '/fulfillment/carriers': '/orders/fulfillment/carriers',
-  '/fulfillment/rules': '/orders/fulfillment/rules',
-  '/fulfillment/dashboard': '/orders/fulfillment',
   
-  // Customers - Routes uniformisées
+  // Customers
   '/customers-page': '/customers',
   '/dashboard/customers': '/customers',
   
-  // Settings - Routes uniformisées
+  // Settings
   '/dashboard/settings': '/settings',
-  '/dashboard/settings/api': '/settings/api',
   
-  // Stores - Routes uniformisées
+  // Stores & Channels
   '/dashboard/stores': '/stores-channels',
-  '/dashboard/stores/connect': '/stores-channels/connect',
-  '/dashboard/stores/integrations': '/stores-channels/integrations',
   
   // Analytics
-  '/analytics-ultra-pro': '/analytics/advanced',
   '/advanced-analytics': '/analytics/advanced',
   
   // Automation
-  '/automation-ultra-pro': '/automation',
   '/ai-automation': '/automation/ai-hub',
   
-  // CRM
-  '/crm-ultra-pro': '/marketing/crm',
+  // Marketing (CRM, SEO fusionnés)
   '/crm-prospects': '/marketing/crm/leads',
-  
-  // SEO
   '/seo-ultra-pro': '/marketing/seo',
   
-  // Marketing
-  '/marketing-ultra-pro': '/marketing',
-  
-  // Inventory
-  '/inventory-ultra-pro': '/products/inventory-predictor',
+  // Inventory & Stock
   '/stock': '/automation/stock-sync',
   
-  // Tracking - Routes uniformisées
-  '/tracking-ultra-pro': '/orders/tracking',
+  // Tracking
   '/tracking': '/orders/tracking',
   
-  // Reviews
-  '/reviews-ultra-pro': '/marketing/crm',
+  // Reviews → Marketing CRM
   '/reviews': '/marketing/crm',
   
-  // Plugins
-  '/plugins-ultra-pro': '/integrations/extensions',
+  // Plugins & Extensions
   '/plugins': '/integrations/extensions',
-  
-  // Mobile
-  '/mobile-ultra-pro': '/integrations/extensions',
   '/mobile': '/integrations/extensions',
   
   // Admin & Enterprise
   '/admin-panel': '/admin/dashboard',
   '/supplier-admin': '/admin/suppliers',
   '/multi-tenant-management': '/admin/multi-tenant/management',
-  '/platform-management': '/admin/platform',
   
   // API
   '/api-docs': '/integrations/api/documentation',
-  '/api-developer': '/integrations/api/developer',
   
-  // Support
-  '/support-ultra-pro': '/integrations/support',
+  // Support & Academy
   '/academy': '/integrations/academy',
   
   // Marketplace
   '/marketplace-hub': '/integrations/marketplace/hub',
   '/marketplace-sync': '/marketplace-sync',
-  '/dashboard/marketplace-sync': '/marketplace-sync',
   '/feed-manager': '/integrations/marketplace/feed-manager',
   
-  // Extensions
-  '/extension-ultra-pro': '/integrations/extensions',
-  '/extensions-hub': '/integrations/extensions',
-  '/extension-api': '/integrations/extensions/api',
-  
-  // Observability
+  // Monitoring
   '/observability': '/admin/monitoring',
   '/monitoring': '/admin/monitoring',
-  '/performance-monitoring': '/admin/monitoring',
-  '/advanced-monitoring': '/admin/monitoring/advanced',
-  
-  // Security
-  '/security-ultra-pro': '/admin/security',
-  
-  // Integrations
-  '/integrations-ultra-pro': '/integrations',
 };
 
 /**
@@ -140,3 +88,8 @@ export function getLegacyRedirect(oldPath: string): string | null {
 export function isLegacyRoute(path: string): boolean {
   return path in LEGACY_ROUTE_REDIRECTS;
 }
+
+/**
+ * Nombre total de redirections legacy
+ */
+export const LEGACY_REDIRECT_COUNT = Object.keys(LEGACY_ROUTE_REDIRECTS).length;
