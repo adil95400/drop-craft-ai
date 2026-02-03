@@ -55,7 +55,7 @@ interface RecentActivity {
   severity: 'info' | 'warning' | 'error' | 'success';
 }
 
-export const SuperAdminDashboard = () => {
+const SuperAdminDashboard = () => {
   const { isAdmin, loading: authLoading } = useAdminRole();
   const [metrics, setMetrics] = useState<SystemMetrics>({
     totalUsers: 0,
@@ -669,3 +669,5 @@ export const SuperAdminDashboard = () => {
     </div>
   );
 };
+
+export default SuperAdminDashboard;
