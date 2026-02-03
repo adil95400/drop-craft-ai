@@ -91,6 +91,9 @@
       ],
       "js": [
         "lib/logger.js",
+        "lib/gateway-client.js",
+        "lib/action-logger.js",
+        "lib/deep-links.js",
         "lib/feature-flags.js",
         "lib/storage-manager.js",
         "lib/secure-dom-builder.js",

@@ -21,6 +21,7 @@ const ChromeExtensionPage = lazy(() => import('@/pages/extensions/ChromeExtensio
 const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 const ExtensionImportHistoryPage = lazy(() => import('@/pages/extensions/ExtensionImportHistoryPage'));
 const ExtensionReadinessPage = lazy(() => import('@/pages/extensions/ExtensionReadinessPage'));
+const ExtensionHealthPage = lazy(() => import('@/pages/ExtensionHealthPage'));
 
 export function ExtensionRoutes() {
   return (
@@ -41,6 +42,7 @@ export function ExtensionRoutes() {
       <Route path="api" element={<ExtensionAPIPage />} />
       <Route path="history" element={<ExtensionImportHistoryPage />} />
       <Route path="readiness" element={<ExtensionReadinessPage />} />
+      <Route path="health" element={<ExtensionHealthPage />} />
     </Routes>
   );
 }
