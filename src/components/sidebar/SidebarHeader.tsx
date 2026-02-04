@@ -5,7 +5,7 @@ import { SidebarHeader } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import logoSvg from "@/assets/logo.svg";
+import logoPng from "@/assets/logo-shopopti.png";
 
 interface SidebarHeaderContentProps {
   collapsed: boolean;
@@ -36,7 +36,7 @@ export const SidebarHeaderContent: React.FC<SidebarHeaderContentProps> = ({
         {/* Logo et titre */}
         <div className="flex items-center gap-3">
           <div className="rounded-lg overflow-hidden shadow-lg shadow-primary/25">
-            <img src={logoSvg} alt="Shopopti+ Logo" className="h-9 w-9 object-contain" />
+            <img src={logoPng} alt="Shopopti+ Logo" className="h-9 w-9 object-contain" />
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
