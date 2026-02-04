@@ -6134,6 +6134,81 @@ export type Database = {
         }
         Relationships: []
       }
+      import_pipeline_logs: {
+        Row: {
+          completed_at: string | null
+          completeness_score: number | null
+          created_at: string
+          duration_ms: number | null
+          error_code: string | null
+          error_message: string | null
+          extension_version: string | null
+          extraction_method: string | null
+          fallback_success: boolean | null
+          fallback_triggered: boolean | null
+          id: string
+          job_id: string | null
+          metadata: Json | null
+          pipeline_used: string
+          platform: string
+          product_id: string | null
+          request_id: string
+          routing_reason: string | null
+          source_url: string
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completeness_score?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          extension_version?: string | null
+          extraction_method?: string | null
+          fallback_success?: boolean | null
+          fallback_triggered?: boolean | null
+          id?: string
+          job_id?: string | null
+          metadata?: Json | null
+          pipeline_used: string
+          platform: string
+          product_id?: string | null
+          request_id: string
+          routing_reason?: string | null
+          source_url: string
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completeness_score?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          extension_version?: string | null
+          extraction_method?: string | null
+          fallback_success?: boolean | null
+          fallback_triggered?: boolean | null
+          id?: string
+          job_id?: string | null
+          metadata?: Json | null
+          pipeline_used?: string
+          platform?: string
+          product_id?: string | null
+          request_id?: string
+          routing_reason?: string | null
+          source_url?: string
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       imported_products: {
         Row: {
           brand: string | null
@@ -13023,6 +13098,21 @@ export type Database = {
         Args: { days_old?: number }
         Returns: number
       }
+      complete_import_pipeline_log: {
+        Args: {
+          p_completeness_score?: number
+          p_error_code?: string
+          p_error_message?: string
+          p_extraction_method?: string
+          p_fallback_success?: boolean
+          p_fallback_triggered?: boolean
+          p_job_id?: string
+          p_log_id: string
+          p_product_id?: string
+          p_status: string
+        }
+        Returns: undefined
+      }
       convert_price: {
         Args: {
           p_amount: number
@@ -13152,6 +13242,19 @@ export type Database = {
       }
       is_admin_secure: { Args: never; Returns: boolean }
       is_token_revoked: { Args: { token_id?: string }; Returns: boolean }
+      log_import_pipeline: {
+        Args: {
+          p_metadata?: Json
+          p_pipeline_used: string
+          p_platform: string
+          p_request_id: string
+          p_routing_reason: string
+          p_source_url: string
+          p_status?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       log_scope_usage: {
         Args: {
           p_action: string
@@ -13167,6 +13270,14 @@ export type Database = {
       }
       refresh_extension_token: {
         Args: { p_refresh_token: string }
+        Returns: Json
+      }
+      should_use_new_import_pipeline: {
+        Args: {
+          p_feature_flag_key?: string
+          p_platform: string
+          p_user_id: string
+        }
         Returns: Json
       }
       token_has_scope: {

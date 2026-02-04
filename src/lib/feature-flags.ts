@@ -29,6 +29,9 @@ export const FLAG_KEYS = {
   PRODUCTS_IMPORT_AI: 'products.import.ai',
   PRODUCTS_IMPORT_SCHEDULED: 'products.import.scheduled',
   
+  // Import Pipeline (A/B Test)
+  IMPORT_PIPELINE_V3: 'import.pipeline.v3',
+  
   // Analytics
   ANALYTICS_BASIC: 'analytics.basic',
   ANALYTICS_ADVANCED: 'analytics.advanced',
