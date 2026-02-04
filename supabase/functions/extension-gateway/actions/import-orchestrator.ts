@@ -14,6 +14,12 @@
 
 import { z } from "zod"
 import { GatewayContext, HandlerResult } from '../types.ts'
+import { 
+  HeadlessScraper, 
+  createHeadlessScraper, 
+  ExtractedProduct as ScraperProduct,
+  ExtractedField 
+} from '../lib/headless-scraper.ts'
 
 // =============================================================================
 // SCHEMAS
@@ -180,7 +186,7 @@ async function extractViaAPI(
 }
 
 // =============================================================================
-// STRATEGY 2: HEADLESS (Firecrawl with actions)
+// STRATEGY 2: HEADLESS (HeadlessScraper Module)
 // =============================================================================
 
 async function extractViaHeadless(
@@ -189,63 +195,256 @@ async function extractViaHeadless(
   options: ImportOptions,
   ctx: GatewayContext
 ): Promise<ExtractionResult> {
-  console.log(`[Orchestrator] Trying Headless extraction for ${platform}`)
+  console.log(`[Orchestrator] Trying HeadlessScraper extraction for ${platform}`)
   
-  const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
-  if (!firecrawlKey) {
-    console.log('[Orchestrator] Firecrawl API key not configured')
-    return { success: false, fields: {}, source: 'headless', error: 'Firecrawl not configured' }
-  }
-
+  const scraper = createHeadlessScraper(ctx)
+  
   try {
-    // Platform-specific scraping actions
-    const actions = getPlatformActions(platform, options)
-    
-    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url,
-        formats: ['markdown', 'html', 'extract'],
-        extract: {
-          schema: getExtractionSchema(platform, options),
-        },
-        actions,
-        timeout: 45000,
-        waitFor: 3000,
-      }),
+    // Step 1: Render the page
+    const renderResult = await scraper.render(url, {
+      scrollToBottom: true,
+      waitMs: platform === 'aliexpress' || platform === 'temu' ? 5000 : 3000,
+      extractFormats: ['html', 'markdown', 'links'],
     })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`[Orchestrator] Firecrawl error: ${response.status} - ${errorText}`)
-      return { success: false, fields: {}, source: 'headless', error: `Firecrawl ${response.status}` }
-    }
-
-    const result = await response.json()
     
-    if (!result.success) {
-      console.log('[Orchestrator] Firecrawl returned success: false')
-      return { success: false, fields: {}, source: 'headless', error: 'Extraction failed' }
+    if (!renderResult.success) {
+      console.log(`[Orchestrator] Render failed: ${renderResult.error}`)
+      return { 
+        success: false, 
+        fields: {}, 
+        source: 'headless', 
+        error: renderResult.error || 'Render failed' 
+      }
     }
-
-    const extracted = result.data?.extract || {}
-    const fields = normalizeExtractedFields(extracted, 'headless')
     
-    // Check if we got critical fields
-    if (!fields.title?.value || !fields.price?.value) {
-      console.log('[Orchestrator] Headless missing critical fields')
-      return { success: false, fields, source: 'headless', rawData: extracted, error: 'Missing critical fields' }
+    console.log(`[Orchestrator] Page rendered in ${renderResult.renderTimeMs}ms`)
+    
+    // Step 2: Extract all fields using HeadlessScraper
+    const extracted = await scraper.extractAll()
+    
+    // Step 3: Convert HeadlessScraper output to orchestrator format
+    const fields = convertScraperToFields(extracted, options)
+    
+    // Step 4: Check critical fields
+    const hasCritical = fields.title?.value && fields.price?.value && fields.images?.value?.length
+    
+    if (!hasCritical) {
+      console.log('[Orchestrator] HeadlessScraper missing critical fields')
+      return { 
+        success: false, 
+        fields, 
+        source: 'headless', 
+        rawData: extracted,
+        error: 'Missing critical fields (title, price, or images)' 
+      }
     }
-
-    return { success: true, fields, source: 'headless', rawData: extracted }
+    
+    // Log scraper stats
+    const stats = scraper.getStats()
+    console.log(`[Orchestrator] HeadlessScraper completed: ${stats.pageCount} pages, platform: ${stats.platform}`)
+    
+    return { 
+      success: true, 
+      fields, 
+      source: 'headless', 
+      rawData: extracted 
+    }
+    
   } catch (error) {
-    console.error('[Orchestrator] Headless error:', error)
-    return { success: false, fields: {}, source: 'headless', error: error.message }
+    console.error('[Orchestrator] HeadlessScraper error:', error)
+    return { 
+      success: false, 
+      fields: {}, 
+      source: 'headless', 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }
   }
+}
+
+/**
+ * Convert HeadlessScraper output to orchestrator ExtractedFields format
+ */
+function convertScraperToFields(
+  scraperOutput: ScraperProduct, 
+  options: ImportOptions
+): ExtractedFields {
+  const fields: ExtractedFields = {}
+  
+  // Map scraper source to orchestrator source
+  const mapSource = (src: string): ExtractionSource => {
+    if (src === 'json-ld' || src === 'structured') return 'html'
+    if (src === 'opengraph' || src === 'meta') return 'html'
+    if (src === 'dom') return 'headless'
+    return 'fallback'
+  }
+  
+  // Title
+  if (scraperOutput.title.value) {
+    fields.title = {
+      value: scraperOutput.title.value,
+      source: mapSource(scraperOutput.title.source),
+      confidence: scraperOutput.title.confidence
+    }
+  }
+  
+  // Price
+  if (scraperOutput.price.value !== null) {
+    fields.price = {
+      value: scraperOutput.price.value,
+      source: mapSource(scraperOutput.price.source),
+      confidence: scraperOutput.price.confidence
+    }
+  }
+  
+  // Original price
+  if (scraperOutput.originalPrice.value !== null) {
+    fields.original_price = {
+      value: scraperOutput.originalPrice.value,
+      source: mapSource(scraperOutput.originalPrice.source),
+      confidence: scraperOutput.originalPrice.confidence
+    }
+  }
+  
+  // Currency
+  if (scraperOutput.currency.value) {
+    fields.currency = {
+      value: scraperOutput.currency.value,
+      source: mapSource(scraperOutput.currency.source),
+      confidence: scraperOutput.currency.confidence
+    }
+  }
+  
+  // Images (high-res)
+  if (scraperOutput.images.value && scraperOutput.images.value.length > 0) {
+    fields.images = {
+      value: scraperOutput.images.value,
+      source: mapSource(scraperOutput.images.source),
+      confidence: scraperOutput.images.confidence
+    }
+  }
+  
+  // Description (cleaned)
+  if (scraperOutput.description.value) {
+    fields.description = {
+      value: scraperOutput.description.value,
+      source: mapSource(scraperOutput.description.source),
+      confidence: scraperOutput.description.confidence
+    }
+  }
+  
+  // Variants (if requested)
+  if (options.include_variants && scraperOutput.variants.value && scraperOutput.variants.value.length > 0) {
+    fields.variants = {
+      value: scraperOutput.variants.value.map(v => ({
+        id: v.id,
+        title: v.name,
+        price: v.price || 0,
+        sku: v.sku,
+        image_url: v.imageUrl,
+        available: v.available,
+        options: v.options
+      })),
+      source: mapSource(scraperOutput.variants.source),
+      confidence: scraperOutput.variants.confidence
+    }
+  }
+  
+  // Video (if requested)
+  if (options.include_video && scraperOutput.videoUrls.value && scraperOutput.videoUrls.value.length > 0) {
+    fields.video_url = {
+      value: scraperOutput.videoUrls.value[0],
+      source: mapSource(scraperOutput.videoUrls.source),
+      confidence: scraperOutput.videoUrls.confidence
+    }
+  }
+  
+  // Brand
+  if (scraperOutput.brand.value) {
+    fields.brand = {
+      value: scraperOutput.brand.value,
+      source: mapSource(scraperOutput.brand.source),
+      confidence: scraperOutput.brand.confidence
+    }
+  }
+  
+  // SKU
+  if (scraperOutput.sku.value) {
+    fields.sku = {
+      value: scraperOutput.sku.value,
+      source: mapSource(scraperOutput.sku.source),
+      confidence: scraperOutput.sku.confidence
+    }
+  }
+  
+  // Rating
+  if (scraperOutput.rating.value !== null) {
+    fields.rating = {
+      value: scraperOutput.rating.value,
+      source: mapSource(scraperOutput.rating.source),
+      confidence: scraperOutput.rating.confidence
+    }
+  }
+  
+  // Review count
+  if (scraperOutput.reviewCount.value !== null) {
+    fields.reviews_count = {
+      value: scraperOutput.reviewCount.value,
+      source: mapSource(scraperOutput.reviewCount.source),
+      confidence: scraperOutput.reviewCount.confidence
+    }
+  }
+  
+  // Seller
+  if (scraperOutput.seller.value) {
+    fields.seller_name = {
+      value: scraperOutput.seller.value,
+      source: mapSource(scraperOutput.seller.source),
+      confidence: scraperOutput.seller.confidence
+    }
+  }
+  
+  // Category
+  if (scraperOutput.category.value) {
+    fields.category = {
+      value: scraperOutput.category.value,
+      source: mapSource(scraperOutput.category.source),
+      confidence: scraperOutput.category.confidence
+    }
+  }
+  
+  // Availability
+  if (scraperOutput.availability.value) {
+    const statusMap: Record<string, 'in_stock' | 'out_of_stock' | 'unknown'> = {
+      'in_stock': 'in_stock',
+      'out_of_stock': 'out_of_stock',
+      'unknown': 'unknown'
+    }
+    fields.stock_status = {
+      value: statusMap[scraperOutput.availability.value] || 'unknown',
+      source: mapSource(scraperOutput.availability.source),
+      confidence: scraperOutput.availability.confidence
+    }
+  }
+  
+  // Reviews data (if extracted)
+  if (scraperOutput.reviews.value) {
+    if (scraperOutput.reviews.value.averageRating > 0) {
+      fields.rating = {
+        value: scraperOutput.reviews.value.averageRating,
+        source: mapSource(scraperOutput.reviews.source),
+        confidence: scraperOutput.reviews.confidence
+      }
+    }
+    if (scraperOutput.reviews.value.totalCount > 0) {
+      fields.reviews_count = {
+        value: scraperOutput.reviews.value.totalCount,
+        source: mapSource(scraperOutput.reviews.source),
+        confidence: scraperOutput.reviews.confidence
+      }
+    }
+  }
+  
+  return fields
 }
 
 function getPlatformActions(platform: string, options: ImportOptions): any[] {
