@@ -40,6 +40,7 @@ import { handleSyncAction } from './actions/sync.ts'
 import { handleUtilityAction } from './actions/utility.ts'
 import { handleScrapeAction } from './actions/scrape.ts'
 import { handleAnalyzeAction } from './actions/analyze.ts'
+import { handleProgressiveImport, handleJobStatus } from './actions/import-progressive.ts'
 
 // =============================================================================
 // CONFIGURATION
@@ -316,6 +317,15 @@ Deno.serve(async (req: Request) => {
         break
       case 'analyze':
         result = await handleAnalyzeAction(action, payload, ctx)
+        break
+      case 'progressive':
+        if (action === 'IMPORT_PROGRESSIVE') {
+          result = await handleProgressiveImport(payload, ctx)
+        } else if (action === 'JOB_STATUS') {
+          result = await handleJobStatus(payload, ctx)
+        } else {
+          result = { success: false, error: { code: 'UNKNOWN_PROGRESSIVE_ACTION', message: 'Unknown progressive action' } }
+        }
         break
       default:
         result = { success: false, error: { code: 'UNKNOWN_HANDLER', message: 'Handler not found' } }
