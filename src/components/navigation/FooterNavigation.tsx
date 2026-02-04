@@ -10,6 +10,7 @@ import {
   MapPin,
   ArrowRight 
 } from 'lucide-react';
+import logoFull from '@/assets/logo-shopopti-full.png';
 
 const FooterNavigation = () => {
   const currentYear = new Date().getFullYear();
@@ -81,12 +82,14 @@ const FooterNavigation = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Company Info */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">S</span>
-              </div>
-              <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
-            </div>
+            <Link to="/" className="inline-block">
+              <img 
+                src={logoFull} 
+                alt="ShopOpti" 
+                className="h-12 w-auto object-contain"
+                loading="lazy"
+              />
+            </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
               La plateforme e-commerce intelligente qui révolutionne le dropshipping. 
               Automatisez vos processus et développez votre business avec l'IA.
