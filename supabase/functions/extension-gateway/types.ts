@@ -147,7 +147,9 @@ export const ACTION_CONFIG: Record<string, ActionConfig> = {
   'LOG_ACTION': { rateLimit: { maxRequests: 200, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   'CHECK_QUOTA': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   'GET_IMPORT_JOB': { rateLimit: { maxRequests: 100, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
+  'GET_PRODUCT_IMPORT_JOB': { rateLimit: { maxRequests: 100, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   'GET_PIPELINE_STATUS': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
+  'HEALTHCHECK': { rateLimit: { maxRequests: 60, windowMinutes: 60 }, requiresToken: false, handler: 'utility' },
   
   // Analyze actions
   'ANALYZE_PRODUCT': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'analyze:product', handler: 'analyze' },

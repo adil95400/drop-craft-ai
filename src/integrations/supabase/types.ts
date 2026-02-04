@@ -4924,6 +4924,7 @@ export type Database = {
         Row: {
           action: string
           created_at: string | null
+          expires_at: string | null
           extension_id: string
           id: string
           ip_address: string | null
@@ -4934,6 +4935,7 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string | null
+          expires_at?: string | null
           extension_id: string
           id?: string
           ip_address?: string | null
@@ -4944,6 +4946,7 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string | null
+          expires_at?: string | null
           extension_id?: string
           id?: string
           ip_address?: string | null
@@ -6219,9 +6222,13 @@ export type Database = {
           currency: string | null
           description: string | null
           description_html: string | null
+          description_text: string | null
           extraction_metadata: Json | null
+          field_confidence: Json | null
+          field_sources: Json | null
           id: string
           image_urls: string[] | null
+          images: Json | null
           import_job_id: string | null
           import_notes: string | null
           job_id: string | null
@@ -6243,6 +6250,7 @@ export type Database = {
           supplier_name: string | null
           supplier_product_id: string | null
           sync_status: string | null
+          title: string | null
           updated_at: string | null
           user_id: string
           variants: Json | null
@@ -6259,9 +6267,13 @@ export type Database = {
           currency?: string | null
           description?: string | null
           description_html?: string | null
+          description_text?: string | null
           extraction_metadata?: Json | null
+          field_confidence?: Json | null
+          field_sources?: Json | null
           id?: string
           image_urls?: string[] | null
+          images?: Json | null
           import_job_id?: string | null
           import_notes?: string | null
           job_id?: string | null
@@ -6283,6 +6295,7 @@ export type Database = {
           supplier_name?: string | null
           supplier_product_id?: string | null
           sync_status?: string | null
+          title?: string | null
           updated_at?: string | null
           user_id: string
           variants?: Json | null
@@ -6299,9 +6312,13 @@ export type Database = {
           currency?: string | null
           description?: string | null
           description_html?: string | null
+          description_text?: string | null
           extraction_metadata?: Json | null
+          field_confidence?: Json | null
+          field_sources?: Json | null
           id?: string
           image_urls?: string[] | null
+          images?: Json | null
           import_job_id?: string | null
           import_notes?: string | null
           job_id?: string | null
@@ -6323,6 +6340,7 @@ export type Database = {
           supplier_name?: string | null
           supplier_product_id?: string | null
           sync_status?: string | null
+          title?: string | null
           updated_at?: string | null
           user_id?: string
           variants?: Json | null
@@ -13093,6 +13111,13 @@ export type Database = {
         Returns: Json
       }
       cleanup_expired_audit_logs: { Args: never; Returns: number }
+      cleanup_expired_import_records: {
+        Args: never
+        Returns: {
+          deleted_keys: number
+          deleted_requests: number
+        }[]
+      }
       cleanup_extension_records: { Args: never; Returns: undefined }
       cleanup_old_translation_cache: {
         Args: { days_old?: number }
@@ -13170,6 +13195,13 @@ export type Database = {
       get_exchange_rate: {
         Args: { p_base: string; p_target: string }
         Returns: number
+      }
+      get_import_job_with_product: {
+        Args: { p_job_id: string; p_user_id: string }
+        Returns: {
+          job_data: Json
+          product_data: Json
+        }[]
       }
       get_scope_rate_limit: { Args: { p_scope_name: string }; Returns: number }
       get_translation_usage_summary: {
