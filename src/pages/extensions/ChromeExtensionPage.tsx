@@ -32,6 +32,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
+// Chrome Web Store URL - Replace [EXTENSION_ID] with actual ID after publication
+const CHROME_STORE_URL = 'https://chrome.google.com/webstore/detail/shopopti-dropshipping-pro/pending-publication';
+const EXTENSION_VERSION = '5.8.1';
+const IS_PUBLISHED = false; // Set to true after Chrome Web Store approval
+
 interface ExtensionSettings {
   autoImport: boolean;
   importReviews: boolean;
@@ -368,20 +373,31 @@ export default function ChromeExtensionPage() {
             
             <div className="flex flex-wrap gap-3 pt-2">
               <ExtensionTokenGenerator />
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-cyan-500/50"
-                onClick={handleDownloadExtension}
-                disabled={isDownloading}
-              >
-                {isDownloading ? (
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                ) : (
-                  <Download className="h-5 w-5 mr-2" />
-                )}
-                {isDownloading ? 'Téléchargement...' : 'Télécharger l\'extension'}
-              </Button>
+              {IS_PUBLISHED ? (
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                  onClick={() => window.open(CHROME_STORE_URL, '_blank')}
+                >
+                  <Chrome className="h-5 w-5 mr-2" />
+                  Installer depuis Chrome Web Store
+                </Button>
+              ) : (
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="border-cyan-500/50"
+                  onClick={handleDownloadExtension}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? (
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-5 w-5 mr-2" />
+                  )}
+                  {isDownloading ? 'Téléchargement...' : 'Télécharger l\'extension'}
+                </Button>
+              )}
               <Button variant="ghost" size="lg" onClick={() => navigate('/extensions/tutorials')}>
                 <Play className="h-5 w-5 mr-2" />
                 Tutoriels
