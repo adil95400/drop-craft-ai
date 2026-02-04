@@ -13,7 +13,7 @@
  * - X-Idempotency-Key: For write operation deduplication
  */
 
-(function() {
+;(function() {
   'use strict';
 
   if (window.__shopoptiBackendImportClientLoaded) return;

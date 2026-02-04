@@ -4,7 +4,7 @@
  * Single design, single behavior, single position strategy
  */
 
-(function() {
+;(function() {
   'use strict';
 
   // ==================== BUTTON DESIGN SYSTEM ====================

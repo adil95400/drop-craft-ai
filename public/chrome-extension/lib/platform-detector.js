@@ -4,7 +4,7 @@
  * Handles edge cases like Shopify stores, regional domains, SPAs
  */
 
-(function() {
+;(function() {
   'use strict';
 
   if (window.__shopoptiPlatformDetectorLoaded) return;

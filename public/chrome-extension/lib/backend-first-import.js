@@ -9,7 +9,7 @@
  *   window.BackendFirstImport.import(url, options);
  */
 
-(function() {
+;(function() {
   'use strict';
 
   if (window.__shopoptiBackendFirstImportLoaded) return;
