@@ -330,6 +330,232 @@ async function handleGetImportJob(
 }
 
 // =============================================================================
+// GET PRODUCT IMPORT JOB (new tables)
+// =============================================================================
+
+const GetProductImportJobPayload = z.object({
+  job_id: z.string().uuid(),
+})
+
+async function handleGetProductImportJob(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  const parsed = GetProductImportJobPayload.safeParse(payload)
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'INVALID_PAYLOAD', message: 'Job ID required' }
+    }
+  }
+
+  try {
+    // Get job from product_import_jobs table
+    const { data: job, error: jobError } = await ctx.supabase
+      .from('product_import_jobs')
+      .select('*')
+      .eq('id', parsed.data.job_id)
+      .eq('user_id', ctx.userId)
+      .single()
+
+    if (jobError || !job) {
+      return {
+        success: false,
+        error: { code: 'JOB_NOT_FOUND', message: 'Import job not found' }
+      }
+    }
+
+    // Get associated product if ready
+    let product = null
+    if (job.status === 'ready' || job.status === 'error_incomplete') {
+      const { data: productData } = await ctx.supabase
+        .from('imported_products')
+        .select('*')
+        .eq('job_id', job.id)
+        .maybeSingle()
+      
+      product = productData
+    }
+
+    // Calculate progress percentage
+    const statusProgress: Record<string, number> = {
+      'received': 10,
+      'scraping': 40,
+      'enriching': 70,
+      'ready': 100,
+      'error_incomplete': 100,
+      'error': 100,
+    }
+
+    return {
+      success: true,
+      data: {
+        job: {
+          id: job.id,
+          status: job.status,
+          source_url: job.source_url,
+          platform: job.platform,
+          missing_fields: job.missing_fields,
+          field_sources: job.field_sources,
+          error_code: job.error_code,
+          error_message: job.error_message,
+          progress: statusProgress[job.status] || 0,
+          created_at: job.created_at,
+          started_at: job.started_at,
+          completed_at: job.completed_at,
+        },
+        product: product ? {
+          id: product.id,
+          title: product.title || product.name,
+          price: product.price,
+          currency: product.currency,
+          images: product.images || product.image_urls || [],
+          completeness_score: product.completeness_score,
+          status: product.status,
+          field_sources: product.field_sources,
+        } : null,
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: { code: 'HANDLER_ERROR', message: error.message }
+    }
+  }
+}
+
+// =============================================================================
+// HEALTHCHECK
+// =============================================================================
+
+async function handleHealthcheck(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  const checks: Record<string, { status: 'ok' | 'error'; latencyMs?: number; error?: string }> = {}
+  
+  // Check database connectivity
+  const dbStart = Date.now()
+  try {
+    await ctx.supabase.from('extension_requests').select('id', { count: 'exact', head: true }).limit(1)
+    checks.database = { status: 'ok', latencyMs: Date.now() - dbStart }
+  } catch (error) {
+    checks.database = { status: 'error', error: error.message, latencyMs: Date.now() - dbStart }
+  }
+
+  // Check Firecrawl API (if configured)
+  const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
+  if (firecrawlKey) {
+    const fcStart = Date.now()
+    try {
+      const response = await fetch('https://api.firecrawl.dev/v1/health', {
+        headers: { 'Authorization': `Bearer ${firecrawlKey}` },
+        signal: AbortSignal.timeout(5000),
+      })
+      checks.firecrawl = { 
+        status: response.ok ? 'ok' : 'error', 
+        latencyMs: Date.now() - fcStart,
+        error: response.ok ? undefined : `HTTP ${response.status}`,
+      }
+    } catch (error) {
+      checks.firecrawl = { status: 'error', error: error.message, latencyMs: Date.now() - fcStart }
+    }
+  } else {
+    checks.firecrawl = { status: 'ok', latencyMs: 0 } // Skip if not configured
+  }
+
+  // Overall status
+  const allOk = Object.values(checks).every(c => c.status === 'ok')
+
+  return {
+    success: true,
+    data: {
+      status: allOk ? 'healthy' : 'degraded',
+      version: GATEWAY_VERSION,
+      timestamp: new Date().toISOString(),
+      checks,
+      uptime: {
+        gatewayVersion: GATEWAY_VERSION,
+        minExtensionVersion: MIN_EXTENSION_VERSION,
+        currentExtensionVersion: CURRENT_EXTENSION_VERSION,
+      }
+    }
+  }
+}
+
+// =============================================================================
+// GET PIPELINE STATUS (for monitoring)
+// =============================================================================
+
+async function handleGetPipelineStatus(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  try {
+    // Get recent pipeline logs
+    const { data: recentLogs, error } = await ctx.supabase
+      .from('import_pipeline_logs')
+      .select('*')
+      .eq('user_id', ctx.userId)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (error) throw error
+
+    // Calculate stats
+    const stats = {
+      total: recentLogs?.length || 0,
+      v3_orchestrator: 0,
+      legacy: 0,
+      success: 0,
+      error: 0,
+      avg_duration_ms: 0,
+      avg_completeness: 0,
+    }
+
+    let totalDuration = 0
+    let totalCompleteness = 0
+
+    for (const log of recentLogs || []) {
+      if (log.pipeline_used === 'v3_orchestrator') stats.v3_orchestrator++
+      else stats.legacy++
+
+      if (log.status === 'success') stats.success++
+      else if (log.status === 'error') stats.error++
+
+      if (log.duration_ms) totalDuration += log.duration_ms
+      if (log.completeness_score) totalCompleteness += log.completeness_score
+    }
+
+    if (stats.total > 0) {
+      stats.avg_duration_ms = Math.round(totalDuration / stats.total)
+      stats.avg_completeness = Math.round(totalCompleteness / stats.total)
+    }
+
+    return {
+      success: true,
+      data: {
+        stats,
+        recent_logs: recentLogs?.slice(0, 10).map(l => ({
+          id: l.id,
+          platform: l.platform,
+          pipeline: l.pipeline_used,
+          status: l.status,
+          duration_ms: l.duration_ms,
+          completeness: l.completeness_score,
+          created_at: l.created_at,
+        })),
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: { code: 'HANDLER_ERROR', message: error.message }
+    }
+  }
+}
+
+// =============================================================================
 // ROUTER
 // =============================================================================
 
@@ -351,6 +577,12 @@ export async function handleUtilityAction(
       return handleCheckQuota(payload, ctx)
     case 'GET_IMPORT_JOB':
       return handleGetImportJob(payload, ctx)
+    case 'GET_PRODUCT_IMPORT_JOB':
+      return handleGetProductImportJob(payload, ctx)
+    case 'HEALTHCHECK':
+      return handleHealthcheck(payload, ctx)
+    case 'GET_PIPELINE_STATUS':
+      return handleGetPipelineStatus(payload, ctx)
     default:
       return {
         success: false,
