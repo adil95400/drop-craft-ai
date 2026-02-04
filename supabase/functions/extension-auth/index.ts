@@ -56,15 +56,55 @@ const ALLOWED_ACTIONS = new Set([
   'heartbeat',
 ])
 
-// Allowed permissions for extension tokens
+// Granular scopes for extension tokens (P1.3 compliant)
 const ALLOWED_PERMISSIONS = new Set([
-  'import',
-  'sync',
-  'logs',
-  'bulk',
-  'ai_optimize',
-  'stock_monitor',
+  // Products
+  'products:read',
+  'products:write',
+  'products:import',
+  'products:bulk',
+  'products:delete',
+  // Sync
+  'sync:read',
+  'sync:trigger',
+  'sync:auto',
+  // Analytics
+  'analytics:read',
+  'analytics:export',
+  // Settings
+  'settings:read',
+  'settings:write',
+  // AI
+  'ai:generate',
+  'ai:optimize',
+  // Orders
+  'orders:read',
+  'orders:write',
+  'orders:fulfill',
+  // Admin
+  'admin:users',
+  'admin:system',
 ])
+
+// Default permissions for free plan users
+const DEFAULT_PERMISSIONS = [
+  'products:read',
+  'products:import',
+  'sync:read',
+  'settings:read',
+  'analytics:read',
+]
+
+// Legacy scope mapping for backward compatibility
+const LEGACY_SCOPE_MAP: Record<string, string[]> = {
+  'import': ['products:read', 'products:import', 'products:write'],
+  'sync': ['sync:read', 'sync:trigger'],
+  'logs': ['analytics:read'],
+  'bulk': ['products:bulk'],
+  'ai_optimize': ['ai:generate', 'ai:optimize'],
+  'stock_monitor': ['sync:auto'],
+  'settings': ['settings:read', 'settings:write'],
+}
 
 // Validation helpers
 function sanitizeToken(value: unknown): string | null {
@@ -93,10 +133,25 @@ function sanitizeDeviceInfo(value: unknown): Record<string, unknown> {
 }
 
 function validatePermissions(perms: unknown): string[] {
-  if (!Array.isArray(perms)) return ['import', 'sync']
-  return perms
-    .filter(p => typeof p === 'string' && ALLOWED_PERMISSIONS.has(p))
-    .slice(0, 10)
+  if (!Array.isArray(perms)) return DEFAULT_PERMISSIONS
+  
+  // Expand legacy scopes to granular scopes
+  const expandedPerms: string[] = []
+  for (const p of perms) {
+    if (typeof p !== 'string') continue
+    
+    // Check if it's a legacy scope that needs expansion
+    if (LEGACY_SCOPE_MAP[p]) {
+      expandedPerms.push(...LEGACY_SCOPE_MAP[p])
+    } else if (ALLOWED_PERMISSIONS.has(p)) {
+      // Already a valid granular scope
+      expandedPerms.push(p)
+    }
+  }
+  
+  // Deduplicate and limit
+  const uniquePerms = [...new Set(expandedPerms)]
+  return uniquePerms.length > 0 ? uniquePerms.slice(0, 20) : DEFAULT_PERMISSIONS
 }
 
 Deno.serve(async (req) => {

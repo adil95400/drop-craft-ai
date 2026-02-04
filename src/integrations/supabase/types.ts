@@ -13176,6 +13176,14 @@ export type Database = {
       generate_extension_token:
         | {
             Args: {
+              p_email: string
+              p_requested_scopes?: string[]
+              p_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
               p_device_info?: Json
               p_permissions?: Json
               p_user_id: string
@@ -13299,6 +13307,21 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      map_legacy_permission: {
+        Args: { legacy_perm: string }
+        Returns: string[]
+      }
+      migrate_all_legacy_tokens: {
+        Args: never
+        Returns: {
+          scopes_granted: number
+          token_id: string
+        }[]
+      }
+      migrate_token_to_granular_scopes: {
+        Args: { p_token_id: string }
+        Returns: number
       }
       refresh_extension_token: {
         Args: { p_refresh_token: string }
