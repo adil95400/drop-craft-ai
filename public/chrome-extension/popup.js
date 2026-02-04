@@ -1,14 +1,27 @@
 // ============================================
-// ShopOpti+ Chrome Extension - Popup Script v5.7.2
+// ShopOpti+ Chrome Extension - Popup Script v5.8.1
 // 100% AutoDS Feature Parity - Complete & Production Ready
 // Ads Spy, Auto-Order, Multi-Store, Real-Time Sync
 // NOTIFICATIONS SYSTEM + DYNAMIC BADGE + TOKEN REFRESH
 // P1: OAuth-only auth (no password grant)
+// VERSION: Dynamically loaded from manifest.json
 // ============================================
+
+// Get version dynamically from manifest.json
+function getManifestVersion() {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) {
+      return chrome.runtime.getManifest().version;
+    }
+  } catch (e) {
+    console.warn('Could not read manifest version:', e);
+  }
+  return '5.8.1'; // Fallback
+}
 
 class ShopOptiPopup {
   constructor() {
-    this.VERSION = '5.7.2';  // Full sync with backend
+    this.VERSION = getManifestVersion();  // Dynamic version from manifest
     this.API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
     this.APP_URL = 'https://shopopti.io';
     
@@ -57,6 +70,9 @@ class ShopOptiPopup {
   async init() {
     console.log(`[ShopOpti+] Popup v${this.VERSION} initializing...`);
     
+    // Update version badge dynamically
+    this.updateVersionBadge();
+    
     if (!this.isExtensionRuntime()) {
       this.initPreviewMode();
       return;
@@ -77,6 +93,14 @@ class ShopOptiPopup {
     } catch (error) {
       console.error('[ShopOpti+] Init error:', error);
       this.showToast('Erreur d\'initialisation', 'error');
+    }
+  }
+  
+  // Update version badge from manifest
+  updateVersionBadge() {
+    const versionBadge = document.getElementById('versionBadge');
+    if (versionBadge) {
+      versionBadge.textContent = `v${this.VERSION}`;
     }
   }
 

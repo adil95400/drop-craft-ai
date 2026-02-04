@@ -7,7 +7,20 @@
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.8.1';
+
+// Get version dynamically from manifest.json
+function getManifestVersion() {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) {
+      return chrome.runtime.getManifest().version;
+    }
+  } catch (e) {
+    console.warn('Could not read manifest version:', e);
+  }
+  return '5.8.1'; // Fallback
+}
+
+const VERSION = getManifestVersion();
 
 // ============================================
 // SECURITY MODULE
