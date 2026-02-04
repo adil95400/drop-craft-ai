@@ -1,9 +1,15 @@
 /**
- * Import Product Handler v3.1
+ * Import Product Handler v3.2
  * Handles all import-related actions with Backend-First architecture
  * 
+ * v3.2 CHANGES:
+ * - Added Pipeline Router for A/B testing between legacy and v3 orchestrator
+ * - Platform-based routing: amazon, temu => new pipeline
+ * - Automatic fallback to legacy on failure
+ * - Comprehensive logging for monitoring
+ * 
  * Actions:
- * - IMPORT_PRODUCT (legacy)
+ * - IMPORT_PRODUCT (legacy) - now routes through PipelineRouter
  * - IMPORT_PRODUCT_BACKEND (v3.0 - API → Headless → HTML cascade)
  * - IMPORT_BULK / IMPORT_BULK_BACKEND
  * - IMPORT_REVIEWS (with idempotency)
@@ -14,6 +20,13 @@
 import { z } from "zod"
 import { GatewayContext, HandlerResult } from '../types.ts'
 import { handleImportOrchestrator } from './import-orchestrator.ts'
+import { 
+  executePipeline, 
+  detectPlatformFromUrl, 
+  logPipelineStart, 
+  logPipelineComplete,
+  getRoutingDecision
+} from '../lib/pipeline-router.ts'
 
 // =============================================================================
 // SCHEMAS (Legacy - for backward compatibility)
@@ -673,8 +686,143 @@ async function handlePublishToStore(
 }
 
 // =============================================================================
-// ROUTER
+// ROUTER WITH PIPELINE A/B TEST
 // =============================================================================
+
+/**
+ * Smart import handler that routes between legacy and new pipeline
+ * Based on feature flag and platform (amazon/temu => new pipeline)
+ */
+async function handleSmartImport(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  // Extract URL from legacy payload
+  const productPayload = payload as { product?: { url?: string } }
+  const sourceUrl = productPayload?.product?.url
+  
+  if (!sourceUrl) {
+    // No URL, use legacy directly
+    console.log('[SmartImport] No URL in payload, using legacy handler')
+    return handleImportProduct(payload, ctx)
+  }
+  
+  // Detect platform from URL
+  const platform = detectPlatformFromUrl(sourceUrl)
+  const requestId = ctx.requestId || crypto.randomUUID()
+  
+  console.log(`[SmartImport] Detected platform: ${platform} for URL: ${sourceUrl.substring(0, 80)}...`)
+  
+  // Execute through pipeline router with automatic A/B test and fallback
+  return executePipeline({
+    userId: ctx.userId!,
+    requestId,
+    platform,
+    sourceUrl,
+    extensionVersion: ctx.extensionVersion,
+    
+    // Legacy handler - uses the product data sent by extension
+    legacyHandler: async () => {
+      console.log('[SmartImport] Executing LEGACY pipeline')
+      return handleImportProduct(payload, ctx)
+    },
+    
+    // New pipeline handler - only uses URL, backend does extraction
+    newPipelineHandler: async () => {
+      console.log('[SmartImport] Executing V3_ORCHESTRATOR pipeline')
+      // Convert legacy payload to backend-first format
+      const backendPayload = {
+        source_url: sourceUrl,
+        platform,
+        options: {
+          include_variants: true,
+          include_reviews: false,
+          preferred_currency: 'EUR',
+        },
+        request_id: requestId,
+        idempotency_key: ctx.idempotencyKey || `auto-${requestId}`,
+        timestamp: Date.now(),
+      }
+      return handleImportOrchestrator(backendPayload, ctx)
+    },
+    
+    // Enable fallback to legacy if new pipeline fails
+    fallbackToLegacy: true,
+  }, ctx)
+}
+
+/**
+ * Smart bulk import with pipeline routing per product
+ */
+async function handleSmartBulkImport(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  const parsed = ImportBulkPayload.safeParse(payload)
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: {
+        code: 'INVALID_PAYLOAD',
+        message: 'Invalid bulk import data',
+        details: { issues: parsed.error.issues }
+      }
+    }
+  }
+
+  const { products } = parsed.data
+  const results: { success: number; failed: number; products: any[]; routing: any[] } = {
+    success: 0,
+    failed: 0,
+    products: [],
+    routing: []
+  }
+
+  for (const product of products) {
+    try {
+      const platform = product.url ? detectPlatformFromUrl(product.url) : 'other'
+      const decision = await getRoutingDecision(platform, ctx.userId!, ctx)
+      
+      results.routing.push({
+        url: product.url,
+        platform,
+        pipeline: decision.useNewPipeline ? 'v3_orchestrator' : 'legacy',
+        reason: decision.reason
+      })
+      
+      // Use smart import for each product
+      const result = await handleSmartImport({ product }, ctx)
+      
+      if (result.success) {
+        results.success++
+        results.products.push(result.data?.product)
+      } else {
+        results.failed++
+      }
+    } catch {
+      results.failed++
+    }
+  }
+
+  // Log bulk action
+  await ctx.supabase.from('extension_action_logs').insert({
+    user_id: ctx.userId,
+    action_type: 'IMPORT_BULK_SMART',
+    action_status: results.failed === 0 ? 'success' : (results.success > 0 ? 'partial' : 'error'),
+    metadata: {
+      totalProducts: products.length,
+      successCount: results.success,
+      errorCount: results.failed,
+      routingDecisions: results.routing,
+    },
+    extension_version: ctx.extensionVersion,
+  }).catch(e => console.error('[Import] Log bulk action error:', e))
+
+  return {
+    success: true,
+    data: results
+  }
+}
 
 export async function handleImportAction(
   action: string,
@@ -682,17 +830,17 @@ export async function handleImportAction(
   ctx: GatewayContext
 ): Promise<HandlerResult> {
   switch (action) {
-    // Legacy import (extension sends product data)
+    // Legacy import - NOW ROUTES THROUGH SMART PIPELINE
     case 'IMPORT_PRODUCT':
-      return handleImportProduct(payload, ctx)
+      return handleSmartImport(payload, ctx)
     
-    // Backend-first import (extension sends URL only)
+    // Backend-first import (explicit new pipeline)
     case 'IMPORT_PRODUCT_BACKEND':
       return handleImportOrchestrator(payload, ctx)
     
-    // Bulk imports
+    // Bulk imports - NOW WITH SMART ROUTING
     case 'IMPORT_BULK':
-      return handleImportBulk(payload, ctx)
+      return handleSmartBulkImport(payload, ctx)
     case 'IMPORT_BULK_BACKEND':
       return handleBulkBackendImport(payload, ctx)
     
@@ -703,6 +851,12 @@ export async function handleImportAction(
       return handleUpsertProduct(payload, ctx)
     case 'PUBLISH_TO_STORE':
       return handlePublishToStore(payload, ctx)
+    
+    // Legacy endpoints (for backward compatibility - direct legacy handler)
+    case 'IMPORT_PRODUCT_LEGACY':
+      return handleImportProduct(payload, ctx)
+    case 'IMPORT_BULK_LEGACY':
+      return handleImportBulk(payload, ctx)
     
     default:
       return {

@@ -95,7 +95,6 @@ export interface ActionConfig {
   handler: 'auth' | 'import' | 'ai' | 'sync' | 'utility' | 'scrape' | 'analyze' | 'progressive' | 'reviews'
   requiresToken: boolean
   requiredScope?: string
-  handler: 'auth' | 'import' | 'ai' | 'sync' | 'utility' | 'scrape' | 'analyze' | 'progressive'
 }
 
 export const ACTION_CONFIG: Record<string, ActionConfig> = {
@@ -106,11 +105,13 @@ export const ACTION_CONFIG: Record<string, ActionConfig> = {
   'AUTH_REVOKE_TOKEN': { rateLimit: { maxRequests: 10, windowMinutes: 60 }, requiresToken: true, handler: 'auth' },
   'AUTH_HEARTBEAT': { rateLimit: { maxRequests: 60, windowMinutes: 60 }, requiresToken: true, handler: 'auth' },
   
-  // Product import actions (Backend-First v3.1)
+  // Product import actions (Backend-First v3.2 with Pipeline Router)
   'IMPORT_PRODUCT': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'import' },
   'IMPORT_PRODUCT_BACKEND': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'import' },
+  'IMPORT_PRODUCT_LEGACY': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'import' },
   'IMPORT_BULK': { rateLimit: { maxRequests: 10, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:bulk', handler: 'import' },
   'IMPORT_BULK_BACKEND': { rateLimit: { maxRequests: 5, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:bulk', handler: 'import' },
+  'IMPORT_BULK_LEGACY': { rateLimit: { maxRequests: 10, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:bulk', handler: 'import' },
   'IMPORT_REVIEWS': { rateLimit: { maxRequests: 20, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'reviews' },
   'REVIEW_JOB_STATUS': { rateLimit: { maxRequests: 100, windowMinutes: 60 }, requiresToken: true, handler: 'reviews' },
   'UPSERT_PRODUCT': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:write', handler: 'import' },
@@ -135,6 +136,7 @@ export const ACTION_CONFIG: Record<string, ActionConfig> = {
   'LOG_ACTION': { rateLimit: { maxRequests: 200, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   'CHECK_QUOTA': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   'GET_IMPORT_JOB': { rateLimit: { maxRequests: 100, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
+  'GET_PIPELINE_STATUS': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, handler: 'utility' },
   
   // Analyze actions
   'ANALYZE_PRODUCT': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'analyze:product', handler: 'analyze' },
