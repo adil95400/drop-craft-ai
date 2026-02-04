@@ -105,11 +105,14 @@ export const ACTION_CONFIG: Record<string, ActionConfig> = {
   'AUTH_REVOKE_TOKEN': { rateLimit: { maxRequests: 10, windowMinutes: 60 }, requiresToken: true, handler: 'auth' },
   'AUTH_HEARTBEAT': { rateLimit: { maxRequests: 60, windowMinutes: 60 }, requiresToken: true, handler: 'auth' },
   
-  // Product import actions (Backend-First v3.0)
+  // Product import actions (Backend-First v3.1)
   'IMPORT_PRODUCT': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'import' },
   'IMPORT_PRODUCT_BACKEND': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'import' },
   'IMPORT_BULK': { rateLimit: { maxRequests: 10, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:bulk', handler: 'import' },
   'IMPORT_BULK_BACKEND': { rateLimit: { maxRequests: 5, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:bulk', handler: 'import' },
+  'IMPORT_REVIEWS': { rateLimit: { maxRequests: 20, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'import' },
+  'UPSERT_PRODUCT': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:write', handler: 'import' },
+  'PUBLISH_TO_STORE': { rateLimit: { maxRequests: 20, windowMinutes: 60 }, requiresToken: true, requiredScope: 'store:publish', handler: 'import' },
   'SCRAPE_URL': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:read', handler: 'scrape' },
   
   // AI actions
@@ -143,6 +146,9 @@ export const WRITE_ACTIONS = new Set([
   'IMPORT_PRODUCT_BACKEND',
   'IMPORT_BULK',
   'IMPORT_BULK_BACKEND',
+  'IMPORT_REVIEWS',
+  'UPSERT_PRODUCT',
+  'PUBLISH_TO_STORE',
   'AI_OPTIMIZE_TITLE',
   'AI_OPTIMIZE_DESCRIPTION',
   'AI_OPTIMIZE_FULL',

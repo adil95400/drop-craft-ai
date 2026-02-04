@@ -1,15 +1,19 @@
 /**
- * Import Product Handler
- * Handles IMPORT_PRODUCT, IMPORT_PRODUCT_BACKEND, IMPORT_BULK, and IMPORT_BULK_BACKEND actions
+ * Import Product Handler v3.1
+ * Handles all import-related actions with Backend-First architecture
  * 
- * v3.0: Backend-First Architecture
- * - Extension sends only URL + metadata
- * - Backend extracts via API → Firecrawl → HTML fallback
+ * Actions:
+ * - IMPORT_PRODUCT (legacy)
+ * - IMPORT_PRODUCT_BACKEND (v3.0 - API → Headless → HTML cascade)
+ * - IMPORT_BULK / IMPORT_BULK_BACKEND
+ * - IMPORT_REVIEWS (with idempotency)
+ * - UPSERT_PRODUCT (with idempotency)
+ * - PUBLISH_TO_STORE (with idempotency)
  */
 
 import { z } from "zod"
 import { GatewayContext, HandlerResult } from '../types.ts'
-import { handleBackendImport } from './import-backend.ts'
+import { handleImportOrchestrator } from './import-orchestrator.ts'
 
 // =============================================================================
 // SCHEMAS (Legacy - for backward compatibility)
@@ -371,6 +375,304 @@ export async function handleBulkBackendImport(
 }
 
 // =============================================================================
+// IMPORT REVIEWS (with idempotency)
+// =============================================================================
+
+const ImportReviewsPayload = z.object({
+  product_id: z.string().uuid(),
+  source_url: z.string().url(),
+  reviews: z.array(z.object({
+    author: z.string().max(200),
+    rating: z.number().min(0).max(5),
+    content: z.string().max(5000),
+    date: z.string().optional(),
+    helpful_count: z.number().optional(),
+    images: z.array(z.string().url()).max(10).optional(),
+  })).max(100),
+  request_id: z.string().uuid(),
+  idempotency_key: z.string().min(10).max(100),
+})
+
+async function handleImportReviews(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  const parsed = ImportReviewsPayload.safeParse(payload)
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'INVALID_PAYLOAD', message: 'Invalid reviews payload', details: { issues: parsed.error.issues } }
+    }
+  }
+
+  const { product_id, source_url, reviews } = parsed.data
+
+  try {
+    // Verify product ownership
+    const { data: product } = await ctx.supabase
+      .from('products')
+      .select('id')
+      .eq('id', product_id)
+      .eq('user_id', ctx.userId)
+      .single()
+
+    if (!product) {
+      return { success: false, error: { code: 'NOT_FOUND', message: 'Product not found or not owned by user' } }
+    }
+
+    // Upsert reviews
+    const reviewsToInsert = reviews.map((r, idx) => ({
+      product_id,
+      user_id: ctx.userId,
+      author: r.author,
+      rating: r.rating,
+      content: r.content,
+      review_date: r.date,
+      helpful_count: r.helpful_count || 0,
+      images: r.images || [],
+      source_url,
+      external_id: `${product_id}-review-${idx}`,
+    }))
+
+    const { data, error } = await ctx.supabase
+      .from('product_reviews')
+      .upsert(reviewsToInsert, { onConflict: 'external_id' })
+      .select('id')
+
+    if (error) throw error
+
+    // Update product reviews count
+    await ctx.supabase
+      .from('products')
+      .update({ 
+        reviews_count: reviews.length,
+        rating: reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', product_id)
+
+    return {
+      success: true,
+      data: { imported_count: data?.length || 0, product_id }
+    }
+  } catch (error) {
+    return { success: false, error: { code: 'HANDLER_ERROR', message: error.message } }
+  }
+}
+
+// =============================================================================
+// UPSERT PRODUCT (with idempotency)
+// =============================================================================
+
+const UpsertProductPayload = z.object({
+  product: z.object({
+    id: z.string().uuid().optional(),
+    name: z.string().min(1).max(500),
+    description: z.string().max(10000).optional(),
+    price: z.number().min(0),
+    cost_price: z.number().min(0).optional(),
+    currency: z.string().max(3).optional().default('EUR'),
+    sku: z.string().max(100).optional(),
+    category: z.string().max(100).optional(),
+    brand: z.string().max(100).optional(),
+    images: z.array(z.string().url()).max(20).optional(),
+    source_url: z.string().url().optional(),
+    platform: z.string().max(50).optional(),
+    variants: z.array(z.record(z.unknown())).max(100).optional(),
+    status: z.enum(['draft', 'active', 'archived']).optional(),
+  }),
+  request_id: z.string().uuid(),
+  idempotency_key: z.string().min(10).max(100),
+})
+
+async function handleUpsertProduct(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  const parsed = UpsertProductPayload.safeParse(payload)
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'INVALID_PAYLOAD', message: 'Invalid product payload', details: { issues: parsed.error.issues } }
+    }
+  }
+
+  const { product } = parsed.data
+
+  try {
+    if (product.id) {
+      // Update existing - verify ownership
+      const { data: existing } = await ctx.supabase
+        .from('products')
+        .select('id')
+        .eq('id', product.id)
+        .eq('user_id', ctx.userId)
+        .single()
+
+      if (!existing) {
+        return { success: false, error: { code: 'NOT_FOUND', message: 'Product not found or not owned by user' } }
+      }
+
+      const { data, error } = await ctx.supabase
+        .from('products')
+        .update({
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          cost_price: product.cost_price,
+          currency: product.currency,
+          sku: product.sku,
+          category: product.category,
+          brand: product.brand,
+          images: product.images || [],
+          source_url: product.source_url,
+          platform: product.platform,
+          variants: product.variants || [],
+          status: product.status || 'active',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', product.id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return { success: true, data: { action: 'updated', product: data } }
+    } else {
+      // Create new
+      const { data, error } = await ctx.supabase
+        .from('products')
+        .insert({
+          user_id: ctx.userId,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          cost_price: product.cost_price,
+          currency: product.currency,
+          sku: product.sku,
+          category: product.category,
+          brand: product.brand,
+          images: product.images || [],
+          source_url: product.source_url,
+          platform: product.platform,
+          variants: product.variants || [],
+          status: product.status || 'draft',
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return { success: true, data: { action: 'created', product: data } }
+    }
+  } catch (error) {
+    return { success: false, error: { code: 'HANDLER_ERROR', message: error.message } }
+  }
+}
+
+// =============================================================================
+// PUBLISH TO STORE (with idempotency)
+// =============================================================================
+
+const PublishToStorePayload = z.object({
+  product_id: z.string().uuid(),
+  store_id: z.string().uuid(),
+  store_type: z.enum(['shopify', 'woocommerce', 'prestashop', 'ebay', 'amazon']),
+  publish_options: z.object({
+    set_active: z.boolean().optional().default(true),
+    update_inventory: z.boolean().optional().default(true),
+    include_variants: z.boolean().optional().default(true),
+  }).optional().default({}),
+  request_id: z.string().uuid(),
+  idempotency_key: z.string().min(10).max(100),
+})
+
+async function handlePublishToStore(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  const parsed = PublishToStorePayload.safeParse(payload)
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'INVALID_PAYLOAD', message: 'Invalid publish payload', details: { issues: parsed.error.issues } }
+    }
+  }
+
+  const { product_id, store_id, store_type, publish_options } = parsed.data
+
+  try {
+    // Verify product ownership
+    const { data: product } = await ctx.supabase
+      .from('products')
+      .select('*')
+      .eq('id', product_id)
+      .eq('user_id', ctx.userId)
+      .single()
+
+    if (!product) {
+      return { success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } }
+    }
+
+    // Verify store ownership
+    const { data: store } = await ctx.supabase
+      .from('store_integrations')
+      .select('id, platform, credentials_encrypted')
+      .eq('id', store_id)
+      .eq('user_id', ctx.userId)
+      .single()
+
+    if (!store) {
+      return { success: false, error: { code: 'NOT_FOUND', message: 'Store not found' } }
+    }
+
+    // Create publish job (async processing)
+    const { data: job, error: jobError } = await ctx.supabase
+      .from('background_jobs')
+      .insert({
+        user_id: ctx.userId,
+        job_type: 'publish_to_store',
+        job_subtype: store_type,
+        name: `Publish "${product.name}" to ${store_type}`,
+        status: 'pending',
+        input_data: {
+          product_id,
+          store_id,
+          store_type,
+          publish_options,
+        },
+        metadata: { extension_version: ctx.extensionVersion },
+      })
+      .select('id')
+      .single()
+
+    if (jobError) throw jobError
+
+    // Update product status
+    await ctx.supabase
+      .from('products')
+      .update({ 
+        status: publish_options.set_active ? 'active' : 'draft',
+        published_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', product_id)
+
+    return {
+      success: true,
+      data: {
+        job_id: job.id,
+        product_id,
+        store_id,
+        store_type,
+        status: 'queued',
+        message: 'Product publish job created. Check job status for progress.'
+      }
+    }
+  } catch (error) {
+    return { success: false, error: { code: 'HANDLER_ERROR', message: error.message } }
+  }
+}
+
+// =============================================================================
 // ROUTER
 // =============================================================================
 
@@ -380,14 +682,28 @@ export async function handleImportAction(
   ctx: GatewayContext
 ): Promise<HandlerResult> {
   switch (action) {
+    // Legacy import (extension sends product data)
     case 'IMPORT_PRODUCT':
       return handleImportProduct(payload, ctx)
+    
+    // Backend-first import (extension sends URL only)
     case 'IMPORT_PRODUCT_BACKEND':
-      return handleBackendImport(payload, ctx)
+      return handleImportOrchestrator(payload, ctx)
+    
+    // Bulk imports
     case 'IMPORT_BULK':
       return handleImportBulk(payload, ctx)
     case 'IMPORT_BULK_BACKEND':
       return handleBulkBackendImport(payload, ctx)
+    
+    // Idempotent write actions
+    case 'IMPORT_REVIEWS':
+      return handleImportReviews(payload, ctx)
+    case 'UPSERT_PRODUCT':
+      return handleUpsertProduct(payload, ctx)
+    case 'PUBLISH_TO_STORE':
+      return handlePublishToStore(payload, ctx)
+    
     default:
       return {
         success: false,
