@@ -6,7 +6,7 @@ import { ExtensionTokenGenerator } from '@/components/extensions/ExtensionTokenG
 import { 
   Chrome, Download, Play, CheckCircle, Settings, Zap, Star,
   Package, RefreshCw, Globe, ArrowRight, ExternalLink, Key,
-  Activity, History, TrendingUp, Clock, AlertCircle, Save, Loader2
+  Activity, History, TrendingUp, Clock, AlertCircle, Save, Loader2, Cloud
 } from 'lucide-react';
 import { generateExtensionZip } from '@/utils/extensionZipGenerator';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -662,14 +662,22 @@ export default function ChromeExtensionPage() {
         <TabsContent value="sync" className="space-y-6">
           {/* Sub-tabs for sync */}
           <Tabs defaultValue="status" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsList className="grid w-full grid-cols-4 mb-4">
               <TabsTrigger value="status" className="flex items-center gap-1">
                 <Activity className="h-4 w-4" />
-                État Sync
+                État
               </TabsTrigger>
               <TabsTrigger value="bidirectional" className="flex items-center gap-1">
                 <RefreshCw className="h-4 w-4" />
-                Sync Bidirectionnelle
+                Bidirectionnelle
+              </TabsTrigger>
+              <TabsTrigger value="sync-settings" className="flex items-center gap-1">
+                <Settings className="h-4 w-4" />
+                Paramètres
+              </TabsTrigger>
+              <TabsTrigger value="imports-history" className="flex items-center gap-1">
+                <History className="h-4 w-4" />
+                Imports
               </TabsTrigger>
             </TabsList>
 
@@ -679,6 +687,170 @@ export default function ChromeExtensionPage() {
 
             <TabsContent value="bidirectional">
               <ExtensionBidirectionalSync />
+            </TabsContent>
+
+            {/* Sync Settings */}
+            <TabsContent value="sync-settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5 text-primary" />
+                    Paramètres de synchronisation
+                  </CardTitle>
+                  <CardDescription>
+                    Configurez comment l'extension synchronise avec le cloud
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Zap className="h-5 w-5 text-yellow-500" />
+                        <div>
+                          <p className="font-medium">Sync automatique</p>
+                          <p className="text-sm text-muted-foreground">Synchroniser les données en temps réel</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.backendFirst}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, backendFirst: v }))}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Cloud className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="font-medium">Backend-First Import</p>
+                          <p className="text-sm text-muted-foreground">Extraction côté serveur (recommandé)</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.backendFirst}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, backendFirst: v }))}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <RefreshCw className="h-5 w-5 text-green-500" />
+                        <div>
+                          <p className="font-medium">Sync des prix</p>
+                          <p className="text-sm text-muted-foreground">Mettre à jour les prix automatiquement</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.priceTracking}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, priceTracking: v }))}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Package className="h-5 w-5 text-purple-500" />
+                        <div>
+                          <p className="font-medium">Sync des stocks</p>
+                          <p className="text-sm text-muted-foreground">Suivi du stock en temps réel</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.priceTracking}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, priceTracking: v }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-lg border border-dashed bg-muted/20">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-sm">Mode Backend-First</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          L'extension envoie uniquement l'URL au serveur. Toute l'extraction et la normalisation sont effectuées côté serveur pour garantir la cohérence et la qualité des données.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button onClick={saveSettings} disabled={isSaving}>
+                      {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                      Sauvegarder
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Imports History */}
+            <TabsContent value="imports-history">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <History className="h-5 w-5 text-primary" />
+                    Historique des imports extension
+                  </CardTitle>
+                  <CardDescription>
+                    Tous les produits importés via l'extension Chrome
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingImports ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="flex items-center gap-4 p-3 border rounded-lg animate-pulse">
+                          <div className="h-10 w-10 bg-muted rounded" />
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 w-1/3 bg-muted rounded" />
+                            <div className="h-3 w-1/4 bg-muted rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : recentImports.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Package className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                      <p className="text-muted-foreground">Aucun import récent</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Utilisez l'extension pour importer des produits
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentImports.map((item) => (
+                        <div 
+                          key={item.id}
+                          className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/30 transition-colors"
+                        >
+                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-xl">
+                            {getPlatformIcon(item.source_platform)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{item.product_name}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="capitalize">{item.source_platform}</span>
+                              <span>•</span>
+                              <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: fr })}</span>
+                            </div>
+                          </div>
+                          <Badge 
+                            className={cn(
+                              item.status === 'success' && 'bg-green-500/10 text-green-600 border-green-500/30',
+                              item.status === 'pending' && 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
+                              item.status === 'error' && 'bg-red-500/10 text-red-600 border-red-500/30'
+                            )}
+                          >
+                            {item.status === 'success' && <CheckCircle className="h-3 w-3 mr-1" />}
+                            {item.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+                            {item.status === 'error' && <AlertCircle className="h-3 w-3 mr-1" />}
+                            {item.status === 'success' ? 'Importé' : item.status === 'pending' ? 'En cours' : 'Erreur'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </TabsContent>
