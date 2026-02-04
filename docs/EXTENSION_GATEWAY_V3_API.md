@@ -1,13 +1,15 @@
-# Extension Gateway v3.0 - Backend-First Import API
+# Extension Gateway v3.1 - Backend-First Import API
 
 ## Architecture Overview
 
-The Extension Gateway v3.0 implements a **backend-first** extraction strategy, replacing the previous client-side DOM scraping approach. This ensures:
+The Extension Gateway v3.1 implements a **backend-first** extraction strategy, replacing the previous client-side DOM scraping approach. This ensures:
 
-- **100% data completeness** via API → Firecrawl → HTML cascade
+- **100% data completeness** via API → Headless → HTML cascade
 - **Progressive import** with job tracking
-- **Strict normalization** of product data
+- **Strict normalization** of product data with field attribution
 - **Detailed completeness logs**
+- **Anti-replay protection** (30-day TTL)
+- **Idempotency for writes** (7-day TTL)
 
 ## Endpoint
 
@@ -37,6 +39,39 @@ First, generate an extension token:
   "payload": {}
 }
 ```
+
+## Security Protections
+
+### Anti-Replay Protection
+
+Every request requires a unique `X-Request-Id` (UUID v4). If the same request_id is seen again within 30 days:
+
+```json
+{
+  "ok": false,
+  "code": "REPLAY_DETECTED",
+  "message": "Request already processed",
+  "details": { "requestId": "uuid-v4" }
+}
+```
+
+### Idempotency (Write Operations)
+
+Write actions require `X-Idempotency-Key`. Behavior:
+
+| State | Response |
+|-------|----------|
+| Key not seen | Execute operation, cache result |
+| Key seen + succeeded | Return cached response |
+| Key seen + started | Return `409 IN_PROGRESS` |
+| Key seen + failed | Re-execute operation |
+
+Write actions requiring idempotency:
+- `IMPORT_PRODUCT`, `IMPORT_PRODUCT_BACKEND`
+- `IMPORT_BULK`, `IMPORT_BULK_BACKEND`
+- `IMPORT_REVIEWS`, `UPSERT_PRODUCT`, `PUBLISH_TO_STORE`
+- `AI_OPTIMIZE_*`, `AI_GENERATE_*`
+- `SYNC_STOCK`, `SYNC_PRICE`
 
 ## Import Product (Backend-First)
 
@@ -211,27 +246,43 @@ First, generate an extension token:
 }
 ```
 
-## Extraction Cascade
+## Extraction Cascade (Import Orchestrator v3.1)
 
-The backend uses a three-tier extraction strategy:
+The backend uses a three-tier extraction strategy with field attribution:
 
 ### 1. Platform API (Fastest, Most Reliable)
 - Amazon Product Advertising API
 - AliExpress Affiliate API
 - eBay Browse API
-- *Currently stub - to be implemented*
+- **Confidence: 98%**
+- *Requires API keys - falls back to next tier if unavailable*
 
-### 2. Firecrawl (AI-Powered)
-- Uses Firecrawl's `/v1/scrape` endpoint
-- Structured extraction with JSON schema
+### 2. Headless Firecrawl (AI-Powered)
+- Uses Firecrawl's `/v1/scrape` endpoint with actions
+- Platform-specific scroll/wait actions
 - Handles JavaScript-rendered pages
-- Anti-bot bypass via headless browser
+- **Confidence: 85%**
 
 ### 3. HTML Fallback
 - Direct HTTP fetch with browser User-Agent
-- JSON-LD structured data extraction
-- Platform-specific regex patterns
-- Open Graph meta tag parsing
+- JSON-LD structured data extraction (highest HTML confidence: 95%)
+- Platform-specific regex patterns (confidence: 75-85%)
+- Open Graph meta tag parsing (fallback confidence: 55-70%)
+
+### Field Attribution
+
+Each extracted field tracks its source:
+
+```json
+{
+  "field_sources": {
+    "title": { "source": "headless", "confidence": 85 },
+    "price": { "source": "html", "confidence": 95 },
+    "images": { "source": "headless", "confidence": 85 },
+    "rating": { "source": "html", "confidence": 90 }
+  }
+}
+```
 
 ## Supported Platforms
 
