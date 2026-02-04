@@ -16,8 +16,9 @@ import { Loader2 } from 'lucide-react'
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate()
-  const { productId } = useParams<{ productId: string }>()
-  const { data: product, isLoading } = useProduct(productId || '')
+  // Route uses :id, not :productId
+  const { id } = useParams<{ id: string }>()
+  const { data: product, isLoading } = useProduct(id || '')
 
   if (isLoading) {
     return (
