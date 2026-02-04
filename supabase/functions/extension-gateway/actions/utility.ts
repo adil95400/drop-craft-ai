@@ -264,6 +264,72 @@ async function handleCheckQuota(
 }
 
 // =============================================================================
+// GET IMPORT JOB STATUS
+// =============================================================================
+
+const GetImportJobPayload = z.object({
+  job_id: z.string().uuid(),
+})
+
+async function handleGetImportJob(
+  payload: Record<string, unknown>,
+  ctx: GatewayContext
+): Promise<HandlerResult> {
+  const parsed = GetImportJobPayload.safeParse(payload)
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'INVALID_PAYLOAD', message: 'Job ID required' }
+    }
+  }
+
+  try {
+    const { data: job, error } = await ctx.supabase
+      .from('background_jobs')
+      .select('*')
+      .eq('id', parsed.data.job_id)
+      .eq('user_id', ctx.userId) // Security: only own jobs
+      .single()
+
+    if (error || !job) {
+      return {
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Job not found' }
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        job_id: job.id,
+        job_type: job.job_type,
+        status: job.status,
+        progress: {
+          percent: job.progress_percent,
+          message: job.progress_message,
+        },
+        result: job.status === 'completed' ? job.output_data : null,
+        error: job.status === 'failed' ? {
+          message: job.error_message,
+          details: job.error_details,
+        } : null,
+        timing: {
+          created_at: job.created_at,
+          started_at: job.started_at,
+          completed_at: job.completed_at,
+          duration_ms: job.duration_ms,
+        }
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: { code: 'HANDLER_ERROR', message: error.message }
+    }
+  }
+}
+
+// =============================================================================
 // ROUTER
 // =============================================================================
 
@@ -283,6 +349,8 @@ export async function handleUtilityAction(
       return handleLogAnalytics(payload, ctx)
     case 'CHECK_QUOTA':
       return handleCheckQuota(payload, ctx)
+    case 'GET_IMPORT_JOB':
+      return handleGetImportJob(payload, ctx)
     default:
       return {
         success: false,
