@@ -9,8 +9,7 @@ import {
   Award, 
   TrendingUp,
   Target,
-  Zap,
-  Star
+  Zap
 } from 'lucide-react';
 import { useAcademyProgress, useAcademyAchievements, useAcademyCertificates } from '@/hooks/useAcademyProgress';
 import { Link } from 'react-router-dom';
