@@ -50,14 +50,14 @@ const extensionChecklist: ChecklistItem[] = [
   { id: 'manifest-version', category: 'manifest', label: 'Manifest V3', description: 'Utilisation du Manifest V3 (requis depuis 2024)', status: 'pass', details: 'manifest_version: 3' },
   { id: 'manifest-name', category: 'manifest', label: 'Nom de l\'extension', description: 'Nom clair et descriptif', status: 'pass', details: 'ShopOpti+ Pro' },
   { id: 'manifest-description', category: 'manifest', label: 'Description', description: 'Description complète des fonctionnalités', status: 'pass', details: '< 132 caractères' },
-  { id: 'manifest-version-number', category: 'manifest', label: 'Numéro de version', description: 'Format semver correct', status: 'pass', details: '5.7.3' },
-  { id: 'manifest-permissions', category: 'manifest', label: 'Permissions minimales', description: 'Seules les permissions nécessaires', status: 'pass', details: 'storage, activeTab, scripting...' },
+  { id: 'manifest-version-number', category: 'manifest', label: 'Numéro de version', description: 'Format semver correct', status: 'pass', details: '5.8.1' },
+  { id: 'manifest-permissions', category: 'manifest', label: 'Permissions minimales', description: 'Seules les permissions nécessaires', status: 'pass', details: 'storage, activeTab, alarms, notifications' },
   
   // Assets
   { id: 'icons-all-sizes', category: 'assets', label: 'Icônes toutes tailles', description: '16x16, 32x32, 48x48, 128x128', status: 'pass', details: 'PNG format, transparent bg' },
-  { id: 'store-screenshots', category: 'assets', label: 'Screenshots Chrome Store', description: '1280x800 ou 640x400 pixels', status: 'warning', details: 'Préparer 3-5 screenshots', action: { label: 'Créer', href: '#' } },
-  { id: 'promotional-tile', category: 'assets', label: 'Image promotionnelle', description: '440x280 pixels pour le store', status: 'warning', details: 'Tile promotionnelle requise', action: { label: 'Créer', href: '#' } },
-  { id: 'marquee-image', category: 'assets', label: 'Bannière marquee', description: '1400x560 pixels (optionnel)', status: 'pending' },
+  { id: 'store-screenshots', category: 'assets', label: 'Screenshots Chrome Store', description: '1280x800 ou 640x400 pixels', status: 'pass', details: '3 screenshots créés', action: { label: 'Voir', href: '/chrome-extension/store-assets/' } },
+  { id: 'promotional-tile', category: 'assets', label: 'Image promotionnelle', description: '440x280 pixels pour le store', status: 'pass', details: 'Tile small + large créées' },
+  { id: 'marquee-image', category: 'assets', label: 'Bannière marquee', description: '1400x560 pixels (optionnel)', status: 'pass', details: 'Marquee 1400x560 créée' },
 
   // Security
   { id: 'csp-policy', category: 'security', label: 'Content Security Policy', description: 'CSP stricte définie', status: 'pass', details: 'script-src \'self\'; object-src \'self\'' },
@@ -75,7 +75,7 @@ const extensionChecklist: ChecklistItem[] = [
 
   // Store Listing
   { id: 'privacy-policy', category: 'store', label: 'Politique de confidentialité', description: 'URL de politique de confidentialité', status: 'pass', details: 'https://drop-craft-ai.lovable.app/privacy', action: { label: 'Voir', href: '/privacy' } },
-  { id: 'store-description', category: 'store', label: 'Description store', description: 'Description détaillée pour le Chrome Store', status: 'warning', details: 'Préparer description marketing' },
+  { id: 'store-description', category: 'store', label: 'Description store', description: 'Description détaillée pour le Chrome Store', status: 'pass', details: 'STORE_LISTING.md préparé' },
   { id: 'category', category: 'store', label: 'Catégorie', description: 'Catégorie appropriée sélectionnée', status: 'pass', details: 'Shopping / Productivity' },
   { id: 'support-email', category: 'store', label: 'Email support', description: 'Email de contact configuré', status: 'pass' }
 ];
@@ -270,8 +270,11 @@ export default function ExtensionReadinessPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-lg">ShopOpti+ Pro</h3>
-                      <p className="text-sm text-muted-foreground">Version 5.7.3</p>
-                      <Badge variant="outline" className="mt-1">Manifest V3</Badge>
+                      <p className="text-sm text-muted-foreground">Version 5.8.1</p>
+                      <div className="flex gap-1 mt-1">
+                        <Badge variant="outline">Manifest V3</Badge>
+                        <Badge className="bg-green-500">Prêt</Badge>
+                      </div>
                     </div>
                   </div>
                   <Separator />
