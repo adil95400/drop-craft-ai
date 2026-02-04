@@ -97,7 +97,7 @@ serve(async (req) => {
         })
     }
 
-    // Update order status
+    // Update order status - P0.2: Filter by user_id for data isolation
     await supabase
       .from('orders')
       .update({
@@ -106,6 +106,7 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', orderId)
+      .eq('user_id', user.id)  // ✅ Critical: Ensure user owns this order
 
     console.log(`[shipment-create] Shipment created: ${shipment.id}`)
 

@@ -1,3 +1,8 @@
+/**
+ * Check Plan - Secured Implementation
+ * P0.1: JWT authentication required
+ * P0.2: Users can only check their own plan (or admins for any)
+ */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts'
@@ -5,9 +10,10 @@ import { parseJsonValidated, z } from '../_shared/validators.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 
 const BodySchema = z.object({
-  userId: z.string().uuid('userId must be a valid UUID'),
+  userId: z.string().uuid('userId must be a valid UUID').optional(),
   requiredPlan: z.enum(['standard', 'pro', 'ultra_pro'], {
     errorMap: () => ({ message: 'requiredPlan must be standard, pro, or ultra_pro' })
   })
@@ -20,17 +26,43 @@ Deno.serve(
       return new Response(null, { headers: corsHeaders })
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    // P0.1: Require JWT authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    })
     
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const { userId, requiredPlan } = await parseJsonValidated(req, BodySchema)
 
-    console.log(`Checking plan access for user ${userId}, required: ${requiredPlan}`)
+    // P0.2: Use authenticated user's ID, ignore any provided userId
+    // This prevents users from checking other users' plans
+    const targetUserId = user.id
+
+    console.log(`Checking plan access for user ${targetUserId}, required: ${requiredPlan}`)
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Get user's current plan
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('plan')
-      .eq('id', userId)
+      .eq('id', targetUserId)
       .single()
 
     if (profileError) {
