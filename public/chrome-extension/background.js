@@ -308,8 +308,8 @@ class ShopOptiBackground {
           break;
 
         case 'REQUEST_PERMISSIONS':
-          await this.requestPermissions(message.origins);
-          sendResponse({ success: true });
+          const permResult = await this.requestPermissions(message.origins);
+          sendResponse(permResult);
           break;
 
         case 'OPEN_IMPORT_OVERLAY':
