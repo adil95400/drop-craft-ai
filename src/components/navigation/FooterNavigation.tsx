@@ -86,7 +86,7 @@ const FooterNavigation = () => {
               <img 
                 src={logoFull} 
                 alt="ShopOpti" 
-                className="h-12 w-auto object-contain"
+                className="h-14 w-auto object-contain"
                 loading="lazy"
               />
             </Link>
