@@ -16,8 +16,8 @@ const HeaderLogo = memo(() => (
     <img 
       src={logoFull} 
       alt="ShopOpti" 
-      className="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-sm"
-      height={48}
+      className="h-12 sm:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-sm"
+      height={56}
       loading="eager"
     />
   </Link>
