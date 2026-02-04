@@ -41,8 +41,12 @@ interface ExtensionSettings {
   autoImport: boolean;
   importReviews: boolean;
   importImages: boolean;
+  importVariants: boolean;
   priceTracking: boolean;
   notifications: boolean;
+  showBadge: boolean;
+  debugMode: boolean;
+  backendFirst: boolean;
   defaultCategory: string;
   priceMarkup: number;
 }
@@ -60,8 +64,12 @@ const defaultSettings: ExtensionSettings = {
   autoImport: true,
   importReviews: true,
   importImages: true,
+  importVariants: true,
   priceTracking: true,
   notifications: true,
+  showBadge: true,
+  debugMode: false,
+  backendFirst: true,
   defaultCategory: 'general',
   priceMarkup: 30,
 };
@@ -657,30 +665,48 @@ export default function ChromeExtensionPage() {
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Paramètres de l'extension
-              </CardTitle>
-              <CardDescription>
-                Personnalisez le comportement de l'extension
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {false ? (
-                <div className="space-y-4">
-                  {Array(4).fill(0).map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-full" />
-                  ))}
-                </div>
-              ) : (
-                <>
+          {/* Sub-tabs for settings */}
+          <Tabs defaultValue="import" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsTrigger value="import" className="flex items-center gap-1">
+                <Package className="h-4 w-4" />
+                Import
+              </TabsTrigger>
+              <TabsTrigger value="price" className="flex items-center gap-1">
+                <TrendingUp className="h-4 w-4" />
+                Prix
+              </TabsTrigger>
+              <TabsTrigger value="behavior" className="flex items-center gap-1">
+                <Zap className="h-4 w-4" />
+                Comportement
+              </TabsTrigger>
+              <TabsTrigger value="advanced" className="flex items-center gap-1">
+                <Settings className="h-4 w-4" />
+                Avancé
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Import Settings */}
+            <TabsContent value="import">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5 text-primary" />
+                    Paramètres d'import
+                  </CardTitle>
+                  <CardDescription>
+                    Configurez comment l'extension importe les produits
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-center justify-between p-4 rounded-lg border">
-                      <div>
-                        <p className="font-medium">Import automatique</p>
-                        <p className="text-sm text-muted-foreground">Ajouter directement au catalogue</p>
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Zap className="h-5 w-5 text-yellow-500" />
+                        <div>
+                          <p className="font-medium">Import automatique</p>
+                          <p className="text-sm text-muted-foreground">Importer en 1 clic sans preview</p>
+                        </div>
                       </div>
                       <Switch 
                         checked={settings.autoImport}
@@ -688,21 +714,13 @@ export default function ChromeExtensionPage() {
                       />
                     </div>
                     
-                    <div className="flex items-center justify-between p-4 rounded-lg border">
-                      <div>
-                        <p className="font-medium">Importer les avis</p>
-                        <p className="text-sm text-muted-foreground">Récupérer les avis clients</p>
-                      </div>
-                      <Switch 
-                        checked={settings.importReviews}
-                        onCheckedChange={(v) => setSettings(s => ({ ...s, importReviews: v }))}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-4 rounded-lg border">
-                      <div>
-                        <p className="font-medium">Images HD</p>
-                        <p className="text-sm text-muted-foreground">Télécharger toutes les images</p>
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Globe className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="font-medium">Importer les images</p>
+                          <p className="text-sm text-muted-foreground">Télécharger toutes les images HD</p>
+                        </div>
                       </div>
                       <Switch 
                         checked={settings.importImages}
@@ -710,10 +728,59 @@ export default function ChromeExtensionPage() {
                       />
                     </div>
                     
-                    <div className="flex items-center justify-between p-4 rounded-lg border">
-                      <div>
-                        <p className="font-medium">Suivi des prix</p>
-                        <p className="text-sm text-muted-foreground">Alertes de changement</p>
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Star className="h-5 w-5 text-orange-500" />
+                        <div>
+                          <p className="font-medium">Importer les avis</p>
+                          <p className="text-sm text-muted-foreground">Récupérer les avis clients</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.importReviews}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, importReviews: v }))}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <RefreshCw className="h-5 w-5 text-purple-500" />
+                        <div>
+                          <p className="font-medium">Importer les variantes</p>
+                          <p className="text-sm text-muted-foreground">Tailles, couleurs, options</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.importVariants}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, importVariants: v }))}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Price Settings */}
+            <TabsContent value="price">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-green-500" />
+                    Paramètres de prix
+                  </CardTitle>
+                  <CardDescription>
+                    Configurez les règles de prix et le suivi
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Activity className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="font-medium">Suivi des prix</p>
+                          <p className="text-sm text-muted-foreground">Alertes sur les changements</p>
+                        </div>
                       </div>
                       <Switch 
                         checked={settings.priceTracking}
@@ -721,30 +788,185 @@ export default function ChromeExtensionPage() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between p-4 rounded-lg border">
-                      <div>
-                        <p className="font-medium">Notifications</p>
-                        <p className="text-sm text-muted-foreground">Recevoir les alertes</p>
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <TrendingUp className="h-5 w-5 text-green-500" />
+                        <div>
+                          <p className="font-medium">Markup par défaut</p>
+                          <p className="text-sm text-muted-foreground">Marge appliquée à l'import</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="number" 
+                          min="0" 
+                          max="500"
+                          className="w-20 px-3 py-1.5 rounded-md border bg-background text-right"
+                          value={settings.priceMarkup}
+                          onChange={(e) => setSettings(s => ({ ...s, priceMarkup: parseInt(e.target.value) || 0 }))}
+                        />
+                        <span className="text-muted-foreground">%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-lg border border-dashed bg-muted/20">
+                    <p className="text-sm text-muted-foreground">
+                      💡 <strong>Conseil:</strong> Un markup de 30-50% est recommandé pour le dropshipping. 
+                      Ajustez selon votre marché et vos frais de livraison.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Behavior Settings */}
+            <TabsContent value="behavior">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-yellow-500" />
+                    Comportement
+                  </CardTitle>
+                  <CardDescription>
+                    Configurez les notifications et le comportement de l'extension
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="font-medium">Notifications</p>
+                          <p className="text-sm text-muted-foreground">Recevoir les alertes</p>
+                        </div>
                       </div>
                       <Switch 
                         checked={settings.notifications}
                         onCheckedChange={(v) => setSettings(s => ({ ...s, notifications: v }))}
                       />
                     </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Chrome className="h-5 w-5 text-green-500" />
+                        <div>
+                          <p className="font-medium">Badge compteur</p>
+                          <p className="text-sm text-muted-foreground">Afficher le nombre d'imports</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.showBadge}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, showBadge: v }))}
+                      />
+                    </div>
                   </div>
-                  
-                  <Button 
-                    className="w-full mt-6" 
-                    onClick={() => saveSettings()}
-                    disabled={isSaving}
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {isSaving ? 'Sauvegarde...' : 'Sauvegarder les paramètres'}
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Advanced Settings */}
+            <TabsContent value="advanced">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5 text-slate-500" />
+                    Paramètres avancés
+                  </CardTitle>
+                  <CardDescription>
+                    Configuration pour utilisateurs avancés
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-amber-600">Installation Mode Développeur</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Pour charger l'extension en mode développeur:
+                        </p>
+                        <ol className="text-sm text-muted-foreground mt-2 list-decimal list-inside space-y-1">
+                          <li>Téléchargez l'extension (bouton ci-dessous)</li>
+                          <li>Décompressez le fichier ZIP</li>
+                          <li>Ouvrez <code className="px-1 py-0.5 bg-muted rounded">chrome://extensions</code></li>
+                          <li>Activez le "Mode développeur" (en haut à droite)</li>
+                          <li>Cliquez "Charger l'extension non empaquetée"</li>
+                          <li>Sélectionnez le dossier décompressé</li>
+                        </ol>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-3"
+                          onClick={handleDownloadExtension}
+                          disabled={isDownloading}
+                        >
+                          {isDownloading ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Download className="h-4 w-4 mr-2" />
+                          )}
+                          {isDownloading ? 'Téléchargement...' : 'Télécharger l\'extension'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Activity className="h-5 w-5 text-red-500" />
+                        <div>
+                          <p className="font-medium">Mode debug</p>
+                          <p className="text-sm text-muted-foreground">Logs détaillés console</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.debugMode}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, debugMode: v }))}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <ExternalLink className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="font-medium">Backend-first</p>
+                          <p className="text-sm text-muted-foreground">Import via API (recommandé)</p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={settings.backendFirst}
+                        onCheckedChange={(v) => setSettings(s => ({ ...s, backendFirst: v }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-lg border bg-muted/30">
+                    <h4 className="font-medium mb-2">Informations techniques</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="text-muted-foreground">Version:</div>
+                      <div className="font-mono">5.8.1</div>
+                      <div className="text-muted-foreground">API Endpoint:</div>
+                      <div className="font-mono text-xs truncate">jsmwckzrmqecwwrswwrz.supabase.co</div>
+                      <div className="text-muted-foreground">Token Storage:</div>
+                      <div className="font-mono">extensionToken</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          <Button 
+            className="w-full" 
+            onClick={() => saveSettings()}
+            disabled={isSaving}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {isSaving ? 'Sauvegarde...' : 'Sauvegarder tous les paramètres'}
+          </Button>
         </TabsContent>
 
         {/* Remote Control Tab */}
