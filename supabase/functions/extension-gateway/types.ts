@@ -82,6 +82,17 @@ export const ERROR_CODES = {
   // Server errors (5xx)
   INTERNAL: { code: 'INTERNAL', status: 500, message: 'Internal server error' },
   HANDLER_ERROR: { code: 'HANDLER_ERROR', status: 500, message: 'Action handler failed' },
+  TIMEOUT: { code: 'TIMEOUT', status: 504, message: 'Request timed out' },
+  
+  // Import specific
+  JOB_CREATE_FAILED: { code: 'JOB_CREATE_FAILED', status: 500, message: 'Failed to create import job' },
+  JOB_NOT_FOUND: { code: 'JOB_NOT_FOUND', status: 404, message: 'Import job not found' },
+  IMPORT_FAILED: { code: 'IMPORT_FAILED', status: 500, message: 'Product import failed' },
+  REVIEWS_UNAVAILABLE: { code: 'REVIEWS_UNAVAILABLE', status: 404, message: 'Reviews not available for this product' },
+  
+  // Network/External
+  NETWORK_ERROR: { code: 'NETWORK_ERROR', status: 502, message: 'External service unavailable' },
+  SCRAPE_FAILED: { code: 'SCRAPE_FAILED', status: 502, message: 'Failed to extract product data' },
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES
