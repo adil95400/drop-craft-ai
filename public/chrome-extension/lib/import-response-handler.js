@@ -9,7 +9,7 @@
  * - NETWORK_ERROR → Retry option
  */
 
-(function() {
+;(function() {
   'use strict';
 
   if (window.__shopoptiImportResponseHandlerLoaded) return;

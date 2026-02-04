@@ -3,7 +3,7 @@
 // Safe DOM construction utilities to prevent XSS vulnerabilities
 // ============================================================================
 
-(function() {
+;(function() {
   'use strict';
 
   /**

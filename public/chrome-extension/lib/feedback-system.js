@@ -5,7 +5,7 @@
  * SECURITY FIX v5.7.2: XSS-safe DOM manipulation (no innerHTML with user data)
  */
 
-(function() {
+;(function() {
   'use strict';
 
   // Feedback types with styling

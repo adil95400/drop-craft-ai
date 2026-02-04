@@ -3,7 +3,7 @@
 // Offline-first import queue with automatic sync when connection restored
 // ============================================================================
 
-(function() {
+;(function() {
   'use strict';
 
   const STORAGE_KEY = 'shopopti_offline_queue';
