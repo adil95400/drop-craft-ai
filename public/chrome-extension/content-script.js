@@ -449,10 +449,10 @@
         return;
       }
       
-      // LEGACY FALLBACK: Use ShopOptiPipeline (local extraction)
+      // LEGACY FALLBACK #1: Use ShopOptiPipeline (local extraction)
       if (window.ShopOptiPipeline) {
-        console.warn('[ShopOpti+] Falling back to legacy ShopOptiPipeline');
-        
+        console.warn('[ShopOpti+] Falling back to legacy ShopOptiPipeline (local extraction)');
+        showToast('⚠️ Mode fallback: extraction locale', 'warning');
         const result = await window.ShopOptiPipeline.processUrl(url, {
           targetStores: userStores.map(s => s.id)
         });
@@ -550,7 +550,11 @@
         }
         return;
       }
-        console.log('[ShopOpti+] Using ExtractionOrchestrator fallback');
+      
+      // LEGACY FALLBACK #2: Use ExtractionOrchestrator (local extraction)
+      if (window.ExtractionOrchestrator) {
+        console.warn('[ShopOpti+] Falling back to ExtractionOrchestrator (local extraction)');
+        showToast('⚠️ Mode fallback: extraction locale', 'warning');
         
         const result = await window.ExtractionOrchestrator.extract(url, {
           targetStores: userStores.map(s => s.id)
