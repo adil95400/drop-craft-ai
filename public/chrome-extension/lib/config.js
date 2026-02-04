@@ -1,11 +1,26 @@
 /**
- * ShopOpti+ Configuration Module v5.7.0
+ * ShopOpti+ Configuration Module v5.8.1
  * Centralized configuration for the extension
  * Synced with shopopti.io backend
+ * 
+ * IMPORTANT: VERSION is synced automatically from manifest.json
  */
 
 const Config = {
-  VERSION: '5.7.0',
+  // Version is loaded dynamically from manifest.json at runtime
+  VERSION: '5.8.1',
+  
+  // Method to get version dynamically from manifest
+  async getVersion() {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) {
+        return chrome.runtime.getManifest().version;
+      }
+    } catch (e) {
+      console.warn('Could not read manifest version:', e);
+    }
+    return this.VERSION;
+  },
   BRAND: 'ShopOpti+',
   
   // API Configuration - Synced with shopopti.io

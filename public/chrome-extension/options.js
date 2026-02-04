@@ -1,9 +1,23 @@
-// ShopOpti+ Chrome Extension - Options Script v5.7.2
+// ShopOpti+ Chrome Extension - Options Script v5.8.1
 // P0/P1 Security Hardening - XSS Prevention
+// Version is now dynamically loaded from manifest.json
 
 const API_URL = 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1';
 const APP_URL = 'https://shopopti.io';
-const VERSION = '5.7.2';
+
+// Get version dynamically from manifest.json
+function getManifestVersion() {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) {
+      return chrome.runtime.getManifest().version;
+    }
+  } catch (e) {
+    console.warn('Could not read manifest version:', e);
+  }
+  return '5.8.1'; // Fallback
+}
+
+const VERSION = getManifestVersion();
 
 const DEFAULT_SETTINGS = {
   apiUrl: API_URL,
@@ -135,6 +149,9 @@ function alarmsClear(name) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Update version badge dynamically from manifest
+  updateVersionBadge();
+  
   await loadSettings();
   await loadStats();
   setupEventListeners();
@@ -145,6 +162,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupPlatformToggles();
   setupSelectInputs();
 });
+
+// Update version badge from manifest.json
+function updateVersionBadge() {
+  const versionBadge = getElement('version-badge');
+  if (versionBadge) {
+    const version = getManifestVersion();
+    versionBadge.textContent = `v${version} Pro`;
+  }
+}
 
 // Tab switching functionality
 function setupTabs() {
