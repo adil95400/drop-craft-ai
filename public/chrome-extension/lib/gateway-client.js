@@ -11,7 +11,7 @@
  */
 
 const ShopOptiGateway = {
-  VERSION: '2.0.0',
+  VERSION: '2.1.0',
   EXTENSION_VERSION: '5.8.1',
   EXTENSION_ID: 'shopopti-extension',
   
@@ -27,6 +27,9 @@ const ShopOptiGateway = {
   // Current token
   _token: null,
   _tokenExpiry: null,
+  
+  // Debug mode flag
+  debugMode: false,
   
   // ==========================================================================
   // INITIALIZATION
@@ -49,14 +52,42 @@ const ShopOptiGateway = {
       this._tokenExpiry = tokenData.expiresAt ? new Date(tokenData.expiresAt) : null;
     }
     
+    // Load debug mode setting
+    const debugSetting = await this._getFromStorage('debugMode');
+    this.debugMode = debugSetting || false;
+    
     // Initialize IndexedDB
     await this._initDB();
     
     // Process any pending actions
     this._processPendingQueue();
     
-    console.log('[Gateway] Initialized v' + this.VERSION);
+    console.log('[Gateway] Initialized v' + this.VERSION + (this.debugMode ? ' (DEBUG MODE)' : ''));
     return true;
+  },
+  
+  /**
+   * Enable/disable debug mode - logs all payloads and responses
+   */
+  async setDebugMode(enabled) {
+    this.debugMode = enabled;
+    await this._setInStorage('debugMode', enabled);
+    console.log(`[Gateway] Debug mode: ${enabled ? 'ON' : 'OFF'}`);
+  },
+  
+  /**
+   * Debug log helper - only logs if debugMode is enabled
+   */
+  _debugLog(label, data) {
+    if (!this.debugMode) return;
+    
+    console.group(`[Gateway DEBUG] ${label}`);
+    try {
+      console.log(JSON.stringify(data, null, 2));
+    } catch (e) {
+      console.log(data);
+    }
+    console.groupEnd();
   },
   
   // ==========================================================================
@@ -249,22 +280,38 @@ const ShopOptiGateway = {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.config.requestTimeout);
     
+    const requestBody = {
+      action: request.action,
+      version: this.EXTENSION_VERSION,
+      payload: request.payload,
+      metadata: request.metadata,
+    };
+    
+    // DEBUG: Log outgoing request
+    this._debugLog('REQUEST', {
+      url: this.config.gatewayUrl,
+      headers: { ...headers, 'X-Extension-Token': headers['X-Extension-Token'] ? '[REDACTED]' : undefined },
+      body: requestBody,
+    });
+    
     try {
       const response = await fetch(this.config.gatewayUrl, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          action: request.action,
-          version: this.EXTENSION_VERSION,
-          payload: request.payload,
-          metadata: request.metadata,
-        }),
+        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
       
       clearTimeout(timeoutId);
       
       const data = await response.json();
+      
+      // DEBUG: Log response
+      this._debugLog('RESPONSE', {
+        status: response.status,
+        statusText: response.statusText,
+        data,
+      });
       
       // Handle specific status codes
       if (response.status === 401) {
@@ -295,6 +342,13 @@ const ShopOptiGateway = {
       
     } catch (error) {
       clearTimeout(timeoutId);
+      
+      // DEBUG: Log error
+      this._debugLog('ERROR', {
+        message: error.message,
+        code: error.code,
+        name: error.name,
+      });
       
       if (error.name === 'AbortError') {
         const timeoutError = new Error('Request timeout');
