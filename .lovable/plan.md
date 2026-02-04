@@ -1,226 +1,236 @@
 
-# Plan de Publication de l'Extension ShopOpti+ v5.8.1 sur le Chrome Web Store
+# Plan de Correction des Scopes de Permission
 
-## Résumé Exécutif
+## Problème Identifié
 
-L'extension ShopOpti+ v5.8.1 est **techniquement prête** pour la publication sur le Chrome Web Store. Le manifeste est conforme à Manifest V3, les permissions suivent le principe du moindre privilège, et la politique de confidentialité est documentée. Ce plan couvre les **actions restantes** pour compléter la soumission.
+**Mismatch critique entre scopes legacy et granulaires :**
 
----
+| Composant | Scopes Utilisés |
+|-----------|-----------------|
+| `extension-auth/index.ts` | `import`, `sync`, `logs`, `bulk` (legacy) |
+| Gateway `types.ts` | `products:import`, `products:bulk`, `sync:read` (granulaires) |
+| Tokens actifs (11) | `[import, sync, logs]` avec **0 scope_count** |
+| Fonction SQL `generate_extension_token` | Attend scopes granulaires |
 
-## État Actuel de Préparation
-
-| Catégorie | Statut | Détails |
-|-----------|--------|---------|
-| Manifest V3 | ✅ Prêt | Version 5.8.1, permissions minimales, optional_host_permissions |
-| Icônes | ✅ Prêt | 16x16, 32x32, 48x48, 128x128 PNG présentes |
-| Background Service Worker | ✅ Prêt | `background.js` conforme MV3 |
-| Politique de confidentialité | ✅ Prêt | `PRIVACY_POLICY.md` conforme RGPD/CCPA |
-| Screenshots Store | ⚠️ À créer | 3-5 images 1280x800 requis |
-| Promotional Tiles | ⚠️ À créer | Small 440x280, Large 920x680, Marquee 1400x560 |
-| Description Store | ✅ Prêt | `STORE_LISTING.md` préparé en français |
+**Résultat :** Les tokens générés via `extension-auth` n'ont pas les permissions requises par le gateway → erreur `FORBIDDEN_SCOPE`.
 
 ---
 
-## Plan d'Implémentation
+## Solution en 3 Phases
 
-### Phase 1 : Préparation des Assets Graphiques
+### Phase 1 : Migration SQL des Tokens Existants
 
-**1.1 Générer les Screenshots Officiels (1280x800)**
+Créer une migration qui :
 
-Créer 5 captures d'écran professionnelles :
-1. **Popup Principal** - Interface popup avec statistiques et actions rapides
-2. **Bouton d'Import** - Page produit Amazon/AliExpress avec bouton "+ ShopOpti" visible
-3. **Prévisualisation Produit** - Modal de preview avant import avec score qualité
-4. **Dashboard Intégré** - Produits synchronisés dans le tableau de bord ShopOpti
-5. **Paramètres** - Page de configuration de l'extension
+1. **Mappe les scopes legacy vers granulaires** :
+   - `import` → `products:read`, `products:import`, `products:write`
+   - `sync` → `sync:read`, `sync:trigger`
+   - `logs` → `analytics:read`
+   - `bulk` → `products:bulk`
+   - `ai_optimize` → `ai:generate`, `ai:optimize`
+   - `stock_monitor` → `sync:auto`
 
-**1.2 Créer les Images Promotionnelles**
+2. **Migre tous les tokens actifs** vers la table `extension_token_scopes`
 
-| Asset | Dimensions | Contenu |
-|-------|------------|---------|
-| Small Tile | 440x280 | Logo + tagline "Dropshipping Pro" |
-| Large Tile | 920x680 | Showcase des fonctionnalités principales |
-| Marquee | 1400x560 | Bannière complète avec plateformes supportées |
-
-### Phase 2 : Configuration du Compte Développeur Chrome
-
-**2.1 Prérequis**
-- Créer un compte développeur Chrome si non existant
-- Payer les frais d'inscription uniques ($5 USD)
-- Vérifier l'identité du développeur
-
-**2.2 Informations à Renseigner**
-```text
-Nom développeur: ShopOpti Team
-Email support: support@shopopti.io
-Site web: https://shopopti.io
-Politique de confidentialité: https://shopopti.io/privacy
-```
-
-### Phase 3 : Préparation du Package ZIP
-
-**3.1 Fichiers Critiques Validés**
-
-Le générateur `extensionZipGenerator.ts` inclut déjà tous les fichiers requis :
+3. **Met à jour le champ `permissions` JSONB** dans `extension_auth_tokens` pour utiliser le nouveau format
 
 ```text
-public/chrome-extension/
-├── manifest.json          ✅ MV3 conforme
-├── background.js          ✅ Service Worker
-├── popup.html/js/css      ✅ Interface popup
-├── content-script.js      ✅ Injection marketplaces
-├── bulk-import-v5-secure.js ✅ Import sécurisé
-├── icons/                 ✅ 4 tailles
-├── lib/                   ✅ 65+ modules
-├── extractors/            ✅ 21 extracteurs
-├── PRIVACY_POLICY.md      ✅ Documentation
-└── CHANGELOG.md           ✅ Historique versions
+┌─────────────────────────────────────────────────────────────────┐
+│                    FLUX DE MIGRATION                            │
+├─────────────────────────────────────────────────────────────────┤
+│  extension_auth_tokens                                          │
+│  permissions: ["import", "sync", "logs"]                        │
+│                    │                                            │
+│                    ▼                                            │
+│  Fonction migrate_legacy_token_permissions()                    │
+│                    │                                            │
+│                    ▼                                            │
+│  extension_token_scopes                                         │
+│  (token_id, scope_id) pour products:read, products:import, etc. │
+│                    │                                            │
+│                    ▼                                            │
+│  extension_auth_tokens.permissions mis à jour                   │
+│  permissions: ["products:read", "products:import", ...]         │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**3.2 Validation Finale du Package**
-- Télécharger le ZIP via le bouton existant dans l'app
-- Charger en mode développeur pour test final
-- Vérifier l'absence d'erreurs dans la console
+### Phase 2 : Mise à Jour de `extension-auth/index.ts`
 
-### Phase 4 : Soumission au Chrome Web Store
-
-**4.1 Étapes de Soumission**
-
-1. Accéder à https://chrome.google.com/webstore/devconsole
-2. Cliquer "Nouvel élément"
-3. Uploader le ZIP de l'extension
-4. Remplir les métadonnées :
-
-```text
-Nom: ShopOpti+ | Dropshipping Pro
-Description courte (132 car.): 
-  Extension Dropshipping Pro - Import 1-Click produits & avis, 
-  monitoring prix, auto-order. 45+ plateformes. 🚀
-
-Catégorie: Shopping / Productivity
-Langue: Français
-```
-
-5. Uploader les screenshots et promotional tiles
-6. Définir les régions de distribution (Monde entier ou France)
-7. Soumettre pour examen
-
-**4.2 Justification des Permissions**
-
-Le Chrome Store demande une justification pour chaque permission. Textes préparés :
-
-| Permission | Justification |
-|------------|---------------|
-| `activeTab` | Accès à l'onglet actif pour extraire les données produit |
-| `storage` | Sauvegarder les préférences utilisateur localement |
-| `alarms` | Planifier les vérifications automatiques de prix |
-| `notifications` | Alerter l'utilisateur des changements de prix/stock |
-| `host_permissions` (optionnel) | Accès aux marketplaces uniquement avec consentement utilisateur |
-
-### Phase 5 : Post-Publication
-
-**5.1 Mise à Jour de l'Application**
-
-Modifier `ChromeExtensionPage.tsx` pour afficher le lien officiel du Chrome Web Store :
+Modifier l'edge function pour utiliser les scopes granulaires :
 
 ```typescript
-// Remplacer le téléchargement ZIP par le lien store
-const CHROME_STORE_URL = 'https://chrome.google.com/webstore/detail/shopopti-dropshipping-pro/[EXTENSION_ID]';
+// AVANT
+const ALLOWED_PERMISSIONS = new Set([
+  'import', 'sync', 'logs', 'bulk', 'ai_optimize', 'stock_monitor'
+])
 
-<Button onClick={() => window.open(CHROME_STORE_URL, '_blank')}>
-  <Chrome className="h-5 w-5 mr-2" />
-  Installer depuis Chrome Web Store
-</Button>
+function validatePermissions(perms) {
+  if (!Array.isArray(perms)) return ['import', 'sync']
+  // ...
+}
+
+// APRÈS
+const ALLOWED_PERMISSIONS = new Set([
+  'products:read', 'products:write', 'products:import', 'products:bulk',
+  'sync:read', 'sync:trigger', 'analytics:read', 'settings:read', 
+  'ai:generate', 'ai:optimize'
+])
+
+const DEFAULT_PERMISSIONS = [
+  'products:read', 'products:import', 'sync:read', 'settings:read', 'analytics:read'
+]
+
+function validatePermissions(perms) {
+  if (!Array.isArray(perms)) return DEFAULT_PERMISSIONS
+  // ...
+}
 ```
 
-**5.2 Système de Mises à Jour Automatiques**
+### Phase 3 : Rétrocompatibilité dans le Gateway
 
-Une fois publiée, les mises à jour se font via :
-1. Incrémenter la version dans `manifest.json` (5.8.2, etc.)
-2. Générer un nouveau ZIP
-3. Uploader via le Developer Dashboard
-4. Les utilisateurs reçoivent la mise à jour automatiquement
+Ajouter un mapper de compatibilité dans le gateway pour gérer les clients utilisant encore les anciens noms :
 
----
+```typescript
+const LEGACY_SCOPE_MAP: Record<string, string[]> = {
+  'import': ['products:read', 'products:import'],
+  'sync': ['sync:read', 'sync:trigger'],
+  'logs': ['analytics:read'],
+  'bulk': ['products:bulk'],
+  'ai_optimize': ['ai:generate', 'ai:optimize'],
+  'stock_monitor': ['sync:auto'],
+}
 
-## Fichiers à Créer/Modifier
-
-| Fichier | Action | Description |
-|---------|--------|-------------|
-| `public/chrome-extension/store-assets/` | Créer | Dossier pour screenshots et tiles |
-| `src/pages/extensions/ChromeExtensionPage.tsx` | Modifier | Ajouter lien Chrome Web Store |
-| `src/pages/extensions/ExtensionReadinessPage.tsx` | Modifier | Mettre à jour statut post-publication |
-| `public/chrome-extension/manifest.json` | Vérifier | Confirmer version 5.8.1 |
-
----
-
-## Checklist Finale Avant Soumission
-
-- [ ] Screenshots 1280x800 créés (5 images)
-- [ ] Small Tile 440x280 créée
-- [ ] Large Tile 920x680 créée (optionnel mais recommandé)
-- [ ] Marquee 1400x560 créée (optionnel)
-- [ ] Compte développeur Chrome vérifié
-- [ ] ZIP téléchargé et testé localement
-- [ ] Aucune erreur de chargement dans chrome://extensions
-- [ ] Test d'import sur Amazon/AliExpress réussi
-- [ ] URL politique de confidentialité accessible publiquement
-
----
-
-## Section Technique
-
-### Structure du Package Final
-
-```text
-shopopti-extension-v5.8.1.zip
-├── manifest.json                    # Manifest V3
-├── background.js                    # Service Worker (1647 lignes)
-├── content-script.js                # Injection DOM
-├── bulk-import-v5-secure.js         # Import sécurisé IndexedDB
-├── popup.html / popup.js / popup.css
-├── options.html / options.js
-├── auth.html / auth.js
-├── content.css
-├── lib/                             # 65 modules utilitaires
-│   ├── gateway-client.js            # Enterprise Gateway v2.1
-│   ├── extractor-bridge.js          # Multi-strategy extraction
-│   ├── platform-detector.js         # Détection 45+ plateformes
-│   ├── quality-scorer.js            # Score 0-100
-│   └── ...
-├── extractors/                      # 21 extracteurs par plateforme
-│   ├── amazon-extractor.js
-│   ├── aliexpress-extractor.js
-│   ├── temu-extractor.js
-│   └── ...
-├── icons/
-│   ├── icon16.png
-│   ├── icon32.png
-│   ├── icon48.png
-│   └── icon128.png
-├── PRIVACY_POLICY.md
-├── CHANGELOG.md
-└── INSTALL.txt
+function expandLegacyScopes(scopes: string[]): string[] {
+  return scopes.flatMap(s => LEGACY_SCOPE_MAP[s] || [s])
+}
 ```
 
-### Validation Manifest V3
+---
 
-Le manifest actuel est conforme :
-- ✅ `manifest_version: 3`
-- ✅ `service_worker` au lieu de `background.scripts`
-- ✅ `host_permissions` séparées des `permissions`
-- ✅ `optional_host_permissions` pour marketplaces
-- ✅ CSP stricte : `script-src 'self'`
+## Fichiers à Modifier
 
-### Délai de Révision Chrome
-
-Le processus de révision prend généralement **1 à 3 jours ouvrés** pour une première soumission. Les mises à jour ultérieures sont plus rapides (quelques heures).
+| Fichier | Modification |
+|---------|-------------|
+| `supabase/migrations/` | Nouvelle migration avec fonction de mapping et migration des tokens |
+| `supabase/functions/extension-auth/index.ts` | `ALLOWED_PERMISSIONS` et `validatePermissions()` mis à jour |
+| `supabase/functions/extension-gateway/actions/auth.ts` | Ajout du mapper legacy (optionnel pour rétrocompatibilité) |
 
 ---
 
-## Prochaines Étapes Après Approbation
+## Détails Techniques
 
-1. Récupérer l'ID de l'extension publiée
-2. Mettre à jour les liens dans l'application SaaS
-3. Communiquer le lien officiel aux utilisateurs existants
-4. Configurer les alertes de monitoring des reviews
+### Migration SQL
+
+```sql
+-- 1. Fonction de mapping legacy -> granulaire
+CREATE OR REPLACE FUNCTION public.map_legacy_permission(legacy_perm TEXT)
+RETURNS TEXT[]
+LANGUAGE sql IMMUTABLE
+AS $$
+  SELECT CASE legacy_perm
+    WHEN 'import' THEN ARRAY['products:read', 'products:import', 'products:write']
+    WHEN 'sync' THEN ARRAY['sync:read', 'sync:trigger']
+    WHEN 'logs' THEN ARRAY['analytics:read']
+    WHEN 'bulk' THEN ARRAY['products:bulk']
+    WHEN 'ai_optimize' THEN ARRAY['ai:generate', 'ai:optimize']
+    WHEN 'stock_monitor' THEN ARRAY['sync:auto']
+    ELSE ARRAY[legacy_perm]::TEXT[]
+  END;
+$$;
+
+-- 2. Fonction de migration pour un token
+CREATE OR REPLACE FUNCTION public.migrate_token_to_granular_scopes(p_token_id UUID)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_permissions JSONB;
+  v_perm TEXT;
+  v_granular_scopes TEXT[];
+  v_scope_name TEXT;
+  v_scope_id UUID;
+  v_user_id UUID;
+  v_granted INTEGER := 0;
+BEGIN
+  -- Récupérer les permissions legacy
+  SELECT permissions, user_id INTO v_permissions, v_user_id
+  FROM extension_auth_tokens WHERE id = p_token_id;
+  
+  -- Pour chaque permission legacy
+  FOR v_perm IN SELECT jsonb_array_elements_text(COALESCE(v_permissions, '[]'::jsonb))
+  LOOP
+    -- Mapper vers scopes granulaires
+    v_granular_scopes := map_legacy_permission(v_perm);
+    
+    -- Insérer chaque scope granulaire
+    FOREACH v_scope_name IN ARRAY v_granular_scopes LOOP
+      SELECT id INTO v_scope_id FROM extension_scopes WHERE scope_name = v_scope_name;
+      
+      IF v_scope_id IS NOT NULL THEN
+        INSERT INTO extension_token_scopes (token_id, scope_id, granted_by)
+        VALUES (p_token_id, v_scope_id, v_user_id)
+        ON CONFLICT (token_id, scope_id) DO NOTHING;
+        v_granted := v_granted + 1;
+      END IF;
+    END LOOP;
+  END LOOP;
+  
+  -- Mettre à jour le champ permissions avec les scopes granulaires
+  UPDATE extension_auth_tokens
+  SET permissions = (
+    SELECT to_jsonb(array_agg(DISTINCT s.scope_name))
+    FROM extension_token_scopes ts
+    JOIN extension_scopes s ON s.id = ts.scope_id
+    WHERE ts.token_id = p_token_id
+  )
+  WHERE id = p_token_id;
+  
+  RETURN v_granted;
+END;
+$$;
+
+-- 3. Migrer tous les tokens actifs
+DO $$
+DECLARE
+  v_token RECORD;
+  v_total INTEGER := 0;
+BEGIN
+  FOR v_token IN 
+    SELECT id FROM extension_auth_tokens 
+    WHERE is_active = true AND revoked_at IS NULL
+  LOOP
+    v_total := v_total + migrate_token_to_granular_scopes(v_token.id);
+  END LOOP;
+  
+  RAISE NOTICE 'Migration terminée: % scopes attribués', v_total;
+END;
+$$;
+```
+
+### Mise à jour extension-auth
+
+Changements dans `validatePermissions()` :
+
+1. Remplacer `ALLOWED_PERMISSIONS` par les 19 scopes granulaires
+2. Changer les permissions par défaut de `['import', 'sync']` vers `['products:read', 'products:import', 'sync:read', 'settings:read']`
+3. Ajouter un mapper inline pour la rétrocompatibilité des clients existants
+
+---
+
+## Risques et Mitigations
+
+| Risque | Mitigation |
+|--------|------------|
+| Extensions anciennes envoient encore `import` | Le mapper dans `validatePermissions()` convertit automatiquement |
+| Tokens migrés perdent des permissions | La migration ajoute plus de scopes (inclusif), pas moins |
+| Rollback nécessaire | Les anciennes permissions restent dans `permissions` JSONB jusqu'à mise à jour |
+
+---
+
+## Résultat Attendu
+
+Après implémentation :
+- Tous les tokens actifs auront des entrées dans `extension_token_scopes`
+- Le gateway validera `products:import` avec succès
+- Les nouvelles générations de tokens utiliseront directement le format granulaire
+- Compatibilité maintenue avec les extensions < 5.8.1
