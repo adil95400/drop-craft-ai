@@ -92,6 +92,7 @@ export type ErrorCode = keyof typeof ERROR_CODES
 
 export interface ActionConfig {
   rateLimit: { maxRequests: number; windowMinutes: number }
+  handler: 'auth' | 'import' | 'ai' | 'sync' | 'utility' | 'scrape' | 'analyze' | 'progressive' | 'reviews'
   requiresToken: boolean
   requiredScope?: string
   handler: 'auth' | 'import' | 'ai' | 'sync' | 'utility' | 'scrape' | 'analyze' | 'progressive'
@@ -110,7 +111,8 @@ export const ACTION_CONFIG: Record<string, ActionConfig> = {
   'IMPORT_PRODUCT_BACKEND': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'import' },
   'IMPORT_BULK': { rateLimit: { maxRequests: 10, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:bulk', handler: 'import' },
   'IMPORT_BULK_BACKEND': { rateLimit: { maxRequests: 5, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:bulk', handler: 'import' },
-  'IMPORT_REVIEWS': { rateLimit: { maxRequests: 20, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'import' },
+  'IMPORT_REVIEWS': { rateLimit: { maxRequests: 20, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'reviews' },
+  'REVIEW_JOB_STATUS': { rateLimit: { maxRequests: 100, windowMinutes: 60 }, requiresToken: true, handler: 'reviews' },
   'UPSERT_PRODUCT': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:write', handler: 'import' },
   'PUBLISH_TO_STORE': { rateLimit: { maxRequests: 20, windowMinutes: 60 }, requiresToken: true, requiredScope: 'store:publish', handler: 'import' },
   'SCRAPE_URL': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:read', handler: 'scrape' },
