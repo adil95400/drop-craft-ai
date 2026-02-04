@@ -15,7 +15,7 @@ import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { cn } from '@/lib/utils';
 
 // Import assets
-import shopOptiLogo from '@/assets/logo.svg';
+import shopOptiLogo from '@/assets/logo-shopopti.png';
 import dashboardPreview1 from '@/assets/dashboard-preview-1.jpg';
 import dashboardPreview2 from '@/assets/dashboard-preview-2.jpg';
 import dashboardPreview3 from '@/assets/dashboard-preview-3.jpg';
