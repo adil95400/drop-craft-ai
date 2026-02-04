@@ -1,3 +1,8 @@
+/**
+ * Shopify Stats - Secured Implementation
+ * P0.1: JWT authentication required
+ * P0.2: Verify integration belongs to authenticated user
+ */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 
@@ -6,17 +11,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
-    )
+    // P0.1: Require JWT authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    })
+    
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false }
+    })
 
     const { integration_id } = await req.json()
 
@@ -24,15 +53,20 @@ serve(async (req) => {
       throw new Error('Integration ID is required')
     }
 
-    // Get integration details
+    // P0.2: Get integration details WITH user_id filter
     const { data: integration, error: integrationError } = await supabaseClient
       .from('integrations')
       .select('*')
       .eq('id', integration_id)
+      .eq('user_id', user.id)  // ✅ Critical: Filter by authenticated user
       .single()
 
-    if (integrationError) {
-      throw new Error(`Integration not found: ${integrationError.message}`)
+    if (integrationError || !integration) {
+      console.error('Integration not found or access denied:', integrationError)
+      return new Response(
+        JSON.stringify({ success: false, error: 'Integration not found or access denied' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Check cache first

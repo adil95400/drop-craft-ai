@@ -1,26 +1,56 @@
 /**
  * PHASE 3: Supabase Edge Function pour OpenAI Realtime API
  * Proxy sécurisé entre le frontend et OpenAI avec WebSockets
+ * P0.1: JWT authentication required before WebSocket upgrade
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 
 const OPENAI_REALTIME_URL = "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01"
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+}
 
 serve(async (req) => {
   console.log('🚀 Realtime chat function called')
   
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-      },
-    })
+    return new Response(null, { status: 200, headers: corsHeaders })
   }
+
+  // P0.1: Require JWT authentication BEFORE WebSocket upgrade
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader?.startsWith('Bearer ')) {
+    console.error('❌ No authorization header')
+    return new Response(
+      JSON.stringify({ error: 'Authentication required' }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    )
+  }
+
+  const token = authHeader.replace('Bearer ', '')
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } }
+  })
+  
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  if (authError || !user) {
+    console.error('❌ Invalid token:', authError?.message)
+    return new Response(
+      JSON.stringify({ error: 'Invalid or expired token' }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    )
+  }
+
+  console.log(`✅ User authenticated: ${user.id}`)
 
   // Get OpenAI API Key
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
@@ -28,19 +58,16 @@ serve(async (req) => {
     console.error('❌ OpenAI API Key not found')
     return new Response(
       JSON.stringify({ error: 'OpenAI API Key not configured' }),
-      { 
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     )
   }
 
   console.log('✅ OpenAI API Key found')
 
-  // Upgrade to WebSocket
+  // Upgrade to WebSocket (only after authentication)
   if (req.headers.get("upgrade") !== "websocket") {
     console.error('❌ Not a WebSocket request')
-    return new Response("Expected WebSocket", { status: 400 })
+    return new Response("Expected WebSocket", { status: 400, headers: corsHeaders })
   }
 
   console.log('🔄 Upgrading to WebSocket connection...')
@@ -50,6 +77,7 @@ serve(async (req) => {
   // Variables for managing connections
   let openaiSocket: WebSocket | null = null
   let sessionCreated = false
+  const authenticatedUserId = user.id  // Store for session logging
 
   console.log('📡 Setting up client WebSocket handlers...')
 
