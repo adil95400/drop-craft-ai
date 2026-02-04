@@ -432,9 +432,26 @@
     setButtonLoading(button, true);
     
     try {
-      // PHASE 1+2: Use ShopOptiPipeline (atomic import with strict validation)
+      // BACKEND-FIRST ARCHITECTURE: Use BackendFirstImport (no local extraction)
+      if (window.BackendFirstImport) {
+        console.log('[ShopOpti+] Using BackendFirstImport (backend-first architecture)');
+        
+        const result = await window.BackendFirstImport.import(url, {
+          targetStores: userStores.map(s => s.id)
+        }, button);
+        
+        // Response handling is done by ImportResponseHandler
+        // Just log and sync
+        if (result.ok) {
+          syncWithSaaS('product_import_started', { jobId: result.job_id, url });
+        }
+        
+        return;
+      }
+      
+      // LEGACY FALLBACK: Use ShopOptiPipeline (local extraction)
       if (window.ShopOptiPipeline) {
-        console.log('[ShopOpti+] Using Pipeline v5.7.1 for atomic import');
+        console.warn('[ShopOpti+] Falling back to legacy ShopOptiPipeline');
         
         const result = await window.ShopOptiPipeline.processUrl(url, {
           targetStores: userStores.map(s => s.id)
@@ -533,9 +550,6 @@
         }
         return;
       }
-      
-      // FALLBACK: Use ExtractionOrchestrator
-      if (window.ExtractionOrchestrator) {
         console.log('[ShopOpti+] Using ExtractionOrchestrator fallback');
         
         const result = await window.ExtractionOrchestrator.extract(url, {

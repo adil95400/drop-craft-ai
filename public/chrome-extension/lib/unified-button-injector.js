@@ -435,7 +435,8 @@
     }
 
     /**
-     * Handle import button click
+     * Handle import button click - BACKEND-FIRST ARCHITECTURE
+     * No local extraction - sends only URL to backend
      */
     async handleImportClick(button) {
       const url = window.location.href;
@@ -444,12 +445,33 @@
       this.setButtonState(button, 'loading');
 
       try {
-        // Use the import pipeline
+        // BACKEND-FIRST: Use BackendFirstImport (no local extraction)
+        if (window.BackendFirstImport) {
+          console.log('[ShopOpti+] Using BackendFirstImport (backend-first architecture)');
+          
+          const result = await window.BackendFirstImport.import(url, {}, button);
+
+          // Result is already handled by ImportResponseHandler
+          // Just update button state if needed
+          if (result.ok) {
+            // Button state managed by ImportResponseHandler
+            return;
+          } else {
+            // Error already shown by ImportResponseHandler
+            setTimeout(() => {
+              this.setButtonState(button, 'default');
+            }, 3000);
+          }
+          return;
+        }
+
+        // LEGACY FALLBACK: Use old pipeline (for backwards compatibility)
         if (window.ShopOptiPipeline) {
+          console.warn('[ShopOpti+] Falling back to legacy ShopOptiPipeline');
+          
           const result = await window.ShopOptiPipeline.processUrl(url, {});
 
           if (result.status === 'awaiting_confirmation') {
-            // Show pre-import dialog
             this.setButtonState(button, 'default');
             
             if (window.ShopOptiPreImportDialog) {
@@ -479,14 +501,8 @@
             this.showToast(`❌ ${result.error}`, 'error');
           }
         } else {
-          // Fallback to direct API call
-          if (window.ShopOptiAPI) {
-            const result = await window.ShopOptiAPI.importFromUrl(url);
-            this.setButtonState(button, 'success');
-            this.showToast('✅ Produit importé!', 'success');
-          } else {
-            throw new Error('API non disponible');
-          }
+          // No import system available
+          throw new Error('Système d\'import non disponible');
         }
       } catch (error) {
         console.error('[ShopOpti+] Import error:', error);
