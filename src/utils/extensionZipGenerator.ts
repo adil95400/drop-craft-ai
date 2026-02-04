@@ -4,8 +4,24 @@ import { toast } from 'sonner';
 
 const EXTENSION_VERSION = '5.8.1';
 
+// Required files that MUST be present for the extension to load in Chrome
+const REQUIRED_FILES = [
+  'manifest.json',
+  'background.js',
+  'content-script.js',
+  'bulk-import-v5-secure.js',
+  'lib/base-extractor.js',
+  'lib/platform-detector.js',
+  'lib/extractor-bridge.js',
+  'lib/feedback-system.js',
+  'lib/import-pipeline.js',
+  'lib/product-validator.js',
+  'extractors/extractor-registry.js',
+  'extractors/core-extractor.js',
+];
+
 const EXTENSION_FILES = [
-  // Core files
+  // Core files (required)
   'manifest.json',
   'background.js',
   'popup.html',
@@ -18,7 +34,7 @@ const EXTENSION_FILES = [
   'auth.html',
   'auth.js',
   
-  // Import system
+  // Import system (bulk-import-v5-secure.js is REQUIRED)
   'import-overlay-v2.js',
   'bulk-import-v5.js',
   'bulk-import-v5-secure.js',
@@ -198,20 +214,8 @@ export async function generateExtensionZip(): Promise<void> {
   const failedFiles: string[] = [];
 
   // If any of these are missing, the extension will NOT load in Chrome.
-  // Keep this list minimal and strictly aligned with manifest references.
-  const requiredFiles = new Set<string>([
-    'manifest.json',
-    'background.js',
-    'content-script.js',
-    'lib/base-extractor.js',
-    'lib/platform-detector.js',
-    'lib/extractor-bridge.js',
-    'lib/feedback-system.js',
-    'lib/import-pipeline.js',
-    'lib/product-validator.js',
-    'extractors/extractor-registry.js',
-    'extractors/core-extractor.js',
-  ]);
+  // Use the REQUIRED_FILES constant defined at the top of the file.
+  const requiredFiles = new Set<string>(REQUIRED_FILES);
   
   toast.info(`Préparation de ${EXTENSION_FILES.length} fichiers...`);
   
