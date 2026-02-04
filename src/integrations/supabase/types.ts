@@ -6138,14 +6138,18 @@ export type Database = {
         Row: {
           brand: string | null
           category: string | null
+          completeness_score: number | null
           cost_price: number | null
           created_at: string | null
           currency: string | null
           description: string | null
+          description_html: string | null
+          extraction_metadata: Json | null
           id: string
           image_urls: string[] | null
           import_job_id: string | null
           import_notes: string | null
+          job_id: string | null
           metadata: Json | null
           name: string | null
           original_images: string[] | null
@@ -6157,6 +6161,7 @@ export type Database = {
           sku: string | null
           source_platform: string | null
           source_url: string | null
+          sources_json: Json | null
           specifications: Json | null
           status: string | null
           stock_quantity: number | null
@@ -6166,19 +6171,25 @@ export type Database = {
           updated_at: string | null
           user_id: string
           variants: Json | null
+          variants_json: Json | null
           video_urls: string[] | null
+          videos: string[] | null
         }
         Insert: {
           brand?: string | null
           category?: string | null
+          completeness_score?: number | null
           cost_price?: number | null
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          description_html?: string | null
+          extraction_metadata?: Json | null
           id?: string
           image_urls?: string[] | null
           import_job_id?: string | null
           import_notes?: string | null
+          job_id?: string | null
           metadata?: Json | null
           name?: string | null
           original_images?: string[] | null
@@ -6190,6 +6201,7 @@ export type Database = {
           sku?: string | null
           source_platform?: string | null
           source_url?: string | null
+          sources_json?: Json | null
           specifications?: Json | null
           status?: string | null
           stock_quantity?: number | null
@@ -6199,19 +6211,25 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           variants?: Json | null
+          variants_json?: Json | null
           video_urls?: string[] | null
+          videos?: string[] | null
         }
         Update: {
           brand?: string | null
           category?: string | null
+          completeness_score?: number | null
           cost_price?: number | null
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          description_html?: string | null
+          extraction_metadata?: Json | null
           id?: string
           image_urls?: string[] | null
           import_job_id?: string | null
           import_notes?: string | null
+          job_id?: string | null
           metadata?: Json | null
           name?: string | null
           original_images?: string[] | null
@@ -6223,6 +6241,7 @@ export type Database = {
           sku?: string | null
           source_platform?: string | null
           source_url?: string | null
+          sources_json?: Json | null
           specifications?: Json | null
           status?: string | null
           stock_quantity?: number | null
@@ -6232,7 +6251,9 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           variants?: Json | null
+          variants_json?: Json | null
           video_urls?: string[] | null
+          videos?: string[] | null
         }
         Relationships: [
           {
@@ -6240,6 +6261,13 @@ export type Database = {
             columns: ["import_job_id"]
             isOneToOne: false
             referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imported_products_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "product_import_jobs"
             referencedColumns: ["id"]
           },
           {
@@ -8516,6 +8544,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          extraction_method: string | null
+          id: string
+          max_retries: number | null
+          metadata: Json | null
+          missing_fields: string[] | null
+          platform: string
+          progress_percent: number | null
+          retry_count: number | null
+          source_url: string
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          extraction_method?: string | null
+          id?: string
+          max_retries?: number | null
+          metadata?: Json | null
+          missing_fields?: string[] | null
+          platform?: string
+          progress_percent?: number | null
+          retry_count?: number | null
+          source_url: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          extraction_method?: string | null
+          id?: string
+          max_retries?: number | null
+          metadata?: Json | null
+          missing_fields?: string[] | null
+          platform?: string
+          progress_percent?: number | null
+          retry_count?: number | null
+          source_url?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       product_price_conversions: {
         Row: {

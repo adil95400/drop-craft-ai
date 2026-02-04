@@ -94,7 +94,7 @@ export interface ActionConfig {
   rateLimit: { maxRequests: number; windowMinutes: number }
   requiresToken: boolean
   requiredScope?: string
-  handler: 'auth' | 'import' | 'ai' | 'sync' | 'utility' | 'scrape' | 'analyze'
+  handler: 'auth' | 'import' | 'ai' | 'sync' | 'utility' | 'scrape' | 'analyze' | 'progressive'
 }
 
 export const ACTION_CONFIG: Record<string, ActionConfig> = {
@@ -138,12 +138,17 @@ export const ACTION_CONFIG: Record<string, ActionConfig> = {
   'ANALYZE_PRODUCT': { rateLimit: { maxRequests: 30, windowMinutes: 60 }, requiresToken: true, requiredScope: 'analyze:product', handler: 'analyze' },
   'ANALYZE_COMPETITORS': { rateLimit: { maxRequests: 20, windowMinutes: 60 }, requiresToken: true, requiredScope: 'analyze:competitors', handler: 'analyze' },
   'ANALYZE_MARKET': { rateLimit: { maxRequests: 15, windowMinutes: 60 }, requiresToken: true, requiredScope: 'analyze:market', handler: 'analyze' },
+  
+  // Progressive Import actions (async job-based)
+  'IMPORT_PROGRESSIVE': { rateLimit: { maxRequests: 50, windowMinutes: 60 }, requiresToken: true, requiredScope: 'products:import', handler: 'progressive' },
+  'JOB_STATUS': { rateLimit: { maxRequests: 200, windowMinutes: 60 }, requiresToken: true, handler: 'progressive' },
 }
 
 // Write actions that require idempotency
 export const WRITE_ACTIONS = new Set([
   'IMPORT_PRODUCT',
   'IMPORT_PRODUCT_BACKEND',
+  'IMPORT_PROGRESSIVE',
   'IMPORT_BULK',
   'IMPORT_BULK_BACKEND',
   'IMPORT_REVIEWS',
