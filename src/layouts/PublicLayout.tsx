@@ -1,12 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, ShoppingCart } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import FooterNavigation from '@/components/navigation/FooterNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import logoPng from '@/assets/logo-shopopti.png';
+
 interface PublicLayoutProps {
   children: React.ReactNode;
 }
+
+// Memoized Logo component for performance
+const HeaderLogo = memo(() => (
+  <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group">
+    <img 
+      src={logoPng} 
+      alt="Shopopti+" 
+      className="h-8 w-8 sm:h-10 sm:w-10 object-contain transition-transform duration-300 group-hover:scale-105"
+      width={40}
+      height={40}
+      loading="eager"
+    />
+    <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+      ShopOpti+
+    </span>
+  </Link>
+));
+HeaderLogo.displayName = 'HeaderLogo';
+
 export function PublicLayout({
   children
 }: PublicLayoutProps) {
@@ -38,14 +59,7 @@ export function PublicLayout({
         <div className="container mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex h-14 sm:h-16 items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
-                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-              </div>
-              <span className="text-base sm:text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
-                ShopOpti+
-              </span>
-            </Link>
+            <HeaderLogo />
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-1">

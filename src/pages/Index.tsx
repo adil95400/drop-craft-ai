@@ -13,6 +13,9 @@ import { LiveDemoPreview } from "@/components/landing/LiveDemoPreview";
 import { TestimonialsWithPhotos } from "@/components/landing/TestimonialsWithPhotos";
 import { InteractiveDemo } from "@/components/landing/InteractiveDemo";
 import { TrustedBySection } from "@/components/landing/TrustedBySection";
+import { memo } from "react";
+import logoPng from "@/assets/logo-shopopti.png";
+
 // Hero images in public folder for LCP discovery
 const heroImage = "/images/hero-automation.jpg";
 const heroImageSm = "/images/hero-automation-sm.jpg";
@@ -23,66 +26,90 @@ import featureIntegrationSm from "@/assets/feature-integration-sm.jpg";
 import featureAnalytics from "@/assets/feature-analytics.jpg";
 import featureAnalyticsSm from "@/assets/feature-analytics-sm.jpg";
 
-// Hero Section
-const HeroSection = () => {
+// Hero Section - Optimized with memo and improved animations
+const HeroSection = memo(() => {
   const navigate = useNavigate();
   
   return (
-    <section className="relative py-12 md:py-20 lg:py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
-      <div className="absolute inset-0 bg-grid-white/10 bg-grid-16 [mask-image:radial-gradient(white,transparent_70%)]" />
+    <section className="relative py-16 md:py-24 lg:py-32 overflow-hidden">
+      {/* Enhanced gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-background to-secondary/10" />
+      <div className="absolute inset-0 bg-grid-white/10 bg-grid-16 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,white,transparent_70%)]" />
+      
+      {/* Floating decorative elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/15 rounded-full blur-3xl animate-pulse delay-1000" />
       
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left Content */}
-          <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
-            <Badge className="px-4 py-2 text-xs sm:text-sm bg-primary/10 text-primary border-primary/20 inline-flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              La plateforme n°1 du dropshipping intelligent
-            </Badge>
+          <div className="space-y-8 text-center lg:text-left">
+            {/* Logo + Badge */}
+            <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4">
+              <img 
+                src={logoPng} 
+                alt="ShopOpti+" 
+                className="h-14 w-14 sm:h-16 sm:w-16 object-contain drop-shadow-lg"
+                width={64}
+                height={64}
+                loading="eager"
+              />
+              <Badge className="px-5 py-2.5 text-sm bg-gradient-to-r from-primary/15 to-primary/5 text-primary border-primary/25 shadow-sm inline-flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                La plateforme n°1 du dropshipping intelligent
+              </Badge>
+            </div>
             
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
               Automatisez votre
-              <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-primary via-primary/70 to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
                 e-commerce avec l'IA
               </span>
             </h1>
             
-            <p className="text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed">
-              Importez des produits de 99+ fournisseurs internationaux, automatisez votre gestion 
-              et développez votre business avec notre plateforme SaaS propulsée par l'intelligence artificielle.
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Importez des produits de <strong className="text-foreground">99+ fournisseurs</strong> internationaux, 
+              automatisez votre gestion et développez votre business avec notre plateforme SaaS propulsée par l'IA.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg group w-full sm:w-auto" onClick={() => navigate('/auth')}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <Button 
+                size="lg" 
+                className="px-8 py-6 text-lg font-semibold group shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300" 
+                onClick={() => navigate('/auth')}
+              >
                 <Crown className="w-5 h-5 mr-2" />
                 Essai gratuit 14 jours
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="outline" size="lg" className="px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg w-full sm:w-auto" onClick={() => navigate('/dashboard')}>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="px-8 py-6 text-lg border-2 hover:bg-secondary/50 transition-all duration-300" 
+                onClick={() => navigate('/dashboard')}
+              >
                 Voir la démo
               </Button>
             </div>
             
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 pt-4 text-xs sm:text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-success flex-shrink-0" />
-                <span>14 jours gratuits</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-success flex-shrink-0" />
-                <span>Installation en 2 min</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-success flex-shrink-0" />
-                <span>Support 24/7</span>
-              </div>
+            {/* Trust indicators */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 pt-6">
+              {[
+                { icon: CheckCircle2, text: "14 jours gratuits" },
+                { icon: CheckCircle2, text: "Installation en 2 min" },
+                { icon: CheckCircle2, text: "Support 24/7" }
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <item.icon className="h-5 w-5 text-success flex-shrink-0" />
+                  <span>{item.text}</span>
+                </div>
+              ))}
             </div>
           </div>
           
-          {/* Right Image */}
+          {/* Right Image - Enhanced with better shadows and floating elements */}
           <div className="relative lg:order-last order-first">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border/50 bg-gradient-to-br from-background to-secondary/20">
               <img 
                 src={heroImageSm} 
                 srcSet={`${heroImageSm} 640w, ${heroImage} 1920w`}
@@ -95,25 +122,41 @@ const HeroSection = () => {
                 fetchPriority="high"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-transparent" />
             </div>
-            {/* Floating badges */}
-            <div className="absolute -bottom-4 -left-4 bg-background border border-border rounded-lg p-3 shadow-lg hidden sm:block">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-success" />
+            
+            {/* Floating badges with enhanced styling */}
+            <div className="absolute -bottom-6 -left-6 bg-background/95 backdrop-blur-sm border border-border rounded-xl p-4 shadow-xl hidden sm:block animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-success/10 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-success" />
+                </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Croissance</div>
-                  <div className="text-sm font-bold">+127%</div>
+                  <div className="text-xs text-muted-foreground font-medium">Croissance</div>
+                  <div className="text-lg font-bold text-success">+127%</div>
                 </div>
               </div>
             </div>
-            <div className="absolute -top-4 -right-4 bg-background border border-border rounded-lg p-3 shadow-lg hidden sm:block">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="text-xs text-muted-foreground">IA Active</div>
-                  <div className="text-sm font-bold">24/7</div>
+            
+            <div className="absolute -top-6 -right-6 bg-background/95 backdrop-blur-sm border border-border rounded-xl p-4 shadow-xl hidden sm:block animate-fade-in delay-300">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Sparkles className="h-5 w-5 text-primary" />
                 </div>
+                <div>
+                  <div className="text-xs text-muted-foreground font-medium">IA Active</div>
+                  <div className="text-lg font-bold">24/7</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* New floating element - Integration count */}
+            <div className="absolute top-1/2 -left-4 bg-background/95 backdrop-blur-sm border border-border rounded-xl p-3 shadow-xl hidden lg:block animate-fade-in delay-500">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded-lg">
+                  <Globe className="h-4 w-4 text-primary" />
+                </div>
+                <div className="text-sm font-semibold">99+ fournisseurs</div>
               </div>
             </div>
           </div>
@@ -121,7 +164,8 @@ const HeroSection = () => {
       </div>
     </section>
   );
-};
+});
+HeroSection.displayName = 'HeroSection';
 
 // Stats Section - Beta-appropriate metrics
 const StatsSection = () => {
