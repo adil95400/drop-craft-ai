@@ -660,7 +660,27 @@ export default function ChromeExtensionPage() {
 
         {/* Sync Tab */}
         <TabsContent value="sync" className="space-y-6">
-          <ExtensionSyncStatus />
+          {/* Sub-tabs for sync */}
+          <Tabs defaultValue="status" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="status" className="flex items-center gap-1">
+                <Activity className="h-4 w-4" />
+                État Sync
+              </TabsTrigger>
+              <TabsTrigger value="bidirectional" className="flex items-center gap-1">
+                <RefreshCw className="h-4 w-4" />
+                Sync Bidirectionnelle
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="status">
+              <ExtensionSyncStatus />
+            </TabsContent>
+
+            <TabsContent value="bidirectional">
+              <ExtensionBidirectionalSync />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* Settings Tab */}
