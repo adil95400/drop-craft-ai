@@ -1023,5 +1023,5 @@
   }
   
   window.ShopOptiBulkImport = bulkImport;
-  console.log('[ShopOpti+] BulkImport v5.8.0 (XSS-Secure) loaded');
+  console.log('[ShopOpti+] BulkImport v5.8.1 (XSS-Secure) loaded');
 })();
