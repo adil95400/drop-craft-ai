@@ -1,10 +1,45 @@
 /**
  * Auth Handler
  * Handles AUTH_* actions for extension authentication
+ * P1.3: Updated with legacy scope compatibility mapping
  */
 
 import { z } from "zod"
 import { GatewayContext, HandlerResult } from '../types.ts'
+
+// =============================================================================
+// LEGACY SCOPE COMPATIBILITY
+// =============================================================================
+
+/**
+ * Maps legacy scope names to granular P1.3 scopes
+ * This ensures backward compatibility with extensions < 5.8.1
+ */
+const LEGACY_SCOPE_MAP: Record<string, string[]> = {
+  'import': ['products:read', 'products:import', 'products:write'],
+  'sync': ['sync:read', 'sync:trigger'],
+  'logs': ['analytics:read'],
+  'bulk': ['products:bulk'],
+  'ai_optimize': ['ai:generate', 'ai:optimize'],
+  'stock_monitor': ['sync:auto'],
+  'settings': ['settings:read', 'settings:write'],
+}
+
+/**
+ * Expands legacy scopes to their granular equivalents
+ * Pass-through for already granular scopes
+ */
+function expandLegacyScopes(scopes: string[]): string[] {
+  const expanded: string[] = []
+  for (const scope of scopes) {
+    if (LEGACY_SCOPE_MAP[scope]) {
+      expanded.push(...LEGACY_SCOPE_MAP[scope])
+    } else {
+      expanded.push(scope)
+    }
+  }
+  return [...new Set(expanded)] // Deduplicate
+}
 
 // =============================================================================
 // SCHEMAS
