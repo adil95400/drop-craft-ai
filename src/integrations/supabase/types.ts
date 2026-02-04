@@ -8655,6 +8655,71 @@ export type Database = {
           },
         ]
       }
+      product_reviews: {
+        Row: {
+          author: string
+          country: string | null
+          created_at: string
+          external_id: string | null
+          helpful_count: number | null
+          id: string
+          images: string[] | null
+          product_id: string | null
+          rating: number
+          review_date: string | null
+          source_platform: string | null
+          source_url: string | null
+          text: string
+          updated_at: string
+          user_id: string
+          verified_purchase: boolean | null
+        }
+        Insert: {
+          author?: string
+          country?: string | null
+          created_at?: string
+          external_id?: string | null
+          helpful_count?: number | null
+          id?: string
+          images?: string[] | null
+          product_id?: string | null
+          rating: number
+          review_date?: string | null
+          source_platform?: string | null
+          source_url?: string | null
+          text?: string
+          updated_at?: string
+          user_id: string
+          verified_purchase?: boolean | null
+        }
+        Update: {
+          author?: string
+          country?: string | null
+          created_at?: string
+          external_id?: string | null
+          helpful_count?: number | null
+          id?: string
+          images?: string[] | null
+          product_id?: string | null
+          rating?: number
+          review_date?: string | null
+          source_platform?: string | null
+          source_url?: string | null
+          text?: string
+          updated_at?: string
+          user_id?: string
+          verified_purchase?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_rewrites: {
         Row: {
           applied_at: string | null
@@ -9758,6 +9823,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      review_import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          id: string
+          limit_requested: number | null
+          platform: string | null
+          product_id: string | null
+          progress_percent: number | null
+          reviews_found: number | null
+          reviews_imported: number | null
+          source_url: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          limit_requested?: number | null
+          platform?: string | null
+          product_id?: string | null
+          progress_percent?: number | null
+          reviews_found?: number | null
+          reviews_imported?: number | null
+          source_url: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          limit_requested?: number | null
+          platform?: string | null
+          product_id?: string | null
+          progress_percent?: number | null
+          reviews_found?: number | null
+          reviews_imported?: number | null
+          source_url?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_import_jobs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sales_channels: {
         Row: {

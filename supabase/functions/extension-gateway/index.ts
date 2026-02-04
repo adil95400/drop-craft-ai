@@ -41,6 +41,7 @@ import { handleUtilityAction } from './actions/utility.ts'
 import { handleScrapeAction } from './actions/scrape.ts'
 import { handleAnalyzeAction } from './actions/analyze.ts'
 import { handleProgressiveImport, handleJobStatus } from './actions/import-progressive.ts'
+import { handleImportReviews, handleReviewJobStatus } from './actions/import-reviews.ts'
 
 // =============================================================================
 // CONFIGURATION
@@ -325,6 +326,15 @@ Deno.serve(async (req: Request) => {
           result = await handleJobStatus(payload, ctx)
         } else {
           result = { success: false, error: { code: 'UNKNOWN_PROGRESSIVE_ACTION', message: 'Unknown progressive action' } }
+        }
+        break
+      case 'reviews':
+        if (action === 'IMPORT_REVIEWS') {
+          result = await handleImportReviews(payload, ctx)
+        } else if (action === 'REVIEW_JOB_STATUS') {
+          result = await handleReviewJobStatus(payload, ctx)
+        } else {
+          result = { success: false, error: { code: 'UNKNOWN_REVIEWS_ACTION', message: 'Unknown reviews action' } }
         }
         break
       default:
