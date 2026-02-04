@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, Clock, Trophy } from 'lucide-react';
-import type { Quiz, QuizQuestion } from '@/services/academy.service';
+import type { Quiz } from '@/services/academy.service';
 
 interface QuizComponentProps {
   quiz: Quiz;

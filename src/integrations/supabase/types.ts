@@ -1584,6 +1584,93 @@ export type Database = {
         }
         Relationships: []
       }
+      background_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          duration_ms: number | null
+          error_details: Json | null
+          error_message: string | null
+          estimated_completion_at: string | null
+          id: string
+          input_data: Json | null
+          items_failed: number | null
+          items_processed: number | null
+          items_succeeded: number | null
+          items_total: number | null
+          job_subtype: string | null
+          job_type: string
+          max_retries: number | null
+          metadata: Json | null
+          name: string | null
+          output_data: Json | null
+          priority: number | null
+          progress_message: string | null
+          progress_percent: number | null
+          retries: number | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_details?: Json | null
+          error_message?: string | null
+          estimated_completion_at?: string | null
+          id?: string
+          input_data?: Json | null
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: number | null
+          items_total?: number | null
+          job_subtype?: string | null
+          job_type: string
+          max_retries?: number | null
+          metadata?: Json | null
+          name?: string | null
+          output_data?: Json | null
+          priority?: number | null
+          progress_message?: string | null
+          progress_percent?: number | null
+          retries?: number | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_details?: Json | null
+          error_message?: string | null
+          estimated_completion_at?: string | null
+          id?: string
+          input_data?: Json | null
+          items_failed?: number | null
+          items_processed?: number | null
+          items_succeeded?: number | null
+          items_total?: number | null
+          job_subtype?: string | null
+          job_type?: string
+          max_retries?: number | null
+          metadata?: Json | null
+          name?: string | null
+          output_data?: Json | null
+          priority?: number | null
+          progress_message?: string | null
+          progress_percent?: number | null
+          retries?: number | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           ai_generated: boolean | null

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { RealTimeMonitoring } from './RealTimeMonitoring'
 import { SecurityDashboard } from './SecurityDashboard'
-import { AdvancedAnalytics } from './AdvancedAnalytics'
+import { AdvancedAnalytics } from '@/components/analytics/AdvancedAnalytics'
 import { BusinessIntelligence } from './BusinessIntelligence'
 import { ImportJobProcessor } from '@/components/import/ImportJobProcessor'
 import { SystemHealthMonitor } from './SystemHealthMonitor'

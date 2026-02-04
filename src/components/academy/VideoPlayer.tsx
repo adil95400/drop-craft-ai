@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Play, Pause, Volume2, VolumeX, Maximize, Settings } from 'lucide-react';
 import { useAcademyProgress } from '@/hooks/useAcademyProgress';
 
@@ -125,7 +124,7 @@ export function VideoPlayer({ videoUrl, lessonId, onComplete }: VideoPlayerProps
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const _progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
     <Card className="overflow-hidden">
