@@ -11,11 +11,9 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   '/catalogue': '/products/catalogue',
   '/my-products': '/products',
   
-  // Import - Vers /products/import
-  '/import': '/products/import',
-  '/import/quick': '/products/import/quick',
-  '/import/advanced': '/products/import/advanced',
-  
+  // Import - (routes actuelles: /import/*). Ne pas rediriger /import vers /products/import
+  // Anciennes routes /products/import* sont déjà gérées dans ProductRoutes.
+
   // Orders - Routes uniformisées
   '/orders-center': '/orders/center',
   '/dashboard/orders': '/orders',
