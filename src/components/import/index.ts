@@ -75,3 +75,4 @@ export { SupplierComparisonTable } from './SupplierComparisonTable';
 export { UnifiedImportWizard } from './UnifiedImportWizard';
 export { ImportRollbackManager } from './ImportRollbackManager';
 export { ProfitCalculator } from './ProfitCalculator';
+export { QuickImportCard } from './QuickImportCard';
