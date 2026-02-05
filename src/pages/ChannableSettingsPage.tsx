@@ -3,6 +3,7 @@
  */
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAdminRole } from '@/hooks/useAdminRole'
 import { useSettingsActions } from '@/hooks/useSettingsActions'
@@ -55,6 +56,7 @@ export default function ChannableSettingsPage() {
   const { isAdmin } = useAdminRole()
   const { theme, setTheme } = useTheme()
   const { saveSettings, changePassword, exportData, deleteAccount, loading } = useSettingsActions()
+  const { i18n } = useTranslation()
   const [activeCategory, setActiveCategory] = useState('appearance')
 
   const [notifications, setNotifications] = useState({
@@ -122,6 +124,8 @@ export default function ChannableSettingsPage() {
   const handleLanguageChange = (value: string) => {
     setLanguage(value)
     setHasChanges(true)
+    // Apply language change immediately via i18next
+    i18n.changeLanguage(value)
   }
 
   const handleDeleteAccount = async () => {
@@ -461,6 +465,7 @@ export default function ChannableSettingsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
               >
                 <Card>
                   <CardHeader>
@@ -486,14 +491,34 @@ export default function ChannableSettingsPage() {
                         Changer de plan
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <div className="flex items-center justify-between py-3">
-                      <div>
-                        <Label className="font-medium">Historique de facturation</Label>
-                        <p className="text-sm text-muted-foreground">Voir vos factures et reçus</p>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5">
+                        <Download className="w-5 h-5 text-blue-600" />
                       </div>
-                      <Button variant="outline" onClick={() => (window.location.href = '/dashboard/billing')}>
-                        Voir les factures
+                      <div>
+                        <CardTitle>Historique de facturation</CardTitle>
+                        <CardDescription>Consultez et téléchargez vos factures</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Download className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                      <p className="font-medium">Aucune facture disponible</p>
+                      <p className="text-sm mt-1">
+                        Vos factures apparaîtront ici après votre premier paiement.
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={() => (window.location.href = '/pricing')}
+                      >
+                        Voir les plans
                       </Button>
                     </div>
                   </CardContent>

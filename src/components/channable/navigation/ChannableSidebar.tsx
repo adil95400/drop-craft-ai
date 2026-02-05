@@ -382,12 +382,27 @@ const ChannableFooter = memo(({
   }[profile?.plan || 'standard'] || 'Standard';
   return <SidebarFooter className="border-t border-sidebar-border/50 p-3 bg-sidebar-muted/20 dark:bg-sidebar-muted/10">
       <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
-        <motion.div className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg cursor-pointer", planStyle.gradient)} whileHover={prefersReducedMotion ? undefined : {
-        scale: 1.05,
-        rotate: 2
-      }} onClick={() => navigate('/dashboard/profile')} role="button" aria-label="Voir mon profil">
-          {profile?.full_name?.[0]?.toUpperCase() || 'U'}
-        </motion.div>
+        {profile?.avatar_url ? (
+          <motion.img
+            src={profile.avatar_url}
+            alt={profile?.full_name || 'Avatar'}
+            className="w-10 h-10 rounded-xl object-cover shadow-lg cursor-pointer"
+            whileHover={prefersReducedMotion ? undefined : { scale: 1.05, rotate: 2 }}
+            onClick={() => navigate('/profile')}
+            role="button"
+            aria-label="Voir mon profil"
+          />
+        ) : (
+          <motion.div 
+            className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg cursor-pointer", planStyle.gradient)} 
+            whileHover={prefersReducedMotion ? undefined : { scale: 1.05, rotate: 2 }} 
+            onClick={() => navigate('/profile')} 
+            role="button" 
+            aria-label="Voir mon profil"
+          >
+            {profile?.full_name?.[0]?.toUpperCase() || 'U'}
+          </motion.div>
+        )}
         
         <AnimatePresence>
           {!collapsed && <motion.div initial={prefersReducedMotion ? undefined : {
@@ -402,11 +417,11 @@ const ChannableFooter = memo(({
         }} className="flex-1 min-w-0">
               <div 
                 className="cursor-pointer group" 
-                onClick={() => navigate('/dashboard/profile')}
+                onClick={() => navigate('/profile')}
                 role="button" 
                 tabIndex={0}
                 aria-label="Voir mon profil"
-                onKeyDown={(e) => e.key === 'Enter' && navigate('/dashboard/profile')}
+                onKeyDown={(e) => e.key === 'Enter' && navigate('/profile')}
               >
                 <p className="text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors">
                   {profile?.full_name || 'Utilisateur'}
@@ -436,7 +451,7 @@ const ChannableFooter = memo(({
     }} animate={prefersReducedMotion ? false : {
       opacity: 1
     }} className="mt-3 grid grid-cols-3 gap-1.5">
-          <Button variant="ghost" size="sm" className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" aria-label="Mon profil" onClick={() => navigate('/dashboard/profile')}>
+          <Button variant="ghost" size="sm" className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" aria-label="Mon profil" onClick={() => navigate('/profile')}>
             <User className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
           <Button variant="ghost" size="sm" className="h-8 text-xs rounded-lg hover:bg-sidebar-accent/40 dark:hover:bg-sidebar-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" aria-label="Aide et support" onClick={() => navigate('/support')}>

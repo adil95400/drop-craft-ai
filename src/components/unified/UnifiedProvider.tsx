@@ -4,9 +4,11 @@
  */
 
 import React, { createContext, useContext, useEffect, useRef } from 'react'
-import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { useToast } from '@/hooks/use-toast'
+
+// Import only the context, not the hook to avoid the "must be within provider" error
+import { UnifiedAuthContext } from '@/contexts/UnifiedAuthContext'
 
 interface UnifiedProviderProps {
   children: React.ReactNode
@@ -18,7 +20,10 @@ const UnifiedContext = createContext<{
 }>({ initialized: false })
 
 export function UnifiedProvider({ children }: UnifiedProviderProps) {
-  const { user } = useUnifiedAuth()
+  // Use the context directly to handle cases where it might not be provided
+  const authContext = useContext(UnifiedAuthContext)
+  const user = authContext?.user ?? null
+  
   const { loadUserPlan, loading, error } = useUnifiedPlan()
   const { toast } = useToast()
   const loadedRef = useRef(false)
@@ -29,7 +34,7 @@ export function UnifiedProvider({ children }: UnifiedProviderProps) {
       loadedRef.current = true
       loadUserPlan(user.id)
     }
-  }, [user?.id])
+  }, [user?.id, loadUserPlan])
   
   // Afficher les erreurs de plan
   useEffect(() => {
@@ -55,7 +60,9 @@ export function useUnifiedContext() {
 
 // Hook de convenance qui combine auth et plan
 export function useAuthWithPlan() {
-  const { user, loading: authLoading } = useUnifiedAuth()
+  const authContext = useContext(UnifiedAuthContext)
+  const user = authContext?.user ?? null
+  const authLoading = authContext?.loading ?? true
   const planStore = useUnifiedPlan()
   const { initialized } = useUnifiedContext()
   

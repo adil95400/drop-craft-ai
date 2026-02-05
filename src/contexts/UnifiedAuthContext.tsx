@@ -74,7 +74,7 @@ interface UnifiedAuthContextType {
   refetchProfile: () => Promise<void>;
 }
 
-const UnifiedAuthContext = createContext<UnifiedAuthContextType | undefined>(undefined);
+export const UnifiedAuthContext = createContext<UnifiedAuthContextType | undefined>(undefined);
 
 // Session monitoring constants
 const SESSION_WARNING_THRESHOLD = 5 * 60 * 1000; // 5 minutes before expiry
