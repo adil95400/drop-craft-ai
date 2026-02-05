@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Plus, Mail, Phone, User, Calendar, ShoppingBag, Eye, Edit, Trash2, Send, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useCustomerManagement } from '@/hooks/useCustomerManagement';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { CustomerDetailSheet } from './CustomerDetailSheet';
 import { CustomerEditDialog } from './CustomerEditDialog';
 import { CustomerDeleteDialog } from './CustomerDeleteDialog';
@@ -58,7 +58,7 @@ export function CustomerManagement() {
       await createCustomer(data);
       setIsNewCustomerOpen(false);
     } catch (error) {
-      logError(error as Error, 'Error creating customer');
+      productionLogger.error('Failed to create customer', error as Error, 'CustomerManagement');
     }
   };
 
@@ -67,7 +67,7 @@ export function CustomerManagement() {
       await createSegment(data);
       setIsNewSegmentOpen(false);
     } catch (error) {
-      logError(error as Error, 'Error creating segment');
+      productionLogger.error('Failed to create segment', error as Error, 'CustomerManagement');
     }
   };
 

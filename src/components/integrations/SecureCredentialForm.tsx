@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EyeIcon, EyeOffIcon, ShieldCheckIcon, InfoIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface CredentialField {
   name: string;
@@ -74,7 +74,7 @@ export const SecureCredentialForm = ({
     try {
       await onSubmit(credentials);
     } catch (error) {
-      logError(error as Error, 'Credential submission error');
+      productionLogger.error('Credential submission failed', error as Error, 'SecureCredentialForm');
     }
   };
 

@@ -1,5 +1,5 @@
 import { BaseConnector, FetchOptions, SupplierProduct, SyncResult } from './BaseConnector';
-import { logError, logAction } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 export class AlibabaConnector extends BaseConnector {
   private language: string;
@@ -84,7 +84,7 @@ export class AlibabaConnector extends BaseConnector {
       errors: []
     };
 
-    logAction('Starting Alibaba inventory sync', { count: products.length });
+    productionLogger.info('Starting Alibaba inventory sync', { count: products.length }, 'AlibabaConnector');
 
     // Note: Alibaba est principalement une plateforme de sourcing B2B
     // L'inventaire est généralement géré par les fournisseurs
@@ -96,14 +96,14 @@ export class AlibabaConnector extends BaseConnector {
         const productDetails = await this.fetchProduct(product.id);
         
         if (productDetails) {
-          logAction('Alibaba product synchronized', { id: product.id });
+          productionLogger.info('Alibaba product synchronized', { id: product.id }, 'AlibabaConnector');
           result.imported++;
         } else {
           result.duplicates++;
         }
       } catch (error: any) {
         result.errors.push(`Erreur pour ${product.id}: ${error.message}`);
-        logError(error, `Alibaba sync for ${product.id}`);
+        productionLogger.error(`Alibaba sync failed for ${product.id}`, error as Error, 'AlibabaConnector');
       }
     }
 

@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Truck, Clock, Star, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
-import { logAction } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface CarrierMetrics {
   deliveryRate: string;
@@ -27,9 +27,9 @@ export function CarrierDetailsModal({
 }: CarrierDetailsModalProps) {
   
   // Debug logging to understand what's happening
-  logAction('CarrierDetailsModal metrics received', metrics);
-  logAction('CarrierDetailsModal metrics type', typeof metrics);
-  logAction('CarrierDetailsModal metrics is null', metrics === null);
+  productionLogger.debug('CarrierDetailsModal metrics received', metrics, 'CarrierDetailsModal');
+  productionLogger.debug('CarrierDetailsModal metrics type', typeof metrics, 'CarrierDetailsModal');
+  productionLogger.debug('CarrierDetailsModal metrics is null', metrics === null, 'CarrierDetailsModal');
   
   // Use default metrics if metrics is null or undefined
   const defaultMetrics = {
@@ -40,7 +40,7 @@ export function CarrierDetailsModal({
   };
   
   const actualMetrics = metrics || defaultMetrics;
-  logAction('CarrierDetailsModal actualMetrics', actualMetrics);
+  productionLogger.debug('CarrierDetailsModal actualMetrics', actualMetrics, 'CarrierDetailsModal');
   
   const performanceScore = parseFloat(actualMetrics.deliveryRate.replace('%', ''));
   const satisfactionScore = parseFloat(actualMetrics.customerSatisfaction.split('/')[0]) * 20; // Convert to percentage

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -157,7 +157,7 @@ export const PredictiveAnalyzer = ({ className }: PredictiveAnalyzerProps) => {
       });
 
     } catch (error: any) {
-      logError(error, 'PredictiveAnalyzer.runAnalysis');
+      productionLogger.error('Predictive analysis failed', error as Error, 'PredictiveAnalyzer');
       toast({
         title: "Erreur",
         description: error.message,

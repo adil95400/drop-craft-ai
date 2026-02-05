@@ -11,7 +11,7 @@ import { useIntegrationsUnified, UnifiedIntegration, IntegrationTemplate } from 
 import { TrustIndicators } from '@/components/ui/security-badge';
 
 type Integration = UnifiedIntegration;
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 const platformCategories = {
   ecommerce: {
     title: 'E-commerce',
@@ -176,7 +176,7 @@ export const AddIntegrationDialog = () => {
         sync_frequency: 'daily'
       });
     } catch (error) {
-      logError(error as Error, 'Failed to create integration');
+      productionLogger.error('Failed to create integration', error as Error, 'AddIntegrationDialog');
     }
   };
   const selectedPlatformData = selectedPlatform ? platformCategories[selectedCategory].platforms.find(p => p.name === selectedPlatform) : null;

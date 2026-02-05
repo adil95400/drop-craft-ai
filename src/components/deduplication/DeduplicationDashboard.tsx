@@ -18,7 +18,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { deduplicationService } from '@/services/DeduplicationService'
-import { logError } from '@/utils/consoleCleanup'
+import { productionLogger } from '@/utils/productionLogger'
 
 interface DeduplicationResult {
   id: string
@@ -166,7 +166,7 @@ export function DeduplicationDashboard() {
         setIsRunning(false)
       }, 2000)
     } catch (error) {
-      logError(error as Error, 'Deduplication process')
+      productionLogger.error('Deduplication process failed', error as Error, 'DeduplicationDashboard')
       setCurrentJob({ status: 'failed', progress: 0 })
       setIsRunning(false)
     }

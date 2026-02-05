@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { logError } from '@/utils/consoleCleanup'
+import { productionLogger } from '@/utils/productionLogger'
 
 interface ImportJob {
   id: string
@@ -98,7 +98,7 @@ export const BulkZipImport = () => {
       })
 
     } catch (error) {
-      logError(error as Error, 'Bulk import');
+      productionLogger.error('Bulk import failed', error as Error, 'BulkZipImport');
       toast({
         title: "Erreur d'import",
         description: "Impossible de démarrer l'import en masse",

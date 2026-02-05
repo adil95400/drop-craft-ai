@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface UploadedFile {
   id: string
@@ -85,7 +85,7 @@ export function MediaUploadZone({
 
       return publicUrl
     } catch (error) {
-      logError(error as Error, 'File upload error')
+      productionLogger.error('File upload failed', error as Error, 'MediaUploadZone')
       return null
     }
   }
