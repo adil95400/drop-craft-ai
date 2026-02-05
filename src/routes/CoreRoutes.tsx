@@ -7,8 +7,8 @@ import { lazy } from 'react';
 
 // Dashboard
 const DashboardHome = lazy(() => import('@/pages/Dashboard'));
-const ProfilePage = lazy(() => import('@/pages/stores/StoreDashboard'));
-const SettingsPage = lazy(() => import('@/pages/stores/StoreDashboard'));
+const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
+const ChannableSettingsPage = lazy(() => import('@/pages/ChannableSettingsPage'));
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
 const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
@@ -35,7 +35,7 @@ export function CoreRoutes() {
     <Routes>
       <Route index element={<DashboardHome />} />
       <Route path="profile" element={<ProfilePage />} />
-      <Route path="settings" element={<SettingsPage />} />
+      <Route path="settings" element={<ChannableSettingsPage />} />
       <Route path="store/builder" element={<AIStoreBuilderHub />} />
       <Route path="invoices" element={<BrandingInvoicesHub />} />
       <Route path="pod" element={<PrintOnDemandHub />} />
