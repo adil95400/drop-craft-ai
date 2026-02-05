@@ -184,10 +184,10 @@ export default function SimplifiedImportPage() {
 
     setTimeout(() => {
       toast({
-        title: 'Import complete',
-        description: `Successfully imported ${previewData.length - previewErrors.length} products`
+        title: 'Import terminé',
+        description: `${previewData.length - previewErrors.length} produits importés avec succès`
       });
-      navigate('/products/import/manage');
+      navigate('/import/products');
     }, 2000);
   };
 
