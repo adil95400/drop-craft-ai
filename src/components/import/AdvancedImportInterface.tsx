@@ -41,7 +41,7 @@ import { toast } from 'sonner'
 import { useToast } from '@/hooks/use-toast'
 import { useImport } from '@/domains/commerce/hooks/useImport'
 import { ImportMethodCard } from './ImportMethodCard'
-import { logAction } from '@/utils/consoleCleanup'
+import { productionLogger } from '@/utils/productionLogger'
 import { PlatformExportDialog } from '@/components/products/export/PlatformExportDialog'
 
 interface FieldMapping {
@@ -200,7 +200,7 @@ export const AdvancedImportInterface = () => {
   }, [selectedProducts])
 
   const handleTestMethod = useCallback(async (methodId: string) => {
-    logAction('Testing import method', { methodId });
+    productionLogger.info('Testing import method', { methodId }, 'AdvancedImportInterface');
     setTestingMethod(methodId)
     
     try {
@@ -237,7 +237,7 @@ export const AdvancedImportInterface = () => {
   }, [])
 
   const handleConfigureMethod = useCallback((methodId: string) => {
-    logAction('Configuring import method', { methodId });
+    productionLogger.info('Configuring import method', { methodId }, 'AdvancedImportInterface');
     // Ouvre la configuration selon la méthode
     switch (methodId) {
       case 'shopify':
