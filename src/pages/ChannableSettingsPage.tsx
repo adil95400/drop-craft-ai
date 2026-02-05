@@ -32,8 +32,10 @@ import {
   Palette,
   User,
   Database,
-  Key
+  Key,
+  Info
 } from 'lucide-react'
+import { VersionInfo } from '@/components/shared/VersionInfo'
 import { useTheme } from 'next-themes'
 import { Helmet } from 'react-helmet-async'
 
@@ -43,6 +45,7 @@ const settingsCategories = [
   { id: 'privacy', label: 'Confidentialité', icon: Eye },
   { id: 'security', label: 'Sécurité', icon: Shield },
   { id: 'account', label: 'Compte', icon: User },
+  { id: 'about', label: 'À propos', icon: Info },
 ]
 
 export default function ChannableSettingsPage() {
@@ -423,6 +426,16 @@ export default function ChannableSettingsPage() {
                     </Button>
                   </CardContent>
                 </Card>
+              </motion.div>
+            )}
+
+            {/* About */}
+            {activeCategory === 'about' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <VersionInfo />
               </motion.div>
             )}
           </div>
