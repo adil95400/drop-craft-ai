@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { 
   Shield,
   AlertTriangle,
@@ -54,7 +54,7 @@ export const SecurityAudit = () => {
       ])
       
     } catch (error) {
-      logError(error as Error, 'Failed to fetch security data')
+      productionLogger.error('Failed to fetch security data', error as Error, 'SecurityAudit')
       toast({
         title: "Erreur de sécurité",
         description: "Impossible de récupérer les données de sécurité",

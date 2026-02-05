@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -110,7 +110,7 @@ export function ComprehensiveAnalytics() {
         realtime: realtimeData
       });
     } catch (error) {
-      logError(error, 'ComprehensiveAnalytics.loadAnalytics');
+      productionLogger.error('Failed to load analytics', error as Error, 'ComprehensiveAnalytics');
       toast({
         title: "Erreur",
         description: "Impossible de charger les analytics",

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,7 +101,7 @@ export function CreateAutomationRule({ onClose, onSuccess }: CreateAutomationRul
       onSuccess?.();
       onClose?.();
     } catch (error) {
-      logError(error, 'CreateAutomationRule.createRule');
+      productionLogger.error('Failed to create automation rule', error as Error, 'CreateAutomationRule');
     }
   };
 

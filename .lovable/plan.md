@@ -16,8 +16,8 @@ La migration a été **partiellement complétée**. Les fichiers obsolètes ont 
 
 | Statut | Fichiers |
 |--------|----------|
-| ✅ Migrés | 26 fichiers nativement vers productionLogger |
-| 🔄 Via wrapper | ~34 fichiers utilisent le wrapper de compatibilité |
+| ✅ Migrés | 36 fichiers nativement vers productionLogger |
+| 🔄 Via wrapper | ~26 fichiers utilisent le wrapper de compatibilité |
 
 **Fichiers migrés nativement:**
 1. IntegrationHealthMonitor.tsx
