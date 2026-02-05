@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { toast } from '@/hooks/use-toast'
 import { Upload, Camera, Search, Zap, Eye, Download } from 'lucide-react'
-import { logError } from '@/utils/consoleCleanup'
+import { productionLogger } from '@/utils/productionLogger'
 import { supabase } from '@/integrations/supabase/client'
 
 interface DetectedProduct {
@@ -80,7 +80,7 @@ export function ImageImportInterface({ onProductsFound }: ImageImportProps) {
       })
 
     } catch (error) {
-      logError(error as Error, 'Image processing');
+      productionLogger.error('Image processing failed', error as Error, 'ImageImportInterface');
       toast({
         title: "Erreur lors de l'analyse",
         description: "Impossible d'analyser l'image",

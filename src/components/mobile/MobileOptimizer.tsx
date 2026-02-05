@@ -18,7 +18,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useResponsive } from '@/hooks/useResponsive';
 import { Capacitor } from '@capacitor/core';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface DeviceInfo {
   platform: string;
@@ -87,7 +87,7 @@ export function MobileOptimizer() {
 
       measurePerformance();
     } catch (error) {
-      logError(error as Error, 'Failed to load native info');
+      productionLogger.error('Failed to load native info', error as Error, 'MobileOptimizer');
       loadWebMetrics();
     }
   };
@@ -155,7 +155,7 @@ export function MobileOptimizer() {
       } : null);
 
     } catch (error) {
-      logError(error as Error, 'Optimization error');
+      productionLogger.error('Optimization failed', error as Error, 'MobileOptimizer');
     } finally {
       setOptimizing(false);
     }

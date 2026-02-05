@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { logError, logWarning } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useState } from 'react'
@@ -47,7 +47,7 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
       try {
         await supabase.auth.signOut({ scope: 'global' })
       } catch (err) {
-        logWarning('Cleanup sign out failed', 'EnhancedAuthForm')
+        productionLogger.warn('Cleanup sign out failed', undefined, 'EnhancedAuthForm')
       }
 
       let result
@@ -77,7 +77,7 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
         }
       }
     } catch (error: any) {
-      logError(error, 'EnhancedAuthForm.authAction');
+      productionLogger.error('Authentication failed', error as Error, 'EnhancedAuthForm');
       setMessage(error.message || 'Une erreur est survenue')
     } finally {
       setLoading(false)

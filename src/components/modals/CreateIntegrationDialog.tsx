@@ -15,7 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useIntegrationsUnified } from "@/hooks/unified";
 import { supabase } from "@/integrations/supabase/client";
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Link2, Key, Globe, Shield, CheckCircle, Zap, ArrowRight, Store, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -87,7 +87,7 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
       setCurrentStep(1);
       setFormData({ name: "", type: "", apiKey: "", apiSecret: "", webhookUrl: "", description: "", enabled: true });
     } catch (error) {
-      logError(error as Error, 'Failed to create integration');
+      productionLogger.error('Failed to create integration', error as Error, 'CreateIntegrationDialog');
       toast({ title: "Erreur", variant: "destructive" });
     }
   };

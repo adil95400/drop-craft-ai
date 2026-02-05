@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { logError } from '@/utils/consoleCleanup'
+import { productionLogger } from '@/utils/productionLogger'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { 
@@ -42,7 +42,7 @@ export const RealImportConfigurationManager = ({ onConfigurationSaved }: RealImp
       try {
         setConfigurations(JSON.parse(saved))
       } catch (error) {
-        logError(error as Error, 'Failed to load configurations')
+        productionLogger.error('Failed to load configurations', error as Error, 'RealImportConfigurationManager')
       }
     }
   }, [])
@@ -72,7 +72,7 @@ export const RealImportConfigurationManager = ({ onConfigurationSaved }: RealImp
       
       toast.success('Configuration sauvegardée avec succès !')
     } catch (error: any) {
-      logError(error as Error, 'Error saving configuration')
+      productionLogger.error('Error saving configuration', error as Error, 'RealImportConfigurationManager')
       toast.error(`Erreur lors de la sauvegarde: ${error.message}`)
     } finally {
       setIsSaving(false)
@@ -114,7 +114,7 @@ export const RealImportConfigurationManager = ({ onConfigurationSaved }: RealImp
 
       toast.success('Test de configuration réussi !')
     } catch (error: any) {
-      logError(error as Error, 'Test configuration error')
+      productionLogger.error('Test configuration error', error as Error, 'RealImportConfigurationManager')
       toast.error(`Test échoué: ${error.message}`)
     } finally {
       setIsTesting(false)

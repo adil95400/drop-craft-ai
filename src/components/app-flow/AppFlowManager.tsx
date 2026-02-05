@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
-import { logWarning } from '@/utils/consoleCleanup'
+import { productionLogger } from '@/utils/productionLogger'
 
 interface AppFlowStep {
   id: string
@@ -215,7 +215,7 @@ export function AppFlowProvider({ children }: { children: React.ReactNode }) {
           setCompletedSteps(new Set(completed))
           setCurrentStepIndex(stepIndex)
         } catch (error) {
-          logWarning('Erreur lors du chargement du flux', 'AppFlowManager')
+          productionLogger.warn('Failed to load app flow state', undefined, 'AppFlowManager')
         }
       }
     }

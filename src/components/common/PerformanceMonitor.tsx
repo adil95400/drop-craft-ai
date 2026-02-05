@@ -3,7 +3,7 @@ import React from 'react';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import { createSupabaseQuery } from '@/lib/fetcher';
 import { supabase } from '@/integrations/supabase/client';
-import { logAction, logWarning } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface PerformanceMonitorProps {
   children: React.ReactNode;
@@ -32,7 +32,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
         const lcp = entries[entries.length - 1] as PerformanceEntry;
         
         if (lcp.startTime > 2500) {
-          logWarning(`LCP slow: ${lcp.startTime}ms`, 'PerformanceMonitor');
+          productionLogger.warn(`LCP slow: ${lcp.startTime}ms`, undefined, 'PerformanceMonitor');
         }
       });
 
@@ -46,7 +46,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
         }
         
         if (clsValue > 0.1) {
-          logWarning(`CLS high: ${clsValue}`, 'PerformanceMonitor');
+          productionLogger.warn(`CLS high: ${clsValue}`, undefined, 'PerformanceMonitor');
         }
       });
 
@@ -54,7 +54,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
         clsObserver.observe({ entryTypes: ['layout-shift'] });
       } catch (error) {
-        logWarning('Performance observer not supported', 'PerformanceMonitor');
+        productionLogger.warn('Performance observer not supported', undefined, 'PerformanceMonitor');
       }
 
       return () => {
@@ -84,7 +84,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
           Object.entries(metrics).forEach(([key, value]) => {
             if (value > 0) {
               const color = value > 1000 ? 'color: red' : value > 500 ? 'color: orange' : 'color: green';
-              logAction(`${key}: ${Math.round(value)}ms`);
+              productionLogger.debug(`${key}: ${Math.round(value)}ms`, undefined, 'PerformanceMonitor');
             }
           });
           console.groupEnd();
