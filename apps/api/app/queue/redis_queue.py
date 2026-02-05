@@ -1,14 +1,19 @@
-import json
-import uuid
-import asyncio
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Callable
-from enum import Enum
-import redis.asyncio as redis
-from pydantic import BaseModel
-import structlog
+"""
+Redis Queue service for job management and caching
+Complements Celery for job tracking and pub/sub
+"""
 
-logger = structlog.get_logger(__name__)
+import json
+import redis
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+from enum import Enum
+import logging
+
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
+
 
 class TaskStatus(str, Enum):
     PENDING = "pending"
@@ -17,268 +22,193 @@ class TaskStatus(str, Enum):
     FAILED = "failed"
     RETRYING = "retrying"
 
+
 class TaskPriority(int, Enum):
     LOW = 1
     NORMAL = 2
     HIGH = 3
     URGENT = 4
 
-class QueueTask(BaseModel):
-    id: str
-    name: str
-    payload: Dict[str, Any]
-    status: TaskStatus = TaskStatus.PENDING
-    priority: TaskPriority = TaskPriority.NORMAL
-    created_at: datetime
-    scheduled_at: Optional[datetime] = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    retry_count: int = 0
-    max_retries: int = 3
-    error_message: Optional[str] = None
-    user_id: Optional[str] = None
 
 class RedisQueue:
-    def __init__(self, redis_url: str = "redis://localhost:6379", db: int = 0):
-        self.redis_pool = redis.ConnectionPool.from_url(redis_url, db=db)
-        self.redis_client = redis.Redis(connection_pool=self.redis_pool)
-        self.task_handlers: Dict[str, Callable] = {}
-        self.is_running = False
-        
-    async def connect(self):
-        """Initialize Redis connection"""
-        try:
-            await self.redis_client.ping()
-            logger.info("Redis connection established")
-        except Exception as e:
-            logger.error("Failed to connect to Redis", error=str(e))
-            raise
-
-    async def disconnect(self):
-        """Close Redis connection"""
-        await self.redis_client.close()
-        logger.info("Redis connection closed")
-
-    def register_handler(self, task_name: str, handler: Callable):
-        """Register a task handler function"""
-        self.task_handlers[task_name] = handler
-        logger.info(f"Registered handler for task: {task_name}")
-
-    async def enqueue(
-        self,
-        task_name: str,
-        payload: Dict[str, Any],
-        priority: TaskPriority = TaskPriority.NORMAL,
-        delay: Optional[int] = None,
-        user_id: Optional[str] = None
-    ) -> str:
-        """Add a task to the queue"""
-        task_id = str(uuid.uuid4())
-        scheduled_at = datetime.utcnow()
-        
-        if delay:
-            scheduled_at += timedelta(seconds=delay)
-            
-        task = QueueTask(
-            id=task_id,
-            name=task_name,
-            payload=payload,
-            priority=priority,
-            created_at=datetime.utcnow(),
-            scheduled_at=scheduled_at,
-            user_id=user_id
-        )
-        
-        # Store task details
-        await self.redis_client.hset(
-            f"task:{task_id}",
-            mapping={
-                "data": task.model_dump_json(),
-                "status": TaskStatus.PENDING
-            }
-        )
-        
-        # Add to priority queue
-        queue_name = f"queue:{priority.name.lower()}"
-        score = scheduled_at.timestamp()
-        
-        await self.redis_client.zadd(queue_name, {task_id: score})
-        
-        # Add to user tasks if user_id provided
-        if user_id:
-            await self.redis_client.sadd(f"user_tasks:{user_id}", task_id)
-            
-        logger.info(f"Enqueued task {task_id} ({task_name}) with priority {priority.name}")
-        return task_id
-
-    async def dequeue(self) -> Optional[QueueTask]:
-        """Get the next task from the queue"""
-        current_time = datetime.utcnow().timestamp()
-        
-        # Check queues in priority order
-        for priority in [TaskPriority.URGENT, TaskPriority.HIGH, TaskPriority.NORMAL, TaskPriority.LOW]:
-            queue_name = f"queue:{priority.name.lower()}"
-            
-            # Get tasks scheduled for now or earlier
-            tasks = await self.redis_client.zrangebyscore(
-                queue_name, 0, current_time, start=0, num=1, withscores=True
+    """Redis-based utilities for job tracking and caching"""
+    
+    def __init__(self, redis_url: str = None):
+        self.redis_url = redis_url or settings.REDIS_URL
+        self._client = None
+    
+    @property
+    def client(self):
+        """Lazy initialization of Redis client"""
+        if self._client is None:
+            self._client = redis.from_url(
+                self.redis_url, 
+                decode_responses=True
             )
-            
-            if tasks:
-                task_id, score = tasks[0]
-                task_id = task_id.decode('utf-8')
-                
-                # Remove from queue
-                await self.redis_client.zrem(queue_name, task_id)
-                
-                # Get task details
-                task_data = await self.redis_client.hget(f"task:{task_id}", "data")
-                if task_data:
-                    task = QueueTask.model_validate_json(task_data)
-                    task.status = TaskStatus.PROCESSING
-                    task.started_at = datetime.utcnow()
-                    
-                    # Update task status
-                    await self.redis_client.hset(
-                        f"task:{task_id}",
-                        mapping={
-                            "data": task.model_dump_json(),
-                            "status": TaskStatus.PROCESSING
-                        }
-                    )
-                    
-                    return task
-                    
+        return self._client
+    
+    def publish_job_update(self, job_id: str, status: str, data: Dict[str, Any] = None):
+        """Publish job status update for realtime notifications"""
+        message = {
+            "job_id": job_id,
+            "status": status,
+            "data": data or {},
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        self.client.publish(f"job_updates:{job_id}", json.dumps(message))
+        logger.debug(f"Published job update: {job_id} -> {status}")
+    
+    def get_job_progress(self, job_id: str) -> Optional[Dict[str, Any]]:
+        """Get current job progress from cache"""
+        data = self.client.get(f"job_progress:{job_id}")
+        if data:
+            return json.loads(data)
         return None
-
-    async def process_task(self, task: QueueTask) -> bool:
-        """Process a single task"""
-        try:
-            handler = self.task_handlers.get(task.name)
-            if not handler:
-                raise ValueError(f"No handler registered for task: {task.name}")
-                
-            logger.info(f"Processing task {task.id} ({task.name})")
-            
-            # Execute task handler
-            if asyncio.iscoroutinefunction(handler):
-                result = await handler(task.payload)
-            else:
-                result = handler(task.payload)
-                
-            # Mark as completed
-            task.status = TaskStatus.COMPLETED
-            task.completed_at = datetime.utcnow()
-            
-            await self.redis_client.hset(
-                f"task:{task.id}",
-                mapping={
-                    "data": task.model_dump_json(),
-                    "status": TaskStatus.COMPLETED,
-                    "result": json.dumps(result) if result else ""
-                }
-            )
-            
-            logger.info(f"Task {task.id} completed successfully")
+    
+    def set_job_progress(self, job_id: str, progress: int, message: str = None, total: int = None):
+        """Update job progress in cache"""
+        data = {
+            "progress": progress,
+            "message": message,
+            "total": total,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        self.client.setex(
+            f"job_progress:{job_id}",
+            3600,  # 1 hour TTL
+            json.dumps(data)
+        )
+        
+        # Also publish update for realtime
+        self.publish_job_update(job_id, "progress", data)
+    
+    def add_to_rate_limit(self, key: str, window_seconds: int = 60) -> int:
+        """Increment rate limit counter and return current count"""
+        pipe = self.client.pipeline()
+        pipe.incr(key)
+        pipe.expire(key, window_seconds)
+        results = pipe.execute()
+        return results[0]
+    
+    def check_rate_limit(self, key: str, max_requests: int) -> bool:
+        """Check if under rate limit"""
+        current = self.client.get(key)
+        if current is None:
             return True
-            
-        except Exception as e:
-            logger.error(f"Task {task.id} failed", error=str(e))
-            await self.handle_task_failure(task, str(e))
-            return False
-
-    async def handle_task_failure(self, task: QueueTask, error_message: str):
-        """Handle task failure with retry logic"""
-        task.retry_count += 1
-        task.error_message = error_message
+        return int(current) < max_requests
+    
+    def get_user_rate_limit_status(self, user_id: str) -> Dict[str, Any]:
+        """Get user's current rate limit status"""
+        key = f"rate_limit:user:{user_id}"
+        current = self.client.get(key)
+        ttl = self.client.ttl(key)
         
-        if task.retry_count <= task.max_retries:
-            # Retry with exponential backoff
-            delay = min(300, 2 ** task.retry_count * 10)  # Max 5 minutes
-            task.status = TaskStatus.RETRYING
-            task.scheduled_at = datetime.utcnow() + timedelta(seconds=delay)
-            
-            # Re-enqueue for retry
-            queue_name = f"queue:{task.priority.name.lower()}"
-            score = task.scheduled_at.timestamp()
-            await self.redis_client.zadd(queue_name, {task.id: score})
-            
-            logger.info(f"Task {task.id} scheduled for retry {task.retry_count}/{task.max_retries} in {delay}s")
-        else:
-            # Mark as permanently failed
-            task.status = TaskStatus.FAILED
-            logger.error(f"Task {task.id} permanently failed after {task.retry_count} retries")
-            
-        # Update task status
-        await self.redis_client.hset(
-            f"task:{task.id}",
-            mapping={
-                "data": task.model_dump_json(),
-                "status": task.status
-            }
-        )
-
-    async def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:
-        """Get task status and details"""
-        task_data = await self.redis_client.hgetall(f"task:{task_id}")
-        if task_data:
-            return {
-                key.decode('utf-8'): value.decode('utf-8')
-                for key, value in task_data.items()
-            }
+        return {
+            "current": int(current) if current else 0,
+            "limit": settings.RATE_LIMIT_PER_MINUTE,
+            "remaining": max(0, settings.RATE_LIMIT_PER_MINUTE - (int(current) if current else 0)),
+            "reset_in": max(0, ttl)
+        }
+    
+    def cache_set(self, key: str, value: Any, ttl_seconds: int = 300):
+        """Set a cached value"""
+        self.client.setex(key, ttl_seconds, json.dumps(value))
+    
+    def cache_get(self, key: str) -> Optional[Any]:
+        """Get a cached value"""
+        data = self.client.get(key)
+        if data:
+            return json.loads(data)
         return None
-
-    async def get_user_tasks(self, user_id: str) -> List[Dict[str, Any]]:
-        """Get all tasks for a specific user"""
-        task_ids = await self.redis_client.smembers(f"user_tasks:{user_id}")
-        tasks = []
+    
+    def cache_delete(self, key: str):
+        """Delete a cached value"""
+        self.client.delete(key)
+    
+    def cache_get_or_set(self, key: str, factory, ttl_seconds: int = 300):
+        """Get cached value or compute and cache it"""
+        cached = self.cache_get(key)
+        if cached is not None:
+            return cached
         
-        for task_id in task_ids:
-            task_id = task_id.decode('utf-8')
-            task_status = await self.get_task_status(task_id)
-            if task_status:
-                tasks.append(task_status)
-                
-        return tasks
-
-    async def get_queue_stats(self) -> Dict[str, int]:
-        """Get queue statistics"""
+        value = factory()
+        self.cache_set(key, value, ttl_seconds)
+        return value
+    
+    # Queue statistics
+    def get_queue_stats(self) -> Dict[str, int]:
+        """Get queue statistics from Celery"""
+        # Note: This queries Celery's Redis backend
         stats = {}
         
         for priority in TaskPriority:
-            queue_name = f"queue:{priority.name.lower()}"
-            count = await self.redis_client.zcard(queue_name)
+            queue_name = f"celery:{priority.name.lower()}"
+            count = self.client.llen(queue_name)
             stats[f"{priority.name.lower()}_queue"] = count
-            
+        
+        # Default celery queue
+        stats["default_queue"] = self.client.llen("celery")
+        
         return stats
+    
+    def get_active_jobs_count(self) -> int:
+        """Get count of currently active jobs"""
+        # This would need coordination with Celery
+        return self.client.scard("active_jobs") or 0
+    
+    # User job tracking
+    def track_user_job(self, user_id: str, job_id: str, job_type: str):
+        """Track a job for a specific user"""
+        self.client.sadd(f"user_jobs:{user_id}", job_id)
+        self.client.hset(f"job_meta:{job_id}", mapping={
+            "user_id": user_id,
+            "job_type": job_type,
+            "created_at": datetime.utcnow().isoformat()
+        })
+        # Expire after 24 hours
+        self.client.expire(f"user_jobs:{user_id}", 86400)
+        self.client.expire(f"job_meta:{job_id}", 86400)
+    
+    def get_user_jobs(self, user_id: str) -> List[str]:
+        """Get all job IDs for a user"""
+        return list(self.client.smembers(f"user_jobs:{user_id}"))
+    
+    def get_job_meta(self, job_id: str) -> Optional[Dict[str, str]]:
+        """Get job metadata"""
+        return self.client.hgetall(f"job_meta:{job_id}")
+    
+    # Supplier sync tracking
+    def set_supplier_sync_status(self, supplier_id: str, status: str, progress: int = 0):
+        """Track supplier sync status"""
+        self.client.hset(f"supplier_sync:{supplier_id}", mapping={
+            "status": status,
+            "progress": progress,
+            "updated_at": datetime.utcnow().isoformat()
+        })
+        self.client.expire(f"supplier_sync:{supplier_id}", 3600)
+    
+    def get_supplier_sync_status(self, supplier_id: str) -> Optional[Dict[str, str]]:
+        """Get supplier sync status"""
+        return self.client.hgetall(f"supplier_sync:{supplier_id}")
+    
+    # Lock management for preventing duplicate jobs
+    def acquire_lock(self, lock_name: str, ttl_seconds: int = 300) -> bool:
+        """Acquire a distributed lock"""
+        return bool(self.client.set(
+            f"lock:{lock_name}",
+            datetime.utcnow().isoformat(),
+            nx=True,
+            ex=ttl_seconds
+        ))
+    
+    def release_lock(self, lock_name: str):
+        """Release a distributed lock"""
+        self.client.delete(f"lock:{lock_name}")
+    
+    def is_locked(self, lock_name: str) -> bool:
+        """Check if a lock exists"""
+        return self.client.exists(f"lock:{lock_name}") > 0
 
-    async def start_worker(self, worker_name: str = "default"):
-        """Start processing tasks from the queue"""
-        self.is_running = True
-        logger.info(f"Starting queue worker: {worker_name}")
-        
-        while self.is_running:
-            try:
-                task = await self.dequeue()
-                if task:
-                    await self.process_task(task)
-                else:
-                    # No tasks available, wait a bit
-                    await asyncio.sleep(1)
-                    
-            except Exception as e:
-                logger.error(f"Worker {worker_name} error", error=str(e))
-                await asyncio.sleep(5)  # Backoff on error
 
-    def stop_worker(self):
-        """Stop the worker"""
-        self.is_running = False
-        logger.info("Queue worker stopping")
-
-    async def cleanup_completed_tasks(self, older_than_hours: int = 24):
-        """Clean up old completed/failed tasks"""
-        cutoff_time = datetime.utcnow() - timedelta(hours=older_than_hours)
-        cutoff_timestamp = cutoff_time.timestamp()
-        
-        # This would need additional implementation to track task completion times
-        logger.info(f"Cleaning up tasks older than {older_than_hours} hours")
+# Global instance
+redis_queue = RedisQueue()

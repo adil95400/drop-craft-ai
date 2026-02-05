@@ -1,0 +1,51 @@
+# Fly.io deployment configuration for ShopOpti API
+app = 'shopopti-api'
+primary_region = 'cdg'  # Paris
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ENVIRONMENT = "production"
+  PORT = "8000"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8000
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+  [[services.http_checks]]
+    interval = "15s"
+    timeout = "5s"
+    method = "GET"
+    path = "/health"
+
+# Worker process for Celery
+[[processes]]
+  name = "worker"
+  cmd = ["celery", "-A", "app.queue.celery_app", "worker", "--loglevel=info", "--concurrency=4"]
+
+# Beat scheduler (optional - can use external scheduler)
+# [[processes]]
+#   name = "beat"
+#   cmd = ["celery", "-A", "app.queue.celery_app", "beat", "--loglevel=info"]
