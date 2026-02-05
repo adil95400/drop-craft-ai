@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { logAction, logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface ReportData {
   id: string;
@@ -67,7 +67,7 @@ export function AdvancedReportsCenter() {
       if (error) throw error;
       setReports(data || []);
     } catch (error) {
-      logError(error as Error, 'Error loading reports');
+      productionLogger.error('Error loading reports', error as Error, 'AdvancedReportsCenter');
       toast.error('Erreur lors du chargement des rapports');
     } finally {
       setLoading(false);
@@ -90,7 +90,7 @@ export function AdvancedReportsCenter() {
       loadReports();
       
     } catch (error) {
-      logError(error as Error, 'Error generating report');
+      productionLogger.error('Error generating report', error as Error, 'AdvancedReportsCenter');
       toast.error('Erreur lors de la génération du rapport');
     } finally {
       setGenerating(false);
@@ -111,10 +111,10 @@ export function AdvancedReportsCenter() {
       if (error) throw error;
       
       toast.success('Analyse des tendances terminée !');
-      logAction('Trend analysis', data);
+      productionLogger.info('Trend analysis', data, 'AdvancedReportsCenter');
       
     } catch (error) {
-      logError(error as Error, 'Error analyzing trends');
+      productionLogger.error('Error analyzing trends', error as Error, 'AdvancedReportsCenter');
       toast.error('Erreur lors de l\'analyse des tendances');
     } finally {
       setGenerating(false);
@@ -135,10 +135,10 @@ export function AdvancedReportsCenter() {
       if (error) throw error;
       
       toast.success('Analyse ROI terminée !');
-      logAction('ROI analysis', data);
+      productionLogger.info('ROI analysis', data, 'AdvancedReportsCenter');
       
     } catch (error) {
-      logError(error as Error, 'Error calculating ROI');
+      productionLogger.error('Error calculating ROI', error as Error, 'AdvancedReportsCenter');
       toast.error('Erreur lors du calcul du ROI');
     } finally {
       setGenerating(false);
@@ -161,10 +161,10 @@ export function AdvancedReportsCenter() {
       toast.success(`Export ${format.toUpperCase()} généré avec succès !`);
       
       // In a real implementation, you would download the file
-      logAction('Export data', data);
+      productionLogger.info('Export data', data, 'AdvancedReportsCenter');
       
     } catch (error) {
-      logError(error as Error, 'Error exporting report');
+      productionLogger.error('Error exporting report', error as Error, 'AdvancedReportsCenter');
       toast.error('Erreur lors de l\'export');
     }
   };

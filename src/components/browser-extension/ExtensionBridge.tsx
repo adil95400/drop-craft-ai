@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, Chrome, Smartphone, Globe, Zap, Monitor } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { logAction } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface ExtensionMessage {
   type: string;
@@ -58,7 +58,7 @@ export const ExtensionBridge = () => {
           break;
 
         default:
-          logAction('Unknown extension message', { type, data });
+          productionLogger.info('Unknown extension message', { type, data }, 'ExtensionBridge');
       }
     };
 

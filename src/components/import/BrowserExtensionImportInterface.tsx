@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
-import { logAction, logError } from '@/utils/consoleCleanup'
+import { productionLogger } from '@/utils/productionLogger'
 
 interface ExtensionSyncLog {
   id: string
@@ -104,7 +104,7 @@ export const BrowserExtensionImportInterface = () => {
       
       setSyncLogs(mappedLogs)
     } catch (error) {
-      logError(error as Error, 'Loading sync logs')
+      productionLogger.error('Loading sync logs', error as Error, 'BrowserExtensionImportInterface')
     }
   }
 
@@ -117,25 +117,25 @@ export const BrowserExtensionImportInterface = () => {
 
   const handleDownload = async () => {
     setIsDownloading(true);
-    logAction('Starting extension download');
+    productionLogger.info('Starting extension download', undefined, 'BrowserExtensionImportInterface');
     
     try {
       // First, let's test if the edge function is accessible
-      logAction('Testing edge function accessibility');
+      productionLogger.info('Testing edge function accessibility', undefined, 'BrowserExtensionImportInterface');
       
       // Try multiple approaches to diagnose the issue
       const approaches = [
         // Approach 1: Standard supabase.functions.invoke
         async () => {
-          logAction('Trying supabase.functions.invoke');
+          productionLogger.info('Trying supabase.functions.invoke', undefined, 'BrowserExtensionImportInterface');
           const { data, error } = await supabase.functions.invoke('extension-download');
-          logAction('Supabase invoke result', { data, error });
+          productionLogger.info('Supabase invoke result', { data, error }, 'BrowserExtensionImportInterface');
           return { data, error, method: 'supabase.functions.invoke' };
         },
         
         // Approach 2: Direct fetch as fallback
         async () => {
-          logAction('Trying direct fetch');
+          productionLogger.info('Trying direct fetch', undefined, 'BrowserExtensionImportInterface');
           const response = await fetch(`https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-download`, {
             method: 'GET',
             headers: {
@@ -149,7 +149,7 @@ export const BrowserExtensionImportInterface = () => {
           }
           
           const data = await response.json();
-          logAction('Direct fetch result', data);
+          productionLogger.info('Direct fetch result', data, 'BrowserExtensionImportInterface');
           return { data, error: null, method: 'direct fetch' };
         }
       ];
@@ -162,11 +162,11 @@ export const BrowserExtensionImportInterface = () => {
         try {
           result = await approach();
           if (result.data && !result.error) {
-            logAction(`Success with ${result.method}`);
+            productionLogger.info(`Success with ${result.method}`, undefined, 'BrowserExtensionImportInterface');
             break;
           }
         } catch (error) {
-          logError(error as Error, `Failed with ${result?.method || 'unknown method'}`);
+          productionLogger.error(`Failed with ${result?.method || 'unknown method'}`, error as Error, 'BrowserExtensionImportInterface');
           lastError = error;
         }
       }
@@ -178,11 +178,11 @@ export const BrowserExtensionImportInterface = () => {
       const { data } = result;
       
       if (!data?.success || !data?.data) {
-        logError(new Error('Invalid response format'), 'Extension download');
+        productionLogger.error('Invalid response format', new Error('Invalid response format'), 'BrowserExtensionImportInterface');
         throw new Error('Format de réponse invalide du serveur');
       }
       
-      logAction('Converting base64 to blob', { size: data.data.length });
+      productionLogger.info('Converting base64 to blob', { size: data.data.length }, 'BrowserExtensionImportInterface');
       
       // Convert base64 to binary
       const binaryString = atob(data.data);
@@ -191,7 +191,7 @@ export const BrowserExtensionImportInterface = () => {
         bytes[i] = binaryString.charCodeAt(i);
       }
       
-      logAction('Creating blob', { byteLength: bytes.length });
+      productionLogger.info('Creating blob', { byteLength: bytes.length }, 'BrowserExtensionImportInterface');
       
       // Create download link
       const blob = new Blob([bytes], { type: 'application/zip' });
@@ -206,13 +206,13 @@ export const BrowserExtensionImportInterface = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      logAction('Download completed successfully');
+      productionLogger.info('Download completed successfully', undefined, 'BrowserExtensionImportInterface');
       toast.success("Extension téléchargée avec succès ! Consultez le guide d'installation pour l'activer.", {
         duration: 5000
       });
       
     } catch (error) {
-      logError(error as Error, 'Extension download');
+      productionLogger.error('Extension download', error as Error, 'BrowserExtensionImportInterface');
       
       // More specific error messages
       let errorMessage = 'Erreur inconnue';

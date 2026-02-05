@@ -20,14 +20,14 @@ import {
   Activity,
   Brain
 } from 'lucide-react'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified } from '@/hooks/unified'
 import { auditProduct } from '@/lib/audit/auditProduct'
 import { FeedService } from '@/services/feeds/FeedService'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { toast } from 'sonner'
 
 export default function CatalogIntelligencePage() {
-  const { products, isLoading } = useRealProducts()
+  const { products, isLoading } = useProductsUnified()
   
   const [activeTab, setActiveTab] = useState('overview')
 

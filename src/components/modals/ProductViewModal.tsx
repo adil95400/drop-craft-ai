@@ -23,8 +23,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { useProductAIOptimizer } from '@/hooks/useProductAIOptimizer'
 import { usePublishProducts } from '@/hooks/usePublishProducts'
-import { Product } from '@/hooks/useRealProducts'
-import { UnifiedProduct } from '@/services/ProductsUnifiedService'
+import { UnifiedProduct } from '@/hooks/unified'
+import { UnifiedProduct as UnifiedProductService } from '@/services/ProductsUnifiedService'
 import { ProductAIStatusBanner, ProductAIStatus } from './product/ProductAIStatusBanner'
 import {
   Edit3,
@@ -113,7 +113,7 @@ import type { ProductAIBadge } from '@/components/products/command-center'
 interface ProductViewModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  product: Product | UnifiedProduct | null
+  product: UnifiedProduct | UnifiedProductService | null
   onEdit?: () => void
   onDelete?: () => void
   onDuplicate?: () => void

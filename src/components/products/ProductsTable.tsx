@@ -2,10 +2,10 @@
 export { ResponsiveProductsTable as ProductsTable } from './ResponsiveProductsTable';
 
 // Types exportés pour compatibilité
-import { Product } from '@/hooks/useRealProducts';
+import { UnifiedProduct } from '@/hooks/unified';
 
 export interface ProductsTableProps {
-  products: Product[];
+  products: UnifiedProduct[];
   isLoading: boolean;
   selectedProducts: string[];
   onSelectionChange: (ids: string[]) => void;

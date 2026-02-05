@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useImport } from "@/hooks/useImport";
 import { ImportResultsPro } from "./ImportResultsPro";
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { toast } from "sonner";
 
 export const ImportURLInterface = () => {
@@ -39,7 +39,7 @@ export const ImportURLInterface = () => {
     try {
       await urlImport(url);
     } catch (error: any) {
-      logError(error, 'URL import');
+      productionLogger.error('URL import', error, 'ImportURLInterface');
       toast.error(`Erreur d'import: ${error.message || 'Une erreur est survenue'}`);
     }
   };

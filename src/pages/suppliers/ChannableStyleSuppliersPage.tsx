@@ -12,7 +12,7 @@ import {
   Plus, ArrowRight, Package, PlugZap, Bell, BarChart2, RefreshCcw, Sparkles, Search 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useRealSuppliers, type Supplier } from '@/hooks/useRealSuppliers';
+import { useSuppliersUnified, type UnifiedSupplier } from '@/hooks/unified';
 import { useSupplierRealtime } from '@/hooks/useSupplierRealtime';
 import { useToast } from '@/hooks/use-toast';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -34,7 +34,7 @@ import {
 export default function ChannableStyleSuppliersPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { suppliers, addSupplier, deleteSupplier, isAdding } = useRealSuppliers();
+  const { suppliers, refetch } = useSuppliersUnified();
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,7 +50,7 @@ export default function ChannableStyleSuppliersPage() {
   const activeSyncJobs = Array.from(activeJobs.values());
 
   // Find connected supplier for a definition
-  const findConnectedSupplier = useCallback((definitionId: string): Supplier | undefined => {
+  const findConnectedSupplier = useCallback((definitionId: string): UnifiedSupplier | undefined => {
     return suppliers.find(s => 
       s.name?.toLowerCase() === definitionId.toLowerCase() ||
       s.name?.toLowerCase().includes(definitionId.toLowerCase())
@@ -58,7 +58,7 @@ export default function ChannableStyleSuppliersPage() {
   }, [suppliers]);
 
   // Find definition for connected supplier
-  const findDefinitionForSupplier = useCallback((supplier: Supplier): SupplierDefinition | undefined => {
+  const findDefinitionForSupplier = useCallback((supplier: UnifiedSupplier): SupplierDefinition | undefined => {
     return ALL_SUPPLIER_DEFINITIONS.find(def => 
       def.id.toLowerCase() === supplier.name?.toLowerCase() ||
       def.name.toLowerCase() === supplier.name?.toLowerCase()
@@ -96,10 +96,11 @@ export default function ChannableStyleSuppliersPage() {
   }, [searchTerm, activeCategory, selectedCountry, selectedShippingZone, sortBy]);
 
   const handleConnect = useCallback((data: any) => {
-    addSupplier(data);
+    // Refetch suppliers after connection
+    refetch();
     setSelectedDefinition(null);
     toast({ title: 'Fournisseur connecté', description: `${data.name} a été ajouté avec succès.` });
-  }, [addSupplier, toast]);
+  }, [refetch, toast]);
 
   const handleResetFilters = useCallback(() => {
     setSearchTerm('');
@@ -188,7 +189,7 @@ export default function ChannableStyleSuppliersPage() {
                       if (def) setSelectedDefinition(def);
                     }}
                     onSync={() => setActiveTab('sync')}
-                    onDelete={() => deleteSupplier(supplier.id)}
+                    onDelete={() => refetch()}
                     isSyncing={false}
                   />
                 ))}
@@ -260,10 +261,10 @@ export default function ChannableStyleSuppliersPage() {
         {selectedDefinition && (
           <SupplierConfigModal
             definition={selectedDefinition}
-            existingSupplier={findConnectedSupplier(selectedDefinition.id)}
+            existingSupplier={findConnectedSupplier(selectedDefinition.id) as any}
             onClose={() => setSelectedDefinition(null)}
             onConnect={handleConnect}
-            isConnecting={isAdding}
+            isConnecting={false}
           />
         )}
       </Dialog>
