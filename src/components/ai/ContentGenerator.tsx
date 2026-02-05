@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -192,7 +192,7 @@ export const ContentGenerator = ({ className }: ContentGeneratorProps) => {
       });
 
     } catch (error: any) {
-      logError(error, 'ContentGenerator.generateContent');
+      productionLogger.error('Failed to generate content', error, 'ContentGenerator');
       toast({
         title: "Erreur",
         description: error.message,

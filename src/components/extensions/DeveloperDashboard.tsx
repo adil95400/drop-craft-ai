@@ -24,7 +24,7 @@ import {
   Zap
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { logAction } from '@/utils/consoleCleanup'
+import { productionLogger } from '@/utils/productionLogger'
 
 // Mock developer data
 const DEVELOPER_DATA = {

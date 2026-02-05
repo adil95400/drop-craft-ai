@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -91,7 +91,7 @@ export const SecurityMonitor = () => {
 
       await refreshEvents();
     } catch (error) {
-      logError(error, 'SecurityMonitor.loadSecurityData');
+      productionLogger.error('Failed to load security data', error as Error, 'SecurityMonitor');
     }
   };
 

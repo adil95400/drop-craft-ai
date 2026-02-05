@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
         description: "L'IA a analysé vos données et mis à jour les insights",
       });
     } catch (error) {
-      logError(error, 'AIRecommendations.generateRecommendations');
+      productionLogger.error('Failed to generate recommendations', error as Error, 'AIRecommendations');
       toast({
         title: "Erreur",
         description: "Impossible de générer de nouvelles recommandations",
@@ -88,7 +88,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
       }, 2000);
 
     } catch (error) {
-      logError(error, 'AIRecommendations.executeAction');
+      productionLogger.error('Failed to execute action', error as Error, 'AIRecommendations');
       toast({
         title: "Erreur",
         description: "Impossible d'exécuter cette action",

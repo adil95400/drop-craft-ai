@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { toast } from "sonner";
-import { logError, logWarning } from "@/utils/consoleCleanup";
+import { productionLogger } from '@/utils/productionLogger';
 import { 
   Package, Send, Truck, CheckCircle, XCircle, Clock, 
   ExternalLink, RefreshCw, Eye, AlertTriangle 
@@ -94,7 +94,7 @@ export const OrderAutomationPanel: React.FC = () => {
       if (error) throw error
       setOrders(data as any || [])
     } catch (error) {
-      logError(error as Error, 'Error loading orders')
+      productionLogger.error('Failed to load orders', error as Error, 'OrderAutomation');
       toast({
         title: "Erreur",
         description: "Impossible de charger les commandes fournisseurs",
@@ -130,7 +130,7 @@ export const OrderAutomationPanel: React.FC = () => {
 
       loadOrders() // Refresh
     } catch (error) {
-      logError(error as Error, 'Error sending order')
+      productionLogger.error('Failed to send order', error as Error, 'OrderAutomation');
       toast({
         title: "Erreur",
         description: "Impossible d'envoyer la commande au fournisseur",
@@ -165,7 +165,7 @@ export const OrderAutomationPanel: React.FC = () => {
 
       loadOrders() // Refresh
     } catch (error) {
-      logError(error as Error, 'Error updating tracking')
+      productionLogger.error('Failed to update tracking', error as Error, 'OrderAutomation');
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le suivi",
@@ -195,7 +195,7 @@ export const OrderAutomationPanel: React.FC = () => {
 
       loadOrders() // Refresh
     } catch (error) {
-      logError(error as Error, 'Error bulk updating')
+      productionLogger.error('Failed to bulk update', error as Error, 'OrderAutomation');
       toast({
         title: "Erreur",
         description: "Impossible de faire la mise à jour groupée",

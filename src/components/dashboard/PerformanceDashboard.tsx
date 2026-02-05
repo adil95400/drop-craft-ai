@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 import { useAuth } from '@/contexts/AuthContext';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface PerformanceMetric {
   id: string;
@@ -204,7 +204,7 @@ export function PerformanceDashboard() {
 
       setData(performanceData);
     } catch (error) {
-      logError(error as Error, 'Error fetching performance data');
+      productionLogger.error('Failed to fetch performance data', error as Error, 'PerformanceDashboard');
     } finally {
       setLoading(false);
     }
