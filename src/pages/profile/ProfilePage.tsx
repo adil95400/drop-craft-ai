@@ -1,10 +1,12 @@
 /**
  * Page Profil Utilisateur - Design Premium
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/hooks/useProfile'
+import { useAvatarUpload } from '@/hooks/useAvatarUpload'
+import { useSessions } from '@/hooks/useSessions'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,13 +19,13 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Building2, 
-  Globe, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building2,
+  Globe,
   Camera,
   Save,
   Loader2,
@@ -37,14 +39,16 @@ import {
   ShoppingCart,
   CreditCard,
   CheckCircle2,
-  AlertCircle,
   Link as LinkIcon,
   Twitter,
   Linkedin,
-  Github
+  Github,
+  Smartphone,
 } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import { supabase } from '@/integrations/supabase/client'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 interface ProfileFormData {
   full_name: string
@@ -62,6 +66,10 @@ interface ProfileFormData {
 export default function ProfilePage() {
   const { user } = useAuth()
   const { profile, isLoading: profileLoading, refetch } = useProfile()
+  const { uploadAvatar, uploading: avatarUploading } = useAvatarUpload(refetch)
+  const { sessions, isLoading: sessionsLoading } = useSessions()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -74,7 +82,7 @@ export default function ProfilePage() {
     location: '',
     twitter: '',
     linkedin: '',
-    github: ''
+    github: '',
   })
 
   useEffect(() => {
@@ -89,10 +97,19 @@ export default function ProfilePage() {
         location: profile.location || '',
         twitter: profile.twitter || '',
         linkedin: profile.linkedin || '',
-        github: profile.github || ''
+        github: profile.github || '',
       })
     }
   }, [profile, user])
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) uploadAvatar(file)
+  }
 
   const handleSave = async () => {
     if (!user) return
@@ -204,12 +221,21 @@ export default function ProfilePage() {
                         {formData.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <button 
-                      className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => toast.info('Upload d\'avatar bientôt disponible')}
+                    <button
+                      type="button"
+                      className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                      onClick={handleAvatarClick}
+                      disabled={avatarUploading}
                     >
-                      <Camera className="w-4 h-4" />
+                      {avatarUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
                     </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarChange}
+                    />
                   </div>
                   
                   <h3 className="mt-4 text-xl font-bold">
@@ -589,15 +615,43 @@ export default function ProfilePage() {
                   </Card>
                 </div>
 
+                {/* Sessions récentes */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">Activité récente</CardTitle>
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Smartphone className="w-4 h-4 text-primary" />
+                      Sessions récentes
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Historique d'activité bientôt disponible</p>
-                    </div>
+                    {sessionsLoading ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      </div>
+                    ) : sessions.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">Aucune session enregistrée</p>
+                    ) : (
+                      <ul className="space-y-3">
+                        {sessions.map((s) => (
+                          <li key={s.id} className="flex items-start gap-3 text-sm">
+                            <Smartphone className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                            <div className="flex-1">
+                              <p className="line-clamp-1">{s.user_agent?.split(' ').slice(0, 3).join(' ') || 'Navigateur inconnu'}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {s.ip_address ?? '—'}
+                                {' · '}
+                                {s.created_at
+                                  ? formatDistanceToNow(new Date(s.created_at), { addSuffix: true, locale: fr })
+                                  : '—'}
+                                {s.isCurrent && (
+                                  <Badge variant="outline" className="ml-2 text-[10px] py-0 px-1">Actuelle</Badge>
+                                )}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
