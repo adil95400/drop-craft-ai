@@ -17,5 +17,9 @@
   "notifications": "Notifications",
   "search": "Search...",
   "menu": "Menu",
-  "home": "Home"
+  "home": "Home",
+  "breadcrumb": "Breadcrumb",
+  "openCloseSidebar": "Open/Close sidebar",
+  "mainNavigation": "Main navigation",
+  "navigateTo": "Navigate to {{page}}"
 }
