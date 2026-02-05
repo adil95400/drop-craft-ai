@@ -50,8 +50,18 @@ export function ProductRoutes() {
       <Route path="catalogue" element={<Navigate to="/products" replace />} />
       <Route path="advanced" element={<AdvancedProductsPage />} />
       
-      {/* Import - Redirect to dedicated module (before :id to prevent conflict) */}
+      {/* Import - Redirect to dedicated module with path preservation */}
       <Route path="import" element={<Navigate to="/import" replace />} />
+      <Route path="import/manage" element={<Navigate to="/import/manage" replace />} />
+      <Route path="import/manage/history" element={<Navigate to="/import/history" replace />} />
+      <Route path="import/manage/products" element={<Navigate to="/import/products" replace />} />
+      <Route path="import/manage/publishing" element={<Navigate to="/import/publishing" replace />} />
+      <Route path="import/manage/marketplace" element={<Navigate to="/import/marketplace" replace />} />
+      <Route path="import/history" element={<Navigate to="/import/history" replace />} />
+      <Route path="import/url" element={<Navigate to="/import/url" replace />} />
+      <Route path="import/quick" element={<Navigate to="/import/quick" replace />} />
+      <Route path="import/advanced" element={<Navigate to="/import/advanced" replace />} />
+      <Route path="import/bulk" element={<Navigate to="/import/bulk" replace />} />
       <Route path="import/*" element={<Navigate to="/import" replace />} />
       
       {/* Dynamic product ID route (must be after specific routes) */}
