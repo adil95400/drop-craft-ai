@@ -1,12 +1,17 @@
 /**
  * ShopOpti+ Import Response Handler v1.0
- * 
+  *
  * Handles all gateway responses with appropriate UI feedback:
  * - ok=true → Show success with job tracking
  * - 426 → Force update modal
  * - QUOTA_EXCEEDED → Upgrade CTA
  * - UNAUTHORIZED → Auth redirect
  * - NETWORK_ERROR → Retry option
+  * - FORBIDDEN_SCOPE → Scope error
+  * - REPLAY_DETECTED → Duplicate request
+  * - IN_PROGRESS → Already processing
+  * - UPGRADE_REQUIRED → Version update needed (alias for 426)
+  * - INTERNAL → Server error
  */
 
 ;(function() {
@@ -261,6 +266,7 @@
 
       switch (response.code) {
         case 'VERSION_OUTDATED':
+        case 'UPGRADE_REQUIRED':
           return this.handleVersionOutdated(response);
         
         case 'QUOTA_EXCEEDED':
@@ -269,11 +275,23 @@
         case 'UNAUTHORIZED':
           return this.handleUnauthorized(response);
         
+        case 'FORBIDDEN_SCOPE':
+          return this.handleForbiddenScope(response);
+        
         case 'RATE_LIMITED':
           return this.handleRateLimited(response);
         
         case 'NETWORK_ERROR':
           return this.handleNetworkError(response);
+        
+        case 'REPLAY_DETECTED':
+          return this.handleReplayDetected(response);
+        
+        case 'IN_PROGRESS':
+          return this.handleInProgress(response);
+        
+        case 'INTERNAL':
+          return this.handleInternalError(response);
         
         default:
           return this.handleGenericError(response);
@@ -379,6 +397,80 @@
       });
 
       return { handled: true, retryAfter };
+    }
+
+    /**
+     * Handle forbidden scope error
+     */
+    handleForbiddenScope(response) {
+      this.showToast({
+        type: 'error',
+        title: '🚫 Permission insuffisante',
+        message: response.message || 'Votre plan ne permet pas cette action.',
+        actions: [
+          {
+            label: 'Voir les plans',
+            primary: true,
+            onClick: () => {
+              window.open(`${APP_URL}/pricing?source=extension&reason=scope`, '_blank');
+            },
+          },
+        ],
+        autoClose: 8000,
+      });
+
+      return { handled: true, scopeError: true };
+    }
+
+    /**
+     * Handle replay detected (duplicate request)
+     */
+    handleReplayDetected(response) {
+      this.showToast({
+        type: 'warning',
+        title: '⚠️ Requête dupliquée',
+        message: 'Cette action a déjà été effectuée.',
+        autoClose: 4000,
+      });
+
+      return { handled: true, isDuplicate: true };
+    }
+
+    /**
+     * Handle in-progress (already being processed)
+     */
+    handleInProgress(response) {
+      this.showToast({
+        type: 'info',
+        title: '⏳ Import en cours',
+        message: 'Ce produit est déjà en cours d\'importation.',
+        autoClose: 5000,
+      });
+
+      return { handled: true, inProgress: true };
+    }
+
+    /**
+     * Handle internal server error
+     */
+    handleInternalError(response) {
+      this.showToast({
+        type: 'error',
+        title: '❌ Erreur serveur',
+        message: response.message || 'Une erreur interne s\'est produite. Réessayez plus tard.',
+        actions: [
+          {
+            label: 'Réessayer',
+            primary: true,
+            onClick: () => {
+              window.dispatchEvent(new CustomEvent('shopopti:retry-import'));
+            },
+          },
+        ],
+        autoClose: 10000,
+      });
+
+      return { handled: true, canRetry: true, serverError: true };
     }
 
     /**
@@ -656,6 +748,6 @@
   // Export singleton
   window.ImportResponseHandler = new ImportResponseHandler();
 
-  console.log('[ShopOpti+] ImportResponseHandler v1.0 loaded');
+  console.log('[ShopOpti+] ImportResponseHandler v1.1 loaded - Full error code handling');
 
 })();

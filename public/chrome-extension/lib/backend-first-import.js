@@ -15,6 +15,30 @@
   if (window.__shopoptiBackendFirstImportLoaded) return;
   window.__shopoptiBackendFirstImportLoaded = true;
 
+  // Debug logging utility
+  const DEBUG_KEY = 'debugMode';
+  let debugEnabled = false;
+
+  async function loadDebugMode() {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        const result = await chrome.storage.local.get([DEBUG_KEY]);
+        debugEnabled = result[DEBUG_KEY] === true;
+      }
+    } catch (e) {
+      // Silent fail
+    }
+  }
+  loadDebugMode();
+
+  function debugLog(label, data) {
+    if (debugEnabled) {
+      console.group(`[BackendFirstImport] ${label}`);
+      console.log(JSON.stringify(data, null, 2));
+      console.groupEnd();
+    }
+  }
+
   class BackendFirstImport {
     constructor() {
       this.lastImportUrl = null;
@@ -46,23 +70,30 @@
       this.lastImportUrl = url;
       this.lastImportOptions = options;
 
+      debugLog('IMPORT_START', { url, options });
+
       // Validate URL
       if (!url || typeof url !== 'string') {
-        return {
+        const errorResult = {
           ok: false,
           code: 'INVALID_URL',
           message: 'URL invalide',
         };
+        debugLog('IMPORT_ERROR', errorResult);
+        return errorResult;
       }
 
       // Ensure clients are loaded
       if (!window.BackendImportClient) {
         console.error('[BackendFirstImport] BackendImportClient not loaded');
-        return {
+        const errorResult = {
           ok: false,
           code: 'CLIENT_NOT_LOADED',
-          message: 'Client d\'import non chargé',
+          message: 'Client d\'import non chargé - essayez de recharger la page',
+          canFallback: true,
         };
+        debugLog('IMPORT_ERROR', errorResult);
+        return errorResult;
       }
 
       // Set button loading state
@@ -72,7 +103,9 @@
 
       try {
         // Call backend - NO local extraction
+        debugLog('CALLING_BACKEND', { url, options });
         const response = await window.BackendImportClient.importProduct(url, options);
+        debugLog('BACKEND_RESPONSE', response);
 
         // Handle response with UI feedback
         if (window.ImportResponseHandler) {
@@ -91,15 +124,22 @@
           });
         }
 
+        // Mark response to allow fallback if network/server error
+        if (!response.ok && ['NETWORK_ERROR', 'INTERNAL', 'CLIENT_NOT_LOADED'].includes(response.code)) {
+          response.canFallback = true;
+        }
+
         return response;
 
       } catch (error) {
         console.error('[BackendFirstImport] Import error:', error);
+        debugLog('IMPORT_EXCEPTION', { message: error.message, stack: error.stack });
 
         const errorResponse = {
           ok: false,
           code: 'UNEXPECTED_ERROR',
           message: error.message || 'Erreur inattendue',
+          canFallback: true,
         };
 
         if (window.ImportResponseHandler) {
@@ -195,6 +235,10 @@
       if (window.BackendImportClient) {
         await window.BackendImportClient.setDebugMode(true);
       }
+      debugEnabled = true;
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        await chrome.storage.local.set({ [DEBUG_KEY]: true });
+      }
       console.log('[BackendFirstImport] Debug mode enabled');
     }
 
@@ -204,6 +248,10 @@
     async disableDebug() {
       if (window.BackendImportClient) {
         await window.BackendImportClient.setDebugMode(false);
+      }
+      debugEnabled = false;
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        await chrome.storage.local.set({ [DEBUG_KEY]: false });
       }
       console.log('[BackendFirstImport] Debug mode disabled');
     }
@@ -222,6 +270,6 @@
   // Export singleton
   window.BackendFirstImport = new BackendFirstImport();
 
-  console.log('[ShopOpti+] BackendFirstImport v1.0 loaded - Backend-first architecture active');
+  console.log('[ShopOpti+] BackendFirstImport v1.1 loaded - Backend-first architecture active');
 
 })();
