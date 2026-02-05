@@ -49,28 +49,53 @@ const settingsCategories = [
 ]
 
 export default function ChannableSettingsPage() {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const { isAdmin } = useAdminRole()
   const { theme, setTheme } = useTheme()
   const { saveSettings, changePassword, exportData, deleteAccount, loading } = useSettingsActions()
   const [activeCategory, setActiveCategory] = useState('appearance')
-  
+
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
     marketing: false,
-    security: true
+    security: true,
   })
 
   const [privacy, setPrivacy] = useState({
     profileVisible: true,
     activityVisible: false,
-    analyticsEnabled: true
+    analyticsEnabled: true,
   })
 
   const [language, setLanguage] = useState('fr')
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+
+  // Load persisted settings from profile (without triggering autosave)
+  useEffect(() => {
+    const s: any = (profile as any)?.settings || {}
+
+    const nextNotifications = {
+      email: s?.notifications?.email ?? (profile as any)?.email_notifications ?? true,
+      push: s?.notifications?.push ?? (profile as any)?.push_notifications ?? false,
+      marketing: s?.notifications?.marketing ?? (profile as any)?.marketing_notifications ?? false,
+      security: true,
+    }
+
+    const nextPrivacy = {
+      profileVisible: s?.privacy?.profileVisible ?? (profile as any)?.profile_visible ?? true,
+      activityVisible: s?.privacy?.activityVisible ?? (profile as any)?.activity_visible ?? false,
+      analyticsEnabled: s?.privacy?.analyticsEnabled ?? (profile as any)?.analytics_enabled ?? true,
+    }
+
+    const nextLanguage = s?.language ?? (profile as any)?.language ?? 'fr'
+
+    setNotifications(nextNotifications)
+    setPrivacy(nextPrivacy)
+    setLanguage(nextLanguage)
+    setHasChanges(false)
+  }, [profile])
 
   useEffect(() => {
     if (hasChanges) {

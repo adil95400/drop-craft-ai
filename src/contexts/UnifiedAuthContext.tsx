@@ -13,11 +13,27 @@ export interface Profile {
   subscription_status?: string;
   avatar_url?: string;
   phone?: string;
+
+  // Backwards compatible alias used by older UI
   company?: string;
+  // Canonical DB column
+  company_name?: string;
+
   website?: string;
   bio?: string;
   location?: string;
+  twitter?: string;
+  linkedin?: string;
+  github?: string;
+  language?: string;
   timezone?: string;
+  email_notifications?: boolean;
+  push_notifications?: boolean;
+  marketing_notifications?: boolean;
+  profile_visible?: boolean;
+  activity_visible?: boolean;
+  analytics_enabled?: boolean;
+  settings?: any;
   created_at: string;
   updated_at: string;
 }
@@ -276,8 +292,9 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
       if (profileData) {
         setProfile({
           ...profileData,
+          company: (profileData as any).company_name ?? (profileData as any).company ?? null,
           is_admin: isAdminData === true,
-          plan: profileData.subscription_plan || 'free'
+          plan: (profileData as any).subscription_plan || 'free',
         } as unknown as Profile);
       } else {
         setProfile(null);

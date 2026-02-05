@@ -96,17 +96,22 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!user) return
-    
+
     setIsSaving(true)
     try {
-      // Only update fields that exist in the current schema
       const { error } = await supabase
         .from('profiles')
         .update({
           full_name: formData.full_name,
           phone: formData.phone,
-          company_name: formData.company, // Map to company_name in DB
-          updated_at: new Date().toISOString()
+          company_name: formData.company,
+          website: formData.website,
+          bio: formData.bio,
+          location: formData.location,
+          twitter: formData.twitter,
+          linkedin: formData.linkedin,
+          github: formData.github,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', user.id)
 

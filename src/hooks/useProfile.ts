@@ -82,22 +82,22 @@ export function useProfile() {
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
       ])
 
-      // Map existing fields to our interface (using company_name from DB)
+      // Map existing fields to our interface
       return {
         id: data.id,
         full_name: data.full_name,
         email: data.email || user.email || null,
         phone: data.phone || null,
-        company: data.company_name || null, // Map company_name to company
-        website: null, // Field doesn't exist in current schema
-        bio: null, // Field doesn't exist in current schema
-        location: null, // Field doesn't exist in current schema
+        company: data.company_name || null,
+        website: data.website || null,
+        bio: data.bio || null,
+        location: data.location || null,
         avatar_url: data.avatar_url,
-        twitter: null, // Field doesn't exist in current schema
-        linkedin: null, // Field doesn't exist in current schema
-        github: null, // Field doesn't exist in current schema
+        twitter: data.twitter || null,
+        linkedin: data.linkedin || null,
+        github: data.github || null,
         subscription_plan: data.subscription_plan || 'free',
-        email_verified: true, // Assume verified if they can log in
+        email_verified: true,
         products_count: productsResult.count || 0,
         orders_count: ordersResult.count || 0,
         imports_count: 0,
@@ -106,7 +106,7 @@ export function useProfile() {
         credits_remaining: 5,
         next_billing_date: null,
         created_at: data.created_at,
-        updated_at: data.updated_at
+        updated_at: data.updated_at,
       }
     },
     enabled: !!user?.id,

@@ -9282,61 +9282,94 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activity_visible: boolean
           admin_mode: string | null
+          analytics_enabled: boolean
           avatar_url: string | null
+          bio: string | null
           company_name: string | null
           created_at: string | null
           email: string | null
           email_notifications: boolean | null
           full_name: string | null
+          github: string | null
           id: string
           language: string | null
           last_login_at: string | null
+          linkedin: string | null
+          location: string | null
           login_count: number | null
+          marketing_notifications: boolean
           onboarding_completed: boolean | null
           phone: string | null
+          profile_visible: boolean
           push_notifications: boolean | null
+          settings: Json
           subscription_plan: string | null
           timezone: string | null
+          twitter: string | null
           updated_at: string | null
+          website: string | null
         }
         Insert: {
+          activity_visible?: boolean
           admin_mode?: string | null
+          analytics_enabled?: boolean
           avatar_url?: string | null
+          bio?: string | null
           company_name?: string | null
           created_at?: string | null
           email?: string | null
           email_notifications?: boolean | null
           full_name?: string | null
+          github?: string | null
           id: string
           language?: string | null
           last_login_at?: string | null
+          linkedin?: string | null
+          location?: string | null
           login_count?: number | null
+          marketing_notifications?: boolean
           onboarding_completed?: boolean | null
           phone?: string | null
+          profile_visible?: boolean
           push_notifications?: boolean | null
+          settings?: Json
           subscription_plan?: string | null
           timezone?: string | null
+          twitter?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Update: {
+          activity_visible?: boolean
           admin_mode?: string | null
+          analytics_enabled?: boolean
           avatar_url?: string | null
+          bio?: string | null
           company_name?: string | null
           created_at?: string | null
           email?: string | null
           email_notifications?: boolean | null
           full_name?: string | null
+          github?: string | null
           id?: string
           language?: string | null
           last_login_at?: string | null
+          linkedin?: string | null
+          location?: string | null
           login_count?: number | null
+          marketing_notifications?: boolean
           onboarding_completed?: boolean | null
           phone?: string | null
+          profile_visible?: boolean
           push_notifications?: boolean | null
+          settings?: Json
           subscription_plan?: string | null
           timezone?: string | null
+          twitter?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Relationships: []
       }
