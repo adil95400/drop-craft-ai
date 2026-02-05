@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useIntegrationsUnified } from "@/hooks/unified";
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { 
   Settings, 
   RefreshCw, 
@@ -113,7 +113,7 @@ export const IntegrationSettingsDialog = ({ open, onOpenChange, integration }: I
         description: "Les paramètres de l'intégration ont été mis à jour",
       });
     } catch (error) {
-      logError(error as Error, 'Failed to update integration');
+      productionLogger.error('Failed to update integration', error as Error, 'IntegrationSettings');
     }
   };
 
@@ -129,7 +129,7 @@ export const IntegrationSettingsDialog = ({ open, onOpenChange, integration }: I
           description: "L'intégration a été supprimée avec succès",
         });
       } catch (error) {
-        logError(error as Error, 'Failed to delete integration');
+        productionLogger.error('Failed to delete integration', error as Error, 'IntegrationSettings');
       }
     }
   };
@@ -140,7 +140,7 @@ export const IntegrationSettingsDialog = ({ open, onOpenChange, integration }: I
     try {
       await syncIntegration(integration.id);
     } catch (error) {
-      logError(error as Error, 'Failed to sync integration');
+      productionLogger.error('Failed to sync integration', error as Error, 'IntegrationSettings');
     }
   };
 

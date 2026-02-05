@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -72,7 +72,7 @@ export const RoleManager = () => {
 
       setUsers(usersWithRoles as UserProfile[])
     } catch (error) {
-      logError(error, 'RoleManager.loadUsers');
+      productionLogger.error('Failed to load users', error as Error, 'RoleManager');
       toast({
         title: "Erreur",
         description: "Impossible de charger les utilisateurs",

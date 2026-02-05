@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface ActionButtonProps {
   children: ReactNode;
@@ -33,7 +33,7 @@ export function ActionButton({
     try {
       await onClick();
     } catch (error) {
-      logError(error as Error, 'Action failed');
+      productionLogger.error('Action failed', error as Error, 'ActionButton');
     }
   };
 

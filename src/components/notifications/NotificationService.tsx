@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Bell, X, CheckCircle, AlertTriangle, Info } from 'lucide-react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface Notification {
   id: string;
@@ -98,7 +98,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
       setNotifications((data || []).map(mapNotification));
     } catch (error) {
-      logError(error as Error, 'Error fetching notifications');
+      productionLogger.error('Failed to fetch notifications', error as Error, 'NotificationService');
     }
   };
 
@@ -116,7 +116,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         prev.map(n => n.id === id ? { ...n, is_read: true } : n)
       );
     } catch (error) {
-      logError(error as Error, 'Error marking notification as read');
+      productionLogger.error('Failed to mark notification as read', error as Error, 'NotificationService');
     }
   };
 
@@ -134,7 +134,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         prev.map(n => ({ ...n, is_read: true }))
       );
     } catch (error) {
-      logError(error as Error, 'Error marking all notifications as read');
+      productionLogger.error('Failed to mark all notifications as read', error as Error, 'NotificationService');
     }
   };
 
@@ -150,7 +150,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
       setNotifications(prev => prev.filter(n => n.id !== id));
     } catch (error) {
-      logError(error as Error, 'Error deleting notification');
+      productionLogger.error('Failed to delete notification', error as Error, 'NotificationService');
     }
   };
 

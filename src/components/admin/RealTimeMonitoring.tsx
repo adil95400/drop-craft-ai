@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -104,7 +104,7 @@ export const RealTimeMonitoring = () => {
         uptime: calculateUptime()
       });
     } catch (error) {
-      logError(error, 'RealTimeMonitoring.loadMetrics');
+      productionLogger.error('Failed to load metrics', error as Error, 'RealTimeMonitoring');
     }
   };
 
@@ -149,7 +149,7 @@ export const RealTimeMonitoring = () => {
         });
       }
     } catch (error) {
-      logError(error, 'RealTimeMonitoring.loadRealEvents');
+      productionLogger.error('Failed to load events', error as Error, 'RealTimeMonitoring');
     }
   };
 
