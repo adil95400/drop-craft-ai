@@ -1,0 +1,134 @@
+# ShopOpti Development Environment
+# Full stack: FastAPI + Celery + Redis + PostgreSQL
+
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: shopopti-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-production}
+      - BIGBUY_API_KEY=${BIGBUY_API_KEY}
+      - ALIEXPRESS_API_KEY=${ALIEXPRESS_API_KEY}
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
+      - LOVABLE_API_KEY=${LOVABLE_API_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - shopopti-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: shopopti-celery-worker
+    environment:
+      - ENVIRONMENT=development
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-production}
+      - BIGBUY_API_KEY=${BIGBUY_API_KEY}
+      - ALIEXPRESS_API_KEY=${ALIEXPRESS_API_KEY}
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
+      - LOVABLE_API_KEY=${LOVABLE_API_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app
+    command: celery -A app.queue.celery_app worker --loglevel=info --concurrency=4
+    networks:
+      - shopopti-network
+
+  # Celery Beat (Scheduler)
+  celery-beat:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: shopopti-celery-beat
+    environment:
+      - ENVIRONMENT=development
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+    depends_on:
+      - redis
+      - celery-worker
+    volumes:
+      - ./apps/api:/app
+    command: celery -A app.queue.celery_app beat --loglevel=info
+    networks:
+      - shopopti-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: shopopti-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-shopopti123}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-shopopti123}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopopti-network
+
+  # Flower (Celery monitoring)
+  flower:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: shopopti-flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-shopopti123}@redis:6379/0
+      - FLOWER_BASIC_AUTH=${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-admin123}
+    depends_on:
+      - redis
+      - celery-worker
+    command: celery -A app.queue.celery_app flower --port=5555
+    networks:
+      - shopopti-network
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  shopopti-network:
+    driver: bridge
