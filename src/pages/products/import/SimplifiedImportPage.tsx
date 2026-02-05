@@ -187,7 +187,7 @@ export default function SimplifiedImportPage() {
         title: 'Import terminé',
         description: `${previewData.length - previewErrors.length} produits importés avec succès`
       });
-      navigate('/import/products');
+      navigate('/products');
     }, 2000);
   };
 
