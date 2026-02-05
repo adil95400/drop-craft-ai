@@ -5961,6 +5961,45 @@ export type Database = {
         }
         Relationships: []
       }
+      gateway_logs: {
+        Row: {
+          action: string
+          created_at: string
+          duration_ms: number | null
+          error_code: string | null
+          id: string
+          level: string
+          message: string | null
+          metadata: Json | null
+          request_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          id?: string
+          level?: string
+          message?: string | null
+          metadata?: Json | null
+          request_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          id?: string
+          level?: string
+          message?: string | null
+          metadata?: Json | null
+          request_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       gdpr_consents: {
         Row: {
           consent_type: string
@@ -9570,6 +9609,33 @@ export type Database = {
         }
         Relationships: []
       }
+      request_replay_log: {
+        Row: {
+          action: string
+          expires_at: string
+          processed_at: string
+          request_id: string
+          response_hash: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          expires_at: string
+          processed_at?: string
+          request_id: string
+          response_hash?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          expires_at?: string
+          processed_at?: string
+          request_id?: string
+          response_hash?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       return_automation_rules: {
         Row: {
           auto_actions: Json
@@ -13119,6 +13185,7 @@ export type Database = {
         }[]
       }
       cleanup_extension_records: { Args: never; Returns: undefined }
+      cleanup_gateway_logs: { Args: never; Returns: number }
       cleanup_old_translation_cache: {
         Args: { days_old?: number }
         Returns: number
