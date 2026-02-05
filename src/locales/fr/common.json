@@ -208,5 +208,45 @@
       "autoEnrich": "Enrichissement IA automatique",
       "enrichFields": "Champs à enrichir"
     }
+  },
+  "header": {
+    "home": "Accueil",
+    "search": "Rechercher...",
+    "searchModule": "Rechercher un module, une action...",
+    "noResultsFound": "Aucun résultat trouvé",
+    "tryOtherTerms": "Essayez d'autres termes",
+    "quickActions": "Actions rapides",
+    "newProduct": "Nouveau produit",
+    "createProduct": "Créer un nouveau produit",
+    "addToCatalog": "Ajouter au catalogue",
+    "importData": "Importer des données",
+    "importFormats": "CSV, Excel, API",
+    "viewAnalytics": "Voir les analytics",
+    "dashboardsAndReports": "Tableaux de bord et rapports",
+    "newOrder": "Nouvelle commande",
+    "createManually": "Créer manuellement",
+    "notifications": "Notifications",
+    "noNotifications": "Aucune notification",
+    "markAllAsRead": "Tout marquer comme lu",
+    "viewAllNotifications": "Voir toutes les notifications",
+    "myProfile": "Mon profil",
+    "helpAndSupport": "Aide et support",
+    "upgradeToPro": "Passer à Pro",
+    "backToPrevious": "Retour à la page précédente"
+  },
+  "sidebar": {
+    "searchModule": "Rechercher un module...",
+    "favorites": "Favoris",
+    "comingSoon": "Bientôt",
+    "viewProfile": "Voir mon profil",
+    "viewSubscription": "Voir mon abonnement",
+    "removeFromFavorites": "Retirer des favoris",
+    "addToFavorites": "Ajouter aux favoris"
+  },
+  "plans": {
+    "ultra_pro": "Ultra Pro",
+    "pro": "Pro",
+    "standard": "Standard",
+    "free": "Gratuit"
   }
 }

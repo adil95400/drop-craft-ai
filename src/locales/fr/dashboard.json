@@ -1,7 +1,7 @@
 {
   "title": "Tableau de bord",
   "welcome": "Bienvenue sur votre tableau de bord",
-  "overview": "Vue d'ensemble",
+  "overview": "Vue d'ensemble de votre activité e-commerce",
   "stats": {
     "totalOrders": "Commandes totales",
     "totalRevenue": "Chiffre d'affaires total",
@@ -19,5 +19,13 @@
     "addProduct": "Ajouter un produit",
     "viewCustomers": "Voir les clients",
     "viewReports": "Voir les rapports"
-  }
+  },
+  "vsLastMonth": "vs mois dernier",
+  "criticalAIAlerts": "Alertes IA Critiques",
+  "finalizeConfig": "Finaliser la configuration",
+  "conversionRate": "Taux de conversion",
+  "averageBasket": "Panier moyen",
+  "performance": "Performance",
+  "excellent": "Excellente",
+  "allIndicatorsPositive": "Tous les indicateurs sont positifs"
 }
