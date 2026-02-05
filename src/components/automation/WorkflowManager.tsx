@@ -19,7 +19,7 @@ import {
   Settings,
   Zap
 } from 'lucide-react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -78,7 +78,7 @@ export function WorkflowManager() {
       if (error) throw error;
       setWorkflows(data.workflows || []);
     } catch (error) {
-      logError(error as Error, 'Error loading workflows');
+      productionLogger.error('Error loading workflows', error as Error, 'WorkflowManager');
       toast.error('Erreur lors du chargement des workflows');
     }
   };
@@ -95,7 +95,7 @@ export function WorkflowManager() {
       setPerformance(data.analysis);
       setWorkflows(data.workflows || []);
     } catch (error) {
-      logError(error as Error, 'Error loading performance data');
+      productionLogger.error('Error loading performance data', error as Error, 'WorkflowManager');
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ export function WorkflowManager() {
       loadWorkflows(); // Refresh data
       
     } catch (error) {
-      logError(error as Error, 'Error executing workflow');
+      productionLogger.error('Error executing workflow', error as Error, 'WorkflowManager');
       toast.error('Erreur lors de l\'exécution du workflow');
     }
   };
@@ -142,7 +142,7 @@ export function WorkflowManager() {
       }
       
     } catch (error) {
-      logError(error as Error, 'Error optimizing workflow');
+      productionLogger.error('Error optimizing workflow', error as Error, 'WorkflowManager');
       toast.error('Erreur lors de l\'optimisation');
     }
   };

@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, CheckCircle, AlertCircle, Zap } from 'lucide-react'
 import { toast } from 'sonner'
+import { productionLogger } from '@/utils/productionLogger'
 
 interface SupplierConnectionTestProps {
   supplierId: string
@@ -61,7 +62,7 @@ export function SupplierConnectionTest({
       onTestComplete?.(success)
 
     } catch (error: any) {
-      console.error('Connection test error:', error)
+      productionLogger.error('Connection test failed', error as Error, 'SupplierConnectionTest');
       
       setTestResult({
         success: false,

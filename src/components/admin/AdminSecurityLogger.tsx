@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { productionLogger } from '@/utils/productionLogger';
 
 export const useAdminSecurityLogger = () => {
   const { user } = useUnifiedAuth();
@@ -28,7 +29,7 @@ export const useAdminSecurityLogger = () => {
         }
       });
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement de l\'action admin:', error);
+      productionLogger.error('Failed to log admin action', error as Error, 'AdminSecurityLogger');
     }
   }, [user]);
 
@@ -60,7 +61,7 @@ export const useAdminSecurityLogger = () => {
         });
       }
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement de l\'événement de sécurité:', error);
+      productionLogger.error('Failed to log security event', error as Error, 'AdminSecurityLogger');
     }
   }, [user, toast]);
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -136,7 +136,7 @@ export const QuotaManager = () => {
       setUserUsages(userUsages);
       
     } catch (error) {
-      logError(error, 'QuotaManager.loadQuotaData');
+      productionLogger.error('Failed to load quota data', error as Error, 'QuotaManager');
       toast({
         title: "Erreur",
         description: "Impossible de charger les données des quotas",
@@ -217,7 +217,7 @@ export const QuotaManager = () => {
       setEditingLimit(null);
       
     } catch (error) {
-      logError(error, 'QuotaManager.updatePlanLimit');
+      productionLogger.error('Failed to update plan limit', error as Error, 'QuotaManager');
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour la limite",
