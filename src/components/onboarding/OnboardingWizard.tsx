@@ -22,7 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
-import { logError } from "@/utils/consoleCleanup";
+import { productionLogger } from '@/utils/productionLogger';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface OnboardingData {
@@ -118,7 +118,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
 
       onComplete(data);
     } catch (error) {
-      logError(error as Error, 'Error saving onboarding data');
+      productionLogger.error('Error saving onboarding data', error as Error, 'OnboardingWizard');
       toast({
         title: "Erreur",
         description: "Impossible de sauvegarder la configuration.",

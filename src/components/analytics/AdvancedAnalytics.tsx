@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -206,7 +206,7 @@ export const AdvancedAnalytics: React.FC = () => {
       });
 
     } catch (error) {
-      logError(error, 'AdvancedAnalytics.fetchAnalyticsData');
+      productionLogger.error('Failed to fetch analytics data', error as Error, 'AdvancedAnalytics');
       toast({
         title: "Erreur",
         description: "Impossible de charger les données d'analyse",

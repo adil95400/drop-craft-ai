@@ -8,7 +8,7 @@ import { useCanvaIntegration } from '@/hooks/useCanvaIntegration'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 export const CanvaIntegrationCard = () => {
   const { toast } = useToast()
@@ -36,7 +36,7 @@ export const CanvaIntegrationCard = () => {
           setLastSync(new Date())
         }
       } catch (error) {
-        logError(error as Error, 'Failed to check Canva connection')
+        productionLogger.error('Failed to check Canva connection', error as Error, 'CanvaIntegrationCard')
       }
     }
     checkConnection()
