@@ -1,5 +1,7 @@
 // Export central des composants Monitoring
 export { BusinessMetrics } from './components/BusinessMetrics'
+export { MonitoringDashboard } from './components/MonitoringDashboard'
+export { AlertHistoryPanel } from './components/AlertHistoryPanel'
 
 // Types
 export interface BusinessMetric {
