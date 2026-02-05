@@ -1,5 +1,5 @@
 /**
- * Page Paramètres avec design Channable
+ * Page Paramètres avec design Channable - Fully i18n translated
  */
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -36,28 +36,29 @@ import {
   Key,
   Info,
   CreditCard,
+  FileText,
 } from 'lucide-react'
 import { VersionInfo } from '@/components/shared/VersionInfo'
 import { useTheme } from 'next-themes'
 import { Helmet } from 'react-helmet-async'
-
-const settingsCategories = [
-  { id: 'appearance', label: 'Apparence', icon: Palette },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'privacy', label: 'Confidentialité', icon: Eye },
-  { id: 'security', label: 'Sécurité', icon: Shield },
-  { id: 'billing', label: 'Facturation', icon: CreditCard },
-  { id: 'account', label: 'Compte', icon: User },
-  { id: 'about', label: 'À propos', icon: Info },
-]
 
 export default function ChannableSettingsPage() {
   const { user, profile, signOut } = useAuth()
   const { isAdmin } = useAdminRole()
   const { theme, setTheme } = useTheme()
   const { saveSettings, changePassword, exportData, deleteAccount, loading } = useSettingsActions()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation('settings')
   const [activeCategory, setActiveCategory] = useState('appearance')
+
+  const settingsCategories = [
+    { id: 'appearance', labelKey: 'categories.appearance', icon: Palette },
+    { id: 'notifications', labelKey: 'categories.notifications', icon: Bell },
+    { id: 'privacy', labelKey: 'categories.privacy', icon: Eye },
+    { id: 'security', labelKey: 'categories.security', icon: Shield },
+    { id: 'billing', labelKey: 'categories.billing', icon: CreditCard },
+    { id: 'account', labelKey: 'categories.account', icon: User },
+    { id: 'about', labelKey: 'categories.about', icon: Info },
+  ]
 
   const [notifications, setNotifications] = useState({
     email: true,
@@ -98,8 +99,14 @@ export default function ChannableSettingsPage() {
     setNotifications(nextNotifications)
     setPrivacy(nextPrivacy)
     setLanguage(nextLanguage)
+    
+    // Apply language from profile on load
+    if (nextLanguage && i18n.language !== nextLanguage) {
+      i18n.changeLanguage(nextLanguage)
+    }
+    
     setHasChanges(false)
-  }, [profile])
+  }, [profile, i18n])
 
   useEffect(() => {
     if (hasChanges) {
@@ -167,16 +174,16 @@ export default function ChannableSettingsPage() {
   return (
     <>
       <Helmet>
-        <title>Paramètres - ShopOpti</title>
-        <meta name="description" content="Configurez vos préférences et paramètres de compte" />
+        <title>{t('title')} - ShopOpti</title>
+        <meta name="description" content={t('description')} />
       </Helmet>
 
       <ChannablePageWrapper
-        title="Paramètres"
-        subtitle="Préférences"
-        description="Configurez vos préférences et personnalisez votre expérience"
+        title={t('title')}
+        subtitle={t('subtitle')}
+        description={t('description')}
         heroImage="analytics"
-        badge={{ label: 'Configuration', icon: Settings }}
+        badge={{ label: t('title'), icon: Settings }}
       >
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Sidebar Categories */}
@@ -188,7 +195,7 @@ export default function ChannableSettingsPage() {
             <Card className="sticky top-6">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Catégories
+                  {t('categories.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-2">
@@ -204,7 +211,7 @@ export default function ChannableSettingsPage() {
                       }`}
                     >
                       <category.icon className="w-4 h-4" />
-                      {category.label}
+                      {t(category.labelKey)}
                     </button>
                   ))}
                 </nav>
@@ -227,26 +234,34 @@ export default function ChannableSettingsPage() {
                         <Palette className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle>Apparence</CardTitle>
-                        <CardDescription>Personnalisez l'interface</CardDescription>
+                        <CardTitle>{t('appearance.title')}</CardTitle>
+                        <CardDescription>{t('appearance.description')}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <SettingRow icon={Moon} label="Thème" description="Choisissez votre thème préféré">
+                    <SettingRow 
+                      icon={Moon} 
+                      label={t('appearance.theme.label')} 
+                      description={t('appearance.theme.description')}
+                    >
                       <Select value={theme} onValueChange={setTheme}>
                         <SelectTrigger className="w-40">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="light">Clair</SelectItem>
-                          <SelectItem value="dark">Sombre</SelectItem>
-                          <SelectItem value="system">Système</SelectItem>
+                          <SelectItem value="light">{t('appearance.theme.light')}</SelectItem>
+                          <SelectItem value="dark">{t('appearance.theme.dark')}</SelectItem>
+                          <SelectItem value="system">{t('appearance.theme.system')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </SettingRow>
 
-                    <SettingRow icon={Globe} label="Langue" description="Langue de l'interface">
+                    <SettingRow 
+                      icon={Globe} 
+                      label={t('appearance.language.label')} 
+                      description={t('appearance.language.description')}
+                    >
                       <Select value={language} onValueChange={handleLanguageChange}>
                         <SelectTrigger className="w-32">
                           <SelectValue />
@@ -275,34 +290,50 @@ export default function ChannableSettingsPage() {
                         <Bell className="w-5 h-5 text-yellow-600" />
                       </div>
                       <div>
-                        <CardTitle>Notifications</CardTitle>
-                        <CardDescription>Gérez vos alertes</CardDescription>
+                        <CardTitle>{t('notifications.title')}</CardTitle>
+                        <CardDescription>{t('notifications.description')}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <SettingRow icon={Mail} label="E-mail" description="Notifications par e-mail">
+                    <SettingRow 
+                      icon={Mail} 
+                      label={t('notifications.email.label')} 
+                      description={t('notifications.email.description')}
+                    >
                       <Switch
                         checked={notifications.email}
                         onCheckedChange={(checked) => handleNotificationChange('email', checked)}
                       />
                     </SettingRow>
 
-                    <SettingRow icon={Smartphone} label="Push" description="Notifications navigateur">
+                    <SettingRow 
+                      icon={Smartphone} 
+                      label={t('notifications.push.label')} 
+                      description={t('notifications.push.description')}
+                    >
                       <Switch
                         checked={notifications.push}
                         onCheckedChange={(checked) => handleNotificationChange('push', checked)}
                       />
                     </SettingRow>
 
-                    <SettingRow icon={Mail} label="Marketing" description="Actualités produit">
+                    <SettingRow 
+                      icon={Mail} 
+                      label={t('notifications.marketing.label')} 
+                      description={t('notifications.marketing.description')}
+                    >
                       <Switch
                         checked={notifications.marketing}
                         onCheckedChange={(checked) => handleNotificationChange('marketing', checked)}
                       />
                     </SettingRow>
 
-                    <SettingRow icon={Shield} label="Sécurité" description="Alertes de sécurité">
+                    <SettingRow 
+                      icon={Shield} 
+                      label={t('notifications.security.label')} 
+                      description={t('notifications.security.description')}
+                    >
                       <Switch checked={notifications.security} disabled />
                     </SettingRow>
                   </CardContent>
@@ -323,27 +354,39 @@ export default function ChannableSettingsPage() {
                         <Eye className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <CardTitle>Confidentialité</CardTitle>
-                        <CardDescription>Contrôlez vos données</CardDescription>
+                        <CardTitle>{t('privacy.title')}</CardTitle>
+                        <CardDescription>{t('privacy.description')}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <SettingRow icon={User} label="Profil public" description="Visible aux autres utilisateurs">
+                    <SettingRow 
+                      icon={User} 
+                      label={t('privacy.profileVisible.label')} 
+                      description={t('privacy.profileVisible.description')}
+                    >
                       <Switch
                         checked={privacy.profileVisible}
                         onCheckedChange={(checked) => handlePrivacyChange('profileVisible', checked)}
                       />
                     </SettingRow>
 
-                    <SettingRow icon={Eye} label="Activité visible" description="Partager avec l'équipe">
+                    <SettingRow 
+                      icon={Eye} 
+                      label={t('privacy.activityVisible.label')} 
+                      description={t('privacy.activityVisible.description')}
+                    >
                       <Switch
                         checked={privacy.activityVisible}
                         onCheckedChange={(checked) => handlePrivacyChange('activityVisible', checked)}
                       />
                     </SettingRow>
 
-                    <SettingRow icon={Database} label="Analytics" description="Données anonymisées">
+                    <SettingRow 
+                      icon={Database} 
+                      label={t('privacy.analytics.label')} 
+                      description={t('privacy.analytics.description')}
+                    >
                       <Switch
                         checked={privacy.analyticsEnabled}
                         onCheckedChange={(checked) => handlePrivacyChange('analyticsEnabled', checked)}
@@ -367,33 +410,99 @@ export default function ChannableSettingsPage() {
                         <Shield className="w-5 h-5 text-red-600" />
                       </div>
                       <div>
-                        <CardTitle>Sécurité</CardTitle>
-                        <CardDescription>Protégez votre compte</CardDescription>
+                        <CardTitle>{t('security.title')}</CardTitle>
+                        <CardDescription>{t('security.description')}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <SettingRow icon={Lock} label="Mot de passe" description="Dernière modification : Il y a 30 jours">
+                    <SettingRow 
+                      icon={Lock} 
+                      label={t('security.password.label')} 
+                      description={t('security.password.description')}
+                    >
                       <Button variant="outline" size="sm" onClick={changePassword} disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                        Modifier
+                        {t('security.password.change')}
                       </Button>
                     </SettingRow>
 
-                    <SettingRow icon={Key} label="2FA" description="Authentification à deux facteurs">
+                    <SettingRow 
+                      icon={Key} 
+                      label={t('security.twoFactor.label')} 
+                      description={t('security.twoFactor.description')}
+                    >
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">Recommandé</Badge>
+                        <Badge variant="outline">{t('security.twoFactor.recommended')}</Badge>
                         <Button variant="outline" size="sm" disabled>
-                          Bientôt
+                          {t('security.twoFactor.comingSoon')}
                         </Button>
                       </div>
                     </SettingRow>
 
-                    <SettingRow icon={Smartphone} label="Sessions" description="Appareils connectés">
+                    <SettingRow 
+                      icon={Smartphone} 
+                      label={t('security.sessions.label')} 
+                      description={t('security.sessions.description')}
+                    >
                       <Button variant="outline" size="sm" disabled>
-                        Bientôt
+                        {t('security.sessions.comingSoon')}
                       </Button>
                     </SettingRow>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Billing */}
+            {activeCategory === 'billing' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5">
+                        <CreditCard className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <CardTitle>{t('billing.title')}</CardTitle>
+                        <CardDescription>{t('billing.description')}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <SettingRow 
+                      icon={CreditCard} 
+                      label={t('billing.currentPlan.title')} 
+                      description={t('billing.currentPlan.free')}
+                    >
+                      <Button variant="outline" size="sm">
+                        {t('billing.currentPlan.changePlan')}
+                      </Button>
+                    </SettingRow>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-gray-500/20 to-gray-500/5">
+                        <FileText className="w-5 h-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <CardTitle>{t('billing.invoices.title')}</CardTitle>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <FileText className="w-12 h-12 text-muted-foreground/50 mb-4" />
+                      <p className="text-muted-foreground font-medium">{t('billing.invoices.noInvoices')}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{t('billing.invoices.noInvoicesDesc')}</p>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -413,16 +522,20 @@ export default function ChannableSettingsPage() {
                         <User className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
-                        <CardTitle>Actions de compte</CardTitle>
-                        <CardDescription>Gérez vos données</CardDescription>
+                        <CardTitle>{t('account.title')}</CardTitle>
+                        <CardDescription>{t('account.description')}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <SettingRow icon={Download} label="Exporter mes données" description="Téléchargez une archive">
+                    <SettingRow 
+                      icon={Download} 
+                      label={t('account.export.label')} 
+                      description={t('account.export.description')}
+                    >
                       <Button variant="outline" size="sm" onClick={exportData} disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-                        Exporter
+                        {t('account.export.button')}
                       </Button>
                     </SettingRow>
                   </CardContent>
@@ -435,92 +548,26 @@ export default function ChannableSettingsPage() {
                         <AlertTriangle className="w-5 h-5 text-red-600" />
                       </div>
                       <div>
-                        <CardTitle className="text-red-600">Zone dangereuse</CardTitle>
-                        <CardDescription>Actions irréversibles</CardDescription>
+                        <CardTitle className="text-red-600">{t('account.dangerZone.title')}</CardTitle>
+                        <CardDescription>{t('account.dangerZone.description')}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Alert variant="destructive" className="mb-4">
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertDescription>
-                        La suppression de votre compte est définitive et irréversible.
-                      </AlertDescription>
-                    </Alert>
-                    <Button 
-                      variant="destructive" 
-                      onClick={() => setShowDeleteDialog(true)}
-                      disabled={loading}
+                    <SettingRow 
+                      icon={Trash2} 
+                      label={t('account.delete.label')} 
+                      description={t('account.delete.description')}
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Supprimer mon compte
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Billing */}
-            {activeCategory === 'billing' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/5">
-                        <CreditCard className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <CardTitle>Abonnement & Facturation</CardTitle>
-                        <CardDescription>Gérez votre plan et vos factures</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between py-3 border-b border-border/50">
-                      <div>
-                        <Label className="font-medium">Plan actuel</Label>
-                        <p className="text-sm text-muted-foreground">
-                          {(profile as any)?.subscription_plan?.toUpperCase() || 'FREE'}
-                        </p>
-                      </div>
-                      <Button variant="outline" onClick={() => (window.location.href = '/dashboard/subscription')}>
-                        Changer de plan
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5">
-                        <Download className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <CardTitle>Historique de facturation</CardTitle>
-                        <CardDescription>Consultez et téléchargez vos factures</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Download className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                      <p className="font-medium">Aucune facture disponible</p>
-                      <p className="text-sm mt-1">
-                        Vos factures apparaîtront ici après votre premier paiement.
-                      </p>
                       <Button 
-                        variant="outline" 
-                        className="mt-4"
-                        onClick={() => (window.location.href = '/pricing')}
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={() => setShowDeleteDialog(true)}
                       >
-                        Voir les plans
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {t('account.delete.button')}
                       </Button>
-                    </div>
+                    </SettingRow>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -532,24 +579,37 @@ export default function ChannableSettingsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <VersionInfo />
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+                        <Info className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle>{t('about.title')}</CardTitle>
+                        <CardDescription>{t('about.description')}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <VersionInfo />
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
           </div>
         </div>
-      </ChannablePageWrapper>
 
-      <ConfirmDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        title="Supprimer le compte"
-        description="Cette action est irréversible. Toutes vos données seront définitivement supprimées."
-        confirmText="Supprimer définitivement"
-        cancelText="Annuler"
-        onConfirm={handleDeleteAccount}
-        variant="destructive"
-        icon={<AlertTriangle className="h-5 w-5" />}
-      />
+        <ConfirmDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          title={t('account.delete.confirmTitle')}
+          description={t('account.delete.confirmDescription')}
+          confirmText={t('account.delete.confirm')}
+          variant="destructive"
+          onConfirm={handleDeleteAccount}
+        />
+      </ChannablePageWrapper>
     </>
   )
 }

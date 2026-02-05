@@ -1,46 +1,138 @@
 {
   "title": "Settings",
-  "description": "Configure your preferences and application settings",
-  "tabs": {
-    "general": "General",
+  "subtitle": "Preferences",
+  "description": "Configure your preferences and personalize your experience",
+  "categories": {
+    "title": "Categories",
     "appearance": "Appearance",
     "notifications": "Notifications",
+    "privacy": "Privacy",
     "security": "Security",
-    "integrations": "Integrations",
-    "support": "Support"
-  },
-  "general": {
-    "title": "General settings",
-    "profile": "User profile",
-    "name": "Name",
-    "email": "Email",
-    "timezone": "Timezone",
-    "language": "Language",
-    "currency": "Currency"
+    "billing": "Billing",
+    "account": "Account",
+    "about": "About"
   },
   "appearance": {
     "title": "Appearance",
-    "theme": "Theme",
-    "themes": {
+    "description": "Customize the interface",
+    "theme": {
+      "label": "Theme",
+      "description": "Choose your preferred theme",
       "light": "Light",
       "dark": "Dark",
       "system": "System"
     },
-    "compactMode": "Compact mode",
-    "animations": "Animations",
-    "sounds": "Sounds"
+    "language": {
+      "label": "Language",
+      "description": "Interface language"
+    }
   },
   "notifications": {
     "title": "Notifications",
-    "desktop": "Desktop notifications",
-    "email": "Email notifications",
-    "push": "Push notifications",
-    "marketing": "Marketing notifications"
+    "description": "Manage your alerts",
+    "email": {
+      "label": "Email",
+      "description": "Email notifications"
+    },
+    "push": {
+      "label": "Push",
+      "description": "Browser notifications"
+    },
+    "marketing": {
+      "label": "Marketing",
+      "description": "Product news"
+    },
+    "security": {
+      "label": "Security",
+      "description": "Security alerts"
+    }
+  },
+  "privacy": {
+    "title": "Privacy",
+    "description": "Control your data",
+    "profileVisible": {
+      "label": "Public profile",
+      "description": "Visible to other users"
+    },
+    "activityVisible": {
+      "label": "Visible activity",
+      "description": "Share with team"
+    },
+    "analytics": {
+      "label": "Analytics",
+      "description": "Anonymous data"
+    }
+  },
+  "security": {
+    "title": "Security",
+    "description": "Protect your account",
+    "password": {
+      "label": "Password",
+      "description": "Last modified: 30 days ago",
+      "change": "Change"
+    },
+    "twoFactor": {
+      "label": "2FA",
+      "description": "Two-factor authentication",
+      "recommended": "Recommended",
+      "comingSoon": "Coming soon"
+    },
+    "sessions": {
+      "label": "Sessions",
+      "description": "Connected devices",
+      "comingSoon": "Coming soon"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "description": "Manage your subscription",
+    "currentPlan": {
+      "title": "Current plan",
+      "free": "Free",
+      "changePlan": "Change plan"
+    },
+    "invoices": {
+      "title": "Invoices",
+      "download": "Download",
+      "noInvoices": "No invoices available",
+      "noInvoicesDesc": "Your invoices will appear here after your first subscription."
+    }
+  },
+  "account": {
+    "title": "Account actions",
+    "description": "Manage your data",
+    "export": {
+      "label": "Export my data",
+      "description": "Download an archive",
+      "button": "Export"
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "description": "Irreversible actions"
+    },
+    "delete": {
+      "label": "Delete account",
+      "description": "This action is permanent",
+      "button": "Delete my account",
+      "confirmTitle": "Delete your account?",
+      "confirmDescription": "This action is irreversible. All your data will be permanently deleted.",
+      "confirm": "Yes, delete my account"
+    }
+  },
+  "about": {
+    "title": "About",
+    "description": "Application information"
   },
   "messages": {
     "saved": "Settings saved",
-    "appearanceSaved": "Appearance settings saved",
-    "languageChanged": "Language changed to {{language}}",
-    "themeChanged": "Theme changed to {{theme}}"
+    "savedDescription": "Your preferences have been updated.",
+    "passwordReset": "Password reset email sent",
+    "passwordResetDescription": "Check your inbox to reset your password.",
+    "exportStarted": "Export started",
+    "exportStartedDescription": "Your data is being prepared.",
+    "accountDeleted": "Account deleted",
+    "accountDeletedDescription": "Your account has been permanently deleted.",
+    "deleteError": "Deletion error",
+    "deleteErrorDescription": "Unable to delete account. Please try again."
   }
 }

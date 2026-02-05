@@ -1,47 +1,138 @@
 {
   "title": "Paramètres",
-  "description": "Configurez vos préférences et paramètres d'application",
-  "userManagement": "Gestion des utilisateurs",
-  "tabs": {
-    "general": "Général",
+  "subtitle": "Préférences",
+  "description": "Configurez vos préférences et personnalisez votre expérience",
+  "categories": {
+    "title": "Catégories",
     "appearance": "Apparence",
     "notifications": "Notifications",
+    "privacy": "Confidentialité",
     "security": "Sécurité",
-    "integrations": "Intégrations",
-    "support": "Support"
-  },
-  "general": {
-    "title": "Paramètres généraux",
-    "profile": "Profil utilisateur",
-    "name": "Nom",
-    "email": "Email",
-    "timezone": "Fuseau horaire",
-    "language": "Langue",
-    "currency": "Devise"
+    "billing": "Facturation",
+    "account": "Compte",
+    "about": "À propos"
   },
   "appearance": {
     "title": "Apparence",
-    "theme": "Thème",
-    "themes": {
+    "description": "Personnalisez l'interface",
+    "theme": {
+      "label": "Thème",
+      "description": "Choisissez votre thème préféré",
       "light": "Clair",
       "dark": "Sombre",
       "system": "Système"
     },
-    "compactMode": "Mode compact",
-    "animations": "Animations",
-    "sounds": "Sons"
+    "language": {
+      "label": "Langue",
+      "description": "Langue de l'interface"
+    }
   },
   "notifications": {
     "title": "Notifications",
-    "desktop": "Notifications bureau",
-    "email": "Notifications email",
-    "push": "Notifications push",
-    "marketing": "Notifications marketing"
+    "description": "Gérez vos alertes",
+    "email": {
+      "label": "E-mail",
+      "description": "Notifications par e-mail"
+    },
+    "push": {
+      "label": "Push",
+      "description": "Notifications navigateur"
+    },
+    "marketing": {
+      "label": "Marketing",
+      "description": "Actualités produit"
+    },
+    "security": {
+      "label": "Sécurité",
+      "description": "Alertes de sécurité"
+    }
+  },
+  "privacy": {
+    "title": "Confidentialité",
+    "description": "Contrôlez vos données",
+    "profileVisible": {
+      "label": "Profil public",
+      "description": "Visible aux autres utilisateurs"
+    },
+    "activityVisible": {
+      "label": "Activité visible",
+      "description": "Partager avec l'équipe"
+    },
+    "analytics": {
+      "label": "Analytics",
+      "description": "Données anonymisées"
+    }
+  },
+  "security": {
+    "title": "Sécurité",
+    "description": "Protégez votre compte",
+    "password": {
+      "label": "Mot de passe",
+      "description": "Dernière modification : Il y a 30 jours",
+      "change": "Modifier"
+    },
+    "twoFactor": {
+      "label": "2FA",
+      "description": "Authentification à deux facteurs",
+      "recommended": "Recommandé",
+      "comingSoon": "Bientôt"
+    },
+    "sessions": {
+      "label": "Sessions",
+      "description": "Appareils connectés",
+      "comingSoon": "Bientôt"
+    }
+  },
+  "billing": {
+    "title": "Facturation",
+    "description": "Gérez votre abonnement",
+    "currentPlan": {
+      "title": "Plan actuel",
+      "free": "Gratuit",
+      "changePlan": "Changer de plan"
+    },
+    "invoices": {
+      "title": "Factures",
+      "download": "Télécharger",
+      "noInvoices": "Aucune facture disponible",
+      "noInvoicesDesc": "Vos factures apparaîtront ici après votre premier abonnement."
+    }
+  },
+  "account": {
+    "title": "Actions de compte",
+    "description": "Gérez vos données",
+    "export": {
+      "label": "Exporter mes données",
+      "description": "Téléchargez une archive",
+      "button": "Exporter"
+    },
+    "dangerZone": {
+      "title": "Zone dangereuse",
+      "description": "Actions irréversibles"
+    },
+    "delete": {
+      "label": "Supprimer le compte",
+      "description": "Cette action est définitive",
+      "button": "Supprimer mon compte",
+      "confirmTitle": "Supprimer votre compte ?",
+      "confirmDescription": "Cette action est irréversible. Toutes vos données seront définitivement supprimées.",
+      "confirm": "Oui, supprimer mon compte"
+    }
+  },
+  "about": {
+    "title": "À propos",
+    "description": "Informations sur l'application"
   },
   "messages": {
     "saved": "Paramètres sauvegardés",
-    "appearanceSaved": "Paramètres d'apparence sauvegardés",
-    "languageChanged": "Langue changée vers {{language}}",
-    "themeChanged": "Thème changé vers {{theme}}"
+    "savedDescription": "Vos préférences ont été mises à jour.",
+    "passwordReset": "E-mail de réinitialisation envoyé",
+    "passwordResetDescription": "Consultez votre boîte mail pour réinitialiser votre mot de passe.",
+    "exportStarted": "Export démarré",
+    "exportStartedDescription": "Vos données sont en cours de préparation.",
+    "accountDeleted": "Compte supprimé",
+    "accountDeletedDescription": "Votre compte a été supprimé définitivement.",
+    "deleteError": "Erreur de suppression",
+    "deleteErrorDescription": "Impossible de supprimer le compte. Veuillez réessayer."
   }
 }
