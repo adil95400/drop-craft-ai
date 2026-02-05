@@ -431,28 +431,67 @@
     
     setButtonLoading(button, true);
     
+    // Debug mode check
+    let debugMode = false;
+    try {
+      const storage = await chrome.storage.local.get(['debugMode']);
+      debugMode = storage.debugMode === true;
+    } catch (e) {}
+    
     try {
       // BACKEND-FIRST ARCHITECTURE: Use BackendFirstImport (no local extraction)
       if (window.BackendFirstImport) {
-        console.log('[ShopOpti+] Using BackendFirstImport (backend-first architecture)');
+        if (debugMode) {
+          console.log('[ShopOpti+] Using BackendFirstImport (backend-first architecture)');
+          console.log('[ShopOpti+] Import URL:', url);
+          console.log('[ShopOpti+] Options:', { targetStores: userStores.map(s => s.id) });
+        }
         
         const result = await window.BackendFirstImport.import(url, {
           targetStores: userStores.map(s => s.id)
         }, button);
         
-        // Response handling is done by ImportResponseHandler
-        // Just log and sync
-        if (result.ok) {
-          syncWithSaaS('product_import_started', { jobId: result.job_id, url });
+        if (debugMode) {
+          console.log('[ShopOpti+] BackendFirstImport result:', result);
         }
         
-        return;
+        // Response handling is done by ImportResponseHandler
+        // Check if we need to fallback to legacy
+        if (result.ok) {
+          syncWithSaaS('product_import_started', { jobId: result.job_id, url });
+          return;
+        }
+        
+        // FALLBACK: If backend-first failed with recoverable error, try legacy
+        if (result.canFallback && (window.ShopOptiPipeline || window.ExtractionOrchestrator)) {
+          console.warn('[ShopOpti+] Backend-first failed, falling back to legacy extraction');
+          showToast('⚠️ Mode fallback: extraction locale', 'warning');
+          
+          if (debugMode) {
+            console.log('[ShopOpti+] Fallback reason:', result.code, result.message);
+          }
+          
+          // Continue to legacy fallback below...
+        } else {
+          // Non-recoverable error or no fallback available
+          return;
+        }
+      } else {
+        if (debugMode) {
+          console.warn('[ShopOpti+] BackendFirstImport not available, using legacy');
+        }
       }
       
       // LEGACY FALLBACK #1: Use ShopOptiPipeline (local extraction)
       if (window.ShopOptiPipeline) {
-        console.warn('[ShopOpti+] Falling back to legacy ShopOptiPipeline (local extraction)');
-        showToast('⚠️ Mode fallback: extraction locale', 'warning');
+        if (debugMode) {
+          console.log('[ShopOpti+] Using ShopOptiPipeline (legacy local extraction)');
+        }
+        
+        if (!window.BackendFirstImport) {
+          showToast('⚠️ Mode fallback: extraction locale', 'warning');
+        }
+        
         const result = await window.ShopOptiPipeline.processUrl(url, {
           targetStores: userStores.map(s => s.id)
         });

@@ -1008,9 +1008,41 @@ class ShopOptiBackground {
 
   async requestPermissions(origins) {
     try {
+      console.log('[ShopOpti+] Requesting permissions for origins:', origins);
+      
+      if (!origins || !Array.isArray(origins) || origins.length === 0) {
+        console.warn('[ShopOpti+] No origins provided for permission request');
+        return { success: false, error: 'Aucune origine spécifiée' };
+      }
+      
+      // Validate origins format
+      const validOrigins = origins.filter(o => {
+        try {
+          const url = new URL(o.replace('*://', 'https://').replace('/*', ''));
+          return true;
+        } catch {
+          return false;
+        }
+      });
+      
+      if (validOrigins.length === 0) {
+        console.warn('[ShopOpti+] No valid origins after validation');
+        return { success: false, error: 'Origines invalides' };
+      }
+      
       const granted = await chrome.permissions.request({ origins });
-      return { success: granted };
+      
+      console.log('[ShopOpti+] Permission request result:', granted);
+      
+      // Return exact grant status - do NOT return success: true if denied
+      return { 
+        success: granted === true, 
+        granted: granted === true,
+        requestedOrigins: origins,
+        message: granted ? 'Permissions accordées' : 'Permissions refusées par l\'utilisateur'
+      };
     } catch (error) {
+      console.error('[ShopOpti+] Permission request error:', error);
       return { success: false, error: error.message };
     }
   }

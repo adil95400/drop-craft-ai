@@ -425,6 +425,6 @@
   // Export singleton
   window.BackendImportClient = new BackendImportClient();
 
-  console.log('[ShopOpti+] BackendImportClient v1.0 loaded - Backend-first architecture');
+  console.log('[ShopOpti+] BackendImportClient v1.1 loaded - Backend-first architecture');
 
 })();
