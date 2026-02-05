@@ -496,6 +496,16 @@ export class ImportGateway {
 
     return !error
   }
+
+  /**
+   * Retourne la liste des sources supportées
+   */
+  getSupportedSources(): ImportSource[] {
+    return [
+      'aliexpress', 'temu', 'amazon', 'ebay', 'shopify', 
+      'etsy', 'csv', 'xml', 'json', 'api', 'extension', 'feed'
+    ]
+  }
 }
 
 // Instance singleton
