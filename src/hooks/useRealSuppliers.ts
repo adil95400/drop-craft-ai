@@ -3,9 +3,6 @@
  * This file is kept for backward compatibility and will be removed in a future version
  */
 import { useSuppliersUnified, UnifiedSupplier } from '@/hooks/unified'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
 
 // Re-export Supplier type for backward compatibility
 export interface Supplier {
@@ -29,11 +26,6 @@ export interface Supplier {
 }
 
 export const useRealSuppliers = (filters?: any) => {
-  console.warn('[DEPRECATED] useRealSuppliers - utilisez useSuppliersUnified de @/hooks/unified')
-  
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
-  
   const result = useSuppliersUnified({
     category: filters?.category,
     status: filters?.status,
@@ -74,124 +66,17 @@ export const useRealSuppliers = (filters?: any) => {
     }, {})
   }
 
-  // Add mutation support for backward compatibility
-  const addMutation = useMutation({
-    mutationFn: async (newSupplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-      
-      const { data, error } = await supabase
-        .from('premium_suppliers')
-        .insert([{
-          name: newSupplier.name,
-          website_url: newSupplier.website,
-          country: newSupplier.country,
-          is_verified: newSupplier.status === 'active',
-          rating: newSupplier.rating
-        }])
-        .select()
-        .single()
-      
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unified-suppliers'] })
-      toast({
-        title: "Fournisseur ajouté",
-        description: "Le fournisseur a été créé avec succès",
-      })
-    }
-  })
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Supplier> }) => {
-      const allowedUpdates: any = {}
-      if (updates.name) allowedUpdates.name = updates.name
-      if (updates.website) allowedUpdates.website_url = updates.website
-      if (updates.country) allowedUpdates.country = updates.country
-      if (updates.status) allowedUpdates.is_verified = updates.status === 'active'
-      if (updates.rating) allowedUpdates.rating = updates.rating
-      
-      const { data, error } = await supabase
-        .from('premium_suppliers')
-        .update(allowedUpdates)
-        .eq('id', id)
-        .select()
-        .single()
-      
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unified-suppliers'] })
-      toast({
-        title: "Fournisseur mis à jour",
-        description: "Le fournisseur a été modifié avec succès",
-      })
-    }
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('premium_suppliers')
-        .delete()
-        .eq('id', id)
-      
-      if (error) throw error
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unified-suppliers'] })
-      toast({
-        title: "Fournisseur supprimé",
-        description: "Le fournisseur a été supprimé avec succès",
-      })
-    }
-  })
-
-  const analyzeMutation = useMutation({
-    mutationFn: async (url: string) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-      
-      const { data, error } = await supabase.functions.invoke('analyze-supplier', {
-        body: { url, userId: user.id }
-      })
-      
-      if (error) throw error
-      if (!data.success) throw new Error(data.error || 'Échec de l\'analyse')
-      
-      return data
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['unified-suppliers'] })
-      toast({
-        title: "Fournisseur analysé",
-        description: `${data.analysis?.name || 'Fournisseur'} a été ajouté avec succès`,
-      })
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Erreur d'analyse",
-        description: error.message || "Impossible d'analyser le fournisseur",
-        variant: "destructive"
-      })
-    }
-  })
-
   return {
     suppliers,
     stats,
     isLoading: result.isLoading,
     error: result.error,
-    addSupplier: addMutation.mutateAsync,
-    updateSupplier: updateMutation.mutate,
-    deleteSupplier: deleteMutation.mutateAsync,
-    analyzeSupplier: analyzeMutation.mutate,
-    isAdding: addMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
-    isAnalyzing: analyzeMutation.isPending
+    refetch: result.refetch,
+    addSupplier: async (_data: any) => { result.refetch() },
+    updateSupplier: () => {},
+    deleteSupplier: async () => {},
+    isAdding: false,
+    isUpdating: false,
+    isDeleting: false
   }
 }

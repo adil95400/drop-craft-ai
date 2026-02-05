@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 interface Notification {
   id: string;
@@ -95,7 +95,7 @@ export const RealTimeNotifications = () => {
       .limit(20);
 
     if (error) {
-      logError(error as Error, 'Error loading notifications');
+      productionLogger.error('Error loading notifications', error as Error, 'RealTimeNotifications');
       return;
     }
 
@@ -170,7 +170,7 @@ export const RealTimeNotifications = () => {
       .insert(randomActivity);
 
     if (error) {
-      logError(error as Error, 'Error adding test notification');
+      productionLogger.error('Error adding test notification', error as Error, 'RealTimeNotifications');
     }
   };
 

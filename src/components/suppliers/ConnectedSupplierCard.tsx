@@ -20,10 +20,10 @@ import {
 import { cn } from '@/lib/utils';
 import { SupplierLogo } from './SupplierLogo';
 import { SupplierDefinition, COUNTRY_FLAGS } from '@/data/supplierDefinitions';
-import type { Supplier } from '@/hooks/useRealSuppliers';
+import type { UnifiedSupplier } from '@/hooks/unified';
 
 interface ConnectedSupplierCardProps {
-  supplier: Supplier;
+  supplier: UnifiedSupplier;
   definition?: SupplierDefinition;
   onConfigure: () => void;
   onSync: () => void;
@@ -39,7 +39,7 @@ export const ConnectedSupplierCard = memo(function ConnectedSupplierCard({
   onDelete,
   isSyncing
 }: ConnectedSupplierCardProps) {
-  const isActive = supplier.status === 'active';
+  const isActive = supplier.status === 'verified' || supplier.connection_status === 'connected';
   
   return (
     <Card className={cn(

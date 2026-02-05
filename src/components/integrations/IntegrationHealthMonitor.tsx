@@ -17,7 +17,7 @@ import {
   Zap
 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
-import { logError, logAction } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 
 export const IntegrationHealthMonitor = () => {
   const { integrations, isLoading, testConnection } = useIntegrationsUnified()
@@ -56,7 +56,7 @@ export const IntegrationHealthMonitor = () => {
 
         setHealthData(healthMap)
       } catch (error) {
-        logError(error as Error, 'Failed to fetch health data')
+        productionLogger.error('Failed to fetch health data', error as Error, 'IntegrationHealthMonitor')
       }
     }
 
@@ -70,7 +70,7 @@ export const IntegrationHealthMonitor = () => {
         schema: 'public',
         table: 'integrations'
       }, (payload) => {
-        logAction('Integration health updated', payload)
+        productionLogger.info('Integration health updated', payload, 'IntegrationHealthMonitor')
         fetchHealthData()
       })
       .subscribe()

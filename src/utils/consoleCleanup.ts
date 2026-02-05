@@ -1,6 +1,6 @@
 /**
  * @deprecated Use productionLogger from @/utils/productionLogger instead
- * This file is kept for backward compatibility
+ * This file is kept for backward compatibility - will be removed in future version
  */
 import { productionLogger } from './productionLogger';
 

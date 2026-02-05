@@ -18,7 +18,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { logError } from '@/utils/consoleCleanup';
+import { productionLogger } from '@/utils/productionLogger';
 import { useToast } from '@/hooks/use-toast';
 
 interface FeatureStatus {
@@ -162,7 +162,7 @@ export const FinalHealthCheck = () => {
           
           if (!error) successCount++;
         } catch (error) {
-          logError(error as Error, `Health check failed for ${check.name}`);
+          productionLogger.error(`Health check failed for ${check.name}`, error as Error, 'FinalHealthCheck');
         }
       }
 

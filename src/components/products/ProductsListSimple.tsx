@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Package, Eye, Edit, Search } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ProductActionMenu } from './ProductActionMenu'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductsUnified } from '@/hooks/unified'
 
 interface ProductsListSimpleProps {
   selectedProducts: string[]
@@ -17,7 +17,7 @@ interface ProductsListSimpleProps {
 }
 
 export function ProductsListSimple({ selectedProducts, onSelectionChange, onProductSelect, searchTerm: externalSearchTerm }: ProductsListSimpleProps) {
-  const { products, isLoading } = useRealProducts()
+  const { products, isLoading } = useProductsUnified()
   const [localSearchTerm, setLocalSearchTerm] = useState('')
   
   const searchTerm = externalSearchTerm ?? localSearchTerm

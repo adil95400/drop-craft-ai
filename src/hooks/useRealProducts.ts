@@ -8,8 +8,6 @@ import { useProductsUnified, UnifiedProduct } from '@/hooks/unified'
 export type Product = UnifiedProduct
 
 export const useRealProducts = (filters?: any) => {
-  console.warn('[DEPRECATED] useRealProducts - utilisez useProductsUnified de @/hooks/unified')
-  
   const result = useProductsUnified({
     filters: {
       status: filters?.status,
