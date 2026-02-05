@@ -76,7 +76,21 @@ export function RouteValidationProvider({
                 <Button onClick={() => setShowErrorDialog(false)} className="flex-1">
                   Continuer quand même
                 </Button>
-                <Button variant="outline" onClick={() => console.log('Voir console pour plus de détails')} className="flex-1">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    console.log('=== Détails des erreurs de routes ===');
+                    validationResults?.issues.forEach((issue, idx) => {
+                      console.group(`❌ Erreur ${idx + 1}: ${issue.name}`);
+                      console.log('Route:', issue.route);
+                      console.log('Catégorie:', issue.category);
+                      console.log('Problème:', issue.issue);
+                      if (issue.suggestion) console.log('💡 Suggestion:', issue.suggestion);
+                      console.groupEnd();
+                    });
+                  }} 
+                  className="flex-1"
+                >
                   Voir les détails (Console)
                 </Button>
               </div>
