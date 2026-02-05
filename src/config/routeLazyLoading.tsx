@@ -1,6 +1,24 @@
-import { Suspense } from 'react';
-import { lazyWithRetry } from '@/utils/lazyWithRetry';
+import { Suspense, lazy, ComponentType } from 'react';
 import { LoadingFallback } from '@/components/common/LoadingFallback';
+
+// Lazy loader with retry logic (consolidated)
+function lazyWithRetry<T extends ComponentType<any>>(
+  componentImport: () => Promise<{ default: T }>,
+  retries = 3
+) {
+  return lazy(async () => {
+    let lastError: Error | null = null;
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await componentImport();
+      } catch (error) {
+        lastError = error as Error;
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+      }
+    }
+    throw lastError;
+  });
+}
 
 export const withSuspense = (Component: React.LazyExoticComponent<any>) => (
   <Suspense fallback={<LoadingFallback />}><Component /></Suspense>
