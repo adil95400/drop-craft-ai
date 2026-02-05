@@ -57,6 +57,9 @@ import { useUnifiedAuth } from "@/contexts/UnifiedAuthContext"
 import { useModules } from "@/hooks/useModules"
 import { useSearchShortcut } from "@/hooks/useKeyboardShortcut"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { useHeaderNotifications } from "@/hooks/useHeaderNotifications"
+import { formatDistanceToNow } from "date-fns"
+import { fr } from "date-fns/locale"
 
 // Breadcrumbs Premium avec animations
 const ChannableBreadcrumbs = memo(() => {
@@ -397,26 +400,36 @@ QuickActionsButton.displayName = 'QuickActionsButton'
 // Memoized Badge Content for notifications
 const NotificationBadge = memo(({ count }: { count: number }) => (
   <Badge className="bg-rose-500/10 text-rose-600 border-rose-500/20 text-[10px] font-semibold">
-    {count} nouvelles
+    {count} nouvelle{count > 1 ? 's' : ''}
   </Badge>
 ))
 NotificationBadge.displayName = 'NotificationBadge'
 
-// Static notifications data - in production, use a store like Zustand
-const STATIC_NOTIFICATIONS = [
-  { title: "Import terminé", desc: "245 produits importés avec succès", time: "Il y a 5 min", type: "success" as const, icon: Check },
-  { title: "Alerte stock", desc: "15 produits en rupture de stock", time: "Il y a 1h", type: "warning" as const, icon: Package },
-  { title: "Nouveau message", desc: "Support client - Réponse requise", time: "Il y a 3h", type: "info" as const, icon: MessageSquare },
-]
+// Notification type styles
+const NOTIF_TYPE_STYLES = {
+  success: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', dot: 'bg-emerald-500' },
+  warning: { bg: 'bg-amber-500/10', text: 'text-amber-500', dot: 'bg-amber-500' },
+  info: { bg: 'bg-blue-500/10', text: 'text-blue-500', dot: 'bg-blue-500' },
+  error: { bg: 'bg-rose-500/10', text: 'text-rose-500', dot: 'bg-rose-500' },
+}
 
-// Notifications Dropdown Premium
+// Notifications Dropdown Premium - Connected to real data
 const NotificationsDropdown = memo(() => {
-  const [hasNew] = useState(true)
+  const { notifications, hasUnread, unreadCount, markAsRead, markAllAsRead, loading } = useHeaderNotifications()
   const prefersReducedMotion = useReducedMotion()
+  const navigate = useNavigate()
   
   const motionProps = prefersReducedMotion 
     ? {} 
     : { whileHover: { scale: 1.05 }, whileTap: { scale: 0.95 } }
+
+  const getTimeAgo = (dateStr: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: fr })
+    } catch {
+      return ''
+    }
+  }
   
   return (
     <DropdownMenu>
@@ -426,10 +439,10 @@ const NotificationsDropdown = memo(() => {
             variant="ghost" 
             size="icon" 
             className="relative h-9 w-9 rounded-xl hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
-            aria-label={hasNew ? "Notifications (3 non lues)" : "Notifications"}
+            aria-label={hasUnread ? `Notifications (${unreadCount} non lues)` : "Notifications"}
           >
             <Bell className="h-4 w-4" aria-hidden="true" />
-            {hasNew && (
+            {hasUnread && (
               <motion.span
                 className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-background"
                 animate={prefersReducedMotion ? undefined : { scale: [1, 1.2, 1] }}
@@ -443,41 +456,72 @@ const NotificationsDropdown = memo(() => {
       <DropdownMenuContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/20">
           <span className="font-semibold text-sm">Notifications</span>
-          <NotificationBadge count={3} />
+          {unreadCount > 0 && <NotificationBadge count={unreadCount} />}
         </div>
         <div className="py-1 max-h-[320px] overflow-auto" role="list" aria-label="Liste des notifications">
-          {STATIC_NOTIFICATIONS.map((notif, i) => {
-            const style = NOTIFICATION_STYLES[notif.type]
-            const NotifIcon = notif.icon
-            
-            return (
-              <motion.div
-                key={i}
-                className="px-3 py-3 hover:bg-muted/30 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
-                whileHover={prefersReducedMotion ? undefined : { x: 2 }}
-                initial={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
-                animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                transition={prefersReducedMotion ? undefined : { delay: i * 0.05 }}
-                role="listitem"
-                tabIndex={0}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", style.bg)}>
-                    <NotifIcon className={cn("h-4 w-4", style.text)} aria-hidden="true" />
+          {loading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <span className="text-sm">Chargement...</span>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="flex flex-col items-center py-8 text-muted-foreground">
+              <Bell className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
+              <p className="text-sm">Aucune notification</p>
+            </div>
+          ) : (
+            notifications.map((notif, i) => {
+              const style = NOTIF_TYPE_STYLES[notif.type] || NOTIF_TYPE_STYLES.info
+              
+              return (
+                <motion.div
+                  key={notif.id}
+                  onClick={() => markAsRead(notif.id)}
+                  className={cn(
+                    "px-3 py-3 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50",
+                    notif.is_read ? "hover:bg-muted/20" : "bg-primary/5 hover:bg-primary/10"
+                  )}
+                  whileHover={prefersReducedMotion ? undefined : { x: 2 }}
+                  initial={prefersReducedMotion ? undefined : { opacity: 0, x: -10 }}
+                  animate={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
+                  transition={prefersReducedMotion ? undefined : { delay: i * 0.05 }}
+                  role="listitem"
+                  tabIndex={0}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", style.bg)}>
+                      <Bell className={cn("h-4 w-4", style.text)} aria-hidden="true" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn("text-sm font-medium", !notif.is_read && "font-semibold")}>{notif.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notif.message}</p>
+                      <p className="text-[10px] text-muted-foreground/50 mt-1">{getTimeAgo(notif.created_at)}</p>
+                    </div>
+                    {!notif.is_read && (
+                      <div className={cn("w-2 h-2 rounded-full mt-2", style.dot)} aria-hidden="true" />
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{notif.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{notif.desc}</p>
-                    <p className="text-[10px] text-muted-foreground/50 mt-1">{notif.time}</p>
-                  </div>
-                  <div className={cn("w-2 h-2 rounded-full mt-2", style.dot)} aria-hidden="true" />
-                </div>
-              </motion.div>
-            )
-          })}
+                </motion.div>
+              )
+            })
+          )}
         </div>
+        {unreadCount > 0 && (
+          <>
+            <DropdownMenuSeparator className="my-0" />
+            <DropdownMenuItem 
+              onClick={markAllAsRead}
+              className="justify-center py-2.5 text-muted-foreground cursor-pointer text-xs"
+            >
+              <Check className="mr-2 h-3 w-3" aria-hidden="true" />
+              Tout marquer comme lu
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator className="my-0" />
-        <DropdownMenuItem className="justify-center py-3 text-primary cursor-pointer font-medium text-sm">
+        <DropdownMenuItem 
+          onClick={() => navigate('/notifications')}
+          className="justify-center py-3 text-primary cursor-pointer font-medium text-sm"
+        >
           <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" />
           Voir toutes les notifications
         </DropdownMenuItem>
@@ -510,12 +554,20 @@ const UserMenuDropdown = memo(() => {
             aria-label={`Menu utilisateur - ${profile?.full_name || 'Utilisateur'}`}
           >
             <div className="relative">
-              <div className={cn(
-                "w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg",
-                currentPlanStyle.gradient
-              )} aria-hidden="true">
-                {profile?.full_name?.[0]?.toUpperCase() || 'U'}
-              </div>
+              {profile?.avatar_url ? (
+                <img 
+                  src={profile.avatar_url} 
+                  alt={profile?.full_name || 'Avatar'} 
+                  className="w-8 h-8 rounded-xl object-cover shadow-lg"
+                />
+              ) : (
+                <div className={cn(
+                  "w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-sm shadow-lg",
+                  currentPlanStyle.gradient
+                )} aria-hidden="true">
+                  {profile?.full_name?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background" aria-label="En ligne" />
             </div>
             <div className="hidden md:block text-left">
@@ -533,12 +585,20 @@ const UserMenuDropdown = memo(() => {
         {/* User Info Header */}
         <div className="px-3 py-3 mb-2 rounded-lg bg-muted/30">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-lg",
-              currentPlanStyle.gradient
-            )} aria-hidden="true">
-              {profile?.full_name?.[0]?.toUpperCase() || 'U'}
-            </div>
+            {profile?.avatar_url ? (
+              <img 
+                src={profile.avatar_url} 
+                alt={profile?.full_name || 'Avatar'} 
+                className="w-12 h-12 rounded-xl object-cover shadow-lg"
+              />
+            ) : (
+              <div className={cn(
+                "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-lg",
+                currentPlanStyle.gradient
+              )} aria-hidden="true">
+                {profile?.full_name?.[0]?.toUpperCase() || 'U'}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">{profile?.full_name || 'Utilisateur'}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
