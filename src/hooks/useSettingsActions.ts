@@ -24,29 +24,40 @@ export const useSettingsActions = () => {
 
   const saveSettings = async (settings: UserSettings) => {
     if (!user) return false;
-    
+
     setLoading(true);
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ 
+        .update({
+          // Store full settings in jsonb for future extensibility
           settings: settings as any,
-          updated_at: new Date().toISOString()
+
+          // Also persist key prefs into first-class columns used elsewhere
+          language: settings.language,
+          email_notifications: settings.notifications.email,
+          push_notifications: settings.notifications.push,
+          marketing_notifications: settings.notifications.marketing,
+          profile_visible: settings.privacy.profileVisible,
+          activity_visible: settings.privacy.activityVisible,
+          analytics_enabled: settings.privacy.analyticsEnabled,
+
+          updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
 
       if (error) throw error;
 
       toast({
-        title: "Paramètres sauvegardés",
-        description: "Vos préférences ont été mises à jour.",
+        title: 'Paramètres sauvegardés',
+        description: 'Vos préférences ont été mises à jour.',
       });
       return true;
     } catch (error: any) {
       toast({
-        title: "Erreur",
-        description: error.message || "Impossible de sauvegarder les paramètres.",
-        variant: "destructive",
+        title: 'Erreur',
+        description: error.message || 'Impossible de sauvegarder les paramètres.',
+        variant: 'destructive',
       });
       return false;
     } finally {
@@ -136,24 +147,22 @@ export const useSettingsActions = () => {
 
   const deleteAccount = async () => {
     if (!user) return false;
-    
+
     setLoading(true);
     try {
-      // Delete user data and account
-      const { error } = await supabase.auth.admin.deleteUser(user.id);
-      
+      const { data, error } = await supabase.functions.invoke('account-delete');
       if (error) throw error;
 
       toast({
-        title: "Compte supprimé",
-        description: "Votre compte a été supprimé définitivement.",
+        title: 'Compte supprimé',
+        description: 'Votre compte a été supprimé définitivement.',
       });
       return true;
     } catch (error: any) {
       toast({
-        title: "Erreur",
+        title: 'Erreur',
         description: error.message || "Impossible de supprimer le compte.",
-        variant: "destructive",
+        variant: 'destructive',
       });
       return false;
     } finally {
