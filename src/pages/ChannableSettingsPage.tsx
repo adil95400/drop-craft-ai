@@ -15,12 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Settings, 
-  Bell, 
-  Shield, 
-  Moon, 
-  Globe, 
+import {
+  Settings,
+  Bell,
+  Shield,
+  Moon,
+  Globe,
   Mail,
   Smartphone,
   Lock,
@@ -33,7 +33,8 @@ import {
   User,
   Database,
   Key,
-  Info
+  Info,
+  CreditCard,
 } from 'lucide-react'
 import { VersionInfo } from '@/components/shared/VersionInfo'
 import { useTheme } from 'next-themes'
@@ -44,6 +45,7 @@ const settingsCategories = [
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'privacy', label: 'Confidentialité', icon: Eye },
   { id: 'security', label: 'Sécurité', icon: Shield },
+  { id: 'billing', label: 'Facturation', icon: CreditCard },
   { id: 'account', label: 'Compte', icon: User },
   { id: 'about', label: 'À propos', icon: Info },
 ]
@@ -449,6 +451,51 @@ export default function ChannableSettingsPage() {
                       <Trash2 className="w-4 h-4 mr-2" />
                       Supprimer mon compte
                     </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Billing */}
+            {activeCategory === 'billing' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/5">
+                        <CreditCard className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <CardTitle>Abonnement & Facturation</CardTitle>
+                        <CardDescription>Gérez votre plan et vos factures</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between py-3 border-b border-border/50">
+                      <div>
+                        <Label className="font-medium">Plan actuel</Label>
+                        <p className="text-sm text-muted-foreground">
+                          {(profile as any)?.subscription_plan?.toUpperCase() || 'FREE'}
+                        </p>
+                      </div>
+                      <Button variant="outline" onClick={() => (window.location.href = '/dashboard/subscription')}>
+                        Changer de plan
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center justify-between py-3">
+                      <div>
+                        <Label className="font-medium">Historique de facturation</Label>
+                        <p className="text-sm text-muted-foreground">Voir vos factures et reçus</p>
+                      </div>
+                      <Button variant="outline" onClick={() => (window.location.href = '/dashboard/billing')}>
+                        Voir les factures
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
