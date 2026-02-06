@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   Plus, Upload, Download, Wand2, RefreshCw, 
-  Filter, Brain
+  Filter, Brain, Loader2
 } from 'lucide-react'
-import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { ViewModeSelector, ViewMode } from '@/components/products/command-center'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 import { cn } from '@/lib/utils'
 
 interface ProductsQuickActionsBarProps {
@@ -45,11 +45,12 @@ export function ProductsQuickActionsBar({
 
   const handleExport = async () => {
     try {
-      const { importExportService } = await import('@/services/importExportService')
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-      await importExportService.exportAllProducts(user.id)
-      toast({ title: '✅ Export réussi', description: 'Le fichier CSV a été téléchargé' })
+      const res = await shopOptiApi.bulkExportProducts(undefined, 'csv')
+      if (res.success) {
+        toast({ title: '✅ Export lancé', description: res.job_id ? `Job: ${res.job_id}` : 'Export en cours...' })
+      } else {
+        throw new Error(res.error)
+      }
     } catch (error) {
       toast({ title: 'Erreur', description: 'Échec de l\'export', variant: 'destructive' })
     }

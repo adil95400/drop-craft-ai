@@ -163,18 +163,16 @@ export function useApiJobDetail(jobId: string | null) {
     refetchInterval: 5_000, // Poll for progress
   })
 
-  // Fetch job_items from Supabase for per-product tracking
+  // Fetch job_items via FastAPI
   const { data: jobItems = [] } = useQuery({
     queryKey: ['api-job-items', jobId],
     queryFn: async () => {
       if (!jobId) return []
-      const { data } = await supabase
-        .from('job_items' as any)
-        .select('*')
-        .eq('job_id', jobId)
-        .order('created_at', { ascending: false })
-        .limit(100)
-      return data || []
+      const res = await shopOptiApi.getJobItems(jobId, { limit: 200 })
+      if (res.success && res.data) {
+        return Array.isArray(res.data) ? res.data : res.data.items || []
+      }
+      return []
     },
     enabled: !!jobId,
     refetchInterval: 5_000,

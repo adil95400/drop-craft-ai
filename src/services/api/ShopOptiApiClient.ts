@@ -480,6 +480,13 @@ class ShopOptiApiClient {
     return this.request(`/jobs/${jobId}`);
   }
 
+  async getJobItems(jobId: string, params?: { status?: string; limit?: number }) {
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.set('status', params.status);
+    if (params?.limit) queryParams.set('limit', String(params.limit || 200));
+    return this.request(`/jobs/${jobId}/items?${queryParams.toString()}`);
+  }
+
   async cancelJob(jobId: string) {
     return this.request(`/jobs/${jobId}/cancel`, {
       method: 'POST',
@@ -494,6 +501,28 @@ class ShopOptiApiClient {
 
   async getJobStats() {
     return this.request('/jobs/stats/summary');
+  }
+
+  // ==========================================
+  // BULK OPERATIONS
+  // ==========================================
+
+  async bulkDeleteProducts(productIds: string[]) {
+    return this.request('/products/bulk-delete', {
+      method: 'POST',
+      body: { product_ids: productIds },
+    });
+  }
+
+  async bulkExportProducts(productIds?: string[], format: 'csv' | 'json' = 'csv') {
+    return this.request('/products/export', {
+      method: 'POST',
+      body: {
+        product_ids: productIds,
+        format,
+      },
+      timeout: 60000,
+    });
   }
 
   // ==========================================
