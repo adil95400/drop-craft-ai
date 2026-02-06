@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { 
   Search, Trophy, Target, TrendingUp, Eye, Megaphone,
   Sparkles, ArrowRight, BarChart3, Globe, Star, 
@@ -345,6 +346,8 @@ export default function ResearchHub() {
           </div>
         }
       >
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.research} />
+
         {/* Quick Search */}
         <Card className="border-2 border-dashed border-primary/20 bg-gradient-to-r from-primary/5 to-violet-500/5">
           <CardContent className="py-6">

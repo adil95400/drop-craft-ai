@@ -10,6 +10,7 @@ import { StockSyncConfigurator } from '@/components/stock/StockSyncConfigurator'
 import { PricingRulesManager } from '@/components/stock/PricingRulesManager';
 import { PriceHistoryView } from '@/components/stock/PriceHistoryView';
 import { StockAlertsPanel } from '@/components/stock/StockAlertsPanel';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function StockRepricingHub() {
   const stockSync = useStockSync();
@@ -23,6 +24,8 @@ export default function StockRepricingHub() {
       </Helmet>
 
       <div className="container mx-auto p-6 space-y-6">
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.stockRepricing} />
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

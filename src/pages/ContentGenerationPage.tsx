@@ -4,6 +4,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Video, Image, FileText, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 const StatCard = ({ 
   title, 
@@ -50,6 +51,8 @@ export default function ContentGenerationPage() {
         subtitle="Créez automatiquement des vidéos TikTok, posts sociaux et améliorez vos photos produits"
         heroImage="marketing"
       >
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.contentGeneration} />
+
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard

@@ -8,6 +8,7 @@ import {
   Package, RefreshCw, Globe, ArrowRight, ExternalLink, Key,
   Activity, History, TrendingUp, Clock, AlertCircle, Save, Loader2, Cloud
 } from 'lucide-react';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { generateExtensionZip } from '@/utils/extensionZipGenerator';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -352,6 +353,8 @@ export default function ChromeExtensionPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.chromeExtension} />
+
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

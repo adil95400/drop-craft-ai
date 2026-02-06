@@ -5,6 +5,7 @@ import { useIntegrationsUnified } from '@/hooks/unified'
 import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus'
 import { Store, Plus, RefreshCw, Settings, Unplug, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 
 export default function StoresPage() {
   const { integrations, isLoading: loading, refetch, sync: syncIntegration, disconnect: disconnectIntegration } = useIntegrationsUnified()
@@ -58,8 +59,10 @@ export default function StoresPage() {
 
   return (
     <div className="container mx-auto p-6">
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.stores} />
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 mt-6">
         <div className="flex items-center gap-3">
           <Store className="w-8 h-8 text-primary" />
           <div>

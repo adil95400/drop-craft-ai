@@ -1293,5 +1293,426 @@ export const ADVANCED_GUIDES: Record<string, GuideConfig> = {
       { question: 'Quelles plateformes PPC sont supportées ?', answer: 'Google Ads, Microsoft Advertising, Facebook/Meta Ads et TikTok Ads.' }
     ],
     academyPath: '/academy'
+  },
+
+  contentGeneration: {
+    featureName: 'Génération de Contenu IA',
+    description: 'Créez vidéos TikTok, posts sociaux et optimisez vos photos produits avec l\'IA',
+    level: 'intermediate',
+    keyFeatures: ['Vidéos TikTok IA', 'Posts sociaux auto', 'Retouche photo IA', 'Templates créatifs'],
+    steps: [
+      {
+        title: 'Choisir le type de contenu',
+        description: 'Sélectionnez entre vidéo, image ou texte selon votre objectif',
+        detailedInstructions: [
+          'L\'onglet "Vidéos" permet de générer des clips TikTok/Reels à partir de vos produits',
+          'L\'onglet "Images" optimise vos photos produits (fond, retouche, mise en scène)',
+          'L\'onglet "Textes" génère descriptions, posts sociaux et scripts publicitaires'
+        ]
+      },
+      {
+        title: 'Configurer les paramètres',
+        description: 'Ajustez ton, style, format et durée selon votre audience cible',
+        detailedInstructions: [
+          'Choisissez le ton : professionnel, décontracté, urgent, luxe...',
+          'Définissez le format : carré (Instagram), vertical (TikTok/Reels), horizontal (YouTube)',
+          'Sélectionnez la durée pour les vidéos : 15s, 30s ou 60s'
+        ]
+      },
+      {
+        title: 'Générer et prévisualiser',
+        description: 'L\'IA crée le contenu en quelques secondes — prévisualisez avant de publier'
+      },
+      {
+        title: 'Exporter et publier',
+        description: 'Téléchargez ou publiez directement sur vos réseaux sociaux'
+      }
+    ],
+    tips: [
+      { text: 'Les vidéos de 15-30s avec un hook dans les 3 premières secondes performent 3x mieux', type: 'pro' },
+      { text: 'Vérifiez toujours le rendu final — l\'IA peut parfois générer des artefacts visuels', type: 'warning' },
+      { text: 'Réutilisez vos meilleurs contenus comme templates pour accélérer la production', type: 'info' }
+    ],
+    videos: [
+      { title: 'Créer une vidéo TikTok en 2 minutes', description: 'Du produit au clip viral avec l\'IA', youtubeId: 'dQw4w9WgXcQ', duration: '5:20' },
+      { title: 'Optimiser vos photos produits', description: 'Fond blanc, mise en scène et retouche automatique', youtubeId: 'dQw4w9WgXcQ', duration: '4:15' }
+    ],
+    faqs: [
+      { question: 'Combien de contenus puis-je générer ?', answer: 'Le nombre dépend de vos crédits IA. Chaque génération consomme entre 1 et 5 crédits selon la complexité.' },
+      { question: 'Puis-je utiliser les contenus commercialement ?', answer: 'Oui, tous les contenus générés vous appartiennent et peuvent être utilisés librement à des fins commerciales.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  storeSync: {
+    featureName: 'Centre de Synchronisation',
+    description: 'Orchestrez la synchronisation de vos données en temps réel avec toutes vos boutiques',
+    level: 'intermediate',
+    keyFeatures: ['Sync temps réel', 'Multi-boutiques', 'File d\'attente', 'Logs détaillés'],
+    steps: [
+      {
+        title: 'Vérifier les connexions',
+        description: 'Assurez-vous que toutes vos boutiques sont connectées et actives',
+        detailedInstructions: [
+          'Le tableau de bord affiche le statut de chaque boutique connectée',
+          'Les icônes vertes indiquent une connexion active, rouges une erreur',
+          'Cliquez sur "Reconnecter" pour résoudre les problèmes de connexion'
+        ]
+      },
+      {
+        title: 'Lancer une synchronisation',
+        description: 'Synchronisez manuellement ou configurez la sync automatique',
+        detailedInstructions: [
+          'Cliquez sur "Sync complète" pour synchroniser toutes les données',
+          'Utilisez "Sync module" pour synchroniser uniquement produits, commandes ou stocks',
+          'La sync automatique peut être configurée toutes les 15min, 1h ou 4h'
+        ]
+      },
+      {
+        title: 'Surveiller la file d\'attente',
+        description: 'Suivez les éléments en attente de synchronisation'
+      },
+      {
+        title: 'Consulter les logs',
+        description: 'Analysez l\'historique complet des synchronisations passées'
+      }
+    ],
+    tips: [
+      { text: 'Planifiez les syncs complètes pendant les heures creuses pour éviter les conflits', type: 'pro' },
+      { text: 'En cas d\'erreur répétée, vérifiez vos clés API dans les paramètres de la boutique', type: 'warning' },
+      { text: 'La sync incrémentale (module par module) est 5x plus rapide que la sync complète', type: 'info' }
+    ],
+    videos: [
+      { title: 'Synchronisation multi-boutiques', description: 'Gérez 5+ boutiques sans effort', youtubeId: 'dQw4w9WgXcQ', duration: '6:00' }
+    ],
+    faqs: [
+      { question: 'À quelle fréquence les données sont-elles synchronisées ?', answer: 'Par défaut toutes les heures. Vous pouvez configurer une fréquence de 15min à 24h selon votre plan.' },
+      { question: 'Que faire si la sync échoue ?', answer: 'Vérifiez les logs d\'erreur, reconnectez la boutique et relancez. Si le problème persiste, contactez le support.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  stores: {
+    featureName: 'Boutiques Connectées',
+    description: 'Gérez toutes vos boutiques e-commerce depuis un tableau de bord centralisé',
+    level: 'beginner',
+    keyFeatures: ['Multi-plateformes', 'Connexion 1-clic', 'Monitoring', 'Sync automatique'],
+    steps: [
+      {
+        title: 'Connecter une boutique',
+        description: 'Cliquez sur "Connecter une boutique" et suivez le wizard',
+        detailedInstructions: [
+          'Choisissez votre plateforme : Shopify, WooCommerce, PrestaShop, etc.',
+          'Renseignez l\'URL de votre boutique et les identifiants API',
+          'L\'assistant teste automatiquement la connexion et importe vos données'
+        ]
+      },
+      {
+        title: 'Vérifier la connexion',
+        description: 'Le statut doit afficher "Connecté" avec une icône verte'
+      },
+      {
+        title: 'Synchroniser les données',
+        description: 'Lancez la première synchronisation pour importer produits et commandes'
+      },
+      {
+        title: 'Configurer les paramètres',
+        description: 'Ajustez la fréquence de sync et les données à synchroniser'
+      }
+    ],
+    tips: [
+      { text: 'Commencez par connecter votre boutique principale, puis ajoutez les secondaires', type: 'info' },
+      { text: 'Gardez vos clés API en sécurité — ne les partagez jamais', type: 'warning' },
+      { text: 'Les boutiques connectées bénéficient de la mise à jour automatique des stocks en temps réel', type: 'pro' }
+    ],
+    videos: [
+      { title: 'Connecter Shopify en 2 minutes', description: 'Guide pas-à-pas pour lier votre boutique Shopify', youtubeId: 'dQw4w9WgXcQ', duration: '3:30' }
+    ],
+    faqs: [
+      { question: 'Combien de boutiques puis-je connecter ?', answer: 'Le nombre dépend de votre plan : Standard 1 boutique, Pro 3 boutiques, Ultra Pro illimité.' },
+      { question: 'La connexion est-elle sécurisée ?', answer: 'Oui, nous utilisons OAuth 2.0 et les clés API sont chiffrées côté serveur.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  research: {
+    featureName: 'Veille & Recherche',
+    description: 'Découvrez les produits gagnants, analysez la concurrence et suivez les tendances',
+    level: 'beginner',
+    keyFeatures: ['Produits gagnants', 'Analyse concurrence', 'Tendances marché', 'Score produit'],
+    steps: [
+      {
+        title: 'Explorer les produits gagnants',
+        description: 'Parcourez les produits tendance sélectionnés par l\'IA',
+        detailedInstructions: [
+          'La page d\'accueil affiche les produits les plus performants du moment',
+          'Chaque produit affiche un score basé sur : tendance, marge, demande, concurrence',
+          'Filtrez par catégorie, marge minimum ou volume de recherche'
+        ]
+      },
+      {
+        title: 'Rechercher par mot-clé',
+        description: 'Trouvez des produits spécifiques dans toutes les sources',
+        detailedInstructions: [
+          'La barre de recherche interroge simultanément 6+ sources de données',
+          'Les résultats incluent volume de recherche Google, tendance et estimations de ventes',
+          'Sauvegardez vos recherches pour recevoir des alertes sur les nouvelles opportunités'
+        ]
+      },
+      {
+        title: 'Analyser une niche',
+        description: 'Étudiez en profondeur le potentiel d\'une catégorie de produits'
+      },
+      {
+        title: 'Surveiller les tendances',
+        description: 'Suivez l\'évolution des niches et produits dans le temps'
+      }
+    ],
+    tips: [
+      { text: 'Les produits avec un score > 75 et une tendance haussière sont vos meilleures opportunités', type: 'pro' },
+      { text: 'Diversifiez vos niches — ne misez pas tout sur un seul type de produit', type: 'warning' },
+      { text: 'Consultez l\'onglet "Tendances" chaque semaine pour repérer les opportunités émergentes', type: 'info' }
+    ],
+    videos: [
+      { title: 'Trouver un produit gagnant', description: 'Méthodologie complète pour identifier les winners', youtubeId: 'dQw4w9WgXcQ', duration: '9:45' }
+    ],
+    faqs: [
+      { question: 'D\'où viennent les données ?', answer: 'Nous agrégeons des données de AliExpress, Amazon, Google Trends, réseaux sociaux et bases propriétaires.' },
+      { question: 'À quelle fréquence les tendances sont-elles mises à jour ?', answer: 'Les scores et tendances sont recalculés quotidiennement.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  printOnDemand: {
+    featureName: 'Print on Demand',
+    description: 'Créez et vendez des produits personnalisés sans stock grâce au print on demand',
+    level: 'intermediate',
+    keyFeatures: ['Design IA', 'Catalogue étendu', 'Sans stock', 'Fulfillment auto'],
+    steps: [
+      {
+        title: 'Explorer le catalogue',
+        description: 'Parcourez les produits disponibles : t-shirts, mugs, coques, posters...',
+        detailedInstructions: [
+          'L\'onglet "Catalogue" affiche tous les produits personnalisables disponibles',
+          'Chaque produit indique les zones imprimables, tailles et couleurs disponibles',
+          'Filtrez par catégorie pour trouver rapidement le support idéal'
+        ]
+      },
+      {
+        title: 'Créer un design IA',
+        description: 'Décrivez votre design et l\'IA le génère pour vous',
+        detailedInstructions: [
+          'Saisissez une description du design souhaité dans le champ "Prompt"',
+          'Choisissez le style : moderne, vintage, minimaliste, cartoon...',
+          'L\'IA génère plusieurs variantes — sélectionnez votre préférée'
+        ]
+      },
+      {
+        title: 'Appliquer et prévisualiser',
+        description: 'Placez le design sur le produit et vérifiez le rendu en mockup'
+      },
+      {
+        title: 'Publier sur votre boutique',
+        description: 'Le produit est créé et les commandes sont traitées automatiquement'
+      }
+    ],
+    tips: [
+      { text: 'Les designs simples avec des couleurs contrastées se vendent 40% mieux', type: 'pro' },
+      { text: 'Commencez par les t-shirts — c\'est le produit POD avec la meilleure marge', type: 'info' },
+      { text: 'Vérifiez les droits d\'auteur avant d\'utiliser des références culturelles dans vos designs', type: 'warning' }
+    ],
+    videos: [
+      { title: 'Lancer votre marque POD', description: 'De l\'idée au premier produit en vente', youtubeId: 'dQw4w9WgXcQ', duration: '8:30' }
+    ],
+    faqs: [
+      { question: 'Qui gère la production et l\'expédition ?', answer: 'Le fournisseur POD gère tout : impression, emballage et expédition. Vous n\'avez aucun stock à gérer.' },
+      { question: 'Quelles sont les marges typiques ?', answer: 'Les marges varient de 20% à 50% selon le produit. Les t-shirts offrent généralement 30-40% de marge.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  stockRepricing: {
+    featureName: 'Stock Live & Repricing',
+    description: 'Synchronisation stock temps réel et repricing automatique pour optimiser vos marges',
+    level: 'advanced',
+    keyFeatures: ['Sync stock temps réel', 'Repricing auto', 'Historique prix', 'Alertes stock'],
+    steps: [
+      {
+        title: 'Configurer la synchronisation stock',
+        description: 'Connectez vos sources de données pour un stock toujours à jour',
+        detailedInstructions: [
+          'Allez dans l\'onglet "Configuration" pour lier vos fournisseurs',
+          'Définissez la fréquence de vérification : temps réel, 15min, 1h...',
+          'Activez les alertes de rupture de stock pour être prévenu immédiatement'
+        ]
+      },
+      {
+        title: 'Définir les règles de repricing',
+        description: 'Créez des règles pour ajuster automatiquement vos prix',
+        detailedInstructions: [
+          'L\'onglet "Règles de prix" permet de définir vos stratégies',
+          'Règles courantes : marge minimum, alignement concurrence, prix psychologiques',
+          'Testez vos règles en mode simulation avant de les activer'
+        ]
+      },
+      {
+        title: 'Surveiller l\'historique des prix',
+        description: 'Analysez les évolutions de prix fournisseur et vos ajustements'
+      },
+      {
+        title: 'Gérer les alertes',
+        description: 'Configurez et consultez vos alertes stock bas et ruptures'
+      }
+    ],
+    tips: [
+      { text: 'Le repricing dynamique augmente les marges de 15% en moyenne sur les produits concurrentiels', type: 'pro' },
+      { text: 'Définissez toujours un prix plancher pour éviter de vendre à perte', type: 'warning' },
+      { text: 'L\'historique des prix vous aide à anticiper les variations saisonnières', type: 'info' }
+    ],
+    videos: [
+      { title: 'Repricing intelligent', description: 'Automatisez vos ajustements de prix pour maximiser les marges', youtubeId: 'dQw4w9WgXcQ', duration: '7:00' }
+    ],
+    faqs: [
+      { question: 'Le repricing peut-il vendre à perte ?', answer: 'Non, si vous configurez un prix plancher ou une marge minimum, le système ne descendra jamais en dessous.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  chromeExtension: {
+    featureName: 'Extension Chrome',
+    description: 'Importez des produits directement depuis AliExpress, Amazon et autres avec l\'extension',
+    level: 'beginner',
+    keyFeatures: ['Import 1-clic', 'Calcul marge instant', 'Multi-plateformes', 'Sync automatique'],
+    steps: [
+      {
+        title: 'Installer l\'extension',
+        description: 'Téléchargez et installez l\'extension depuis cette page',
+        detailedInstructions: [
+          'Cliquez sur "Télécharger l\'extension" pour obtenir le fichier ZIP',
+          'Ouvrez chrome://extensions dans votre navigateur',
+          'Activez le "Mode développeur" et cliquez sur "Charger l\'extension non empaquetée"',
+          'Sélectionnez le dossier décompressé de l\'extension'
+        ]
+      },
+      {
+        title: 'Connecter votre compte',
+        description: 'Générez un token d\'accès et connectez l\'extension à ShopOpti',
+        detailedInstructions: [
+          'Cliquez sur "Générer un token" dans les paramètres ci-dessous',
+          'Copiez le token et collez-le dans le popup de l\'extension',
+          'L\'extension se connecte automatiquement à votre compte'
+        ]
+      },
+      {
+        title: 'Importer depuis les plateformes',
+        description: 'Naviguez sur AliExpress ou Amazon et cliquez sur le bouton d\'import'
+      },
+      {
+        title: 'Configurer les préférences',
+        description: 'Ajustez la marge par défaut, la devise et les notifications'
+      }
+    ],
+    tips: [
+      { text: 'L\'extension calcule la marge en temps réel en tenant compte des frais de livraison', type: 'pro' },
+      { text: 'Gardez l\'extension à jour pour bénéficier des derniers correctifs et fonctionnalités', type: 'info' },
+      { text: 'Ne partagez jamais votre token d\'accès — il donne accès complet à votre compte', type: 'warning' }
+    ],
+    videos: [
+      { title: 'Installation de l\'extension', description: 'Guide complet d\'installation pas-à-pas', youtubeId: 'dQw4w9WgXcQ', duration: '4:00' }
+    ],
+    faqs: [
+      { question: 'L\'extension fonctionne-t-elle sur Firefox ?', answer: 'Pour le moment, l\'extension est disponible uniquement sur Chrome et les navigateurs basés sur Chromium (Edge, Brave, Opera).' },
+      { question: 'Les données importées sont-elles sécurisées ?', answer: 'Oui, toutes les données transitent en HTTPS et sont stockées de manière chiffrée sur nos serveurs.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  priceRules: {
+    featureName: 'Règles de Prix',
+    description: 'Définissez des règles de prix automatiques pour optimiser vos marges et rester compétitif',
+    level: 'intermediate',
+    keyFeatures: ['Règles dynamiques', 'Marge minimum', 'Prix psychologiques', 'Simulation'],
+    steps: [
+      {
+        title: 'Créer une règle de prix',
+        description: 'Définissez les conditions et l\'action de votre règle',
+        detailedInstructions: [
+          'Cliquez sur "Nouvelle règle" pour ouvrir le configurateur',
+          'Choisissez le type : marge fixe, pourcentage, alignement, arrondi...',
+          'Définissez les conditions d\'application : catégorie, fournisseur, plage de prix'
+        ]
+      },
+      {
+        title: 'Configurer les paramètres',
+        description: 'Ajustez les seuils, marges et conditions d\'activation',
+        detailedInstructions: [
+          'Définissez la marge minimum pour ne jamais vendre à perte',
+          'Activez les prix psychologiques (ex: 29,99€ au lieu de 30€)',
+          'Configurez les exceptions par produit ou catégorie'
+        ]
+      },
+      {
+        title: 'Tester en simulation',
+        description: 'Prévisualisez l\'impact de la règle avant de l\'activer'
+      },
+      {
+        title: 'Activer et surveiller',
+        description: 'Lancez la règle et suivez son impact sur vos marges'
+      }
+    ],
+    tips: [
+      { text: 'Les prix psychologiques (.99, .95) augmentent les conversions de 15-20%', type: 'pro' },
+      { text: 'Testez toujours en simulation avant d\'activer une règle sur l\'ensemble du catalogue', type: 'warning' },
+      { text: 'Combinez plusieurs règles avec des priorités pour une stratégie de pricing sophistiquée', type: 'info' }
+    ],
+    videos: [
+      { title: 'Stratégie de pricing gagnante', description: 'Configurez vos règles pour maximiser les marges', youtubeId: 'dQw4w9WgXcQ', duration: '6:30' }
+    ],
+    faqs: [
+      { question: 'Les règles s\'appliquent-elles rétroactivement ?', answer: 'Oui, quand vous activez une règle, elle recalcule les prix de tous les produits correspondants.' },
+      { question: 'Puis-je exclure certains produits ?', answer: 'Oui, vous pouvez définir des exceptions par produit, catégorie ou fournisseur.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  documentation: {
+    featureName: 'Centre de Documentation',
+    description: 'Accédez à tous les guides, tutoriels et FAQ pour maîtriser chaque module',
+    level: 'beginner',
+    keyFeatures: ['Guides complets', 'Recherche avancée', 'Par module', 'Niveaux de difficulté'],
+    steps: [
+      {
+        title: 'Rechercher un sujet',
+        description: 'Utilisez la barre de recherche pour trouver un guide spécifique',
+        detailedInstructions: [
+          'La recherche interroge titres, descriptions, FAQ et guides pas-à-pas',
+          'Les résultats sont triés par pertinence avec mise en surbrillance',
+          'Utilisez des mots-clés spécifiques pour des résultats plus précis'
+        ]
+      },
+      {
+        title: 'Explorer par catégorie',
+        description: 'Parcourez les guides organisés par module fonctionnel'
+      },
+      {
+        title: 'Suivre un guide pas-à-pas',
+        description: 'Chaque module propose un tutoriel étape par étape avec captures'
+      },
+      {
+        title: 'Consulter les FAQ',
+        description: 'Trouvez rapidement les réponses aux questions les plus fréquentes'
+      }
+    ],
+    tips: [
+      { text: 'Chaque page de l\'application dispose de son propre guide contextuel en haut', type: 'info' },
+      { text: 'Les guides sont classés par niveau : débutant, intermédiaire et avancé', type: 'info' }
+    ],
+    videos: [
+      { title: 'Tour de la documentation', description: 'Comment naviguer efficacement dans les guides', youtubeId: 'dQw4w9WgXcQ', duration: '3:00' }
+    ],
+    faqs: [
+      { question: 'Les guides sont-ils mis à jour ?', answer: 'Oui, les guides sont mis à jour à chaque nouvelle fonctionnalité ou changement majeur.' }
+    ],
+    academyPath: '/academy'
   }
 }
