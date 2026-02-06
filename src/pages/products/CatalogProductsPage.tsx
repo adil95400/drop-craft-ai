@@ -10,9 +10,12 @@ import { useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 
 // Data hooks
 import { useProductsUnified, UnifiedProduct } from '@/hooks/unified/useProductsUnified'
+import { useApiProducts } from '@/hooks/api/useApiProducts'
+import { useApiSync } from '@/hooks/api/useApiSync'
 
 // UI Components
 import { Button } from '@/components/ui/button'
@@ -74,8 +77,8 @@ export default function CatalogProductsPage() {
 
   // === DATA ===
   const { products, stats, isLoading, refetch } = useProductsUnified()
-
-  // === DERIVED DATA ===
+  const { deleteProduct, createProduct } = useApiProducts()
+  const { triggerSync, isSyncing } = useApiSync()
   const categories = useMemo(() => {
     const cats = new Set(products.map(p => p.category).filter(Boolean))
     return Array.from(cats).sort() as string[]
@@ -132,59 +135,34 @@ export default function CatalogProductsPage() {
     if (unified) setViewModalProduct(unified)
   }, [products])
 
-  const handleDelete = useCallback(async (id: string) => {
+  const handleDelete = useCallback((id: string) => {
     if (!confirm('Supprimer ce produit ?')) return
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-      
-      await Promise.all([
-        supabase.from('products').delete().eq('id', id).eq('user_id', user.id),
-        supabase.from('imported_products').delete().eq('id', id).eq('user_id', user.id)
-      ])
-      
-      toast({ title: 'Produit supprimé' })
-      handleRefresh()
-    } catch (error) {
-      toast({ title: 'Erreur', description: 'Impossible de supprimer', variant: 'destructive' })
-    }
-  }, [toast, handleRefresh])
+    deleteProduct.mutate(id, {
+      onSuccess: () => handleRefresh(),
+    })
+  }, [deleteProduct, handleRefresh])
 
-  const handleDuplicate = useCallback(async (product: any) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-      
-      const p = products.find(x => x.id === product.id)
-      if (!p) return
-
-      await supabase.from('products').insert([{
-        user_id: user.id,
-        title: `${p.name} (copie)`,
-        name: `${p.name} (copie)`,
-        description: p.description || null,
-        price: p.price || 0,
-        cost_price: p.cost_price || 0,
-        sku: p.sku ? `${p.sku}-COPY` : null,
-        category: p.category || null,
-        image_url: p.image_url || null,
-        stock_quantity: p.stock_quantity || 0,
-        status: 'draft',
-      }])
-      
-      toast({ title: 'Produit dupliqué' })
-      handleRefresh()
-    } catch {
-      toast({ title: 'Erreur', variant: 'destructive' })
-    }
-  }, [products, toast, handleRefresh])
+  const handleDuplicate = useCallback((product: any) => {
+    const p = products.find(x => x.id === product.id)
+    if (!p) return
+    createProduct.mutate({
+      title: `${p.name} (copie)`,
+      salePrice: p.price || 0,
+      costPrice: p.cost_price,
+      sku: p.sku ? `${p.sku}-COPY` : undefined,
+      stock: p.stock_quantity || 0,
+    }, {
+      onSuccess: () => handleRefresh(),
+    })
+  }, [products, createProduct, handleRefresh])
 
   const handleBulkDelete = useCallback(async () => {
     if (selectedProducts.length === 0) return
     setIsBulkDeleting(true)
     try {
-      const { importExportService } = await import('@/services/importExportService')
-      await importExportService.bulkDelete(selectedProducts)
+      for (const id of selectedProducts) {
+        await shopOptiApi.deleteProduct(id)
+      }
       toast({ title: `${selectedProducts.length} produit(s) supprimé(s)` })
       setSelectedProducts([])
       setBulkDeleteOpen(false)
@@ -241,6 +219,14 @@ export default function CatalogProductsPage() {
               <Button variant="outline" size="sm" className="gap-2" onClick={handleExportCSV}>
                 <Download className="h-4 w-4" />
                 Exporter
+              </Button>
+              <Button 
+                variant="outline" size="sm" className="gap-2" 
+                onClick={() => triggerSync.mutate({ syncType: 'products' })}
+                disabled={isSyncing}
+              >
+                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                Sync
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="gap-2" onClick={handleRefresh} disabled={isLoading}>
