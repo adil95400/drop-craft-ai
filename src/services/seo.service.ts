@@ -1,30 +1,13 @@
-import { supabase } from '@/integrations/supabase/client';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 
 class SEOService {
   async runOptimization(checkType: string, recommendations: string[]): Promise<any> {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      throw new Error('User not authenticated');
-    }
-
-    const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/seo-optimizer', {
+    const res = await shopOptiApi.request('/seo/optimize', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        checkType,
-        recommendations
-      }),
+      body: { checkType, recommendations }
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to apply optimizations');
-    }
-
-    return response.json();
+    if (!res.success) throw new Error(res.error || 'Failed to apply optimizations');
+    return res.data;
   }
 }
 

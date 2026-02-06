@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 
 export interface SiteHealthData {
   overall: number;
@@ -13,39 +13,20 @@ export interface SiteHealthData {
   nextOptimization: string;
 }
 
+const DEFAULT_HEALTH: SiteHealthData = {
+  overall: 0, seo: 0, images: 0, content: 0, translations: 0,
+  lastOptimization: 'Jamais', optimizationCount: 0, improvement: 0, nextOptimization: 'Non planifiée'
+};
+
 export function useSiteHealth() {
   const { data: siteHealth, isLoading } = useQuery({
     queryKey: ['site-health'],
     queryFn: async (): Promise<SiteHealthData> => {
-      // Simulate fetching site health data
-      // In production, this would call an edge function
-      return {
-        overall: 78,
-        seo: 85,
-        images: 62,
-        content: 91,
-        translations: 45,
-        lastOptimization: 'Il y a 2 jours',
-        optimizationCount: 347,
-        improvement: 24,
-        nextOptimization: 'Dans 5 jours'
-      };
+      const res = await shopOptiApi.request<SiteHealthData>('/seo/site-health');
+      return res.data || DEFAULT_HEALTH;
     },
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 
-  return {
-    siteHealth: siteHealth || {
-      overall: 0,
-      seo: 0,
-      images: 0,
-      content: 0,
-      translations: 0,
-      lastOptimization: 'Jamais',
-      optimizationCount: 0,
-      improvement: 0,
-      nextOptimization: 'Non planifiée'
-    },
-    isLoading
-  };
+  return { siteHealth: siteHealth || DEFAULT_HEALTH, isLoading };
 }
