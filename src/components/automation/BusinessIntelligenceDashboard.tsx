@@ -85,7 +85,7 @@ export function BusinessIntelligenceDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Insights Total</p>
-                <p className="text-2xl font-bold">{metrics?.totalInsights || 0}</p>
+                <p className="text-2xl font-bold">{metrics?.total || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -99,7 +99,7 @@ export function BusinessIntelligenceDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Critiques</p>
-                <p className="text-2xl font-bold text-red-600">{metrics?.criticalInsights || 0}</p>
+                <p className="text-2xl font-bold text-red-600">{metrics?.critical || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -113,7 +113,7 @@ export function BusinessIntelligenceDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Opportunités</p>
-                <p className="text-2xl font-bold text-green-600">{metrics?.opportunities || 0}</p>
+                <p className="text-2xl font-bold text-green-600">{(metrics?.total || 0) - (metrics?.critical || 0)}</p>
               </div>
             </div>
           </CardContent>
@@ -127,7 +127,7 @@ export function BusinessIntelligenceDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Taux d'Action</p>
-                <p className="text-2xl font-bold">{metrics?.actionRate || 0}%</p>
+                <p className="text-2xl font-bold">{metrics?.total ? Math.round((metrics.acknowledged / metrics.total) * 100) : 0}%</p>
               </div>
             </div>
           </CardContent>
@@ -160,24 +160,24 @@ export function BusinessIntelligenceDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {priorityInsights.map((insight) => (
-                <div key={insight.id} className={`p-4 border rounded-lg ${getSeverityColor(insight.severity)}`}>
+              {priorityInsights.map((insight: any) => (
+                <div key={insight.id} className={`p-4 border rounded-lg ${getSeverityColor(insight.trend || 'info')}`}>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-white/80 rounded-lg">
-                        {getInsightIcon(insight.insight_type)}
+                        {getInsightIcon(insight.category || 'general')}
                       </div>
                       <div>
-                        <h4 className="font-semibold">{insight.title}</h4>
+                        <h4 className="font-semibold">{insight.metric_name}</h4>
                         <p className="text-sm opacity-80 mb-2">
-                          {insight.description}
+                          {insight.category || 'Insight'}
                         </p>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs bg-white/50">
                             {getCategoryLabel(insight.category)}
                           </Badge>
-                          <Badge className={`text-xs ${getSeverityColor(insight.severity)}`}>
-                            {getSeverityLabel(insight.severity)}
+                          <Badge className={`text-xs ${getSeverityColor(insight.trend || 'info')}`}>
+                            {getSeverityLabel(insight.trend || 'info')}
                           </Badge>
                         </div>
                       </div>
@@ -186,25 +186,25 @@ export function BusinessIntelligenceDashboard() {
                     <div className="text-right">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-medium">Confiance:</span>
-                        <Progress value={insight.confidence_score} className="w-16 h-2" />
-                        <span className="text-sm">{insight.confidence_score}%</span>
+                        <Progress value={insight.confidence_score || 0} className="w-16 h-2" />
+                        <span className="text-sm">{insight.confidence_score || 0}%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Impact:</span>
-                        <Progress value={insight.impact_score} className="w-16 h-2" />
-                        <span className="text-sm">{insight.impact_score}%</span>
+                        <span className="text-sm font-medium">Valeur:</span>
+                        <Progress value={insight.metric_value || 0} className="w-16 h-2" />
+                        <span className="text-sm">{insight.metric_value || 0}</span>
                       </div>
                     </div>
                   </div>
                   
-                  {insight.actionable_recommendations && (
+                  {insight.insights && (
                     <div className="mb-4">
                       <h5 className="font-medium mb-2">Recommandations:</h5>
                       <ul className="space-y-1">
-                        {(insight.actionable_recommendations as string[]).slice(0, 3).map((rec, index) => (
+                        {(Array.isArray(insight.insights) ? insight.insights : []).slice(0, 3).map((rec: string, index: number) => (
                           <li key={index} className="text-sm opacity-80 flex items-center gap-2">
                             <CheckCircle className="h-3 w-3" />
-                            {rec}
+                            {typeof rec === 'string' ? rec : JSON.stringify(rec)}
                           </li>
                         ))}
                       </ul>

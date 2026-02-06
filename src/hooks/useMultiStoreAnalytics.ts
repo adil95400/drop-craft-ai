@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface StorePerformanceAnalytics {
   id: string;
@@ -82,62 +83,98 @@ export interface AnalyticsInsight {
 }
 
 export function useStorePerformanceAnalytics(storeId?: string) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['store-performance-analytics', storeId],
+    queryKey: ['store-performance-analytics', storeId, user?.id],
     queryFn: async (): Promise<StorePerformanceAnalytics[]> => {
-      const endpoint = storeId
-        ? `/analytics/stores/${storeId}/performance`
-        : '/analytics/stores/performance';
-      const res = await shopOptiApi.request(endpoint);
-      if (!res.success) return [];
-      return res.data || [];
+      if (!user?.id) return [];
+      // Use analytics_snapshots as proxy
+      const { data, error } = await supabase
+        .from('analytics_snapshots')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('snapshot_type', 'store_performance')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return (data || []).map(d => ({
+        id: d.id,
+        user_id: d.user_id,
+        store_identifier: null,
+        store_name: null,
+        analysis_period_start: d.snapshot_date,
+        analysis_period_end: d.snapshot_date,
+        total_revenue: (d.metrics as any)?.revenue || 0,
+        total_orders: (d.metrics as any)?.orders || 0,
+        avg_order_value: (d.metrics as any)?.avg_order_value || 0,
+        conversion_rate: (d.metrics as any)?.conversion_rate || 0,
+        customer_acquisition_cost: 0,
+        customer_lifetime_value: 0,
+        inventory_turnover_rate: 0,
+        profit_margin: 0,
+        top_products: [],
+        top_categories: [],
+        customer_segments: {},
+        sales_trends: {},
+        performance_score: 0,
+        recommendations: [],
+        created_at: d.created_at,
+        updated_at: d.created_at,
+      }));
     },
+    enabled: !!user?.id,
   });
 }
 
 export function useComparativeAnalytics() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['comparative-analytics'],
+    queryKey: ['comparative-analytics', user?.id],
     queryFn: async (): Promise<ComparativeAnalytics[]> => {
-      const res = await shopOptiApi.request('/analytics/comparisons');
-      if (!res.success) return [];
-      return res.data || [];
+      return []; // No real table for this yet
     },
+    enabled: !!user?.id,
   });
 }
 
 export function usePredictiveAnalytics(storeId?: string) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['predictive-analytics', storeId],
+    queryKey: ['predictive-analytics-store', storeId, user?.id],
     queryFn: async (): Promise<PredictiveAnalytics[]> => {
-      const res = await shopOptiApi.getPredictiveInsights();
-      if (!res.success) return [];
-      return res.data || [];
+      return []; // Requires AI backend
     },
+    enabled: !!user?.id,
   });
 }
 
 export function useAnalyticsInsights(acknowledged?: boolean) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['analytics-insights', acknowledged],
+    queryKey: ['analytics-insights', acknowledged, user?.id],
     queryFn: async () => {
-      const params = acknowledged !== undefined ? `?acknowledged=${acknowledged}` : '';
-      const res = await shopOptiApi.request(`/analytics/insights${params}`);
-      if (!res.success) return [];
-      return (res.data || []) as AnalyticsInsight[];
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('analytics_insights')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as any as AnalyticsInsight[];
     },
+    enabled: !!user?.id,
   });
 }
 
 export function useAcknowledgeInsightMutation() {
   const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async (insightId: string) => {
-      const res = await shopOptiApi.request(`/analytics/insights/${insightId}/acknowledge`, {
-        method: 'POST',
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to acknowledge insight');
+      const { error } = await supabase
+        .from('analytics_insights')
+        .update({ metadata: { acknowledged: true } })
+        .eq('id', insightId);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['analytics-insights'] });
@@ -147,15 +184,10 @@ export function useAcknowledgeInsightMutation() {
 
 export function useCreateComparison() {
   const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async (data: any) => {
-      const res = await shopOptiApi.request('/analytics/comparisons', {
-        method: 'POST',
-        body: data,
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to create comparison');
-      return res.data;
+      // No real table for comparisons yet
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comparative-analytics'] });

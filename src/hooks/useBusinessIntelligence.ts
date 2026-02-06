@@ -1,39 +1,58 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function usePriorityInsights() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['business-insights', 'priority'],
+    queryKey: ['business-insights', 'priority', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.request('/analytics/insights?priority=true');
-      if (!res.success) return [];
-      return res.data || [];
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('analytics_insights')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data || [];
     },
+    enabled: !!user?.id,
     staleTime: 2 * 60 * 1000,
   });
 }
 
 export function useInsightMetrics() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['insight-metrics'],
+    queryKey: ['insight-metrics', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.request('/analytics/insights/metrics');
-      if (!res.success) return null;
-      return res.data;
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('analytics_insights')
+        .select('*')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      return {
+        total: data?.length || 0,
+        critical: data?.filter(d => d.trend === 'critical').length || 0,
+        acknowledged: data?.filter(d => d.metadata && typeof d.metadata === 'object' && (d.metadata as any).acknowledged).length || 0,
+      };
     },
+    enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useAcknowledgeInsight() {
   const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async (insightId: string) => {
-      const res = await shopOptiApi.request(`/analytics/insights/${insightId}/acknowledge`, {
-        method: 'POST',
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to acknowledge');
+      const { error } = await supabase
+        .from('analytics_insights')
+        .update({ metadata: { acknowledged: true, acknowledged_at: new Date().toISOString() } })
+        .eq('id', insightId);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-insights'] });
@@ -43,13 +62,13 @@ export function useAcknowledgeInsight() {
 
 export function useDismissInsight() {
   const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async (insightId: string) => {
-      const res = await shopOptiApi.request(`/analytics/insights/${insightId}/dismiss`, {
-        method: 'POST',
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to dismiss');
+      const { error } = await supabase
+        .from('analytics_insights')
+        .delete()
+        .eq('id', insightId);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-insights'] });
@@ -60,12 +79,8 @@ export function useDismissInsight() {
 export function useGenerateInsights() {
   return useMutation({
     mutationFn: async ({ analysisType, timeRange }: { analysisType?: string; timeRange?: string }) => {
-      const res = await shopOptiApi.request('/analytics/insights/generate', {
-        method: 'POST',
-        body: { analysis_type: analysisType, time_range: timeRange },
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to generate insights');
-      return res.data;
+      // Placeholder: insights generation would require AI backend
+      return { message: 'Génération d\'insights disponible prochainement' };
     },
   });
 }

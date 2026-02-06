@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdvancedFeatureGuide } from '@/components/guide';
 import { ADVANCED_GUIDES } from '@/components/guide';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -38,25 +38,28 @@ export default function AdvancedAnalyticsPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleGenerateReport = async () => {
-    const res = await shopOptiApi.generateReport('analytics', '30');
-    if (res.success) {
-      toast({ title: 'Rapport en cours', description: `Job: ${res.job_id || 'lancé'}` });
-      queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
-    } else {
-      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) throw new Error('Non authentifié');
+      const { error } = await supabase.from('advanced_reports').insert({
+        user_id: session.user.id,
+        report_name: `Rapport Analytics ${new Date().toLocaleDateString('fr-FR')}`,
+        report_type: 'analytics',
+        status: 'generated',
+        last_generated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      toast({ title: 'Rapport généré', description: 'Le rapport a été créé' });
+      queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de générer le rapport', variant: 'destructive' });
     }
   };
 
   const handleExport = async () => {
     setIsExporting(true);
-    const res = await shopOptiApi.bulkExportProducts(undefined, 'csv');
+    toast({ title: 'Export', description: 'Utilisez le bouton Exporter dans l\'onglet Rapports' });
     setIsExporting(false);
-    if (res.success) {
-      toast({ title: 'Export lancé', description: `Job: ${res.job_id || 'en cours'}` });
-      queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
-    } else {
-      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
-    }
   };
 
   return (

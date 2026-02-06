@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useToast } from '@/hooks/use-toast'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface AdvancedAnalytics {
   predictions: {
@@ -27,31 +26,21 @@ export interface AdvancedAnalytics {
 }
 
 export const useAdvancedAnalytics = () => {
-  const { toast } = useToast()
+  const { user } = useAuth()
 
   const { data: analytics, isLoading, error } = useQuery({
-    queryKey: ['advanced-analytics'],
+    queryKey: ['advanced-analytics', user?.id],
     queryFn: async (): Promise<AdvancedAnalytics> => {
-      const res = await shopOptiApi.getPredictiveInsights()
-      if (!res.success || !res.data) {
-        throw new Error(res.error || 'Failed to fetch advanced analytics')
+      // Predictive analytics requires AI backend - return defaults
+      return {
+        predictions: { nextMonthRevenue: 0, trendDirection: 'stable', confidenceScore: 0 },
+        performance: { topPerformingHours: [], conversionBySource: [], customerLifetimeValue: 0 },
+        alerts: [],
+        competitiveIntelligence: { marketPosition: 'niche', priceCompetitiveness: 0, opportunityScore: 0 },
       }
-      return res.data as AdvancedAnalytics
     },
-    meta: {
-      onError: () => {
-        toast({
-          title: "Erreur d'analyse avancée",
-          description: "Impossible de charger les analytics avancés",
-          variant: "destructive"
-        })
-      }
-    }
+    enabled: !!user?.id,
   })
 
-  return {
-    analytics,
-    isLoading,
-    error
-  }
+  return { analytics, isLoading, error }
 }

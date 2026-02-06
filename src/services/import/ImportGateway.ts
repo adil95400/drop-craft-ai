@@ -1,11 +1,9 @@
 /**
- * Import Gateway - Routes all imports through FastAPI
- * Keeps idempotence/anti-replay logic but delegates actual work to backend
+ * Import Gateway - Routes all imports through Edge Functions / Supabase
  */
 
 import { supabase } from '@/integrations/supabase/client'
 import { productionLogger } from '@/utils/productionLogger'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 import { 
   ImportSource, 
   ImportRequest, 
@@ -19,9 +17,6 @@ function generateRequestId(): string {
 }
 
 export class ImportGateway {
-  /**
-   * Point d'entrée principal — delegates to FastAPI
-   */
   async import(request: ImportRequest): Promise<ImportResult> {
     const requestId = generateRequestId()
     const startTime = Date.now()
@@ -36,66 +31,53 @@ export class ImportGateway {
       let res: any
 
       if (request.url) {
-        // URL import → FastAPI scraping or import endpoint
-        const source = request.source
-        if (['csv', 'xml', 'json'].includes(source)) {
-          res = await shopOptiApi.importFromFeed(
-            request.url, 
-            source as 'xml' | 'csv' | 'json',
-            request.options?.mapping
-          )
-        } else {
-          res = await shopOptiApi.importFromUrl(request.url, {
+        // URL import → Edge Function
+        const { data, error } = await supabase.functions.invoke('url-import', {
+          body: {
+            url: request.url,
+            source: request.source,
             enrichWithAi: true,
-          })
-        }
+          }
+        })
+        if (error) throw error
+        res = data
       } else if (request.data) {
-        // Data array → FastAPI bulk import
-        res = await shopOptiApi.request('/imports/bulk', {
-          method: 'POST',
+        // Data array → Edge Function bulk import
+        const { data, error } = await supabase.functions.invoke('import-products', {
           body: {
             products: Array.isArray(request.data) ? request.data : [request.data],
             source: request.source,
-          },
-          timeout: 120000,
+          }
         })
+        if (error) throw error
+        res = data
       } else {
         throw new Error('URL ou données requis')
       }
 
       const duration = Date.now() - startTime
 
-      if (!res.success) {
+      if (res?.error) {
         return {
           success: false,
-          error: {
-            code: 'IMPORT_FAILED',
-            message: res.error || 'Import failed',
-            details: { requestId, durationMs: duration }
-          },
+          error: { code: 'IMPORT_FAILED', message: res.error, details: { requestId, durationMs: duration } },
           products: [],
           metadata: { requestId, source: request.source, durationMs: duration, timestamp: new Date().toISOString() }
         }
       }
 
-      const jobId = res.job_id || res.data?.job_id
-      const imported = res.data?.imported || res.data?.succeeded || 0
+      const jobId = res?.job_id || res?.id || ''
+      const imported = res?.imported || res?.succeeded || res?.products?.length || 0
 
-      productionLogger.info('Import completed', { 
-        requestId, jobId, productsImported: imported, durationMs: duration
-      }, 'ImportGateway')
+      productionLogger.info('Import completed', { requestId, jobId, productsImported: imported, durationMs: duration }, 'ImportGateway')
 
       return {
         success: true,
-        products: res.data?.products || [],
+        products: res?.products || [],
         metadata: {
-          requestId,
-          source: request.source,
-          jobId,
-          totalImported: imported,
-          totalErrors: res.data?.failed || 0,
-          timestamp: new Date().toISOString(),
-          durationMs: duration,
+          requestId, source: request.source, jobId,
+          totalImported: imported, totalErrors: res?.failed || 0,
+          timestamp: new Date().toISOString(), durationMs: duration,
         }
       }
     } catch (error) {
@@ -104,11 +86,7 @@ export class ImportGateway {
 
       return {
         success: false,
-        error: {
-          code: 'IMPORT_FAILED',
-          message: error instanceof Error ? error.message : 'Import failed',
-          details: { requestId, durationMs: duration }
-        },
+        error: { code: 'IMPORT_FAILED', message: error instanceof Error ? error.message : 'Import failed', details: { requestId, durationMs: duration } },
         products: [],
         metadata: { requestId, source: request.source, durationMs: duration, timestamp: new Date().toISOString() }
       }
@@ -147,31 +125,45 @@ export class ImportGateway {
   }
 
   async getImportHistory(limit = 50): Promise<ImportJob[]> {
-    const res = await shopOptiApi.getImportHistory(limit)
-    if (!res.success || !res.data) return []
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user?.id) return []
 
-    const jobs = Array.isArray(res.data) ? res.data : res.data?.jobs || []
-    return jobs.map((job: any) => ({
+    const { data, error } = await supabase
+      .from('background_jobs')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import'])
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    if (error) return []
+
+    return (data || []).map((job: any) => ({
       id: job.id,
       userId: job.user_id,
-      source: job.source_platform || job.source as ImportSource,
+      source: job.job_subtype || job.job_type as ImportSource,
       status: job.status,
-      totalProducts: job.total_products || job.total_items,
-      successfulImports: job.successful_imports || job.items_succeeded,
-      failedImports: job.failed_imports || job.items_failed,
+      totalProducts: job.items_total,
+      successfulImports: job.items_succeeded,
+      failedImports: job.items_failed,
       createdAt: new Date(job.created_at),
       completedAt: job.completed_at ? new Date(job.completed_at) : undefined
     }))
   }
 
   async cancelJob(jobId: string): Promise<boolean> {
-    const res = await shopOptiApi.cancelJob(jobId)
-    return res.success
+    const { error } = await supabase
+      .from('background_jobs')
+      .update({ status: 'cancelled' })
+      .eq('id', jobId)
+    return !error
   }
 
   async retryJob(jobId: string): Promise<boolean> {
-    const res = await shopOptiApi.retryJob(jobId)
-    return res.success
+    const { error } = await supabase
+      .from('background_jobs')
+      .update({ status: 'pending', retries: 0 })
+      .eq('id', jobId)
+    return !error
   }
 
   getSupportedSources(): ImportSource[] {

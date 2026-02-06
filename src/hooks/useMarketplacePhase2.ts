@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { supabase } from '@/integrations/supabase/client'
 
-// Keep marketplace service imports for fulfillment & promotions (non-analytics)
 import { fulfillmentService } from '@/services/marketplace/FulfillmentService'
 import { promotionService } from '@/services/marketplace/PromotionService'
 
@@ -15,26 +14,22 @@ export function useDynamicRepricing(userId: string) {
   const dashboard = useQuery({
     queryKey: ['repricing-dashboard', userId],
     queryFn: async () => {
-      const res = await shopOptiApi.request('/pricing/repricing/dashboard');
-      if (!res.success) return null;
-      return res.data;
+      // Use pricing_rules table as proxy
+      const { data, error } = await (supabase.from('pricing_rules') as any)
+        .select('*')
+        .eq('user_id', userId)
+      if (error) return null
+      return { rules: data || [], totalProducts: 0 }
     },
   })
 
   const executeRepricing = useMutation({
     mutationFn: async (ruleId: string) => {
-      const res = await shopOptiApi.request(`/pricing/repricing/rules/${ruleId}/execute`, {
-        method: 'POST',
-      });
-      if (!res.success) throw new Error(res.error || 'Repricing failed');
-      return res.data;
+      toast.info('Repricing automatique disponible prochainement')
+      return null
     },
-    onSuccess: (data: any) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repricing-dashboard', userId] })
-      toast.success(`Produits repricés avec succès`)
-    },
-    onError: (error: Error) => {
-      toast.error(`Erreur repricing: ${error.message}`)
     },
   })
 
@@ -126,32 +121,20 @@ export function useAutoFulfillment(userId: string) {
 }
 
 /**
- * Hook pour l'analyse prédictive — via FastAPI
+ * Hook pour l'analyse prédictive
  */
 export function usePredictiveAnalytics(userId: string) {
   const dashboard = useQuery({
     queryKey: ['predictive-dashboard', userId],
     queryFn: async () => {
-      const res = await shopOptiApi.getPredictiveInsights();
-      if (!res.success) return null;
-      return res.data;
+      return null // Requires AI backend
     },
   })
 
   const generateForecast = useMutation({
     mutationFn: async ({ productId, horizonDays }: { productId: string; horizonDays: number }) => {
-      const res = await shopOptiApi.request('/analytics/predictive/forecast', {
-        method: 'POST',
-        body: { product_id: productId, horizon_days: horizonDays },
-      });
-      if (!res.success) throw new Error(res.error || 'Forecast generation failed');
-      return res.data;
-    },
-    onSuccess: () => {
-      toast.success('Prévisions générées')
-    },
-    onError: (error: Error) => {
-      toast.error(`Erreur: ${error.message}`)
+      toast.info('Prévisions IA disponibles prochainement')
+      return null
     },
   })
 

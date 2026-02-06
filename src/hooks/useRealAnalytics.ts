@@ -1,10 +1,9 @@
 /**
- * Real Analytics Hook - Uses FastAPI backend (no direct Supabase queries)
- * Provides dashboard analytics from the API
+ * Real Analytics Hook - Uses Supabase direct queries
  */
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { supabase } from '@/integrations/supabase/client'
 
 export interface RealAnalytics {
   revenue: number
@@ -13,24 +12,9 @@ export interface RealAnalytics {
   products: number
   averageOrderValue: number
   conversionRate: number
-  topProducts: Array<{
-    name: string
-    sales: number
-    revenue: string
-    growth: string
-  }>
-  recentOrders: Array<{
-    id: string
-    order_number: string
-    total_amount: number
-    status: string
-    created_at: string
-  }>
-  salesByDay: Array<{
-    date: string
-    revenue: number
-    orders: number
-  }>
+  topProducts: Array<{ name: string; sales: number; revenue: string; growth: string }>
+  recentOrders: Array<{ id: string; order_number: string; total_amount: number; status: string; created_at: string }>
+  salesByDay: Array<{ date: string; revenue: number; orders: number }>
 }
 
 export const useRealAnalytics = () => {
@@ -39,28 +23,40 @@ export const useRealAnalytics = () => {
   const { data: analytics, isLoading, error, refetch } = useQuery({
     queryKey: ['real-analytics', user?.id],
     queryFn: async (): Promise<RealAnalytics> => {
-      if (!user) return getEmptyAnalytics()
+      if (!user?.id) return getEmptyAnalytics()
 
-      const res = await shopOptiApi.getAnalyticsDashboard('30d')
-      if (!res.success || !res.data) return getEmptyAnalytics()
+      // Fetch real data from Supabase tables
+      const [ordersRes, productsRes] = await Promise.all([
+        supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100),
+        supabase.from('products').select('id, name, price').eq('user_id', user.id),
+      ])
 
-      // Map API response to expected format
-      const d = res.data as any
+      const orders = ordersRes.data || []
+      const products = productsRes.data || []
+      const totalRevenue = orders.reduce((s, o) => s + (o.total_amount || 0), 0)
+      const totalOrders = orders.length
+
       return {
-        revenue: d.revenue ?? 0,
-        orders: d.orders ?? 0,
-        customers: d.customers ?? 0,
-        products: d.products ?? 0,
-        averageOrderValue: d.averageOrderValue ?? d.average_order_value ?? 0,
-        conversionRate: d.conversionRate ?? d.conversion_rate ?? 0,
-        topProducts: d.topProducts ?? d.top_products ?? [],
-        recentOrders: d.recentOrders ?? d.recent_orders ?? [],
-        salesByDay: d.salesByDay ?? d.sales_by_day ?? [],
+        revenue: totalRevenue,
+        orders: totalOrders,
+        customers: new Set(orders.map(o => o.customer_email).filter(Boolean)).size,
+        products: products.length,
+        averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+        conversionRate: 0,
+        topProducts: [],
+        recentOrders: orders.slice(0, 10).map(o => ({
+          id: o.id,
+          order_number: o.order_number || o.id.slice(0, 8),
+          total_amount: o.total_amount || 0,
+          status: o.status || 'pending',
+          created_at: o.created_at,
+        })),
+        salesByDay: [],
       }
     },
     enabled: !!user,
     staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
   })
 
   return {
@@ -73,14 +69,8 @@ export const useRealAnalytics = () => {
 
 function getEmptyAnalytics(): RealAnalytics {
   return {
-    revenue: 0,
-    orders: 0,
-    customers: 0,
-    products: 0,
-    averageOrderValue: 0,
-    conversionRate: 0,
-    topProducts: [],
-    recentOrders: [],
-    salesByDay: []
+    revenue: 0, orders: 0, customers: 0, products: 0,
+    averageOrderValue: 0, conversionRate: 0,
+    topProducts: [], recentOrders: [], salesByDay: []
   }
 }
