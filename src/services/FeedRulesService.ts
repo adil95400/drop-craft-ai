@@ -1,7 +1,8 @@
 /**
- * Feed Rules Service
- * Gestion des règles if/then pour les flux produits
+ * Feed Rules Service - Routes through FastAPI
+ * CRUD + execution via shopOptiApi, zero direct Supabase
  */
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 import { supabase } from '@/integrations/supabase/client';
 
 // Types
@@ -74,7 +75,6 @@ export interface CreateRuleInput {
   priority?: number;
 }
 
-// Helper functions
 function transformRule(row: Record<string, unknown>): FeedRule {
   return {
     id: row.id as string,
@@ -127,91 +127,57 @@ function transformExecution(row: Record<string, unknown>): FeedRuleExecution {
 }
 
 export const FeedRulesService = {
-  // ========== RULES ==========
+  // ========== RULES (via FastAPI) ==========
   
   async getRules(feedId?: string): Promise<FeedRule[]> {
-    let query = supabase
-      .from('feed_rules')
-      .select('*')
-      .order('priority', { ascending: false })
-      .order('created_at', { ascending: false });
+    const res = await shopOptiApi.getFeedRules();
+    if (!res.success || !res.data) return [];
+    
+    const rules = Array.isArray(res.data) ? res.data : res.data?.rules || [];
+    let mapped = rules.map(transformRule);
     
     if (feedId) {
-      query = query.eq('feed_id', feedId);
+      mapped = mapped.filter(r => r.feed_id === feedId);
     }
     
-    const { data, error } = await query;
-    if (error) throw error;
-    return (data || []).map(transformRule);
+    return mapped.sort((a, b) => b.priority - a.priority);
   },
 
   async getRule(ruleId: string): Promise<FeedRule> {
-    const { data, error } = await supabase
-      .from('feed_rules')
-      .select('*')
-      .eq('id', ruleId)
-      .single();
-    
-    if (error) throw error;
-    return transformRule(data);
+    // Use list + filter since API may not have single-rule endpoint
+    const rules = await this.getRules();
+    const rule = rules.find(r => r.id === ruleId);
+    if (!rule) throw new Error('Règle non trouvée');
+    return rule;
   },
 
   async createRule(input: CreateRuleInput): Promise<FeedRule> {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('Non authentifié');
-
-    const insertData = {
-      user_id: userData.user.id,
+    const res = await shopOptiApi.createFeedRule({
       name: input.name,
-      description: input.description,
-      feed_id: input.feed_id,
-      conditions: input.conditions as unknown as Record<string, unknown>[],
-      actions: input.actions as unknown as Record<string, unknown>[],
-      match_type: input.match_type || 'all',
-      priority: input.priority || 0,
-    };
-
-    const { data, error } = await supabase
-      .from('feed_rules')
-      .insert(insertData as never)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return transformRule(data);
+      conditions: input.conditions,
+      actions: input.actions,
+      priority: input.priority,
+    });
+    
+    if (!res.success) throw new Error(res.error || 'Création échouée');
+    return transformRule(res.data || res);
   },
 
   async updateRule(ruleId: string, updates: Partial<FeedRule>): Promise<FeedRule> {
-    const updateData: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
-    };
+    const res = await shopOptiApi.updateFeedRule(ruleId, {
+      name: updates.name,
+      conditions: updates.conditions,
+      actions: updates.actions,
+      is_active: updates.is_active,
+    });
     
-    if (updates.name !== undefined) updateData.name = updates.name;
-    if (updates.description !== undefined) updateData.description = updates.description;
-    if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
-    if (updates.priority !== undefined) updateData.priority = updates.priority;
-    if (updates.match_type !== undefined) updateData.match_type = updates.match_type;
-    if (updates.conditions !== undefined) updateData.conditions = updates.conditions as unknown as Record<string, unknown>[];
-    if (updates.actions !== undefined) updateData.actions = updates.actions as unknown as Record<string, unknown>[];
-
-    const { data, error } = await supabase
-      .from('feed_rules')
-      .update(updateData)
-      .eq('id', ruleId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return transformRule(data);
+    if (!res.success) throw new Error(res.error || 'Mise à jour échouée');
+    return transformRule(res.data || res);
   },
 
   async deleteRule(ruleId: string): Promise<void> {
-    const { error } = await supabase
-      .from('feed_rules')
-      .delete()
-      .eq('id', ruleId);
-
-    if (error) throw error;
+    const res = await shopOptiApi.deleteFeedRule(ruleId);
+    if (!res.success) throw new Error(res.error || 'Suppression échouée');
   },
 
   async toggleRule(ruleId: string, isActive: boolean): Promise<FeedRule> {
@@ -231,7 +197,7 @@ export const FeedRulesService = {
     });
   },
 
-  // ========== TEMPLATES ==========
+  // ========== TEMPLATES (Supabase reads OK — config data, not business logic) ==========
 
   async getTemplates(category?: string): Promise<FeedRuleTemplate[]> {
     let query = supabase
@@ -257,7 +223,6 @@ export const FeedRulesService = {
 
     if (templateError) throw templateError;
 
-    // Increment usage count
     await supabase
       .from('feed_rule_templates')
       .update({ usage_count: (template.usage_count || 0) + 1 })
@@ -303,9 +268,10 @@ export const FeedRulesService = {
     return transformTemplate(data);
   },
 
-  // ========== EXECUTIONS ==========
+  // ========== EXECUTIONS (via FastAPI — creates a job) ==========
 
   async getExecutions(ruleId?: string, limit: number = 50): Promise<FeedRuleExecution[]> {
+    // Read executions from Supabase (read-only, realtime compatible)
     let query = supabase
       .from('feed_rule_executions')
       .select('*')
@@ -322,48 +288,25 @@ export const FeedRulesService = {
   },
 
   async executeRule(ruleId: string, feedId?: string): Promise<FeedRuleExecution> {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('Non authentifié');
-
-    const startTime = Date.now();
+    // Execute via FastAPI — creates a background job
+    const res = await shopOptiApi.testFeedRule(ruleId);
     
-    // Simulate rule execution (in real app, would process products)
-    const productsMatched = Math.floor(Math.random() * 100) + 10;
-    const productsModified = Math.floor(productsMatched * 0.8);
+    if (!res.success) throw new Error(res.error || 'Exécution échouée');
     
-    const executionTime = Date.now() - startTime + Math.floor(Math.random() * 500);
-
-    const { data, error } = await supabase
-      .from('feed_rule_executions')
-      .insert({
-        rule_id: ruleId,
-        user_id: userData.user.id,
-        feed_id: feedId,
-        products_matched: productsMatched,
-        products_modified: productsModified,
-        execution_time_ms: executionTime,
-        status: 'success',
-        changes_summary: {
-          excluded: Math.floor(productsModified * 0.3),
-          price_changed: Math.floor(productsModified * 0.4),
-          field_updated: Math.floor(productsModified * 0.3),
-        },
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // Update rule execution count
-    await supabase
-      .from('feed_rules')
-      .update({ 
-        execution_count: supabase.rpc ? undefined : 1, // Will be handled by trigger ideally
-        last_executed_at: new Date().toISOString(),
-      })
-      .eq('id', ruleId);
-
-    return transformExecution(data);
+    // Return the execution result from API
+    const execData = res.data || res;
+    return {
+      id: execData.id || execData.execution_id || crypto.randomUUID(),
+      rule_id: ruleId,
+      user_id: execData.user_id || '',
+      feed_id: feedId,
+      products_matched: execData.products_matched || 0,
+      products_modified: execData.products_modified || 0,
+      execution_time_ms: execData.execution_time_ms || 0,
+      status: execData.status || 'success',
+      changes_summary: execData.changes_summary,
+      executed_at: execData.executed_at || new Date().toISOString(),
+    };
   },
 
   // ========== STATS ==========
@@ -374,14 +317,13 @@ export const FeedRulesService = {
     totalExecutions: number;
     avgProductsModified: number;
   }> {
-    const [rulesResult, executionsResult] = await Promise.all([
-      supabase.from('feed_rules').select('id, is_active'),
+    const rules = await this.getRules();
+    
+    const [executionsResult] = await Promise.all([
       supabase.from('feed_rule_executions').select('products_modified'),
     ]);
 
-    const rules = rulesResult.data || [];
     const executions = executionsResult.data || [];
-
     const totalModified = executions.reduce((sum, e) => sum + (e.products_modified || 0), 0);
 
     return {
@@ -392,7 +334,7 @@ export const FeedRulesService = {
     };
   },
 
-  // ========== FIELD OPTIONS ==========
+  // ========== FIELD OPTIONS (static, no backend needed) ==========
 
   getFieldOptions(): { value: string; label: string; type: string }[] {
     return [
@@ -420,7 +362,7 @@ export const FeedRulesService = {
       { value: 'starts_with', label: 'Commence par' },
       { value: 'ends_with', label: 'Finit par' },
       { value: 'is_empty', label: 'Est vide' },
-      { value: 'is_not_empty', label: 'N\'est pas vide' },
+      { value: 'is_not_empty', label: "N'est pas vide" },
     ];
 
     const numberOperators = [

@@ -1,6 +1,10 @@
+/**
+ * useRealImportMethods - Import jobs list & actions via FastAPI
+ * Zero direct Supabase — all reads/writes through shopOptiApi
+ */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 
 export interface ImportMethod {
   id: string
@@ -24,84 +28,42 @@ export const useRealImportMethods = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
+  // READ: Import history via FastAPI
   const { data: importMethods = [], isLoading, error } = useQuery({
     queryKey: ['import-jobs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .select('*')
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      
-      // Map to ImportMethod format with correct field names
-      const mappedData = (data || []).map((job: any) => ({
+      const res = await shopOptiApi.getImportHistory(100)
+      if (!res.success || !res.data) return []
+
+      const jobs = Array.isArray(res.data) ? res.data : res.data?.jobs || []
+      return jobs.map((job: any) => ({
         id: job.id,
         user_id: job.user_id,
-        source_type: job.job_type,
-        method_name: job.job_type,
-        configuration: job.import_settings,
+        source_type: job.job_type || job.source,
+        method_name: job.job_type || job.source,
+        configuration: job.import_settings || job.metadata,
         status: job.status,
-        total_rows: job.total_products,
-        processed_rows: job.processed_products,
-        success_rows: job.successful_imports,
-        error_rows: job.failed_imports,
-        mapping_config: job.import_settings,
+        total_rows: job.total_products || job.total_items || 0,
+        processed_rows: job.processed_products || job.processed_items || 0,
+        success_rows: job.successful_imports || job.items_succeeded || 0,
+        error_rows: job.failed_imports || job.items_failed || 0,
+        mapping_config: job.import_settings || job.metadata,
         created_at: job.created_at,
         updated_at: job.updated_at,
         started_at: job.started_at,
         completed_at: job.completed_at
-      }));
-      
-      return mappedData as ImportMethod[];
+      })) as ImportMethod[]
     },
     refetchInterval: (query) => {
-      // Intelligent polling: only refetch if there are active jobs
       const jobs = query.state.data || []
-      const hasActiveJobs = jobs.some(job => 
+      const hasActiveJobs = jobs.some(job =>
         job.status === 'pending' || job.status === 'processing'
       )
-      return hasActiveJobs ? 3000 : false // 3s if active, stop if all done
+      return hasActiveJobs ? 3000 : false
     },
   })
 
-  const createMethod = useMutation({
-    mutationFn: async (methodData: {
-      method_type: string
-      method_name: string
-      configuration: any
-      source_type: string
-    }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .insert([{
-          user_id: user.id,
-          job_type: methodData.source_type || methodData.method_type,
-          import_settings: methodData.configuration,
-          status: 'pending',
-          total_products: 0,
-          processed_products: 0,
-          successful_imports: 0,
-          failed_imports: 0
-        }])
-        .select()
-        .maybeSingle()
-
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
-      toast({
-        title: "Méthode d'import créée",
-        description: "La méthode d'import a été configurée avec succès"
-      })
-    }
-  })
-
+  // WRITE: Execute import via FastAPI
   const executeImport = useMutation({
     mutationFn: async (jobData: {
       method_id?: string
@@ -109,72 +71,87 @@ export const useRealImportMethods = () => {
       source_url?: string
       mapping_config?: any
     }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .insert([{
-          user_id: user.id,
-          job_type: jobData.source_type,
-          supplier_id: jobData.source_url,
-          import_settings: jobData.mapping_config,
-          status: 'pending',
-          total_products: 0,
-          processed_products: 0,
-          successful_imports: 0,
-          failed_imports: 0
-        }])
-        .select()
-        .maybeSingle()
-
-      if (error) throw error
-      return data
+      if (jobData.source_url) {
+        return shopOptiApi.importFromUrl(jobData.source_url, {
+          enrichWithAi: true,
+          autoMapping: true,
+        })
+      }
+      // Fallback: use scrape endpoint
+      return shopOptiApi.scrapeUrl(jobData.source_url || '', {
+        enrichWithAi: true,
+      })
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['products-unified'] })
+      if (res.success) {
+        toast({
+          title: 'Import démarré',
+          description: `Job ID: ${res.job_id || res.data?.job_id || 'en cours'}`
+        })
+      } else {
+        toast({
+          title: 'Erreur import',
+          description: res.error || 'Erreur inconnue',
+          variant: 'destructive'
+        })
+      }
+    },
+    onError: (err: Error) => {
       toast({
-        title: "Import démarré",
-        description: "Le processus d'import a été lancé avec succès"
+        title: 'Erreur',
+        description: err.message,
+        variant: 'destructive'
       })
     }
   })
 
-  const updateMethod = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ImportMethod> }) => {
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .maybeSingle()
-
-      if (error) throw error
-      return data
+  // WRITE: Create import method (starts a new job via FastAPI)
+  const createMethod = useMutation({
+    mutationFn: async (methodData: {
+      method_type: string
+      method_name: string
+      configuration: any
+      source_type: string
+    }) => {
+      // Create via the appropriate FastAPI endpoint based on source
+      const url = methodData.configuration?.url || methodData.configuration?.feed_url
+      if (url) {
+        return shopOptiApi.importFromUrl(url, { enrichWithAi: true })
+      }
+      // For feed-type imports
+      if (methodData.source_type === 'xml' || methodData.source_type === 'csv' || methodData.source_type === 'json') {
+        return shopOptiApi.importFromFeed(
+          methodData.configuration?.feed_url || '',
+          methodData.source_type as 'xml' | 'csv' | 'json',
+          methodData.configuration?.mapping
+        )
+      }
+      return shopOptiApi.importFromUrl(url || '', { enrichWithAi: true })
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
       toast({
-        title: "Méthode mise à jour",
-        description: "La méthode d'import a été modifiée avec succès"
+        title: "Import configuré",
+        description: res.success ? `Job: ${res.job_id || 'créé'}` : (res.error || 'Erreur')
       })
     }
   })
 
+  // DELETE: Cancel/delete job via FastAPI
   const deleteMethod = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('import_jobs')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
+      return shopOptiApi.cancelJob(id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
       toast({
-        title: "Méthode supprimée",
-        description: "La méthode d'import a été supprimée avec succès"
+        title: 'Job supprimé',
+        description: 'Le job a été annulé avec succès'
       })
     }
   })
@@ -195,11 +172,11 @@ export const useRealImportMethods = () => {
     error,
     createMethod: createMethod.mutate,
     executeImport: executeImport.mutate,
-    updateMethod: updateMethod.mutate,
+    updateMethod: () => {}, // Deprecated: updates go through FastAPI job system
     deleteMethod: deleteMethod.mutate,
     isCreating: createMethod.isPending,
     isExecuting: executeImport.isPending,
-    isUpdating: updateMethod.isPending,
+    isUpdating: false,
     isDeleting: deleteMethod.isPending
   }
 }
