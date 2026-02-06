@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, X, Minimize2, Maximize2, Sparkles, ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
+import { Send, User, Bot, X, Minimize2, Maximize2, Sparkles, ThumbsUp, ThumbsDown, Copy, Check, Headphones, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { SupportAvailabilityIndicator } from './SupportAvailabilityIndicator';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Message {
   id: string;
@@ -22,8 +24,10 @@ interface AdvancedLiveChatProps {
 
 export function AdvancedLiveChat({ isOpen: externalIsOpen, onClose: externalOnClose }: AdvancedLiveChatProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [showHumanSupport, setShowHumanSupport] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -32,6 +36,8 @@ export function AdvancedLiveChat({ isOpen: externalIsOpen, onClose: externalOnCl
       timestamp: new Date()
     }
   ]);
+  
+  const userPlan = (user?.user_metadata?.plan?.toLowerCase() || 'free') as 'free' | 'pro' | 'business' | 'enterprise';
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -230,20 +236,40 @@ export function AdvancedLiveChat({ isOpen: externalIsOpen, onClose: externalOnCl
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
                 <Bot className="h-6 w-6 text-white" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white animate-pulse" />
             </div>
             <div>
               <h3 className="font-semibold flex items-center gap-2">
-                Assistant IA Drop Craft
+                {showHumanSupport ? 'Support Humain' : 'Assistant IA'}
                 <Badge variant="secondary" className="text-xs">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  Premium
+                  {showHumanSupport ? (
+                    <>
+                      <Headphones className="h-3 w-3 mr-1" />
+                      Live
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Premium
+                    </>
+                  )}
                 </Badge>
               </h3>
-              <p className="text-xs text-muted-foreground">Réponse en temps réel</p>
+              <p className="text-xs text-muted-foreground">
+                {showHumanSupport ? 'Agent disponible' : 'Réponse en temps réel'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHumanSupport(!showHumanSupport)}
+              className="h-8 px-2 text-xs"
+              title={showHumanSupport ? 'Retour à l\'IA' : 'Parler à un humain'}
+            >
+              {showHumanSupport ? <Bot className="h-4 w-4" /> : <Headphones className="h-4 w-4" />}
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -340,7 +366,7 @@ export function AdvancedLiveChat({ isOpen: externalIsOpen, onClose: externalOnCl
                   </div>
                 ))}
                 
-                {messages.length === 1 && (
+                {messages.length === 1 && !showHumanSupport && (
                   <div className="space-y-2 mt-4">
                     <p className="text-xs text-muted-foreground px-2">Questions suggérées :</p>
                     {suggestedQuestions.map((q, i) => (
@@ -352,6 +378,12 @@ export function AdvancedLiveChat({ isOpen: externalIsOpen, onClose: externalOnCl
                         {q}
                       </button>
                     ))}
+                  </div>
+                )}
+                
+                {showHumanSupport && (
+                  <div className="mt-4">
+                    <SupportAvailabilityIndicator tier={userPlan} showDetails={true} />
                   </div>
                 )}
                 
