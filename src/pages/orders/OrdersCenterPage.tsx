@@ -17,8 +17,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useApiOrders } from '@/hooks/api';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -216,6 +217,9 @@ export default function OrdersCenterPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
   
+  // FastAPI hooks
+  const { fulfillOrder, updateStatus, bulkFulfill } = useApiOrders();
+  
   // Shopify order import
   const { integrations, importOrders, isImporting } = useShopifyOrderImport();
 
@@ -285,46 +289,24 @@ export default function OrdersCenterPage() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          customers (
-            first_name,
-            last_name,
-            email
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const res = await shopOptiApi.getOrders({ limit: 200 });
 
-      if (error) throw error;
+      if (!res.success) throw new Error(res.error || 'Failed to load orders');
 
-      const formattedOrders = (data || []).map((order: any) => {
-        // Build customer name from various sources
-        let customerName = 'Client';
-        if (order.customer_name) {
-          customerName = order.customer_name;
-        } else if (order.customers?.first_name || order.customers?.last_name) {
-          customerName = `${order.customers?.first_name || ''} ${order.customers?.last_name || ''}`.trim();
-        } else if (order.shipping_address?.name) {
-          customerName = order.shipping_address.name;
-        }
-        
-        return {
-          id: order.id,
-          order_number: order.order_number,
-          customer_id: order.customer_id,
-          customer_name: customerName,
-          status: order.status || 'pending',
-          total_amount: order.total_amount || 0,
-          currency: order.currency || 'EUR',
-          created_at: order.created_at,
-          delivery_date: order.delivery_date,
-          items_count: 0,
-          tracking_number: order.tracking_number
-        };
-      });
+      const rawOrders = res.data?.orders || res.data || [];
+      const formattedOrders = (Array.isArray(rawOrders) ? rawOrders : []).map((order: any) => ({
+        id: order.id,
+        order_number: order.order_number || order.id?.slice(0, 8),
+        customer_id: order.customer_id || '',
+        customer_name: order.customer_name || 'Client',
+        status: order.status || 'pending',
+        total_amount: order.total_amount || 0,
+        currency: order.currency || 'EUR',
+        created_at: order.created_at,
+        delivery_date: order.delivery_date,
+        items_count: order.items_count || 0,
+        tracking_number: order.tracking_number,
+      }));
       
       setOrders(formattedOrders);
     } catch (error: any) {
@@ -341,56 +323,57 @@ export default function OrdersCenterPage() {
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     setIsUpdatingStatus(orderId);
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString(),
-          ...(newStatus === 'shipped' ? { shipped_at: new Date().toISOString() } : {}),
-          ...(newStatus === 'delivered' ? { delivery_date: new Date().toISOString() } : {})
-        })
-        .eq('id', orderId);
+    
+    updateStatus.mutate(
+      { orderId, status: newStatus },
+      {
+        onSuccess: () => {
+          const statusLabels: Record<string, string> = {
+            pending: 'En attente',
+            processing: 'En traitement',
+            shipped: 'Expédiée',
+            delivered: 'Livrée',
+            cancelled: 'Annulée'
+          };
 
-      if (error) throw error;
+          toast({
+            title: "✓ Statut mis à jour",
+            description: `La commande est maintenant "${statusLabels[newStatus] || newStatus}"`
+          });
 
-      const statusLabels: Record<string, string> = {
-        pending: 'En attente',
-        processing: 'En traitement',
-        shipped: 'Expédiée',
-        delivered: 'Livrée',
-        cancelled: 'Annulée'
-      };
-
-      toast({
-        title: "✓ Statut mis à jour",
-        description: `La commande est maintenant "${statusLabels[newStatus] || newStatus}"`
-      });
-
-      // Mise à jour optimiste
-      setOrders(prev => prev.map(o => 
-        o.id === orderId ? { ...o, status: newStatus } : o
-      ));
-    } catch (error: any) {
-      toast({
-        title: "Erreur de mise à jour",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsUpdatingStatus(null);
-    }
+          // Optimistic update
+          setOrders(prev => prev.map(o => 
+            o.id === orderId ? { ...o, status: newStatus } : o
+          ));
+          setIsUpdatingStatus(null);
+        },
+        onError: (error: any) => {
+          toast({
+            title: "Erreur de mise à jour",
+            description: error.message,
+            variant: "destructive"
+          });
+          setIsUpdatingStatus(null);
+        },
+      }
+    );
   };
 
   const handleExport = async () => {
     try {
-      const csv = convertOrdersToCSV(filteredOrders);
-      downloadCSV(csv, `orders-export-${new Date().toISOString().split('T')[0]}.csv`);
-
-      toast({
-        title: "Export réussi",
-        description: `${filteredOrders.length} commandes exportées`
-      });
+      const res = await shopOptiApi.bulkExportOrders(
+        filteredOrders.map(o => o.id),
+        'csv'
+      );
+      
+      if (res.success) {
+        toast({
+          title: "Export lancé",
+          description: `Job: ${res.job_id || 'en cours'} — ${filteredOrders.length} commandes`
+        });
+      } else {
+        throw new Error(res.error);
+      }
     } catch (error: any) {
       toast({
         title: "Erreur d'export",
