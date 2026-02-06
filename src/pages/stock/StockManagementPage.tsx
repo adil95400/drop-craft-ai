@@ -35,6 +35,7 @@ import {
 } from '@/components/channable';
 import { ChannableStat, ChannableQuickAction } from '@/components/channable/types';
 import { useToast } from '@/hooks/use-toast';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function StockManagementPage() {
   const { t } = useTranslation();
@@ -147,6 +148,7 @@ export default function StockManagementPage() {
         </div>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.stockManagement} />
       {/* Stock Movement Dialog */}
       <StockMovementDialog open={movementDialogOpen} onOpenChange={setMovementDialogOpen} />
       {/* Stats Grid */}

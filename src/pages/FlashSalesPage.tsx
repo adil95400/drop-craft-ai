@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Zap, Clock, TrendingUp, DollarSign, Users, Plus } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 const FlashSalesPage: React.FC = () => {
   const flashSales = [
@@ -57,6 +58,7 @@ const FlashSalesPage: React.FC = () => {
         </Button>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.flashSales} />
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>

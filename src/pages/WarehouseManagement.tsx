@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Warehouse, Package, TrendingUp, AlertTriangle, MapPin, Users, Truck } from 'lucide-react'
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 
 export default function WarehouseManagement() {
   const warehouses = [
@@ -72,6 +73,7 @@ export default function WarehouseManagement() {
 
   return (
     <div className="space-y-6">
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.warehouse} />
       <div>
         <h1 className="text-3xl font-bold">Gestion des entrepôts</h1>
         <p className="text-muted-foreground">Gérez vos entrepôts et stocks multi-localisations</p>

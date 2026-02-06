@@ -26,6 +26,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { FeedSubNavigation } from '@/components/feeds/FeedSubNavigation';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { 
   useOptimizableProducts, 
   useAnalyzeProducts, 
@@ -98,6 +99,7 @@ export default function FeedOptimizationPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-6">
       <FeedSubNavigation />
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.feedOptimization} />
 
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

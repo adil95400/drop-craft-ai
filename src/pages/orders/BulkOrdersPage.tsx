@@ -7,6 +7,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { BulkOrdersDashboard } from '@/components/bulk-orders';
 import { ShoppingCart, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -55,6 +56,7 @@ export default function BulkOrdersPage() {
           </Button>
         }
       >
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.bulkOrders} />
         <BulkOrdersDashboard />
       </ChannablePageWrapper>
     </>

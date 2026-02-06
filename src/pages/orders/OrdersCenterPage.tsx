@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Label } from '@/components/ui/label';
 import { useShopifyOrderImport } from '@/hooks/useShopifyOrderImport';
 import { AutoOrderDashboard } from '@/components/orders/AutoOrderDashboard';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -494,6 +495,7 @@ export default function OrdersCenterPage() {
         </>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.orders} />
       {/* Main Tabs: Orders vs Auto-Order */}
       <Tabs value={activeMainTab} onValueChange={(v) => setActiveMainTab(v as 'orders' | 'auto-order')} className="mb-6">
         <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">

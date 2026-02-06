@@ -33,6 +33,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useNotificationPreferences, NOTIFICATION_CATEGORIES, type NotificationPreferences } from '@/hooks/useNotificationPreferences';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { ChannableStatsGrid } from '@/components/channable';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { ChannableStat } from '@/components/channable/types';
 
 interface Notification {
@@ -351,6 +352,7 @@ export default function NotificationsPage() {
         </div>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.notifications} />
       {/* Stats Grid */}
       <ChannableStatsGrid stats={stats} columns={4} compact />
 

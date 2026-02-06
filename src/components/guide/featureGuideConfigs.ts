@@ -1714,5 +1714,456 @@ export const ADVANCED_GUIDES: Record<string, GuideConfig> = {
       { question: 'Les guides sont-ils mis à jour ?', answer: 'Oui, les guides sont mis à jour à chaque nouvelle fonctionnalité ou changement majeur.' }
     ],
     academyPath: '/academy'
+  },
+
+  // ===== LOT 5: Pages restantes =====
+
+  feedOptimization: {
+    featureName: 'Optimisation IA des Feeds',
+    description: 'Améliorez la qualité de vos flux produits avec l\'intelligence artificielle',
+    level: 'intermediate',
+    keyFeatures: ['Analyse qualité', 'Optimisation titres/descriptions', 'Score feed', 'Recommandations IA'],
+    steps: [
+      {
+        title: 'Analyser vos produits',
+        description: 'Lancez un scan IA pour évaluer la qualité de vos fiches produit',
+        detailedInstructions: [
+          'Cliquez sur "Analyser" pour scanner jusqu\'à 20 produits',
+          'Chaque produit reçoit un score de 0 à 100 basé sur la complétude des données',
+          'Les problèmes critiques (titres courts, descriptions manquantes) sont surlignés en rouge'
+        ]
+      },
+      {
+        title: 'Consulter les recommandations',
+        description: 'L\'IA propose des actions prioritaires classées par impact',
+      },
+      {
+        title: 'Optimiser avec l\'IA',
+        description: 'Générez automatiquement des titres et descriptions optimisés',
+      },
+      {
+        title: 'Appliquer les changements',
+        description: 'Validez et appliquez les optimisations en un clic'
+      }
+    ],
+    tips: [
+      { text: 'Commencez par les produits avec un score < 60 pour un impact maximal', type: 'pro' },
+      { text: 'Les titres optimisés contiennent marque + type + attribut clé + taille/couleur', type: 'info' },
+      { text: 'Revérifiez toujours les textes générés par l\'IA avant de les appliquer', type: 'warning' }
+    ],
+    videos: [
+      { title: 'Optimiser ses feeds en 5 minutes', description: 'Augmentez vos ventes avec des fiches parfaites', youtubeId: 'dQw4w9WgXcQ', duration: '5:30' }
+    ],
+    faqs: [
+      { question: 'Combien de produits puis-je optimiser ?', answer: 'Vous pouvez analyser 20 produits à la fois et optimiser 5 produits par batch avec l\'IA.' },
+      { question: 'Les changements sont-ils réversibles ?', answer: 'Oui, l\'original est conservé et vous pouvez annuler chaque optimisation.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  feedRules: {
+    featureName: 'Règles de Feeds',
+    description: 'Créez des règles IF/THEN pour transformer automatiquement vos flux produits',
+    level: 'advanced',
+    keyFeatures: ['Règles IF/THEN', 'Transformations auto', 'Conditions avancées', 'Templates'],
+    steps: [
+      {
+        title: 'Créer une règle',
+        description: 'Cliquez sur "Nouvelle règle" pour ouvrir l\'éditeur de règles',
+        detailedInstructions: [
+          'Définissez la condition IF : champ, opérateur et valeur (ex: SI titre contient "test")',
+          'Définissez l\'action THEN : modifier, supprimer, enrichir le champ cible',
+          'Testez la règle sur un échantillon avant de l\'activer'
+        ]
+      },
+      {
+        title: 'Configurer les conditions',
+        description: 'Combinez plusieurs conditions avec ET/OU pour des règles précises'
+      },
+      {
+        title: 'Tester et valider',
+        description: 'Prévisualisez l\'impact de la règle sur vos produits existants'
+      },
+      {
+        title: 'Activer et monitorer',
+        description: 'Activez la règle et suivez son exécution dans les logs'
+      }
+    ],
+    tips: [
+      { text: 'Les règles de nettoyage (suppression HTML, normalisation) sont les plus rentables', type: 'pro' },
+      { text: 'Testez toujours sur un petit échantillon avant d\'activer en production', type: 'warning' }
+    ],
+    videos: [
+      { title: 'Règles IF/THEN pour feeds', description: 'Automatisez la transformation de vos flux', youtubeId: 'dQw4w9WgXcQ', duration: '7:00' }
+    ],
+    faqs: [
+      { question: 'Combien de règles puis-je créer ?', answer: 'Illimité. Les règles sont exécutées dans l\'ordre de priorité que vous définissez.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  aiContent: {
+    featureName: 'Contenu IA Avancé',
+    description: 'Générez des descriptions, titres et contenus SEO automatiquement avec l\'IA',
+    level: 'intermediate',
+    keyFeatures: ['Descriptions IA', 'Titres optimisés', 'Templates', 'Batch generation'],
+    steps: [
+      {
+        title: 'Choisir un template',
+        description: 'Sélectionnez un modèle de contenu adapté à votre niche',
+      },
+      {
+        title: 'Configurer les paramètres',
+        description: 'Ajustez le ton, la langue et la longueur du contenu généré'
+      },
+      {
+        title: 'Générer le contenu',
+        description: 'L\'IA crée le contenu en quelques secondes à partir de vos données produit'
+      },
+      {
+        title: 'Appliquer et publier',
+        description: 'Validez le contenu et appliquez-le à vos fiches produit'
+      }
+    ],
+    tips: [
+      { text: 'Les descriptions de 150-300 mots avec des bullets points convertissent le mieux', type: 'pro' },
+      { text: 'Utilisez le mode batch pour traiter des dizaines de produits en une fois', type: 'info' }
+    ],
+    videos: [
+      { title: 'Contenu IA pour e-commerce', description: 'Rédaction automatique de fiches produit', youtubeId: 'dQw4w9WgXcQ', duration: '6:00' }
+    ],
+    faqs: [
+      { question: 'Le contenu IA est-il unique ?', answer: 'Oui, chaque génération produit un texte original adapté à votre produit spécifique.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  productAudit: {
+    featureName: 'Audit Catalogue',
+    description: 'Évaluez la qualité de vos fiches produit avec des scores détaillés et recommandations',
+    level: 'intermediate',
+    keyFeatures: ['Score global', 'Audit SEO', 'Audit images', 'Recommandations'],
+    steps: [
+      {
+        title: 'Lancer l\'audit',
+        description: 'L\'audit analyse automatiquement tous vos produits dès le chargement',
+      },
+      {
+        title: 'Consulter les scores',
+        description: 'Chaque produit reçoit un score sur 4 axes : SEO, contenu, images, données'
+      },
+      {
+        title: 'Identifier les priorités',
+        description: 'Les produits critiques (score < 40) nécessitent une action immédiate'
+      },
+      {
+        title: 'Corriger et améliorer',
+        description: 'Cliquez sur un produit pour voir les recommandations détaillées'
+      }
+    ],
+    tips: [
+      { text: 'Visez un score moyen > 70 pour un catalogue de qualité professionnelle', type: 'pro' },
+      { text: 'Les images sont le premier critère de conversion — assurez-vous d\'en avoir au moins 3', type: 'info' }
+    ],
+    videos: [
+      { title: 'Audit catalogue complet', description: 'Améliorez la qualité de vos fiches en 10 minutes', youtubeId: 'dQw4w9WgXcQ', duration: '8:00' }
+    ],
+    faqs: [
+      { question: 'Comment est calculé le score ?', answer: 'Le score agrège 4 critères pondérés : titre (≥10 car.), description (≥50 car.), images et complétude des données.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  productScoring: {
+    featureName: 'Scoring Produits IA',
+    description: 'Analysez et améliorez le score de qualité de vos fiches produits avec l\'IA',
+    level: 'intermediate',
+    keyFeatures: ['Score IA', 'Analyse multi-critères', 'Suggestions auto', 'Benchmark'],
+    steps: [
+      {
+        title: 'Analyser vos produits',
+        description: 'Le scoring IA évalue automatiquement chaque produit de votre catalogue'
+      },
+      {
+        title: 'Comprendre les scores',
+        description: 'Chaque score est décomposé en critères : pertinence, complétude, SEO, attractivité'
+      },
+      {
+        title: 'Appliquer les suggestions',
+        description: 'L\'IA propose des améliorations concrètes pour chaque critère'
+      },
+      {
+        title: 'Suivre la progression',
+        description: 'Comparez vos scores dans le temps pour mesurer vos progrès'
+      }
+    ],
+    tips: [
+      { text: 'Un score > 80 place vos produits dans le top 10% des catalogues e-commerce', type: 'pro' },
+      { text: 'Le scoring est recalculé à chaque modification — surveillez l\'évolution', type: 'info' }
+    ],
+    videos: [
+      { title: 'Scoring IA expliqué', description: 'Comprenez chaque critère et améliorez vos scores', youtubeId: 'dQw4w9WgXcQ', duration: '5:00' }
+    ],
+    faqs: [
+      { question: 'Le scoring consomme-t-il des crédits IA ?', answer: 'L\'analyse initiale est gratuite. Les suggestions d\'amélioration utilisent des crédits IA.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  orders: {
+    featureName: 'Centre de Commandes',
+    description: 'Vue unifiée de toutes vos commandes avec gestion avancée et suivi en temps réel',
+    level: 'beginner',
+    keyFeatures: ['Suivi temps réel', 'Import Shopify', 'Export CSV', 'Auto-Order'],
+    steps: [
+      {
+        title: 'Consulter vos commandes',
+        description: 'Le tableau de bord affiche toutes vos commandes avec filtres et recherche',
+        detailedInstructions: [
+          'Utilisez la barre de recherche pour trouver par numéro ou client',
+          'Filtrez par statut : en attente, traitement, expédié, livré',
+          'Triez par date ou montant selon vos besoins'
+        ]
+      },
+      {
+        title: 'Mettre à jour les statuts',
+        description: 'Faites avancer chaque commande dans le workflow en un clic'
+      },
+      {
+        title: 'Importer depuis Shopify',
+        description: 'Synchronisez automatiquement vos commandes Shopify'
+      },
+      {
+        title: 'Exporter les données',
+        description: 'Exportez vos commandes filtrées en CSV pour vos rapports'
+      }
+    ],
+    tips: [
+      { text: 'Activez l\'Auto-Order pour traiter automatiquement les commandes fournisseurs', type: 'pro' },
+      { text: 'Importez régulièrement depuis Shopify pour garder vos données synchronisées', type: 'info' }
+    ],
+    videos: [
+      { title: 'Gestion des commandes', description: 'Maîtrisez le centre de commandes en 5 minutes', youtubeId: 'dQw4w9WgXcQ', duration: '5:00' }
+    ],
+    faqs: [
+      { question: 'Puis-je automatiser le traitement ?', answer: 'Oui, l\'onglet Auto-Order permet de configurer le traitement automatique des commandes chez vos fournisseurs.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  bulkOrders: {
+    featureName: 'Commandes Groupées',
+    description: 'Regroupez vos achats fournisseurs pour optimiser les coûts d\'expédition',
+    level: 'intermediate',
+    keyFeatures: ['Multi-fournisseurs', 'Optimisation coûts', 'Suivi groupé', 'Rapports'],
+    steps: [
+      {
+        title: 'Créer une commande groupée',
+        description: 'Regroupez plusieurs commandes client pour un même fournisseur'
+      },
+      {
+        title: 'Optimiser les lots',
+        description: 'L\'IA regroupe automatiquement par fournisseur pour minimiser les frais'
+      },
+      {
+        title: 'Passer les commandes',
+        description: 'Validez et envoyez les commandes groupées à chaque fournisseur'
+      },
+      {
+        title: 'Suivre les livraisons',
+        description: 'Suivez l\'avancement de chaque lot avec tracking centralisé'
+      }
+    ],
+    tips: [
+      { text: 'Regrouper 5+ commandes réduit les frais d\'expédition de 30% en moyenne', type: 'pro' },
+      { text: 'Attendez d\'avoir un volume suffisant avant de passer la commande groupée', type: 'info' }
+    ],
+    videos: [
+      { title: 'Commandes groupées', description: 'Économisez sur les frais de port', youtubeId: 'dQw4w9WgXcQ', duration: '4:30' }
+    ],
+    faqs: [
+      { question: 'Quel est le minimum de commandes pour un groupage ?', answer: 'Il n\'y a pas de minimum, mais le bénéfice commence à partir de 3-5 commandes par fournisseur.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  stockManagement: {
+    featureName: 'Gestion des Stocks',
+    description: 'Gérez votre inventaire multi-entrepôts avec alertes automatiques et suivi temps réel',
+    level: 'intermediate',
+    keyFeatures: ['Multi-entrepôts', 'Alertes stock bas', 'Mouvements tracés', 'Variantes'],
+    steps: [
+      {
+        title: 'Configurer les entrepôts',
+        description: 'Ajoutez vos emplacements de stockage avec capacité et localisation'
+      },
+      {
+        title: 'Suivre les niveaux de stock',
+        description: 'Consultez les niveaux en temps réel par produit et par entrepôt'
+      },
+      {
+        title: 'Configurer les alertes',
+        description: 'Définissez des seuils d\'alerte pour chaque produit ou catégorie'
+      },
+      {
+        title: 'Enregistrer les mouvements',
+        description: 'Tracez chaque entrée, sortie ou transfert de stock'
+      }
+    ],
+    tips: [
+      { text: 'Définissez un seuil d\'alerte à 2x le délai de réapprovisionnement moyen', type: 'pro' },
+      { text: 'Les mouvements de stock sont journalisés pour l\'audit et la traçabilité', type: 'info' }
+    ],
+    videos: [
+      { title: 'Gestion de stock avancée', description: 'Multi-entrepôts et alertes automatiques', youtubeId: 'dQw4w9WgXcQ', duration: '7:00' }
+    ],
+    faqs: [
+      { question: 'Puis-je gérer des variantes ?', answer: 'Oui, l\'onglet Variantes permet de gérer les stocks par taille, couleur et autres options.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  flashSales: {
+    featureName: 'Ventes Flash',
+    description: 'Créez l\'urgence et boostez vos ventes avec des offres limitées dans le temps',
+    level: 'intermediate',
+    keyFeatures: ['Countdown', 'Templates', 'Statistiques', 'Programmation'],
+    steps: [
+      {
+        title: 'Créer une vente flash',
+        description: 'Choisissez les produits, le pourcentage de réduction et la durée'
+      },
+      {
+        title: 'Configurer le timing',
+        description: 'Programmez la date de début et la durée (2h, 24h, 48h...)'
+      },
+      {
+        title: 'Suivre en temps réel',
+        description: 'Surveillez les ventes, le stock restant et le taux de conversion'
+      },
+      {
+        title: 'Analyser les résultats',
+        description: 'Consultez le rapport post-vente avec métriques détaillées'
+      }
+    ],
+    tips: [
+      { text: 'Les ventes flash de 24h avec -40% ou plus génèrent le meilleur engagement', type: 'pro' },
+      { text: 'Prévenez vos abonnés 24h avant par email pour maximiser le trafic', type: 'info' }
+    ],
+    videos: [
+      { title: 'Créer une vente flash qui convertit', description: 'Stratégies pour maximiser vos ventes éclair', youtubeId: 'dQw4w9WgXcQ', duration: '5:00' }
+    ],
+    faqs: [
+      { question: 'Puis-je programmer à l\'avance ?', answer: 'Oui, vous pouvez programmer vos ventes flash jusqu\'à 30 jours à l\'avance.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  marketplace: {
+    featureName: 'Hub Marketplace',
+    description: 'Gérez tous vos canaux de vente marketplace depuis une interface unique',
+    level: 'intermediate',
+    keyFeatures: ['Multi-marketplace', 'Sync centralisée', 'Gestion listings', 'Performance'],
+    steps: [
+      {
+        title: 'Connecter une marketplace',
+        description: 'Ajoutez vos comptes Amazon, eBay, Cdiscount et autres marketplaces'
+      },
+      {
+        title: 'Publier vos produits',
+        description: 'Sélectionnez les produits à publier et configurez les prix par canal'
+      },
+      {
+        title: 'Synchroniser les données',
+        description: 'Les stocks et commandes sont synchronisés automatiquement'
+      },
+      {
+        title: 'Analyser les performances',
+        description: 'Comparez les ventes et la rentabilité par marketplace'
+      }
+    ],
+    tips: [
+      { text: 'Adaptez vos prix par marketplace pour tenir compte des commissions (15-20%)', type: 'pro' },
+      { text: 'Commencez par Amazon puis étendez aux autres marketplaces', type: 'info' }
+    ],
+    videos: [
+      { title: 'Vendre sur les marketplaces', description: 'Guide multi-canal pour maximiser vos ventes', youtubeId: 'dQw4w9WgXcQ', duration: '8:00' }
+    ],
+    faqs: [
+      { question: 'Quelles marketplaces sont supportées ?', answer: 'Amazon, eBay, Cdiscount, Rakuten, ManoMano, Fnac et les principales places de marché européennes.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  warehouse: {
+    featureName: 'Gestion des Entrepôts',
+    description: 'Gérez vos entrepôts et stocks multi-localisations',
+    level: 'advanced',
+    keyFeatures: ['Multi-localisations', 'Capacité', 'Transferts', 'Alertes'],
+    steps: [
+      {
+        title: 'Ajouter un entrepôt',
+        description: 'Renseignez le nom, la localisation et la capacité de stockage'
+      },
+      {
+        title: 'Configurer l\'inventaire',
+        description: 'Assignez des produits et définissez les niveaux de stock par entrepôt'
+      },
+      {
+        title: 'Gérer les transferts',
+        description: 'Transférez du stock entre entrepôts selon la demande géographique'
+      },
+      {
+        title: 'Surveiller les alertes',
+        description: 'Recevez des notifications pour les stocks bas et ruptures'
+      }
+    ],
+    tips: [
+      { text: 'Répartissez votre stock selon la demande géographique pour réduire les délais', type: 'pro' },
+      { text: 'Un entrepôt par zone de livraison optimise les coûts de 25%', type: 'info' }
+    ],
+    videos: [
+      { title: 'Gestion multi-entrepôts', description: 'Optimisez votre logistique', youtubeId: 'dQw4w9WgXcQ', duration: '6:00' }
+    ],
+    faqs: [
+      { question: 'Puis-je gérer des entrepôts à l\'étranger ?', answer: 'Oui, le système supporte les entrepôts multi-pays avec gestion des devises et réglementations locales.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  notifications: {
+    featureName: 'Centre de Notifications',
+    description: 'Consultez vos alertes, gérez vos préférences et restez informé en temps réel',
+    level: 'beginner',
+    keyFeatures: ['Alertes temps réel', 'Catégories', 'Préférences', 'Filtres'],
+    steps: [
+      {
+        title: 'Consulter les notifications',
+        description: 'Parcourez toutes vos alertes classées par catégorie et priorité'
+      },
+      {
+        title: 'Filtrer par catégorie',
+        description: 'Utilisez les filtres pour voir uniquement commandes, stock, marketing...'
+      },
+      {
+        title: 'Configurer les préférences',
+        description: 'Choisissez quels types d\'alertes vous souhaitez recevoir'
+      },
+      {
+        title: 'Marquer et nettoyer',
+        description: 'Marquez comme lu ou supprimez les notifications traitées'
+      }
+    ],
+    tips: [
+      { text: 'Activez les alertes stock bas et commandes pour ne rien manquer d\'important', type: 'pro' },
+      { text: 'Nettoyez régulièrement vos notifications lues pour garder une vue claire', type: 'info' }
+    ],
+    videos: [
+      { title: 'Gérer ses notifications', description: 'Ne manquez plus aucune alerte importante', youtubeId: 'dQw4w9WgXcQ', duration: '3:00' }
+    ],
+    faqs: [
+      { question: 'Puis-je recevoir des alertes par email ?', answer: 'Oui, activez les notifications email dans l\'onglet Préférences pour chaque catégorie.' }
+    ],
+    academyPath: '/academy'
   }
 }

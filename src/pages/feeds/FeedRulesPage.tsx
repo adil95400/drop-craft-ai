@@ -9,6 +9,7 @@ import { Plus, GitBranch } from 'lucide-react';
 import { useFeedRulesStats } from '@/hooks/useFeedRules';
 import { CreateRuleDialog } from '@/components/feed-rules/CreateRuleDialog';
 import { FeedRulesDashboard } from '@/components/feed-rules';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function FeedRulesPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -31,6 +32,7 @@ export default function FeedRulesPage() {
         </Button>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.feedRules} />
       <FeedRulesDashboard />
 
       <CreateRuleDialog 

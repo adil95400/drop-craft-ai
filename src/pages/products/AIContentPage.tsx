@@ -6,6 +6,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { AIContentDashboard } from '@/components/ai-content';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Download, Settings } from 'lucide-react';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function AIContentPage() {
   return (
@@ -28,6 +29,7 @@ export default function AIContentPage() {
         </div>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.aiContent} />
       <AIContentDashboard />
     </ChannablePageWrapper>
   );

@@ -13,6 +13,7 @@ export default function PriceRulesPage() {
       badge={{ label: 'Pricing', icon: DollarSign }}
     >
       <AdvancedFeatureGuide {...ADVANCED_GUIDES.priceRules} />
+
       <PriceRulesDashboard />
     </ChannablePageWrapper>
   );
