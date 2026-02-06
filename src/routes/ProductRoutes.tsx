@@ -8,6 +8,7 @@ import { lazy } from 'react';
 
 // Products
 const CatalogProductsPage = lazy(() => import('@/pages/products/CatalogProductsPage'));
+const ProductCockpitPage = lazy(() => import('@/pages/products/ProductCockpitPage'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
 
@@ -45,6 +46,7 @@ export function ProductRoutes() {
     <Routes>
       {/* Products Management */}
       <Route index element={<CatalogProductsPage />} />
+      <Route path="cockpit" element={<ProductCockpitPage />} />
       <Route path="enhanced-catalog" element={<Navigate to="/products" replace />} />
       <Route path="publish" element={<ProductPublishing />} />
       <Route path="catalogue" element={<Navigate to="/products" replace />} />
