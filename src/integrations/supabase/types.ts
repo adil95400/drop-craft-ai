@@ -729,6 +729,45 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_preferences: {
+        Row: {
+          alert_at_10_percent: boolean | null
+          alert_at_5_percent: boolean | null
+          created_at: string
+          email_alerts: boolean | null
+          id: string
+          in_app_alerts: boolean | null
+          quota_key: string
+          updated_at: string
+          user_id: string
+          webhook_url: string | null
+        }
+        Insert: {
+          alert_at_10_percent?: boolean | null
+          alert_at_5_percent?: boolean | null
+          created_at?: string
+          email_alerts?: boolean | null
+          id?: string
+          in_app_alerts?: boolean | null
+          quota_key: string
+          updated_at?: string
+          user_id: string
+          webhook_url?: string | null
+        }
+        Update: {
+          alert_at_10_percent?: boolean | null
+          alert_at_5_percent?: boolean | null
+          created_at?: string
+          email_alerts?: boolean | null
+          id?: string
+          in_app_alerts?: boolean | null
+          quota_key?: string
+          updated_at?: string
+          user_id?: string
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
       analytics_dashboards: {
         Row: {
           created_at: string
@@ -3150,6 +3189,93 @@ export type Database = {
           requirements_total?: number | null
           status?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      consumption_alerts: {
+        Row: {
+          alert_date: string
+          alert_type: string
+          channels_sent: string[] | null
+          created_at: string
+          current_usage: number
+          id: string
+          is_dismissed: boolean | null
+          is_read: boolean | null
+          limit_value: number
+          message: string | null
+          quota_key: string
+          read_at: string | null
+          threshold_percent: number
+          user_id: string
+        }
+        Insert: {
+          alert_date?: string
+          alert_type: string
+          channels_sent?: string[] | null
+          created_at?: string
+          current_usage: number
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          limit_value: number
+          message?: string | null
+          quota_key: string
+          read_at?: string | null
+          threshold_percent: number
+          user_id: string
+        }
+        Update: {
+          alert_date?: string
+          alert_type?: string
+          channels_sent?: string[] | null
+          created_at?: string
+          current_usage?: number
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          limit_value?: number
+          message?: string | null
+          quota_key?: string
+          read_at?: string | null
+          threshold_percent?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      consumption_logs: {
+        Row: {
+          action_detail: Json | null
+          action_type: string
+          cost_estimate: number | null
+          created_at: string
+          id: string
+          quota_key: string
+          source: string | null
+          tokens_used: number | null
+          user_id: string
+        }
+        Insert: {
+          action_detail?: Json | null
+          action_type: string
+          cost_estimate?: number | null
+          created_at?: string
+          id?: string
+          quota_key: string
+          source?: string | null
+          tokens_used?: number | null
+          user_id: string
+        }
+        Update: {
+          action_detail?: Json | null
+          action_type?: string
+          cost_estimate?: number | null
+          created_at?: string
+          id?: string
+          quota_key?: string
+          source?: string | null
+          tokens_used?: number | null
           user_id?: string
         }
         Relationships: []
@@ -9519,6 +9645,42 @@ export type Database = {
         }
         Relationships: []
       }
+      quota_addons: {
+        Row: {
+          additional_credits: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          purchase_date: string
+          quota_key: string
+          stripe_payment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          additional_credits?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          purchase_date?: string
+          quota_key: string
+          stripe_payment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          additional_credits?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          purchase_date?: string
+          quota_key?: string
+          stripe_payment_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       quota_usage: {
         Row: {
           created_at: string
@@ -13190,6 +13352,8 @@ export type Database = {
           subscription_status: string
         }[]
       }
+      admin_get_all_users_consumption: { Args: never; Returns: Json }
+      admin_get_consumption_overview: { Args: never; Returns: Json }
       admin_set_role: {
         Args: {
           new_role: Database["public"]["Enums"]["app_role"]
@@ -13351,6 +13515,10 @@ export type Database = {
           severity: string
         }[]
       }
+      get_user_consumption_stats: {
+        Args: { p_period?: string; p_user_id: string }
+        Returns: Json
+      }
       get_user_feature_flags: {
         Args: { p_user_id?: string }
         Returns: {
@@ -13382,6 +13550,18 @@ export type Database = {
       }
       is_admin_secure: { Args: never; Returns: boolean }
       is_token_revoked: { Args: { token_id?: string }; Returns: boolean }
+      log_consumption_and_check_alerts: {
+        Args: {
+          p_action_detail?: Json
+          p_action_type: string
+          p_cost_estimate?: number
+          p_quota_key: string
+          p_source?: string
+          p_tokens_used?: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
       log_import_pipeline: {
         Args: {
           p_metadata?: Json
