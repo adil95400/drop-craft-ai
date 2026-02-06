@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 
 export interface MarketingCampaign {
   id: string
@@ -37,93 +37,52 @@ export const useMarketing = () => {
   const { data: campaigns = [], isLoading: isLoadingCampaigns } = useQuery({
     queryKey: ['marketing-campaigns'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('marketing_campaigns' as any)
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return (data || []) as unknown as MarketingCampaign[]
+      const res = await shopOptiApi.request<MarketingCampaign[]>('/marketing/campaigns')
+      return res.data || []
     },
   })
 
   const { data: segments = [], isLoading: isLoadingSegments } = useQuery({
     queryKey: ['marketing-segments'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('marketing_segments' as any)
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return (data || []) as unknown as MarketingSegment[]
+      const res = await shopOptiApi.request<MarketingSegment[]>('/marketing/segments')
+      return res.data || []
     },
   })
 
   const createCampaign = useMutation({
     mutationFn: async (campaign: Omit<MarketingCampaign, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'budget_spent'>) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { data, error } = await supabase
-        .from('marketing_campaigns' as any)
-        .insert([{ ...campaign, user_id: user.id, budget_spent: 0 }])
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+      const res = await shopOptiApi.request('/marketing/campaigns', { method: 'POST', body: campaign })
+      if (!res.success) throw new Error(res.error)
+      return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] })
-      toast({
-        title: "Campagne créée",
-        description: "La campagne marketing a été créée avec succès",
-      })
+      toast({ title: "Campagne créée", description: "La campagne marketing a été créée avec succès" })
     }
   })
 
   const updateCampaign = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<MarketingCampaign> }) => {
-      const { data, error } = await supabase
-        .from('marketing_campaigns' as any)
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+      const res = await shopOptiApi.request(`/marketing/campaigns/${id}`, { method: 'PUT', body: updates })
+      if (!res.success) throw new Error(res.error)
+      return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] })
-      toast({
-        title: "Campagne mise à jour",
-        description: "La campagne a été mise à jour avec succès",
-      })
+      toast({ title: "Campagne mise à jour", description: "La campagne a été mise à jour avec succès" })
     }
   })
 
   const createSegment = useMutation({
     mutationFn: async (segment: Omit<MarketingSegment, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'contact_count'>) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { data, error } = await supabase
-        .from('marketing_segments' as any)
-        .insert([{ ...segment, user_id: user.id, contact_count: 0 }])
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+      const res = await shopOptiApi.request('/marketing/segments', { method: 'POST', body: segment })
+      if (!res.success) throw new Error(res.error)
+      return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-segments'] })
-      toast({
-        title: "Segment créé",
-        description: "Le segment marketing a été créé avec succès",
-      })
+      toast({ title: "Segment créé", description: "Le segment marketing a été créé avec succès" })
     }
   })
 

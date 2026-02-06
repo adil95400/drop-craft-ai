@@ -1,17 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface MarketingIntegration {
-  id: string
-  platform: string
-  platform_name?: string
-  connection_status?: string
-  is_active?: boolean
-  last_sync_at?: string
-  created_at?: string
-  updated_at?: string
+  id: string; platform: string; platform_name?: string; connection_status?: string
+  is_active?: boolean; last_sync_at?: string; created_at?: string; updated_at?: string
 }
 
 export const useMarketingIntegrations = () => {
@@ -19,106 +13,54 @@ export const useMarketingIntegrations = () => {
   const queryClient = useQueryClient()
   const { user } = useAuth()
 
-  const {
-    data: integrations = [],
-    isLoading,
-    error
-  } = useQuery({
+  const { data: integrations = [], isLoading, error } = useQuery({
     queryKey: ['marketing-integrations', user?.id],
     queryFn: async (): Promise<MarketingIntegration[]> => {
       if (!user?.id) return []
-      
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return (data || []) as unknown as MarketingIntegration[]
+      const res = await shopOptiApi.request<MarketingIntegration[]>('/marketing/integrations')
+      return res.data || []
     },
     enabled: !!user?.id
   })
 
   const connectIntegration = useMutation({
-    mutationFn: async (integrationData: { 
-      platform_name: string
-      platform_type?: string
-      api_key?: string
-      access_token?: string 
-    }) => {
-      if (!user?.id) throw new Error('User not authenticated')
-
-      const { data, error } = await supabase
-        .from('integrations')
-        .insert([{ 
-          platform: integrationData.platform_name,
-          platform_name: integrationData.platform_name,
-          user_id: user.id,
-          connection_status: 'connected',
-          is_active: true
-        } as any])
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+    mutationFn: async (integrationData: { platform_name: string; platform_type?: string; api_key?: string; access_token?: string }) => {
+      const res = await shopOptiApi.request('/marketing/integrations', { method: 'POST', body: integrationData })
+      if (!res.success) throw new Error(res.error)
+      return res.data
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['marketing-integrations'] })
-      toast({
-        title: `${data.platform_name} connecté`,
-        description: `Votre compte ${data.platform_name} a été connecté avec succès`
-      })
+      toast({ title: `${data.platform_name || 'Intégration'} connecté`, description: `Votre compte a été connecté avec succès` })
     }
   })
 
   const disconnectIntegration = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('integrations')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
+      const res = await shopOptiApi.request(`/marketing/integrations/${id}`, { method: 'DELETE' })
+      if (!res.success) throw new Error(res.error)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-integrations'] })
-      toast({
-        title: "Intégration déconnectée",
-        description: "L'intégration a été supprimée avec succès"
-      })
+      toast({ title: "Intégration déconnectée", description: "L'intégration a été supprimée avec succès" })
     }
   })
 
   const syncIntegration = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase
-        .from('integrations')
-        .update({ 
-          last_sync_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+      const res = await shopOptiApi.request(`/marketing/integrations/${id}/sync`, { method: 'POST' })
+      if (!res.success) throw new Error(res.error)
+      return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-integrations'] })
       queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] })
-      toast({
-        title: "Synchronisation terminée",
-        description: "Les données ont été synchronisées avec succès"
-      })
+      toast({ title: "Synchronisation terminée", description: "Les données ont été synchronisées avec succès" })
     }
   })
 
   return {
-    integrations,
-    isLoading,
-    error,
+    integrations, isLoading, error,
     connectIntegration: connectIntegration.mutate,
     disconnectIntegration: disconnectIntegration.mutate,
     syncIntegration: syncIntegration.mutate,

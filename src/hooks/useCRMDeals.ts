@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 import { toast } from 'sonner';
 
 export interface CRMDeal {
@@ -24,64 +24,22 @@ export interface CRMDeal {
 export function useCRMDeals() {
   const queryClient = useQueryClient();
 
-  // Use orders table as CRM deals source
   const { data: deals = [], isLoading } = useQuery({
     queryKey: ['crm-deals'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
-
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return (data || []).map((order: any) => ({
-        id: order.id,
-        user_id: order.user_id,
-        name: `Commande ${order.order_number}`,
-        contact_id: order.customer_id,
-        lead_id: order.customer_id,
-        stage: order.status === 'delivered' ? 'closed_won' : 
-               order.status === 'cancelled' ? 'closed_lost' : 
-               order.status === 'pending' ? 'prospecting' : 'negotiation',
-        value: order.total_amount || 0,
-        probability: order.status === 'delivered' ? 100 : 
-                    order.status === 'cancelled' ? 0 : 50,
-        expected_close_date: order.created_at,
-        actual_close_date: order.status === 'delivered' ? order.updated_at : undefined,
-        source: 'order',
-        notes: order.notes,
-        tags: [],
-        custom_fields: {},
-        created_at: order.created_at,
-        updated_at: order.updated_at
-      })) as CRMDeal[];
+      const res = await shopOptiApi.request<CRMDeal[]>('/crm/deals');
+      return res.data || [];
     },
   });
 
   const createDeal = useMutation({
     mutationFn: async (dealData: Partial<CRMDeal>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
-
-      const { data, error } = await supabase
-        .from('orders')
-        .insert([{
-          user_id: user.id,
-          order_number: `DEAL-${Date.now()}`,
-          customer_id: dealData.contact_id,
-          status: 'pending',
-          total_amount: dealData.value || 0,
-          notes: dealData.notes,
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request('/crm/deals', {
+        method: 'POST',
+        body: dealData,
+      });
+      if (!res.success) throw new Error(res.error);
+      return res.data;
     },
     onSuccess: () => {
       toast.success('Deal créé');
@@ -94,19 +52,12 @@ export function useCRMDeals() {
 
   const updateDeal = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<CRMDeal> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('orders')
-        .update({
-          total_amount: updates.value,
-          notes: updates.notes,
-          status: updates.stage === 'closed_won' ? 'delivered' : 
-                  updates.stage === 'closed_lost' ? 'cancelled' : 'pending'
-        })
-        .eq('id', id)
-        .select();
-
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request(`/crm/deals/${id}`, {
+        method: 'PUT',
+        body: updates,
+      });
+      if (!res.success) throw new Error(res.error);
+      return res.data;
     },
     onSuccess: () => {
       toast.success('Deal mis à jour');
@@ -116,12 +67,8 @@ export function useCRMDeals() {
 
   const deleteDeal = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('orders')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const res = await shopOptiApi.request(`/crm/deals/${id}`, { method: 'DELETE' });
+      if (!res.success) throw new Error(res.error);
     },
     onSuccess: () => {
       toast.success('Deal supprimé');

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 import { toast } from 'sonner';
 
 export interface CRMLead {
@@ -26,69 +26,22 @@ export interface CRMLead {
 export function useCRMLeads() {
   const queryClient = useQueryClient();
 
-  // Use customers table as CRM leads source
   const { data: leads = [], isLoading, error } = useQuery({
     queryKey: ['crm-leads'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
-
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return (data || []).map((customer: any) => ({
-        id: customer.id,
-        user_id: customer.user_id,
-        name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email,
-        email: customer.email,
-        phone: customer.phone,
-        company: customer.address,
-        position: '',
-        source: 'customer',
-        status: customer.total_orders > 0 ? 'won' : 'new',
-        lead_score: Math.min(100, (customer.total_orders || 0) * 20 + 10),
-        estimated_value: customer.total_spent || 0,
-        expected_close_date: customer.created_at,
-        notes: customer.notes,
-        tags: customer.tags || [],
-        custom_fields: {},
-        converted_to_customer_id: customer.total_orders > 0 ? customer.id : undefined,
-        created_at: customer.created_at,
-        updated_at: customer.updated_at
-      })) as CRMLead[];
+      const res = await shopOptiApi.request<CRMLead[]>('/crm/leads');
+      return res.data || [];
     },
   });
 
   const createLead = useMutation({
     mutationFn: async (leadData: Partial<CRMLead>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
-
-      const nameParts = (leadData.name || '').split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-
-      const { data, error } = await supabase
-        .from('customers')
-        .insert([{
-          user_id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          email: leadData.email || '',
-          phone: leadData.phone,
-          address: leadData.company,
-          notes: leadData.notes,
-          tags: leadData.tags,
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request('/crm/leads', {
+        method: 'POST',
+        body: leadData,
+      });
+      if (!res.success) throw new Error(res.error);
+      return res.data;
     },
     onSuccess: () => {
       toast.success('Lead créé avec succès');
@@ -101,27 +54,12 @@ export function useCRMLeads() {
 
   const updateLead = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<CRMLead> & { id: string }) => {
-      const nameParts = (updates.name || '').split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-
-      const { data, error } = await supabase
-        .from('customers')
-        .update({
-          first_name: firstName,
-          last_name: lastName,
-          email: updates.email,
-          phone: updates.phone,
-          address: updates.company,
-          notes: updates.notes,
-          tags: updates.tags,
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request(`/crm/leads/${id}`, {
+        method: 'PUT',
+        body: updates,
+      });
+      if (!res.success) throw new Error(res.error);
+      return res.data;
     },
     onSuccess: () => {
       toast.success('Lead mis à jour');
@@ -134,12 +72,8 @@ export function useCRMLeads() {
 
   const deleteLead = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('customers')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const res = await shopOptiApi.request(`/crm/leads/${id}`, { method: 'DELETE' });
+      if (!res.success) throw new Error(res.error);
     },
     onSuccess: () => {
       toast.success('Lead supprimé');
