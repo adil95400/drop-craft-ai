@@ -1,6 +1,7 @@
 import { PriceRulesDashboard } from '@/components/price-rules';
 import { ChannablePageWrapper } from '@/components/channable';
 import { DollarSign } from 'lucide-react';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function PriceRulesPage() {
   return (
@@ -11,6 +12,7 @@ export default function PriceRulesPage() {
       heroImage="products"
       badge={{ label: 'Pricing', icon: DollarSign }}
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.priceRules} />
       <PriceRulesDashboard />
     </ChannablePageWrapper>
   );

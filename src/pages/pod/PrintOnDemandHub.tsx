@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Sparkles, Package, Image as ImageIcon, Palette, Plus, TrendingUp } from 'lucide-react';
 import { usePOD } from '@/hooks/usePOD';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function PrintOnDemandHub() {
   const [productName, setProductName] = useState('');
@@ -26,6 +27,7 @@ export default function PrintOnDemandHub() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.printOnDemand} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">

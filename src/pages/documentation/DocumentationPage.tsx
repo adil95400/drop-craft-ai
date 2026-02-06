@@ -9,6 +9,7 @@ import { DocumentationHub, DocumentationViewer } from '@/components/documentatio
 import { getDocumentationBySlug } from '@/data/documentation'
 import { Book, HelpCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { Button } from '@/components/ui/button'
 
 export default function DocumentationPage() {
@@ -70,6 +71,7 @@ export default function DocumentationPage() {
       heroImage="support"
       badge={{ label: 'Guides Pro', icon: Book }}
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.documentation} />
       <DocumentationHub 
         onSelectModule={(moduleId) => {
           // Find module by ID and navigate to its slug

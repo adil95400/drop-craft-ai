@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 import { useChannelConnections } from '@/hooks/useChannelConnections';
 import {
   useSyncStats,
@@ -376,6 +377,8 @@ export default function StoreSyncDashboard() {
     >
       {/* Global Progress */}
       <AnimatePresence>
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.storeSync} />
+
         {hasActiveSync && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
