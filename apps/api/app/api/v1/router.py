@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     jobs,
     imports,
     pricing,
+    seo,
 )
 
 api_router = APIRouter()
@@ -73,6 +74,13 @@ api_router.include_router(
     orders.router,
     prefix="/orders",
     tags=["Orders"]
+)
+
+# SEO audits, analysis, AI generation, fixes
+api_router.include_router(
+    seo.router,
+    prefix="/seo",
+    tags=["SEO"]
 )
 
 # Scraping & import (legacy — redirects to /import)
