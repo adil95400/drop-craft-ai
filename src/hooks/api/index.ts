@@ -12,3 +12,6 @@ export { useApiImports } from './useApiImports'
 export { useApiOrders } from './useApiOrders'
 export { useApiHealth } from './useApiHealth'
 export { useApiStores } from './useApiStores'
+
+// Re-export the API client for direct use in pages
+export { shopOptiApi } from '@/services/api/ShopOptiApiClient'

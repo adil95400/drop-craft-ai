@@ -1,6 +1,6 @@
 /**
  * Page Rapports - Style Channable
- * Consultez vos rapports de performance
+ * Actions via FastAPI + jobs
  */
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart3, Download, FileText, TrendingUp, DollarSign, Package, Users, Trash2, Loader2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useReports } from '@/hooks/useReports';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -21,11 +21,14 @@ import {
 import { ChannableStat, ChannableQuickAction } from '@/components/channable/types';
 import { useToast } from '@/hooks/use-toast';
 import { PDFExportButton } from '@/components/reports/PDFExportButton';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 
 export default function ReportsPage() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [dateRange, setDateRange] = useState('30');
   const [reportType, setReportType] = useState('sales');
+  const [isGeneratingViaApi, setIsGeneratingViaApi] = useState(false);
   
   const { 
     recentReports, 
@@ -44,8 +47,18 @@ export default function ReportsPage() {
     queryFn: () => fetchStats(parseInt(dateRange)),
   });
 
-  const handleGenerateReport = () => {
-    generateReport({ reportType, dateRange });
+  const handleGenerateReport = async () => {
+    setIsGeneratingViaApi(true);
+    const res = await shopOptiApi.generateReport(reportType, dateRange);
+    setIsGeneratingViaApi(false);
+    if (res.success) {
+      toast({ title: 'Rapport en cours de génération', description: `Job: ${res.job_id || 'lancé'}` });
+      queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
+    } else {
+      // Fallback to local generation
+      generateReport({ reportType, dateRange });
+    }
   };
 
   const formatReportData = (data: Record<string, unknown>) => {
@@ -112,7 +125,15 @@ export default function ReportsPage() {
       id: 'export',
       label: 'Exporter tout',
       icon: Download,
-      onClick: () => toast({ title: 'Export en cours', description: 'Tous les rapports seront exportés' }),
+      onClick: async () => {
+        const res = await shopOptiApi.bulkExportProducts(undefined, 'csv');
+        if (res.success) {
+          toast({ title: 'Export lancé', description: `Job: ${res.job_id || 'en cours'}` });
+          queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
+        } else {
+          toast({ title: 'Export en cours', description: 'Tous les rapports seront exportés' });
+        }
+      },
       description: 'CSV/Excel'
     }
   ];

@@ -1,8 +1,8 @@
 /**
  * Page Analytics Avancés avec design Channable premium
- * OPTIMISÉ: Lazy loading des tabs pour réduire le bundle initial
+ * Actions (générer rapport, exporter) via FastAPI + jobs
  */
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Users, Target, Activity, TrendingUp, Sparkles, Download, Loader2 } from 'lucide-react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
@@ -11,6 +11,9 @@ import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdvancedFeatureGuide } from '@/components/guide';
 import { ADVANCED_GUIDES } from '@/components/guide';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Lazy load heavy tab components (~50KB each with recharts)
 const CustomReportsBuilder = lazy(() => import('@/components/analytics/CustomReportsBuilder').then(m => ({ default: m.CustomReportsBuilder })));
@@ -30,6 +33,32 @@ const TabSkeleton = () => (
 );
 
 export default function AdvancedAnalyticsPage() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleGenerateReport = async () => {
+    const res = await shopOptiApi.generateReport('analytics', '30');
+    if (res.success) {
+      toast({ title: 'Rapport en cours', description: `Job: ${res.job_id || 'lancé'}` });
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
+    } else {
+      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    }
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    const res = await shopOptiApi.bulkExportProducts(undefined, 'csv');
+    setIsExporting(false);
+    if (res.success) {
+      toast({ title: 'Export lancé', description: `Job: ${res.job_id || 'en cours'}` });
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
+    } else {
+      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    }
+  };
+
   return (
     <ChannablePageWrapper
       title="Analytics Avancés"
@@ -42,12 +71,12 @@ export default function AdvancedAnalyticsPage() {
       }}
       actions={
         <>
-          <Button className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25">
+          <Button onClick={handleGenerateReport} className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25">
             <TrendingUp className="h-4 w-4" />
             Générer un rapport
           </Button>
-          <Button variant="outline" className="gap-2 backdrop-blur-sm bg-background/50">
-            <Download className="h-4 w-4" />
+          <Button variant="outline" onClick={handleExport} disabled={isExporting} className="gap-2 backdrop-blur-sm bg-background/50">
+            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
             Exporter
           </Button>
         </>

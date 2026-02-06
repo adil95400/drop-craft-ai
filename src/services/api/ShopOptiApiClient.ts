@@ -575,6 +575,165 @@ class ShopOptiApiClient {
   }
 
   // ==========================================
+  // IMPORT ENDPOINTS
+  // ==========================================
+
+  async importFromUrl(url: string, options?: { enrichWithAi?: boolean; autoMapping?: boolean }) {
+    return this.request('/imports/url', {
+      method: 'POST',
+      body: { url, enrich_with_ai: options?.enrichWithAi ?? true, auto_mapping: options?.autoMapping ?? true },
+      timeout: 60000,
+    });
+  }
+
+  async importFromFeed(feedUrl: string, feedType: 'xml' | 'csv' | 'json', mappingConfig?: Record<string, string>) {
+    return this.request('/imports/feed', {
+      method: 'POST',
+      body: { feed_url: feedUrl, feed_type: feedType, mapping_config: mappingConfig || {} },
+      timeout: 60000,
+    });
+  }
+
+  async bulkImportUrls(urls: string[]) {
+    return this.request('/imports/bulk-urls', {
+      method: 'POST',
+      body: { urls },
+      timeout: 120000,
+    });
+  }
+
+  async getImportHistory(limit: number = 50) {
+    return this.request(`/imports/history?limit=${limit}`);
+  }
+
+  // ==========================================
+  // FEED RULES ENDPOINTS
+  // ==========================================
+
+  async getFeedRules() {
+    return this.request('/feeds/rules');
+  }
+
+  async createFeedRule(rule: { name: string; conditions: any; actions: any; priority?: number }) {
+    return this.request('/feeds/rules', { method: 'POST', body: rule });
+  }
+
+  async updateFeedRule(ruleId: string, updates: Partial<{ name: string; conditions: any; actions: any; is_active: boolean }>) {
+    return this.request(`/feeds/rules/${ruleId}`, { method: 'PATCH', body: updates });
+  }
+
+  async deleteFeedRule(ruleId: string) {
+    return this.request(`/feeds/rules/${ruleId}`, { method: 'DELETE' });
+  }
+
+  async testFeedRule(ruleId: string, sampleProductIds?: string[]) {
+    return this.request(`/feeds/rules/${ruleId}/test`, { method: 'POST', body: { product_ids: sampleProductIds } });
+  }
+
+  // ==========================================
+  // ANALYTICS & REPORTS ENDPOINTS
+  // ==========================================
+
+  async getAnalyticsDashboard(period: string = '30d') {
+    return this.request(`/analytics/dashboard?period=${period}`);
+  }
+
+  async getAnalyticsKpis(period: string = '30d') {
+    return this.request(`/analytics/kpis?period=${period}`);
+  }
+
+  async generateReport(reportType: string, dateRange: string, options?: Record<string, any>) {
+    return this.request('/reports/generate', {
+      method: 'POST',
+      body: { report_type: reportType, date_range: dateRange, options },
+      timeout: 60000,
+    });
+  }
+
+  async exportReport(reportId: string, format: 'pdf' | 'csv' | 'xlsx' = 'csv') {
+    return this.request(`/reports/${reportId}/export`, {
+      method: 'POST',
+      body: { format },
+    });
+  }
+
+  async getPredictiveInsights() {
+    return this.request('/analytics/predictive');
+  }
+
+  // ==========================================
+  // AUTOMATION & WORKFLOWS ENDPOINTS
+  // ==========================================
+
+  async getWorkflows() {
+    return this.request('/automation/workflows');
+  }
+
+  async createWorkflow(workflow: { name: string; trigger_type: string; description?: string; steps?: any[] }) {
+    return this.request('/automation/workflows', { method: 'POST', body: workflow });
+  }
+
+  async toggleWorkflow(workflowId: string, isActive: boolean) {
+    return this.request(`/automation/workflows/${workflowId}/toggle`, {
+      method: 'POST',
+      body: { is_active: isActive },
+    });
+  }
+
+  async runWorkflow(workflowId: string) {
+    return this.request(`/automation/workflows/${workflowId}/run`, { method: 'POST' });
+  }
+
+  async deleteWorkflow(workflowId: string) {
+    return this.request(`/automation/workflows/${workflowId}`, { method: 'DELETE' });
+  }
+
+  async getWorkflowExecutions(workflowId?: string, limit: number = 50) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (workflowId) params.set('workflow_id', workflowId);
+    return this.request(`/automation/executions?${params.toString()}`);
+  }
+
+  // ==========================================
+  // CRM ENDPOINTS
+  // ==========================================
+
+  async getCrmLeads(params?: { status?: string; limit?: number }) {
+    const q = new URLSearchParams();
+    if (params?.status) q.set('status', params.status);
+    if (params?.limit) q.set('limit', String(params.limit));
+    return this.request(`/crm/leads?${q.toString()}`);
+  }
+
+  async updateLeadStatus(leadId: string, status: string) {
+    return this.request(`/crm/leads/${leadId}/status`, { method: 'PATCH', body: { status } });
+  }
+
+  async getCrmPipeline() {
+    return this.request('/crm/pipeline');
+  }
+
+  async scoreLead(leadId: string) {
+    return this.request(`/crm/leads/${leadId}/score`, { method: 'POST' });
+  }
+
+  // ==========================================
+  // CATEGORY MAPPING ENDPOINTS
+  // ==========================================
+
+  async getCategoryMappings() {
+    return this.request('/categories/mappings');
+  }
+
+  async createCategoryMapping(mapping: { source_category: string; target_category: string; platform: string }) {
+    return this.request('/categories/mappings', { method: 'POST', body: mapping });
+  }
+
+  async autoMapCategories(productIds?: string[]) {
+    return this.request('/categories/auto-map', { method: 'POST', body: { product_ids: productIds } });
+  }
+
+  // ==========================================
   // HEALTH CHECK
   // ==========================================
 
