@@ -34,7 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
-import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { PageLayout } from '@/components/shared';
 import { useReducedMotion, getMotionProps } from '@/hooks/useReducedMotion';
 
 // Nouveaux composants modulaires
@@ -292,16 +292,13 @@ function ImportHubContent() {
         onComplete={() => setShowOnboarding(false)}
       />
 
-      <ChannablePageWrapper
+      <PageLayout
         title="Importez vos produits"
-        subtitle="Hub Import"
-        description="Importez depuis AliExpress, Amazon, Shopify et plus. Notre IA optimise automatiquement vos fiches."
-        heroImage="import"
-        badge={{ label: "Import Pro", icon: Sparkles }}
+        subtitle="Depuis AliExpress, Amazon, Shopify et plus — Notre IA optimise automatiquement vos fiches"
         actions={
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
             <ImportModeToggle />
-            <Button variant="ghost" size="icon" onClick={resetOnboarding} title="Revoir l'introduction">
+            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={resetOnboarding} title="Revoir l'introduction">
               <HelpCircle className="w-4 h-4" />
             </Button>
           </div>
@@ -1072,7 +1069,7 @@ function ImportHubContent() {
             </Card>
           </TabsContent>
         </Tabs>
-      </ChannablePageWrapper>
+      </PageLayout>
     </>
   );
 }

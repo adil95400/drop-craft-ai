@@ -21,7 +21,7 @@ import { PlatformExportDialog } from '@/components/products/export/PlatformExpor
 import {
   ChannableCategoryFilter,
 } from '@/components/channable'
-import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { PageLayout } from '@/components/shared'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -430,60 +430,34 @@ export default function ChannableProductsPage() {
   // === LOADING STATE ===
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center space-y-4"
-        >
-          <div className="relative">
-            <Loader2 className="h-16 w-16 animate-spin mx-auto text-primary" />
-            <div className="absolute inset-0 animate-ping opacity-20">
-              <Loader2 className="h-16 w-16 mx-auto text-primary" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-lg font-medium">Chargement du catalogue...</p>
-            <p className="text-sm text-muted-foreground">Préparation de vos produits</p>
-          </div>
-        </motion.div>
-      </div>
+      <PageLayout title="Catalogue Produits" subtitle="Chargement en cours…">
+        <div className="flex items-center justify-center min-h-[300px]">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      </PageLayout>
     )
   }
 
   // === RENDER ===
   return (
-    <ChannablePageWrapper
+    <PageLayout
       title={mainView === 'products' ? 'Catalogue Produits' : 'Moteur de Règles'}
-      subtitle={mainView === 'products' ? 'Gestion unifiée' : 'Automatisation'}
-      description={mainView === 'products' 
-        ? 'Gérez, analysez et optimisez tous vos produits depuis une interface centralisée.'
-        : 'Automatisez la gestion de vos produits avec des règles intelligentes.'
+      subtitle={mainView === 'products' 
+        ? `${stats.total} produits — Gérez, analysez et optimisez`
+        : `${rules.length} règles — Automatisez la gestion`
       }
-      heroImage={mainView === 'products' ? 'products' : 'automation'}
-      badge={{
-        label: mainView === 'products' ? `${stats.total} produits` : `${rules.length} règles`,
-        icon: mainView === 'products' ? Package : GitBranch
-      }}
       actions={
         mainView === 'rules' ? (
-          <div className="flex items-center gap-3">
-            <Button 
-              onClick={handleNewRule}
-              className="gap-2"
-            >
+          <>
+            <Button size="sm" onClick={handleNewRule} className="gap-1.5 h-9">
               <Plus className="h-4 w-4" />
               Nouvelle règle
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setTemplatesOpen(true)}
-              className="gap-2 bg-background/80 backdrop-blur"
-            >
+            <Button size="sm" variant="outline" onClick={() => setTemplatesOpen(true)} className="h-9">
               Templates
             </Button>
-          </div>
-        ) : null
+          </>
+        ) : undefined
       }
     >
       {/* Main View Tabs: Products / Rules */}
@@ -1000,6 +974,6 @@ export default function ChannableProductsPage() {
         onAction={handleBulkAction}
         isVisible={selectedProducts.length > 0}
       />
-    </ChannablePageWrapper>
+    </PageLayout>
   )
 }
