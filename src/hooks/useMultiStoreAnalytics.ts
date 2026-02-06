@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 
 export interface StorePerformanceAnalytics {
   id: string;
@@ -85,8 +85,12 @@ export function useStorePerformanceAnalytics(storeId?: string) {
   return useQuery({
     queryKey: ['store-performance-analytics', storeId],
     queryFn: async (): Promise<StorePerformanceAnalytics[]> => {
-      // Return empty array - table doesn't exist in types
-      return [];
+      const endpoint = storeId
+        ? `/analytics/stores/${storeId}/performance`
+        : '/analytics/stores/performance';
+      const res = await shopOptiApi.request(endpoint);
+      if (!res.success) return [];
+      return res.data || [];
     },
   });
 }
@@ -95,8 +99,9 @@ export function useComparativeAnalytics() {
   return useQuery({
     queryKey: ['comparative-analytics'],
     queryFn: async (): Promise<ComparativeAnalytics[]> => {
-      // Return empty array - table doesn't exist in types
-      return [];
+      const res = await shopOptiApi.request('/analytics/comparisons');
+      if (!res.success) return [];
+      return res.data || [];
     },
   });
 }
@@ -105,8 +110,9 @@ export function usePredictiveAnalytics(storeId?: string) {
   return useQuery({
     queryKey: ['predictive-analytics', storeId],
     queryFn: async (): Promise<PredictiveAnalytics[]> => {
-      // Return empty array - table doesn't exist in types
-      return [];
+      const res = await shopOptiApi.getPredictiveInsights();
+      if (!res.success) return [];
+      return res.data || [];
     },
   });
 }
@@ -115,14 +121,10 @@ export function useAnalyticsInsights(acknowledged?: boolean) {
   return useQuery({
     queryKey: ['analytics-insights', acknowledged],
     queryFn: async () => {
-      let query = supabase
-        .from('analytics_insights')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data || []) as unknown as AnalyticsInsight[];
+      const params = acknowledged !== undefined ? `?acknowledged=${acknowledged}` : '';
+      const res = await shopOptiApi.request(`/analytics/insights${params}`);
+      if (!res.success) return [];
+      return (res.data || []) as AnalyticsInsight[];
     },
   });
 }
@@ -132,14 +134,10 @@ export function useAcknowledgeInsightMutation() {
   
   return useMutation({
     mutationFn: async (insightId: string) => {
-      const { error } = await supabase
-        .from('analytics_insights')
-        .update({ 
-          is_read: true
-        } as any)
-        .eq('id', insightId);
-      
-      if (error) throw error;
+      const res = await shopOptiApi.request(`/analytics/insights/${insightId}/acknowledge`, {
+        method: 'POST',
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to acknowledge insight');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['analytics-insights'] });
@@ -152,8 +150,12 @@ export function useCreateComparison() {
   
   return useMutation({
     mutationFn: async (data: any) => {
-      // Comparison functionality not available - table doesn't exist
-      console.log('Comparison created:', data);
+      const res = await shopOptiApi.request('/analytics/comparisons', {
+        method: 'POST',
+        body: data,
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to create comparison');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comparative-analytics'] });

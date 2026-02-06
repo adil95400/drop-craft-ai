@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { dynamicRepricingService } from '@/services/marketplace/DynamicRepricingService'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+
+// Keep marketplace service imports for fulfillment & promotions (non-analytics)
 import { fulfillmentService } from '@/services/marketplace/FulfillmentService'
-import { predictiveAnalyticsService } from '@/services/marketplace/PredictiveAnalyticsService'
 import { promotionService } from '@/services/marketplace/PromotionService'
 
 /**
@@ -13,18 +14,26 @@ export function useDynamicRepricing(userId: string) {
 
   const dashboard = useQuery({
     queryKey: ['repricing-dashboard', userId],
-    queryFn: () => dynamicRepricingService.getDashboard(userId),
+    queryFn: async () => {
+      const res = await shopOptiApi.request('/pricing/repricing/dashboard');
+      if (!res.success) return null;
+      return res.data;
+    },
   })
 
   const executeRepricing = useMutation({
     mutationFn: async (ruleId: string) => {
-      return dynamicRepricingService.executeRepricingRule(ruleId)
+      const res = await shopOptiApi.request(`/pricing/repricing/rules/${ruleId}/execute`, {
+        method: 'POST',
+      });
+      if (!res.success) throw new Error(res.error || 'Repricing failed');
+      return res.data;
     },
-    onSuccess: (executions) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['repricing-dashboard', userId] })
-      toast.success(`${executions.length} produits repricés`)
+      toast.success(`Produits repricés avec succès`)
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(`Erreur repricing: ${error.message}`)
     },
   })
@@ -95,7 +104,7 @@ export function useAutoFulfillment(userId: string) {
         toast.error(`Erreur: ${result.error}`)
       }
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(`Erreur fulfillment: ${error.message}`)
     },
   })
@@ -117,22 +126,31 @@ export function useAutoFulfillment(userId: string) {
 }
 
 /**
- * Hook pour l'analyse prédictive
+ * Hook pour l'analyse prédictive — via FastAPI
  */
 export function usePredictiveAnalytics(userId: string) {
   const dashboard = useQuery({
     queryKey: ['predictive-dashboard', userId],
-    queryFn: () => predictiveAnalyticsService.getPredictiveDashboard(userId),
+    queryFn: async () => {
+      const res = await shopOptiApi.getPredictiveInsights();
+      if (!res.success) return null;
+      return res.data;
+    },
   })
 
   const generateForecast = useMutation({
     mutationFn: async ({ productId, horizonDays }: { productId: string; horizonDays: number }) => {
-      return predictiveAnalyticsService.generateSalesForecast(productId, horizonDays)
+      const res = await shopOptiApi.request('/analytics/predictive/forecast', {
+        method: 'POST',
+        body: { product_id: productId, horizon_days: horizonDays },
+      });
+      if (!res.success) throw new Error(res.error || 'Forecast generation failed');
+      return res.data;
     },
     onSuccess: () => {
       toast.success('Prévisions générées')
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(`Erreur: ${error.message}`)
     },
   })
@@ -149,8 +167,6 @@ export function usePredictiveAnalytics(userId: string) {
  * Hook pour les promotions automatisées
  */
 export function usePromotionsAutomation(userId: string) {
-  const queryClient = useQueryClient()
-
   const stats = useQuery({
     queryKey: ['promotions-stats', userId],
     queryFn: () => promotionService.getStats(userId),

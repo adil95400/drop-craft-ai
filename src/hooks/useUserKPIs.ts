@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 
 export interface UserKPI {
   id: string;
@@ -34,15 +34,9 @@ export function useUserKPIs() {
     queryKey: ['user-kpis', user?.id],
     queryFn: async (): Promise<UserKPI[]> => {
       if (!user?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('user_kpis')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return (data || []) as unknown as UserKPI[];
+      const res = await shopOptiApi.request<UserKPI[]>('/analytics/kpis/user');
+      if (!res.success) return [];
+      return res.data || [];
     },
     enabled: !!user?.id,
   });
@@ -50,18 +44,12 @@ export function useUserKPIs() {
   const createKPI = useMutation({
     mutationFn: async (kpiData: CreateKPIData) => {
       if (!user?.id) throw new Error('User not authenticated');
-      
-      const { data, error } = await supabase
-        .from('user_kpis')
-        .insert({
-          ...kpiData,
-          user_id: user.id,
-        } as any)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request('/analytics/kpis/user', {
+        method: 'POST',
+        body: kpiData,
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to create KPI');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-kpis'] });
@@ -81,15 +69,12 @@ export function useUserKPIs() {
 
   const updateKPI = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<UserKPI> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('user_kpis')
-        .update(updates as any)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request(`/analytics/kpis/user/${id}`, {
+        method: 'PATCH',
+        body: updates,
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to update KPI');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-kpis'] });
@@ -109,12 +94,10 @@ export function useUserKPIs() {
 
   const deleteKPI = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('user_kpis')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
+      const res = await shopOptiApi.request(`/analytics/kpis/user/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to delete KPI');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-kpis'] });

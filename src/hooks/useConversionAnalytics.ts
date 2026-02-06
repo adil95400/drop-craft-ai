@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 
 export interface ConversionMetrics {
   overview: {
@@ -29,11 +29,17 @@ export function useConversionAnalytics(params: {
   const { data, isLoading } = useQuery({
     queryKey: ['conversion-analytics', params],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('conversion-analytics', {
-        body: { action: 'get_conversion_metrics', ...params }
+      const queryParams = new URLSearchParams({
+        start_date: params.startDate,
+        end_date: params.endDate,
       });
-      if (error) throw error;
-      return data.metrics as ConversionMetrics;
+      if (params.marketplace) queryParams.set('marketplace', params.marketplace);
+      
+      const res = await shopOptiApi.request<ConversionMetrics>(
+        `/analytics/conversions?${queryParams.toString()}`
+      );
+      if (!res.success) throw new Error(res.error || 'Failed to fetch conversion metrics');
+      return res.data;
     },
     enabled: !!params.startDate && !!params.endDate
   });
@@ -44,11 +50,12 @@ export function useConversionAnalytics(params: {
       marketplace?: string;
       source?: string;
     }) => {
-      const { data, error } = await supabase.functions.invoke('conversion-analytics', {
-        body: { action: 'track_product_view', productId, marketplace, source }
+      const res = await shopOptiApi.request('/analytics/conversions/track-view', {
+        method: 'POST',
+        body: { product_id: productId, marketplace, source },
       });
-      if (error) throw error;
-      return data;
+      if (!res.success) throw new Error(res.error || 'Failed to track view');
+      return res.data;
     }
   });
 
@@ -63,11 +70,11 @@ export function useProductPerformance(productId: string, days: number = 30) {
   return useQuery({
     queryKey: ['product-performance', productId, days],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('conversion-analytics', {
-        body: { action: 'get_product_performance', productId, days }
-      });
-      if (error) throw error;
-      return data.performance;
+      const res = await shopOptiApi.request(
+        `/analytics/products/${productId}/performance?days=${days}`
+      );
+      if (!res.success) throw new Error(res.error || 'Failed to fetch product performance');
+      return res.data;
     },
     enabled: !!productId
   });

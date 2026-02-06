@@ -1,10 +1,10 @@
 /**
- * Real Analytics Hook - Uses real Supabase data (no mocks)
- * Provides dashboard analytics from actual database records
+ * Real Analytics Hook - Uses FastAPI backend (no direct Supabase queries)
+ * Provides dashboard analytics from the API
  */
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 
 export interface RealAnalytics {
   revenue: number
@@ -39,77 +39,27 @@ export const useRealAnalytics = () => {
   const { data: analytics, isLoading, error, refetch } = useQuery({
     queryKey: ['real-analytics', user?.id],
     queryFn: async (): Promise<RealAnalytics> => {
-      if (!user) {
-        return getEmptyAnalytics()
-      }
+      if (!user) return getEmptyAnalytics()
 
-      // Fetch all data in parallel for performance
-      const [ordersResult, productsResult, customersResult] = await Promise.all([
-        supabase
-          .from('orders')
-          .select('id, order_number, total_amount, status, created_at')
-          .eq('user_id', user.id),
-        supabase
-          .from('products')
-          .select('id, name, price')
-          .eq('user_id', user.id),
-        supabase
-          .from('customers')
-          .select('id')
-          .eq('user_id', user.id)
-      ])
+      const res = await shopOptiApi.getAnalyticsDashboard('30d')
+      if (!res.success || !res.data) return getEmptyAnalytics()
 
-      const orders = ordersResult.data || []
-      const products = productsResult.data || []
-      const customers = customersResult.data || []
-
-      // Calculate real metrics
-      const deliveredOrders = orders.filter(o => o.status === 'delivered')
-      const revenue = deliveredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
-      const orderCount = orders.length
-      const customerCount = customers.length
-      const productCount = products.length
-      const averageOrderValue = orderCount > 0 ? revenue / orderCount : 0
-      const conversionRate = customerCount > 0 ? (orderCount / customerCount) * 100 : 0
-
-      // Top products (limited real data)
-      const topProducts = products.slice(0, 5).map((product) => ({
-        name: product.name || 'Produit',
-        sales: 0,
-        revenue: `€${(product.price || 0).toFixed(2)}`,
-        growth: '0%'
-      }))
-
-      // Recent orders
-      const recentOrders = orders
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 5)
-
-      // Sales by day (last 7 days from real data)
-      const salesByDay = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        const dayOrders = orders.filter(o => o.created_at?.startsWith(date))
-        return {
-          date,
-          revenue: dayOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
-          orders: dayOrders.length
-        }
-      }).reverse()
-
+      // Map API response to expected format
+      const d = res.data as any
       return {
-        revenue,
-        orders: orderCount,
-        customers: customerCount,
-        products: productCount,
-        averageOrderValue,
-        conversionRate,
-        topProducts,
-        recentOrders,
-        salesByDay
+        revenue: d.revenue ?? 0,
+        orders: d.orders ?? 0,
+        customers: d.customers ?? 0,
+        products: d.products ?? 0,
+        averageOrderValue: d.averageOrderValue ?? d.average_order_value ?? 0,
+        conversionRate: d.conversionRate ?? d.conversion_rate ?? 0,
+        topProducts: d.topProducts ?? d.top_products ?? [],
+        recentOrders: d.recentOrders ?? d.recent_orders ?? [],
+        salesByDay: d.salesByDay ?? d.sales_by_day ?? [],
       }
     },
     enabled: !!user,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000
   })
 
