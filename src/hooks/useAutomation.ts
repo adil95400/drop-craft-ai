@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 
 export interface AutomationTrigger {
   id: string;
@@ -44,69 +44,45 @@ export const useAutomation = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch automation triggers
+  // Fetch automation triggers via FastAPI
   const { data: triggers = [], isLoading: isLoadingTriggers } = useQuery({
     queryKey: ['automation-triggers'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('automation_triggers')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as AutomationTrigger[];
+      const res = await shopOptiApi.request<AutomationTrigger[]>('/automation/triggers');
+      if (!res.success) return [];
+      return res.data || [];
     },
   });
 
-  // Fetch automation actions
+  // Fetch automation actions via FastAPI
   const { data: actions = [], isLoading: isLoadingActions } = useQuery({
     queryKey: ['automation-actions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('automation_actions')
-        .select('*')
-        .order('execution_order', { ascending: true });
-      
-      if (error) throw error;
-      return (data || []).map((a: any) => ({
-        ...a,
-        action_config: a.config || {}
-      })) as unknown as AutomationAction[];
+      const res = await shopOptiApi.request<AutomationAction[]>('/automation/actions');
+      if (!res.success) return [];
+      return res.data || [];
     },
   });
 
-  // Fetch execution logs
+  // Fetch execution logs via FastAPI
   const { data: executions = [], isLoading: isLoadingExecutions } = useQuery({
     queryKey: ['automation-executions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('automation_execution_logs')
-        .select('*')
-        .order('executed_at', { ascending: false })
-        .limit(100);
-      
-      if (error) throw error;
-      return (data || []).map((e: any) => ({
-        ...e,
-        started_at: e.executed_at
-      })) as unknown as AutomationExecution[];
+      const res = await shopOptiApi.getWorkflowExecutions(undefined, 100);
+      if (!res.success) return [];
+      return (res.data || []) as AutomationExecution[];
     },
   });
 
   // Create automation trigger
   const createTrigger = useMutation({
     mutationFn: async (newTrigger: Omit<AutomationTrigger, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
-
-      const { data, error } = await supabase
-        .from('automation_triggers')
-        .insert([{ ...newTrigger, user_id: user.id }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request('/automation/triggers', {
+        method: 'POST',
+        body: newTrigger,
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to create trigger');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
@@ -115,7 +91,7 @@ export const useAutomation = () => {
         description: "Le déclencheur d'automatisation a été créé avec succès",
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: "Erreur",
         description: "Impossible de créer le déclencheur",
@@ -127,15 +103,12 @@ export const useAutomation = () => {
   // Update automation trigger
   const updateTrigger = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<AutomationTrigger> }) => {
-      const { data, error } = await supabase
-        .from('automation_triggers')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request(`/automation/triggers/${id}`, {
+        method: 'PATCH',
+        body: updates,
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to update trigger');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
@@ -149,12 +122,10 @@ export const useAutomation = () => {
   // Delete automation trigger
   const deleteTrigger = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('automation_triggers')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const res = await shopOptiApi.request(`/automation/triggers/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to delete trigger');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
@@ -169,25 +140,12 @@ export const useAutomation = () => {
   // Create automation action
   const createAction = useMutation({
     mutationFn: async (newAction: Omit<AutomationAction, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
-
-      const { data, error } = await supabase
-        .from('automation_actions')
-        .insert([{ 
-          name: `Action ${newAction.action_type}`,
-          trigger_id: newAction.trigger_id,
-          action_type: newAction.action_type,
-          config: newAction.action_config,
-          execution_order: newAction.execution_order,
-          is_active: newAction.is_active,
-          user_id: user.id 
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const res = await shopOptiApi.request('/automation/actions', {
+        method: 'POST',
+        body: newAction,
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to create action');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-actions'] });
@@ -198,19 +156,15 @@ export const useAutomation = () => {
     },
   });
 
-  // Process automation trigger
+  // Process automation trigger (run)
   const processTrigger = useMutation({
     mutationFn: async ({ triggerId, contextData }: { triggerId: string; contextData?: any }) => {
-      // Simulate trigger processing since the RPC doesn't exist
-      const { data: trigger, error } = await supabase
-        .from('automation_triggers')
-        .update({ last_triggered_at: new Date().toISOString() })
-        .eq('id', triggerId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { actions_executed: 1, trigger };
+      const res = await shopOptiApi.request(`/automation/triggers/${triggerId}/execute`, {
+        method: 'POST',
+        body: { context: contextData },
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to process trigger');
+      return res.data;
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['automation-executions'] });
@@ -220,7 +174,6 @@ export const useAutomation = () => {
       });
     },
   });
-
 
   const stats = {
     totalTriggers: triggers.length,
