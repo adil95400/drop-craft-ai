@@ -1,6 +1,7 @@
 import { ProductScoringDashboard } from '@/components/product-scoring';
 import { ChannablePageWrapper } from '@/components/channable';
 import { Star } from 'lucide-react';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function ProductScoringPage() {
   return (
@@ -11,6 +12,7 @@ export default function ProductScoringPage() {
       heroImage="products"
       badge={{ label: 'IA Score', icon: Star }}
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.productScoring} />
       <ProductScoringDashboard />
     </ChannablePageWrapper>
   );

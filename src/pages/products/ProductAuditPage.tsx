@@ -16,6 +16,7 @@ import {
   Sparkles, RefreshCw, Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 const StatCard = ({ 
   icon: Icon, 
@@ -121,6 +122,7 @@ export default function ProductAuditPage() {
         </div>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.productAudit} />
       {/* Stats globales */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard 
