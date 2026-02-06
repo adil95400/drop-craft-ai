@@ -71,6 +71,9 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   '/fulfillment/rules': '/orders/fulfillment/rules',
   '/fulfillment/dashboard': '/orders/fulfillment',
   
+  // Products (French aliases)
+  '/produits': '/products',
+  
   // Suppliers (French aliases)
   '/fournisseurs': '/suppliers',
   '/fournisseurs/moteur': '/suppliers/engine',
@@ -138,6 +141,7 @@ export function LegacyRedirectHandler({ children }: { children: React.ReactNode 
       { pattern: '/dashboard/settings/', redirect: '/settings/' },
       { pattern: '/stores/', redirect: '/stores-channels/' },
       { pattern: '/crm/', redirect: '/marketing/crm/' },
+      { pattern: '/produits/', redirect: '/products/' },
       { pattern: '/fournisseurs/', redirect: '/suppliers/' },
       { pattern: '/attributes/', redirect: '/catalog/attributes/' },
       { pattern: '/api/', redirect: '/integrations/api/' },
