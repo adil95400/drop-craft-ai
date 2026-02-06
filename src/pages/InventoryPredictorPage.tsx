@@ -5,6 +5,7 @@ import { PredictionsDashboard } from '@/components/inventory/PredictionsDashboar
 import { StockAlerts } from '@/components/inventory/StockAlerts';
 import { RestockSuggestions } from '@/components/inventory/RestockSuggestions';
 import { Package, TrendingUp, AlertTriangle, RefreshCw } from 'lucide-react';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function InventoryPredictorPage() {
   return (
@@ -15,6 +16,7 @@ export default function InventoryPredictorPage() {
       </Helmet>
       <div className="container mx-auto p-6">
         <div className="space-y-6">
+          <AdvancedFeatureGuide {...ADVANCED_GUIDES.inventoryPredictor} />
           <div>
             <h1 className="text-3xl font-bold">Smart Inventory Predictor</h1>
             <p className="text-muted-foreground mt-2">

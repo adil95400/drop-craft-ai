@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 const EmailMarketingPage: React.FC = () => {
   const { campaigns, isLoading, createCampaign, updateCampaign, deleteCampaign, isCreating } = useMarketingCampaigns();
@@ -24,7 +25,6 @@ const EmailMarketingPage: React.FC = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newCampaign, setNewCampaign] = useState({ name: '', type: 'email' as const });
 
-  // Calculate real stats from campaigns
   const totalSent = campaigns.reduce((acc, c) => {
     const metrics = c.metrics as any;
     return acc + (metrics?.sent || 0);
@@ -130,6 +130,7 @@ const EmailMarketingPage: React.FC = () => {
         </Dialog>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.emailMarketing} />
 
       {/* Stats Cards - Real Data */}
       <div className="grid gap-4 md:grid-cols-4">

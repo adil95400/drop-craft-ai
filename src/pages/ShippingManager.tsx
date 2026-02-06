@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -52,6 +53,7 @@ export default function ShippingManager() {
       </Helmet>
 
       <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.shipping} />
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
