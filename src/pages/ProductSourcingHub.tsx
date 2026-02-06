@@ -17,6 +17,8 @@ import {
   Heart
 } from 'lucide-react'
 import { useProductSourcing } from '@/hooks/useProductSourcing'
+import { AdvancedFeatureGuide } from '@/components/guide'
+import { ADVANCED_GUIDES } from '@/components/guide'
 
 export default function ProductSourcingHub() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -58,6 +60,9 @@ export default function ProductSourcingHub() {
             Trouvez les meilleurs produits depuis 6+ plateformes
           </p>
         </div>
+
+        {/* Guide intégré */}
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.sourcing} />
 
         {/* Search */}
         <Card>

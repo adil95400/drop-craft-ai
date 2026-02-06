@@ -9,6 +9,8 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AdvancedFeatureGuide } from '@/components/guide';
+import { ADVANCED_GUIDES } from '@/components/guide';
 
 // Lazy load heavy tab components (~50KB each with recharts)
 const CustomReportsBuilder = lazy(() => import('@/components/analytics/CustomReportsBuilder').then(m => ({ default: m.CustomReportsBuilder })));
@@ -51,6 +53,7 @@ export default function AdvancedAnalyticsPage() {
         </>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.analytics} />
       <Tabs defaultValue="reports" className="space-y-6">
         <motion.div
           initial={{ opacity: 0, y: 10 }}

@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AlertCircle, TrendingUp, CheckCircle, Zap, Filter, ArrowUpDown, Package, Sparkles, Euro, Clock, Brain, FileEdit } from 'lucide-react'
 import { useProductBacklog, BacklogCategory, BacklogItem, useDraftProducts } from '@/hooks/catalog'
+import { AdvancedFeatureGuide } from '@/components/guide'
+import { ADVANCED_GUIDES } from '@/components/guide'
 import { BacklogAIPanel, DraftProductsPanel } from '@/components/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -65,6 +67,7 @@ export default function ToProcessPage() {
         </Button>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.catalog} />
       <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'list' | 'ai' | 'drafts')} className="space-y-6">
         <TabsList className="grid w-full max-w-lg grid-cols-3">
           <TabsTrigger value="ai" className="flex items-center gap-2">

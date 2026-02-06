@@ -10,6 +10,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { AdvancedFeatureGuide } from '@/components/guide';
+import { ADVANCED_GUIDES } from '@/components/guide';
 
 // Lazy load enterprise components
 const WorkflowSandbox = lazy(() => import('@/components/automation/WorkflowSandbox').then(m => ({ default: m.WorkflowSandbox })));
@@ -61,6 +63,8 @@ export default function AutomationPage() {
         </Button>
       }
     >
+
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.automation} />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

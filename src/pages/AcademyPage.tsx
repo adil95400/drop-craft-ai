@@ -8,6 +8,8 @@ import { CourseCard } from '@/components/academy/CourseCard';
 import { ProgressDashboard } from '@/components/academy/ProgressDashboard';
 import { useAcademyProgress } from '@/hooks/useAcademyProgress';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { AdvancedFeatureGuide } from '@/components/guide';
+import { ADVANCED_GUIDES } from '@/components/guide';
 
 export default function AcademyPage() {
   const [activeTab, setActiveTab] = useState('courses');
@@ -32,6 +34,7 @@ export default function AcademyPage() {
         heroImage="ai"
         badge={{ label: "Formation", icon: GraduationCap }}
       >
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.academy} />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
