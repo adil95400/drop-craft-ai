@@ -2,17 +2,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PlatformAnalyticsDashboard } from '@/components/platform/PlatformAnalyticsDashboard'
 import { SyncConfigManager } from '@/components/platform/SyncConfigManager'
 import { ContentOptimizer } from '@/components/platform/ContentOptimizer'
-import { BarChart3, RefreshCw, Sparkles } from 'lucide-react'
+import { BarChart3, RefreshCw, Sparkles, Globe } from 'lucide-react'
+import { PageBanner } from '@/components/shared/PageBanner'
 
 export default function PlatformManagementPage() {
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Gestion des Plateformes</h1>
-        <p className="text-muted-foreground">
-          Synchronisation automatique, analytics et optimisation IA de vos marketplaces
-        </p>
-      </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <PageBanner
+        icon={Globe}
+        title="Gestion des Plateformes"
+        description="Synchronisation automatique, analytics et optimisation IA de vos marketplaces"
+        theme="blue"
+      />
 
       <Tabs defaultValue="analytics" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">

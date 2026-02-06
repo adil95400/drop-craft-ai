@@ -3,6 +3,7 @@ import { MarketplaceSyncDashboard } from '@/components/marketplace/MarketplaceSy
 import { DynamicCampaignsDashboard } from '@/components/campaigns/DynamicCampaignsDashboard';
 import { SEO } from '@/components/SEO';
 import { Store, Megaphone, ArrowRightLeft, Zap } from 'lucide-react';
+import { PageBanner } from '@/components/shared/PageBanner';
 
 export default function MarketplaceCampaignsPage() {
   return (
@@ -13,13 +14,13 @@ export default function MarketplaceCampaignsPage() {
         path="/marketplace-campaigns"
         keywords="marketplace, synchronisation, campagnes, publicité, Shopify, Amazon, eBay"
       />
-      <div className="container mx-auto py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Marketplace & Campagnes</h1>
-          <p className="text-muted-foreground">
-            Synchronisez vos produits sur plusieurs marketplaces et gérez vos campagnes publicitaires dynamiques
-          </p>
-        </div>
+      <div className="container mx-auto py-8 space-y-6">
+        <PageBanner
+          icon={Store}
+          title="Marketplace & Campagnes"
+          description="Synchronisez vos produits et gérez vos campagnes publicitaires dynamiques"
+          theme="green"
+        />
 
         <Tabs defaultValue="sync" className="w-full">
           <TabsList className="mb-6">

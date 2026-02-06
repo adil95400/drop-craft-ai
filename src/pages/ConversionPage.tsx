@@ -1,17 +1,19 @@
 import { ConversionHub } from '@/components/conversion/ConversionHub';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { ResponsiveContainer } from '@/components/layout/ResponsiveContainer';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Download, RefreshCw } from 'lucide-react';
+import { Download, RefreshCw, TrendingUp } from 'lucide-react';
+import { PageBanner } from '@/components/shared/PageBanner';
 
 const ConversionPage = () => {
   return (
     <ErrorBoundary>
       <ResponsiveContainer>
-        <PageHeader
+        <PageBanner
+          icon={TrendingUp}
           title="Conversion Analytics"
-          description="Track and optimize your conversion rates across all channels"
+          description="Suivez et optimisez vos taux de conversion sur tous les canaux"
+          theme="green"
           actions={
             <>
               <Button variant="outline" size="sm">
