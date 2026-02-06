@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { CheckCircle2, RefreshCw, AlertCircle, Package, Clock, Loader2, RotateCcw } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -36,11 +37,9 @@ export function SyncStatusInline({
   const handleResetSync = async () => {
     setIsResetting(true)
     try {
-      const { data, error } = await supabase.functions.invoke('reset-sync-status', {
-        body: { integration_id: integrationId }
-      })
+      const res = await shopOptiApi.request(`/sync/reset/${integrationId}`, { method: 'POST' })
       
-      if (error) throw error
+      if (!res.success) throw new Error(res.error)
       
       setLocalConfig(prev => ({ ...prev, sync_in_progress: false }))
       setLocalSyncStatus('connected')

@@ -1,21 +1,26 @@
 /**
  * Page Catalogue Produits - Vue simple de gestion
- * Table par défaut, filtres, actions bulk, import/export
- * Aucun KPI, aucun cockpit business (→ /products/cockpit)
+ * 100% connecté FastAPI : toutes les mutations passent par les hooks API
+ * Jobs/Job_items affichés via ActiveJobsBanner + JobTrackerPanel
  */
 
 import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 
-// Data hooks
+// API hooks (FastAPI)
 import { useProductsUnified, UnifiedProduct } from '@/hooks/unified/useProductsUnified'
 import { useApiProducts } from '@/hooks/api/useApiProducts'
 import { useApiSync } from '@/hooks/api/useApiSync'
+import { useApiAI } from '@/hooks/api/useApiAI'
+import { useApiJobs } from '@/hooks/api/useApiJobs'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+
+// Job tracking UI
+import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner'
+import { JobTrackerPanel } from '@/components/jobs/JobTrackerPanel'
 
 // UI Components
 import { Button } from '@/components/ui/button'
@@ -39,9 +44,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { 
   Plus, Search, Upload, Download, RefreshCw, Trash2, 
-  Edit3, Loader2, Package, Filter, X 
+  Edit3, Loader2, Package, Filter, X, Brain, Zap,
+  ChevronDown
 } from 'lucide-react'
 
 // Product components
@@ -71,14 +78,19 @@ export default function CatalogProductsPage() {
   const [showPlatformExport, setShowPlatformExport] = useState(false)
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
   const [viewModalProduct, setViewModalProduct] = useState<UnifiedProduct | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(50)
+  const [showJobTracker, setShowJobTracker] = useState(false)
 
-  // === DATA ===
+  // === DATA (reads via Supabase, mutations via FastAPI) ===
   const { products, stats, isLoading, refetch } = useProductsUnified()
   const { deleteProduct, createProduct } = useApiProducts()
   const { triggerSync, isSyncing } = useApiSync()
+  const { bulkEnrich, isBulkEnriching } = useApiAI()
+  const { activeJobs } = useApiJobs({ limit: 5 })
+
   const categories = useMemo(() => {
     const cats = new Set(products.map(p => p.category).filter(Boolean))
     return Array.from(cats).sort() as string[]
@@ -86,8 +98,6 @@ export default function CatalogProductsPage() {
 
   const filteredProducts = useMemo(() => {
     let result = [...products]
-
-    // Search
     if (search) {
       const q = search.toLowerCase()
       result = result.filter(p =>
@@ -96,21 +106,15 @@ export default function CatalogProductsPage() {
         p.category?.toLowerCase().includes(q)
       )
     }
-
-    // Status
     if (statusFilter !== 'all') {
       result = result.filter(p => p.status === statusFilter)
     }
-
-    // Category
     if (categoryFilter !== 'all') {
       result = result.filter(p => p.category === categoryFilter)
     }
-
     return result
   }, [products, search, statusFilter, categoryFilter])
 
-  // Pagination
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage
@@ -119,10 +123,11 @@ export default function CatalogProductsPage() {
 
   const hasActiveFilters = search !== '' || statusFilter !== 'all' || categoryFilter !== 'all'
 
-  // === HANDLERS ===
+  // === HANDLERS (100% FastAPI) ===
   const handleRefresh = useCallback(() => {
     refetch()
     queryClient.invalidateQueries({ queryKey: ['products-unified'] })
+    queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
     toast({ title: 'Catalogue actualisé' })
   }, [refetch, queryClient, toast])
 
@@ -156,14 +161,20 @@ export default function CatalogProductsPage() {
     })
   }, [products, createProduct, handleRefresh])
 
+  // Bulk delete via FastAPI endpoint
   const handleBulkDelete = useCallback(async () => {
     if (selectedProducts.length === 0) return
     setIsBulkDeleting(true)
     try {
-      for (const id of selectedProducts) {
-        await shopOptiApi.deleteProduct(id)
+      const res = await shopOptiApi.bulkDeleteProducts(selectedProducts)
+      if (res.success) {
+        toast({ 
+          title: 'Suppression lancée', 
+          description: res.job_id ? `Job: ${res.job_id}` : `${selectedProducts.length} produit(s) supprimé(s)` 
+        })
+      } else {
+        throw new Error(res.error)
       }
-      toast({ title: `${selectedProducts.length} produit(s) supprimé(s)` })
       setSelectedProducts([])
       setBulkDeleteOpen(false)
       handleRefresh()
@@ -174,17 +185,43 @@ export default function CatalogProductsPage() {
     }
   }, [selectedProducts, toast, handleRefresh])
 
+  // Export via FastAPI
   const handleExportCSV = useCallback(async () => {
+    setIsExporting(true)
     try {
-      const { importExportService } = await import('@/services/importExportService')
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-      await importExportService.exportAllProducts(user.id)
-      toast({ title: 'Export CSV téléchargé' })
+      const res = await shopOptiApi.bulkExportProducts(
+        selectedProducts.length > 0 ? selectedProducts : undefined,
+        'csv'
+      )
+      if (res.success) {
+        toast({ 
+          title: 'Export lancé', 
+          description: res.job_id ? `Job: ${res.job_id}` : 'Export en cours...' 
+        })
+      } else {
+        throw new Error(res.error)
+      }
     } catch {
       toast({ title: 'Erreur d\'export', variant: 'destructive' })
+    } finally {
+      setIsExporting(false)
     }
-  }, [toast])
+  }, [toast, selectedProducts])
+
+  // Sync via FastAPI
+  const handleSync = useCallback(() => {
+    triggerSync.mutate({ syncType: 'products' })
+  }, [triggerSync])
+
+  // Enrichir IA via FastAPI
+  const handleEnrichAI = useCallback(() => {
+    const ids = selectedProducts.length > 0 ? selectedProducts : filteredProducts.map(p => p.id)
+    bulkEnrich.mutate({
+      filterCriteria: selectedProducts.length > 0 ? { product_ids: ids } : {},
+      enrichmentTypes: ['seo', 'description'],
+      limit: ids.length,
+    })
+  }, [selectedProducts, filteredProducts, bulkEnrich])
 
   const resetFilters = useCallback(() => {
     setSearch('')
@@ -203,6 +240,9 @@ export default function CatalogProductsPage() {
       badge={{ label: `${stats.total} produits`, icon: Package }}
     >
       <div className="space-y-4">
+        {/* === ACTIVE JOBS BANNER === */}
+        <ActiveJobsBanner />
+
         {/* === TOOLBAR === */}
         <div className="flex flex-col gap-3">
           {/* Row 1: Actions principales */}
@@ -212,28 +252,60 @@ export default function CatalogProductsPage() {
                 <Plus className="h-4 w-4" />
                 Nouveau produit
               </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/import/quick')}>
-                <Upload className="h-4 w-4" />
-                Importer
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2" onClick={handleExportCSV}>
-                <Download className="h-4 w-4" />
-                Exporter
+              <Button 
+                variant="outline" size="sm" className="gap-2 border-primary/50 text-primary hover:bg-primary/10" 
+                onClick={handleEnrichAI}
+                disabled={isBulkEnriching}
+              >
+                {isBulkEnriching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+                Enrichir IA
               </Button>
               <Button 
                 variant="outline" size="sm" className="gap-2" 
-                onClick={() => triggerSync.mutate({ syncType: 'products' })}
+                onClick={handleSync}
                 disabled={isSyncing}
               >
                 <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                 Sync
               </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/import/quick')}>
+                <Upload className="h-4 w-4" />
+                Importer
+              </Button>
+              <Button 
+                variant="outline" size="sm" className="gap-2" 
+                onClick={handleExportCSV}
+                disabled={isExporting}
+              >
+                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                Exporter
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" className="gap-2" onClick={handleRefresh} disabled={isLoading}>
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Actualiser
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Jobs tracker toggle */}
+              {activeJobs.length > 0 && (
+                <Button 
+                  variant="ghost" size="sm" className="gap-1.5 text-primary"
+                  onClick={() => setShowJobTracker(!showJobTracker)}
+                >
+                  <Zap className="h-4 w-4" />
+                  {activeJobs.length} job{activeJobs.length > 1 ? 's' : ''}
+                  <ChevronDown className={`h-3 w-3 transition-transform ${showJobTracker ? 'rotate-180' : ''}`} />
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" className="gap-2" onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Actualiser
+              </Button>
+            </div>
           </div>
+
+          {/* Job Tracker Panel (collapsible) */}
+          {showJobTracker && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+              <JobTrackerPanel />
+            </motion.div>
+          )}
 
           {/* Row 2: Filtres */}
           <div className="flex flex-col sm:flex-row gap-2">
@@ -305,6 +377,14 @@ export default function CatalogProductsPage() {
               {selectedProducts.length} sélectionné(s)
             </Badge>
             <div className="flex-1" />
+            <Button 
+              variant="outline" size="sm" className="gap-2" 
+              onClick={handleEnrichAI}
+              disabled={isBulkEnriching}
+            >
+              <Brain className="h-4 w-4" />
+              Enrichir IA
+            </Button>
             <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowPlatformExport(true)}>
               <Upload className="h-4 w-4" />
               Exporter
@@ -346,6 +426,20 @@ export default function CatalogProductsPage() {
             onItemsPerPageChange={(items) => { setItemsPerPage(items); setCurrentPage(1) }}
           />
         )}
+
+        {/* === JOB TRACKER (always visible at bottom) === */}
+        <Collapsible open={showJobTracker} onOpenChange={setShowJobTracker}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm" className="w-full gap-2 text-muted-foreground">
+              <Zap className="h-4 w-4" />
+              Historique des jobs ({activeJobs.length} actif{activeJobs.length !== 1 ? 's' : ''})
+              <ChevronDown className={`h-3 w-3 ml-auto transition-transform ${showJobTracker ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2">
+            <JobTrackerPanel />
+          </CollapsibleContent>
+        </Collapsible>
       </div>
 
       {/* === DIALOGS === */}
@@ -377,7 +471,7 @@ export default function CatalogProductsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer {selectedProducts.length} produit(s) ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Tous les produits sélectionnés seront définitivement supprimés.
+              Cette action est irréversible. Tous les produits sélectionnés seront définitivement supprimés via le backend.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
