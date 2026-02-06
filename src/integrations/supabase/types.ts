@@ -6806,6 +6806,111 @@ export type Database = {
         }
         Relationships: []
       }
+      job_items: {
+        Row: {
+          after_state: Json | null
+          before_state: Json | null
+          created_at: string
+          error_code: string | null
+          id: string
+          job_id: string
+          message: string | null
+          processed_at: string | null
+          product_id: string | null
+          status: string
+        }
+        Insert: {
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          error_code?: string | null
+          id?: string
+          job_id: string
+          message?: string | null
+          processed_at?: string | null
+          product_id?: string | null
+          status?: string
+        }
+        Update: {
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          error_code?: string | null
+          id?: string
+          job_id?: string
+          message?: string | null
+          processed_at?: string | null
+          product_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          failed_items: number | null
+          id: string
+          job_type: string
+          metadata: Json | null
+          processed_items: number | null
+          progress_percent: number | null
+          started_at: string | null
+          status: string
+          total_items: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          failed_items?: number | null
+          id?: string
+          job_type: string
+          metadata?: Json | null
+          processed_items?: number | null
+          progress_percent?: number | null
+          started_at?: string | null
+          status?: string
+          total_items?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          failed_items?: number | null
+          id?: string
+          job_type?: string
+          metadata?: Json | null
+          processed_items?: number | null
+          progress_percent?: number | null
+          started_at?: string | null
+          status?: string
+          total_items?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           content: Json
@@ -8913,6 +9018,70 @@ export type Database = {
           },
         ]
       }
+      product_pricing_state: {
+        Row: {
+          base_cost: number | null
+          computed_price: number | null
+          created_at: string
+          id: string
+          last_applied_at: string | null
+          margin_amount: number | null
+          margin_percent: number | null
+          product_id: string
+          rule_id: string | null
+          updated_at: string
+          variant_id: string | null
+        }
+        Insert: {
+          base_cost?: number | null
+          computed_price?: number | null
+          created_at?: string
+          id?: string
+          last_applied_at?: string | null
+          margin_amount?: number | null
+          margin_percent?: number | null
+          product_id: string
+          rule_id?: string | null
+          updated_at?: string
+          variant_id?: string | null
+        }
+        Update: {
+          base_cost?: number | null
+          computed_price?: number | null
+          created_at?: string
+          id?: string
+          last_applied_at?: string | null
+          margin_amount?: number | null
+          margin_percent?: number | null
+          product_id?: string
+          rule_id?: string | null
+          updated_at?: string
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_pricing_state_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_pricing_state_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_pricing_state_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_reviews: {
         Row: {
           author: string
@@ -9152,6 +9321,66 @@ export type Database = {
           },
         ]
       }
+      product_store_links: {
+        Row: {
+          created_at: string
+          external_product_id: string | null
+          external_variant_ids: Json | null
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          product_id: string
+          published: boolean | null
+          store_id: string
+          sync_config: Json | null
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_product_id?: string | null
+          external_variant_ids?: Json | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          product_id: string
+          published?: boolean | null
+          store_id: string
+          sync_config?: Json | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_product_id?: string | null
+          external_variant_ids?: Json | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          product_id?: string
+          published?: boolean | null
+          store_id?: string
+          sync_config?: Json | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_store_links_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_store_links_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_supplier_mapping: {
         Row: {
           auto_switch_enabled: boolean | null
@@ -9320,6 +9549,7 @@ export type Database = {
           is_published: boolean | null
           name: string | null
           price: number | null
+          product_type: string | null
           seo_description: string | null
           seo_title: string | null
           shopify_product_id: string | null
@@ -9334,6 +9564,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           variants: Json | null
+          vendor: string | null
           view_count: number | null
           weight: number | null
           weight_unit: string | null
@@ -9353,6 +9584,7 @@ export type Database = {
           is_published?: boolean | null
           name?: string | null
           price?: number | null
+          product_type?: string | null
           seo_description?: string | null
           seo_title?: string | null
           shopify_product_id?: string | null
@@ -9367,6 +9599,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           variants?: Json | null
+          vendor?: string | null
           view_count?: number | null
           weight?: number | null
           weight_unit?: string | null
@@ -9386,6 +9619,7 @@ export type Database = {
           is_published?: boolean | null
           name?: string | null
           price?: number | null
+          product_type?: string | null
           seo_description?: string | null
           seo_title?: string | null
           shopify_product_id?: string | null
@@ -9400,6 +9634,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           variants?: Json | null
+          vendor?: string | null
           view_count?: number | null
           weight?: number | null
           weight_unit?: string | null
@@ -11102,6 +11337,56 @@ export type Database = {
         }
         Relationships: []
       }
+      store_connections: {
+        Row: {
+          connected_at: string | null
+          created_at: string
+          encrypted_credentials: string | null
+          expires_at: string | null
+          id: string
+          last_error: string | null
+          platform: string
+          scopes: string[] | null
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string
+          encrypted_credentials?: string | null
+          expires_at?: string | null
+          id?: string
+          last_error?: string | null
+          platform: string
+          scopes?: string[] | null
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string
+          encrypted_credentials?: string | null
+          expires_at?: string | null
+          id?: string
+          last_error?: string | null
+          platform?: string
+          scopes?: string[] | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_connections_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_integrations: {
         Row: {
           access_token_encrypted: string | null
@@ -11162,6 +11447,42 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           webhook_secret?: string | null
+        }
+        Relationships: []
+      }
+      stores: {
+        Row: {
+          created_at: string
+          domain: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          platform: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          domain?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          platform: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          platform?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
