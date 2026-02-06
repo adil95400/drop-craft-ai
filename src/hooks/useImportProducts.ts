@@ -1,22 +1,29 @@
 /**
- * useImportProducts - Products list via FastAPI
- * Zero direct Supabase for product reads
+ * useImportProducts - Products list via Supabase direct
  */
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import type { ImportedProduct, AIJob, ScheduledImport } from '@/types/import';
 
 export function useImportProducts() {
-  const { data: productsData, isLoading: isLoadingProducts, refetch } = useQuery({
-    queryKey: ['imported-products'],
-    queryFn: async () => {
-      const res = await shopOptiApi.getProducts({ limit: 100 });
-      if (!res.success || !res.data) return [];
+  const { user } = useUnifiedAuth();
 
-      const products = Array.isArray(res.data) ? res.data : res.data?.products || res.data?.items || [];
-      return products;
+  const { data: productsData, isLoading: isLoadingProducts, refetch } = useQuery({
+    queryKey: ['imported-products', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data || [];
     },
+    enabled: !!user?.id,
   });
 
   const importedProducts = useMemo<ImportedProduct[]>(() => {

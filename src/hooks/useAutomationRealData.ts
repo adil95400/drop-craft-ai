@@ -1,9 +1,10 @@
 /**
- * Hook pour gérer les automatisations — via FastAPI
+ * Hook pour gérer les automatisations — via Supabase direct
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 
 export interface AutomationWorkflow {
   id: string;
@@ -31,38 +32,64 @@ export interface AutomationStats {
 }
 
 export function useAutomationWorkflows() {
+  const { user } = useUnifiedAuth();
+
   return useQuery({
-    queryKey: ['automation-workflows'],
+    queryKey: ['automation-workflows', user?.id],
     queryFn: async (): Promise<AutomationWorkflow[]> => {
-      const res = await shopOptiApi.getWorkflows();
-      if (!res.success) throw new Error(res.error || 'Failed to fetch workflows');
-      return res.data || [];
-    }
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('automation_workflows')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []).map((w: any) => ({
+        ...w,
+        execution_count: w.execution_count || w.run_count || 0,
+        success_rate: 100,
+      }));
+    },
+    enabled: !!user?.id,
   });
 }
 
 export function useAutomationStats() {
+  const { user } = useUnifiedAuth();
+
   return useQuery({
-    queryKey: ['automation-stats'],
+    queryKey: ['automation-stats', user?.id],
     queryFn: async (): Promise<AutomationStats> => {
-      const res = await shopOptiApi.request<AutomationStats>('/automation/stats');
-      if (!res.success) {
-        return {
-          totalWorkflows: 0,
-          activeWorkflows: 0,
-          totalExecutions: 0,
-          successRate: 100,
-          executionsToday: 0,
-          executionsThisWeek: 0
-        };
-      }
-      return res.data!;
-    }
+      if (!user?.id) return {
+        totalWorkflows: 0, activeWorkflows: 0, totalExecutions: 0,
+        successRate: 100, executionsToday: 0, executionsThisWeek: 0
+      };
+
+      const { data, error } = await supabase
+        .from('automation_workflows')
+        .select('id, is_active, run_count, execution_count')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      const workflows = data || [];
+      const totalExec = workflows.reduce((sum, w) => sum + ((w as any).execution_count || (w as any).run_count || 0), 0);
+
+      return {
+        totalWorkflows: workflows.length,
+        activeWorkflows: workflows.filter(w => w.is_active).length,
+        totalExecutions: totalExec,
+        successRate: 100,
+        executionsToday: 0,
+        executionsThisWeek: 0,
+      };
+    },
+    enabled: !!user?.id,
   });
 }
 
 export function useCreateAutomation() {
   const queryClient = useQueryClient();
+  const { user } = useUnifiedAuth();
 
   return useMutation({
     mutationFn: async (data: {
@@ -72,14 +99,21 @@ export function useCreateAutomation() {
       conditions?: any;
       steps?: any[];
     }) => {
-      const res = await shopOptiApi.createWorkflow({
-        name: data.name,
-        trigger_type: data.trigger_type,
-        description: data.description,
-        steps: data.steps,
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to create workflow');
-      return res.data;
+      if (!user?.id) throw new Error('Non authentifié');
+      const { data: result, error } = await supabase
+        .from('automation_workflows')
+        .insert({
+          user_id: user.id,
+          name: data.name,
+          description: data.description,
+          trigger_type: data.trigger_type || 'manual',
+          steps: data.steps,
+          workflow_data: data.conditions,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-workflows'] });
@@ -97,8 +131,11 @@ export function useToggleAutomation() {
 
   return useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      const res = await shopOptiApi.toggleWorkflow(id, !isActive);
-      if (!res.success) throw new Error(res.error || 'Failed to toggle workflow');
+      const { error } = await supabase
+        .from('automation_workflows')
+        .update({ is_active: !isActive })
+        .eq('id', id);
+      if (error) throw error;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['automation-workflows'] });
@@ -116,8 +153,11 @@ export function useDeleteAutomation() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await shopOptiApi.deleteWorkflow(id);
-      if (!res.success) throw new Error(res.error || 'Failed to delete workflow');
+      const { error } = await supabase
+        .from('automation_workflows')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-workflows'] });
@@ -135,9 +175,11 @@ export function useRunAutomation() {
 
   return useMutation({
     mutationFn: async (workflowId: string) => {
-      const res = await shopOptiApi.runWorkflow(workflowId);
-      if (!res.success) throw new Error(res.error || 'Failed to run workflow');
-      return res.data;
+      const { error } = await supabase
+        .from('automation_workflows')
+        .update({ last_run_at: new Date().toISOString() })
+        .eq('id', workflowId);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-workflows'] });

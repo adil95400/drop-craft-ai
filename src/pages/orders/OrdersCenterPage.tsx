@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useApiOrders } from '@/hooks/api';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -289,12 +289,16 @@ export default function OrdersCenterPage() {
 
     setIsLoading(true);
     try {
-      const res = await shopOptiApi.getOrders({ limit: 200 });
+      const { data: rawOrders, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(200);
+      
+      if (error) throw error;
 
-      if (!res.success) throw new Error(res.error || 'Failed to load orders');
-
-      const rawOrders = res.data?.orders || res.data || [];
-      const formattedOrders = (Array.isArray(rawOrders) ? rawOrders : []).map((order: any) => ({
+      const formattedOrders = (rawOrders || []).map((order: any) => ({
         id: order.id,
         order_number: order.order_number || order.id?.slice(0, 8),
         customer_id: order.customer_id || '',
@@ -361,19 +365,22 @@ export default function OrdersCenterPage() {
 
   const handleExport = async () => {
     try {
-      const res = await shopOptiApi.bulkExportOrders(
-        filteredOrders.map(o => o.id),
-        'csv'
-      );
-      
-      if (res.success) {
-        toast({
-          title: "Export lancé",
-          description: `Job: ${res.job_id || 'en cours'} — ${filteredOrders.length} commandes`
-        });
-      } else {
-        throw new Error(res.error);
-      }
+      // Client-side CSV export
+      const headers = ['ID', 'Numéro', 'Client', 'Statut', 'Montant', 'Date'];
+      const rows = filteredOrders.map(o => [o.id, o.order_number, o.customer_name, o.status, o.total_amount, o.created_at]);
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `commandes-export-${Date.now()}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export terminé",
+        description: `${filteredOrders.length} commandes exportées`
+      });
     } catch (error: any) {
       toast({
         title: "Erreur d'export",

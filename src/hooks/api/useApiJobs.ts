@@ -1,13 +1,11 @@
 /**
- * useApiJobs - Hook pour le suivi des jobs en arrière-plan via FastAPI
- * Combine les appels API et le realtime Supabase pour le suivi en temps réel
+ * useApiJobs - Hook pour le suivi des jobs en arrière-plan via Supabase
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 
 export interface Job {
   id: string
@@ -35,26 +33,46 @@ export function useApiJobs(options?: {
   const queryClient = useQueryClient()
   const { realtime = true } = options || {}
 
-  // Fetch jobs list from FastAPI
   const { data: jobs = [], isLoading, refetch } = useQuery({
     queryKey: ['api-jobs', user?.id, options?.status, options?.jobType],
     queryFn: async () => {
-      const res = await shopOptiApi.getJobs({
-        status: options?.status,
-        jobType: options?.jobType,
-        limit: options?.limit || 20,
-      })
-      if (res.success && res.data) {
-        return (Array.isArray(res.data) ? res.data : res.data.jobs || []) as Job[]
+      if (!user?.id) return []
+      let query = supabase
+        .from('background_jobs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(options?.limit || 20)
+
+      if (options?.status) {
+        query = query.eq('status', options.status)
       }
-      return []
+      if (options?.jobType) {
+        query = query.eq('job_type', options.jobType)
+      }
+
+      const { data, error } = await query
+      if (error) throw error
+      return (data || []).map((j: any) => ({
+        id: j.id,
+        user_id: j.user_id,
+        job_type: j.job_type,
+        status: j.status,
+        total_items: j.items_total || 0,
+        processed_items: j.items_processed || 0,
+        failed_items: j.items_failed || 0,
+        progress_percent: j.progress_percent || 0,
+        error_message: j.error_message,
+        metadata: j.metadata,
+        created_at: j.created_at,
+        updated_at: j.updated_at,
+      })) as Job[]
     },
     enabled: !!user,
     staleTime: 10_000,
-    refetchInterval: realtime ? false : 15_000, // Fallback polling if no realtime
+    refetchInterval: realtime ? false : 15_000,
   })
 
-  // Realtime subscription on jobs table
   useEffect(() => {
     if (!user || !realtime) return
 
@@ -65,66 +83,50 @@ export function useApiJobs(options?: {
         {
           event: '*',
           schema: 'public',
-          table: 'jobs',
+          table: 'background_jobs',
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
-          
-          // Notify on completion
           const newRecord = payload.new as any
           if (newRecord?.status === 'completed') {
-            toast({
-              title: 'Job terminé',
-              description: `${newRecord.job_type} terminé avec succès`,
-            })
+            toast({ title: 'Job terminé', description: `${newRecord.job_type} terminé avec succès` })
           } else if (newRecord?.status === 'failed') {
-            toast({
-              title: 'Job échoué',
-              description: newRecord.error_message || 'Une erreur est survenue',
-              variant: 'destructive',
-            })
+            toast({ title: 'Job échoué', description: newRecord.error_message || 'Une erreur est survenue', variant: 'destructive' })
           }
         }
       )
       .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [user?.id, realtime, queryClient, toast])
 
-  // Cancel a job
   const cancelJob = useMutation({
-    mutationFn: (jobId: string) => shopOptiApi.cancelJob(jobId),
-    onSuccess: (res) => {
-      if (res.success) {
-        queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
-        toast({ title: 'Job annulé' })
-      }
+    mutationFn: async (jobId: string) => {
+      const { error } = await supabase
+        .from('background_jobs')
+        .update({ status: 'cancelled' })
+        .eq('id', jobId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
+      toast({ title: 'Job annulé' })
     },
   })
 
-  // Retry a failed job
   const retryJob = useMutation({
-    mutationFn: (jobId: string) => shopOptiApi.retryJob(jobId),
-    onSuccess: (res) => {
-      if (res.success) {
-        queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
-        toast({ title: 'Job relancé' })
-      }
+    mutationFn: async (jobId: string) => {
+      const { error } = await supabase
+        .from('background_jobs')
+        .update({ status: 'pending', error_message: null })
+        .eq('id', jobId)
+      if (error) throw error
     },
-  })
-
-  // Job stats summary
-  const { data: jobStats } = useQuery({
-    queryKey: ['api-jobs-stats', user?.id],
-    queryFn: async () => {
-      const res = await shopOptiApi.getJobStats()
-      return res.success ? res.data : null
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
+      toast({ title: 'Job relancé' })
     },
-    enabled: !!user,
-    staleTime: 30_000,
   })
 
   const activeJobs = jobs.filter(j => j.status === 'running' || j.status === 'pending')
@@ -136,7 +138,7 @@ export function useApiJobs(options?: {
     activeJobs,
     completedJobs,
     failedJobs,
-    jobStats,
+    jobStats: null,
     isLoading,
     cancelJob: cancelJob.mutate,
     retryJob: retryJob.mutate,
@@ -146,9 +148,6 @@ export function useApiJobs(options?: {
   }
 }
 
-/**
- * useApiJobDetail - Suivi détaillé d'un job spécifique + ses items
- */
 export function useApiJobDetail(jobId: string | null) {
   const { user } = useAuth()
 
@@ -156,31 +155,21 @@ export function useApiJobDetail(jobId: string | null) {
     queryKey: ['api-job-detail', jobId],
     queryFn: async () => {
       if (!jobId) return null
-      const res = await shopOptiApi.getJob(jobId)
-      return res.success ? res.data : null
+      const { data, error } = await supabase
+        .from('background_jobs')
+        .select('*')
+        .eq('id', jobId)
+        .single()
+      if (error) return null
+      return data
     },
     enabled: !!user && !!jobId,
-    refetchInterval: 5_000, // Poll for progress
-  })
-
-  // Fetch job_items via FastAPI
-  const { data: jobItems = [] } = useQuery({
-    queryKey: ['api-job-items', jobId],
-    queryFn: async () => {
-      if (!jobId) return []
-      const res = await shopOptiApi.getJobItems(jobId, { limit: 200 })
-      if (res.success && res.data) {
-        return Array.isArray(res.data) ? res.data : res.data.items || []
-      }
-      return []
-    },
-    enabled: !!jobId,
     refetchInterval: 5_000,
   })
 
   return {
     job,
-    jobItems,
+    jobItems: [],
     isLoading,
     isRunning: job?.status === 'running' || job?.status === 'pending',
     isCompleted: job?.status === 'completed',

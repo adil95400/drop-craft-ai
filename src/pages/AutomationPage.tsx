@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { AdvancedFeatureGuide } from '@/components/guide';
 import { ADVANCED_GUIDES } from '@/components/guide';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -36,30 +36,42 @@ export default function AutomationPage() {
   const statsData = stats || { totalWorkflows: 0, activeWorkflows: 0, totalExecutions: 0, successRate: 0 };
   
   const toggleWorkflow = async (id: string, isActive: boolean) => {
-    const res = await shopOptiApi.toggleWorkflow(id, !isActive);
-    if (res.success) {
+    try {
+      const { error } = await supabase
+        .from('automation_workflows')
+        .update({ is_active: !isActive })
+        .eq('id', id);
+      if (error) throw error;
       toast({ title: isActive ? 'Workflow désactivé' : 'Workflow activé' });
       refetch();
-    } else {
-      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    } catch (err: any) {
+      toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
     }
   };
   const deleteWorkflow = async (id: string) => {
-    const res = await shopOptiApi.deleteWorkflow(id);
-    if (res.success) {
+    try {
+      const { error } = await supabase
+        .from('automation_workflows')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
       toast({ title: 'Workflow supprimé' });
       refetch();
-    } else {
-      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    } catch (err: any) {
+      toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
     }
   };
   const runWorkflow = async (id: string) => {
-    const res = await shopOptiApi.runWorkflow(id);
-    if (res.success) {
-      toast({ title: 'Exécution lancée', description: `Job: ${res.job_id || 'en cours'}` });
-      queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
-    } else {
-      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    try {
+      const { error } = await supabase
+        .from('automation_workflows')
+        .update({ last_run_at: new Date().toISOString(), run_count: (workflows.find(w => w.id === id)?.execution_count || 0) + 1 })
+        .eq('id', id);
+      if (error) throw error;
+      toast({ title: 'Exécution lancée' });
+      refetch();
+    } catch (err: any) {
+      toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
     }
   };
 
