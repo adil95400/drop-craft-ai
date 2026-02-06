@@ -80,6 +80,18 @@
       "js": ["content/dynamic-loader.js"],
       "css": ["content/shopopti-styles.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.aliexpress.com/*order*",
+        "https://*.aliexpress.com/*checkout*",
+        "https://*.cjdropshipping.com/*order*",
+        "https://*.cjdropshipping.com/*checkout*",
+        "https://*.alibaba.com/*order*",
+        "https://*.1688.com/*order*"
+      ],
+      "js": ["content/address-copier.js"],
+      "run_at": "document_idle"
     }
   ],
 
