@@ -555,6 +555,25 @@ class ShopOptiApiClient {
     });
   }
 
+  async bulkExportOrders(orderIds?: string[], format: 'csv' | 'json' = 'csv') {
+    return this.request('/orders/export', {
+      method: 'POST',
+      body: {
+        order_ids: orderIds,
+        format,
+      },
+      timeout: 60000,
+    });
+  }
+
+  async getProduct(productId: string) {
+    return this.request(`/products/${productId}`);
+  }
+
+  async getProductStoreLinks(productId: string) {
+    return this.request(`/products/${productId}/store-links`);
+  }
+
   // ==========================================
   // HEALTH CHECK
   // ==========================================

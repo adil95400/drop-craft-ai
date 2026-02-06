@@ -1,12 +1,6 @@
 /**
  * Product Details Page - Premium Redesign v3.0
- * Inspired by AutoDS, DSers and top dropshipping SaaS
- * Features:
- * - Hero section with image gallery
- * - Quick actions bar
- * - AI audit widget
- * - Performance metrics
- * - Multi-channel readiness
+ * All mutations via FastAPI (useApiProducts, useApiAI)
  */
 import { useState, useMemo } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -37,12 +31,19 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
+import { useApiProducts, useApiAI } from '@/hooks/api'
+import { useApiSync } from '@/hooks/api'
 
 export default function ProductDetailsPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { data: product, isLoading, refetch } = useProduct(id || '')
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+
+  // FastAPI hooks for mutations
+  const { updateProduct, deleteProduct } = useApiProducts()
+  const { generateContent, optimizeSeo, isGenerating, isOptimizingSeo } = useApiAI()
+  const { triggerSync } = useApiSync()
 
   // Calculate health score
   const healthScore = useMemo(() => {
@@ -77,7 +78,32 @@ export default function ProductDetailsPage() {
   }
 
   const handlePublish = () => {
-    toast.success('Publication en cours...')
+    if (!id) return
+    triggerSync.mutate({ syncType: 'products', options: { productIds: [id] } })
+  }
+
+  const handleOptimizeAI = () => {
+    if (!id) return
+    generateContent.mutate({
+      productId: id,
+      contentTypes: ['title', 'description', 'seo'],
+    })
+  }
+
+  const handleOptimizeSEO = () => {
+    if (!id) return
+    optimizeSeo.mutate({ productIds: [id] })
+  }
+
+  const handleDelete = () => {
+    if (!id) return
+    if (!confirm('Supprimer ce produit définitivement ?')) return
+    deleteProduct.mutate(id, {
+      onSuccess: () => {
+        toast.success('Produit supprimé')
+        navigate('/products')
+      },
+    })
   }
 
   if (isLoading) {
@@ -184,7 +210,7 @@ export default function ProductDetailsPage() {
                       Partager
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem className="text-destructive" onClick={handleDelete}>
                       <Trash2 className="h-4 w-4 mr-2" />
                       Supprimer
                     </DropdownMenuItem>
@@ -363,13 +389,13 @@ export default function ProductDetailsPage() {
                 <CardContent className="pt-4 pb-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Sparkles className="h-4 w-4" />
+                      <Button variant="outline" size="sm" className="gap-2" onClick={handleOptimizeAI} disabled={isGenerating}>
+                        {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                         Optimiser IA
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <FileText className="h-4 w-4" />
-                        Réécrire
+                      <Button variant="outline" size="sm" className="gap-2" onClick={handleOptimizeSEO} disabled={isOptimizingSeo}>
+                        {isOptimizingSeo ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                        SEO
                       </Button>
                       <Button variant="outline" size="sm" className="gap-2">
                         <Images className="h-4 w-4" />

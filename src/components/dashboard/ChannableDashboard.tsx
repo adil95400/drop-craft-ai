@@ -77,6 +77,7 @@ const MarketplacesWidget = lazy(() => import('./widgets/MarketplacesWidget').the
 import { OnboardingWidget, OnboardingModal } from '@/components/onboarding/UnifiedOnboarding';
 import { DashboardEmptyState } from './DashboardEmptyState';
 import { useDashboardEmptyState } from '@/hooks/useDashboardEmptyState';
+import { ActiveJobsBanner } from '@/components/jobs';
 
 // Widget loading skeleton
 const WidgetSkeleton = () => (
@@ -437,6 +438,9 @@ export function ChannableDashboard() {
         <>
           {/* Widget d'onboarding compact */}
           <OnboardingWidget />
+
+          {/* Active Jobs Banner */}
+          <ActiveJobsBanner />
 
           {/* Quick Stats Grid Premium - DONNÉES DYNAMIQUES */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label="Statistiques rapides">
