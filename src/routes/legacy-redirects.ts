@@ -10,6 +10,7 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   // Products - Consolidation catalogue
   '/catalogue': '/products/catalogue',
   '/my-products': '/products',
+  '/produits': '/products',
   
   // Import - (routes actuelles: /import/*). Ne pas rediriger /import vers /products/import
   // Anciennes routes /products/import* sont déjà gérées dans ProductRoutes.
