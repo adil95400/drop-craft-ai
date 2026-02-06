@@ -12,6 +12,9 @@ import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { AdvancedFeatureGuide } from '@/components/guide';
 import { ADVANCED_GUIDES } from '@/components/guide';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Lazy load enterprise components
 const WorkflowSandbox = lazy(() => import('@/components/automation/WorkflowSandbox').then(m => ({ default: m.WorkflowSandbox })));
@@ -19,6 +22,8 @@ const WorkflowTemplates = lazy(() => import('@/components/automation/WorkflowTem
 
 export default function AutomationPage() {
   const [activeTab, setActiveTab] = useState('list');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { 
     data: workflows = [], 
     isLoading: isLoadingWorkflows, 
@@ -31,13 +36,31 @@ export default function AutomationPage() {
   const statsData = stats || { totalWorkflows: 0, activeWorkflows: 0, totalExecutions: 0, successRate: 0 };
   
   const toggleWorkflow = async (id: string, isActive: boolean) => {
-    console.log('Toggle workflow', id, isActive);
+    const res = await shopOptiApi.toggleWorkflow(id, !isActive);
+    if (res.success) {
+      toast({ title: isActive ? 'Workflow désactivé' : 'Workflow activé' });
+      refetch();
+    } else {
+      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    }
   };
   const deleteWorkflow = async (id: string) => {
-    console.log('Delete workflow', id);
+    const res = await shopOptiApi.deleteWorkflow(id);
+    if (res.success) {
+      toast({ title: 'Workflow supprimé' });
+      refetch();
+    } else {
+      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    }
   };
   const runWorkflow = async (id: string) => {
-    console.log('Run workflow', id);
+    const res = await shopOptiApi.runWorkflow(id);
+    if (res.success) {
+      toast({ title: 'Exécution lancée', description: `Job: ${res.job_id || 'en cours'}` });
+      queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
+    } else {
+      toast({ title: 'Erreur', description: res.error, variant: 'destructive' });
+    }
   };
 
   const getTriggerIcon = (triggerType: string) => {
