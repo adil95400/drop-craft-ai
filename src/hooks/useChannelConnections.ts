@@ -1,10 +1,13 @@
 /**
  * Hook unifié pour les connexions canaux
- * Fusionne integrations + sales_channels et récupère les vraies statistiques
+ * READS: Supabase direct (realtime)
+ * MUTATIONS: FastAPI via useApiStores (jobs en arrière-plan)
  */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { useApiStores } from '@/hooks/api/useApiStores'
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 
 export interface ChannelConnection {
   id: string
@@ -32,8 +35,9 @@ export interface ChannelStats {
 
 export function useChannelConnections() {
   const queryClient = useQueryClient()
+  const apiStores = useApiStores()
 
-  // Fetch real data from both tables
+  // Fetch real data from both tables (READ via Supabase)
   const { data: connections = [], isLoading, error } = useQuery({
     queryKey: ['channel-connections-unified'],
     queryFn: async () => {
@@ -56,40 +60,24 @@ export function useChannelConnections() {
       
       if (scError) console.error('Sales channels error:', scError)
 
-      // Fetch real product counts from Shopify API for each connected store
-      const shopifyIntegrations = (integrations || []).filter(
-        d => d.connection_status === 'connected' && d.platform?.toLowerCase() === 'shopify'
-      )
-      
-      // Get product count directly from Shopify Admin API for each store
-      const shopifyProductCounts: Record<string, number> = {}
-      
-      for (const integration of shopifyIntegrations) {
-        try {
-          const config = integration.config as any
-          const credentials = config?.credentials || {}
-          const shopDomain = credentials.shop_domain || integration.store_url
-          const accessToken = credentials.access_token
-          
-          if (shopDomain && accessToken) {
-            // Fetch product count from Shopify Admin API
-            const response = await supabase.functions.invoke('shopify-admin-products', {
-              body: { shopDomain, accessToken, limit: 250 }
-            })
-            
-            if (response.data?.count) {
-              shopifyProductCounts[integration.id] = response.data.count
-            } else if (response.data?.products) {
-              // Fallback: count returned products
-              shopifyProductCounts[integration.id] = response.data.products.length
+      // Try to get real product counts from FastAPI
+      let storeStats: Record<string, { products: number; orders: number }> = {}
+      try {
+        const res = await shopOptiApi.getStores()
+        if (res.success && res.data) {
+          const storesData = Array.isArray(res.data) ? res.data : res.data.stores || []
+          storesData.forEach((s: any) => {
+            storeStats[s.id] = {
+              products: s.products_count || s.products_synced || 0,
+              orders: s.orders_count || s.orders_synced || 0,
             }
-          }
-        } catch (err) {
-          console.error(`Error fetching Shopify product count for ${integration.id}:`, err)
+          })
         }
+      } catch {
+        // Fallback: use local data
       }
 
-      // Fetch order count from local database (orders come from Shopify sync)
+      // Fetch order count from local database
       let orderCount = 0
       if (userId) {
         const ordersResult = await supabase
@@ -99,13 +87,10 @@ export function useChannelConnections() {
         orderCount = ordersResult.count || 0
       }
 
-      // Map integrations with real Shopify product counts
+      // Map integrations
       const mappedIntegrations: ChannelConnection[] = (integrations || []).map(d => {
-        const isConnectedShopify = d.connection_status === 'connected' && d.platform?.toLowerCase() === 'shopify'
-        const productsForThis = isConnectedShopify ? (shopifyProductCounts[d.id] || 0) : 0
-        const ordersForThis = isConnectedShopify && shopifyIntegrations.length > 0 
-          ? Math.floor(orderCount / shopifyIntegrations.length) 
-          : 0
+        const fastApiStats = storeStats[d.id]
+        const isConnected = d.connection_status === 'connected'
         
         return {
           id: d.id,
@@ -114,8 +99,8 @@ export function useChannelConnections() {
           shop_domain: d.store_url,
           connection_status: (d.connection_status as any) || 'disconnected',
           last_sync_at: d.last_sync_at,
-          products_synced: productsForThis,
-          orders_synced: ordersForThis,
+          products_synced: fastApiStats?.products ?? (isConnected ? ((d as any).store_config?.last_products_synced || 0) : 0),
+          orders_synced: fastApiStats?.orders ?? (isConnected ? Math.floor(orderCount / Math.max((integrations || []).filter(i => i.connection_status === 'connected').length, 1)) : 0),
           created_at: d.created_at || new Date().toISOString(),
           auto_sync_enabled: d.auto_sync_enabled || false,
           source: 'integrations' as const
@@ -129,6 +114,7 @@ export function useChannelConnections() {
           const config = d.sync_config as { auto_sync?: boolean }
           autoSyncEnabled = Boolean(config.auto_sync)
         }
+        const fastApiStats = storeStats[d.id]
         
         return {
           id: d.id,
@@ -137,8 +123,8 @@ export function useChannelConnections() {
           shop_domain: d.name,
           connection_status: mapSalesChannelStatus(d.status),
           last_sync_at: d.last_sync_at,
-          products_synced: d.products_synced || 0,
-          orders_synced: d.orders_synced || 0,
+          products_synced: fastApiStats?.products ?? (d.products_synced || 0),
+          orders_synced: fastApiStats?.orders ?? (d.orders_synced || 0),
           created_at: d.created_at,
           auto_sync_enabled: autoSyncEnabled,
           source: 'sales_channels' as const
@@ -148,7 +134,6 @@ export function useChannelConnections() {
       // Deduplicate by id
       const allConnections = [...mappedIntegrations, ...mappedSalesChannels]
       const uniqueById = new Map<string, ChannelConnection>()
-      
       allConnections.forEach(conn => {
         const existing = uniqueById.get(conn.id)
         if (!existing || conn.products_synced > (existing.products_synced || 0)) {
@@ -161,7 +146,7 @@ export function useChannelConnections() {
     staleTime: 30000
   })
 
-  // Compute stats from connections (which now have real Shopify counts)
+  // Compute stats from connections
   const stats: ChannelStats = {
     totalConnected: connections.filter(c => c.connection_status === 'connected').length,
     totalProducts: connections.reduce((sum, c) => sum + (c.products_synced || 0), 0),
@@ -172,102 +157,7 @@ export function useChannelConnections() {
     errorsCount: connections.filter(c => c.connection_status === 'error').length
   }
 
-  // Sync mutation
-  const syncMutation = useMutation({
-    mutationFn: async (connectionIds: string[]) => {
-      for (const id of connectionIds) {
-        const connection = connections.find(c => c.id === id)
-        if (!connection) continue
-
-        if (connection.source === 'integrations') {
-          await supabase.from('integrations').update({ 
-            connection_status: 'connecting',
-            last_sync_at: new Date().toISOString()
-          }).eq('id', connection.id)
-
-          // Simulate sync completion
-          await new Promise(resolve => setTimeout(resolve, 2000))
-
-          await supabase.from('integrations').update({ 
-            connection_status: 'connected'
-          }).eq('id', connection.id)
-        } else {
-          await supabase.from('sales_channels').update({ 
-            status: 'syncing',
-            last_sync_at: new Date().toISOString()
-          }).eq('id', connection.id)
-
-          await new Promise(resolve => setTimeout(resolve, 2000))
-
-          await supabase.from('sales_channels').update({ 
-            status: 'active'
-          }).eq('id', connection.id)
-        }
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['channel-connections-unified'] })
-      queryClient.invalidateQueries({ queryKey: ['channel-activity'] })
-      toast.success('Synchronisation terminée')
-    },
-    onError: (error) => {
-      toast.error(`Erreur de synchronisation: ${error.message}`)
-    }
-  })
-
-  // Delete mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (connectionIds: string[]) => {
-      for (const id of connectionIds) {
-        const connection = connections.find(c => c.id === id)
-        if (!connection) continue
-
-        if (connection.source === 'integrations') {
-          const { error } = await supabase.from('integrations').delete().eq('id', id)
-          if (error) throw error
-        } else {
-          const { error } = await supabase.from('sales_channels').delete().eq('id', id)
-          if (error) throw error
-        }
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['channel-connections-unified'] })
-      toast.success('Canal(aux) supprimé(s)')
-    },
-    onError: (error) => {
-      toast.error(`Erreur de suppression: ${error.message}`)
-    }
-  })
-
-  // Toggle auto-sync mutation
-  const toggleAutoSyncMutation = useMutation({
-    mutationFn: async ({ connectionIds, enabled }: { connectionIds: string[], enabled: boolean }) => {
-      for (const id of connectionIds) {
-        const connection = connections.find(c => c.id === id)
-        if (!connection) continue
-
-        if (connection.source === 'integrations') {
-          await supabase.from('integrations').update({ 
-            auto_sync_enabled: enabled
-          }).eq('id', id)
-        } else {
-          await supabase.from('sales_channels').update({ 
-            sync_config: { auto_sync: enabled, sync_interval_minutes: 60 }
-          }).eq('id', id)
-        }
-      }
-    },
-    onSuccess: (_, { enabled }) => {
-      queryClient.invalidateQueries({ queryKey: ['channel-connections-unified'] })
-      toast.success(enabled ? 'Auto-sync activé' : 'Auto-sync désactivé')
-    },
-    onError: (error) => {
-      toast.error(`Erreur: ${error.message}`)
-    }
-  })
-
-  // Export channels data
+  // Export channels data (client-side, no mock)
   const exportChannels = (connectionIds: string[]) => {
     const channelsToExport = connectionIds.length > 0 
       ? connections.filter(c => connectionIds.includes(c.id))
@@ -285,12 +175,10 @@ export function useChannelConnections() {
       date_creation: c.created_at
     }))
 
-    // Convert to CSV
     const headers = Object.keys(data[0] || {}).join(',')
     const rows = data.map(row => Object.values(row).join(','))
     const csv = [headers, ...rows].join('\n')
 
-    // Download file
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
@@ -305,10 +193,14 @@ export function useChannelConnections() {
     stats,
     isLoading,
     error,
-    syncMutation,
-    deleteMutation,
-    toggleAutoSyncMutation,
-    exportChannels
+    // ALL MUTATIONS via FastAPI (no more Supabase direct writes)
+    syncMutation: apiStores.syncStores,
+    deleteMutation: apiStores.deleteStores,
+    toggleAutoSyncMutation: apiStores.toggleAutoSync,
+    exportChannels,
+    // Flags
+    isSyncing: apiStores.isSyncing,
+    isDeleting: apiStores.isDeleting,
   }
 }
 

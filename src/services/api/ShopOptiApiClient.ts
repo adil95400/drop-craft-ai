@@ -150,6 +150,36 @@ class ShopOptiApiClient {
   }
 
   // ==========================================
+  // STORE MANAGEMENT ENDPOINTS
+  // ==========================================
+
+  async getStores() {
+    return this.request('/stores');
+  }
+
+  async getStore(storeId: string) {
+    return this.request(`/stores/${storeId}`);
+  }
+
+  async disconnectStore(storeId: string) {
+    return this.request(`/stores/${storeId}/disconnect`, { method: 'POST' });
+  }
+
+  async updateStoreAutoSync(storeId: string, enabled: boolean) {
+    return this.request(`/stores/${storeId}/auto-sync`, {
+      method: 'PATCH',
+      body: { enabled },
+    });
+  }
+
+  async getStoreHealth(storeId: string) {
+    return this.request(`/stores/${storeId}/health`);
+  }
+
+  async resetStoreSync(storeId: string) {
+    return this.request(`/sync/reset/${storeId}`, { method: 'POST' });
+  }
+  // ==========================================
   // PRODUCT ENDPOINTS
   // ==========================================
 

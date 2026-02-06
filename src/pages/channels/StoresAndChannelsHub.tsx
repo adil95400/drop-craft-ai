@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { useChannelConnections, type ChannelConnection } from '@/hooks/useChannelConnections'
 import { useChannelHealth } from '@/hooks/useChannelHealth'
 import { useChannelActivity } from '@/hooks/useChannelActivity'
+import { useApiJobs } from '@/hooks/api/useApiJobs'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 // Channable Components
@@ -445,6 +446,56 @@ function HealthMetricCard({ icon: Icon, label, value, status }: HealthMetricProp
   )
 }
 
+// ============= ACTIVE JOBS SIDEBAR =============
+function ActiveJobsSidebar() {
+  const { activeJobs, jobs } = useApiJobs({ limit: 5, jobType: 'sync' })
+  
+  const recentJobs = jobs.slice(0, 5)
+  if (recentJobs.length === 0) return null
+
+  return (
+    <Card className="border-border/40 bg-card/60 backdrop-blur-xl rounded-2xl overflow-hidden">
+      <CardHeader className="pb-3 border-b border-border/40">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-primary/10">
+            <Zap className="h-4 w-4 text-primary" />
+          </div>
+          Jobs Sync
+          {activeJobs.length > 0 && (
+            <Badge className="text-[10px] bg-primary/10 text-primary border-0">
+              {activeJobs.length} actif{activeJobs.length > 1 ? 's' : ''}
+            </Badge>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-3 space-y-2">
+        {recentJobs.map(job => {
+          const isActive = job.status === 'running' || job.status === 'pending'
+          const isDone = job.status === 'completed'
+          const isFail = job.status === 'failed'
+          return (
+            <div key={job.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 text-xs">
+              {isActive ? (
+                <Loader2 className="h-3.5 w-3.5 text-primary animate-spin shrink-0" />
+              ) : isDone ? (
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+              ) : isFail ? (
+                <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
+              ) : (
+                <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              )}
+              <span className="flex-1 truncate capitalize">{job.job_type?.replace(/_/g, ' ')}</span>
+              {isActive && (
+                <span className="text-primary font-medium">{Math.round(job.progress_percent || 0)}%</span>
+              )}
+            </div>
+          )
+        })}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ============= MAIN COMPONENT =============
 export default function StoresAndChannelsHub() {
   const navigate = useNavigate()
@@ -764,6 +815,9 @@ export default function StoresAndChannelsHub() {
 
           {/* Sidebar */}
           <div className="space-y-4">
+            {/* Active Jobs from FastAPI */}
+            <ActiveJobsSidebar />
+
             {/* Channel Health */}
             <Card className="border-border/40 bg-card/60 backdrop-blur-xl rounded-2xl overflow-hidden">
               <CardHeader className="pb-3 border-b border-border/40">

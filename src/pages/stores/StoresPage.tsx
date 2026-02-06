@@ -1,34 +1,38 @@
+/**
+ * StoresPage - Page legacy boutiques
+ * Mutations routées via FastAPI (useApiStores)
+ * Lectures via useIntegrationsUnified (Supabase)
+ */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useIntegrationsUnified } from '@/hooks/unified'
+import { useApiStores } from '@/hooks/api/useApiStores'
 import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus'
-import { Store, Plus, RefreshCw, Settings, Unplug, ExternalLink } from 'lucide-react'
+import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner'
+import { Store, Plus, RefreshCw, Unplug, ExternalLink, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 
 export default function StoresPage() {
-  const { integrations, isLoading: loading, refetch, sync: syncIntegration, disconnect: disconnectIntegration } = useIntegrationsUnified()
+  const { integrations, isLoading: loading, refetch } = useIntegrationsUnified()
+  const { syncStores, deleteStores, isSyncing, isDeleting } = useApiStores()
 
-  const handleSync = async (integrationId: string) => {
-    await syncIntegration(integrationId)
+  const handleSync = (integrationId: string) => {
+    syncStores.mutate([integrationId])
   }
 
-  const handleDisconnect = async (integrationId: string) => {
+  const handleDisconnect = (integrationId: string) => {
     if (confirm('Êtes-vous sûr de vouloir déconnecter cette boutique ?')) {
-      await disconnectIntegration(integrationId)
+      deleteStores.mutate([integrationId])
     }
   }
 
-  const getTotalStats = () => {
-    return {
-      stores: integrations.length,
-      connected: integrations.filter(i => i.connection_status === 'connected').length,
-      errors: integrations.filter(i => i.connection_status === 'error').length
-    }
+  const stats = {
+    stores: integrations.length,
+    connected: integrations.filter(i => i.connection_status === 'connected').length,
+    errors: integrations.filter(i => i.connection_status === 'error').length
   }
-
-  const stats = getTotalStats()
 
   if (loading) {
     return (
@@ -40,16 +44,8 @@ export default function StoresPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="w-32 h-6 bg-muted rounded" />
-                <div className="w-24 h-4 bg-muted rounded" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="w-full h-4 bg-muted rounded" />
-                  <div className="w-3/4 h-4 bg-muted rounded" />
-                </div>
-              </CardContent>
+              <CardHeader><div className="w-32 h-6 bg-muted rounded" /></CardHeader>
+              <CardContent><div className="w-full h-4 bg-muted rounded" /></CardContent>
             </Card>
           ))}
         </div>
@@ -67,9 +63,7 @@ export default function StoresPage() {
           <Store className="w-8 h-8 text-primary" />
           <div>
             <h1 className="text-3xl font-bold">Boutiques connectées</h1>
-            <p className="text-muted-foreground">
-              Gérez vos boutiques e-commerce connectées
-            </p>
+            <p className="text-muted-foreground">Gérez vos boutiques e-commerce connectées</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -86,38 +80,31 @@ export default function StoresPage() {
         </div>
       </div>
 
+      {/* Active Jobs */}
+      <div className="mb-6">
+        <ActiveJobsBanner />
+      </div>
+
       {/* Stats globales */}
       {integrations.length > 0 && (
         <div className="grid gap-4 md:grid-cols-3 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Boutiques totales
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Boutiques totales</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.stores}</div>
-            </CardContent>
+            <CardContent><div className="text-2xl font-bold">{stats.stores}</div></CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Connectées
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Connectées</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.connected}</div>
-            </CardContent>
+            <CardContent><div className="text-2xl font-bold text-emerald-600">{stats.connected}</div></CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Erreurs
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Erreurs</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
-            </CardContent>
+            <CardContent><div className="text-2xl font-bold text-destructive">{stats.errors}</div></CardContent>
           </Card>
         </div>
       )}
@@ -128,16 +115,11 @@ export default function StoresPage() {
           <CardHeader>
             <Store className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <CardTitle>Aucune boutique connectée</CardTitle>
-            <CardDescription>
-              Connectez votre première boutique pour commencer à synchroniser vos données
-            </CardDescription>
+            <CardDescription>Connectez votre première boutique pour commencer à synchroniser vos données</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="gap-2">
-              <Link to="/stores/connect">
-                <Plus className="w-4 h-4" />
-                Connecter une boutique
-              </Link>
+              <Link to="/stores/connect"><Plus className="w-4 h-4" />Connecter une boutique</Link>
             </Button>
           </CardContent>
         </Card>
@@ -147,7 +129,7 @@ export default function StoresPage() {
             <Card key={integration.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                       <Store className="w-5 h-5 text-primary" />
                     </div>
@@ -155,9 +137,7 @@ export default function StoresPage() {
                       <CardTitle className="text-base">
                         {(integration as any).config?.name || integration.platform_name}
                       </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {integration.platform_name}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{integration.platform_name}</p>
                     </div>
                   </div>
                   <StoreConnectionStatus status={integration.connection_status as any} />
@@ -168,34 +148,31 @@ export default function StoresPage() {
                   {integration.store_url && (
                     <div className="flex items-center gap-2 text-sm">
                       <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground truncate">
-                        {integration.store_url}
-                      </span>
+                      <span className="text-muted-foreground truncate">{integration.store_url}</span>
                     </div>
                   )}
-                  
                   {integration.last_sync_at && (
                     <div className="text-sm text-muted-foreground">
                       Dernière sync: {new Date(integration.last_sync_at).toLocaleDateString('fr-FR')}
                     </div>
                   )}
-
                   <div className="flex gap-2 pt-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleSync(integration.id)}
-                      disabled={integration.connection_status === 'connecting'}
+                      disabled={isSyncing}
                       className="flex-1"
                     >
-                      <RefreshCw className="w-4 h-4 mr-1" />
+                      {isSyncing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}
                       Sync
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDisconnect(integration.id)}
-                      className="text-red-600 hover:text-red-700"
+                      disabled={isDeleting}
+                      className="text-destructive hover:text-destructive"
                     >
                       <Unplug className="w-4 h-4" />
                     </Button>
