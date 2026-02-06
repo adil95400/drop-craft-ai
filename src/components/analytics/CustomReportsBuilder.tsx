@@ -10,9 +10,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Save, BarChart, TrendingUp, Users, ShoppingCart, Trash2, Play, Clock, Star, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
 
 interface Report {
   id: string;
@@ -49,15 +49,9 @@ export function CustomReportsBuilder() {
     queryKey: ['advanced-reports', user?.id],
     queryFn: async (): Promise<Report[]> => {
       if (!user?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('advanced_reports')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return (data || []) as Report[];
+      const res = await shopOptiApi.request<Report[]>('/reports');
+      if (!res.success) return [];
+      return res.data || [];
     },
     enabled: !!user?.id,
   });
@@ -65,22 +59,17 @@ export function CustomReportsBuilder() {
   const createReport = useMutation({
     mutationFn: async (reportConfig: ReportConfig) => {
       if (!user?.id) throw new Error('User not authenticated');
-      
-      const { data, error } = await supabase
-        .from('advanced_reports')
-        .insert({
+      const res = await shopOptiApi.request('/reports', {
+        method: 'POST',
+        body: {
           report_name: reportConfig.name,
           report_type: reportConfig.type,
           filters: { description: reportConfig.description },
           schedule: reportConfig.schedule,
-          status: 'draft',
-          user_id: user.id,
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+        },
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to create report');
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
@@ -88,12 +77,7 @@ export function CustomReportsBuilder() {
         title: '✅ Rapport créé',
         description: `Le rapport "${report.name}" a été créé avec succès`,
       });
-      setReport({
-        name: '',
-        description: '',
-        type: 'sales',
-        schedule: 'manual',
-      });
+      setReport({ name: '', description: '', type: 'sales', schedule: 'manual' });
     },
     onError: (error: Error) => {
       toast({
@@ -106,12 +90,8 @@ export function CustomReportsBuilder() {
 
   const deleteReport = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('advanced_reports')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
+      const res = await shopOptiApi.request(`/reports/${id}`, { method: 'DELETE' });
+      if (!res.success) throw new Error(res.error || 'Failed to delete report');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
@@ -124,12 +104,11 @@ export function CustomReportsBuilder() {
 
   const toggleFavorite = useMutation({
     mutationFn: async ({ id, is_favorite }: { id: string; is_favorite: boolean }) => {
-      const { error } = await supabase
-        .from('advanced_reports')
-        .update({ is_favorite: !is_favorite })
-        .eq('id', id);
-      
-      if (error) throw error;
+      const res = await shopOptiApi.request(`/reports/${id}`, {
+        method: 'PATCH',
+        body: { is_favorite: !is_favorite },
+      });
+      if (!res.success) throw new Error(res.error || 'Failed to toggle favorite');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
@@ -248,12 +227,7 @@ export function CustomReportsBuilder() {
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"
-              onClick={() => setReport({
-                name: '',
-                description: '',
-                type: 'sales',
-                schedule: 'manual',
-              })}
+              onClick={() => setReport({ name: '', description: '', type: 'sales', schedule: 'manual' })}
             >
               Annuler
             </Button>
