@@ -245,43 +245,54 @@ export default function ChoosePlanPage() {
                   </thead>
                   <tbody>
                     {FEATURE_ROWS.map((row, index) => (
-                      <tr
-                        key={row.key}
-                        className={cn(
-                          'border-b transition-colors hover:bg-muted/30',
-                          index % 2 === 0 && 'bg-muted/10'
+                      <React.Fragment key={row.key}>
+                        {row.section && (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="pt-6 pb-2 px-4 text-xs font-bold uppercase tracking-wider text-primary border-b-2 border-primary/20"
+                            >
+                              {isFr ? row.section : (row.sectionEn || row.section)}
+                            </td>
+                          </tr>
                         )}
-                      >
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
-                              {isFr ? row.labelFr : row.labelEn}
-                            </span>
-                            {row.tooltip && (
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Info className="w-3.5 h-3.5 text-muted-foreground/60" />
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs">
-                                  {row.tooltip}
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          {renderFeatureValue(row.standard)}
-                        </td>
-                        <td className={cn(
-                          'py-3.5 px-4 text-center',
-                          'bg-primary/[0.03]'
-                        )}>
-                          {renderFeatureValue(row.pro)}
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          {renderFeatureValue(row.ultra_pro)}
-                        </td>
-                      </tr>
+                        <tr
+                          className={cn(
+                            'border-b transition-colors hover:bg-muted/30',
+                            index % 2 === 0 && 'bg-muted/10'
+                          )}
+                        >
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">
+                                {isFr ? row.labelFr : row.labelEn}
+                              </span>
+                              {row.tooltip && (
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <Info className="w-3.5 h-3.5 text-muted-foreground/60" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    {row.tooltip}
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {renderFeatureValue(row.standard)}
+                          </td>
+                          <td className={cn(
+                            'py-3.5 px-4 text-center',
+                            'bg-primary/[0.03]'
+                          )}>
+                            {renderFeatureValue(row.pro)}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {renderFeatureValue(row.ultra_pro)}
+                          </td>
+                        </tr>
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>
