@@ -11178,6 +11178,435 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_ai_generations: {
+        Row: {
+          audit_id: string | null
+          cost_usd: number | null
+          created_at: string
+          id: string
+          input: Json
+          language: string
+          output: Json
+          page_id: string | null
+          tokens_used: number | null
+          tone: string
+          type: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          audit_id?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          id?: string
+          input?: Json
+          language?: string
+          output?: Json
+          page_id?: string | null
+          tokens_used?: number | null
+          tone?: string
+          type: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          audit_id?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          id?: string
+          input?: Json
+          language?: string
+          output?: Json
+          page_id?: string | null
+          tokens_used?: number | null
+          tone?: string
+          type?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_ai_generations_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_ai_generations_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audit_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_audit_pages: {
+        Row: {
+          audit_id: string
+          canonical_url: string | null
+          created_at: string
+          final_url: string | null
+          h1: string | null
+          h1_count: number | null
+          http_status: number | null
+          id: string
+          images_count: number | null
+          images_missing_alt_count: number | null
+          internal_links_out: number | null
+          issues_summary: Json
+          load_time_ms: number | null
+          meta_description: string | null
+          meta_description_length: number | null
+          normalized_url: string
+          og_present: boolean | null
+          page_type: string | null
+          raw: Json
+          redirect_chain: Json
+          robots_meta: string | null
+          score: number
+          structured_data_types: Json
+          title: string | null
+          title_length: number | null
+          twitter_cards_present: boolean | null
+          url: string
+          word_count: number | null
+        }
+        Insert: {
+          audit_id: string
+          canonical_url?: string | null
+          created_at?: string
+          final_url?: string | null
+          h1?: string | null
+          h1_count?: number | null
+          http_status?: number | null
+          id?: string
+          images_count?: number | null
+          images_missing_alt_count?: number | null
+          internal_links_out?: number | null
+          issues_summary?: Json
+          load_time_ms?: number | null
+          meta_description?: string | null
+          meta_description_length?: number | null
+          normalized_url: string
+          og_present?: boolean | null
+          page_type?: string | null
+          raw?: Json
+          redirect_chain?: Json
+          robots_meta?: string | null
+          score?: number
+          structured_data_types?: Json
+          title?: string | null
+          title_length?: number | null
+          twitter_cards_present?: boolean | null
+          url: string
+          word_count?: number | null
+        }
+        Update: {
+          audit_id?: string
+          canonical_url?: string | null
+          created_at?: string
+          final_url?: string | null
+          h1?: string | null
+          h1_count?: number | null
+          http_status?: number | null
+          id?: string
+          images_count?: number | null
+          images_missing_alt_count?: number | null
+          internal_links_out?: number | null
+          issues_summary?: Json
+          load_time_ms?: number | null
+          meta_description?: string | null
+          meta_description_length?: number | null
+          normalized_url?: string
+          og_present?: boolean | null
+          page_type?: string | null
+          raw?: Json
+          redirect_chain?: Json
+          robots_meta?: string | null
+          score?: number
+          structured_data_types?: Json
+          title?: string | null
+          title_length?: number | null
+          twitter_cards_present?: boolean | null
+          url?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_audit_pages_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_audits: {
+        Row: {
+          base_url: string
+          created_at: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          include_query_params: boolean
+          max_depth: number | null
+          max_urls: number
+          mode: string
+          page_type_filters: Json
+          rate_limit_rps: number
+          requested_by: string | null
+          respect_robots: boolean
+          sitemap_url: string | null
+          started_at: string | null
+          status: string
+          store_id: string | null
+          summary: Json
+          updated_at: string
+          url_patterns_exclude: Json
+          url_patterns_include: Json
+          user_id: string
+        }
+        Insert: {
+          base_url: string
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          include_query_params?: boolean
+          max_depth?: number | null
+          max_urls?: number
+          mode: string
+          page_type_filters?: Json
+          rate_limit_rps?: number
+          requested_by?: string | null
+          respect_robots?: boolean
+          sitemap_url?: string | null
+          started_at?: string | null
+          status?: string
+          store_id?: string | null
+          summary?: Json
+          updated_at?: string
+          url_patterns_exclude?: Json
+          url_patterns_include?: Json
+          user_id: string
+        }
+        Update: {
+          base_url?: string
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          include_query_params?: boolean
+          max_depth?: number | null
+          max_urls?: number
+          mode?: string
+          page_type_filters?: Json
+          rate_limit_rps?: number
+          requested_by?: string | null
+          respect_robots?: boolean
+          sitemap_url?: string | null
+          started_at?: string | null
+          status?: string
+          store_id?: string | null
+          summary?: Json
+          updated_at?: string
+          url_patterns_exclude?: Json
+          url_patterns_include?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      seo_fix_applies: {
+        Row: {
+          action: string
+          created_at: string
+          error_message: string | null
+          id: string
+          job_id: string | null
+          page_id: string | null
+          payload: Json
+          product_id: string | null
+          status: string
+          store_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_id?: string | null
+          page_id?: string | null
+          payload?: Json
+          product_id?: string | null
+          status?: string
+          store_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_id?: string | null
+          page_id?: string | null
+          payload?: Json
+          product_id?: string | null
+          status?: string
+          store_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_fix_applies_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audit_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_issues: {
+        Row: {
+          audit_id: string
+          code: string
+          created_at: string
+          evidence: Json
+          fix_actions: Json
+          id: string
+          is_fixable: boolean
+          message: string
+          page_id: string
+          recommendation: string | null
+          severity: string
+        }
+        Insert: {
+          audit_id: string
+          code: string
+          created_at?: string
+          evidence?: Json
+          fix_actions?: Json
+          id?: string
+          is_fixable?: boolean
+          message: string
+          page_id: string
+          recommendation?: string | null
+          severity: string
+        }
+        Update: {
+          audit_id?: string
+          code?: string
+          created_at?: string
+          evidence?: Json
+          fix_actions?: Json
+          id?: string
+          is_fixable?: boolean
+          message?: string
+          page_id?: string
+          recommendation?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_issues_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_issues_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "seo_audit_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_keyword_snapshots: {
+        Row: {
+          captured_at: string
+          cpc: number | null
+          difficulty: number | null
+          id: string
+          keyword_id: string
+          position: number | null
+          raw: Json
+          search_engine: string
+          search_volume: number | null
+          source: string | null
+          url: string | null
+        }
+        Insert: {
+          captured_at?: string
+          cpc?: number | null
+          difficulty?: number | null
+          id?: string
+          keyword_id: string
+          position?: number | null
+          raw?: Json
+          search_engine?: string
+          search_volume?: number | null
+          source?: string | null
+          url?: string | null
+        }
+        Update: {
+          captured_at?: string
+          cpc?: number | null
+          difficulty?: number | null
+          id?: string
+          keyword_id?: string
+          position?: number | null
+          raw?: Json
+          search_engine?: string
+          search_volume?: number | null
+          source?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_keyword_snapshots_keyword_id_fkey"
+            columns: ["keyword_id"]
+            isOneToOne: false
+            referencedRelation: "seo_keywords"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_keywords: {
+        Row: {
+          country: string | null
+          created_at: string
+          id: string
+          keyword: string
+          language: string
+          store_id: string | null
+          tags: Json
+          user_id: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          keyword: string
+          language?: string
+          store_id?: string | null
+          tags?: Json
+          user_id: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          keyword?: string
+          language?: string
+          store_id?: string | null
+          tags?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       seo_templates: {
         Row: {
           created_at: string | null

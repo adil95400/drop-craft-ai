@@ -5,506 +5,536 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, TrendingUp, Target, Globe, CheckCircle, AlertTriangle, Settings, Plus, Download, Upload, RefreshCw } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Search, TrendingUp, Target, Globe, CheckCircle, AlertTriangle, Plus, Download, RefreshCw, Play, FileText, Wand2, Wrench, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { useSEOAudits, useSEOAuditDetail, useSEOAuditPages, useSEOIssues, useSEOAIGenerate, useSEOFixApply, useSEOExport } from '@/hooks/useSEOAudits';
 import { useRealSEO } from '@/hooks/useRealSEO';
-import { SEOAuditCard } from '@/components/seo/SEOAuditCard';
 import { AddKeywordModal } from '@/components/seo/AddKeywordModal';
-import { SEOAnalysisModal } from '@/components/seo/SEOAnalysisModal';
-import { SEORecommendationsCard } from '@/components/seo/SEORecommendationsCard';
 import { SEOContentGenerator } from '@/components/seo/SEOContentGenerator';
-import { SEOTechnicalDetailsModal } from '@/components/seo/SEOTechnicalDetailsModal';
-import { SEOPageOptimizationModal } from '@/components/seo/SEOPageOptimizationModal';
+import { SEORecommendationsCard } from '@/components/seo/SEORecommendationsCard';
 import { useToast } from '@/hooks/use-toast';
-import { useSEOOptimization } from '@/hooks/useSEOOptimization';
-import { AdvancedFeatureGuide } from '@/components/guide';
-import { ADVANCED_GUIDES } from '@/components/guide';
 
 export default function SEOManagerPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddKeywordModal, setShowAddKeywordModal] = useState(false);
-  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
-  const [analysisUrl, setAnalysisUrl] = useState('');
-  const [showTechnicalModal, setShowTechnicalModal] = useState(false);
-  const [selectedTechnicalDetail, setSelectedTechnicalDetail] = useState(null);
-  const [showPageOptimizationModal, setShowPageOptimizationModal] = useState(false);
-  const [selectedPage, setSelectedPage] = useState(null);
-  
-  const { 
-    analyses, 
-    keywords, 
-    stats, 
-    isLoading,
-    analyzeUrl,
-    isAnalyzing,
-    addKeyword,
-    isAddingKeyword,
-    updateKeyword
-  } = useRealSEO();
-  
-  const { startOptimization, isOptimizing } = useSEOOptimization();
-  
+  const [showNewAuditModal, setShowNewAuditModal] = useState(false);
+  const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [showIssuesModal, setShowIssuesModal] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [pagesPage, setPagesPage] = useState(1);
+  const [pageTypeFilter, setPageTypeFilter] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState('score_desc');
+
+  // New audit form
+  const [auditMode, setAuditMode] = useState('single_url');
+  const [auditUrl, setAuditUrl] = useState('');
+  const [auditSitemapUrl, setAuditSitemapUrl] = useState('');
+  const [auditMaxUrls, setAuditMaxUrls] = useState(200);
+
+  // AI generate form
+  const [aiType, setAiType] = useState('meta_description');
+  const [aiLanguage, setAiLanguage] = useState('fr');
+  const [aiTone, setAiTone] = useState('professional');
+  const [aiKeywords, setAiKeywords] = useState('');
+
+  // Hooks
+  const { audits, isLoading: isLoadingAudits, createAudit, isCreating } = useSEOAudits();
+  const { audit: selectedAudit } = useSEOAuditDetail(selectedAuditId);
+  const { pages, total: totalPages, isLoading: isLoadingPages } = useSEOAuditPages(selectedAuditId, {
+    page: pagesPage,
+    limit: 50,
+    pageType: pageTypeFilter || undefined,
+    sort: sortOrder,
+  });
+  const { issues, isLoading: isLoadingIssues } = useSEOIssues(selectedPageId);
+  const { generate: generateAI, isGenerating } = useSEOAIGenerate();
+  const { applyFix, isApplying } = useSEOFixApply();
+  const { exportAudit, isExporting } = useSEOExport();
+  const { keywords, stats, isLoading: isLoadingKeywords, addKeyword, updateKeyword } = useRealSEO();
+
   const { toast } = useToast();
 
-  const handleAnalyzeUrl = async () => {
-    if (!analysisUrl.trim()) {
-      toast({
-        title: "URL manquante",
-        description: "Veuillez saisir une URL à analyser",
-        variant: "destructive"
-      });
+  const handleCreateAudit = () => {
+    if (!auditUrl.trim()) {
+      toast({ title: 'URL requise', description: 'Veuillez saisir une URL', variant: 'destructive' });
       return;
     }
-    
-    try {
-      await analyzeUrl(analysisUrl);
-      setAnalysisUrl('');
-      setShowAnalysisModal(false);
-    } catch (error) {
-      toast({
-        title: "Erreur d'analyse",
-        description: "Impossible d'analyser cette URL",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const exportSEOData = () => {
-    const data = {
-      analyses,
-      keywords,
-      stats,
-      exportedAt: new Date().toISOString()
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `seo-data-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Export réussi",
-      description: "Les données SEO ont été exportées"
+    createAudit({
+      mode: auditMode,
+      base_url: auditUrl,
+      sitemap_url: auditSitemapUrl || undefined,
+      max_urls: auditMaxUrls,
+      page_type_filters: ['product', 'category', 'blog', 'home'],
     });
+    setShowNewAuditModal(false);
+    setAuditUrl('');
   };
 
-  const filteredKeywords = keywords.filter(keyword => 
+  const handleExport = (auditId: string) => {
+    exportAudit({ auditId, format: 'csv' });
+  };
+
+  const handleAIGenerate = () => {
+    generateAI({
+      type: aiType,
+      page_id: selectedPageId || undefined,
+      language: aiLanguage,
+      tone: aiTone,
+      keywords: aiKeywords.split(',').map(k => k.trim()).filter(Boolean),
+      variants: 3,
+    });
+    setShowAIModal(false);
+  };
+
+  const filteredKeywords = keywords.filter(keyword =>
     keyword.keyword.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleTechnicalDetails = (detail: any) => {
-    setSelectedTechnicalDetail(detail);
-    setShowTechnicalModal(true);
-  };
-
-  const handlePageOptimization = (page: any) => {
-    setSelectedPage(page);
-    setShowPageOptimizationModal(true);
-  };
-
-  const technicalChecks = [
-    { 
-      check: 'Vitesse de chargement', 
-      status: 'success', 
-      details: '2.1s (Bon)',
-      score: 85,
-      impact: 'Une vitesse de chargement rapide améliore l\'expérience utilisateur et le classement SEO'
-    },
-    { 
-      check: 'Mobile-friendly', 
-      status: 'success', 
-      details: 'Compatible',
-      score: 95,
-      impact: 'La compatibilité mobile est essentielle pour le référencement Google'
-    },
-    { 
-      check: 'HTTPS', 
-      status: 'success', 
-      details: 'Sécurisé',
-      score: 100,
-      impact: 'HTTPS est un facteur de classement confirmé par Google'
-    },
-    { 
-      check: 'Sitemap XML', 
-      status: 'warning', 
-      details: 'À mettre à jour',
-      score: 70,
-      impact: 'Un sitemap à jour aide les moteurs de recherche à indexer vos pages'
-    },
-    { 
-      check: 'Robots.txt', 
-      status: 'success', 
-      details: 'Configuré',
-      score: 90,
-      impact: 'Le fichier robots.txt guide les crawlers des moteurs de recherche'
-    }
-  ];
-
-  const pagesData = [
-    { url: '/products', score: 85, issues: 2, status: 'good' as const },
-    { url: '/suppliers', score: 72, issues: 4, status: 'warning' as const },
-    { url: '/analytics', score: 91, issues: 1, status: 'good' as const },
-    { url: '/automation', score: 68, issues: 5, status: 'warning' as const }
-  ];
+  const totalPagesCount = Math.ceil(totalPages / 50);
 
   return (
     <>
       <Helmet>
-        <title>SEO Manager - Optimisation SEO | Drop Craft AI</title>
-        <meta name="description" content="Optimisez votre référencement naturel avec notre suite SEO complète. Suivi des mots-clés, analyse technique et recommandations IA." />
+        <title>SEO Manager Pro - Audit & Optimisation | Drop Craft AI</title>
+        <meta name="description" content="Suite SEO professionnelle : audits complets, suivi de mots-clés, génération IA, corrections automatiques." />
       </Helmet>
 
       <div className="space-y-8">
-        {/* Guide intégré */}
-        <AdvancedFeatureGuide {...ADVANCED_GUIDES.seo} />
-
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">SEO Manager</h1>
             <p className="text-muted-foreground">
-              Optimisez votre référencement naturel et améliorez votre visibilité
+              Audits, mots-clés, génération IA et corrections automatiques
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={exportSEOData}>
-              <Download className="mr-2 h-4 w-4" />
-              Exporter
-            </Button>
             <Button variant="outline" onClick={() => setShowAddKeywordModal(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter mot-clé
+              Mot-clé
             </Button>
-            <Button onClick={() => setShowAnalysisModal(true)}>
-              <Search className="mr-2 h-4 w-4" />
-              Analyser URL
+            <Button onClick={() => setShowNewAuditModal(true)}>
+              <Play className="mr-2 h-4 w-4" />
+              Nouvel Audit
             </Button>
           </div>
         </div>
 
-        {/* Métriques SEO */}
+        {/* Stats */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Score SEO Global</CardTitle>
+              <CardTitle className="text-sm font-medium">Audits</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl font-bold">{Math.round(stats.averageScore)}</span>
-                <span className="text-sm text-muted-foreground">/100</span>
-              </div>
-              <Progress value={stats.averageScore} className="h-2" />
+              <span className="text-2xl font-bold">{audits.length}</span>
+              <p className="text-xs text-muted-foreground">audits réalisés</p>
             </CardContent>
           </Card>
-          
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Mots-clés Trackés</CardTitle>
+              <CardTitle className="text-sm font-medium">Score Moyen</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl font-bold">{stats.totalKeywords}</span>
-                <span className="text-sm text-muted-foreground">actifs</span>
-              </div>
-              <Progress value={(stats.trackingKeywords / Math.max(stats.totalKeywords, 1)) * 100} className="h-2" />
+              <span className="text-2xl font-bold">{Math.round(stats.averageScore)}</span>
+              <span className="text-sm text-muted-foreground">/100</span>
+              <Progress value={stats.averageScore} className="h-2 mt-2" />
             </CardContent>
           </Card>
-          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Mots-clés</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <span className="text-2xl font-bold">{stats.totalKeywords}</span>
+              <p className="text-xs text-muted-foreground">{stats.trackingKeywords} actifs</p>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Pages Analysées</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl font-bold">{stats.totalPages}</span>
-                <span className="text-sm text-muted-foreground">pages</span>
-              </div>
-              <Progress value={(stats.totalPages / 50) * 100} className="h-2" />
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Analyses Total</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-2xl font-bold">{stats.totalAnalyses}</span>
-                <span className="text-sm text-muted-foreground">réalisées</span>
-              </div>
-              <Progress value={(stats.totalAnalyses / 100) * 100} className="h-2" />
+              <span className="text-2xl font-bold">{stats.totalPages}</span>
+              <p className="text-xs text-muted-foreground">pages indexées</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Contenu Principal */}
-        <Tabs defaultValue="keywords" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="keywords">Mots-clés</TabsTrigger>
-            <TabsTrigger value="analyses">Analyses</TabsTrigger>
-            <TabsTrigger value="generator">Générateur</TabsTrigger>
+        {/* Main Tabs */}
+        <Tabs defaultValue="audits" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="audits">Audits</TabsTrigger>
             <TabsTrigger value="pages">Pages</TabsTrigger>
-            <TabsTrigger value="technical">Technique</TabsTrigger>
+            <TabsTrigger value="keywords">Mots-clés</TabsTrigger>
+            <TabsTrigger value="generator">Générateur IA</TabsTrigger>
             <TabsTrigger value="recommendations">Recommandations</TabsTrigger>
           </TabsList>
 
+          {/* ── Audits Tab ── */}
+          <TabsContent value="audits" className="space-y-4">
+            {isLoadingAudits ? (
+              <Card><CardContent className="py-8 text-center"><RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" /><p>Chargement...</p></CardContent></Card>
+            ) : audits.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <Search className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Aucun audit SEO</h3>
+                  <p className="text-muted-foreground mb-4">Lancez votre premier audit pour analyser vos pages</p>
+                  <Button onClick={() => setShowNewAuditModal(true)}>
+                    <Play className="mr-2 h-4 w-4" />Lancer un audit
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {audits.map((audit) => (
+                  <Card key={audit.id} className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setSelectedAuditId(audit.id)}>
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-semibold">{audit.base_url}</span>
+                          <Badge variant={
+                            audit.status === 'succeeded' ? 'default' :
+                            audit.status === 'running' ? 'secondary' :
+                            audit.status === 'failed' ? 'destructive' : 'outline'
+                          }>
+                            {audit.status === 'queued' ? 'En attente' :
+                             audit.status === 'running' ? 'En cours' :
+                             audit.status === 'succeeded' ? 'Terminé' :
+                             audit.status === 'failed' ? 'Échoué' : audit.status}
+                          </Badge>
+                          <Badge variant="outline">{audit.mode}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(audit.created_at).toLocaleDateString('fr-FR')} • Max {audit.max_urls} URLs
+                          {audit.summary?.avg_score != null && ` • Score: ${audit.summary.avg_score}/100`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleExport(audit.id); }} disabled={isExporting}>
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setSelectedAuditId(audit.id); }}>
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ── Pages Tab ── */}
+          <TabsContent value="pages" className="space-y-4">
+            {!selectedAuditId ? (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Sélectionnez un audit</h3>
+                  <p className="text-muted-foreground">Cliquez sur un audit dans l'onglet "Audits" pour voir ses pages</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Pages analysées</CardTitle>
+                      <CardDescription>{totalPages} pages • Audit: {selectedAudit?.base_url}</CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      <Select value={pageTypeFilter} onValueChange={setPageTypeFilter}>
+                        <SelectTrigger className="w-40"><SelectValue placeholder="Type" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Tous</SelectItem>
+                          <SelectItem value="product">Produit</SelectItem>
+                          <SelectItem value="category">Catégorie</SelectItem>
+                          <SelectItem value="blog">Blog</SelectItem>
+                          <SelectItem value="home">Accueil</SelectItem>
+                          <SelectItem value="cms">CMS</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={sortOrder} onValueChange={setSortOrder}>
+                        <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="score_desc">Score ↓</SelectItem>
+                          <SelectItem value="score_asc">Score ↑</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingPages ? (
+                    <div className="text-center py-8"><RefreshCw className="h-6 w-6 animate-spin mx-auto" /></div>
+                  ) : (
+                    <div className="space-y-2">
+                      {pages.map((page) => (
+                        <div key={page.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{page.url}</p>
+                            <div className="flex gap-2 mt-1">
+                              {page.page_type && <Badge variant="outline" className="text-xs">{page.page_type}</Badge>}
+                              {page.http_status && <Badge variant={page.http_status === 200 ? 'default' : 'destructive'} className="text-xs">{page.http_status}</Badge>}
+                              {page.issues_summary?.critical > 0 && <Badge variant="destructive" className="text-xs">{page.issues_summary.critical} critique(s)</Badge>}
+                              {page.issues_summary?.major > 0 && <Badge variant="secondary" className="text-xs">{page.issues_summary.major} majeur(s)</Badge>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 ml-4">
+                            <div className="text-right">
+                              <div className="text-lg font-bold">{page.score}/100</div>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={() => { setSelectedPageId(page.id); setShowIssuesModal(true); }}>
+                              Issues
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => { setSelectedPageId(page.id); setShowAIModal(true); }}>
+                              <Wand2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Pagination */}
+                      {totalPagesCount > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                          <Button variant="outline" size="sm" disabled={pagesPage <= 1} onClick={() => setPagesPage(p => p - 1)}>
+                            <ChevronLeft className="h-4 w-4 mr-1" />Précédent
+                          </Button>
+                          <span className="text-sm text-muted-foreground">Page {pagesPage} / {totalPagesCount}</span>
+                          <Button variant="outline" size="sm" disabled={pagesPage >= totalPagesCount} onClick={() => setPagesPage(p => p + 1)}>
+                            Suivant<ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* ── Keywords Tab ── */}
           <TabsContent value="keywords" className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Suivi des Mots-clés</CardTitle>
-                    <CardDescription>
-                      Suivez les positions de vos mots-clés stratégiques ({filteredKeywords.length} mots-clés)
-                    </CardDescription>
+                    <CardDescription>{filteredKeywords.length} mots-clés suivis</CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="Rechercher un mot-clé..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="max-w-sm"
-                    />
-                    <Button onClick={() => setShowAddKeywordModal(true)}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Ajouter
-                    </Button>
+                    <Input placeholder="Rechercher..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm" />
+                    <Button onClick={() => setShowAddKeywordModal(true)}><Plus className="mr-2 h-4 w-4" />Ajouter</Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {isLoading ? (
-                    <div className="text-center py-8">
-                      <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                      <p>Chargement des mots-clés...</p>
-                    </div>
-                  ) : filteredKeywords.length > 0 ? (
-                    filteredKeywords.map((keyword) => (
-                      <div key={keyword.id} className="flex items-center justify-between p-4 border rounded-lg">
+                {isLoadingKeywords ? (
+                  <div className="text-center py-8"><RefreshCw className="h-8 w-8 animate-spin mx-auto" /></div>
+                ) : filteredKeywords.length > 0 ? (
+                  <div className="space-y-3">
+                    {filteredKeywords.map((kw) => (
+                      <div key={kw.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex-1">
-                          <h4 className="font-semibold">{keyword.keyword}</h4>
+                          <h4 className="font-semibold">{kw.keyword}</h4>
                           <p className="text-sm text-muted-foreground">
-                            Volume: {keyword.search_volume?.toLocaleString() || 'N/A'} recherches/mois
-                            {keyword.difficulty_score && ` • Difficulté: ${keyword.difficulty_score}/100`}
+                            Volume: {kw.search_volume?.toLocaleString() || 'N/A'}
+                            {kw.difficulty_score && ` • Difficulté: ${kw.difficulty_score}/100`}
                           </p>
-                          {keyword.target_url && (
-                            <p className="text-xs text-blue-600">{keyword.target_url}</p>
-                          )}
+                          {kw.target_url && <p className="text-xs text-blue-600">{kw.target_url}</p>}
                         </div>
                         <div className="flex items-center space-x-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold">
-                              #{keyword.current_position || '--'}
-                            </div>
-                            <Badge variant={keyword.tracking_active ? 'default' : 'secondary'}>
-                              {keyword.tracking_active ? 'Actif' : 'Inactif'}
+                            <div className="text-2xl font-bold">#{kw.current_position || '--'}</div>
+                            <Badge variant={kw.tracking_active ? 'default' : 'secondary'}>
+                              {kw.tracking_active ? 'Actif' : 'Inactif'}
                             </Badge>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => updateKeyword({ 
-                              id: keyword.id, 
-                              updates: { tracking_active: !keyword.tracking_active } 
-                            })}
-                          >
-                            {keyword.tracking_active ? 'Désactiver' : 'Activer'}
+                          <Button variant="outline" size="sm" onClick={() => updateKeyword({ id: kw.id, updates: { tracking_active: !kw.tracking_active } })}>
+                            {kw.tracking_active ? 'Désactiver' : 'Activer'}
                           </Button>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
-                      <Target className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Aucun mot-clé trouvé</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Ajoutez des mots-clés pour commencer le suivi SEO
-                      </p>
-                      <Button onClick={() => setShowAddKeywordModal(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Ajouter votre premier mot-clé
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Target className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Aucun mot-clé</h3>
+                    <Button onClick={() => setShowAddKeywordModal(true)}><Plus className="mr-2 h-4 w-4" />Ajouter un mot-clé</Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="analyses" className="space-y-4">
-            <div className="grid gap-4">
-              {analyses.length > 0 ? (
-                analyses.map((analysis) => (
-                  <SEOAuditCard
-                    key={analysis.id}
-                    url={analysis.url}
-                    score={analysis.overall_score}
-                    issues={[
-                      ...(analysis.issues?.critical || []).map((issue: any) => ({
-                        type: 'critical' as const,
-                        title: issue.title || 'Problème critique',
-                        description: issue.description || '',
-                        howToFix: issue.solution || 'Solution à définir',
-                        impact: 'high' as const
-                      })),
-                      ...(analysis.issues?.warnings || []).map((issue: any) => ({
-                        type: 'warning' as const,
-                        title: issue.title || 'Avertissement',
-                        description: issue.description || '',
-                        howToFix: issue.solution || 'Solution à définir',
-                        impact: 'medium' as const
-                      }))
-                    ]}
-                    lastAudited={new Date(analysis.analyzed_at)}
-                    onReaudit={() => analyzeUrl(analysis.url)}
-                    loading={isAnalyzing}
-                  />
-                ))
-              ) : (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <Search className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Aucune analyse SEO</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Lancez votre première analyse pour obtenir des insights SEO
-                    </p>
-                    <Button onClick={() => setShowAnalysisModal(true)}>
-                      <Search className="mr-2 h-4 w-4" />
-                      Analyser une URL
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
-
+          {/* ── Generator Tab ── */}
           <TabsContent value="generator" className="space-y-4">
             <SEOContentGenerator />
           </TabsContent>
 
-          <TabsContent value="pages" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Analyse des Pages</CardTitle>
-                <CardDescription>
-                  Optimisation SEO de vos pages principales
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {pagesData.map((page, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-1">
-                          <h4 className="font-semibold">{page.url}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {page.issues} problème(s) détecté(s)
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <div className="text-lg font-bold">{page.score}/100</div>
-                          <Badge variant={page.status === 'good' ? 'default' : 'secondary'}>
-                            {page.status === 'good' ? 'Bon' : 'À améliorer'}
-                          </Badge>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handlePageOptimization(page)}
-                        >
-                          Optimiser
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="technical" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Audit Technique</CardTitle>
-                <CardDescription>
-                  Vérification technique de votre site
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {technicalChecks.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        {item.status === 'success' ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                        )}
-                        <div>
-                          <h4 className="font-medium">{item.check}</h4>
-                          <p className="text-sm text-muted-foreground">{item.details}</p>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleTechnicalDetails(item)}
-                      >
-                        Détails
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
+          {/* ── Recommendations Tab ── */}
           <TabsContent value="recommendations" className="space-y-4">
-            <SEORecommendationsCard loading={isLoading} />
+            <SEORecommendationsCard loading={isLoadingAudits} />
           </TabsContent>
         </Tabs>
 
-        {/* Modals */}
-        <AddKeywordModal 
-          open={showAddKeywordModal} 
-          onOpenChange={setShowAddKeywordModal} 
-        />
-        
-        <SEOAnalysisModal
-          open={showAnalysisModal}
-          onOpenChange={(open) => {
-            setShowAnalysisModal(open);
-            if (!open) setAnalysisUrl('');
-          }}
-          onAnalyze={async (url, options) => {
-            setAnalysisUrl(url);
-            await handleAnalyzeUrl();
-          }}
-          isAnalyzing={isAnalyzing}
-        />
-        
-        <SEOTechnicalDetailsModal
-          open={showTechnicalModal}
-          onOpenChange={setShowTechnicalModal}
-          detail={selectedTechnicalDetail}
-          onOptimize={(checkType, recommendations) => {
-            startOptimization({ checkType, recommendations });
-          }}
-        />
-        
-        <SEOPageOptimizationModal
-          open={showPageOptimizationModal}
-          onOpenChange={setShowPageOptimizationModal}
-          page={selectedPage}
-        />
+        {/* ── New Audit Modal ── */}
+        <Dialog open={showNewAuditModal} onOpenChange={setShowNewAuditModal}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Nouvel Audit SEO</DialogTitle>
+              <DialogDescription>Configurez les paramètres de votre audit</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Mode d'audit</label>
+                <Select value={auditMode} onValueChange={setAuditMode}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single_url">URL unique</SelectItem>
+                    <SelectItem value="sitemap">Sitemap</SelectItem>
+                    <SelectItem value="crawl">Crawl complet</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">URL de base</label>
+                <Input placeholder="https://example.com" value={auditUrl} onChange={(e) => setAuditUrl(e.target.value)} />
+              </div>
+              {auditMode === 'sitemap' && (
+                <div>
+                  <label className="text-sm font-medium">URL du sitemap</label>
+                  <Input placeholder="https://example.com/sitemap.xml" value={auditSitemapUrl} onChange={(e) => setAuditSitemapUrl(e.target.value)} />
+                </div>
+              )}
+              <div>
+                <label className="text-sm font-medium">Nombre max d'URLs</label>
+                <Input type="number" value={auditMaxUrls} onChange={(e) => setAuditMaxUrls(Number(e.target.value))} min={1} max={10000} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowNewAuditModal(false)}>Annuler</Button>
+              <Button onClick={handleCreateAudit} disabled={isCreating}>
+                {isCreating ? <><RefreshCw className="mr-2 h-4 w-4 animate-spin" />Lancement...</> : <><Play className="mr-2 h-4 w-4" />Lancer l'audit</>}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* ── Issues Modal ── */}
+        <Dialog open={showIssuesModal} onOpenChange={setShowIssuesModal}>
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Issues SEO</DialogTitle>
+              <DialogDescription>Problèmes détectés sur cette page</DialogDescription>
+            </DialogHeader>
+            {isLoadingIssues ? (
+              <div className="text-center py-8"><RefreshCw className="h-6 w-6 animate-spin mx-auto" /></div>
+            ) : issues.length === 0 ? (
+              <div className="text-center py-8">
+                <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-2" />
+                <p>Aucune issue détectée</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {issues.map((issue) => (
+                  <div key={issue.id} className="p-3 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant={
+                        issue.severity === 'critical' ? 'destructive' :
+                        issue.severity === 'major' ? 'secondary' : 'outline'
+                      }>
+                        {issue.severity}
+                      </Badge>
+                      <span className="font-mono text-xs text-muted-foreground">{issue.code}</span>
+                    </div>
+                    <p className="font-medium">{issue.message}</p>
+                    {issue.recommendation && <p className="text-sm text-muted-foreground mt-1">{issue.recommendation}</p>}
+                    {issue.is_fixable && (
+                      <div className="mt-2">
+                        {issue.fix_actions.map((action: string) => (
+                          <Button key={action} variant="outline" size="sm" className="mr-2" disabled={isApplying}
+                            onClick={() => applyFix({ action, page_id: selectedPageId || undefined })}>
+                            <Wrench className="mr-1 h-3 w-3" />{action.replace('_', ' ')}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* ── AI Generate Modal ── */}
+        <Dialog open={showAIModal} onOpenChange={setShowAIModal}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Générer du contenu SEO (IA)</DialogTitle>
+              <DialogDescription>Génération automatique via intelligence artificielle</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Type de contenu</label>
+                <Select value={aiType} onValueChange={setAiType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="meta_description">Meta Description</SelectItem>
+                    <SelectItem value="title">Title</SelectItem>
+                    <SelectItem value="h1">H1</SelectItem>
+                    <SelectItem value="alt_text">Alt Text</SelectItem>
+                    <SelectItem value="faq">FAQ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Langue</label>
+                <Select value={aiLanguage} onValueChange={setAiLanguage}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fr">Français</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="es">Español</SelectItem>
+                    <SelectItem value="de">Deutsch</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Ton</label>
+                <Select value={aiTone} onValueChange={setAiTone}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="professional">Professionnel</SelectItem>
+                    <SelectItem value="casual">Décontracté</SelectItem>
+                    <SelectItem value="persuasive">Persuasif</SelectItem>
+                    <SelectItem value="informative">Informatif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Mots-clés (séparés par des virgules)</label>
+                <Input placeholder="chaussure, cuir, artisanal" value={aiKeywords} onChange={(e) => setAiKeywords(e.target.value)} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAIModal(false)}>Annuler</Button>
+              <Button onClick={handleAIGenerate} disabled={isGenerating}>
+                {isGenerating ? <><RefreshCw className="mr-2 h-4 w-4 animate-spin" />Génération...</> : <><Wand2 className="mr-2 h-4 w-4" />Générer</>}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Keywords Modal */}
+        <AddKeywordModal open={showAddKeywordModal} onOpenChange={setShowAddKeywordModal} />
       </div>
     </>
   );
