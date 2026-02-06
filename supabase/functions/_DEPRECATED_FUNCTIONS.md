@@ -2,6 +2,22 @@
 
 Ce document documente les fonctions obsolètes qui ont été supprimées.
 
+## Nettoyage Batch 2 — 45 fonctions non-référencées supprimées
+
+Fonctions supprimées car jamais invoquées dans le frontend (src/) :
+- ai-ad-creator, ai-ad-creator-complete, ai-content-secure
+- enrich-product, enrich-product-ai, conversion-analytics, seed-dev
+- aliexpress-integration, aliexpress-api, amazon-pa-api, amazon-seller-api
+- ebay-browse-api, ebay-trading-api, global-seo-scanner
+- shopify-webhook-handler, shopify-webhook, shopify-auth, shopify-product-create, sync-shopify
+- supplier-import-csv, supplier-order-automation, supplier-place-order
+- supplier-webhook-bigbuy, supplier-webhook-cj, supplier-webhook-handler, supplier-webhooks
+- stock-auto-update, stock-sync-cross-marketplace, prestashop-sync-products
+- sync-all-tracking, sync-orders-to-channels, sync-stock-to-channels, sync-tracking-to-channels
+- tracking-sync, unified-channel-webhooks, webhook-delivery, creative-generation
+- winners-amazon, winners-ebay, maintenance, api
+- bts-csv-import, import-bts-csv, secure-integration-credentials, secure-supplier-credentials
+
 ## Nettoyage du 2026-02-06 — 54 fonctions supprimées
 
 ### Dev/Test (6)
