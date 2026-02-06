@@ -17,6 +17,8 @@ import { SEOTechnicalDetailsModal } from '@/components/seo/SEOTechnicalDetailsMo
 import { SEOPageOptimizationModal } from '@/components/seo/SEOPageOptimizationModal';
 import { useToast } from '@/hooks/use-toast';
 import { useSEOOptimization } from '@/hooks/useSEOOptimization';
+import { AdvancedFeatureGuide } from '@/components/guide';
+import { ADVANCED_GUIDES } from '@/components/guide';
 
 export default function SEOManagerPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -158,6 +160,9 @@ export default function SEOManagerPage() {
       </Helmet>
 
       <div className="space-y-8">
+        {/* Guide intégré */}
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.seo} />
+
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>

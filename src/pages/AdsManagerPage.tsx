@@ -13,6 +13,8 @@ import {
 import { useRealAdsManager } from '@/hooks/useRealAdsManager';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { cn } from '@/lib/utils';
+import { AdvancedFeatureGuide } from '@/components/guide';
+import { ADVANCED_GUIDES } from '@/components/guide';
 
 export default function AdsManagerPage() {
   const { campaigns, metrics, isLoading, refetch } = useRealAdsManager();
@@ -70,6 +72,9 @@ export default function AdsManagerPage() {
           </div>
         }
       >
+
+          {/* Guide intégré */}
+          <AdvancedFeatureGuide {...ADVANCED_GUIDES.ads} />
 
           {/* Stats Overview */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

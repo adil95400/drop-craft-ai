@@ -7,6 +7,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Settings, Trash2, Play, Pause } from 'lucide-react'
+import { AdvancedFeatureGuide } from '@/components/guide'
+import { ADVANCED_GUIDES } from '@/components/guide'
 import {
   Table,
   TableBody,
@@ -97,6 +99,7 @@ export default function FulfillmentRulesPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.fulfillment} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Règles d'automatisation</h1>

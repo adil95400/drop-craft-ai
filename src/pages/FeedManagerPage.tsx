@@ -1,6 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import FeedManager from '@/components/feeds/FeedManager';
+import { AdvancedFeatureGuide } from '@/components/guide';
+import { ADVANCED_GUIDES } from '@/components/guide';
 
 export default function FeedManagerPage() {
   return (
@@ -13,7 +15,8 @@ export default function FeedManagerPage() {
         />
       </Helmet>
       
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto py-8 px-4 space-y-6">
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.feeds} />
         <FeedManager />
       </div>
     </>

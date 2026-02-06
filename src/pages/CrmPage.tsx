@@ -9,6 +9,8 @@ import { CRMKanbanPipeline } from "@/components/crm/CRMKanbanPipeline";
 import { LeadsManager } from "@/components/crm/LeadsManager";
 import { LeadScoring } from "@/components/crm/LeadScoring";
 import { SalesPipeline } from "@/components/crm/SalesPipeline";
+import { AdvancedFeatureGuide } from '@/components/guide';
+import { ADVANCED_GUIDES } from '@/components/guide';
 
 export default function CrmPage() {
   const [activeTab, setActiveTab] = useState("pipeline");
@@ -21,6 +23,7 @@ export default function CrmPage() {
       heroImage="marketing"
       badge={{ label: 'Pro', icon: Star }}
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.crm} />
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
           <TabsTrigger value="pipeline" className="gap-2">
