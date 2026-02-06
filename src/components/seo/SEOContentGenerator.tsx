@@ -1,22 +1,15 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Sparkles, 
-  Copy, 
-  RefreshCw, 
-  Download,
-  CheckCircle,
-  FileText,
-  Tag,
-  Hash
-} from "lucide-react";
+import { Sparkles, Copy, RefreshCw, Download, CheckCircle, FileText, Tag, Hash, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
 interface GeneratedContent {
   title: string;
@@ -33,106 +26,81 @@ interface SEOContentGeneratorProps {
   category?: string;
 }
 
-export const SEOContentGenerator = ({ 
+function SEOContentGeneratorComponent({
   productName = "",
   productDescription = "",
   category = ""
-}: SEOContentGeneratorProps) => {
+}: SEOContentGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [contentType, setContentType] = useState('product');
   const [tone, setTone] = useState('professional');
   const [language, setLanguage] = useState('fr');
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
-  
+  const [error, setError] = useState<string | null>(null);
+
   const { toast } = useToast();
 
-  const generateContent = async () => {
+  const generateContent = useCallback(async () => {
     if (!keyword.trim()) {
-      toast({
-        title: "Mot-clé manquant",
-        description: "Veuillez saisir un mot-clé principal",
-        variant: "destructive"
-      });
+      toast({ title: "Mot-clé manquant", description: "Veuillez saisir un mot-clé principal", variant: "destructive" });
       return;
     }
 
     setIsGenerating(true);
+    setError(null);
 
-    // Simulation de génération IA (à remplacer par un vrai appel API)
-    setTimeout(() => {
+    try {
+      // Generate all types in parallel via Lovable AI
+      const types = ['title', 'meta_description', 'h1', 'alt_text'];
+      const responses = await Promise.all(
+        types.map(type =>
+          supabase.functions.invoke('seo-content-ai', {
+            body: { type, keyword, productName, category, language, tone, keywords: [], variants: 3 }
+          })
+        )
+      );
+
+      const [titleRes, metaRes, h1Res, altRes] = responses;
+
+      // Check for errors
+      for (const res of responses) {
+        if (res.error) throw new Error(res.error.message || 'Erreur IA');
+        if (res.data?.error) throw new Error(res.data.error);
+      }
+
+      const titleResults = titleRes.data?.results || [];
+      const metaResults = metaRes.data?.results || [];
+      const h1Results = h1Res.data?.results || [];
+      const altResults = altRes.data?.results || [];
+
       const content: GeneratedContent = {
-        title: `${keyword} - ${productName || 'Produit de qualité'} | Meilleur Prix`,
-        metaDescription: `Découvrez notre sélection de ${keyword.toLowerCase()}. ${productDescription?.substring(0, 100) || 'Produits de haute qualité'} ✓ Livraison rapide ✓ Garantie satisfaction`,
-        h1: `${keyword} : Guide complet et sélection 2024`,
-        keywords: [
-          keyword,
-          `${keyword} pas cher`,
-          `meilleur ${keyword}`,
-          `acheter ${keyword}`,
-          `${keyword} en ligne`,
-          `${keyword} qualité`,
-          `comparatif ${keyword}`,
-          `avis ${keyword}`
-        ],
-        content: `
-# ${keyword} : Guide complet et sélection 2024
-
-## Qu'est-ce que ${keyword} ?
-
-${keyword} représente une catégorie de produits essentiels pour ${category || 'votre activité'}. Notre sélection rigoureuse vous garantit des produits de qualité supérieure.
-
-## Pourquoi choisir nos ${keyword} ?
-
-- **Qualité garantie** : Sélection rigoureuse de nos fournisseurs
-- **Prix compétitifs** : Meilleur rapport qualité-prix du marché  
-- **Livraison rapide** : Expédition sous 24-48h
-- **Service client** : Support 7j/7 pour vous accompagner
-
-## Notre sélection de ${keyword}
-
-${productDescription || `Découvrez notre gamme complète de ${keyword} adaptée à tous vos besoins.`}
-
-## Questions fréquentes sur ${keyword}
-
-### Comment choisir le bon ${keyword} ?
-Le choix dépend de vos besoins spécifiques, votre budget et l'usage prévu.
-
-### Quelle est la garantie sur ${keyword} ?
-Tous nos produits bénéficient d'une garantie satisfait ou remboursé.
-
-## Conclusion
-
-${keyword} est un investissement important. Notre expertise vous garantit le meilleur choix pour vos besoins.
-        `,
-        alt_texts: [
-          `${keyword} de qualité professionnelle`,
-          `Meilleur ${keyword} 2024`,
-          `${keyword} pas cher et efficace`,
-          `Guide d'achat ${keyword}`
-        ]
+        title: titleResults[0]?.text || `${keyword} - Meilleur Prix`,
+        metaDescription: metaResults[0]?.text || `Découvrez ${keyword}`,
+        h1: h1Results[0]?.text || keyword,
+        keywords: [keyword, `${keyword} pas cher`, `meilleur ${keyword}`, `acheter ${keyword}`],
+        content: `# ${h1Results[0]?.text || keyword}\n\n${metaResults.map((m: any) => m.text).join('\n\n')}`,
+        alt_texts: altResults.map((a: any) => a.text || a.question || ''),
       };
 
       setGeneratedContent(content);
+      toast({ title: "Contenu généré avec succès", description: "Le contenu SEO optimisé par IA est prêt" });
+    } catch (err: any) {
+      const msg = err.message || "Impossible de générer le contenu";
+      setError(msg);
+      toast({ title: "Erreur de génération", description: msg, variant: "destructive" });
+    } finally {
       setIsGenerating(false);
-      toast({
-        title: "Contenu généré avec succès",
-        description: "Le contenu SEO optimisé est prêt à être utilisé"
-      });
-    }, 3000);
-  };
+    }
+  }, [keyword, productName, category, language, tone, toast]);
 
-  const copyToClipboard = (text: string, type: string) => {
+  const copyToClipboard = useCallback((text: string, type: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copié !",
-      description: `${type} copié dans le presse-papier`
-    });
-  };
+    toast({ title: "Copié !", description: `${type} copié dans le presse-papier` });
+  }, [toast]);
 
-  const exportContent = () => {
+  const exportContent = useCallback(() => {
     if (!generatedContent) return;
-    
     const blob = new Blob([JSON.stringify(generatedContent, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -142,42 +110,32 @@ ${keyword} est un investissement important. Notre expertise vous garantit le mei
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Export réussi",
-      description: "Le contenu a été exporté"
-    });
-  };
+    toast({ title: "Export réussi", description: "Le contenu a été exporté" });
+  }, [generatedContent, keyword, toast]);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5" />
+          <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+            <Sparkles className="h-4 w-4 text-primary" />
+          </div>
           Générateur de Contenu IA
         </CardTitle>
         <CardDescription>
-          Créez du contenu SEO optimisé automatiquement
+          Créez du contenu SEO optimisé automatiquement grâce à l'intelligence artificielle
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Configuration */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Mot-clé principal *</label>
-            <Input
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Ex: smartphone waterproof"
-            />
+          <div className="space-y-1.5">
+            <Label>Mot-clé principal *</Label>
+            <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="Ex: smartphone waterproof" className="h-10" />
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Type de contenu</label>
+          <div className="space-y-1.5">
+            <Label>Type de contenu</Label>
             <Select value={contentType} onValueChange={setContentType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="product">Page produit</SelectItem>
                 <SelectItem value="category">Page catégorie</SelectItem>
@@ -186,13 +144,10 @@ ${keyword} est un investissement important. Notre expertise vous garantit le mei
               </SelectContent>
             </Select>
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Ton</label>
+          <div className="space-y-1.5">
+            <Label>Ton</Label>
             <Select value={tone} onValueChange={setTone}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="professional">Professionnel</SelectItem>
                 <SelectItem value="friendly">Amical</SelectItem>
@@ -201,13 +156,10 @@ ${keyword} est un investissement important. Notre expertise vous garantit le mei
               </SelectContent>
             </Select>
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Langue</label>
+          <div className="space-y-1.5">
+            <Label>Langue</Label>
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="fr">Français</SelectItem>
                 <SelectItem value="en">Anglais</SelectItem>
@@ -218,36 +170,30 @@ ${keyword} est un investissement important. Notre expertise vous garantit le mei
           </div>
         </div>
 
-        {/* Bouton de génération */}
-        <Button 
-          onClick={generateContent} 
-          disabled={isGenerating || !keyword.trim()}
-          className="w-full"
-        >
+        <Button onClick={generateContent} disabled={isGenerating || !keyword.trim()} className="w-full h-11">
           {isGenerating ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Génération en cours...
-            </>
+            <><RefreshCw className="mr-2 h-4 w-4 animate-spin" />Génération IA en cours…</>
           ) : (
-            <>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Générer le contenu SEO
-            </>
+            <><Sparkles className="mr-2 h-4 w-4" />Générer le contenu SEO</>
           )}
         </Button>
 
-        {/* Contenu généré */}
+        {error && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
         {generatedContent && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                Contenu généré
+                <CheckCircle className="h-5 w-5 text-success" />
+                Contenu généré par IA
               </h3>
               <Button variant="outline" size="sm" onClick={exportContent}>
-                <Download className="mr-2 h-4 w-4" />
-                Exporter
+                <Download className="mr-2 h-4 w-4" />Exporter
               </Button>
             </div>
 
@@ -258,122 +204,65 @@ ${keyword} est un investissement important. Notre expertise vous garantit le mei
                 <TabsTrigger value="content">Contenu</TabsTrigger>
                 <TabsTrigger value="images">Images</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="meta" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold flex items-center gap-2">
-                        <Tag className="h-4 w-4" />
-                        Titre SEO
-                      </h4>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(generatedContent.title, 'Titre')}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
+                {[
+                  { label: 'Titre SEO', icon: Tag, value: generatedContent.title, charCount: true },
+                  { label: 'Meta Description', icon: FileText, value: generatedContent.metaDescription, charCount: true },
+                  { label: 'Titre H1', icon: Hash, value: generatedContent.h1 },
+                ].map(item => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.label} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-sm flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-muted-foreground" />{item.label}
+                        </h4>
+                        <Button size="sm" variant="ghost" className="h-7" onClick={() => copyToClipboard(item.value, item.label)}>
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <p className="text-sm bg-muted/50 p-2.5 rounded">{item.value}</p>
+                      {item.charCount && <Badge variant="outline" className="mt-2 text-xs">{item.value.length} caractères</Badge>}
                     </div>
-                    <p className="text-sm bg-gray-50 p-2 rounded">{generatedContent.title}</p>
-                    <Badge variant="outline" className="mt-2">
-                      {generatedContent.title.length} caractères
-                    </Badge>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold">Meta Description</h4>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(generatedContent.metaDescription, 'Meta description')}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <p className="text-sm bg-gray-50 p-2 rounded">{generatedContent.metaDescription}</p>
-                    <Badge variant="outline" className="mt-2">
-                      {generatedContent.metaDescription.length} caractères
-                    </Badge>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold">Titre H1</h4>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(generatedContent.h1, 'Titre H1')}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <p className="text-sm bg-gray-50 p-2 rounded">{generatedContent.h1}</p>
-                  </div>
-                </div>
+                  );
+                })}
               </TabsContent>
-              
-              <TabsContent value="keywords" className="space-y-4">
+
+              <TabsContent value="keywords">
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <Hash className="h-4 w-4" />
-                      Mots-clés suggérés
-                    </h4>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyToClipboard(generatedContent.keywords.join(', '), 'Mots-clés')}
-                    >
-                      <Copy className="h-4 w-4" />
+                    <h4 className="font-semibold text-sm flex items-center gap-2"><Hash className="h-4 w-4" />Mots-clés suggérés</h4>
+                    <Button size="sm" variant="ghost" className="h-7" onClick={() => copyToClipboard(generatedContent.keywords.join(', '), 'Mots-clés')}>
+                      <Copy className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {generatedContent.keywords.map((kw, index) => (
-                      <Badge key={index} variant="secondary">
-                        {kw}
-                      </Badge>
-                    ))}
+                    {generatedContent.keywords.map((kw, i) => <Badge key={i} variant="secondary">{kw}</Badge>)}
                   </div>
                 </div>
               </TabsContent>
-              
-              <TabsContent value="content" className="space-y-4">
+
+              <TabsContent value="content">
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Contenu optimisé
-                    </h4>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => copyToClipboard(generatedContent.content, 'Contenu')}
-                    >
-                      <Copy className="h-4 w-4" />
+                    <h4 className="font-semibold text-sm flex items-center gap-2"><FileText className="h-4 w-4" />Contenu optimisé</h4>
+                    <Button size="sm" variant="ghost" className="h-7" onClick={() => copyToClipboard(generatedContent.content, 'Contenu')}>
+                      <Copy className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                  <Textarea
-                    value={generatedContent.content}
-                    readOnly
-                    className="min-h-[300px] font-mono text-sm"
-                  />
+                  <Textarea value={generatedContent.content} readOnly className="min-h-[300px] font-mono text-sm" />
                 </div>
               </TabsContent>
-              
-              <TabsContent value="images" className="space-y-4">
+
+              <TabsContent value="images">
                 <div className="p-4 border rounded-lg">
-                  <h4 className="font-semibold mb-3">Textes alternatifs suggérés</h4>
+                  <h4 className="font-semibold text-sm mb-3">Textes alternatifs suggérés</h4>
                   <div className="space-y-2">
-                    {generatedContent.alt_texts.map((alt, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    {generatedContent.alt_texts.filter(Boolean).map((alt, i) => (
+                      <div key={i} className="flex items-center justify-between p-2.5 bg-muted/50 rounded">
                         <span className="text-sm">{alt}</span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyToClipboard(alt, 'Texte alternatif')}
-                        >
+                        <Button size="sm" variant="ghost" className="h-7" onClick={() => copyToClipboard(alt, 'Alt text')}>
                           <Copy className="h-3 w-3" />
                         </Button>
                       </div>
@@ -387,4 +276,6 @@ ${keyword} est un investissement important. Notre expertise vous garantit le mei
       </CardContent>
     </Card>
   );
-};
+}
+
+export const SEOContentGenerator = memo(SEOContentGeneratorComponent);
