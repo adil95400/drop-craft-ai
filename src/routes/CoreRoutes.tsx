@@ -20,7 +20,7 @@ const PrintOnDemandHub = lazy(() => import('@/pages/pod/PrintOnDemandHub'));
 const CompetitiveIntelligenceHub = lazy(() => import('@/pages/research/CompetitiveIntelligenceHub'));
 const StockManagement = lazy(() => import('@/pages/stock/StockManagementPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
-const ChannableProductsPage = lazy(() => import('@/pages/products/ChannableProductsPage'));
+const CatalogProductsPage = lazy(() => import('@/pages/products/CatalogProductsPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const APIManagementPage = lazy(() => import('@/pages/APIManagementPage'));
@@ -48,7 +48,7 @@ export function CoreRoutes() {
       <Route path="stock" element={<StockManagement />} />
       <Route path="reports" element={<ReportsPage />} />
       <Route path="analytics" element={<AdvancedAnalyticsPage />} />
-      <Route path="products" element={<ChannableProductsPage />} />
+      <Route path="products" element={<CatalogProductsPage />} />
       <Route path="ai-insights" element={<PredictiveAnalyticsPage />} />
       <Route path="workflows" element={<AutomationPage />} />
       <Route path="api" element={<APIManagementPage />} />

@@ -25,7 +25,7 @@ export const withSuspense = (Component: React.LazyExoticComponent<any>) => (
 );
 
 export const LazyDashboardHome = lazyWithRetry(() => import('@/pages/Dashboard'));
-export const LazyModernProductsPage = lazyWithRetry(() => import('@/pages/products/ChannableProductsPage'));
+export const LazyModernProductsPage = lazyWithRetry(() => import('@/pages/products/CatalogProductsPage'));
 export const LazyModernOrdersPage = lazyWithRetry(() => import('@/pages/orders/OrdersCenterPage'));
 export const LazyModernCustomersPage = lazyWithRetry(() => import('@/pages/CustomersPage'));
 export const LazyAdvancedAnalyticsPage = lazyWithRetry(() => import('@/pages/AdvancedAnalyticsPage'));
@@ -52,7 +52,7 @@ export const LazyAuthPage = lazyWithRetry(() => import('@/pages/AuthPage'));
 export const LazySEOManagerPage = lazyWithRetry(() => import('@/pages/SEOManagerPage'));
 export const LazyAutomations = lazyWithRetry(() => import('@/pages/AutomationPage'));
 export const LazyIntegrations = lazyWithRetry(() => import('@/pages/integrations/ChannableStyleIntegrationsPage'));
-export const LazyCatalog = lazyWithRetry(() => import('@/pages/products/ChannableProductsPage'));
+export const LazyCatalog = lazyWithRetry(() => import('@/pages/products/CatalogProductsPage'));
 export const LazyReports = lazyWithRetry(() => import('@/pages/Reports'));
 export const LazyMarketplace = lazyWithRetry(() => import('@/pages/MarketplaceHubPage'));
 export const LazyOrders = lazyWithRetry(() => import('@/pages/orders/OrdersCenterPage'));
