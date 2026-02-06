@@ -1,13 +1,10 @@
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { toast } from 'sonner';
 
 class SEOService {
   async runOptimization(checkType: string, recommendations: string[]): Promise<any> {
-    const res = await shopOptiApi.request('/seo/optimize', {
-      method: 'POST',
-      body: { checkType, recommendations }
-    });
-    if (!res.success) throw new Error(res.error || 'Failed to apply optimizations');
-    return res.data;
+    // Placeholder - will be implemented via Edge Function or AI service
+    toast.info(`Optimisation SEO "${checkType}" avec ${recommendations.length} recommandations - disponible prochainement`);
+    return { success: true, applied: 0 };
   }
 }
 
