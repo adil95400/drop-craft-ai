@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface CRMLead {
   id: string;
@@ -25,63 +26,66 @@ export interface CRMLead {
 
 export function useCRMLeads() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: leads = [], isLoading, error } = useQuery({
-    queryKey: ['crm-leads'],
+    queryKey: ['crm-leads', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.request<CRMLead[]>('/crm/leads');
-      return res.data || [];
+      if (!user?.id) return [];
+      const { data, error } = await (supabase.from('crm_leads') as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as CRMLead[];
     },
+    enabled: !!user?.id,
   });
 
   const createLead = useMutation({
     mutationFn: async (leadData: Partial<CRMLead>) => {
-      const res = await shopOptiApi.request('/crm/leads', {
-        method: 'POST',
-        body: leadData,
-      });
-      if (!res.success) throw new Error(res.error);
-      return res.data;
+      if (!user?.id) throw new Error('Not authenticated');
+      const { data, error } = await (supabase.from('crm_leads') as any)
+        .insert({ ...leadData, user_id: user.id })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       toast.success('Lead créé avec succès');
       queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
     },
-    onError: () => {
-      toast.error('Erreur lors de la création du lead');
-    },
+    onError: () => toast.error('Erreur lors de la création du lead'),
   });
 
   const updateLead = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<CRMLead> & { id: string }) => {
-      const res = await shopOptiApi.request(`/crm/leads/${id}`, {
-        method: 'PUT',
-        body: updates,
-      });
-      if (!res.success) throw new Error(res.error);
-      return res.data;
+      const { data, error } = await (supabase.from('crm_leads') as any)
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       toast.success('Lead mis à jour');
       queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
     },
-    onError: () => {
-      toast.error('Erreur lors de la mise à jour');
-    },
+    onError: () => toast.error('Erreur lors de la mise à jour'),
   });
 
   const deleteLead = useMutation({
     mutationFn: async (id: string) => {
-      const res = await shopOptiApi.request(`/crm/leads/${id}`, { method: 'DELETE' });
-      if (!res.success) throw new Error(res.error);
+      const { error } = await (supabase.from('crm_leads') as any).delete().eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Lead supprimé');
       queryClient.invalidateQueries({ queryKey: ['crm-leads'] });
     },
-    onError: () => {
-      toast.error('Erreur lors de la suppression');
-    },
+    onError: () => toast.error('Erreur lors de la suppression'),
   });
 
   const stats = {
@@ -92,16 +96,11 @@ export function useCRMLeads() {
     won: leads.filter(l => l.status === 'won').length,
     lost: leads.filter(l => l.status === 'lost').length,
     totalValue: leads.reduce((sum, l) => sum + (l.estimated_value || 0), 0),
-    avgScore: leads.length > 0 
-      ? leads.reduce((sum, l) => sum + l.lead_score, 0) / leads.length 
-      : 0,
+    avgScore: leads.length > 0 ? leads.reduce((sum, l) => sum + l.lead_score, 0) / leads.length : 0,
   };
 
   return {
-    leads,
-    stats,
-    isLoading,
-    error,
+    leads, stats, isLoading, error,
     createLead: createLead.mutate,
     updateLead: updateLead.mutate,
     deleteLead: deleteLead.mutate,

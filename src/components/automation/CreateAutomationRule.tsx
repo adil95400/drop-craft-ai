@@ -90,6 +90,7 @@ export function CreateAutomationRule({ onClose, onSuccess }: CreateAutomationRul
         await new Promise((resolve, reject) => {
           createAction({
             ...actionData,
+            name: actionData.action_type,
             trigger_id: (newTrigger as any).id
           }, {
             onSuccess: resolve,

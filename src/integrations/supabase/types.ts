@@ -3846,6 +3846,370 @@ export type Database = {
           },
         ]
       }
+      crm_activities: {
+        Row: {
+          activity_type: string
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          lead_id: string | null
+          metadata: Json | null
+          outcome: string | null
+          scheduled_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          outcome?: string | null
+          scheduled_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          outcome?: string | null
+          scheduled_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_calendar_events: {
+        Row: {
+          attendees: string[] | null
+          color: string | null
+          content_type: string
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          location: string | null
+          notes: string | null
+          platform: string | null
+          priority: string | null
+          scheduled_date: string
+          scheduled_time: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendees?: string[] | null
+          color?: string | null
+          content_type?: string
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          platform?: string | null
+          priority?: string | null
+          scheduled_date: string
+          scheduled_time?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attendees?: string[] | null
+          color?: string | null
+          content_type?: string
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          platform?: string | null
+          priority?: string | null
+          scheduled_date?: string
+          scheduled_time?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crm_calls: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          date: string
+          duration: number | null
+          follow_up: string | null
+          id: string
+          notes: string | null
+          outcome: string | null
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          date?: string
+          duration?: number | null
+          follow_up?: string | null
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          status?: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          date?: string
+          duration?: number | null
+          follow_up?: string | null
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          status?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crm_deals: {
+        Row: {
+          actual_close_date: string | null
+          contact_id: string | null
+          created_at: string
+          custom_fields: Json | null
+          expected_close_date: string | null
+          id: string
+          lead_id: string | null
+          name: string
+          notes: string | null
+          probability: number | null
+          source: string | null
+          stage: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          actual_close_date?: string | null
+          contact_id?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          name: string
+          notes?: string | null
+          probability?: number | null
+          source?: string | null
+          stage?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          actual_close_date?: string | null
+          contact_id?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          name?: string
+          notes?: string | null
+          probability?: number | null
+          source?: string | null
+          stage?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_leads: {
+        Row: {
+          company: string | null
+          converted_to_customer_id: string | null
+          created_at: string
+          custom_fields: Json | null
+          email: string | null
+          estimated_value: number | null
+          expected_close_date: string | null
+          id: string
+          lead_score: number | null
+          name: string
+          notes: string | null
+          phone: string | null
+          position: string | null
+          source: string | null
+          status: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          converted_to_customer_id?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          email?: string | null
+          estimated_value?: number | null
+          expected_close_date?: string | null
+          id?: string
+          lead_score?: number | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          source?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          converted_to_customer_id?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          email?: string | null
+          estimated_value?: number | null
+          expected_close_date?: string | null
+          id?: string
+          lead_score?: number | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          source?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crm_tasks: {
+        Row: {
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          lead_id: string | null
+          priority: string
+          reminder_at: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          lead_id?: string | null
+          priority?: string
+          reminder_at?: string | null
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          lead_id?: string | null
+          priority?: string
+          reminder_at?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cron_execution_logs: {
         Row: {
           correlation_id: string | null
@@ -10853,6 +11217,57 @@ export type Database = {
           title_template?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      seo_tracked_keywords: {
+        Row: {
+          change: number | null
+          competition: string | null
+          cpc: number | null
+          created_at: string
+          current_position: number | null
+          difficulty: number | null
+          id: string
+          keyword: string
+          last_update: string | null
+          previous_position: number | null
+          trend: string | null
+          url: string | null
+          user_id: string
+          volume: number | null
+        }
+        Insert: {
+          change?: number | null
+          competition?: string | null
+          cpc?: number | null
+          created_at?: string
+          current_position?: number | null
+          difficulty?: number | null
+          id?: string
+          keyword: string
+          last_update?: string | null
+          previous_position?: number | null
+          trend?: string | null
+          url?: string | null
+          user_id: string
+          volume?: number | null
+        }
+        Update: {
+          change?: number | null
+          competition?: string | null
+          cpc?: number | null
+          created_at?: string
+          current_position?: number | null
+          difficulty?: number | null
+          id?: string
+          keyword?: string
+          last_update?: string | null
+          previous_position?: number | null
+          trend?: string | null
+          url?: string | null
+          user_id?: string
+          volume?: number | null
         }
         Relationships: []
       }

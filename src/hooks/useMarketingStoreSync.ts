@@ -1,82 +1,56 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
-import { toast } from 'sonner'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface SyncStats {
-  active_rules: number; total_rules: number; total_executions: number; success_rate: number
-  estimated_savings: number; connected_platforms: number; recent_syncs: any[]
-}
-
-interface AutomationRule {
-  id: string; name: string; description: string | null; trigger_type: string; action_type: string
-  is_active: boolean; trigger_count: number; last_triggered_at: string | null
-  trigger_config: any; action_config: any
-}
+interface SyncStats { active_rules: number; total_rules: number; total_executions: number; success_rate: number; estimated_savings: number; connected_platforms: number; recent_syncs: any[]; }
+interface AutomationRule { id: string; name: string; description: string | null; trigger_type: string; action_type: string; is_active: boolean; trigger_count: number; last_triggered_at: string | null; trigger_config: any; action_config: any; }
 
 export function useMarketingStoreSync() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  const { data: stats, isLoading: isLoadingStats } = useQuery<SyncStats>({
-    queryKey: ['marketing-sync-stats'],
+  const { data: rules = [], isLoading: isLoadingRules } = useQuery<AutomationRule[]>({
+    queryKey: ['marketing-automation-rules', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.request<{ stats: SyncStats }>('/marketing/store-sync/stats')
-      return res.data?.stats || { active_rules: 0, total_rules: 0, total_executions: 0, success_rate: 0, estimated_savings: 0, connected_platforms: 0, recent_syncs: [] }
+      if (!user?.id) return [];
+      const { data, error } = await supabase.from('automation_rules')
+        .select('*').eq('user_id', user.id);
+      if (error) throw error;
+      return (data || []) as AutomationRule[];
     },
-    refetchInterval: 30000
-  })
+    enabled: !!user?.id,
+  });
 
-  const { data: rules, isLoading: isLoadingRules } = useQuery<AutomationRule[]>({
-    queryKey: ['marketing-automation-rules'],
-    queryFn: async () => {
-      const res = await shopOptiApi.request<{ rules: AutomationRule[] }>('/marketing/store-sync/rules')
-      return res.data?.rules || []
-    }
-  })
+  const stats: SyncStats = {
+    active_rules: rules.filter(r => r.is_active).length, total_rules: rules.length,
+    total_executions: rules.reduce((s, r) => s + (r.trigger_count || 0), 0),
+    success_rate: 100, estimated_savings: 0, connected_platforms: 0, recent_syncs: [],
+  };
 
   const syncCoupons = useMutation({
-    mutationFn: async () => {
-      const res = await shopOptiApi.request('/marketing/store-sync/coupons', { method: 'POST' })
-      if (!res.success) throw new Error(res.error)
-      return res.data
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ['marketing-sync-stats'] })
-      toast.success(`${data.synced_count} coupons synchronisés`, { description: `Vers ${data.platforms_count} plateformes connectées` })
-    },
-    onError: (error: Error) => { toast.error('Erreur de synchronisation', { description: error.message }) }
-  })
+    mutationFn: async () => { toast.success('Synchronisation des coupons non disponible pour le moment'); },
+  });
 
   const importCustomers = useMutation({
-    mutationFn: async () => {
-      const res = await shopOptiApi.request('/marketing/store-sync/import-customers', { method: 'POST' })
-      if (!res.success) throw new Error(res.error)
-      return res.data
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ['marketing-sync-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['customers'] })
-      toast.success(`${data.total_imported} clients importés`, { description: `Depuis ${data.platforms_count} boutiques` })
-    },
-    onError: (error: Error) => { toast.error("Erreur d'import", { description: error.message }) }
-  })
+    mutationFn: async () => { toast.success("Import des clients non disponible pour le moment"); },
+  });
 
   const toggleRule = useMutation({
     mutationFn: async ({ ruleId, isActive }: { ruleId: string; isActive: boolean }) => {
-      const res = await shopOptiApi.request(`/marketing/store-sync/rules/${ruleId}/toggle`, { method: 'PUT', body: { is_active: isActive } })
-      if (!res.success) throw new Error(res.error)
-      return res.data
+      const { error } = await supabase.from('automation_rules').update({ is_active: isActive }).eq('id', ruleId);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketing-automation-rules'] })
-      queryClient.invalidateQueries({ queryKey: ['marketing-sync-stats'] })
-      toast.success('Règle mise à jour')
-    }
-  })
+      queryClient.invalidateQueries({ queryKey: ['marketing-automation-rules'] });
+      toast.success('Règle mise à jour');
+    },
+  });
 
   return {
-    stats, isLoadingStats, rules: rules || [], isLoadingRules,
+    stats, isLoadingStats: isLoadingRules, rules, isLoadingRules,
     syncCoupons: syncCoupons.mutate, isSyncingCoupons: syncCoupons.isPending,
     importCustomers: importCustomers.mutate, isImportingCustomers: importCustomers.isPending,
-    toggleRule: toggleRule.mutate, isTogglingRule: toggleRule.isPending
-  }
+    toggleRule: toggleRule.mutate, isTogglingRule: toggleRule.isPending,
+  };
 }
