@@ -75,6 +75,7 @@ const DocumentationPage = lazy(() => import('@/pages/documentation/Documentation
 
 // Profile & Subscription (Settings group)
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
+const ChoosePlanPage = lazy(() => import('@/pages/ChoosePlanPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
 
@@ -205,6 +206,7 @@ export function AppRoutes() {
           {/* Profile & Subscription (Settings group) */}
           <Route path="/profile" element={<Protected><BillingPage /></Protected>} />
           <Route path="/subscription" element={<Protected><SubscriptionDashboard /></Protected>} />
+          <Route path="/choose-plan" element={<Protected><ChoosePlanPage /></Protected>} />
           <Route path="/api/documentation" element={<Protected><APIDocumentationPage /></Protected>} />
           
           {/* Ads Spy - redirect to research */}
