@@ -16,7 +16,7 @@ import { useApiProducts } from '@/hooks/api/useApiProducts'
 import { useApiSync } from '@/hooks/api/useApiSync'
 import { useApiAI } from '@/hooks/api/useApiAI'
 import { useApiJobs } from '@/hooks/api/useApiJobs'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { supabase } from '@/integrations/supabase/client'
 
 // Job tracking UI
 import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner'
@@ -161,20 +161,20 @@ export default function CatalogProductsPage() {
     })
   }, [products, createProduct, handleRefresh])
 
-  // Bulk delete via FastAPI endpoint
+  // Bulk delete via Supabase
   const handleBulkDelete = useCallback(async () => {
     if (selectedProducts.length === 0) return
     setIsBulkDeleting(true)
     try {
-      const res = await shopOptiApi.bulkDeleteProducts(selectedProducts)
-      if (res.success) {
-        toast({ 
-          title: 'Suppression lancée', 
-          description: res.job_id ? `Job: ${res.job_id}` : `${selectedProducts.length} produit(s) supprimé(s)` 
-        })
-      } else {
-        throw new Error(res.error)
-      }
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .in('id', selectedProducts)
+      if (error) throw error
+      toast({ 
+        title: 'Produits supprimés', 
+        description: `${selectedProducts.length} produit(s) supprimé(s)` 
+      })
       setSelectedProducts([])
       setBulkDeleteOpen(false)
       handleRefresh()
@@ -185,28 +185,28 @@ export default function CatalogProductsPage() {
     }
   }, [selectedProducts, toast, handleRefresh])
 
-  // Export via FastAPI
+  // Export CSV client-side
   const handleExportCSV = useCallback(async () => {
     setIsExporting(true)
     try {
-      const res = await shopOptiApi.bulkExportProducts(
-        selectedProducts.length > 0 ? selectedProducts : undefined,
-        'csv'
-      )
-      if (res.success) {
-        toast({ 
-          title: 'Export lancé', 
-          description: res.job_id ? `Job: ${res.job_id}` : 'Export en cours...' 
-        })
-      } else {
-        throw new Error(res.error)
-      }
+      const items = products || []
+      const headers = ['Nom', 'SKU', 'Prix', 'Stock', 'Statut', 'Catégorie']
+      const rows = items.map(p => [p.name || '', p.sku || '', p.price || 0, p.stock_quantity || 0, p.status || '', p.category || ''])
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `produits-export-${Date.now()}.csv`
+      a.click()
+      window.URL.revokeObjectURL(url)
+      toast({ title: 'Export terminé' })
     } catch {
       toast({ title: 'Erreur d\'export', variant: 'destructive' })
     } finally {
       setIsExporting(false)
     }
-  }, [toast, selectedProducts])
+  }, [toast, products])
 
   // Sync via FastAPI
   const handleSync = useCallback(() => {

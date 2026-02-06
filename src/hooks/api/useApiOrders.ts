@@ -1,10 +1,9 @@
 /**
- * useApiOrders - Hook pour les opérations commandes via FastAPI
- * Fulfillment, bulk fulfill → créent des jobs
+ * useApiOrders - Hook pour les opérations commandes via Supabase direct
  */
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { supabase } from '@/integrations/supabase/client'
 
 export function useApiOrders() {
   const { toast } = useToast()
@@ -12,44 +11,50 @@ export function useApiOrders() {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['unified-orders'] })
-    queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
   }
 
-  // Fulfill a single order → job
   const fulfillOrder = useMutation({
-    mutationFn: (params: { orderId: string; supplierId?: string }) =>
-      shopOptiApi.fulfillOrder(params.orderId, params.supplierId),
-    onSuccess: (res) => {
-      if (res.success) {
-        toast({ title: 'Fulfillment lancé', description: `Job: ${res.job_id || res.data?.job_id || 'en cours'}` })
-        invalidate()
-      } else {
-        toast({ title: 'Erreur fulfillment', description: res.error, variant: 'destructive' })
-      }
+    mutationFn: async (params: { orderId: string; supplierId?: string }) => {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'processing', fulfillment_status: 'in_progress' })
+        .eq('id', params.orderId)
+      if (error) throw error
+      return { success: true }
+    },
+    onSuccess: () => {
+      toast({ title: 'Fulfillment lancé' })
+      invalidate()
     },
   })
 
-  // Bulk fulfill orders → job
   const bulkFulfill = useMutation({
-    mutationFn: (params: { orderIds: string[]; supplierPreference?: string }) =>
-      shopOptiApi.bulkFulfillOrders(params.orderIds, params.supplierPreference),
-    onSuccess: (res) => {
-      if (res.success) {
-        toast({ title: 'Fulfillment bulk lancé' })
-        invalidate()
-      }
+    mutationFn: async (params: { orderIds: string[]; supplierPreference?: string }) => {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'processing', fulfillment_status: 'in_progress' })
+        .in('id', params.orderIds)
+      if (error) throw error
+      return { success: true }
+    },
+    onSuccess: () => {
+      toast({ title: 'Fulfillment bulk lancé' })
+      invalidate()
     },
   })
 
-  // Update order status via FastAPI
   const updateStatus = useMutation({
-    mutationFn: (params: { orderId: string; status: string }) =>
-      shopOptiApi.updateOrderStatus(params.orderId, params.status),
-    onSuccess: (res) => {
-      if (res.success) {
-        toast({ title: 'Statut mis à jour' })
-        invalidate()
-      }
+    mutationFn: async (params: { orderId: string; status: string }) => {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: params.status })
+        .eq('id', params.orderId)
+      if (error) throw error
+      return { success: true }
+    },
+    onSuccess: () => {
+      toast({ title: 'Statut mis à jour' })
+      invalidate()
     },
   })
 

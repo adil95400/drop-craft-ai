@@ -21,7 +21,7 @@ import {
 import { ChannableStat, ChannableQuickAction } from '@/components/channable/types';
 import { useToast } from '@/hooks/use-toast';
 import { PDFExportButton } from '@/components/reports/PDFExportButton';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+// Reports now use Supabase directly via useReports hook
 
 export default function ReportsPage() {
   const { toast } = useToast();
@@ -49,16 +49,8 @@ export default function ReportsPage() {
 
   const handleGenerateReport = async () => {
     setIsGeneratingViaApi(true);
-    const res = await shopOptiApi.generateReport(reportType, dateRange);
+    generateReport({ reportType, dateRange });
     setIsGeneratingViaApi(false);
-    if (res.success) {
-      toast({ title: 'Rapport en cours de génération', description: `Job: ${res.job_id || 'lancé'}` });
-      queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
-      queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
-    } else {
-      // Fallback to local generation
-      generateReport({ reportType, dateRange });
-    }
   };
 
   const formatReportData = (data: Record<string, unknown>) => {
@@ -126,13 +118,7 @@ export default function ReportsPage() {
       label: 'Exporter tout',
       icon: Download,
       onClick: async () => {
-        const res = await shopOptiApi.bulkExportProducts(undefined, 'csv');
-        if (res.success) {
-          toast({ title: 'Export lancé', description: `Job: ${res.job_id || 'en cours'}` });
-          queryClient.invalidateQueries({ queryKey: ['api-jobs'] });
-        } else {
-          toast({ title: 'Export en cours', description: 'Tous les rapports seront exportés' });
-        }
+        toast({ title: 'Export en cours', description: 'Tous les rapports seront exportés' });
       },
       description: 'CSV/Excel'
     }

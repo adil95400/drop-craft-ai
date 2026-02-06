@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { subDays, format } from 'date-fns';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { subDays } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 
 interface ReportData {
   id: string;
@@ -19,36 +20,62 @@ interface ReportData {
 
 export function useReports() {
   const queryClient = useQueryClient();
+  const { user } = useUnifiedAuth();
 
-  // Fetch saved reports via FastAPI
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
-    queryKey: ['advanced-reports'],
+    queryKey: ['advanced-reports', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.request<ReportData[]>('/reports');
-      if (!res.success) throw new Error(res.error || 'Failed to fetch reports');
-      return res.data || [];
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('advanced_reports')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as ReportData[];
     },
+    enabled: !!user?.id,
   });
 
-  // Fetch aggregated stats via FastAPI
   const fetchStats = async (days: number) => {
-    const res = await shopOptiApi.getAnalyticsDashboard(`${days}d`);
-    if (!res.success) throw new Error(res.error || 'Failed to fetch stats');
-    return res.data || {
+    if (!user?.id) return { revenue: 0, revenueChange: 0, orders: 0, products: 0, customers: 0 };
+    
+    const { count: productCount } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+
+    const { count: orderCount } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+
+    return {
       revenue: 0,
       revenueChange: 0,
-      orders: 0,
-      products: 0,
+      orders: orderCount || 0,
+      products: productCount || 0,
       customers: 0,
     };
   };
 
-  // Generate report via FastAPI (creates a background job)
   const generateReportMutation = useMutation({
     mutationFn: async ({ reportType, dateRange }: { reportType: string; dateRange: string }) => {
-      const res = await shopOptiApi.generateReport(reportType, dateRange);
-      if (!res.success) throw new Error(res.error || 'Failed to generate report');
-      return res.data;
+      if (!user?.id) throw new Error('Non authentifié');
+      const { data, error } = await supabase
+        .from('advanced_reports')
+        .insert({
+          user_id: user.id,
+          report_name: `Rapport ${reportType} - ${dateRange}j`,
+          report_type: reportType,
+          report_data: {},
+          filters: { days: dateRange },
+          status: 'completed',
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
@@ -59,11 +86,13 @@ export function useReports() {
     }
   });
 
-  // Delete report via FastAPI
   const deleteReportMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await shopOptiApi.request(`/reports/${id}`, { method: 'DELETE' });
-      if (!res.success) throw new Error(res.error || 'Failed to delete report');
+      const { error } = await supabase
+        .from('advanced_reports')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
@@ -71,7 +100,6 @@ export function useReports() {
     }
   });
 
-  // Export report as CSV (client-side from report_data)
   const exportReport = (report: ReportData) => {
     const data = report.report_data as Record<string, unknown>;
     const rows = Object.entries(data).map(([key, value]) => `${key},${value}`);

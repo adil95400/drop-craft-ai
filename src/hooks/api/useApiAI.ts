@@ -1,11 +1,10 @@
 /**
- * useApiAI - Hook pour les opérations IA via FastAPI
- * Enrichissement, SEO, pricing → toutes créent des jobs
+ * useApiAI - Hook pour les opérations IA via Edge Functions
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { supabase } from '@/integrations/supabase/client'
 
 export function useApiAI() {
   const { user } = useAuth()
@@ -17,97 +16,95 @@ export function useApiAI() {
     queryClient.invalidateQueries({ queryKey: ['products-unified'] })
   }
 
-  // Generate content for a single product
   const generateContent = useMutation({
-    mutationFn: (params: {
+    mutationFn: async (params: {
       productId: string
       contentTypes: string[]
       language?: string
       tone?: string
-    }) => shopOptiApi.generateContent(
-      params.productId,
-      params.contentTypes,
-      { language: params.language, tone: params.tone }
-    ),
-    onSuccess: (res) => {
-      if (res.success) {
-        toast({ title: 'Contenu IA généré', description: `Job: ${res.job_id || 'terminé'}` })
-        invalidateAfterJob()
-      } else {
-        toast({ title: 'Erreur IA', description: res.error, variant: 'destructive' })
-      }
+    }) => {
+      const { data, error } = await supabase.functions.invoke('ai-content-generator', {
+        body: {
+          product_id: params.productId,
+          content_types: params.contentTypes,
+          language: params.language || 'fr',
+          tone: params.tone || 'professional',
+        },
+      })
+      if (error) throw error
+      return { success: true, data }
+    },
+    onSuccess: () => {
+      toast({ title: 'Contenu IA généré' })
+      invalidateAfterJob()
     },
     onError: () => toast({ title: 'Erreur', description: 'Génération impossible', variant: 'destructive' }),
   })
 
-  // Optimize SEO for multiple products → job
   const optimizeSeo = useMutation({
-    mutationFn: (params: {
+    mutationFn: async (params: {
       productIds: string[]
       targetKeywords?: string[]
       language?: string
-    }) => shopOptiApi.optimizeSeo(params.productIds, {
-      targetKeywords: params.targetKeywords,
-      language: params.language,
-    }),
-    onSuccess: (res) => {
-      if (res.success) {
-        toast({ title: 'Optimisation SEO lancée', description: `Job: ${res.job_id || res.data?.job_id || 'en cours'}` })
-        invalidateAfterJob()
-      } else {
-        toast({ title: 'Erreur SEO', description: res.error, variant: 'destructive' })
-      }
+    }) => {
+      const { data, error } = await supabase.functions.invoke('seo-optimizer', {
+        body: {
+          product_ids: params.productIds,
+          target_keywords: params.targetKeywords,
+          language: params.language || 'fr',
+        },
+      })
+      if (error) throw error
+      return { success: true, data }
+    },
+    onSuccess: () => {
+      toast({ title: 'Optimisation SEO lancée' })
+      invalidateAfterJob()
     },
   })
 
-  // Analyze pricing → job
   const analyzePricing = useMutation({
-    mutationFn: (params: {
+    mutationFn: async (params: {
       productIds: string[]
       competitorAnalysis?: boolean
       marketPositioning?: 'budget' | 'competitive' | 'premium'
-    }) => shopOptiApi.analyzePricing(params.productIds, {
-      competitorAnalysis: params.competitorAnalysis,
-      marketPositioning: params.marketPositioning,
-    }),
-    onSuccess: (res) => {
-      if (res.success) {
-        toast({ title: 'Analyse pricing lancée' })
-        invalidateAfterJob()
-      }
+    }) => {
+      const { data, error } = await supabase.functions.invoke('ai-pricing-optimizer', {
+        body: {
+          product_ids: params.productIds,
+          competitor_analysis: params.competitorAnalysis ?? true,
+          market_positioning: params.marketPositioning || 'competitive',
+        },
+      })
+      if (error) throw error
+      return { success: true, data }
+    },
+    onSuccess: () => {
+      toast({ title: 'Analyse pricing lancée' })
+      invalidateAfterJob()
     },
   })
 
-  // Bulk AI enrichment → job
   const bulkEnrich = useMutation({
-    mutationFn: (params: {
+    mutationFn: async (params: {
       filterCriteria: Record<string, any>
       enrichmentTypes: string[]
       limit?: number
-    }) => shopOptiApi.bulkEnrich(
-      params.filterCriteria,
-      params.enrichmentTypes,
-      params.limit
-    ),
-    onSuccess: (res) => {
-      if (res.success) {
-        toast({ title: 'Enrichissement bulk lancé', description: `Job: ${res.job_id || res.data?.job_id || 'en cours'}` })
-        invalidateAfterJob()
-      } else {
-        toast({ title: 'Erreur enrichissement', description: res.error, variant: 'destructive' })
-      }
+    }) => {
+      const { data, error } = await supabase.functions.invoke('bulk-ai-optimizer', {
+        body: {
+          filter_criteria: params.filterCriteria,
+          enrichment_types: params.enrichmentTypes,
+          limit: params.limit,
+        },
+      })
+      if (error) throw error
+      return { success: true, data }
     },
-  })
-
-  // AI usage stats
-  const { data: aiUsage } = useQuery({
-    queryKey: ['api-ai-usage', user?.id],
-    queryFn: async () => {
-      const res = await shopOptiApi.getAiUsage()
-      return res.success ? res.data : null
+    onSuccess: () => {
+      toast({ title: 'Enrichissement bulk lancé' })
+      invalidateAfterJob()
     },
-    enabled: !!user,
-    staleTime: 60_000,
   })
 
   return {
@@ -115,7 +112,7 @@ export function useApiAI() {
     optimizeSeo,
     analyzePricing,
     bulkEnrich,
-    aiUsage,
+    aiUsage: null,
     isGenerating: generateContent.isPending,
     isOptimizingSeo: optimizeSeo.isPending,
     isAnalyzingPricing: analyzePricing.isPending,

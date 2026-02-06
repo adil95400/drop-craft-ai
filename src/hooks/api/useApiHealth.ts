@@ -1,20 +1,17 @@
 /**
- * useApiHealth - Hook pour vérifier la santé du backend FastAPI
+ * useApiHealth - Toujours retourner disponible (pas de FastAPI externe)
  */
 import { useQuery } from '@tanstack/react-query'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
 
 export function useApiHealth() {
   const { data, isLoading } = useQuery({
     queryKey: ['api-health'],
-    queryFn: () => shopOptiApi.healthCheck(),
+    queryFn: async () => ({ success: true, data: { status: 'ok', backend: 'supabase' } }),
     staleTime: 60_000,
-    retry: 1,
-    refetchInterval: 5 * 60_000, // Check every 5 minutes
   })
 
   return {
-    isApiAvailable: data?.success ?? false,
+    isApiAvailable: true,
     apiStatus: data?.data,
     isChecking: isLoading,
   }
