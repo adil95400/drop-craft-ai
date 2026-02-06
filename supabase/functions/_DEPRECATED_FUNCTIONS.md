@@ -2,56 +2,87 @@
 
 Ce document documente les fonctions obsolètes qui ont été supprimées.
 
-## Fonctions Supprimées
+## Nettoyage du 2026-02-06 — 54 fonctions supprimées
 
-### 1. unified-payments/ ✅ SUPPRIMÉ
-**Date suppression**: 2025-01-21
-**Raison**: Complètement mocké, pas d'intégration réelle
-**Migration**: Utiliser Stripe directement via `stripe-checkout` et `stripe-webhook`
+### Dev/Test (6)
+- `example-secure-function` — exemple de code
+- `generate-test-data` — générateur de données test
+- `generate-realistic-data` — générateur de données test
+- `simulate-optimization` — simulation mock
+- `sso-manager` — devrait être config auth, pas edge function
+- `cli-manager` — pas pertinent en web API
 
-### 2. unified-management/ ✅ SUPPRIMÉ
-**Date suppression**: 2025-01-21
-**Raison**: Endpoints non pertinents, tout mocké
-**Migration**: 
-- SSO → Configurer dans Supabase Auth Dashboard
-- Force-disconnect → Fonction `force-disconnect-user`
+### Sync doublons (9)
+- `automated-sync` → supersédé par fonctions sync spécifiques
+- `cron-stock-sync` → `stock-price-sync` utilisé à la place
+- `auto-sync-scheduler` → `auto-sync-channels` utilisé
+- `supplier-sync-engine` → `supplier-sync-products` utilisé
+- `supplier-unified-sync` → `supplier-catalog-sync` utilisé
+- `sync-suppliers` → `supplier-sync-products` utilisé
+- `shopify-sync-export` → `shopify-operations` utilisé
+- `shopify-sync-import` → `shopify-store-import` utilisé
+- `shopify-integration` → `shopify-sync` utilisé
 
-### 3. unified-integrations/ ✅ SUPPRIMÉ
-**Date suppression**: 2025-01-21
-**Raison**: Duplications avec autres fonctions + mocks
-**Migration**: Utiliser fonctions dédiées:
-- `aliexpress-integration/` pour AliExpress
-- `bigbuy-integration/` pour BigBuy
-- `shopify-webhook/` pour Shopify
+### Intégrations non invoquées (9)
+- `channel-sync-bidirectional` → `advanced-sync` utilisé
+- `integration-oauth` → `oauth-supplier` utilisé
+- `integration-webhook` → webhooks spécifiques utilisés
+- `integration-health-monitor` → `system-health-check` utilisé
+- `image-optimization` → `global-image-optimizer` utilisé
+- `instagram-shopping` — jamais implémenté
+- `process-price-sync-queue` — orchestrateur interne non utilisé
+- `customer-behavior-analysis` — jamais invoqué
+- `enterprise-scalability` — jamais invoqué
 
-### 4. canva-design-optimizer/ ✅ SUPPRIMÉ
-**Date suppression**: 2025-12-06
-**Raison**: Mock complet sans intégration Canva API réelle
-**Migration**: Utiliser l'intégration Canva native via `canva-oauth` et `canva-webhook`
+### Extensions doublons (14)
+- `extension-import-collection` → `extension-realtime-import` utilisé
+- `extension-import-product` → `extension-product-importer` utilisé
+- `extension-ai-optimize` → `ai-optimizer` utilisé
+- `extension-gateway` — jamais invoqué
+- `extension-notifications` → `send-notification` utilisé
+- `extension-scraper` → `extension-realtime-import` utilisé
+- `extension-selectors` — jamais invoqué
+- `extension-stock-alert` → `extension-price-monitor` utilisé
+- `extension-supplier-search` — jamais invoqué
+- `extension-sync-stock` → `extension-sync-realtime` utilisé
+- `extension-sync` → `extension-sync-realtime` utilisé
+- `extension-import-reviews` → `extension-review-importer` utilisé
+- `extension-import-videos` — jamais invoqué
+- `extension-job-status` — jamais invoqué
 
-## Fonctions Conservées avec Notes
+### Marketing/Marketplace doublons (6)
+- `marketing-integration` — jamais invoqué
+- `marketing-store-sync` — jamais invoqué
+- `marketing-intelligence` — jamais invoqué
+- `marketing-optimization` — jamais invoqué
+- `marketplace-webhook` — jamais invoqué depuis frontend
+- `oauth-setup` → `oauth-supplier` utilisé
 
-### global-blog-optimizer/ ✅ CONSERVÉ
-**Statut**: Production-ready avec LOVABLE_API_KEY
-**Notes**: Génère des articles de blog via Lovable AI. Fonctionne correctement quand la clé API est configurée.
+### Autres doublons (10)
+- `store-webhooks` → `shopify-webhook` utilisé
+- `webhook-handler` → `webhook-delivery` utilisé
+- `import-to-store` → `import-to-shopify` utilisé
+- `import-reviews` → `extension-review-importer` utilisé
+- `order-automation` → `order-automation-processor` utilisé
+- `label-generate` → `label-generate-real` utilisé
+- `bigbuy-sync` → `bigbuy-integration` utilisé
+- `btswholesaler-sync` → `bts-feed-sync` utilisé
+- `supplier-scheduler` — jamais invoqué
+- `process-unified-sync-queue` — orchestrateur interne
 
-### extension-processor/ ✅ CONSERVÉ
-**Statut**: En développement
-**Notes**: Intégration des extensions Chrome. À compléter avec vraies APIs Amazon/Shopify.
+## Nettoyages précédents
 
-## Historique de Nettoyage
+| Date | Fonction | Raison |
+|------|----------|--------|
+| 2025-01-21 | unified-payments | Mock complet |
+| 2025-01-21 | unified-management | Mock complet |
+| 2025-01-21 | unified-integrations | Duplications + mocks |
+| 2025-12-06 | canva-design-optimizer | Mock sans API Canva |
 
-| Date | Action | Fonction | Impact |
-|------|--------|----------|--------|
-| 2025-01-21 | Marqué déprécié | unified-payments, unified-management, unified-integrations | Aucun |
-| 2025-01-21 | Supprimé | unified-payments, unified-management, unified-integrations | Aucun |
-| 2025-12-06 | Supprimé | canva-design-optimizer | Aucun - fonction mock |
+## Résumé
 
-## Process de Dépréciation Future
-
-1. **Identifier** la fonction candidate via audit
-2. **Vérifier** les usages dans le code (`grep -r "function-name" src/`)
-3. **Créer** alternatives si nécessaire
-4. **Supprimer** la fonction du dossier `supabase/functions/`
-5. **Nettoyer** l'entrée dans `config.toml`
-6. **Documenter** dans ce fichier
+| Métrique | Avant | Après |
+|----------|-------|-------|
+| Edge Functions totales | ~400+ | ~350 |
+| Fonctions supprimées (total) | 4 | 58 |
+| Doublons éliminés | 0 | 40+ |
