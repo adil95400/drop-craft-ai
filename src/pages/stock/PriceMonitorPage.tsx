@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { FeatureGuide, FEATURE_GUIDES } from '@/components/guide/FeatureGuide'
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { usePriceStockMonitor } from '@/hooks/usePriceStockMonitor'
 import {
   TrendingUp, TrendingDown, AlertTriangle, RefreshCw, Plus,
@@ -47,8 +47,7 @@ export default function PriceMonitorPage() {
       }
     >
       <div className="space-y-6">
-        {/* Guide intégré */}
-        <FeatureGuide {...FEATURE_GUIDES.priceMonitor} defaultOpen />
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.priceMonitor} />
 
         {/* Stats rapides */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

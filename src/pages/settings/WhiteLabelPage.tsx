@@ -1,6 +1,5 @@
 /**
  * WhiteLabelPage - Personnalisation marque blanche
- * Permet de personnaliser l'apparence avec son propre branding
  */
 import { useState } from 'react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
@@ -10,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import { FeatureGuide, FEATURE_GUIDES } from '@/components/guide/FeatureGuide'
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 import { Palette, Upload, Globe, Mail, Eye, Crown, Image, Type } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -45,10 +44,8 @@ export default function WhiteLabelPage() {
       }
     >
       <div className="space-y-6">
-        {/* Guide intégré */}
-        <FeatureGuide {...FEATURE_GUIDES.whiteLabel} defaultOpen />
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.whiteLabel} />
 
-        {/* Identité visuelle */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -61,45 +58,25 @@ export default function WhiteLabelPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="brandName">Nom de la marque</Label>
-                <Input
-                  id="brandName"
-                  value={settings.brandName}
-                  onChange={(e) => setSettings(s => ({ ...s, brandName: e.target.value }))}
-                  placeholder="Votre marque"
-                />
+                <Input id="brandName" value={settings.brandName} onChange={(e) => setSettings(s => ({ ...s, brandName: e.target.value }))} placeholder="Votre marque" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="customDomain">Domaine personnalisé</Label>
-                <Input
-                  id="customDomain"
-                  value={settings.customDomain}
-                  onChange={(e) => setSettings(s => ({ ...s, customDomain: e.target.value }))}
-                  placeholder="app.votremarque.com"
-                />
+                <Input id="customDomain" value={settings.customDomain} onChange={(e) => setSettings(s => ({ ...s, customDomain: e.target.value }))} placeholder="app.votremarque.com" />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="primaryColor">Couleur primaire</Label>
+                <Label>Couleur primaire</Label>
                 <div className="flex gap-2">
-                  <input
-                    type="color"
-                    value={settings.primaryColor}
-                    onChange={(e) => setSettings(s => ({ ...s, primaryColor: e.target.value }))}
-                    className="h-10 w-14 rounded border cursor-pointer"
-                  />
+                  <input type="color" value={settings.primaryColor} onChange={(e) => setSettings(s => ({ ...s, primaryColor: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer" />
                   <Input value={settings.primaryColor} readOnly className="flex-1" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="secondaryColor">Couleur secondaire</Label>
+                <Label>Couleur secondaire</Label>
                 <div className="flex gap-2">
-                  <input
-                    type="color"
-                    value={settings.secondaryColor}
-                    onChange={(e) => setSettings(s => ({ ...s, secondaryColor: e.target.value }))}
-                    className="h-10 w-14 rounded border cursor-pointer"
-                  />
+                  <input type="color" value={settings.secondaryColor} onChange={(e) => setSettings(s => ({ ...s, secondaryColor: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer" />
                   <Input value={settings.secondaryColor} readOnly className="flex-1" />
                 </div>
               </div>
@@ -107,7 +84,6 @@ export default function WhiteLabelPage() {
           </CardContent>
         </Card>
 
-        {/* Logo et Favicon */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -121,23 +97,18 @@ export default function WhiteLabelPage() {
                 <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                 <p className="font-medium">Logo principal</p>
                 <p className="text-sm text-muted-foreground">PNG ou SVG, 400x100px recommandé</p>
-                <Button variant="outline" size="sm" className="mt-3">
-                  Uploader
-                </Button>
+                <Button variant="outline" size="sm" className="mt-3">Uploader</Button>
               </div>
               <div className="border-2 border-dashed rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
                 <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                 <p className="font-medium">Favicon</p>
                 <p className="text-sm text-muted-foreground">ICO ou PNG, 32x32px</p>
-                <Button variant="outline" size="sm" className="mt-3">
-                  Uploader
-                </Button>
+                <Button variant="outline" size="sm" className="mt-3">Uploader</Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Options supplémentaires */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -154,10 +125,7 @@ export default function WhiteLabelPage() {
                   <p className="text-xs text-muted-foreground">Appliquer votre marque aux emails transactionnels</p>
                 </div>
               </div>
-              <Switch
-                checked={settings.emailBranding}
-                onCheckedChange={(v) => setSettings(s => ({ ...s, emailBranding: v }))}
-              />
+              <Switch checked={settings.emailBranding} onCheckedChange={(v) => setSettings(s => ({ ...s, emailBranding: v }))} />
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
@@ -167,10 +135,7 @@ export default function WhiteLabelPage() {
                   <p className="text-xs text-muted-foreground">Retirer toute mention de ShopOpti dans l'interface</p>
                 </div>
               </div>
-              <Switch
-                checked={settings.hideShopOptiBadge}
-                onCheckedChange={(v) => setSettings(s => ({ ...s, hideShopOptiBadge: v }))}
-              />
+              <Switch checked={settings.hideShopOptiBadge} onCheckedChange={(v) => setSettings(s => ({ ...s, hideShopOptiBadge: v }))} />
             </div>
           </CardContent>
         </Card>

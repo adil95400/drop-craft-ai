@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { usePredictiveAnalytics } from '@/hooks/useMarketplacePhase2';
 import { TrendingUp, TrendingDown, AlertTriangle, DollarSign } from 'lucide-react';
 import { useAuthOptimized } from '@/shared';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function PredictiveAnalyticsPage() {
   const { user } = useAuthOptimized()
@@ -17,6 +18,7 @@ export default function PredictiveAnalyticsPage() {
       </Helmet>
 
       <div className="container mx-auto p-6 space-y-6">
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.predictiveAnalytics} />
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">
             🔮 Analytics Prédictive
@@ -92,9 +94,7 @@ export default function PredictiveAnalyticsPage() {
                   {isLoadingDashboard ? (
                     <div className="text-center py-8 text-muted-foreground">Chargement...</div>
                   ) : dashboard?.restock_recommendations.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Aucune recommandation pour le moment
-                    </div>
+                    <div className="text-center py-8 text-muted-foreground">Aucune recommandation</div>
                   ) : (
                     <div className="space-y-4">
                       {dashboard?.restock_recommendations.slice(0, 5).map((rec) => (
@@ -102,18 +102,9 @@ export default function PredictiveAnalyticsPage() {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <p className="font-medium">Produit #{rec.product_id.slice(0, 8)}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Stock actuel: {rec.current_stock} | Recommandé: {rec.recommended_restock_quantity}
-                              </p>
+                              <p className="text-sm text-muted-foreground">Stock: {rec.current_stock} | Recommandé: {rec.recommended_restock_quantity}</p>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              rec.urgency === 'critical' ? 'bg-destructive/20 text-destructive' :
-                              rec.urgency === 'high' ? 'bg-orange-500/20 text-orange-500' :
-                              rec.urgency === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
-                              'bg-green-500/20 text-green-500'
-                            }`}>
-                              {rec.urgency}
-                            </span>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${rec.urgency === 'critical' ? 'bg-destructive/20 text-destructive' : rec.urgency === 'high' ? 'bg-orange-500/20 text-orange-500' : 'bg-yellow-500/20 text-yellow-500'}`}>{rec.urgency}</span>
                           </div>
                         </div>
                       ))}
@@ -131,9 +122,7 @@ export default function PredictiveAnalyticsPage() {
                   {isLoadingDashboard ? (
                     <div className="text-center py-8 text-muted-foreground">Chargement...</div>
                   ) : dashboard?.pricing_recommendations.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Aucune recommandation de prix
-                    </div>
+                    <div className="text-center py-8 text-muted-foreground">Aucune recommandation</div>
                   ) : (
                     <div className="space-y-4">
                       {dashboard?.pricing_recommendations.slice(0, 5).map((rec) => (
@@ -149,9 +138,7 @@ export default function PredictiveAnalyticsPage() {
                                 <DollarSign className="h-3 w-3" />
                                 <span className="font-bold text-primary">{rec.recommended_price}€</span>
                               </div>
-                              <p className="text-xs text-green-500">
-                                +{rec.expected_sales_lift_percent}% ventes
-                              </p>
+                              <p className="text-xs text-green-500">+{rec.expected_sales_lift_percent}% ventes</p>
                             </div>
                           </div>
                         </div>
@@ -171,9 +158,7 @@ export default function PredictiveAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 {dashboard?.stockout_alerts.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Aucune alerte stock
-                  </div>
+                  <div className="text-center py-8 text-muted-foreground">Aucune alerte stock</div>
                 ) : (
                   <div className="space-y-3">
                     {dashboard?.stockout_alerts.map((alert, idx) => (
@@ -182,14 +167,10 @@ export default function PredictiveAnalyticsPage() {
                           <AlertTriangle className="h-5 w-5 text-destructive" />
                           <div>
                             <p className="font-medium">{alert.product_name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Rupture dans {alert.days_until_stockout} jours
-                            </p>
+                            <p className="text-sm text-muted-foreground">Rupture dans {alert.days_until_stockout} jours</p>
                           </div>
                         </div>
-                        <span className={`px-2 py-1 rounded text-xs font-medium bg-destructive/20 text-destructive`}>
-                          {alert.urgency}
-                        </span>
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-destructive/20 text-destructive">{alert.urgency}</span>
                       </div>
                     ))}
                   </div>
@@ -206,21 +187,16 @@ export default function PredictiveAnalyticsPage() {
                     <TrendingUp className="h-5 w-5 text-green-500" />
                     Produits en Hausse
                   </CardTitle>
-                  <CardDescription>Tendances positives détectées</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {dashboard?.trending_up.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Aucune tendance haussière
-                    </div>
+                    <div className="text-center py-8 text-muted-foreground">Aucune tendance</div>
                   ) : (
                     <div className="space-y-3">
                       {dashboard?.trending_up.map((trend, idx) => (
                         <div key={idx} className="flex items-center justify-between">
                           <p className="font-medium">{trend.product_name}</p>
-                          <span className="text-green-500 font-bold">
-                            +{trend.growth_rate.toFixed(1)}%
-                          </span>
+                          <span className="text-green-500 font-bold">+{trend.growth_rate.toFixed(1)}%</span>
                         </div>
                       ))}
                     </div>
@@ -234,21 +210,16 @@ export default function PredictiveAnalyticsPage() {
                     <TrendingDown className="h-5 w-5 text-destructive" />
                     Produits en Baisse
                   </CardTitle>
-                  <CardDescription>Tendances négatives à surveiller</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {dashboard?.trending_down.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Aucune tendance baissière
-                    </div>
+                    <div className="text-center py-8 text-muted-foreground">Aucune tendance</div>
                   ) : (
                     <div className="space-y-3">
                       {dashboard?.trending_down.map((trend, idx) => (
                         <div key={idx} className="flex items-center justify-between">
                           <p className="font-medium">{trend.product_name}</p>
-                          <span className="text-destructive font-bold">
-                            {trend.decline_rate.toFixed(1)}%
-                          </span>
+                          <span className="text-destructive font-bold">{trend.decline_rate.toFixed(1)}%</span>
                         </div>
                       ))}
                     </div>
@@ -262,12 +233,9 @@ export default function PredictiveAnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Analyse d'Élasticité des Prix</CardTitle>
-                <CardDescription>Impact des changements de prix sur les ventes</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  Analyse d'élasticité à venir
-                </div>
+                <div className="text-center py-8 text-muted-foreground">Analyse d'élasticité à venir</div>
               </CardContent>
             </Card>
           </TabsContent>

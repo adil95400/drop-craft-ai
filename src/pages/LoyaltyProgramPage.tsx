@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Award, Star, Gift, Users, TrendingUp, Crown, Plus, Trash2, Loader2 } from 'lucide-react';
 import { useLoyaltyProgram } from '@/hooks/useLoyaltyProgram';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 const iconMap: Record<string, React.ElementType> = {
   award: Award,
@@ -112,6 +113,7 @@ const LoyaltyProgramPage: React.FC = () => {
         </Dialog>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.loyalty} />
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>

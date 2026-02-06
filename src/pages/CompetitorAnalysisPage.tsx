@@ -6,6 +6,7 @@ import { PriceTracker } from '@/components/competitive/PriceTracker';
 import { Target, DollarSign, TrendingUp, BarChart3, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function CompetitorAnalysisPage() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function CompetitorAnalysisPage() {
         </Button>
       }
     >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.competitorAnalysis} />
       <Tabs defaultValue="analysis" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="analysis" className="flex items-center gap-2">
