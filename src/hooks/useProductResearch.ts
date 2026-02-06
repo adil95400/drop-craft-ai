@@ -1,3 +1,7 @@
+/**
+ * useProductResearch — Unified product research hook
+ * Preserves legacy API (scanTrends, analyzeViralProduct, etc.) while delegating to real Supabase
+ */
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,27 +67,13 @@ export function useProductResearch() {
     setIsScanning(true);
     try {
       const { data, error } = await supabase.functions.invoke('product-research-scanner', {
-        body: {
-          action: 'scan_trends',
-          keyword,
-          category
-        }
+        body: { action: 'scan_trends', keyword, category }
       });
-
       if (error) throw error;
-
       setTrends(data.trends || []);
-      toast({
-        title: "✅ Scan terminé",
-        description: `${data.trends?.length || 0} tendances trouvées pour "${keyword}"`,
-      });
+      toast({ title: "✅ Scan terminé", description: `${data.trends?.length || 0} tendances trouvées` });
     } catch (error: any) {
-      console.error('Error scanning trends:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible de scanner les tendances",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur", description: error.message || "Impossible de scanner", variant: "destructive" });
     } finally {
       setIsScanning(false);
     }
@@ -93,26 +83,13 @@ export function useProductResearch() {
     setIsAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke('product-research-scanner', {
-        body: {
-          action: 'analyze_viral',
-          url
-        }
+        body: { action: 'analyze_viral', url }
       });
-
       if (error) throw error;
-
       setViralProducts(prev => [data.product, ...prev]);
-      toast({
-        title: "✅ Analyse terminée",
-        description: `Score viral: ${data.product.viral_score}%`,
-      });
+      toast({ title: "✅ Analyse terminée", description: `Score viral: ${data.product.viral_score}%` });
     } catch (error: any) {
-      console.error('Error analyzing viral product:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'analyser le produit",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur", description: error.message || "Impossible d'analyser", variant: "destructive" });
     } finally {
       setIsAnalyzing(false);
     }
@@ -122,26 +99,13 @@ export function useProductResearch() {
     setIsAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke('product-research-scanner', {
-        body: {
-          action: 'analyze_saturation',
-          niche
-        }
+        body: { action: 'analyze_saturation', niche }
       });
-
       if (error) throw error;
-
       setSaturationData(data.saturation);
-      toast({
-        title: "✅ Analyse terminée",
-        description: `Saturation: ${data.saturation.saturation_level.toUpperCase()}`,
-      });
+      toast({ title: "✅ Analyse terminée", description: `Saturation: ${data.saturation.saturation_level.toUpperCase()}` });
     } catch (error: any) {
-      console.error('Error analyzing saturation:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'analyser la saturation",
-        variant: "destructive",
-      });
+      toast({ title: "Erreur", description: error.message || "Impossible d'analyser", variant: "destructive" });
     } finally {
       setIsAnalyzing(false);
     }
@@ -151,18 +115,13 @@ export function useProductResearch() {
     try {
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) return;
-
-      // Use ai_optimization_jobs table with job_type = 'product_research'
       const { data, error } = await (supabase as any)
         .from('ai_optimization_jobs')
         .select('*')
         .eq('job_type', 'product_research')
         .order('created_at', { ascending: false })
         .limit(50);
-
       if (error) throw error;
-      
-      // Map to SavedProduct format
       const mappedProducts: SavedProduct[] = (data || []).map((item: any) => ({
         id: item.id,
         product_name: item.output_data?.product_name || 'Unknown',
@@ -176,7 +135,6 @@ export function useProductResearch() {
         source_platform: item.output_data?.source_platform,
         created_at: item.created_at
       }));
-      
       setSavedProducts(mappedProducts);
     } catch (error: any) {
       console.error('Error loading saved products:', error);
@@ -184,15 +142,11 @@ export function useProductResearch() {
   };
 
   return {
-    isScanning,
-    isAnalyzing,
-    trends,
-    viralProducts,
-    saturationData,
-    savedProducts,
-    scanTrends,
-    analyzeViralProduct,
-    analyzeSaturation,
-    loadSavedProducts,
+    isScanning, isAnalyzing, trends, viralProducts, saturationData, savedProducts,
+    scanTrends, analyzeViralProduct, analyzeSaturation, loadSavedProducts,
   };
 }
+
+// Also export the real aggregator-based version for advanced pages
+export { useRealProductResearch as useProductResearchAggregator } from './useRealProductResearch'
+export { useAITrendScan, useViralAnalysis, useSaturationAnalysis, useResearchStats, useFavoriteProducts, useImportProduct } from './useRealProductResearch'
