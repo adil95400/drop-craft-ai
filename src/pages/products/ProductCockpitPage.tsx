@@ -1,18 +1,19 @@
 /**
  * Cockpit Business - Vue de pilotage stratégique
- * KPIs, alertes stock, ROI, priorités IA, répartition catégories
- * Aucune gestion opérationnelle ici (→ /products)
+ * Migré sur le socle PageLayout + StatCard
  */
 import { Skeleton } from '@/components/ui/skeleton'
-import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
-import { useCockpitData } from '@/hooks/useCockpitData'
-import { CockpitKPIGrid } from '@/components/cockpit/CockpitKPIGrid'
+import { PageLayout, StatCard } from '@/components/shared'
+import { useCockpitData, CockpitKPI } from '@/hooks/useCockpitData'
 import { CatalogHealthCard } from '@/components/cockpit/CatalogHealthCard'
 import { ROIAnalysisCard } from '@/components/cockpit/ROIAnalysisCard'
 import { StockAlertsCard } from '@/components/cockpit/StockAlertsCard'
 import { AIPrioritiesCard } from '@/components/cockpit/AIPrioritiesCard'
 import { CategoryBreakdownChart } from '@/components/cockpit/CategoryBreakdownChart'
-import { Gauge, BarChart3 } from 'lucide-react'
+import { Package, DollarSign, TrendingUp, AlertTriangle, ShieldAlert } from 'lucide-react'
+
+const KPI_ICONS = [Package, DollarSign, TrendingUp, AlertTriangle, ShieldAlert, ShieldAlert] as const
+const KPI_COLORS = ['primary', 'info', 'success', 'warning', 'destructive', 'destructive'] as const
 
 export default function ProductCockpitPage() {
   const {
@@ -28,17 +29,11 @@ export default function ProductCockpitPage() {
 
   if (isLoading) {
     return (
-      <ChannablePageWrapper
-        title="Cockpit Business"
-        subtitle="Pilotage"
-        description="Vue stratégique de votre catalogue produits."
-        heroImage="analytics"
-        badge={{ label: 'Chargement...', icon: Gauge }}
-      >
+      <PageLayout title="Cockpit Business" subtitle="Chargement…">
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-[120px] rounded-lg" />
+              <Skeleton key={i} className="h-[90px] rounded-lg" />
             ))}
           </div>
           <div className="grid gap-4 md:grid-cols-3">
@@ -47,21 +42,28 @@ export default function ProductCockpitPage() {
             <Skeleton className="h-[300px]" />
           </div>
         </div>
-      </ChannablePageWrapper>
+      </PageLayout>
     )
   }
 
   return (
-    <ChannablePageWrapper
+    <PageLayout
       title="Cockpit Business"
-      subtitle="Pilotage"
-      description="Analysez les performances, identifiez les opportunités et prenez des décisions éclairées."
-      heroImage="analytics"
-      badge={{ label: `${products.length} produits`, icon: BarChart3 }}
+      subtitle={`${products.length} produits — Analysez les performances et identifiez les opportunités`}
     >
       <div className="space-y-6">
-        {/* KPIs principaux */}
-        <CockpitKPIGrid kpis={mainKPIs} />
+        {/* KPIs — StatCard socle */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {mainKPIs.map((kpi: CockpitKPI, i: number) => (
+            <StatCard
+              key={kpi.label}
+              label={kpi.label}
+              value={kpi.value}
+              icon={KPI_ICONS[i] || Package}
+              color={KPI_COLORS[i] || 'primary'}
+            />
+          ))}
+        </div>
 
         {/* Row 2: Santé + ROI + Alertes stock */}
         <div className="grid gap-4 md:grid-cols-3">
@@ -78,6 +80,6 @@ export default function ProductCockpitPage() {
           <CategoryBreakdownChart products={products} />
         </div>
       </div>
-    </ChannablePageWrapper>
+    </PageLayout>
   )
 }
