@@ -26,7 +26,7 @@ const getApiBaseUrl = (): string => {
 
 const API_BASE_URL = getApiBaseUrl();
 
-interface ApiResponse<T = any> {
+export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   message?: string;

@@ -4,3 +4,4 @@
  */
 
 export { shopOptiApi, ShopOptiApiClient } from './ShopOptiApiClient';
+export type { ApiResponse } from './ShopOptiApiClient';
