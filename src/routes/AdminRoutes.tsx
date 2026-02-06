@@ -9,6 +9,7 @@ const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const VideoTutorialsPage = lazy(() => import('@/pages/admin/VideoTutorialsPage'));
 const ChannableStyleSuppliersPage = lazy(() => import('@/pages/suppliers/ChannableStyleSuppliersPage'));
+const AdminConsumptionPage = lazy(() => import('@/pages/admin/AdminConsumptionPage'));
 
 export function AdminRoutes() {
   return (
@@ -24,6 +25,9 @@ export function AdminRoutes() {
       
       {/* Suppliers Management */}
       <Route path="suppliers" element={<ChannableStyleSuppliersPage />} />
+      
+      {/* Consumption Tracking */}
+      <Route path="consumption" element={<AdminConsumptionPage />} />
     </Routes>
   );
 }
