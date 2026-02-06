@@ -1,7 +1,16 @@
+/**
+ * useAutomation — Unified automation hook
+ * Combines trigger-based (legacy) and workflow-based (useRealAutomation) automation
+ */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Re-export workflow-based automation as named export
+export { useRealAutomation as useAutomationWorkflows } from './useRealAutomation'
+export type { AutomationWorkflow } from './useRealAutomation'
+// Avoid re-exporting AutomationExecution from useRealAutomation to prevent conflict
 
 export interface AutomationTrigger {
   id: string; user_id: string; name: string; description?: string;
@@ -72,9 +81,8 @@ export const useAutomation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
-      toast({ title: "Déclencheur créé", description: "Le déclencheur d'automatisation a été créé avec succès" });
+      toast({ title: "Déclencheur créé" });
     },
-    onError: () => toast({ title: "Erreur", description: "Impossible de créer le déclencheur", variant: "destructive" }),
   });
 
   const updateTrigger = useMutation({
@@ -86,7 +94,7 @@ export const useAutomation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
-      toast({ title: "Déclencheur mis à jour", description: "Le déclencheur a été modifié avec succès" });
+      toast({ title: "Déclencheur mis à jour" });
     },
   });
 
@@ -118,7 +126,6 @@ export const useAutomation = () => {
 
   const processTrigger = useMutation({
     mutationFn: async ({ triggerId, contextData }: { triggerId: string; contextData?: any }) => {
-      // Log the execution attempt
       if (!user?.id) throw new Error('Not authenticated');
       const { data, error } = await supabase.from('automation_execution_logs')
         .insert({ user_id: user.id, trigger_id: triggerId, status: 'completed', input_data: contextData || {} })

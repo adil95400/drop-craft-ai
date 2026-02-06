@@ -9,10 +9,20 @@ interface AlertsWidgetProps {
 }
 
 export function AlertsWidget({ isCustomizing }: AlertsWidgetProps) {
-  const { alerts, isLoading } = useDashboard();
+  const { activityEvents, isLoading } = useDashboard();
   const navigate = useNavigate();
 
-  const alertCount = alerts?.length || 0;
+  // Filter activity events to show only alerts/warnings
+  const alerts = activityEvents
+    .filter(e => e.status === 'error' || e.status === 'warning' || e.type === 'alert')
+    .slice(0, 5)
+    .map(e => ({
+      type: e.status === 'error' ? 'warning' : 'info',
+      title: e.title,
+      message: e.description || '',
+      action: undefined as string | undefined,
+    }));
+  const alertCount = alerts.length;
 
   const getAlertIcon = (type: string) => {
     switch (type) {
