@@ -4,6 +4,7 @@
 import { Helmet } from 'react-helmet-async';
 import { PageBuilderDashboard } from '@/components/page-builder';
 import { Layout } from 'lucide-react';
+import { PageBanner } from '@/components/shared/PageBanner';
 
 export default function PageBuilderPage() {
   return (
@@ -17,20 +18,12 @@ export default function PageBuilderPage() {
       </Helmet>
       
       <div className="container mx-auto py-6 px-4 space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Layout className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold">Page Builder</h1>
-            <p className="text-muted-foreground">
-              Créez des landing pages avec le drag-and-drop
-            </p>
-          </div>
-        </div>
-
-        {/* Dashboard */}
+        <PageBanner
+          icon={Layout}
+          title="Page Builder"
+          description="Créez des landing pages avec le drag-and-drop"
+          theme="purple"
+        />
         <PageBuilderDashboard />
       </div>
     </>
