@@ -9,6 +9,7 @@ const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
 const APIManagementPage = lazy(() => import('@/pages/APIManagementPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
+const WhiteLabelPage = lazy(() => import('@/pages/settings/WhiteLabelPage'));
 
 export function SettingsRoutes() {
   return (
@@ -18,6 +19,7 @@ export function SettingsRoutes() {
       <Route path="api" element={<APIManagementPage />} />
       <Route path="billing" element={<BillingPage />} />
       <Route path="security" element={<SecurityDashboard />} />
+      <Route path="white-label" element={<WhiteLabelPage />} />
     </Routes>
   );
 }
