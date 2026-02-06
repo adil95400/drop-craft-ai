@@ -1,66 +1,99 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const useAdvancedAnalyticsService = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   const { data: performanceMetrics, isLoading: isLoadingMetrics } = useQuery({
-    queryKey: ['performance-metrics'],
+    queryKey: ['performance-metrics', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.request('/analytics/performance-metrics');
-      if (!res.success) return [];
-      return res.data || [];
+      if (!user?.id) return []
+      const { data, error } = await supabase
+        .from('analytics_insights')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('metric_type', 'performance')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
     },
+    enabled: !!user?.id,
   })
 
   const { data: reports, isLoading: isLoadingReports } = useQuery({
-    queryKey: ['advanced-reports'],
+    queryKey: ['advanced-reports', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.request('/reports');
-      if (!res.success) return [];
-      return res.data || [];
+      if (!user?.id) return []
+      const { data, error } = await supabase
+        .from('advanced_reports')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
     },
+    enabled: !!user?.id,
   })
 
   const { data: predictiveAnalytics, isLoading: isLoadingPredictive } = useQuery({
-    queryKey: ['predictive-analytics'],
+    queryKey: ['predictive-analytics', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.getPredictiveInsights();
-      if (!res.success) return [];
-      return res.data || [];
+      if (!user?.id) return []
+      const { data, error } = await supabase
+        .from('analytics_insights')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('prediction_type', 'predictive')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
     },
+    enabled: !!user?.id,
   })
 
   const { data: abTests, isLoading: isLoadingABTests } = useQuery({
-    queryKey: ['ab-tests'],
+    queryKey: ['ab-tests', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.request('/analytics/ab-tests');
-      if (!res.success) return [];
-      return res.data || [];
+      if (!user?.id) return []
+      const { data, error } = await supabase
+        .from('ab_test_experiments')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data || []
     },
+    enabled: !!user?.id,
   })
 
   const generateReportMutation = useMutation({
     mutationFn: async (config: { reportType: string; config: any }) => {
-      const res = await shopOptiApi.generateReport(config.reportType, '30d', config.config);
-      if (!res.success) throw new Error(res.error || 'Failed to generate report');
-      return res.data;
+      if (!user?.id) throw new Error('Non authentifié')
+      const { data, error } = await supabase
+        .from('advanced_reports')
+        .insert({
+          user_id: user.id,
+          report_name: `Rapport ${config.reportType}`,
+          report_type: config.reportType,
+          filters: config.config,
+          status: 'generated',
+          last_generated_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+      if (error) throw error
+      return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] })
-      toast({
-        title: "Rapport généré",
-        description: "Le rapport avancé a été généré avec succès",
-      })
+      toast({ title: 'Rapport généré', description: 'Le rapport a été généré avec succès' })
     },
     onError: () => {
-      toast({
-        title: "Erreur",
-        description: "Impossible de générer le rapport",
-        variant: "destructive"
-      })
+      toast({ title: 'Erreur', description: 'Impossible de générer le rapport', variant: 'destructive' })
     }
   })
 
@@ -74,49 +107,36 @@ export const useAdvancedAnalyticsService = () => {
       successMetrics: any[];
       trafficAllocation: any;
     }) => {
-      const res = await shopOptiApi.request('/analytics/ab-tests', {
-        method: 'POST',
-        body: testConfig,
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to create AB test');
-      return res.data;
+      if (!user?.id) throw new Error('Non authentifié')
+      const { data, error } = await supabase
+        .from('ab_test_experiments')
+        .insert({
+          user_id: user.id,
+          name: testConfig.experimentName,
+          description: testConfig.hypothesis,
+          status: 'draft',
+          variants: { control: testConfig.controlVariant, test: testConfig.testVariants },
+          metrics: { success: testConfig.successMetrics, traffic: testConfig.trafficAllocation },
+        })
+        .select()
+        .single()
+      if (error) throw error
+      return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ab-tests'] })
-      toast({
-        title: "Test A/B créé",
-        description: "Le test A/B a été créé avec succès",
-      })
+      toast({ title: 'Test A/B créé', description: 'Le test A/B a été créé avec succès' })
     },
     onError: () => {
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer le test A/B",
-        variant: "destructive"
-      })
+      toast({ title: 'Erreur', description: 'Impossible de créer le test A/B', variant: 'destructive' })
     }
   })
 
   const runPredictiveAnalysisMutation = useMutation({
     mutationFn: async () => {
-      const res = await shopOptiApi.request('/analytics/predictive/run', { method: 'POST' });
-      if (!res.success) throw new Error(res.error || 'Failed to run predictive analysis');
-      return res.data;
+      toast({ title: 'Info', description: 'Analyse prédictive disponible prochainement via IA' })
+      return null
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['predictive-analytics'] })
-      toast({
-        title: "Analyse prédictive lancée",
-        description: "L'analyse prédictive a été démarrée",
-      })
-    },
-    onError: () => {
-      toast({
-        title: "Erreur",
-        description: "Impossible de lancer l'analyse prédictive",
-        variant: "destructive"
-      })
-    }
   })
 
   return {

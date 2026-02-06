@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { ViewModeSelector, ViewMode } from '@/components/products/command-center'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
 
 interface ProductsQuickActionsBarProps {
@@ -45,11 +45,26 @@ export function ProductsQuickActionsBar({
 
   const handleExport = async () => {
     try {
-      const res = await shopOptiApi.bulkExportProducts(undefined, 'csv')
-      if (res.success) {
-        toast({ title: '✅ Export lancé', description: res.job_id ? `Job: ${res.job_id}` : 'Export en cours...' })
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user?.id) throw new Error('Non authentifié')
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', session.user.id)
+      if (error) throw error
+      // Generate CSV client-side
+      if (data && data.length > 0) {
+        const headers = Object.keys(data[0]).join(',')
+        const rows = data.map(r => Object.values(r).map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+        const csv = [headers, ...rows].join('\n')
+        const blob = new Blob([csv], { type: 'text/csv' })
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(blob)
+        link.download = `produits-export-${new Date().toISOString().split('T')[0]}.csv`
+        link.click()
+        toast({ title: '✅ Export terminé', description: `${data.length} produits exportés` })
       } else {
-        throw new Error(res.error)
+        toast({ title: 'Info', description: 'Aucun produit à exporter' })
       }
     } catch (error) {
       toast({ title: 'Erreur', description: 'Échec de l\'export', variant: 'destructive' })

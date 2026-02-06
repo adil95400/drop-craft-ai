@@ -12,7 +12,7 @@ import { Plus, Save, BarChart, TrendingUp, Users, ShoppingCart, Trash2, Play, Cl
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Report {
   id: string;
@@ -39,19 +39,20 @@ export function CustomReportsBuilder() {
   const queryClient = useQueryClient();
   
   const [report, setReport] = useState<ReportConfig>({
-    name: '',
-    description: '',
-    type: 'sales',
-    schedule: 'manual',
+    name: '', description: '', type: 'sales', schedule: 'manual',
   });
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['advanced-reports', user?.id],
     queryFn: async (): Promise<Report[]> => {
       if (!user?.id) return [];
-      const res = await shopOptiApi.request<Report[]>('/reports');
-      if (!res.success) return [];
-      return res.data || [];
+      const { data, error } = await supabase
+        .from('advanced_reports')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as Report[];
     },
     enabled: !!user?.id,
   });
@@ -59,56 +60,46 @@ export function CustomReportsBuilder() {
   const createReport = useMutation({
     mutationFn: async (reportConfig: ReportConfig) => {
       if (!user?.id) throw new Error('User not authenticated');
-      const res = await shopOptiApi.request('/reports', {
-        method: 'POST',
-        body: {
+      const { error } = await supabase
+        .from('advanced_reports')
+        .insert({
+          user_id: user.id,
           report_name: reportConfig.name,
           report_type: reportConfig.type,
           filters: { description: reportConfig.description },
           schedule: reportConfig.schedule,
-        },
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to create report');
-      return res.data;
+          status: 'draft',
+        });
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
-      toast({
-        title: '✅ Rapport créé',
-        description: `Le rapport "${report.name}" a été créé avec succès`,
-      });
+      toast({ title: '✅ Rapport créé', description: `Le rapport "${report.name}" a été créé` });
       setReport({ name: '', description: '', type: 'sales', schedule: 'manual' });
     },
     onError: (error: Error) => {
-      toast({
-        title: '❌ Erreur',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: '❌ Erreur', description: error.message, variant: 'destructive' });
     },
   });
 
   const deleteReport = useMutation({
     mutationFn: async (id: string) => {
-      const res = await shopOptiApi.request(`/reports/${id}`, { method: 'DELETE' });
-      if (!res.success) throw new Error(res.error || 'Failed to delete report');
+      const { error } = await supabase.from('advanced_reports').delete().eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
-      toast({
-        title: '✅ Rapport supprimé',
-        description: 'Le rapport a été supprimé avec succès',
-      });
+      toast({ title: '✅ Rapport supprimé' });
     },
   });
 
   const toggleFavorite = useMutation({
     mutationFn: async ({ id, is_favorite }: { id: string; is_favorite: boolean }) => {
-      const res = await shopOptiApi.request(`/reports/${id}`, {
-        method: 'PATCH',
-        body: { is_favorite: !is_favorite },
-      });
-      if (!res.success) throw new Error(res.error || 'Failed to toggle favorite');
+      const { error } = await supabase
+        .from('advanced_reports')
+        .update({ is_favorite: !is_favorite })
+        .eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['advanced-reports'] });
@@ -124,19 +115,12 @@ export function CustomReportsBuilder() {
   ];
 
   const scheduleLabels: Record<string, string> = {
-    manual: 'Manuel',
-    daily: 'Quotidien',
-    weekly: 'Hebdomadaire',
-    monthly: 'Mensuel',
+    manual: 'Manuel', daily: 'Quotidien', weekly: 'Hebdomadaire', monthly: 'Mensuel',
   };
 
   const handleSave = () => {
     if (!report.name) {
-      toast({
-        title: '❌ Erreur',
-        description: 'Le nom du rapport est requis',
-        variant: 'destructive',
-      });
+      toast({ title: '❌ Erreur', description: 'Le nom du rapport est requis', variant: 'destructive' });
       return;
     }
     createReport.mutate(report);
@@ -144,75 +128,45 @@ export function CustomReportsBuilder() {
 
   return (
     <div className="space-y-6">
-      {/* Create Report Form */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart className="h-5 w-5" />
             Créer un Rapport Personnalisé
           </CardTitle>
-          <CardDescription>
-            Configurez un rapport adapté à vos besoins
-          </CardDescription>
+          <CardDescription>Configurez un rapport adapté à vos besoins</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nom du rapport</Label>
-              <Input
-                id="name"
-                placeholder="Mon rapport mensuel"
-                value={report.name}
-                onChange={(e) => setReport({ ...report, name: e.target.value })}
-              />
+              <Input id="name" placeholder="Mon rapport mensuel" value={report.name} onChange={(e) => setReport({ ...report, name: e.target.value })} />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Décrivez l'objectif de ce rapport..."
-                value={report.description}
-                onChange={(e) => setReport({ ...report, description: e.target.value })}
-                rows={3}
-              />
+              <Textarea id="description" placeholder="Décrivez l'objectif de ce rapport..." value={report.description} onChange={(e) => setReport({ ...report, description: e.target.value })} rows={3} />
             </div>
-
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="type">Type de rapport</Label>
-                <Select
-                  value={report.type}
-                  onValueChange={(value: any) => setReport({ ...report, type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={report.type} onValueChange={(value: any) => setReport({ ...report, type: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {reportTypes.map((type) => {
                       const Icon = type.icon;
                       return (
                         <SelectItem key={type.value} value={type.value}>
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            {type.label}
-                          </div>
+                          <div className="flex items-center gap-2"><Icon className="h-4 w-4" />{type.label}</div>
                         </SelectItem>
                       );
                     })}
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="schedule">Planification</Label>
-                <Select
-                  value={report.schedule}
-                  onValueChange={(value: any) => setReport({ ...report, schedule: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={report.schedule} onValueChange={(value: any) => setReport({ ...report, schedule: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="manual">Manuel</SelectItem>
                     <SelectItem value="daily">Quotidien</SelectItem>
@@ -223,14 +177,8 @@ export function CustomReportsBuilder() {
               </div>
             </div>
           </div>
-
           <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setReport({ name: '', description: '', type: 'sales', schedule: 'manual' })}
-            >
-              Annuler
-            </Button>
+            <Button variant="outline" onClick={() => setReport({ name: '', description: '', type: 'sales', schedule: 'manual' })}>Annuler</Button>
             <Button onClick={handleSave} disabled={createReport.isPending}>
               {createReport.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="mr-2 h-4 w-4" />
@@ -240,13 +188,10 @@ export function CustomReportsBuilder() {
         </CardContent>
       </Card>
 
-      {/* Saved Reports List */}
       <Card>
         <CardHeader>
           <CardTitle>Mes Rapports</CardTitle>
-          <CardDescription>
-            {reports.length} rapport{reports.length > 1 ? 's' : ''} enregistré{reports.length > 1 ? 's' : ''}
-          </CardDescription>
+          <CardDescription>{reports.length} rapport{reports.length > 1 ? 's' : ''} enregistré{reports.length > 1 ? 's' : ''}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -254,10 +199,7 @@ export function CustomReportsBuilder() {
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
                   <Skeleton className="h-10 w-10 rounded" />
-                  <div className="flex-1">
-                    <Skeleton className="h-4 w-32 mb-2" />
-                    <Skeleton className="h-3 w-48" />
-                  </div>
+                  <div className="flex-1"><Skeleton className="h-4 w-32 mb-2" /><Skeleton className="h-3 w-48" /></div>
                   <Skeleton className="h-8 w-20" />
                 </div>
               ))}
@@ -274,52 +216,25 @@ export function CustomReportsBuilder() {
                 {reports.map((r) => {
                   const typeInfo = reportTypes.find(t => t.value === r.report_type);
                   const Icon = typeInfo?.icon || BarChart;
-                  
                   return (
-                    <div
-                      key={r.id}
-                      className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="p-2 rounded-lg bg-muted">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      
+                    <div key={r.id} className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                      <div className="p-2 rounded-lg bg-muted"><Icon className="h-5 w-5" /></div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium truncate">{r.report_name}</h4>
-                          {r.is_favorite && (
-                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                          )}
+                          {r.is_favorite && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
                         </div>
                         <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <Badge variant="outline" className="text-xs">
-                            {typeInfo?.label || r.report_type}
-                          </Badge>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {scheduleLabels[r.schedule || 'manual']}
-                          </span>
+                          <Badge variant="outline" className="text-xs">{typeInfo?.label || r.report_type}</Badge>
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{scheduleLabels[r.schedule || 'manual']}</span>
                         </div>
                       </div>
-                      
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => toggleFavorite.mutate({ id: r.id, is_favorite: r.is_favorite || false })}
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => toggleFavorite.mutate({ id: r.id, is_favorite: r.is_favorite || false })}>
                           <Star className={`h-4 w-4 ${r.is_favorite ? 'text-yellow-500 fill-yellow-500' : ''}`} />
                         </Button>
-                        <Button variant="outline" size="sm">
-                          <Play className="h-3 w-3 mr-1" />
-                          Générer
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive"
-                          onClick={() => deleteReport.mutate(r.id)}
-                        >
+                        <Button variant="outline" size="sm"><Play className="h-3 w-3 mr-1" />Générer</Button>
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteReport.mutate(r.id)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

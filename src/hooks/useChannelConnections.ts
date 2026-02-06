@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { useApiStores } from '@/hooks/api/useApiStores'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+
 
 export interface ChannelConnection {
   id: string
@@ -60,22 +60,8 @@ export function useChannelConnections() {
       
       if (scError) console.error('Sales channels error:', scError)
 
-      // Try to get real product counts from FastAPI
+      // Stats from local data only
       let storeStats: Record<string, { products: number; orders: number }> = {}
-      try {
-        const res = await shopOptiApi.getStores()
-        if (res.success && res.data) {
-          const storesData = Array.isArray(res.data) ? res.data : res.data.stores || []
-          storesData.forEach((s: any) => {
-            storeStats[s.id] = {
-              products: s.products_count || s.products_synced || 0,
-              orders: s.orders_count || s.orders_synced || 0,
-            }
-          })
-        }
-      } catch {
-        // Fallback: use local data
-      }
 
       // Fetch order count from local database
       let orderCount = 0

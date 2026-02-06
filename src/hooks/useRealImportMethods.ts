@@ -1,10 +1,10 @@
 /**
- * useRealImportMethods - Import jobs list & actions via FastAPI
- * Zero direct Supabase — all reads/writes through shopOptiApi
+ * useRealImportMethods - Import jobs list & actions via Supabase direct
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { shopOptiApi } from '@/services/api/ShopOptiApiClient'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface ImportMethod {
   id: string
@@ -27,33 +27,39 @@ export interface ImportMethod {
 export const useRealImportMethods = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
 
-  // READ: Import history via FastAPI
   const { data: importMethods = [], isLoading, error } = useQuery({
-    queryKey: ['import-jobs'],
+    queryKey: ['import-jobs', user?.id],
     queryFn: async () => {
-      const res = await shopOptiApi.getImportHistory(100)
-      if (!res.success || !res.data) return []
-
-      const jobs = Array.isArray(res.data) ? res.data : res.data?.jobs || []
-      return jobs.map((job: any) => ({
+      if (!user?.id) return []
+      const { data, error } = await supabase
+        .from('background_jobs')
+        .select('*')
+        .eq('user_id', user.id)
+        .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import'])
+        .order('created_at', { ascending: false })
+        .limit(100)
+      if (error) throw error
+      return (data || []).map((job: any) => ({
         id: job.id,
         user_id: job.user_id,
-        source_type: job.job_type || job.source,
-        method_name: job.job_type || job.source,
-        configuration: job.import_settings || job.metadata,
+        source_type: job.job_subtype || job.job_type,
+        method_name: job.name || job.job_type,
+        configuration: job.input_data,
         status: job.status,
-        total_rows: job.total_products || job.total_items || 0,
-        processed_rows: job.processed_products || job.processed_items || 0,
-        success_rows: job.successful_imports || job.items_succeeded || 0,
-        error_rows: job.failed_imports || job.items_failed || 0,
-        mapping_config: job.import_settings || job.metadata,
+        total_rows: job.items_total || 0,
+        processed_rows: job.items_processed || 0,
+        success_rows: job.items_succeeded || 0,
+        error_rows: job.items_failed || 0,
+        mapping_config: job.metadata,
         created_at: job.created_at,
         updated_at: job.updated_at,
         started_at: job.started_at,
-        completed_at: job.completed_at
+        completed_at: job.completed_at,
       })) as ImportMethod[]
     },
+    enabled: !!user?.id,
     refetchInterval: (query) => {
       const jobs = query.state.data || []
       const hasActiveJobs = jobs.some(job =>
@@ -63,7 +69,6 @@ export const useRealImportMethods = () => {
     },
   })
 
-  // WRITE: Execute import via FastAPI
   const executeImport = useMutation({
     mutationFn: async (jobData: {
       method_id?: string
@@ -71,44 +76,27 @@ export const useRealImportMethods = () => {
       source_url?: string
       mapping_config?: any
     }) => {
+      if (!user?.id) throw new Error('Non authentifié')
+      // Use url-import edge function
       if (jobData.source_url) {
-        return shopOptiApi.importFromUrl(jobData.source_url, {
-          enrichWithAi: true,
-          autoMapping: true,
+        const { data, error } = await supabase.functions.invoke('url-import', {
+          body: { url: jobData.source_url, enrichWithAi: true }
         })
+        if (error) throw error
+        return data
       }
-      // Fallback: use scrape endpoint
-      return shopOptiApi.scrapeUrl(jobData.source_url || '', {
-        enrichWithAi: true,
-      })
+      throw new Error('URL source requise')
     },
-    onSuccess: (res) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
-      queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
       queryClient.invalidateQueries({ queryKey: ['products-unified'] })
-      if (res.success) {
-        toast({
-          title: 'Import démarré',
-          description: `Job ID: ${res.job_id || res.data?.job_id || 'en cours'}`
-        })
-      } else {
-        toast({
-          title: 'Erreur import',
-          description: res.error || 'Erreur inconnue',
-          variant: 'destructive'
-        })
-      }
+      toast({ title: 'Import démarré', description: 'Le traitement est en cours...' })
     },
     onError: (err: Error) => {
-      toast({
-        title: 'Erreur',
-        description: err.message,
-        variant: 'destructive'
-      })
+      toast({ title: 'Erreur', description: err.message, variant: 'destructive' })
     }
   })
 
-  // WRITE: Create import method (starts a new job via FastAPI)
   const createMethod = useMutation({
     mutationFn: async (methodData: {
       method_type: string
@@ -116,43 +104,34 @@ export const useRealImportMethods = () => {
       configuration: any
       source_type: string
     }) => {
-      // Create via the appropriate FastAPI endpoint based on source
+      if (!user?.id) throw new Error('Non authentifié')
       const url = methodData.configuration?.url || methodData.configuration?.feed_url
       if (url) {
-        return shopOptiApi.importFromUrl(url, { enrichWithAi: true })
+        const { data, error } = await supabase.functions.invoke('url-import', {
+          body: { url, enrichWithAi: true }
+        })
+        if (error) throw error
+        return data
       }
-      // For feed-type imports
-      if (methodData.source_type === 'xml' || methodData.source_type === 'csv' || methodData.source_type === 'json') {
-        return shopOptiApi.importFromFeed(
-          methodData.configuration?.feed_url || '',
-          methodData.source_type as 'xml' | 'csv' | 'json',
-          methodData.configuration?.mapping
-        )
-      }
-      return shopOptiApi.importFromUrl(url || '', { enrichWithAi: true })
-    },
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
-      queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
-      toast({
-        title: "Import configuré",
-        description: res.success ? `Job: ${res.job_id || 'créé'}` : (res.error || 'Erreur')
-      })
-    }
-  })
-
-  // DELETE: Cancel/delete job via FastAPI
-  const deleteMethod = useMutation({
-    mutationFn: async (id: string) => {
-      return shopOptiApi.cancelJob(id)
+      throw new Error('URL requise')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
-      queryClient.invalidateQueries({ queryKey: ['api-jobs'] })
-      toast({
-        title: 'Job supprimé',
-        description: 'Le job a été annulé avec succès'
-      })
+      toast({ title: 'Import configuré', description: 'Job créé avec succès' })
+    }
+  })
+
+  const deleteMethod = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('background_jobs')
+        .update({ status: 'cancelled' })
+        .eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
+      toast({ title: 'Job supprimé', description: 'Le job a été annulé' })
     }
   })
 
@@ -172,7 +151,7 @@ export const useRealImportMethods = () => {
     error,
     createMethod: createMethod.mutate,
     executeImport: executeImport.mutate,
-    updateMethod: () => {}, // Deprecated: updates go through FastAPI job system
+    updateMethod: () => {},
     deleteMethod: deleteMethod.mutate,
     isCreating: createMethod.isPending,
     isExecuting: executeImport.isPending,
