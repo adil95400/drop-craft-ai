@@ -95,10 +95,18 @@ Fonctions supprimées car jamais invoquées dans le frontend (src/) :
 | 2025-01-21 | unified-integrations | Duplications + mocks |
 | 2025-12-06 | canva-design-optimizer | Mock sans API Canva |
 
+## Nettoyage du 2026-02-06 (batch 3) — 5 fonctions non référencées supprimées
+
+- `facebook-shops` — jamais invoqué depuis src/
+- `analyze-channel-readiness` — jamais invoqué depuis src/
+- `list-user-stores` — jamais invoqué depuis src/
+- `metrics-collector` — jamais invoqué depuis src/
+- `price-stock-cron` — jamais invoqué depuis src/
+
 ## Résumé
 
 | Métrique | Avant | Après |
 |----------|-------|-------|
-| Edge Functions totales | ~400+ | ~350 |
-| Fonctions supprimées (total) | 4 | 58 |
+| Edge Functions totales | ~400+ | ~285 |
+| Fonctions supprimées (total) | 4 | 63 |
 | Doublons éliminés | 0 | 40+ |
