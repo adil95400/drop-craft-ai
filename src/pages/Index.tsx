@@ -86,7 +86,7 @@ const HeroSection = memo(() => {
                 variant="outline" 
                 size="lg" 
                 className="px-8 py-6 text-lg border-2 hover:bg-secondary/50 transition-all duration-300" 
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/features')}
               >
                 Voir la démo
               </Button>

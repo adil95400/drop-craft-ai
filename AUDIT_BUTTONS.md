@@ -31,9 +31,9 @@
 | # | Fichier | Contexte | Statut |
 |---|---------|----------|--------|
 | 9 | `src/pages/support/SupportCenterPage.tsx` | Bouton "Démarrer un chat" | ✅ **CORRIGÉ** — Redirige vers `/contact` |
-| 10 | `src/components/landing/StickyCtaBar.tsx` | Bouton "Voir démo" | ❌ À corriger — `navigate('/dashboard')` |
-| 11 | `src/components/landing/LiveDemoPreview.tsx` | Bouton avec icône Play | ❌ À corriger — `navigate('/dashboard')` |
-| 12 | `src/pages/Index.tsx` | Bouton "Voir la démo" | ❌ À corriger — `navigate('/dashboard')` |
+| 10 | `src/components/landing/StickyCtaBar.tsx` | Bouton "Voir démo" | ✅ **CORRIGÉ** — `navigate('/features')` |
+| 11 | `src/components/landing/LiveDemoPreview.tsx` | Bouton avec icône Play | ✅ **CORRIGÉ** — `navigate('/features')` |
+| 12 | `src/pages/Index.tsx` | Bouton "Voir la démo" | ✅ **CORRIGÉ** — `navigate('/features')` |
 
 ---
 
@@ -89,9 +89,9 @@
 | 🔴 Critique | Formulaires sans API | 2 | 1 | 1 |
 | 🟠 Haute | Actions simulées / "bientôt" | 6 | 0 | 6 |
 | 🟠 Haute | Données mockées | 9 | 3 | 6 |
-| 🟡 Moyenne | Navigate factice | 4 | 1 | 3 |
+| 🟡 Moyenne | Navigate factice | 4 | 4 | 0 |
 | 🟡 Moyenne | CTA sans workflow essai | 9 | 2 | 7 |
-| **Total** | | **30** | **7** | **23** |
+| **Total** | | **30** | **10** | **20** |
 
 ---
 
