@@ -39,10 +39,10 @@ export default function ExtensionAuthPage() {
     
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('extension-login', {
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
         body: {
+          handler: 'login',
           action: 'generate_token',
-          userId: user.id
         }
       });
 
@@ -90,9 +90,10 @@ export default function ExtensionAuthPage() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('extension-login', {
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
         body: {
-          action: 'login',
+          handler: 'login',
+          action: 'login_credentials',
           email,
           password
         }

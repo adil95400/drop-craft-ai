@@ -1,8 +1,9 @@
 /**
- * Extension Hub — Consolidated router for simple extension edge functions
+ * Extension Hub — Consolidated router for extension edge functions
  * 
  * Replaces: extension-install, extension-version-check, extension-health-monitor,
- *           extension-auto-order, extension-price-monitor, extension-product-research
+ *           extension-auto-order, extension-price-monitor, extension-product-research,
+ *           extension-login, extension-marketplace, extension-marketplace-sync
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
@@ -42,6 +43,12 @@ serve(async (req) => {
         return await handlePriceMonitor(req, supabase, action, params)
       case 'product-research':
         return await handleProductResearch(req, supabase, action, params)
+      case 'login':
+        return await handleLogin(req, supabase, action, params)
+      case 'marketplace':
+        return await handleMarketplace(req, supabase, action, params)
+      case 'marketplace-sync':
+        return await handleMarketplaceSync(req, supabase, action, params)
       default:
         return jsonResponse({ error: `Unknown handler: ${handler}` }, 400)
     }
@@ -473,4 +480,158 @@ async function handleProductResearch(req: Request, supabase: any, action: string
   }
 
   throw new Error('Invalid action')
+}
+
+// ============================================================================
+// HANDLER: login (replaces extension-login)
+// ============================================================================
+
+async function handleLogin(req: Request, supabase: any, action: string, params: any) {
+  if (action === 'generate_token') {
+    const user = await authenticateJWT(req, supabase)
+    const { data: profile } = await supabase
+      .from('profiles').select('*').eq('id', user.id).single()
+
+    const token = crypto.randomUUID() + '-' + Date.now()
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+
+    const { error: tokenError } = await supabase
+      .from('extension_auth_tokens')
+      .insert({ user_id: user.id, token, expires_at: expiresAt, is_active: true, device_info: { source: 'web_auth_page' } })
+    if (tokenError) throw new Error('Failed to create extension token')
+
+    await supabase.from('security_events').insert({
+      user_id: user.id, event_type: 'extension_token_generated', severity: 'info',
+      description: 'Extension token generated via web auth page', metadata: {}
+    })
+
+    return jsonResponse({
+      success: true, token, expiresAt,
+      user: { id: user.id, plan: profile?.subscription_plan || 'free', firstName: profile?.first_name, lastName: profile?.last_name, avatarUrl: profile?.avatar_url }
+    })
+  }
+
+  if (action === 'login_credentials') {
+    const { email, password } = params
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    if (authError || !authData.user) return jsonResponse({ success: false, error: 'Identifiants invalides' }, 401)
+
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', authData.user.id).single()
+    const token = crypto.randomUUID() + '-' + Date.now()
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+
+    const { error: tokenError } = await supabase
+      .from('extension_auth_tokens')
+      .insert({ user_id: authData.user.id, token, expires_at: expiresAt, is_active: true, device_info: { source: 'extension_login' } })
+    if (tokenError) throw new Error('Failed to create extension token')
+
+    await supabase.from('security_events').insert({
+      user_id: authData.user.id, event_type: 'extension_login', severity: 'info',
+      description: 'User logged in via Chrome extension', metadata: {}
+    })
+
+    return jsonResponse({
+      success: true, token, expiresAt,
+      user: { id: authData.user.id, email: authData.user.email, plan: profile?.subscription_plan || 'free', firstName: profile?.first_name, lastName: profile?.last_name, avatarUrl: profile?.avatar_url }
+    })
+  }
+
+  throw new Error('Invalid login action')
+}
+
+// ============================================================================
+// HANDLER: marketplace (replaces extension-marketplace)
+// ============================================================================
+
+async function handleMarketplace(req: Request, supabase: any, action: string, params: any) {
+  const user = await authenticateJWT(req, supabase)
+
+  if (action === 'publish') {
+    const { data: formData } = params
+    const d = formData || params
+    const errors: string[] = []
+    if (!d.name || d.name.length < 3) errors.push('Name must be at least 3 characters')
+    if (!d.description || d.description.length < 20) errors.push('Description must be at least 20 characters')
+    if (!d.version || !/^\d+\.\d+\.\d+$/.test(d.version)) errors.push('Invalid version format')
+    if (!d.category) errors.push('Category is required')
+    if (errors.length > 0) return jsonResponse({ error: 'Validation failed', details: errors }, 400)
+
+    const { data: listing, error } = await supabase
+      .from('marketplace_extensions')
+      .insert({ developer_id: user.id, name: d.name, description: d.description, version: d.version, category: d.category, source_url: d.source_url, icon_url: d.icon_url, screenshots: d.screenshots, status: 'pending_review' })
+      .select().single()
+    if (error) throw error
+
+    await supabase.from('extension_reviews').insert({ extension_id: listing.id, status: 'pending', requested_by: user.id })
+    return jsonResponse({ success: true, listing, message: 'Extension soumise pour review.' })
+  }
+
+  if (action === 'list') {
+    const { category, search, status = 'approved' } = params.data || params
+    let query = supabase.from('marketplace_extensions').select('*').eq('status', status)
+    if (category) query = query.eq('category', category)
+    if (search) query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)
+    const { data: extensions, error } = await query.order('install_count', { ascending: false }).limit(50)
+    if (error) throw error
+    return jsonResponse({ success: true, extensions })
+  }
+
+  if (action === 'review') {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role !== 'admin') return jsonResponse({ error: 'Admin access required' }, 403)
+    const { extensionId, approved, feedback } = params.data || params
+    await supabase.from('marketplace_extensions').update({ status: approved ? 'approved' : 'rejected', published_at: approved ? new Date().toISOString() : null, review_feedback: feedback }).eq('id', extensionId)
+    return jsonResponse({ success: true, message: `Extension ${approved ? 'approved' : 'rejected'}` })
+  }
+
+  throw new Error('Invalid marketplace action')
+}
+
+// ============================================================================
+// HANDLER: marketplace-sync (replaces extension-marketplace-sync)
+// ============================================================================
+
+async function handleMarketplaceSync(req: Request, supabase: any, action: string, params: any) {
+  const user = await authenticateJWT(req, supabase)
+
+  if (action === 'sync_products') {
+    const { productIds, platforms } = params
+    const results = []
+
+    for (const productId of (productIds || [])) {
+      const { data: product, error: productError } = await supabase
+        .from('products').select('*').eq('id', productId).eq('user_id', user.id).single()
+      if (productError || !product) { results.push({ product_id: productId, success: false, error: 'Product not found' }); continue }
+
+      const platformResults: Record<string, any> = {}
+      for (const platform of (platforms || [])) {
+        const { data: connection } = await supabase
+          .from('marketplace_connections').select('*').eq('user_id', user.id).eq('platform', platform).eq('status', 'connected').single()
+        if (!connection) { platformResults[platform] = { success: false, error: 'Platform not connected' }; continue }
+
+        const { error: syncError } = await supabase
+          .from('marketplace_product_mappings')
+          .upsert({ user_id: user.id, product_id: productId, platform, external_id: `${platform}-${Date.now()}`, sync_status: 'synced', last_synced_at: new Date().toISOString() }, { onConflict: 'user_id,product_id,platform' })
+
+        platformResults[platform] = { success: !syncError, external_id: `${platform}-${Date.now()}`, error: syncError?.message }
+        if (!syncError && connection) {
+          const currentStats = connection.sync_stats || {}
+          await supabase.from('marketplace_connections').update({ last_sync_at: new Date().toISOString(), sync_stats: { ...currentStats, products_synced: (currentStats.products_synced || 0) + 1 } }).eq('id', connection.id)
+        }
+      }
+      results.push({ product_id: productId, product_name: product.title, platforms: platformResults })
+    }
+
+    await supabase.from('activity_logs').insert({ user_id: user.id, action: 'marketplace_sync', entity_type: 'products', description: `Synced ${productIds?.length || 0} products to ${platforms?.length || 0} platforms`, metadata: { products: productIds?.length, platforms, results } })
+    return jsonResponse({ success: true, message: `Synchronized ${productIds?.length || 0} products`, results })
+  }
+
+  if (action === 'configure') {
+    const { config } = params
+    const { data: extension } = await supabase.from('extensions').select('*').eq('user_id', user.id).eq('name', 'marketplace-sync-pro').single()
+    if (extension) await supabase.from('extensions').update({ configuration: config, updated_at: new Date().toISOString() }).eq('id', extension.id)
+    return jsonResponse({ success: true, message: 'Configuration saved' })
+  }
+
+  throw new Error('Invalid marketplace-sync action')
 }
