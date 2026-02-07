@@ -50,8 +50,9 @@ export const MarketplaceSyncConfig = () => {
 
       const productIds = products?.map(p => p.id) || [];
 
-      const { data, error } = await supabase.functions.invoke('extension-marketplace-sync', {
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
         body: { 
+          handler: 'marketplace-sync',
           action: 'sync_products',
           productIds,
           platforms: selectedPlatforms
