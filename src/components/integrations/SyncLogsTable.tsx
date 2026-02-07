@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/integrations/supabase/client'
-import { Search, RefreshCw, AlertCircle, CheckCircle, Clock, Download } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { Search, RefreshCw, AlertCircle, CheckCircle, Clock, Download, Loader2 } from 'lucide-react'
 
 interface SyncLog {
   id: string
@@ -24,37 +25,43 @@ interface SyncLog {
 }
 
 export const SyncLogsTable = () => {
+  const { user } = useAuth()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
 
   const { data: logs = [], isLoading, refetch } = useQuery({
-    queryKey: ['sync-logs', statusFilter, typeFilter],
+    queryKey: ['sync-logs', user?.id, statusFilter, typeFilter],
     queryFn: async () => {
-      // Simuler des données de logs de sync avec vraies structures
-      const { data: integrations } = await supabase
-        .from('integrations')
-        .select('id, platform_name')
+      if (!user) return []
 
-      // Générer des logs simulés basés sur les vraies intégrations
-      const mockLogs: SyncLog[] = integrations?.flatMap(integration => 
-        Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, i) => ({
-          id: `${integration.id}-log-${i}`,
-          integration_id: integration.id,
-          platform_name: integration.platform_name,
-          sync_type: ['products', 'orders', 'inventory'][Math.floor(Math.random() * 3)],
-          status: ['success', 'error', 'in_progress'][Math.floor(Math.random() * 3)] as any,
-          items_processed: Math.floor(Math.random() * 1000) + 10,
-          items_success: Math.floor(Math.random() * 950) + 5,
-          items_error: Math.floor(Math.random() * 50),
-          started_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-          completed_at: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 6 * 24 * 60 * 60 * 1000).toISOString() : undefined,
-          error_message: Math.random() > 0.7 ? 'Erreur de connexion API' : undefined
-        }))
-      ) || []
+      // Query real background_jobs for sync-related jobs
+      const { data: jobs, error } = await supabase
+        .from('background_jobs')
+        .select('id, job_type, job_subtype, status, items_processed, items_succeeded, items_failed, started_at, completed_at, error_message, metadata, name')
+        .eq('user_id', user.id)
+        .in('job_type', ['sync', 'import', 'export'])
+        .order('created_at', { ascending: false })
+        .limit(100)
 
-      return mockLogs.sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime())
+      if (error || !jobs) return []
+
+      return jobs.map((job): SyncLog => ({
+        id: job.id,
+        integration_id: job.id,
+        platform_name: job.name || job.job_subtype || job.job_type,
+        sync_type: job.job_subtype || job.job_type,
+        status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'error' : 'in_progress',
+        items_processed: job.items_processed || 0,
+        items_success: job.items_succeeded || 0,
+        items_error: job.items_failed || 0,
+        started_at: job.started_at || job.completed_at || new Date().toISOString(),
+        completed_at: job.completed_at || undefined,
+        error_message: job.error_message || undefined
+      }))
     },
+    enabled: !!user,
+    staleTime: 30 * 1000,
   })
 
   const filteredLogs = logs.filter(log => {
@@ -123,7 +130,7 @@ export const SyncLogsTable = () => {
       <Card>
         <CardContent className="p-6">
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         </CardContent>
       </Card>
@@ -145,7 +152,6 @@ export const SyncLogsTable = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -157,7 +163,6 @@ export const SyncLogsTable = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -169,7 +174,6 @@ export const SyncLogsTable = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -189,39 +193,26 @@ export const SyncLogsTable = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Historique des Synchronisations</CardTitle>
-              <CardDescription>
-                Consultez l'historique de toutes les synchronisations effectuées
-              </CardDescription>
+              <CardDescription>Consultez l'historique de toutes les synchronisations effectuées</CardDescription>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => refetch()} size="sm">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Actualiser
+                <RefreshCw className="w-4 h-4 mr-2" />Actualiser
               </Button>
               <Button variant="outline" onClick={exportLogs} size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Exporter
+                <Download className="w-4 h-4 mr-2" />Exporter
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Filters */}
           <div className="flex flex-wrap gap-4">
             <div className="relative min-w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
+              <Input placeholder="Rechercher..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
             </div>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filtrer par statut" />
-              </SelectTrigger>
+              <SelectTrigger className="w-48"><SelectValue placeholder="Filtrer par statut" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
                 <SelectItem value="success">Réussi</SelectItem>
@@ -229,11 +220,8 @@ export const SyncLogsTable = () => {
                 <SelectItem value="in_progress">En cours</SelectItem>
               </SelectContent>
             </Select>
-
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filtrer par type" />
-              </SelectTrigger>
+              <SelectTrigger className="w-48"><SelectValue placeholder="Filtrer par type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les types</SelectItem>
                 <SelectItem value="products">Produits</SelectItem>
@@ -243,12 +231,11 @@ export const SyncLogsTable = () => {
             </Select>
           </div>
 
-          {/* Table */}
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Plateforme</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Éléments</TableHead>
@@ -262,7 +249,7 @@ export const SyncLogsTable = () => {
                 {filteredLogs.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      Aucun log de synchronisation trouvé
+                      Aucun historique de synchronisation
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -270,18 +257,12 @@ export const SyncLogsTable = () => {
                     <TableRow key={log.id}>
                       <TableCell className="font-medium">{log.platform_name || 'N/A'}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getTypeColor(log.sync_type)}>
-                          {log.sync_type}
-                        </Badge>
+                        <Badge variant="outline" className={getTypeColor(log.sync_type)}>{log.sync_type}</Badge>
                       </TableCell>
                       <TableCell>{getStatusBadge(log.status)}</TableCell>
                       <TableCell>{log.items_processed.toLocaleString()}</TableCell>
-                      <TableCell className="text-green-600 font-medium">
-                        {log.items_success.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-red-600 font-medium">
-                        {log.items_error.toLocaleString()}
-                      </TableCell>
+                      <TableCell className="text-green-600 font-medium">{log.items_success.toLocaleString()}</TableCell>
+                      <TableCell className="text-red-600 font-medium">{log.items_error.toLocaleString()}</TableCell>
                       <TableCell>{new Date(log.started_at).toLocaleString()}</TableCell>
                       <TableCell>
                         {log.completed_at ? (

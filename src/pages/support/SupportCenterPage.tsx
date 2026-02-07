@@ -18,7 +18,7 @@ const SupportCenterPage = () => {
       action: 'Démarrer un chat',
       badge: 'En ligne',
       badgeVariant: 'default' as const,
-      onClick: () => navigate('/dashboard')
+      onClick: () => navigate('/contact')
     },
     {
       icon: Mail,
