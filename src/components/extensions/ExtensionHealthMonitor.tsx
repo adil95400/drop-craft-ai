@@ -36,8 +36,8 @@ export function ExtensionHealthMonitor() {
   const loadMetrics = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('extension-health-monitor', {
-        body: { action: 'metrics' }
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
+        body: { handler: 'health-monitor', action: 'metrics' }
       })
 
       if (error) throw error
@@ -52,8 +52,8 @@ export function ExtensionHealthMonitor() {
   const runTests = async () => {
     setRunningTests(true)
     try {
-      const { data, error } = await supabase.functions.invoke('extension-health-monitor', {
-        body: { action: 'run_tests' }
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
+        body: { handler: 'health-monitor', action: 'run_tests' }
       })
 
       if (error) throw error

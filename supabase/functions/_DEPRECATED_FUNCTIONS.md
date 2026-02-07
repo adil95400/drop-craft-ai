@@ -103,10 +103,21 @@ Fonctions supprimées car jamais invoquées dans le frontend (src/) :
 - `metrics-collector` — jamais invoqué depuis src/
 - `price-stock-cron` — jamais invoqué depuis src/
 
+## Nettoyage du 2026-02-07 — Consolidation extension-hub (6 fonctions)
+
+Les fonctions suivantes ont été consolidées dans `extension-hub` :
+- `extension-install` → `extension-hub` handler: install
+- `extension-version-check` → `extension-hub` handler: version-check
+- `extension-health-monitor` → `extension-hub` handler: health-monitor
+- `extension-auto-order` → `extension-hub` handler: auto-order
+- `extension-price-monitor` → `extension-hub` handler: price-monitor
+- `extension-product-research` → `extension-hub` handler: product-research
+
 ## Résumé
 
 | Métrique | Avant | Après |
 |----------|-------|-------|
-| Edge Functions totales | ~400+ | ~285 |
-| Fonctions supprimées (total) | 4 | 63 |
-| Doublons éliminés | 0 | 40+ |
+| Edge Functions totales | ~285 | ~280 |
+| Fonctions supprimées (total) | 63 | 69 |
+| Doublons éliminés | 40+ | 40+ |
+| Hubs créés | 0 | 1 (extension-hub) |

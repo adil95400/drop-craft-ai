@@ -25,8 +25,8 @@ export const PriceMonitorConfig = () => {
   const handleSaveConfig = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('extension-price-monitor', {
-        body: { action: 'configure', config }
+      const { error } = await supabase.functions.invoke('extension-hub', {
+        body: { handler: 'price-monitor', action: 'configure', config }
       });
 
       if (error) throw error;

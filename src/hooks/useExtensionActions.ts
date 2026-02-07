@@ -15,8 +15,9 @@ export function useExtensionActions() {
 
     setIsInstalling(true);
     try {
-      const { data, error } = await supabase.functions.invoke('extension-install', {
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
         body: {
+          handler: 'install',
           extension_id: extensionId,
           config
         }

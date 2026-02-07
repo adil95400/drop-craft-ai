@@ -31,7 +31,8 @@ export function ExtensionUpdateNotification() {
       // Get current extension version from localStorage or default
       const currentVersion = localStorage.getItem('extension_version') || '1.0.0'
 
-      const { data, error } = await supabase.functions.invoke('extension-version-check', {
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
+        body: { handler: 'version-check' },
         headers: {
           'x-extension-version': currentVersion
         }
