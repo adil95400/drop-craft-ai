@@ -43,7 +43,7 @@ export interface FinancialData {
   }
 }
 
-export const useRealFinance = () => {
+export const useFinanceData = () => {
   const { toast } = useToast()
 
   const {

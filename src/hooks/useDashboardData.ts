@@ -1,6 +1,5 @@
 /**
- * Hook pour récupérer les données réelles du dashboard depuis la base de données
- * Remplace toutes les données mock par des données réelles
+ * useDashboardData — Récupère les données réelles du dashboard depuis la base de données
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -29,7 +28,7 @@ interface ChannelHealthMetric {
   description?: string
 }
 
-export function useRealDashboardData() {
+export function useDashboardData() {
   const { user } = useUnifiedAuth()
 
   // Récupérer les statistiques principales

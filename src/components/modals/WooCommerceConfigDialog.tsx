@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useIntegrationsUnified, IntegrationTemplate } from "@/hooks/unified";
-import { logError } from "@/utils/consoleCleanup";
+import { productionLogger } from "@/utils/productionLogger";
 import { ShoppingCart, Key, Globe, Settings, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface WooCommerceConfigDialogProps {
@@ -84,7 +84,7 @@ export const WooCommerceConfigDialog = ({ open, onOpenChange }: WooCommerceConfi
         });
       }, 2000);
     } catch (error) {
-      logError(error as Error, 'WooCommerce connection error');
+      productionLogger.error('WooCommerce connection error', error as Error);
     }
   };
 
