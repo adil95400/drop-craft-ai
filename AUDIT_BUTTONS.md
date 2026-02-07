@@ -17,12 +17,12 @@
 
 | # | Fichier | Action | Statut |
 |---|---------|--------|--------|
-| 3 | `src/components/extensions/ExtensionMarketplace.tsx` | Bouton "Installer" extension | ❌ À corriger — `toast("Installation simulée")` |
-| 4 | `src/pages/extensions/ExtensionDeveloperPage.tsx` | 2× Bouton "GitHub Repository" | ❌ À corriger — `toast.info('bientôt disponible')` |
-| 5 | `src/components/suppliers/SupplierManagement.tsx` | Bouton connexion connecteur | ❌ À corriger — `toast("Bientôt disponible")` |
-| 6 | `src/pages/integrations/MarketplaceConnectorsPage.tsx` | Bouton "Connecter" (coming_soon) | ⚠️ Acceptable si badge visible |
-| 7 | `src/pages/stores/ManageIntegrationPage.tsx` | Personnalisation des données | ❌ À corriger — texte "bientôt disponible" |
-| 8 | `src/pages/Reports.tsx` | Export format non disponible | ❌ À corriger — toast sans action |
+| 3 | `src/components/extensions/ExtensionMarketplace.tsx` | Bouton "Installer" extension | ✅ **CORRIGÉ** — Bouton désactivé avec label "Bientôt" |
+| 4 | `src/pages/extensions/ExtensionDeveloperPage.tsx` | 2× Bouton "GitHub Repository" | ✅ **CORRIGÉ** — Boutons désactivés avec label "GitHub — Bientôt" |
+| 5 | `src/components/suppliers/SupplierManagement.tsx` | Bouton connexion connecteur | ✅ **Acceptable** — `coming_soon` avec bouton désactivé + badge |
+| 6 | `src/pages/integrations/MarketplaceConnectorsPage.tsx` | Bouton "Connecter" (coming_soon) | ✅ **Acceptable** — Badge "Bientôt" visible + bouton désactivé |
+| 7 | `src/pages/stores/ManageIntegrationPage.tsx` | Personnalisation des données | ✅ **CORRIGÉ** — Badge "Bientôt" ajouté |
+| 8 | `src/pages/Reports.tsx` | Export format non disponible | ✅ **CORRIGÉ** — Toast clair + reset vers PDF |
 
 ---
 
@@ -87,11 +87,11 @@
 | Priorité | Catégorie | Total | Corrigés | Restants |
 |----------|-----------|-------|----------|----------|
 | 🔴 Critique | Formulaires sans API | 2 | 2 | 0 |
-| 🟠 Haute | Actions simulées / "bientôt" | 6 | 0 | 6 |
+| 🟠 Haute | Actions simulées / "bientôt" | 6 | 6 | 0 |
 | 🟠 Haute | Données mockées | 9 | 6 | 3 (acceptables) |
 | 🟡 Moyenne | Navigate factice | 4 | 4 | 0 |
 | 🟡 Moyenne | CTA sans workflow essai | 9 | 9 | 0 |
-| **Total** | | **30** | **21** | **9** (dont 3 acceptables) |
+| **Total** | | **30** | **27** | **3** (tous acceptables) |
 
 ---
 

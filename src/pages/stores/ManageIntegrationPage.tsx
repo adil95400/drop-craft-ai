@@ -374,10 +374,11 @@ export default function ManageIntegrationPage() {
                     <option value="hourly">Chaque heure</option>
                     <option value="daily">Quotidienne</option>
                     <option value="weekly">Hebdomadaire</option>
-                  </select>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Configuration automatique (Bientôt disponible)
-                  </p>
+                   </select>
+                   <p className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+                     <Badge variant="secondary" className="text-[10px] px-1.5">Bientôt</Badge>
+                     Configuration automatique
+                   </p>
                 </div>
 
                 <div>
