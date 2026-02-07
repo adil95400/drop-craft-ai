@@ -6313,6 +6313,45 @@ export type Database = {
         }
         Relationships: []
       }
+      free_trial_subscriptions: {
+        Row: {
+          coupon_code: string | null
+          created_at: string
+          ends_at: string
+          id: string
+          started_at: string
+          status: string
+          trial_days: number
+          trial_plan: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_code?: string | null
+          created_at?: string
+          ends_at: string
+          id?: string
+          started_at?: string
+          status?: string
+          trial_days?: number
+          trial_plan?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_code?: string | null
+          created_at?: string
+          ends_at?: string
+          id?: string
+          started_at?: string
+          status?: string
+          trial_days?: number
+          trial_plan?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fulfillment_carriers: {
         Row: {
           account_number: string | null
@@ -10057,10 +10096,13 @@ export type Database = {
           marketing_notifications: boolean
           onboarding_completed: boolean | null
           phone: string | null
+          plan: string | null
           profile_visible: boolean
           push_notifications: boolean | null
           settings: Json
+          subscription_expires_at: string | null
           subscription_plan: string | null
+          subscription_status: string | null
           timezone: string | null
           twitter: string | null
           updated_at: string | null
@@ -10087,10 +10129,13 @@ export type Database = {
           marketing_notifications?: boolean
           onboarding_completed?: boolean | null
           phone?: string | null
+          plan?: string | null
           profile_visible?: boolean
           push_notifications?: boolean | null
           settings?: Json
+          subscription_expires_at?: string | null
           subscription_plan?: string | null
+          subscription_status?: string | null
           timezone?: string | null
           twitter?: string | null
           updated_at?: string | null
@@ -10117,10 +10162,13 @@ export type Database = {
           marketing_notifications?: boolean
           onboarding_completed?: boolean | null
           phone?: string | null
+          plan?: string | null
           profile_visible?: boolean
           push_notifications?: boolean | null
           settings?: Json
+          subscription_expires_at?: string | null
           subscription_plan?: string | null
+          subscription_status?: string | null
           timezone?: string | null
           twitter?: string | null
           updated_at?: string | null

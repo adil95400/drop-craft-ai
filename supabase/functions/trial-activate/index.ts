@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 serve(async (req) => {
@@ -12,16 +12,24 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const authHeader = req.headers.get('Authorization')!
+    // Extract user from JWT — never trust user_id from body
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user } } = await supabase.auth.getUser(token)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     
-    if (!user) {
+    if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -32,8 +40,8 @@ serve(async (req) => {
 
     console.log(`[trial-activate] Activating ${trialDays}-day trial for user ${user.id}`)
 
-    // Vérifier si l'utilisateur a déjà eu un essai gratuit
-    const { data: existingTrial } = await supabase
+    // Check if user already had a free trial
+    const { data: existingTrial } = await supabaseAdmin
       .from('free_trial_subscriptions')
       .select('*')
       .eq('user_id', user.id)
@@ -48,12 +56,12 @@ serve(async (req) => {
       })
     }
 
-    // Calculer la date de fin
+    // Calculate end date
     const trialEndsAt = new Date()
     trialEndsAt.setDate(trialEndsAt.getDate() + trialDays)
 
-    // Créer l'essai gratuit
-    const { data: trial, error: trialError } = await supabase
+    // Create free trial record
+    const { data: trial, error: trialError } = await supabaseAdmin
       .from('free_trial_subscriptions')
       .insert({
         user_id: user.id,
@@ -71,8 +79,8 @@ serve(async (req) => {
       throw trialError
     }
 
-    // Mettre à jour le profil utilisateur
-    const { error: profileError } = await supabase
+    // Update user profile
+    const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
         plan: plan,

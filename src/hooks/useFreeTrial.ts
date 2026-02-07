@@ -2,51 +2,55 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { useStripeCheckout } from '@/hooks/useStripeCheckout'
 
 interface TrialData {
   id: string
   user_id: string
-  plan: string
+  trial_plan: string
+  trial_days: number
   status: string
   ends_at: string
-  created_at: string
+  started_at: string
+  coupon_code: string | null
 }
 
 export function useFreeTrial() {
   const { toast } = useToast()
   const { user } = useAuth()
   const queryClient = useQueryClient()
+  const { createCheckoutSession } = useStripeCheckout()
 
+  // Fetch real trial data from free_trial_subscriptions table
   const { data: trial, isLoading } = useQuery({
     queryKey: ['free-trial', user?.id],
     queryFn: async (): Promise<TrialData | null> => {
       if (!user) return null
 
-      // Use profiles table to check subscription status
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, subscription_plan, created_at, updated_at')
-        .eq('id', user.id)
+      const { data, error } = await (supabase as any)
+        .from('free_trial_subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
         .single()
 
-      if (error) return null
-      
-      // Mock trial data based on profile
-      if (data?.subscription_plan === 'pro' || data?.subscription_plan === 'ultra_pro') {
-        return {
-          id: data.id,
-          user_id: data.id,
-          plan: data.subscription_plan,
-          status: 'active',
-          ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          created_at: data.created_at
-        }
+      if (error || !data) return null
+
+      return {
+        id: data.id,
+        user_id: data.user_id,
+        trial_plan: data.trial_plan,
+        trial_days: data.trial_days,
+        status: data.status,
+        ends_at: data.ends_at,
+        started_at: data.started_at,
+        coupon_code: data.coupon_code,
       }
-      return null
     },
     enabled: !!user,
   })
 
+  // Activate trial via secure edge function (user_id extracted from JWT server-side)
   const activateTrialMutation = useMutation({
     mutationFn: async (params: {
       trialDays?: number
@@ -77,39 +81,40 @@ export function useFreeTrial() {
     },
   })
 
+  // Convert trial → redirect to Stripe checkout for the trial plan
   const convertTrialMutation = useMutation({
     mutationFn: async () => {
       if (!trial) throw new Error('No active trial')
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          subscription_plan: trial.plan || 'pro'
-        })
-        .eq('id', user?.id)
-
-      if (error) throw error
+      const planType = (trial.trial_plan || 'pro') as 'standard' | 'pro' | 'ultra_pro'
+      await createCheckoutSession(planType)
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['free-trial'] })
+    onError: (error: any) => {
       toast({
-        title: '✅ Abonnement activé',
-        description: 'Votre essai a été converti en abonnement payant',
+        title: 'Erreur',
+        description: error.message || 'Impossible de convertir l\'essai',
+        variant: 'destructive',
       })
     },
   })
 
+  // Cancel trial
   const cancelTrialMutation = useMutation({
     mutationFn: async () => {
-      if (!trial) throw new Error('No active trial')
+      if (!trial || !user) throw new Error('No active trial')
 
-      // Réinitialiser le profil au plan gratuit
+      await (supabase as any)
+        .from('free_trial_subscriptions')
+        .update({ status: 'cancelled' })
+        .eq('id', trial.id)
+        .eq('user_id', user.id)
+
+      // Reset profile to free plan
       await supabase
         .from('profiles')
         .update({
-          subscription_plan: 'standard'
+          subscription_plan: 'standard',
         })
-        .eq('id', user?.id)
+        .eq('id', user.id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['free-trial'] })
