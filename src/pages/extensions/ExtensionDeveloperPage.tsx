@@ -152,9 +152,9 @@ export default function ExtensionDeveloperPage() {
                 <pre className="bg-muted p-3 rounded text-sm overflow-x-auto mb-4">
                   npm install @shopopti/sdk
                 </pre>
-                <Button variant="outline" className="w-full" onClick={() => toast.info('Repository GitHub bientôt disponible')}>
+                <Button variant="outline" className="w-full opacity-60 cursor-not-allowed" disabled>
                   <GitBranch className="h-4 w-4 mr-2" />
-                  GitHub Repository
+                  GitHub — Bientôt
                 </Button>
               </CardContent>
             </Card>
@@ -168,9 +168,9 @@ export default function ExtensionDeveloperPage() {
                 <pre className="bg-muted p-3 rounded text-sm overflow-x-auto mb-4">
                   npm install @shopopti/react
                 </pre>
-                <Button variant="outline" className="w-full" onClick={() => toast.info('Repository GitHub bientôt disponible')}>
+                <Button variant="outline" className="w-full opacity-60 cursor-not-allowed" disabled>
                   <GitBranch className="h-4 w-4 mr-2" />
-                  GitHub Repository
+                  GitHub — Bientôt
                 </Button>
               </CardContent>
             </Card>

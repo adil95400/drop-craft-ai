@@ -74,12 +74,7 @@ export const ExtensionMarketplace: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const { toast } = useToast()
 
-  const handleInstallClick = (extension: any) => {
-    toast({
-      title: "Installation simulée",
-      description: `${extension.name} sera bientôt disponible`
-    })
-  }
+  // Extensions marketplace not yet available — button disabled with badge
 
   return (
     <div className="space-y-6">
@@ -141,9 +136,9 @@ export const ExtensionMarketplace: React.FC = () => {
                   <span className="font-bold text-lg">
                     {ext.price === 0 ? 'Gratuit' : `${ext.price}€`}
                   </span>
-                  <Button size="sm" onClick={() => handleInstallClick(ext)}>
+                  <Button size="sm" disabled variant="outline" className="opacity-60 cursor-not-allowed">
                     <Download className="w-4 h-4 mr-2" />
-                    Installer
+                    Bientôt
                   </Button>
                 </div>
               </CardContent>

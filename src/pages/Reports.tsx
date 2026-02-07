@@ -242,11 +242,12 @@ export default function Reports() {
           includeRecommendations,
         });
       } else {
-        // Pour les autres formats, afficher un message
         toast({
           title: "Format non disponible",
-          description: `L'export ${format.toUpperCase()} sera bientôt disponible.`,
+          description: `L'export ${format.toUpperCase()} n'est pas encore supporté. Utilisez le format PDF.`,
+          variant: "default",
         });
+        setFormat('pdf');
         return;
       }
 
