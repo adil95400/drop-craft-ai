@@ -4,6 +4,8 @@ import { Database } from '@/integrations/supabase/types';
 type Order = Database['public']['Tables']['orders']['Row'];
 type OrderInsert = Database['public']['Tables']['orders']['Insert'];
 type OrderUpdate = Database['public']['Tables']['orders']['Update'];
+type OrderItem = Database['public']['Tables']['order_items']['Row'];
+type OrderItemInsert = Database['public']['Tables']['order_items']['Insert'];
 
 export class OrdersService {
   /**
@@ -14,7 +16,8 @@ export class OrdersService {
       .from('orders')
       .select(`
         *,
-        customer:customers(*)
+        customer:customers(*),
+        order_items(*)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -24,7 +27,7 @@ export class OrdersService {
   }
 
   /**
-   * Récupère une commande par ID
+   * Récupère une commande par ID avec ses items
    */
   static async getOrder(id: string, userId: string) {
     const { data, error } = await supabase
@@ -32,9 +35,9 @@ export class OrdersService {
       .select(`
         *,
         customer:customers(*),
-        items:order_items(
+        order_items(
           *,
-          product:imported_products(*)
+          product:products(*)
         )
       `)
       .eq('id', id)
@@ -49,22 +52,18 @@ export class OrdersService {
    * Crée une nouvelle commande
    */
   static async createOrder(userId: string, orderData: any, items?: any[]) {
-    // Generate order number if not provided
-    const orderNumber = orderData.order_number || `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-    
-    // Build shipping_address with customer info for display
-    const shippingAddress = orderData.shipping_address || {}
-    if (orderData.customer_name) {
-      shippingAddress.name = orderData.customer_name
-    }
-    if (orderData.customer_email) {
-      shippingAddress.email = orderData.customer_email
-    }
-    
+    const orderNumber = orderData.order_number || `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    const shippingAddress = orderData.shipping_address || {};
+    if (orderData.customer_name) shippingAddress.name = orderData.customer_name;
+    if (orderData.customer_email) shippingAddress.email = orderData.customer_email;
+
     const order: OrderInsert = {
       user_id: userId,
       order_number: orderNumber,
       customer_id: orderData.customer_id || null,
+      customer_name: orderData.customer_name || null,
+      customer_email: orderData.customer_email || null,
       status: orderData.status || 'pending',
       payment_status: orderData.payment_status || 'pending',
       subtotal: orderData.subtotal || 0,
@@ -74,7 +73,8 @@ export class OrdersService {
       carrier: orderData.carrier || null,
       notes: orderData.notes || null,
       currency: orderData.currency || 'EUR',
-    }
+    };
+
     const { data: newOrder, error: orderError } = await supabase
       .from('orders')
       .insert(order)
@@ -83,12 +83,17 @@ export class OrdersService {
 
     if (orderError) throw orderError;
 
-    // Créer les items de commande si fournis
+    // Create order items if provided
     if (items && items.length > 0) {
-      const orderItems = items.map(item => ({
-        ...item,
+      const orderItems: OrderItemInsert[] = items.map(item => ({
         order_id: newOrder.id,
-        user_id: order.user_id
+        product_id: item.product_id || null,
+        product_name: item.product_name || 'Produit',
+        product_sku: item.product_sku || null,
+        qty: item.quantity || item.qty || 1,
+        unit_price: item.unit_price || item.price || 0,
+        total_price: (item.quantity || item.qty || 1) * (item.unit_price || item.price || 0),
+        variant_title: item.variant_title || null,
       }));
 
       const { error: itemsError } = await supabase
@@ -125,14 +130,29 @@ export class OrdersService {
   }
 
   /**
+   * Met à jour le fulfillment (tracking, carrier)
+   */
+  static async updateFulfillment(id: string, userId: string, data: {
+    fulfillment_status?: string;
+    tracking_number?: string;
+    tracking_url?: string;
+    carrier?: string;
+    supplier_order_id?: string;
+  }) {
+    return this.updateOrder(id, userId, {
+      fulfillment_status: data.fulfillment_status,
+      tracking_number: data.tracking_number,
+      tracking_url: data.tracking_url,
+      carrier: data.carrier,
+      supplier_order_id: data.supplier_order_id,
+    });
+  }
+
+  /**
    * Supprime une commande
    */
   static async deleteOrder(id: string, userId: string) {
-    // Supprimer d'abord les items
-    await supabase
-      .from('order_items')
-      .delete()
-      .eq('order_id', id);
+    await supabase.from('order_items').delete().eq('order_id', id);
 
     const { error } = await supabase
       .from('orders')
@@ -149,7 +169,7 @@ export class OrdersService {
   static async getOrderStats(userId: string) {
     const { data: orders, error } = await supabase
       .from('orders')
-      .select('total_amount, status, created_at')
+      .select('total_amount, status, payment_status, fulfillment_status, created_at')
       .eq('user_id', userId);
 
     if (error) throw error;
@@ -158,9 +178,9 @@ export class OrdersService {
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const ordersThisMonth = orders.filter(o => new Date(o.created_at) >= thisMonth);
-    const ordersLastMonth = orders.filter(o => 
-      new Date(o.created_at) >= lastMonth && new Date(o.created_at) < thisMonth
+    const ordersThisMonth = orders.filter(o => new Date(o.created_at!) >= thisMonth);
+    const ordersLastMonth = orders.filter(o =>
+      new Date(o.created_at!) >= lastMonth && new Date(o.created_at!) < thisMonth
     );
 
     const stats = {
@@ -170,9 +190,11 @@ export class OrdersService {
       shipped: orders.filter(o => o.status === 'shipped').length,
       delivered: orders.filter(o => o.status === 'delivered').length,
       cancelled: orders.filter(o => o.status === 'cancelled').length,
+      toFulfill: orders.filter(o => o.fulfillment_status === null || o.fulfillment_status === 'unfulfilled').length,
+      paid: orders.filter(o => o.payment_status === 'paid').length,
       revenue: orders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
-      avgOrderValue: orders.length > 0 
-        ? orders.reduce((sum, o) => sum + (o.total_amount || 0), 0) / orders.length 
+      avgOrderValue: orders.length > 0
+        ? orders.reduce((sum, o) => sum + (o.total_amount || 0), 0) / orders.length
         : 0,
       revenueThisMonth: ordersThisMonth.reduce((sum, o) => sum + (o.total_amount || 0), 0),
       revenueLastMonth: ordersLastMonth.reduce((sum, o) => sum + (o.total_amount || 0), 0),
@@ -180,7 +202,6 @@ export class OrdersService {
       ordersLastMonth: ordersLastMonth.length
     };
 
-    // Calculer les pourcentages de croissance
     const revenueGrowth = stats.revenueLastMonth > 0
       ? ((stats.revenueThisMonth - stats.revenueLastMonth) / stats.revenueLastMonth) * 100
       : 0;
@@ -198,12 +219,9 @@ export class OrdersService {
   static async searchOrders(userId: string, searchTerm: string) {
     const { data, error } = await supabase
       .from('orders')
-      .select(`
-        *,
-        customer:customers(*)
-      `)
+      .select(`*, customer:customers(*), order_items(*)`)
       .eq('user_id', userId)
-      .or(`order_number.ilike.%${searchTerm}%,customer_email.ilike.%${searchTerm}%`)
+      .or(`order_number.ilike.%${searchTerm}%,customer_email.ilike.%${searchTerm}%,customer_name.ilike.%${searchTerm}%,tracking_number.ilike.%${searchTerm}%`)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -216,10 +234,7 @@ export class OrdersService {
   static async filterByStatus(userId: string, status: string) {
     const { data, error } = await supabase
       .from('orders')
-      .select(`
-        *,
-        customer:customers(*)
-      `)
+      .select(`*, customer:customers(*), order_items(*)`)
       .eq('user_id', userId)
       .eq('status', status)
       .order('created_at', { ascending: false });
@@ -234,7 +249,7 @@ export class OrdersService {
   static async getOrdersByPeriod(userId: string, startDate: Date, endDate: Date) {
     const { data, error } = await supabase
       .from('orders')
-      .select('*')
+      .select('*, order_items(*)')
       .eq('user_id', userId)
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())

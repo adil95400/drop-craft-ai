@@ -32,7 +32,7 @@ export function useOrderFulfillment() {
 
   const updateRuleMutation = useMutation({
     mutationFn: ({ ruleId, updates }: any) =>
-      orderFulfillmentService.updateFulfillmentRule(ruleId, updates),
+      orderFulfillmentService.updateFulfillmentRule(ruleId, user!.id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fulfillment-rules'] });
       toast.success('Rule updated');
@@ -43,7 +43,7 @@ export function useOrderFulfillment() {
   });
 
   const deleteRuleMutation = useMutation({
-    mutationFn: (ruleId: string) => orderFulfillmentService.deleteFulfillmentRule(ruleId),
+    mutationFn: (ruleId: string) => orderFulfillmentService.deleteFulfillmentRule(ruleId, user!.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fulfillment-rules'] });
       toast.success('Rule deleted');
@@ -55,7 +55,7 @@ export function useOrderFulfillment() {
 
   const processOrderMutation = useMutation({
     mutationFn: ({ orderId, ruleId }: any) =>
-      orderFulfillmentService.processOrder(user!.id, orderId, ruleId),
+      orderFulfillmentService.processOrder(orderId, ruleId),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['fulfillment-logs'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });

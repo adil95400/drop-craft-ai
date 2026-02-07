@@ -11,31 +11,32 @@ export class OrderFulfillmentService {
   }
 
   async getFulfillmentRules(userId: string) {
-    const { data, error } = await (supabase
-      .from('fulfilment_rules') as any)
+    const { data, error } = await supabase
+      .from('fulfilment_rules')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('priority', { ascending: true });
 
     if (error) throw error;
-    return data;
+    return data || [];
   }
 
   async createFulfillmentRule(userId: string, rule: {
-    rule_name: string;
-    trigger_conditions: any;
-    fulfillment_actions: any;
-    supplier_network_id?: string;
-    auto_place_order: boolean;
-    notification_settings?: any;
+    name: string;
+    description?: string;
+    conditions: any;
+    actions: any[];
+    priority?: number;
   }) {
     const { data, error } = await supabase
       .from('fulfilment_rules')
       .insert({
         user_id: userId,
-        name: rule.rule_name,
-        conditions: rule.trigger_conditions,
-        actions: rule.fulfillment_actions,
+        name: rule.name,
+        description: rule.description || null,
+        conditions: rule.conditions,
+        actions: rule.actions,
+        priority: rule.priority || 0,
         is_active: true
       })
       .select()
@@ -45,14 +46,12 @@ export class OrderFulfillmentService {
     return data;
   }
 
-  async updateFulfillmentRule(ruleId: string, updates: any) {
+  async updateFulfillmentRule(ruleId: string, userId: string, updates: any) {
     const { data, error } = await supabase
       .from('fulfilment_rules')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
+      .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', ruleId)
+      .eq('user_id', userId)
       .select()
       .single();
 
@@ -60,23 +59,28 @@ export class OrderFulfillmentService {
     return data;
   }
 
-  async deleteFulfillmentRule(ruleId: string) {
+  async deleteFulfillmentRule(ruleId: string, userId: string) {
     const { error } = await supabase
       .from('fulfilment_rules')
       .delete()
-      .eq('id', ruleId);
+      .eq('id', ruleId)
+      .eq('user_id', userId);
 
     if (error) throw error;
   }
 
-  async processOrder(userId: string, orderId: string, ruleId: string) {
+  async processOrder(orderId: string, ruleId: string) {
     const { data, error } = await supabase.functions.invoke('order-fulfillment-auto', {
-      body: {
-        userId,
-        orderId,
-        ruleId,
-        action: 'process'
-      }
+      body: { orderId, ruleId, action: 'process' }
+    });
+
+    if (error) throw error;
+    return data;
+  }
+
+  async checkActiveRules() {
+    const { data, error } = await supabase.functions.invoke('order-fulfillment-auto', {
+      body: { action: 'check_rules' }
     });
 
     if (error) throw error;
@@ -84,8 +88,6 @@ export class OrderFulfillmentService {
   }
 
   async getFulfillmentLogs(userId: string, filters?: {
-    orderId?: string;
-    ruleId?: string;
     status?: string;
     limit?: number;
   }) {
@@ -98,27 +100,13 @@ export class OrderFulfillmentService {
     if (filters?.status) {
       query = query.eq('status', filters.status);
     }
-
     if (filters?.limit) {
       query = query.limit(filters.limit);
     }
 
     const { data, error } = await query;
-
     if (error) throw error;
-    return data;
-  }
-
-  async checkActiveRules(userId: string) {
-    const { data, error } = await supabase.functions.invoke('order-fulfillment-auto', {
-      body: {
-        userId,
-        action: 'check_rules'
-      }
-    });
-
-    if (error) throw error;
-    return data;
+    return data || [];
   }
 }
 
