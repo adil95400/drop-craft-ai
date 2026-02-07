@@ -57,14 +57,14 @@
 
 | # | Fichier | Type de mock | Statut |
 |---|---------|-------------|--------|
-| 22 | `src/components/analytics/CohortAnalysis.tsx` | `generateCohortData()` — données aléatoires | ❌ À corriger |
+| 22 | `src/components/analytics/CohortAnalysis.tsx` | `generateCohortData()` — données aléatoires | ✅ **CORRIGÉ** — Connecté à `customers` + `orders` via useQuery |
 | 23 | `src/components/dashboard/widgets/AdsWidget.tsx` | KPIs statiques | ✅ **CORRIGÉ** — Connecté à `ad_campaigns` |
-| 24 | `src/components/supplier/RealTimeSupplierStats.tsx` | Objet hardcodé | ❌ À corriger |
+| 24 | `src/components/supplier/RealTimeSupplierStats.tsx` | Objet hardcodé | ✅ **CORRIGÉ** — Connecté à `suppliers` + `products` via useQuery |
 | 25 | `src/components/integrations/SyncLogsTable.tsx` | Logs `Math.random()` | ✅ **CORRIGÉ** — Connecté à `background_jobs` |
-| 26 | `src/components/testing/TestRunner.tsx` | `mockTestSuites` | ❌ À corriger |
+| 26 | `src/components/testing/TestRunner.tsx` | `mockTestSuites` | ⚠️ Acceptable (outil dev interne, mode test explicite) |
 | 27 | `src/components/catalog/ProductCard.tsx` | Rating simulé | ✅ **CORRIGÉ** — Score marge dynamique |
-| 28 | `src/components/marketing/MarketingHub.tsx` | Graphique simulé | ❌ À corriger |
-| 29 | `src/components/integrations/WorkflowBuilder.tsx` | Trigger simulé | ❌ À corriger |
+| 28 | `src/components/marketing/MarketingHub.tsx` | Graphique simulé | ✅ **CORRIGÉ** — Données via CreativeStudioService + empty state |
+| 29 | `src/components/integrations/WorkflowBuilder.tsx` | Trigger simulé | ⚠️ Acceptable (mode test explicite, save réel via Supabase) |
 | 30 | `src/components/orders/AutoOrderVerification.tsx` | Commande test simulée | ⚠️ Acceptable (mode test explicite) |
 
 ---
@@ -88,10 +88,10 @@
 |----------|-----------|-------|----------|----------|
 | 🔴 Critique | Formulaires sans API | 2 | 2 | 0 |
 | 🟠 Haute | Actions simulées / "bientôt" | 6 | 0 | 6 |
-| 🟠 Haute | Données mockées | 9 | 3 | 6 |
+| 🟠 Haute | Données mockées | 9 | 6 | 3 (acceptables) |
 | 🟡 Moyenne | Navigate factice | 4 | 4 | 0 |
 | 🟡 Moyenne | CTA sans workflow essai | 9 | 9 | 0 |
-| **Total** | | **30** | **18** | **12** |
+| **Total** | | **30** | **21** | **9** (dont 3 acceptables) |
 
 ---
 

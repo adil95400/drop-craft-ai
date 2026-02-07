@@ -1,6 +1,6 @@
 /**
  * Cohort Analysis - Analyse de rétention et LTV avancée
- * Enterprise-ready analytics component
+ * Connecté aux données réelles (customers + orders)
  */
 
 import { useState, useMemo } from 'react';
@@ -13,7 +13,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import {
   Users,
   TrendingUp,
-  Calendar,
   DollarSign,
   ArrowUpRight,
   ArrowDownRight,
@@ -21,11 +20,13 @@ import {
   Download,
   RefreshCw,
   Target,
-  BarChart3
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CohortData {
   cohort: string;
@@ -39,51 +40,117 @@ interface CohortData {
   avgLTV: number;
 }
 
-// Données simulées pour la démo
-const generateCohortData = (): CohortData[] => {
-  const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-  const currentMonth = new Date().getMonth();
-  
-  return Array.from({ length: 8 }, (_, i) => {
-    const monthIndex = (currentMonth - 7 + i + 12) % 12;
-    const baseRetention = 100;
-    const decay = 0.15 + Math.random() * 0.1;
-    
+async function fetchCohortData(): Promise<{ cohorts: CohortData[]; ltvTrend: any[]; channelRetention: any[] }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { cohorts: [], ltvTrend: [], channelRetention: [] };
+
+  // Fetch customers grouped by creation month
+  const { data: customers } = await supabase
+    .from('customers')
+    .select('id, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: true });
+
+  // Fetch orders with customer and amount
+  const { data: orders } = await supabase
+    .from('orders')
+    .select('id, customer_id, created_at, total_amount')
+    .eq('user_id', user.id);
+
+  if (!customers?.length) return { cohorts: [], ltvTrend: [], channelRetention: [] };
+
+  // Group customers by month cohort
+  const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+  const cohortMap = new Map<string, { customers: string[]; monthKey: string }>();
+
+  customers.forEach(c => {
+    const d = new Date(c.created_at);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+    if (!cohortMap.has(key)) cohortMap.set(key, { customers: [], monthKey: label });
+    cohortMap.get(key)!.customers.push(c.id);
+  });
+
+  // Build order lookup by customer
+  const ordersByCustomer = new Map<string, { month: string; amount: number }[]>();
+  (orders || []).forEach(o => {
+    if (!o.customer_id) return;
+    const d = new Date(o.created_at);
+    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (!ordersByCustomer.has(o.customer_id)) ordersByCustomer.set(o.customer_id, []);
+    ordersByCustomer.get(o.customer_id)!.push({ month: monthKey, amount: o.total_amount || 0 });
+  });
+
+  // Calculate retention for each cohort
+  const sortedKeys = Array.from(cohortMap.keys()).sort().slice(-8);
+  const cohorts: CohortData[] = sortedKeys.map(cohortKey => {
+    const { customers: customerIds, monthKey } = cohortMap.get(cohortKey)!;
+    const total = customerIds.length;
+    const cohortYear = parseInt(cohortKey.split('-')[0]);
+    const cohortMonth = parseInt(cohortKey.split('-')[1]) - 1;
+
+    const retention = [100]; // month0 is always 100%
+    let totalRevenue = 0;
+
+    for (let m = 1; m <= 5; m++) {
+      const targetDate = new Date(cohortYear, cohortMonth + m);
+      const targetKey = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      const activeCount = customerIds.filter(cid => {
+        const custOrders = ordersByCustomer.get(cid) || [];
+        return custOrders.some(o => o.month === targetKey);
+      }).length;
+      
+      retention.push(total > 0 ? Math.round((activeCount / total) * 100) : 0);
+    }
+
+    // Calculate LTV
+    customerIds.forEach(cid => {
+      const custOrders = ordersByCustomer.get(cid) || [];
+      totalRevenue += custOrders.reduce((sum, o) => sum + o.amount, 0);
+    });
+
     return {
-      cohort: months[monthIndex] + ' 2024',
-      month0: baseRetention,
-      month1: Math.round(baseRetention * (1 - decay)),
-      month2: Math.round(baseRetention * Math.pow(1 - decay, 2)),
-      month3: Math.round(baseRetention * Math.pow(1 - decay, 3)),
-      month4: Math.round(baseRetention * Math.pow(1 - decay, 4)),
-      month5: Math.round(baseRetention * Math.pow(1 - decay, 5)),
-      totalCustomers: Math.round(50 + Math.random() * 150),
-      avgLTV: Math.round(80 + Math.random() * 120)
+      cohort: monthKey,
+      month0: retention[0],
+      month1: retention[1],
+      month2: retention[2],
+      month3: retention[3],
+      month4: retention[4],
+      month5: retention[5],
+      totalCustomers: total,
+      avgLTV: total > 0 ? Math.round(totalRevenue / total) : 0
     };
   });
-};
 
-const ltvTrendData = [
-  { month: 'Jan', newCustomerLTV: 45, returningLTV: 120, averageLTV: 82 },
-  { month: 'Fév', newCustomerLTV: 52, returningLTV: 135, averageLTV: 93 },
-  { month: 'Mar', newCustomerLTV: 48, returningLTV: 142, averageLTV: 95 },
-  { month: 'Avr', newCustomerLTV: 55, returningLTV: 138, averageLTV: 96 },
-  { month: 'Mai', newCustomerLTV: 62, returningLTV: 155, averageLTV: 108 },
-  { month: 'Juin', newCustomerLTV: 58, returningLTV: 162, averageLTV: 110 },
-];
+  // LTV trend from recent months
+  const ltvTrend = sortedKeys.slice(-6).map(key => {
+    const { customers: customerIds, monthKey } = cohortMap.get(key)!;
+    let totalRev = 0;
+    customerIds.forEach(cid => {
+      const custOrders = ordersByCustomer.get(cid) || [];
+      totalRev += custOrders.reduce((sum, o) => sum + o.amount, 0);
+    });
+    return {
+      month: monthKey.split(' ')[0],
+      averageLTV: customerIds.length > 0 ? Math.round(totalRev / customerIds.length) : 0
+    };
+  });
 
-const retentionByChannel = [
-  { channel: 'Organic', month1: 78, month3: 52, month6: 38 },
-  { channel: 'Paid', month1: 65, month3: 42, month6: 28 },
-  { channel: 'Email', month1: 85, month3: 68, month6: 55 },
-  { channel: 'Social', month1: 72, month3: 48, month6: 32 },
-  { channel: 'Referral', month1: 88, month3: 72, month6: 62 },
-];
+  return { cohorts, ltvTrend, channelRetention: [] };
+}
 
 export function CohortAnalysis() {
   const [period, setPeriod] = useState<'weekly' | 'monthly' | 'quarterly'>('monthly');
   const [metric, setMetric] = useState<'retention' | 'revenue' | 'orders'>('retention');
-  const cohortData = useMemo(() => generateCohortData(), []);
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['cohort-analysis'],
+    queryFn: fetchCohortData,
+  });
+
+  const cohortData = data?.cohorts || [];
+  const ltvTrendData = data?.ltvTrend || [];
 
   const getRetentionColor = (value: number) => {
     if (value >= 80) return 'bg-green-500';
@@ -98,13 +165,12 @@ export function CohortAnalysis() {
     return 'text-gray-900';
   };
 
-  // KPIs calculés
   const kpis = useMemo(() => {
+    if (!cohortData.length) return { avgRetention1m: 0, avgRetention3m: 0, avgLTV: 0, totalCustomers: 0, churnRate: 0 };
     const avgRetention1m = cohortData.reduce((acc, c) => acc + c.month1, 0) / cohortData.length;
     const avgRetention3m = cohortData.reduce((acc, c) => acc + c.month3, 0) / cohortData.length;
     const avgLTV = cohortData.reduce((acc, c) => acc + c.avgLTV, 0) / cohortData.length;
     const totalCustomers = cohortData.reduce((acc, c) => acc + c.totalCustomers, 0);
-    
     return {
       avgRetention1m: Math.round(avgRetention1m),
       avgRetention3m: Math.round(avgRetention3m),
@@ -114,19 +180,39 @@ export function CohortAnalysis() {
     };
   }, [cohortData]);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!cohortData.length) {
+    return (
+      <Card>
+        <CardContent className="py-16 text-center">
+          <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Aucune donnée de cohorte</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Les données de rétention apparaîtront ici une fois que vous aurez des clients et des commandes.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-indigo-500/10">
-            <Users className="h-6 w-6 text-indigo-500" />
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Users className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Analyse de Cohortes</h2>
-            <p className="text-sm text-muted-foreground">
-              Rétention client et valeur vie (LTV)
-            </p>
+            <p className="text-sm text-muted-foreground">Rétention client et valeur vie (LTV)</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -140,7 +226,7 @@ export function CohortAnalysis() {
               <SelectItem value="quarterly">Trimestriel</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button variant="outline">
@@ -163,10 +249,8 @@ export function CohortAnalysis() {
                 <ArrowUpRight className="h-4 w-4 text-green-600" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">+2.3% vs mois dernier</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -178,10 +262,8 @@ export function CohortAnalysis() {
                 <Target className="h-4 w-4 text-blue-600" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Objectif: 50%</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -193,10 +275,8 @@ export function CohortAnalysis() {
                 <DollarSign className="h-4 w-4 text-purple-600" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">+12% vs trimestre</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -204,14 +284,12 @@ export function CohortAnalysis() {
                 <p className="text-sm text-muted-foreground">Clients Actifs</p>
                 <p className="text-2xl font-bold">{kpis.totalCustomers}</p>
               </div>
-              <div className="p-2 rounded-full bg-indigo-100 dark:bg-indigo-900/30">
-                <Users className="h-4 w-4 text-indigo-600" />
+              <div className="p-2 rounded-full bg-primary/10">
+                <Users className="h-4 w-4 text-primary" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">8 cohortes analysées</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -223,7 +301,6 @@ export function CohortAnalysis() {
                 <ArrowDownRight className="h-4 w-4 text-red-600" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">-1.5% (amélioration)</p>
           </CardContent>
         </Card>
       </div>
@@ -232,7 +309,6 @@ export function CohortAnalysis() {
         <TabsList>
           <TabsTrigger value="cohort">Tableau de Cohortes</TabsTrigger>
           <TabsTrigger value="ltv">Évolution LTV</TabsTrigger>
-          <TabsTrigger value="channels">Par Canal</TabsTrigger>
         </TabsList>
 
         <TabsContent value="cohort">
@@ -253,9 +329,7 @@ export function CohortAnalysis() {
                       </Tooltip>
                     </TooltipProvider>
                   </CardTitle>
-                  <CardDescription>
-                    Analyse de la rétention par cohorte mensuelle
-                  </CardDescription>
+                  <CardDescription>Analyse de la rétention par cohorte mensuelle</CardDescription>
                 </div>
                 <Select value={metric} onValueChange={(v: any) => setMetric(v)}>
                   <SelectTrigger className="w-[140px]">
@@ -287,7 +361,7 @@ export function CohortAnalysis() {
                   </thead>
                   <tbody>
                     {cohortData.map((row, i) => (
-                      <motion.tr 
+                      <motion.tr
                         key={row.cohort}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -298,7 +372,7 @@ export function CohortAnalysis() {
                         <td className="text-center py-2 px-3 text-muted-foreground">{row.totalCustomers}</td>
                         {[row.month0, row.month1, row.month2, row.month3, row.month4, row.month5].map((value, j) => (
                           <td key={j} className="py-2 px-3">
-                            <div 
+                            <div
                               className={cn(
                                 "mx-auto w-12 py-1 rounded text-center text-xs font-medium",
                                 getRetentionColor(value),
@@ -326,84 +400,39 @@ export function CohortAnalysis() {
           <Card>
             <CardHeader>
               <CardTitle>Évolution de la Valeur Vie Client</CardTitle>
-              <CardDescription>
-                Comparaison LTV nouveaux clients vs clients récurrents
-              </CardDescription>
+              <CardDescription>LTV moyen par cohorte mensuelle</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={ltvTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${v}€`} />
-                  <RechartsTooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                    formatter={(value: number) => [`${value}€`, '']}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="newCustomerLTV" 
-                    name="Nouveaux clients"
-                    stroke="#3b82f6" 
-                    strokeWidth={2}
-                    dot={{ fill: '#3b82f6' }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="returningLTV" 
-                    name="Clients récurrents"
-                    stroke="#10b981" 
-                    strokeWidth={2}
-                    dot={{ fill: '#10b981' }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="averageLTV" 
-                    name="Moyenne"
-                    stroke="#8b5cf6" 
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                    dot={{ fill: '#8b5cf6' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="channels">
-          <Card>
-            <CardHeader>
-              <CardTitle>Rétention par Canal d'Acquisition</CardTitle>
-              <CardDescription>
-                Performance de rétention selon la source du client
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={retentionByChannel} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${v}%`} />
-                  <YAxis type="category" dataKey="channel" stroke="hsl(var(--muted-foreground))" fontSize={12} width={80} />
-                  <RechartsTooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                    formatter={(value: number) => [`${value}%`, '']}
-                  />
-                  <Legend />
-                  <Bar dataKey="month1" name="M+1" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="month3" name="M+3" fill="#10b981" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="month6" name="M+6" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {ltvTrendData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={ltvTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${v}€`} />
+                    <RechartsTooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                      formatter={(value: number) => [`${value}€`, '']}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="averageLTV"
+                      name="LTV Moyen"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--primary))' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[350px] flex items-center justify-center text-muted-foreground">
+                  Pas assez de données pour afficher le graphique LTV
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
