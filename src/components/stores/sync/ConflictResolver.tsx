@@ -92,13 +92,13 @@ export function ConflictResolver() {
                     <TableCell>
                       <div className="flex flex-col gap-2">
                         {getConflictTypeBadge(conflict.conflict_type)}
-                        <Badge variant="outline">{conflict.entity_type}</Badge>
+                        <Badge variant="outline">{conflict.conflict_type}</Badge>
                       </div>
                     </TableCell>
 
                     <TableCell>
                       <p className="text-sm font-medium truncate max-w-[150px]">
-                        {conflict.entity_id}
+                        {conflict.product_id || conflict.id}
                       </p>
                     </TableCell>
 
@@ -113,11 +113,11 @@ export function ConflictResolver() {
                     </TableCell>
 
                     <TableCell>
-                      {conflict.local_data && conflict.remote_data && (
+                      {conflict.local_value && conflict.remote_value && (
                         <div className="text-xs">
                           <p className="font-medium">Local vs Remote</p>
                           <p className="text-muted-foreground">
-                            {Object.keys(conflict.local_data).length} champs
+                            {typeof conflict.local_value === 'object' ? Object.keys(conflict.local_value as Record<string, unknown>).length : 1} champs
                           </p>
                         </div>
                       )}

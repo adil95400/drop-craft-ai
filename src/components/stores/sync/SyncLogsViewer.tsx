@@ -129,20 +129,18 @@ export function SyncLogsViewer() {
 
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        {getOperationIcon(log.operation)}
-                        <span className="text-sm">{log.operation}</span>
+                        {getOperationIcon(log.sync_type)}
+                        <span className="text-sm">{log.sync_type}</span>
                       </div>
                     </TableCell>
 
                     <TableCell>
-                      {log.entity_type && (
+                      {log.integration_id && (
                         <div className="text-sm">
-                          <p className="font-medium">{log.entity_type}</p>
-                          {log.entity_id && (
-                            <p className="text-xs text-muted-foreground truncate max-w-[100px]">
-                              {log.entity_id}
-                            </p>
-                          )}
+                          <p className="font-medium">Integration</p>
+                          <p className="text-xs text-muted-foreground truncate max-w-[100px]">
+                            {log.integration_id}
+                          </p>
                         </div>
                       )}
                     </TableCell>
@@ -150,16 +148,16 @@ export function SyncLogsViewer() {
                     <TableCell>{getStatusBadge(log.status)}</TableCell>
 
                     <TableCell>
-                      {log.duration_ms && (
+                      {log.records_synced != null && (
                         <span className="text-sm text-muted-foreground">
-                          {log.duration_ms}ms
+                          {log.records_synced} enregistrements
                         </span>
                       )}
                     </TableCell>
 
                     <TableCell>
                       <p className="text-sm max-w-[300px] truncate">
-                        {log.message}
+                        {log.error_message || log.sync_type}
                       </p>
                     </TableCell>
                   </TableRow>

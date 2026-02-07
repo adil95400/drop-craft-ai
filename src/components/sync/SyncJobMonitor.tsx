@@ -236,8 +236,8 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
                       )}
 
                       <div className="text-sm text-muted-foreground">
-                        {job.entity_type} - {job.operation}
-                        {job.entity_id && ` (ID: ${job.entity_id})`}
+                        {job.sync_type} - {job.sync_direction || 'sync'}
+                        {job.product_id && ` (ID: ${job.product_id})`}
                       </div>
 
                       {job.payload && Object.keys(job.payload).length > 0 && (

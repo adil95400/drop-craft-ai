@@ -41,44 +41,13 @@ export interface SEOKeyword {
   updated_at: string
 }
 
-// Mock data for SEO analyses
-const mockAnalyses: SEOAnalysis[] = [
-  {
-    id: '1',
-    url: 'https://example.com',
-    title: 'Example Site',
-    meta_description: 'An example website',
-    overall_score: 85,
-    domain: 'example.com',
-    analyzed_at: new Date().toISOString(),
-    user_id: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-]
-
-const mockKeywords: SEOKeyword[] = [
-  {
-    id: '1',
-    keyword: 'dropshipping france',
-    search_volume: 5400,
-    difficulty_score: 45,
-    current_position: 12,
-    tracking_active: true,
-    user_id: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-]
-
 export const useRealSEO = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const { data: analyses = mockAnalyses, isLoading: isLoadingAnalyses } = useQuery({
+  const { data: analyses = [], isLoading: isLoadingAnalyses } = useQuery({
     queryKey: ['seo-analyses'],
     queryFn: async () => {
-      // Use analytics_insights with metric_type for SEO data
       const { data, error } = await (supabase
         .from('analytics_insights')
         .select('*')
@@ -87,10 +56,10 @@ export const useRealSEO = () => {
 
       if (error) {
         console.error('Error fetching SEO analyses:', error)
-        return mockAnalyses
+        return []
       }
       
-      if (!data || data.length === 0) return mockAnalyses
+      if (!data || data.length === 0) return []
       
       return data.map((item: any) => ({
         id: item.id,
@@ -107,10 +76,9 @@ export const useRealSEO = () => {
     },
   })
 
-  const { data: keywords = mockKeywords, isLoading: isLoadingKeywords } = useQuery({
+  const { data: keywords = [], isLoading: isLoadingKeywords } = useQuery({
     queryKey: ['seo-keywords'],
     queryFn: async () => {
-      // Use analytics_insights with metric_type for keyword data
       const { data, error } = await (supabase
         .from('analytics_insights')
         .select('*')
@@ -119,10 +87,10 @@ export const useRealSEO = () => {
 
       if (error) {
         console.error('Error fetching SEO keywords:', error)
-        return mockKeywords
+        return []
       }
       
-      if (!data || data.length === 0) return mockKeywords
+      if (!data || data.length === 0) return []
       
       return data.map((item: any) => ({
         id: item.id,
@@ -141,24 +109,14 @@ export const useRealSEO = () => {
   const analyzeUrl = useMutation({
     mutationFn: async (url: string) => {
       const response = await supabase.functions.invoke('seo-optimizer', {
-        body: {
-          action: 'analyze_url',
-          url
-        }
+        body: { action: 'analyze_url', url }
       })
-
-      if (response.error) {
-        throw new Error('Erreur lors de l\'analyse SEO')
-      }
-
+      if (response.error) throw new Error('Erreur lors de l\'analyse SEO')
       return response.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seo-analyses'] })
-      toast({
-        title: "Analyse SEO terminée",
-        description: "L'analyse de la page a été effectuée avec succès",
-      })
+      toast({ title: "Analyse SEO terminée", description: "L'analyse de la page a été effectuée avec succès" })
     }
   })
 
@@ -188,10 +146,7 @@ export const useRealSEO = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seo-keywords'] })
-      toast({
-        title: "Mot-clé ajouté",
-        description: "Le mot-clé a été ajouté au suivi SEO",
-      })
+      toast({ title: "Mot-clé ajouté", description: "Le mot-clé a été ajouté au suivi SEO" })
     }
   })
 
@@ -217,10 +172,7 @@ export const useRealSEO = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seo-keywords'] })
-      toast({
-        title: "Mot-clé mis à jour",
-        description: "Le suivi du mot-clé a été mis à jour",
-      })
+      toast({ title: "Mot-clé mis à jour", description: "Le suivi du mot-clé a été mis à jour" })
     }
   })
 
