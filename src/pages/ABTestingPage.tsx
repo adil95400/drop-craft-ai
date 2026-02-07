@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async'
 import { ABTestManager } from '@/components/marketing/ABTestManager'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
-import { PageBanner } from '@/components/shared/PageBanner'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { FlaskConical } from 'lucide-react'
 
 export default function ABTestingPage() {
@@ -11,17 +11,15 @@ export default function ABTestingPage() {
         <title>Tests A/B Marketing - Optimisation Statistique</title>
         <meta name="description" content="Optimisez vos campagnes marketing avec des tests A/B statistiquement significatifs et des insights avancés." />
       </Helmet>
-
-      <div className="container mx-auto p-6 space-y-6">
-        <PageBanner
-          icon={FlaskConical}
-          title="Tests A/B Marketing"
-          description="Optimisez vos campagnes avec des tests statistiquement significatifs"
-          theme="cyan"
-        />
+      <ChannablePageWrapper
+        title="Tests A/B Marketing"
+        description="Optimisez vos campagnes avec des tests statistiquement significatifs"
+        heroImage="marketing"
+        badge={{ label: 'A/B Testing', icon: FlaskConical }}
+      >
         <AdvancedFeatureGuide {...ADVANCED_GUIDES.abTesting} />
         <ABTestManager />
-      </div>
+      </ChannablePageWrapper>
     </>
   )
 }

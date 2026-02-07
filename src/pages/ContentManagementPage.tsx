@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { ContentManagementHub } from '@/components/content-management/ContentManagementHub';
-import { PageBanner } from '@/components/shared/PageBanner';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { FileText } from 'lucide-react';
 
 const ContentManagementPage = () => {
@@ -10,15 +10,14 @@ const ContentManagementPage = () => {
         <title>Gestion de Contenu - Bibliothèque, Blog & Calendrier</title>
         <meta name="description" content="Gérez votre contenu, articles de blog, calendrier éditorial et templates de contenu" />
       </Helmet>
-      <div className="container mx-auto p-6 space-y-6">
-        <PageBanner
-          icon={FileText}
-          title="Gestion de Contenu"
-          description="Gérez votre contenu, articles de blog, calendrier éditorial et templates"
-          theme="purple"
-        />
+      <ChannablePageWrapper
+        title="Gestion de Contenu"
+        description="Gérez votre contenu, articles de blog, calendrier éditorial et templates"
+        heroImage="marketing"
+        badge={{ label: 'Contenu', icon: FileText }}
+      >
         <ContentManagementHub />
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 };

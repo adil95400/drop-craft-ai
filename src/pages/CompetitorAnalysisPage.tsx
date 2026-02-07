@@ -1,6 +1,5 @@
 /**
  * CompetitorAnalysisPage - Analyse Concurrentielle
- * Migré sur socle PageLayout + PageBanner
  */
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -9,45 +8,29 @@ import { CompetitorList } from '@/components/competitive/CompetitorList'
 import { PriceTracker } from '@/components/competitive/PriceTracker'
 import { Target, DollarSign, TrendingUp, BarChart3, Eye } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { PageLayout, PageBanner } from '@/components/shared'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function CompetitorAnalysisPage() {
   const navigate = useNavigate()
 
   return (
-    <PageLayout
+    <ChannablePageWrapper
       title="Analyse Concurrentielle"
-      subtitle="Surveillez vos concurrents et restez compétitif"
+      description="Surveillez vos concurrents et restez compétitif"
+      heroImage="research"
+      badge={{ label: 'Veille', icon: Eye }}
       actions={
         <Button size="sm" onClick={() => navigate('/competitive-comparison')}>
-          <BarChart3 className="w-4 h-4 mr-2" />
-          Comparaison
+          <BarChart3 className="w-4 h-4 mr-2" />Comparaison
         </Button>
       }
     >
-      <PageBanner
-        icon={Eye}
-        title="Veille concurrentielle"
-        description="Analysez les prix, stratégies et catalogues de vos concurrents"
-        theme="cyan"
-      />
-
       <Tabs defaultValue="analysis" className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="analysis" className="flex items-center gap-2">
-            <Target className="w-4 h-4" />
-            Analyse
-          </TabsTrigger>
-          <TabsTrigger value="pricing" className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4" />
-            Prix
-          </TabsTrigger>
-          <TabsTrigger value="results" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Résultats
-          </TabsTrigger>
+          <TabsTrigger value="analysis" className="flex items-center gap-2"><Target className="w-4 h-4" />Analyse</TabsTrigger>
+          <TabsTrigger value="pricing" className="flex items-center gap-2"><DollarSign className="w-4 h-4" />Prix</TabsTrigger>
+          <TabsTrigger value="results" className="flex items-center gap-2"><TrendingUp className="w-4 h-4" />Résultats</TabsTrigger>
         </TabsList>
-
         <TabsContent value="analysis">
           <div className="grid gap-6 md:grid-cols-2">
             <CompetitorAnalyzer />
@@ -62,7 +45,6 @@ export default function CompetitorAnalysisPage() {
             </div>
           </div>
         </TabsContent>
-
         <TabsContent value="pricing">
           <div className="grid gap-6 md:grid-cols-2">
             <PriceTracker />
@@ -77,11 +59,8 @@ export default function CompetitorAnalysisPage() {
             </div>
           </div>
         </TabsContent>
-
-        <TabsContent value="results">
-          <CompetitorList />
-        </TabsContent>
+        <TabsContent value="results"><CompetitorList /></TabsContent>
       </Tabs>
-    </PageLayout>
+    </ChannablePageWrapper>
   )
 }

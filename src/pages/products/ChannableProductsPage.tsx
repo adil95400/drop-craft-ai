@@ -21,7 +21,7 @@ import { PlatformExportDialog } from '@/components/products/export/PlatformExpor
 import {
   ChannableCategoryFilter,
 } from '@/components/channable'
-import { PageLayout } from '@/components/shared'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -430,22 +430,24 @@ export default function ChannableProductsPage() {
   // === LOADING STATE ===
   if (isLoading) {
     return (
-      <PageLayout title="Catalogue Produits" subtitle="Chargement en cours…">
+      <ChannablePageWrapper title="Catalogue Produits" description="Chargement en cours…" heroImage="products" badge={{ label: 'Catalogue', icon: Package }}>
         <div className="flex items-center justify-center min-h-[300px]">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
-      </PageLayout>
+      </ChannablePageWrapper>
     )
   }
 
   // === RENDER ===
   return (
-    <PageLayout
+    <ChannablePageWrapper
       title={mainView === 'products' ? 'Catalogue Produits' : 'Moteur de Règles'}
-      subtitle={mainView === 'products' 
+      description={mainView === 'products' 
         ? `${stats.total} produits — Gérez, analysez et optimisez`
         : `${rules.length} règles — Automatisez la gestion`
       }
+      heroImage="products"
+      badge={{ label: mainView === 'products' ? 'Catalogue' : 'Règles', icon: mainView === 'products' ? Package : GitBranch }}
       actions={
         mainView === 'rules' ? (
           <>
@@ -974,6 +976,6 @@ export default function ChannableProductsPage() {
         onAction={handleBulkAction}
         isVisible={selectedProducts.length > 0}
       />
-    </PageLayout>
+    </ChannablePageWrapper>
   )
 }

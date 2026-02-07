@@ -1,9 +1,9 @@
 /**
  * Cockpit Business - Vue de pilotage stratégique
- * Migré sur le socle PageLayout + StatCard
  */
 import { Skeleton } from '@/components/ui/skeleton'
-import { PageLayout, StatCard } from '@/components/shared'
+import { StatCard } from '@/components/shared'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useCockpitData, CockpitKPI } from '@/hooks/useCockpitData'
 import { CatalogHealthCard } from '@/components/cockpit/CatalogHealthCard'
 import { ROIAnalysisCard } from '@/components/cockpit/ROIAnalysisCard'
@@ -29,7 +29,7 @@ export default function ProductCockpitPage() {
 
   if (isLoading) {
     return (
-      <PageLayout title="Cockpit Business" subtitle="Chargement…">
+      <ChannablePageWrapper title="Cockpit Business" description="Chargement…" heroImage="analytics" badge={{ label: 'Cockpit', icon: TrendingUp }}>
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -42,17 +42,18 @@ export default function ProductCockpitPage() {
             <Skeleton className="h-[300px]" />
           </div>
         </div>
-      </PageLayout>
+      </ChannablePageWrapper>
     )
   }
 
   return (
-    <PageLayout
+    <ChannablePageWrapper
       title="Cockpit Business"
-      subtitle={`${products.length} produits — Analysez les performances et identifiez les opportunités`}
+      description={`${products.length} produits — Analysez les performances et identifiez les opportunités`}
+      heroImage="analytics"
+      badge={{ label: 'Cockpit', icon: TrendingUp }}
     >
       <div className="space-y-6">
-        {/* KPIs — StatCard socle */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {mainKPIs.map((kpi: CockpitKPI, i: number) => (
             <StatCard
@@ -64,22 +65,16 @@ export default function ProductCockpitPage() {
             />
           ))}
         </div>
-
-        {/* Row 2: Santé + ROI + Alertes stock */}
         <div className="grid gap-4 md:grid-cols-3">
           <CatalogHealthCard health={catalogHealth} />
           <ROIAnalysisCard roi={roiAnalysis} />
           <StockAlertsCard alerts={criticalAlerts} stats={stockStats} />
         </div>
-
-        {/* Row 3: Priorités IA */}
         <AIPrioritiesCard priorities={aiPriorities} />
-
-        {/* Row 4: Graphique catégories */}
         <div className="grid gap-4 md:grid-cols-2">
           <CategoryBreakdownChart products={products} />
         </div>
       </div>
-    </PageLayout>
+    </ChannablePageWrapper>
   )
 }

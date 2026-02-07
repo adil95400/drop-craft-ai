@@ -1,6 +1,5 @@
 /**
  * AcademyPage - ShopOpti Academy
- * Migré sur socle PageLayout + PageBanner
  */
 import { Helmet } from 'react-helmet-async'
 import { useState } from 'react'
@@ -11,7 +10,7 @@ import { academyService } from '@/services/academy.service'
 import { CourseCard } from '@/components/academy/CourseCard'
 import { ProgressDashboard } from '@/components/academy/ProgressDashboard'
 import { useAcademyProgress } from '@/hooks/useAcademyProgress'
-import { PageLayout, PageBanner } from '@/components/shared'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function AcademyPage() {
   const [activeTab, setActiveTab] = useState('courses')
@@ -29,30 +28,18 @@ export default function AcademyPage() {
         <meta name="description" content="Formations complètes en dropshipping, e-commerce et automatisation." />
       </Helmet>
 
-      <PageLayout
+      <ChannablePageWrapper
         title="ShopOpti Academy"
-        subtitle="Formations, quiz interactifs et certifications"
+        description="Formations, quiz interactifs et certifications"
+        heroImage="support"
+        badge={{ label: 'Academy', icon: GraduationCap }}
       >
-        <PageBanner
-          icon={GraduationCap}
-          title="Devenez Expert du Dropshipping"
-          description="Formations complètes, quiz interactifs et certifications pour réussir votre business"
-          theme="purple"
-        />
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="courses" className="gap-2">
-              <Video className="h-4 w-4" />Cours
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="gap-2">
-              <TrendingUp className="h-4 w-4" />Progression
-            </TabsTrigger>
-            <TabsTrigger value="certificates" className="gap-2">
-              <Award className="h-4 w-4" />Certificats
-            </TabsTrigger>
+            <TabsTrigger value="courses" className="gap-2"><Video className="h-4 w-4" />Cours</TabsTrigger>
+            <TabsTrigger value="progress" className="gap-2"><TrendingUp className="h-4 w-4" />Progression</TabsTrigger>
+            <TabsTrigger value="certificates" className="gap-2"><Award className="h-4 w-4" />Certificats</TabsTrigger>
           </TabsList>
-
           <TabsContent value="courses" className="space-y-6">
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -72,22 +59,14 @@ export default function AcademyPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {courses.map((course) => (
-                  <CourseCard key={course.id} course={course} showProgress />
-                ))}
+                {courses.map((course) => (<CourseCard key={course.id} course={course} showProgress />))}
               </div>
             )}
           </TabsContent>
-
-          <TabsContent value="progress">
-            <ProgressDashboard />
-          </TabsContent>
-
-          <TabsContent value="certificates">
-            <ProgressDashboard />
-          </TabsContent>
+          <TabsContent value="progress"><ProgressDashboard /></TabsContent>
+          <TabsContent value="certificates"><ProgressDashboard /></TabsContent>
         </Tabs>
-      </PageLayout>
+      </ChannablePageWrapper>
     </>
   )
 }
