@@ -1,54 +1,55 @@
-import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GraduationCap, Video, TrendingUp, Award } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { academyService } from '@/services/academy.service';
-import { CourseCard } from '@/components/academy/CourseCard';
-import { ProgressDashboard } from '@/components/academy/ProgressDashboard';
-import { useAcademyProgress } from '@/hooks/useAcademyProgress';
-import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
-import { AdvancedFeatureGuide } from '@/components/guide';
-import { ADVANCED_GUIDES } from '@/components/guide';
+/**
+ * AcademyPage - ShopOpti Academy
+ * Migré sur socle PageLayout + PageBanner
+ */
+import { Helmet } from 'react-helmet-async'
+import { useState } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { GraduationCap, Video, TrendingUp, Award } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { academyService } from '@/services/academy.service'
+import { CourseCard } from '@/components/academy/CourseCard'
+import { ProgressDashboard } from '@/components/academy/ProgressDashboard'
+import { useAcademyProgress } from '@/hooks/useAcademyProgress'
+import { PageLayout, PageBanner } from '@/components/shared'
 
 export default function AcademyPage() {
-  const [activeTab, setActiveTab] = useState('courses');
-  const { stats } = useAcademyProgress();
-  
+  const [activeTab, setActiveTab] = useState('courses')
+  const { stats } = useAcademyProgress()
+
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ['academy-courses'],
     queryFn: () => academyService.getCourses(),
-  });
+  })
 
   return (
     <>
       <Helmet>
         <title>Academy - Formation Dropshipping | ShopOpti</title>
-        <meta name="description" content="Formations complètes en dropshipping, e-commerce et automatisation. Cours vidéo, guides pratiques et webinars exclusifs." />
+        <meta name="description" content="Formations complètes en dropshipping, e-commerce et automatisation." />
       </Helmet>
 
-      <ChannablePageWrapper
-        title="Devenez Expert du Dropshipping"
-        subtitle="ShopOpti Academy"
-        description="Formations complètes, quiz interactifs et certifications pour réussir votre business"
-        heroImage="ai"
-        badge={{ label: "Formation", icon: GraduationCap }}
+      <PageLayout
+        title="ShopOpti Academy"
+        subtitle="Formations, quiz interactifs et certifications"
       >
-        <AdvancedFeatureGuide {...ADVANCED_GUIDES.academy} />
+        <PageBanner
+          icon={GraduationCap}
+          title="Devenez Expert du Dropshipping"
+          description="Formations complètes, quiz interactifs et certifications pour réussir votre business"
+          theme="purple"
+        />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="courses" className="gap-2">
-              <Video className="h-4 w-4" />
-              Cours
+              <Video className="h-4 w-4" />Cours
             </TabsTrigger>
             <TabsTrigger value="progress" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Ma Progression
+              <TrendingUp className="h-4 w-4" />Progression
             </TabsTrigger>
             <TabsTrigger value="certificates" className="gap-2">
-              <Award className="h-4 w-4" />
-              Certificats
+              <Award className="h-4 w-4" />Certificats
             </TabsTrigger>
           </TabsList>
 
@@ -57,7 +58,7 @@ export default function AcademyPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="space-y-3">
-                    <div className="h-48 bg-gradient-to-br from-muted via-muted to-accent/10 rounded-lg animate-pulse" />
+                    <div className="h-48 bg-muted rounded-lg animate-pulse" />
                     <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
                     <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
                   </div>
@@ -86,7 +87,7 @@ export default function AcademyPage() {
             <ProgressDashboard />
           </TabsContent>
         </Tabs>
-      </ChannablePageWrapper>
+      </PageLayout>
     </>
-  );
+  )
 }
