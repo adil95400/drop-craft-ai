@@ -115,7 +115,10 @@ export default function AIOptimizationPage() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="px-8 py-6 text-lg" onClick={() => navigate('/auth')}>
+                <Button size="lg" className="px-8 py-6 text-lg" onClick={() => {
+                  try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                  navigate('/auth?trial=true');
+                }}>
                   <Sparkles className="w-5 h-5 mr-2" />
                   Essayer gratuitement
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -244,7 +247,10 @@ export default function AIOptimizationPage() {
                 Commencez gratuitement dès aujourd'hui et découvrez la puissance de l'intelligence artificielle pour votre e-commerce.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button size="lg" className="px-8 py-6 text-lg" onClick={() => navigate('/auth')}>
+                <Button size="lg" className="px-8 py-6 text-lg" onClick={() => {
+                  try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                  navigate('/auth?trial=true');
+                }}>
                   <Sparkles className="w-5 h-5 mr-2" />
                   Démarrer gratuitement
                 </Button>

@@ -308,7 +308,10 @@ export function InteractiveDemo() {
                             </li>
                           ))}
                         </ul>
-                        <Button onClick={() => navigate('/auth')} className="mt-4 gap-2">
+                        <Button onClick={() => {
+                          try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                          navigate('/auth?trial=true');
+                        }} className="mt-4 gap-2">
                           Essayer gratuitement
                           <ArrowRight className="h-4 w-4" />
                         </Button>

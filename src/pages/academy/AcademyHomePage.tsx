@@ -211,7 +211,10 @@ const AcademyHomePage = () => {
               <p className="text-lg text-muted-foreground">
                 Accédez à toutes nos formations avec un compte ShopOpti Pro
               </p>
-              <Button size="lg" onClick={() => navigate('/auth')}>
+              <Button size="lg" onClick={() => {
+                try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                navigate('/auth?trial=true');
+              }}>
                 Commencer gratuitement
               </Button>
             </div>

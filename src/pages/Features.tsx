@@ -127,7 +127,10 @@ const Features = () => {
                 <p className="text-xl text-muted-foreground">
                   Une suite complète d'outils professionnels pour automatiser, gérer et développer votre business en ligne.
                 </p>
-                <Button size="lg" onClick={() => navigate('/auth')}>
+                <Button size="lg" onClick={() => {
+                  try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                  navigate('/auth?trial=true');
+                }}>
                   Essayer gratuitement
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -178,7 +181,10 @@ const Features = () => {
                   Rejoignez des milliers d'entrepreneurs qui utilisent ShopOpti+ pour développer leur business.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                  <Button size="lg" variant="secondary" onClick={() => navigate('/auth')}>
+                  <Button size="lg" variant="secondary" onClick={() => {
+                    try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                    navigate('/auth?trial=true');
+                  }}>
                     Essai gratuit 14 jours
                   </Button>
                   <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10" onClick={() => navigate('/pricing')}>
