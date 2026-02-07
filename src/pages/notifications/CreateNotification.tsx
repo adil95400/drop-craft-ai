@@ -84,7 +84,9 @@ export default function CreateNotification() {
     return cost.toFixed(2);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.message || !formData.type) {
       toast.error('Titre, message et type sont requis');
@@ -95,9 +97,56 @@ export default function CreateNotification() {
       toast.error('Date de programmation requise');
       return;
     }
-    
-    toast.success('Notification programmée avec succès');
-    navigate('/dashboard');
+
+    setIsSubmitting(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Vous devez être connecté');
+        return;
+      }
+
+      const scheduledAt = formData.scheduleType === 'scheduled' && scheduleDate
+        ? new Date(`${format(scheduleDate, 'yyyy-MM-dd')}T${scheduleTime || '09:00'}:00`).toISOString()
+        : new Date().toISOString();
+
+      const { error } = await supabase.from('notifications').insert({
+        user_id: user.id,
+        title: formData.title,
+        message: formData.message,
+        type: formData.type,
+        is_read: false,
+        metadata: {
+          priority: formData.priority,
+          target_users: formData.targetUsers,
+          channels: {
+            push: formData.pushNotification,
+            email: formData.emailNotification,
+            sms: formData.smsNotification,
+          },
+          action_url: formData.actionUrl || null,
+          action_label: formData.actionLabel || null,
+          image_url: formData.imageUrl || null,
+          scheduled_at: scheduledAt,
+          template_id: selectedTemplate || null,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        formData.scheduleType === 'now'
+          ? 'Notification envoyée avec succès'
+          : `Notification programmée pour le ${format(scheduleDate!, 'dd/MM/yyyy', { locale: fr })} à ${scheduleTime || '09:00'}`
+      );
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Erreur création notification:', error);
+      toast.error(error.message || 'Erreur lors de la création de la notification');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -147,9 +196,9 @@ export default function CreateNotification() {
                 <Eye className="mr-2 h-4 w-4" />
                 Tester
               </Button>
-              <Button onClick={handleSubmit}>
+              <Button onClick={handleSubmit} disabled={isSubmitting}>
                 <Send className="mr-2 h-4 w-4" />
-                {formData.scheduleType === 'now' ? 'Envoyer maintenant' : 'Programmer'}
+                {isSubmitting ? 'Envoi en cours...' : (formData.scheduleType === 'now' ? 'Envoyer maintenant' : 'Programmer')}
               </Button>
             </div>
           </div>

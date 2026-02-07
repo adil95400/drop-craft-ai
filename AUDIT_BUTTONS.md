@@ -9,7 +9,7 @@
 | # | Fichier | Action | Statut |
 |---|---------|--------|--------|
 | 1 | `src/pages/Contact.tsx` | Bouton "Envoyer" du formulaire contact | ✅ **CORRIGÉ** — Edge Function `contact-form` + table `contact_messages` |
-| 2 | `src/pages/notifications/CreateNotification.tsx` | Bouton "Programmer notification" | ❌ À corriger — `toast.success()` sans requête |
+| 2 | `src/pages/notifications/CreateNotification.tsx` | Bouton "Programmer notification" | ✅ **CORRIGÉ** — Insert réel dans `notifications` table + métadonnées |
 
 ---
 
@@ -86,12 +86,12 @@
 
 | Priorité | Catégorie | Total | Corrigés | Restants |
 |----------|-----------|-------|----------|----------|
-| 🔴 Critique | Formulaires sans API | 2 | 1 | 1 |
+| 🔴 Critique | Formulaires sans API | 2 | 2 | 0 |
 | 🟠 Haute | Actions simulées / "bientôt" | 6 | 0 | 6 |
 | 🟠 Haute | Données mockées | 9 | 3 | 6 |
 | 🟡 Moyenne | Navigate factice | 4 | 4 | 0 |
 | 🟡 Moyenne | CTA sans workflow essai | 9 | 9 | 0 |
-| **Total** | | **30** | **17** | **13** |
+| **Total** | | **30** | **18** | **12** |
 
 ---
 
