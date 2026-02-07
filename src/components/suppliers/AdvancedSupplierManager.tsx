@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSuppliersUnified } from '@/hooks/unified'
 import { useSupplierSync } from '@/hooks/useSupplierSync'
 import { useSupplierConnection } from '@/hooks/useSupplierConnection'
 import { useNavigate } from 'react-router-dom'
@@ -44,7 +44,7 @@ import {
 
 export function AdvancedSupplierManager() {
   const navigate = useNavigate()
-  const { suppliers, stats, isLoading, addSupplier, updateSupplier } = useRealSuppliers()
+  const { suppliers, isLoading, refetch } = useSuppliersUnified()
   const { syncSupplier, syncAllSuppliers, isSyncing } = useSupplierSync()
   const { 
     isSupplierConnected, 
@@ -108,10 +108,10 @@ export function AdvancedSupplierManager() {
 
   // Calculer les métriques de performance
   const performanceMetrics = [
-    { label: 'Fournisseurs Actifs', value: stats.active, trend: '+12%', icon: Users, color: 'text-blue-500' },
-    { label: 'Total Fournisseurs', value: stats.total, trend: '+8%', icon: Package, color: 'text-green-500' },
-    { label: 'Note moyenne', value: stats.averageRating.toFixed(1), trend: '+3%', icon: Star, color: 'text-yellow-500' },
-    { label: 'Pays', value: Object.keys(stats.topCountries).length, trend: '+15%', icon: Globe, color: 'text-orange-500' }
+    { label: 'Fournisseurs Actifs', value: suppliers.filter(s => s.status === 'verified').length, trend: '+12%', icon: Users, color: 'text-blue-500' },
+    { label: 'Total Fournisseurs', value: suppliers.length, trend: '+8%', icon: Package, color: 'text-green-500' },
+    { label: 'Note moyenne', value: (suppliers.reduce((sum, s) => sum + (s.rating || 0), 0) / (suppliers.length || 1)).toFixed(1), trend: '+3%', icon: Star, color: 'text-yellow-500' },
+    { label: 'Pays', value: new Set(suppliers.map(s => s.country).filter(Boolean)).size, trend: '+15%', icon: Globe, color: 'text-orange-500' }
   ]
 
   const filteredSuppliers = suppliers
@@ -299,10 +299,10 @@ export function AdvancedSupplierManager() {
                       <span className="text-muted-foreground">API:</span>
                       <span className="font-medium">{supplier.api_endpoint ? 'Configuré' : 'Non configuré'}</span>
                     </div>
-                    {supplier.has_api_key && (
+                    {supplier.api_endpoint && (
                       <div className="flex items-center gap-1 text-green-600">
                         <CheckCircle className="h-3 w-3" />
-                        <span className="text-xs">Clé API active</span>
+                        <span className="text-xs">API configurée</span>
                       </div>
                     )}
                   </div>

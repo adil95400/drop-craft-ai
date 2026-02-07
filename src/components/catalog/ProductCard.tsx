@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Product } from "@/hooks/useRealProducts";
+import { UnifiedProduct as Product } from "@/hooks/unified";
 import { ProductActionButtons } from "./ProductActionButtons";
 import { Package, Star, TrendingUp, Crown, Zap } from "lucide-react";
 

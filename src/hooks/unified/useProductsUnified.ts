@@ -1,6 +1,6 @@
 /**
  * useProductsUnified - Hook unifié pour la gestion des produits
- * Consolide: useProducts, useProductsOptimized, useRealProducts, useUnifiedProducts
+ * Hook unifié consolidé pour la gestion des produits
  * 
  * Fonctionnalités:
  * - Pagination automatique (gère plus de 1000 produits)

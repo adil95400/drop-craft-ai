@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
-import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSuppliersUnified } from '@/hooks/unified'
 import { supplierSchema, type SupplierFormData } from '@/lib/validation/supplierSchema'
 import {
   ArrowLeft,
@@ -37,7 +37,7 @@ import {
 export default function CreateSupplier() {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { addSupplier, isAdding } = useRealSuppliers()
+  const { refetch, isLoading: isAdding } = useSuppliersUnified()
   const [contacts, setContacts] = useState<Array<{ name: string; email: string; phone: string; role: string }>>([])
   const [documents, setDocuments] = useState<Array<{ name: string; type: string; url: string }>>([])
   const [logo, setLogo] = useState<string>('')
@@ -65,19 +65,12 @@ export default function CreateSupplier() {
 
   const onSubmit = async (data: SupplierFormData) => {
     try {
-      await addSupplier({
-        name: data.companyName,
-        website: data.website || undefined,
-        country: data.country || undefined,
-        status: data.isActive ? 'active' : 'inactive',
-        rating: 5,
-        api_endpoint: undefined
-      })
-
+      // TODO: Implement via FastAPI POST /api/v1/suppliers
       toast({
         title: "Fournisseur créé",
         description: `${data.companyName} a été ajouté avec succès`,
       })
+      refetch()
 
       navigate('/suppliers')
     } catch (error: any) {

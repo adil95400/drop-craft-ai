@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield, Lock, Eye, Clock, RefreshCw } from "lucide-react";
-import { useRealSuppliers } from "@/hooks/useRealSuppliers";
+import { useSuppliersUnified } from "@/hooks/unified";
 import { supabase } from "@/integrations/supabase/client";
 
 interface SecurityEvent {
@@ -17,7 +17,7 @@ interface SecurityEvent {
 }
 
 export function SupplierSecurityDashboard() {
-  const { suppliers } = useRealSuppliers();
+  const { suppliers } = useSuppliersUnified();
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +44,7 @@ export function SupplierSecurityDashboard() {
     fetchSecurityEvents();
   }, []);
 
-  const suppliersWithCredentials = suppliers.filter(s => s.has_encrypted_credentials);
+  const suppliersWithCredentials = suppliers.filter(s => s.api_endpoint);
   const recentAccessEvents = securityEvents.filter(e => e.event_type === 'credentials_accessed');
   const totalAccessCount = suppliers.reduce((sum, s) => sum + (s.access_count || 0), 0);
 
@@ -189,22 +189,17 @@ export function SupplierSecurityDashboard() {
                   <div className="text-sm text-muted-foreground">
                     Status: {supplier.status} • Country: {supplier.country || 'Unknown'}
                   </div>
-                  {supplier.contact_email_masked && (
+                  {supplier.website && (
                     <div className="text-xs text-muted-foreground">
-                      Contact: {supplier.contact_email_masked}
+                      Site: {supplier.website}
                     </div>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  {supplier.has_encrypted_credentials ? (
+                  {supplier.api_endpoint ? (
                     <Badge variant="default" className="bg-green-100 text-green-800">
                       <Lock className="h-3 w-3 mr-1" />
-                      Encrypted
-                    </Badge>
-                  ) : supplier.has_api_key ? (
-                    <Badge variant="default" className="bg-blue-100 text-blue-800">
-                      <Lock className="h-3 w-3 mr-1" />
-                      API Key
+                      API configurée
                     </Badge>
                   ) : (
                     <Badge variant="secondary">
