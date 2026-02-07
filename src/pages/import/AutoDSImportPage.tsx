@@ -140,7 +140,6 @@ export default function AutoDSImportPage() {
         const { data, error } = await supabase.functions.invoke('quick-import-url', {
           body: {
             url: item.url,
-            user_id: user?.id,
             action: 'preview',
             price_multiplier: priceMultiplier
           }
@@ -171,10 +170,8 @@ export default function AutoDSImportPage() {
       const { data, error } = await supabase.functions.invoke('quick-import-url', {
         body: {
           url: item.url,
-          user_id: user?.id,
           action: 'import',
           price_multiplier: priceMultiplier,
-          // Passer les données éditées
           override_data: editedProduct ? {
             title: productData.title,
             description: productData.description,

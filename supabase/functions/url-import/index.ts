@@ -99,16 +99,16 @@ serve(async (req) => {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
+    const { data: userData, error: authError } = await supabase.auth.getUser(token)
     
-    if (claimsError || !claimsData?.claims?.sub) {
+    if (authError || !userData?.user) {
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const userId = claimsData.claims.sub;
+    const userId = userData.user.id;
     console.log('[URL-IMPORT] Authenticated user:', userId.slice(0, 8));
 
     const body = await req.json();

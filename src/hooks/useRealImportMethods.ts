@@ -77,20 +77,26 @@ export const useRealImportMethods = () => {
       mapping_config?: any
     }) => {
       if (!user?.id) throw new Error('Non authentifié')
-      // Use url-import edge function
       if (jobData.source_url) {
-        const { data, error } = await supabase.functions.invoke('url-import', {
-          body: { url: jobData.source_url, enrichWithAi: true }
+        // Use quick-import-url (the working scraper with full platform support)
+        const { data, error } = await supabase.functions.invoke('quick-import-url', {
+          body: { 
+            url: jobData.source_url, 
+            action: 'import',
+            price_multiplier: 1.5
+          }
         })
         if (error) throw error
+        if (!data?.success) throw new Error(data?.error || 'Import échoué')
         return data
       }
       throw new Error('URL source requise')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['imported-products'] })
       queryClient.invalidateQueries({ queryKey: ['products-unified'] })
-      toast({ title: 'Import démarré', description: 'Le traitement est en cours...' })
+      toast({ title: 'Import réussi', description: 'Le produit a été importé dans votre catalogue' })
     },
     onError: (err: Error) => {
       toast({ title: 'Erreur', description: err.message, variant: 'destructive' })
@@ -107,17 +113,19 @@ export const useRealImportMethods = () => {
       if (!user?.id) throw new Error('Non authentifié')
       const url = methodData.configuration?.url || methodData.configuration?.feed_url
       if (url) {
-        const { data, error } = await supabase.functions.invoke('url-import', {
-          body: { url, enrichWithAi: true }
+        const { data, error } = await supabase.functions.invoke('quick-import-url', {
+          body: { url, action: 'import', price_multiplier: 1.5 }
         })
         if (error) throw error
+        if (!data?.success) throw new Error(data?.error || 'Import échoué')
         return data
       }
       throw new Error('URL requise')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
-      toast({ title: 'Import configuré', description: 'Job créé avec succès' })
+      queryClient.invalidateQueries({ queryKey: ['imported-products'] })
+      toast({ title: 'Import réussi', description: 'Produit importé avec succès' })
     }
   })
 
