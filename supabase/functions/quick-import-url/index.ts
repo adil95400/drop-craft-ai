@@ -1926,10 +1926,30 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    const { url, user_id, action = 'preview', target_store_id, price_multiplier = 1.5 } = await req.json()
+    // SECURITY: Extract user_id from JWT token, NOT from body
+    const authHeader = req.headers.get('authorization')
+    let userId: string | null = null
+    
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '')
+      const { data: userData, error: authError } = await supabaseClient.auth.getUser(token)
+      if (!authError && userData?.user) {
+        userId = userData.user.id
+      }
+    }
 
-    if (!url || !user_id) {
-      throw new Error('URL et user_id requis')
+    const body = await req.json()
+    const { url, action = 'preview', target_store_id, price_multiplier = 1.5 } = body
+    
+    // Backward compat: accept user_id from body only if no JWT (extension calls)
+    const user_id = userId || body.user_id
+    
+    if (!url) {
+      throw new Error('URL requise')
+    }
+    
+    if (!user_id) {
+      throw new Error('Authentification requise')
     }
 
     console.log(`🔗 Quick Import from URL: ${url}`)
