@@ -83,7 +83,7 @@ export const StickyCtaBar = memo(() => {
                   size="sm"
                   variant="outline"
                   className="text-xs sm:text-sm"
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/features')}
                 >
                   Voir démo
                 </Button>

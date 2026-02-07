@@ -200,7 +200,7 @@ export const LiveDemoPreview = memo(() => {
                 size="lg" 
                 variant="outline"
                 className="flex-1"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/features')}
               >
                 <Play className="mr-2 h-4 w-4" />
                 Voir la démo complète
