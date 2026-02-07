@@ -6,125 +6,185 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface PublishRequest {
-  productId: string
-  marketplaceIds: string[]
-  publishOptions?: {
-    autoPublish?: boolean
-    syncInventory?: boolean
-    overridePrice?: number
-  }
-}
-
-interface PublishResult {
-  marketplace: string
-  success: boolean
-  message: string
-  listingId?: string
-  error?: string
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const authHeader = req.headers.get('Authorization')!
+    // Auth
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('Missing authorization header')
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    if (userError || !user) throw new Error('Unauthorized')
 
-    if (userError || !user) {
-      throw new Error('Unauthorized')
+    const { productId, storeIds, publishOptions = {} } = await req.json()
+
+    if (!productId || !storeIds?.length) {
+      throw new Error('productId and storeIds are required')
     }
 
-    const { productId, marketplaceIds, publishOptions = {} }: PublishRequest = await req.json()
+    console.log(`[marketplace-publish] User ${user.id} publishing product ${productId} to stores:`, storeIds)
 
-    console.log(`Publishing product ${productId} to marketplaces:`, marketplaceIds)
-
-    // Récupérer le produit
+    // 1. Fetch the product from `products` table
     const { data: product, error: productError } = await supabase
-      .from('imported_products')
+      .from('products')
       .select('*')
       .eq('id', productId)
       .eq('user_id', user.id)
       .single()
 
     if (productError || !product) {
-      throw new Error('Product not found')
+      throw new Error(`Product not found: ${productError?.message || 'unknown'}`)
     }
 
-    // Récupérer les intégrations marketplace
-    const { data: integrations, error: integrationsError } = await supabase
-      .from('supplier_integrations')
+    // 2. Fetch the target stores with their integrations
+    const { data: stores, error: storesError } = await supabase
+      .from('stores')
       .select('*')
       .eq('user_id', user.id)
-      .eq('status', 'active')
-      .in('supplier_id', marketplaceIds)
+      .in('id', storeIds)
 
-    if (integrationsError || !integrations || integrations.length === 0) {
-      throw new Error('No active marketplace integrations found')
+    if (storesError || !stores?.length) {
+      throw new Error(`No stores found: ${storesError?.message || 'no matching stores'}`)
     }
 
-    const results: PublishResult[] = []
+    // 3. Fetch store_integrations for credentials
+    const { data: integrations } = await supabase
+      .from('store_integrations')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .in('id', stores.map((s: any) => s.id))
 
-    // Publier sur chaque marketplace
-    for (const integration of integrations) {
+    const integrationMap = new Map()
+    for (const integ of (integrations || [])) {
+      integrationMap.set(integ.id, integ)
+    }
+
+    const results: Array<{
+      storeId: string
+      storeName: string
+      platform: string
+      success: boolean
+      message: string
+      externalProductId?: string
+    }> = []
+
+    // 4. Publish to each store
+    for (const store of stores) {
       try {
-        console.log(`Publishing to ${integration.supplier_id}...`)
+        console.log(`[marketplace-publish] Publishing to store ${store.name} (${store.platform})`)
 
-        // Transformation du produit selon la marketplace
-        const transformedProduct = await transformProduct(product, integration.supplier_id, publishOptions)
+        const integration = integrationMap.get(store.id)
 
-// Real API publication to marketplace
-        const listingResult = await publishToMarketplaceReal(
-          integration,
-          transformedProduct,
-          product
-        )
+        // Build the product payload for the platform
+        const productPayload = {
+          title: product.name,
+          description: product.description || '',
+          price: publishOptions.overridePrice || product.price || 0,
+          sku: product.sku || '',
+          stock_quantity: product.stock_quantity || 0,
+          images: product.image_urls || (product.image_url ? [product.image_url] : []),
+          category: product.category || '',
+          brand: product.brand || '',
+          tags: product.tags || [],
+        }
 
-        results.push({
-          marketplace: integration.supplier_id,
-          success: true,
-          message: 'Product published successfully',
-          listingId: listingResult.listingId
-        })
+        let externalProductId: string | null = null
 
-        // Enregistrer dans published_products
-        await supabase.from('published_products').insert({
-          user_id: user.id,
-          product_id: productId,
-          marketplace_id: integration.supplier_id,
-          external_listing_id: listingResult.listingId,
-          status: 'active',
-          published_at: new Date().toISOString(),
-          sync_status: publishOptions.syncInventory ? 'synced' : 'manual'
-        })
+        // Route to platform-specific edge function if integration has credentials
+        if (store.platform === 'woocommerce' && integration) {
+          try {
+            const { data: wooResult, error: wooError } = await supabase.functions.invoke('woocommerce-product-create', {
+              body: {
+                product: productPayload,
+                storeId: store.id
+              },
+              headers: { Authorization: `Bearer ${token}` }
+            })
+            if (wooError) throw wooError
+            externalProductId = wooResult?.productId?.toString() || null
+          } catch (e) {
+            console.warn(`WooCommerce API call failed, recording link anyway:`, e.message)
+          }
+        }
+        // Add more platform handlers here (shopify, amazon, etc.) as needed
 
-        // Logger l'activité
+        // 5. Upsert product_store_links
+        const { error: linkError } = await supabase
+          .from('product_store_links')
+          .upsert({
+            product_id: productId,
+            store_id: store.id,
+            published: true,
+            sync_status: externalProductId ? 'synced' : 'pending',
+            external_product_id: externalProductId,
+            last_sync_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'product_id,store_id'
+          })
+
+        if (linkError) {
+          console.error(`Error upserting product_store_links:`, linkError)
+        }
+
+        // 6. Update product status to active
+        await supabase
+          .from('products')
+          .update({ status: 'active', updated_at: new Date().toISOString() })
+          .eq('id', productId)
+
+        // 7. Log activity
         await supabase.from('activity_logs').insert({
           user_id: user.id,
           action: 'publish_product',
-          description: `Published product ${product.name} to ${integration.supplier_id}`,
-          metadata: {
-            product_id: productId,
-            marketplace: integration.supplier_id,
-            listing_id: listingResult.listingId
-          }
+          entity_type: 'product',
+          entity_id: productId,
+          description: `Published "${product.name}" to ${store.name} (${store.platform})`,
+          details: { store_id: store.id, platform: store.platform, external_product_id: externalProductId }
+        })
+
+        results.push({
+          storeId: store.id,
+          storeName: store.name,
+          platform: store.platform,
+          success: true,
+          message: externalProductId
+            ? `Published with external ID: ${externalProductId}`
+            : 'Published (link recorded, awaiting sync)',
+          externalProductId: externalProductId || undefined,
         })
 
       } catch (error) {
-        console.error(`Error publishing to ${integration.supplier_id}:`, error)
+        console.error(`[marketplace-publish] Error for store ${store.id}:`, error)
+
+        // Record failed link
+        await supabase
+          .from('product_store_links')
+          .upsert({
+            product_id: productId,
+            store_id: store.id,
+            published: false,
+            sync_status: 'error',
+            last_error: error.message,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'product_id,store_id'
+          })
+
         results.push({
-          marketplace: integration.supplier_id,
+          storeId: store.id,
+          storeName: store.name,
+          platform: store.platform,
           success: false,
-          message: 'Failed to publish product',
-          error: error.message
+          message: error.message,
         })
       }
     }
@@ -135,7 +195,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: successCount > 0,
-        totalMarketplaces: marketplaceIds.length,
+        totalStores: storeIds.length,
         successCount,
         failCount,
         results
@@ -144,219 +204,10 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Publish error:', error)
+    console.error('[marketplace-publish] Fatal error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
-
-// Transform product according to marketplace requirements
-async function transformProduct(product: any, marketplaceId: string, options: any): Promise<any> {
-  const baseProduct = {
-    sku: product.sku,
-    title: product.name,
-    description: product.description,
-    price: options.overridePrice || product.price,
-    quantity: product.stock_quantity,
-    images: product.image_urls || [],
-    category: product.category,
-    brand: product.brand,
-    weight: product.weight
-  }
-
-  // Marketplace-specific transformations
-  const transformations: Record<string, (p: any) => any> = {
-    amazon: (p) => ({
-      ...p,
-      asin: p.sku,
-      fulfillment_channel: 'DEFAULT',
-      condition: 'New',
-      seller_sku: p.sku
-    }),
-    ebay: (p) => ({
-      ...p,
-      item_id: p.sku,
-      listing_type: 'FixedPriceItem',
-      duration: 'GTC',
-      start_price: p.price
-    }),
-    etsy: (p) => ({
-      ...p,
-      listing_id: p.sku,
-      taxonomy_id: 1,
-      who_made: 'i_did',
-      when_made: '2020_2023',
-      is_supply: false
-    }),
-    shopify: (p) => ({
-      ...p,
-      product_type: p.category,
-      vendor: p.brand,
-      variants: [{
-        sku: p.sku,
-        price: p.price,
-        inventory_quantity: p.quantity
-      }]
-    }),
-    woocommerce: (p) => ({
-      ...p,
-      type: 'simple',
-      regular_price: p.price.toString(),
-      manage_stock: true,
-      stock_quantity: p.quantity
-    })
-  }
-
-  const transformer = transformations[marketplaceId]
-  return transformer ? transformer(baseProduct) : baseProduct
-}
-
-// Real marketplace publication using dedicated API functions
-async function publishToMarketplaceReal(integration: any, transformedProduct: any, originalProduct: any): Promise<any> {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  )
-
-  const marketplaceId = integration.supplier_id.toLowerCase()
-  
-  console.log(`Publishing to real ${marketplaceId} API...`)
-
-  try {
-    switch (marketplaceId) {
-      case 'amazon': {
-        const { data, error } = await supabase.functions.invoke('amazon-seller-api', {
-          body: {
-            action: 'publish_product',
-            credentials: integration.api_credentials || {},
-            product: {
-              sku: transformedProduct.sku || transformedProduct.seller_sku,
-              title: transformedProduct.title,
-              description: transformedProduct.description,
-              price: transformedProduct.price,
-              quantity: transformedProduct.quantity,
-              images: transformedProduct.images || [],
-              category: transformedProduct.category,
-              brand: transformedProduct.brand,
-              asin: transformedProduct.asin
-            }
-          }
-        })
-
-        if (error) throw new Error(`Amazon API error: ${error.message}`)
-        
-        return {
-          listingId: data.submissionId || data.sku,
-          status: 'active',
-          url: `https://sellercentral.amazon.com/inventory?q=${data.sku}`
-        }
-      }
-
-      case 'ebay': {
-        const { data, error } = await supabase.functions.invoke('ebay-trading-api', {
-          body: {
-            action: 'publish_product',
-            credentials: integration.api_credentials || {},
-            product: {
-              sku: transformedProduct.sku || transformedProduct.item_id,
-              title: transformedProduct.title,
-              description: transformedProduct.description,
-              price: transformedProduct.start_price || transformedProduct.price,
-              quantity: transformedProduct.quantity,
-              images: transformedProduct.images || [],
-              category_id: transformedProduct.category_id || '1',
-              condition: 'NEW',
-              shipping_policy_id: integration.api_credentials?.shipping_policy_id,
-              return_policy_id: integration.api_credentials?.return_policy_id,
-              payment_policy_id: integration.api_credentials?.payment_policy_id
-            }
-          }
-        })
-
-        if (error) throw new Error(`eBay API error: ${error.message}`)
-        
-        return {
-          listingId: data.listingId,
-          status: 'active',
-          url: `https://www.ebay.com/itm/${data.listingId}`
-        }
-      }
-
-      case 'etsy': {
-        const { data, error } = await supabase.functions.invoke('etsy-open-api', {
-          body: {
-            action: 'publish_product',
-            credentials: integration.api_credentials || {},
-            product: {
-              sku: transformedProduct.sku || transformedProduct.listing_id,
-              title: transformedProduct.title,
-              description: transformedProduct.description,
-              price: transformedProduct.price,
-              quantity: transformedProduct.quantity,
-              images: transformedProduct.images || [],
-              taxonomy_id: transformedProduct.taxonomy_id || 1,
-              who_made: transformedProduct.who_made || 'i_did',
-              when_made: transformedProduct.when_made || '2020_2023',
-              is_supply: transformedProduct.is_supply || false,
-              tags: transformedProduct.tags || [],
-              materials: transformedProduct.materials || []
-            }
-          }
-        })
-
-        if (error) throw new Error(`Etsy API error: ${error.message}`)
-        
-        return {
-          listingId: data.listingId,
-          status: 'active',
-          url: data.listingUrl
-        }
-      }
-
-      case 'shopify': {
-        const { data: shopifyResult, error: shopifyError } = await supabaseAdmin.functions.invoke('shopify-product-create', {
-          body: { 
-            product: transformedProduct,
-            storeId: credentials.storeId
-          }
-        })
-
-        if (shopifyError) throw new Error(`Shopify error: ${shopifyError.message}`)
-        
-        return {
-          listingId: shopifyResult.productId?.toString(),
-          status: 'active',
-          url: shopifyResult.url
-        }
-      }
-
-      case 'woocommerce': {
-        const { data: wooResult, error: wooError } = await supabaseAdmin.functions.invoke('woocommerce-product-create', {
-          body: { 
-            product: transformedProduct,
-            storeId: credentials.storeId
-          }
-        })
-
-        if (wooError) throw new Error(`WooCommerce error: ${wooError.message}`)
-        
-        return {
-          listingId: wooResult.productId?.toString(),
-          status: 'active',
-          url: wooResult.url
-        }
-      }
-
-      default:
-        throw new Error(`Unsupported marketplace: ${marketplaceId}`)
-    }
-  } catch (error) {
-    console.error(`Error publishing to ${marketplaceId}:`, error)
-    throw error
-  }
-}

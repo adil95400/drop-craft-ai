@@ -13,18 +13,45 @@ export function usePublishProducts() {
     enabled: !!user,
   });
 
+  const { data: stores = [], isLoading: isLoadingStores } = useQuery({
+    queryKey: ['user-stores', user?.id],
+    queryFn: () => PublishProductsService.getUserStores(user!.id),
+    enabled: !!user,
+  });
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['publish-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['products-unified'] });
+    queryClient.invalidateQueries({ queryKey: ['product-store-links'] });
+  };
+
+  const publishToStoresMutation = useMutation({
+    mutationFn: ({ productId, storeIds }: { productId: string; storeIds: string[] }) =>
+      PublishProductsService.publishToStores(productId, storeIds),
+    onSuccess: (result) => {
+      invalidateAll();
+      if (result.successCount > 0) {
+        toast.success(`Publié sur ${result.successCount} boutique(s)`);
+      }
+      if (result.failCount > 0) {
+        toast.error(`${result.failCount} erreur(s)`);
+      }
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Erreur de publication');
+    },
+  });
+
   const publishMutation = useMutation({
     mutationFn: (productId: string) =>
       PublishProductsService.publishProduct(productId, user!.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['publish-stats'] });
-      toast.success('Produit publié dans le catalogue');
+      invalidateAll();
+      toast.success('Produit publié');
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : 'Erreur lors de la publication'
-      );
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de la publication');
     },
   });
 
@@ -32,14 +59,12 @@ export function usePublishProducts() {
     mutationFn: (productIds: string[]) =>
       PublishProductsService.bulkPublish(productIds, user!.id),
     onSuccess: (results) => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['publish-stats'] });
-
+      invalidateAll();
       if (results.success.length > 0) {
         toast.success(`${results.success.length} produit(s) publié(s)`);
       }
       if (results.errors.length > 0) {
-        toast.error(`${results.errors.length} erreur(s) lors de la publication`);
+        toast.error(`${results.errors.length} erreur(s)`);
       }
     },
     onError: () => {
@@ -51,15 +76,11 @@ export function usePublishProducts() {
     mutationFn: ({ productId, quantity }: { productId: string; quantity: number }) =>
       PublishProductsService.syncStock(productId, user!.id, quantity),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      invalidateAll();
       toast.success('Stock synchronisé');
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Erreur lors de la synchronisation'
-      );
+      toast.error(error instanceof Error ? error.message : 'Erreur de synchronisation');
     },
   });
 
@@ -67,26 +88,27 @@ export function usePublishProducts() {
     mutationFn: (productId: string) =>
       PublishProductsService.unpublishProduct(productId, user!.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['publish-stats'] });
+      invalidateAll();
       toast.success('Produit dépublié');
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : 'Erreur lors de la dépublication'
-      );
+      toast.error(error instanceof Error ? error.message : 'Erreur de dépublication');
     },
   });
 
   return {
     stats,
+    stores,
     isLoadingStats,
+    isLoadingStores,
     publishProduct: publishMutation.mutate,
+    publishToStores: (productId: string, storeIds: string[]) =>
+      publishToStoresMutation.mutate({ productId, storeIds }),
     bulkPublish: bulkPublishMutation.mutate,
-    syncStock: (productId: string, quantity: number) => 
+    syncStock: (productId: string, quantity: number) =>
       syncStockMutation.mutate({ productId, quantity }),
     unpublishProduct: unpublishMutation.mutate,
-    isPublishing: publishMutation.isPending,
+    isPublishing: publishMutation.isPending || publishToStoresMutation.isPending,
     isBulkPublishing: bulkPublishMutation.isPending,
     isSyncing: syncStockMutation.isPending,
     isUnpublishing: unpublishMutation.isPending,
