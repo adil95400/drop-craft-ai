@@ -1,10 +1,10 @@
 /**
  * StoresPage - Boutiques connectées
- * Migré sur socle PageLayout + StatCard + PageBanner
  */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { PageLayout, StatCard, PageBanner } from '@/components/shared'
+import { StatCard } from '@/components/shared'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useIntegrationsUnified } from '@/hooks/unified'
 import { useApiStores } from '@/hooks/api/useApiStores'
 import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus'
@@ -16,10 +16,7 @@ export default function StoresPage() {
   const { integrations, isLoading: loading, refetch } = useIntegrationsUnified()
   const { syncStores, deleteStores, isSyncing, isDeleting } = useApiStores()
 
-  const handleSync = (integrationId: string) => {
-    syncStores.mutate([integrationId])
-  }
-
+  const handleSync = (integrationId: string) => { syncStores.mutate([integrationId]) }
   const handleDisconnect = (integrationId: string) => {
     if (confirm('Êtes-vous sûr de vouloir déconnecter cette boutique ?')) {
       deleteStores.mutate([integrationId])
@@ -34,7 +31,7 @@ export default function StoresPage() {
 
   if (loading) {
     return (
-      <PageLayout title="Boutiques connectées" subtitle="Chargement…">
+      <ChannablePageWrapper title="Boutiques connectées" description="Chargement…" heroImage="integrations" badge={{ label: 'Boutiques', icon: Store }}>
         <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -43,35 +40,27 @@ export default function StoresPage() {
             </Card>
           ))}
         </div>
-      </PageLayout>
+      </ChannablePageWrapper>
     )
   }
 
   return (
-    <PageLayout
+    <ChannablePageWrapper
       title="Boutiques connectées"
-      subtitle={`${stats.stores} boutique(s) — ${stats.connected} active(s)`}
+      description={`${stats.stores} boutique(s) — ${stats.connected} active(s)`}
+      heroImage="integrations"
+      badge={{ label: 'Boutiques', icon: Store }}
       actions={
-        <div className="flex gap-2">
+        <>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4 mr-2" />Actualiser
           </Button>
           <Button size="sm" asChild>
-            <Link to="/stores/connect">
-              <Plus className="w-4 h-4 mr-2" />Connecter
-            </Link>
+            <Link to="/stores/connect"><Plus className="w-4 h-4 mr-2" />Connecter</Link>
           </Button>
-        </div>
+        </>
       }
     >
-      <PageBanner
-        icon={Store}
-        title="Gérez vos boutiques e-commerce"
-        description="Connectez, synchronisez et pilotez toutes vos plateformes depuis un seul endroit"
-        theme="blue"
-      />
-
-      {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <StatCard label="Boutiques totales" value={stats.stores} icon={Store} color="primary" />
         <StatCard label="Connectées" value={stats.connected} icon={CheckCircle} color="success" />
@@ -80,7 +69,6 @@ export default function StoresPage() {
 
       <ActiveJobsBanner />
 
-      {/* Liste des boutiques */}
       {integrations.length === 0 ? (
         <Card className="text-center py-12">
           <CardHeader>
@@ -89,9 +77,7 @@ export default function StoresPage() {
             <CardDescription>Connectez votre première boutique pour commencer</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild>
-              <Link to="/stores/connect"><Plus className="w-4 h-4 mr-2" />Connecter une boutique</Link>
-            </Button>
+            <Button asChild><Link to="/stores/connect"><Plus className="w-4 h-4 mr-2" />Connecter une boutique</Link></Button>
           </CardContent>
         </Card>
       ) : (
@@ -105,9 +91,7 @@ export default function StoresPage() {
                       <Store className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">
-                        {(integration as any).config?.name || integration.platform_name}
-                      </CardTitle>
+                      <CardTitle className="text-base">{(integration as any).config?.name || integration.platform_name}</CardTitle>
                       <p className="text-sm text-muted-foreground">{integration.platform_name}</p>
                     </div>
                   </div>
@@ -129,8 +113,7 @@ export default function StoresPage() {
                   )}
                   <div className="flex gap-2 pt-2">
                     <Button variant="outline" size="sm" onClick={() => handleSync(integration.id)} disabled={isSyncing} className="flex-1">
-                      {isSyncing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}
-                      Sync
+                      {isSyncing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}Sync
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => handleDisconnect(integration.id)} disabled={isDeleting} className="text-destructive hover:text-destructive">
                       <Unplug className="w-4 h-4" />
@@ -142,6 +125,6 @@ export default function StoresPage() {
           ))}
         </div>
       )}
-    </PageLayout>
+    </ChannablePageWrapper>
   )
 }

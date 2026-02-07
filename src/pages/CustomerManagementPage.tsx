@@ -1,27 +1,22 @@
 /**
  * CustomerManagementPage - Gestion Clients
- * Migré sur socle PageLayout + PageBanner
  */
 import { CustomerManagement } from '@/components/customer/CustomerManagement'
 import { RequirePlan } from '@/components/plan/RequirePlan'
-import { PageLayout, PageBanner } from '@/components/shared'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Users } from 'lucide-react'
 
 export default function CustomerManagementPage() {
   return (
     <RequirePlan minPlan="pro">
-      <PageLayout
+      <ChannablePageWrapper
         title="Gestion Clients"
-        subtitle="Segmentez, analysez et fidélisez votre base clients"
+        description="Segmentez, analysez et fidélisez votre base clients"
+        heroImage="orders"
+        badge={{ label: 'CRM', icon: Users }}
       >
-        <PageBanner
-          icon={Users}
-          title="CRM & Fidélisation"
-          description="Segmentez, analysez et fidélisez votre base clients"
-          theme="rose"
-        />
         <CustomerManagement />
-      </PageLayout>
+      </ChannablePageWrapper>
     </RequirePlan>
   )
 }

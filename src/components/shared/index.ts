@@ -1,10 +1,8 @@
 /**
  * Composants socle partagés — Design System Channable
- * Toutes les pages DOIVENT utiliser ces composants uniquement.
+ * Toutes les pages DOIVENT utiliser ChannablePageWrapper comme layout principal.
  */
-export { PageLayout } from './PageLayout';
 export { StatCard } from './StatCard';
 export { DataTable, type DataTableColumn } from './DataTable';
 export { BaseModal } from './BaseModal';
 export { ActionBar, type ActionItem } from './ActionBar';
-export { PageBanner, type BannerTheme } from './PageBanner';

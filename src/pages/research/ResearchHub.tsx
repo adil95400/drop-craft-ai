@@ -1,6 +1,5 @@
 /**
  * ResearchHub - Hub Veille & Recherche
- * Migré sur socle PageLayout + PageBanner + StatCard
  */
 import { useState, useMemo, memo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -9,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { PageLayout, StatCard, PageBanner } from '@/components/shared'
+import { StatCard } from '@/components/shared'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import {
   Search, Trophy, Target, TrendingUp, Eye, Megaphone,
   Sparkles, ArrowRight, Package, ChevronRight, RefreshCw
@@ -17,16 +17,9 @@ import {
 import { cn } from '@/lib/utils'
 import { useWinnersRealData } from '@/hooks/useWinnersRealData'
 
+// Définition du type pour les modules de recherche
 interface ResearchModule {
-  id: string
-  title: string
-  description: string
-  icon: React.ComponentType<{ className?: string }>
-  route: string
-  bgColor: string
-  iconColor: string
-  badge?: string
-  stats: { label: string; value: string }
+  id: string; title: string; description: string; icon: React.ComponentType<{ className?: string }>; route: string; bgColor: string; iconColor: string; badge?: string; stats: { label: string; value: string }
 }
 
 const RESEARCH_MODULES: ResearchModule[] = [
@@ -41,14 +34,7 @@ const RESEARCH_MODULES: ResearchModule[] = [
 const ModuleCard = memo(({ module, onClick }: { module: ResearchModule; onClick: () => void }) => {
   const Icon = module.icon
   return (
-    <Card
-      className="cursor-pointer group hover:shadow-md hover:border-primary/30 transition-all"
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onClick()}
-      aria-label={`Accéder à ${module.title}`}
-    >
+    <Card className="cursor-pointer group hover:shadow-md hover:border-primary/30 transition-all" onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && onClick()} aria-label={`Accéder à ${module.title}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", module.bgColor)}>
@@ -79,7 +65,6 @@ export default function ResearchHub() {
   const { data: winnersData, isLoading } = useWinnersRealData(undefined, 5)
 
   const handleModuleClick = useCallback((route: string) => navigate(route), [navigate])
-
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) navigate(`/research/winning?q=${encodeURIComponent(searchQuery)}`)
@@ -101,28 +86,22 @@ export default function ResearchHub() {
         <meta name="description" content="Hub de veille produits et concurrence. Trouvez les produits gagnants et analysez vos concurrents." />
       </Helmet>
 
-      <PageLayout
+      <ChannablePageWrapper
         title="Veille & Recherche"
-        subtitle="Produits gagnants, concurrence, tendances"
+        description="Produits gagnants, concurrence, tendances"
+        heroImage="research"
+        badge={{ label: 'Intelligence IA', icon: Sparkles }}
         actions={
-          <div className="flex gap-2">
+          <>
             <Button variant="outline" size="sm" onClick={() => navigate('/research/intelligence')}>
               <Target className="mr-2 h-4 w-4" />Intelligence
             </Button>
             <Button size="sm" onClick={() => navigate('/research/winning')}>
               <Trophy className="mr-2 h-4 w-4" />Produits Gagnants
             </Button>
-          </div>
+          </>
         }
       >
-        <PageBanner
-          icon={Sparkles}
-          title="Intelligence IA"
-          description="Découvrez les produits gagnants, analysez vos concurrents et identifiez les opportunités"
-          theme="purple"
-        />
-
-        {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard label="Produits Analysés" value={stats.products.toLocaleString()} icon={Package} color="info" />
           <StatCard label="Produits Gagnants" value={stats.winners} icon={Trophy} color="warning" />
@@ -130,48 +109,30 @@ export default function ResearchHub() {
           <StatCard label="Concurrents Suivis" value={stats.competitors} icon={Eye} color="primary" />
         </div>
 
-        {/* Quick Search */}
         <Card>
           <CardContent className="py-4">
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher un produit, une niche, un concurrent..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                  aria-label="Rechercher"
-                />
+                <Input placeholder="Rechercher un produit, une niche, un concurrent..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" aria-label="Rechercher" />
               </div>
-              <Button type="submit" size="sm">
-                <Sparkles className="mr-2 h-4 w-4" />Analyser
-              </Button>
+              <Button type="submit" size="sm"><Sparkles className="mr-2 h-4 w-4" />Analyser</Button>
             </form>
             <div className="flex flex-wrap gap-2 mt-3">
               <span className="text-sm text-muted-foreground">Populaires:</span>
               {['Fitness', 'Cuisine', 'Beauté', 'Tech', 'Enfants'].map(tag => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-primary/20 transition-colors"
-                  onClick={() => { setSearchQuery(tag); navigate(`/research/winning?q=${encodeURIComponent(tag)}`) }}
-                >
-                  {tag}
-                </Badge>
+                <Badge key={tag} variant="secondary" className="cursor-pointer hover:bg-primary/20 transition-colors" onClick={() => { setSearchQuery(tag); navigate(`/research/winning?q=${encodeURIComponent(tag)}`) }}>{tag}</Badge>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Modules Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {RESEARCH_MODULES.map((module) => (
             <ModuleCard key={module.id} module={module} onClick={() => handleModuleClick(module.route)} />
           ))}
         </div>
 
-        {/* Top Winners Preview */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -179,36 +140,20 @@ export default function ResearchHub() {
                 <Trophy className="h-5 w-5 text-warning" />
                 <CardTitle className="text-lg">Top Produits Gagnants</CardTitle>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/research/winning')}>
-                Voir tout <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/research/winning')}>Voir tout <ArrowRight className="ml-2 h-4 w-4" /></Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-1">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
+              <div className="flex items-center justify-center py-8"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : topProducts.length > 0 ? (
               topProducts.map((product: any, index: number) => (
-                <div
-                  key={product.id || index}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => navigate('/research/winning')}
-                >
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs",
-                    index === 0 ? "bg-warning" : index === 1 ? "bg-muted-foreground" : index === 2 ? "bg-warning/70" : "bg-muted text-muted-foreground"
-                  )}>
-                    #{index + 1}
-                  </div>
+                <div key={product.id || index} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/research/winning')}>
+                  <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs", index === 0 ? "bg-warning" : index === 1 ? "bg-muted-foreground" : index === 2 ? "bg-warning/70" : "bg-muted text-muted-foreground")}>#{index + 1}</div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{product.name}</p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <TrendingUp className="h-3 w-3 text-success" />
-                      <span>{product.trend}</span>
-                      <span>•</span>
-                      <span>{product.category}</span>
+                      <TrendingUp className="h-3 w-3 text-success" /><span>{product.trend}</span><span>•</span><span>{product.category}</span>
                     </div>
                   </div>
                   <Badge variant="secondary">{product.score}/100</Badge>
@@ -224,7 +169,7 @@ export default function ResearchHub() {
             )}
           </CardContent>
         </Card>
-      </PageLayout>
+      </ChannablePageWrapper>
     </>
   )
 }

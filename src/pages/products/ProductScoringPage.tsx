@@ -1,13 +1,16 @@
 import { ProductScoringDashboard } from '@/components/product-scoring';
-import { PageLayout } from '@/components/shared';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { Sparkles } from 'lucide-react';
 
 export default function ProductScoringPage() {
   return (
-    <PageLayout
+    <ChannablePageWrapper
       title="Scoring Produits"
-      subtitle="Analysez et améliorez le score de qualité de vos fiches produits"
+      description="Analysez et améliorez le score de qualité de vos fiches produits"
+      heroImage="products"
+      badge={{ label: 'Scoring', icon: Sparkles }}
     >
       <ProductScoringDashboard />
-    </PageLayout>
+    </ChannablePageWrapper>
   );
 }
