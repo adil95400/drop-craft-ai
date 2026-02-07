@@ -16,8 +16,6 @@ import { SecurityDashboard } from './SecurityDashboard'
 import { AdvancedAnalytics } from '@/components/analytics/AdvancedAnalytics'
 import { BusinessIntelligence } from './BusinessIntelligence'
 import { ImportJobProcessor } from '@/components/import/ImportJobProcessor'
-import { SystemHealthMonitor } from './SystemHealthMonitor'
-import { PerformanceOptimizer } from './PerformanceOptimizer'
 import { NotificationCenter } from './NotificationCenter'
 import { AutomationHub } from './AutomationHub'
 import { KPIWidgets } from './KPIWidgets'
@@ -91,7 +89,6 @@ export function EnhancedDashboardTabs() {
 
       <TabsContent value="monitoring" className="space-y-6 mt-6">
         <RealTimeMonitoring />
-        <SystemHealthMonitor />
       </TabsContent>
 
       <TabsContent value="security" className="space-y-6 mt-6">
@@ -100,7 +97,6 @@ export function EnhancedDashboardTabs() {
 
       <TabsContent value="notifications" className="space-y-6 mt-6">
         <NotificationCenter />
-        <PerformanceOptimizer />
         <ImportJobProcessor />
       </TabsContent>
     </Tabs>

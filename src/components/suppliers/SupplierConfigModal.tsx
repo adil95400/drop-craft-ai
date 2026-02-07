@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { SupplierLogo } from './SupplierLogo';
 import { SupplierDefinition, COUNTRY_FLAGS } from '@/data/supplierDefinitions';
-import type { Supplier } from '@/hooks/useRealSuppliers';
+import type { UnifiedSupplier as Supplier } from '@/hooks/unified';
 
 interface SupplierConfigModalProps {
   definition: SupplierDefinition;

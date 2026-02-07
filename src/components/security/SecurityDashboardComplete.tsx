@@ -7,7 +7,7 @@ import { Shield, Lock, Eye, Clock, RefreshCw, AlertTriangle, CheckCircle } from 
 import { supabase } from "@/integrations/supabase/client";
 import { useSecureCustomers } from "@/hooks/useSecureCustomers";
 import { useSecureApiKeys } from "@/hooks/useSecureApiKeys";
-import { useRealSuppliers } from "@/hooks/useRealSuppliers";
+import { useSuppliersUnified } from "@/hooks/unified";
 
 interface SecurityEvent {
   id: string;
@@ -25,7 +25,8 @@ export function SecurityDashboardComplete() {
   
   const { customers, stats: customerStats } = useSecureCustomers();
   const { apiKeys, stats: apiKeyStats } = useSecureApiKeys();
-  const { suppliers, stats: supplierStats } = useRealSuppliers();
+  const { suppliers } = useSuppliersUnified();
+  const supplierStats = { total: suppliers.length, active: suppliers.filter(s => s.status === 'verified').length };
 
   const fetchSecurityData = async () => {
     setLoading(true);
@@ -96,7 +97,7 @@ export function SecurityDashboardComplete() {
   };
 
   const protectedCustomers = customers.filter(c => c.email === 'hidden@protected.com').length;
-  const protectedSuppliers = suppliers.filter(s => s.has_encrypted_credentials).length;
+  const protectedSuppliers = suppliers.filter(s => s.api_endpoint).length;
   const totalSecurityEvents = securityEvents.length;
   const criticalEvents = securityEvents.filter(e => e.severity === 'critical' || e.severity === 'error').length;
 

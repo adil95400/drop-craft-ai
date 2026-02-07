@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useNavigate } from 'react-router-dom'
-import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSuppliersUnified } from '@/hooks/unified'
 import { useSupplierConnection } from '@/hooks/useSupplierConnection'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
@@ -29,7 +29,7 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 export default function MySuppliersPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
-  const { suppliers, stats, isLoading } = useRealSuppliers({ status: 'active' })
+  const { suppliers, isLoading } = useSuppliersUnified({ status: 'active' })
   const { disconnectSupplier, isDisconnecting } = useSupplierConnection()
 
   const connectedSuppliers = suppliers.filter(s => s.status === 'active')

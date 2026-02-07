@@ -31,7 +31,7 @@ import {
   Download,
   Zap
 } from 'lucide-react'
-import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSuppliersUnified } from '@/hooks/unified'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -58,7 +58,7 @@ export default function SupplierImportPage() {
   const { supplierId } = useParams<{ supplierId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { suppliers } = useRealSuppliers()
+  const { suppliers } = useSuppliersUnified()
   
   const [importType, setImportType] = useState<'full' | 'category' | 'incremental'>('full')
   

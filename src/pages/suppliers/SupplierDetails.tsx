@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSuppliersUnified } from '@/hooks/unified'
 import { useSupplierProducts, useSupplierProductCount } from '@/hooks/useSupplierProducts'
 import { motion } from 'framer-motion'
 import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
@@ -38,7 +38,7 @@ import {
 export default function SupplierDetails() {
   const { supplierId } = useParams()
   const navigate = useNavigate()
-  const { suppliers, isLoading } = useRealSuppliers()
+  const { suppliers, isLoading } = useSuppliersUnified()
   const { data: supplierProductsData } = useSupplierProducts(supplierId, 100)
   const { data: productCount } = useSupplierProductCount(supplierId)
   
@@ -266,8 +266,8 @@ export default function SupplierDetails() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   {[
-                    { icon: Mail, label: 'Email', value: supplier.contact_email_masked || 'Non renseigné' },
-                    { icon: Phone, label: 'Téléphone', value: supplier.contact_phone_masked || 'Non renseigné' },
+                    { icon: Mail, label: 'Email', value: 'Non renseigné' },
+                    { icon: Phone, label: 'Téléphone', value: 'Non renseigné' },
                     { icon: Globe, label: 'Site web', value: supplier.website || 'Non renseigné' },
                     { icon: MapPin, label: 'Localisation', value: supplier.country },
                   ].map((info, i) => (
