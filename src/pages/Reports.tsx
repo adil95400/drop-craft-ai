@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   FileText, 
   Download, 
@@ -32,6 +34,7 @@ import {
 } from '@/utils/pdfExport';
 
 export default function Reports() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [reportType, setReportType] = useState('sales');
   const [dateRange, setDateRange] = useState('30d');
@@ -161,49 +164,82 @@ export default function Reports() {
     return { start, end };
   };
 
-  const generateMockData = (type: string) => {
+  const fetchReportData = async (type: string) => {
+    if (!user?.id) return [];
     const { start, end } = getDateRangeValues();
-    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const startISO = start.toISOString();
+    const endISO = end.toISOString();
+
     switch (type) {
-      case 'sales':
-        return Array.from({ length: Math.min(days, 30) }, (_, i) => {
-          const date = new Date(start);
-          date.setDate(date.getDate() + i);
-          return {
-            date: date.toISOString().split('T')[0],
-            orders: Math.floor(Math.random() * 50) + 10,
-            revenue: Math.floor(Math.random() * 5000) + 1000,
-          };
+      case 'sales': {
+        const { data: orders } = await supabase
+          .from('orders')
+          .select('created_at, total_amount')
+          .eq('user_id', user.id)
+          .gte('created_at', startISO)
+          .lte('created_at', endISO)
+          .order('created_at', { ascending: true });
+
+        // Group by day
+        const byDay: Record<string, { orders: number; revenue: number }> = {};
+        (orders || []).forEach(o => {
+          const day = o.created_at?.split('T')[0] || '';
+          if (!byDay[day]) byDay[day] = { orders: 0, revenue: 0 };
+          byDay[day].orders++;
+          byDay[day].revenue += o.total_amount || 0;
         });
-      case 'inventory':
-        return Array.from({ length: 20 }, (_, i) => ({
-          id: `prod-${i}`,
-          title: `Produit ${i + 1}`,
-          sku: `SKU-${1000 + i}`,
-          stock: Math.floor(Math.random() * 15),
+        return Object.entries(byDay).map(([date, v]) => ({ date, ...v }));
+      }
+      case 'inventory': {
+        const { data: products } = await supabase
+          .from('products')
+          .select('id, name, title, sku, stock_quantity, price')
+          .eq('user_id', user.id)
+          .order('stock_quantity', { ascending: true })
+          .limit(100);
+        return (products || []).map(p => ({
+          id: p.id,
+          title: p.name || p.title || 'Sans nom',
+          sku: p.sku || '—',
+          stock: p.stock_quantity ?? 0,
           low_stock_threshold: 10,
-          price: Math.floor(Math.random() * 100) + 10,
+          price: p.price ?? 0,
         }));
-      case 'customers':
-        return Array.from({ length: 50 }, (_, i) => ({
-          id: `cust-${i}`,
-          name: `Client ${i + 1}`,
-          email: `client${i + 1}@example.com`,
-          orders_count: Math.floor(Math.random() * 20) + 1,
-          total_spent: Math.floor(Math.random() * 2000) + 100,
-          created_at: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString(),
+      }
+      case 'customers': {
+        const { data: customers } = await supabase
+          .from('customers')
+          .select('id, first_name, last_name, email, total_orders, total_spent, created_at')
+          .eq('user_id', user.id)
+          .order('total_spent', { ascending: false })
+          .limit(100);
+        return (customers || []).map(c => ({
+          id: c.id,
+          name: [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Anonyme',
+          email: c.email || '—',
+          orders_count: c.total_orders ?? 0,
+          total_spent: c.total_spent ?? 0,
+          created_at: c.created_at,
         }));
-      case 'orders':
-        const statuses = ['pending', 'processing', 'shipped', 'delivered'];
-        return Array.from({ length: 30 }, (_, i) => ({
-          id: `order-${i}`,
-          order_number: `ORD-${10000 + i}`,
-          customer_name: `Client ${Math.floor(Math.random() * 50) + 1}`,
-          status: statuses[Math.floor(Math.random() * statuses.length)],
-          total: Math.floor(Math.random() * 500) + 50,
-          created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      }
+      case 'orders': {
+        const { data: orders } = await supabase
+          .from('orders')
+          .select('id, order_number, customer_name, status, total_amount, created_at')
+          .eq('user_id', user.id)
+          .gte('created_at', startISO)
+          .lte('created_at', endISO)
+          .order('created_at', { ascending: false })
+          .limit(200);
+        return (orders || []).map(o => ({
+          id: o.id,
+          order_number: o.order_number || o.id.slice(0, 8),
+          customer_name: o.customer_name || 'Inconnu',
+          status: o.status || 'pending',
+          total: o.total_amount || 0,
+          created_at: o.created_at,
         }));
+      }
       default:
         return [];
     }
@@ -214,24 +250,33 @@ export default function Reports() {
     
     try {
       const { start, end } = getDateRangeValues();
-      const mockData = generateMockData(reportType);
+      const realData = await fetchReportData(reportType);
       
+      if (realData.length === 0) {
+        toast({
+          title: "Aucune donnée",
+          description: "Aucune donnée trouvée pour cette période. Ajoutez des données d'abord.",
+        });
+        setIsGenerating(false);
+        return;
+      }
+
       let reportData;
       switch (reportType) {
         case 'sales':
-          reportData = generateSalesReport(mockData, { start, end });
+          reportData = generateSalesReport(realData, { start, end });
           break;
         case 'inventory':
-          reportData = generateInventoryReport(mockData);
+          reportData = generateInventoryReport(realData);
           break;
         case 'customers':
-          reportData = generateCustomersReport(mockData);
+          reportData = generateCustomersReport(realData);
           break;
         case 'orders':
-          reportData = generateOrdersReport(mockData);
+          reportData = generateOrdersReport(realData);
           break;
         default:
-          reportData = generateSalesReport(mockData, { start, end });
+          reportData = generateSalesReport(realData, { start, end });
       }
 
       if (format === 'pdf') {
