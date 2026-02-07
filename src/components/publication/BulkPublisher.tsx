@@ -4,37 +4,32 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-import { useToast } from '@/hooks/use-toast'
-import { Loader2, Upload, Package } from 'lucide-react'
-import { supabase } from '@/integrations/supabase/client'
+import { Loader2, Upload, Package, Store } from 'lucide-react'
+import { toast } from 'sonner'
+import { useQuery } from '@tanstack/react-query'
+import { useAuth } from '@/contexts/AuthContext'
+import { PublishProductsService } from '@/services/publishProducts.service'
 
 interface BulkPublisherProps {
   productIds: string[]
-  availableMarketplaces: Array<{
-    id: string
-    platform: string
-    name: string
-    isConnected: boolean
-  }>
   onComplete?: () => void
 }
 
-export function BulkPublisher({ 
-  productIds, 
-  availableMarketplaces,
-  onComplete 
-}: BulkPublisherProps) {
-  const [selectedMarketplaces, setSelectedMarketplaces] = useState<string[]>([])
+export function BulkPublisher({ productIds, onComplete }: BulkPublisherProps) {
+  const { user } = useAuth()
+  const [selectedStores, setSelectedStores] = useState<string[]>([])
   const [publishing, setPublishing] = useState(false)
   const [progress, setProgress] = useState(0)
-  const { toast } = useToast()
+
+  const { data: stores = [], isLoading } = useQuery({
+    queryKey: ['user-stores', user?.id],
+    queryFn: () => PublishProductsService.getUserStores(user!.id),
+    enabled: !!user,
+  })
 
   const handleBulkPublish = async () => {
-    if (selectedMarketplaces.length === 0) {
-      toast({
-        title: 'Aucune marketplace sélectionnée',
-        variant: 'destructive'
-      })
+    if (selectedStores.length === 0) {
+      toast.error('Aucune boutique sélectionnée')
       return
     }
 
@@ -46,29 +41,19 @@ export function BulkPublisher({
       const total = productIds.length
 
       for (const productId of productIds) {
-        await supabase.functions.invoke('marketplace-publish', {
-          body: {
-            product_id: productId,
-            marketplace_ids: selectedMarketplaces,
-          }
-        })
-
+        try {
+          await PublishProductsService.publishToStores(productId, selectedStores)
+        } catch (e) {
+          console.error(`Failed to publish ${productId}:`, e)
+        }
         completed++
         setProgress((completed / total) * 100)
       }
 
-      toast({
-        title: 'Publication terminée',
-        description: `${total} produits publiés sur ${selectedMarketplaces.length} marketplace(s)`,
-      })
-
+      toast.success(`${total} produits publiés sur ${selectedStores.length} boutique(s)`)
       onComplete?.()
     } catch (error: any) {
-      toast({
-        title: 'Erreur de publication',
-        description: error.message,
-        variant: 'destructive'
-      })
+      toast.error(error.message || 'Erreur de publication')
     } finally {
       setPublishing(false)
       setProgress(0)
@@ -87,29 +72,33 @@ export function BulkPublisher({
       </p>
 
       <div className="space-y-3 mb-6">
-        <Label className="text-sm font-medium">Marketplaces cibles</Label>
-        {availableMarketplaces.map((marketplace) => (
-          <div key={marketplace.id} className="flex items-center gap-3">
-            <Checkbox
-              id={`bulk-${marketplace.id}`}
-              checked={selectedMarketplaces.includes(marketplace.id)}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  setSelectedMarketplaces([...selectedMarketplaces, marketplace.id])
-                } else {
-                  setSelectedMarketplaces(selectedMarketplaces.filter(id => id !== marketplace.id))
-                }
-              }}
-              disabled={!marketplace.isConnected || publishing}
-            />
-            <Label 
-              htmlFor={`bulk-${marketplace.id}`}
-              className={!marketplace.isConnected ? 'opacity-50' : ''}
-            >
-              {marketplace.name}
-            </Label>
-          </div>
-        ))}
+        <Label className="text-sm font-medium">Boutiques cibles</Label>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Chargement...</p>
+        ) : stores.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Aucune boutique connectée.</p>
+        ) : (
+          stores.map((store) => (
+            <div key={store.id} className="flex items-center gap-3">
+              <Checkbox
+                id={`bulk-${store.id}`}
+                checked={selectedStores.includes(store.id)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedStores([...selectedStores, store.id])
+                  } else {
+                    setSelectedStores(selectedStores.filter(id => id !== store.id))
+                  }
+                }}
+                disabled={publishing}
+              />
+              <Label htmlFor={`bulk-${store.id}`} className="flex items-center gap-2">
+                <Store className="h-4 w-4" />
+                {store.name} ({store.platform})
+              </Label>
+            </div>
+          ))
+        )}
       </div>
 
       {publishing && (
@@ -121,9 +110,9 @@ export function BulkPublisher({
         </div>
       )}
 
-      <Button 
+      <Button
         onClick={handleBulkPublish}
-        disabled={publishing || selectedMarketplaces.length === 0}
+        disabled={publishing || selectedStores.length === 0}
         className="w-full"
       >
         {publishing ? (
