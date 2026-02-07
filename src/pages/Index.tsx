@@ -76,7 +76,10 @@ const HeroSection = memo(() => {
               <Button 
                 size="lg" 
                 className="px-8 py-6 text-lg font-semibold group shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300" 
-                onClick={() => navigate('/auth')}
+                onClick={() => {
+                  try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                  navigate('/auth?trial=true');
+                }}
               >
                 <Crown className="w-5 h-5 mr-2" />
                 Essai gratuit 14 jours

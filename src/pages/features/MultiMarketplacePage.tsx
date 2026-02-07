@@ -121,7 +121,10 @@ export default function MultiMarketplacePage() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="px-8 py-6 text-lg" onClick={() => navigate('/auth')}>
+                <Button size="lg" className="px-8 py-6 text-lg" onClick={() => {
+                  try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                  navigate('/auth?trial=true');
+                }}>
                   <ShoppingBag className="w-5 h-5 mr-2" />
                   Connecter mes boutiques
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -266,7 +269,10 @@ export default function MultiMarketplacePage() {
                 Connectez toutes vos plateformes en quelques minutes et commencez à gagner du temps dès aujourd'hui.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button size="lg" className="px-8 py-6 text-lg" onClick={() => navigate('/auth')}>
+                <Button size="lg" className="px-8 py-6 text-lg" onClick={() => {
+                  try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                  navigate('/auth?trial=true');
+                }}>
                   <ShoppingBag className="w-5 h-5 mr-2" />
                   Commencer maintenant
                 </Button>

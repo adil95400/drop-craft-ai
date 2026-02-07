@@ -160,7 +160,10 @@ const PricingPage = () => {
                         className="w-full" 
                         variant={plan.highlighted ? "default" : "outline"}
                         size="lg"
-                        onClick={() => navigate('/auth')}
+                        onClick={() => {
+                          try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                          navigate('/auth?trial=true');
+                        }}
                       >
                         {plan.cta}
                         <ArrowRight className="w-4 h-4 ml-2" />
@@ -302,7 +305,10 @@ const PricingPage = () => {
               <p className="text-lg text-muted-foreground">
                 Rejoignez des milliers d'entrepreneurs qui ont déjà fait le choix de ShopOpti
               </p>
-              <Button size="lg" onClick={() => navigate('/auth')}>
+              <Button size="lg" onClick={() => {
+                try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                navigate('/auth?trial=true');
+              }}>
                 <Crown className="w-5 h-5 mr-2" />
                 Commencer gratuitement
                 <ArrowRight className="w-4 h-4 ml-2" />

@@ -41,15 +41,15 @@
 
 | # | Fichier | Bouton | Statut |
 |---|---------|--------|--------|
-| 13 | `src/pages/Index.tsx` | "Essai gratuit", "Commencer" | ❌ À corriger — pas de `?trial=true` |
+| 13 | `src/pages/Index.tsx` | "Essai gratuit", "Commencer" | ✅ **CORRIGÉ** — `pending_trial` + `navigate('/auth?trial=true')` |
 | 14 | `src/layouts/PublicLayout.tsx` | "Connexion" / "Essai Gratuit" | ✅ Navigation légitime |
-| 15 | `src/pages/public/PricingPage.tsx` | CTA plans pricing | ❌ À corriger — pas lié à Stripe |
-| 16 | `src/pages/Features.tsx` | "Essayer gratuitement" | ❌ À corriger |
-| 17 | `src/pages/academy/AcademyHomePage.tsx` | "Commencer gratuitement" | ❌ À corriger |
-| 18 | `src/pages/features/MultiMarketplacePage.tsx` | "Connecter mes boutiques" | ❌ À corriger |
-| 19 | `src/pages/features/AIOptimizationPage.tsx` | "Essayer gratuitement" | ❌ À corriger |
+| 15 | `src/pages/public/PricingPage.tsx` | CTA plans pricing | ✅ **CORRIGÉ** — `pending_trial` + `navigate('/auth?trial=true')` |
+| 16 | `src/pages/Features.tsx` | "Essayer gratuitement" | ✅ **CORRIGÉ** — `pending_trial` + `navigate('/auth?trial=true')` |
+| 17 | `src/pages/academy/AcademyHomePage.tsx` | "Commencer gratuitement" | ✅ **CORRIGÉ** — `pending_trial` + `navigate('/auth?trial=true')` |
+| 18 | `src/pages/features/MultiMarketplacePage.tsx` | "Connecter mes boutiques" | ✅ **CORRIGÉ** — `pending_trial` + `navigate('/auth?trial=true')` |
+| 19 | `src/pages/features/AIOptimizationPage.tsx` | "Essayer gratuitement" | ✅ **CORRIGÉ** — `pending_trial` + `navigate('/auth?trial=true')` |
 | 20 | `src/components/landing/StickyCtaBar.tsx` | CTA sticky "Essai gratuit" | ✅ **CORRIGÉ** — `localStorage('pending_trial')` + `navigate('/auth?trial=true')` |
-| 21 | `src/components/landing/InteractiveDemo.tsx` | "Essayer gratuitement" | ❌ À corriger |
+| 21 | `src/components/landing/InteractiveDemo.tsx` | "Essayer gratuitement" | ✅ **CORRIGÉ** — `pending_trial` + `navigate('/auth?trial=true')` |
 
 ---
 
@@ -90,8 +90,8 @@
 | 🟠 Haute | Actions simulées / "bientôt" | 6 | 0 | 6 |
 | 🟠 Haute | Données mockées | 9 | 3 | 6 |
 | 🟡 Moyenne | Navigate factice | 4 | 4 | 0 |
-| 🟡 Moyenne | CTA sans workflow essai | 9 | 2 | 7 |
-| **Total** | | **30** | **10** | **20** |
+| 🟡 Moyenne | CTA sans workflow essai | 9 | 9 | 0 |
+| **Total** | | **30** | **17** | **13** |
 
 ---
 
