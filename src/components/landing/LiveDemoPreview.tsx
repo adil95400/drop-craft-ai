@@ -188,7 +188,10 @@ export const LiveDemoPreview = memo(() => {
               <Button 
                 size="lg" 
                 className="flex-1 group"
-                onClick={() => navigate('/auth')}
+                onClick={() => {
+                  try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                  navigate('/auth?trial=true');
+                }}
               >
                 Essai gratuit 14 jours
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

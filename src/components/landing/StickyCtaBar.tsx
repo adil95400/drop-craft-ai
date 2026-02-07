@@ -90,7 +90,10 @@ export const StickyCtaBar = memo(() => {
                 <Button
                   size="sm"
                   className="text-xs sm:text-sm group"
-                  onClick={() => navigate('/auth')}
+                  onClick={() => {
+                    try { localStorage.setItem('pending_trial', 'true'); } catch {}
+                    navigate('/auth?trial=true');
+                  }}
                 >
                   <Crown className="h-3.5 w-3.5 mr-1.5" />
                   Essai gratuit
