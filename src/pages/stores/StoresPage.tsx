@@ -1,18 +1,16 @@
 /**
- * StoresPage - Page legacy boutiques
- * Mutations routées via FastAPI (useApiStores)
- * Lectures via useIntegrationsUnified (Supabase)
+ * StoresPage - Boutiques connectées
+ * Migré sur socle PageLayout + StatCard + PageBanner
  */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { PageLayout, StatCard, PageBanner } from '@/components/shared'
 import { useIntegrationsUnified } from '@/hooks/unified'
 import { useApiStores } from '@/hooks/api/useApiStores'
 import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus'
 import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner'
-import { Store, Plus, RefreshCw, Unplug, ExternalLink, Loader2 } from 'lucide-react'
+import { Store, Plus, RefreshCw, Unplug, ExternalLink, Loader2, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
 
 export default function StoresPage() {
   const { integrations, isLoading: loading, refetch } = useIntegrationsUnified()
@@ -36,12 +34,8 @@ export default function StoresPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-muted rounded-md animate-pulse" />
-          <div className="w-48 h-8 bg-muted rounded-md animate-pulse" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <PageLayout title="Boutiques connectées" subtitle="Chargement…">
+        <div className="grid gap-4 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader><div className="w-32 h-6 bg-muted rounded" /></CardHeader>
@@ -49,65 +43,42 @@ export default function StoresPage() {
             </Card>
           ))}
         </div>
-      </div>
+      </PageLayout>
     )
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <AdvancedFeatureGuide {...ADVANCED_GUIDES.stores} />
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 mt-6">
-        <div className="flex items-center gap-3">
-          <Store className="w-8 h-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Boutiques connectées</h1>
-            <p className="text-muted-foreground">Gérez vos boutiques e-commerce connectées</p>
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => refetch()} className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Actualiser
+    <PageLayout
+      title="Boutiques connectées"
+      subtitle={`${stats.stores} boutique(s) — ${stats.connected} active(s)`}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="w-4 h-4 mr-2" />Actualiser
           </Button>
-          <Button asChild className="gap-2">
+          <Button size="sm" asChild>
             <Link to="/stores/connect">
-              <Plus className="w-4 h-4" />
-              Connecter une boutique
+              <Plus className="w-4 h-4 mr-2" />Connecter
             </Link>
           </Button>
         </div>
+      }
+    >
+      <PageBanner
+        icon={Store}
+        title="Gérez vos boutiques e-commerce"
+        description="Connectez, synchronisez et pilotez toutes vos plateformes depuis un seul endroit"
+        theme="blue"
+      />
+
+      {/* KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <StatCard label="Boutiques totales" value={stats.stores} icon={Store} color="primary" />
+        <StatCard label="Connectées" value={stats.connected} icon={CheckCircle} color="success" />
+        <StatCard label="Erreurs" value={stats.errors} icon={AlertTriangle} color="destructive" />
       </div>
 
-      {/* Active Jobs */}
-      <div className="mb-6">
-        <ActiveJobsBanner />
-      </div>
-
-      {/* Stats globales */}
-      {integrations.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-3 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Boutiques totales</CardTitle>
-            </CardHeader>
-            <CardContent><div className="text-2xl font-bold">{stats.stores}</div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Connectées</CardTitle>
-            </CardHeader>
-            <CardContent><div className="text-2xl font-bold text-emerald-600">{stats.connected}</div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Erreurs</CardTitle>
-            </CardHeader>
-            <CardContent><div className="text-2xl font-bold text-destructive">{stats.errors}</div></CardContent>
-          </Card>
-        </div>
-      )}
+      <ActiveJobsBanner />
 
       {/* Liste des boutiques */}
       {integrations.length === 0 ? (
@@ -115,16 +86,16 @@ export default function StoresPage() {
           <CardHeader>
             <Store className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <CardTitle>Aucune boutique connectée</CardTitle>
-            <CardDescription>Connectez votre première boutique pour commencer à synchroniser vos données</CardDescription>
+            <CardDescription>Connectez votre première boutique pour commencer</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild className="gap-2">
-              <Link to="/stores/connect"><Plus className="w-4 h-4" />Connecter une boutique</Link>
+            <Button asChild>
+              <Link to="/stores/connect"><Plus className="w-4 h-4 mr-2" />Connecter une boutique</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {integrations.map((integration) => (
             <Card key={integration.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
@@ -157,23 +128,11 @@ export default function StoresPage() {
                     </div>
                   )}
                   <div className="flex gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSync(integration.id)}
-                      disabled={isSyncing}
-                      className="flex-1"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => handleSync(integration.id)} disabled={isSyncing} className="flex-1">
                       {isSyncing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}
                       Sync
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDisconnect(integration.id)}
-                      disabled={isDeleting}
-                      className="text-destructive hover:text-destructive"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => handleDisconnect(integration.id)} disabled={isDeleting} className="text-destructive hover:text-destructive">
                       <Unplug className="w-4 h-4" />
                     </Button>
                   </div>
@@ -183,6 +142,6 @@ export default function StoresPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageLayout>
   )
 }
