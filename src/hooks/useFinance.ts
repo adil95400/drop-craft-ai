@@ -1,5 +1,5 @@
 /**
- * useFinance — Clean re-export (replaces useRealFinance)
+ * useFinance — Clean re-export
  */
-export { useRealFinance as useFinance } from './useRealFinance'
-export type { FinancialData } from './useRealFinance'
+export { useFinanceData as useFinance } from './useFinanceData'
+export type { FinancialData } from './useFinanceData'

@@ -37,7 +37,7 @@ import {
   CheckCircle2, AlertTriangle, Eye, Download
 } from 'lucide-react';
 import { useDashboardConfig, getTimeRangeLabel } from '@/hooks/useDashboardConfig';
-import { useRealDashboardData } from '@/hooks/useRealDashboardData';
+import { useDashboardData } from '@/hooks/useDashboardData';
 import { DashboardWidgetWrapper } from './DashboardWidgetWrapper';
 import { TimeRangeSelector } from './TimeRangeSelector';
 import { WidgetLibrary } from './WidgetLibrary';
@@ -192,7 +192,7 @@ export function ChannableDashboard() {
   const { isTablet, gridColumns, showCompactView, cardPadding } = useTabletLayout();
 
   // Utiliser les données RÉELLES
-  const { stats: dashboardStats, rawStats, activityEvents, syncEvents, healthMetrics, isLoading: dataLoading } = useRealDashboardData();
+  const { stats: dashboardStats, rawStats, activityEvents, syncEvents, healthMetrics, isLoading: dataLoading } = useDashboardData();
   
   // Vérifier si le dashboard doit afficher l'état vide
   const { isEmpty: showEmptyState, isLoading: emptyStateLoading } = useDashboardEmptyState();

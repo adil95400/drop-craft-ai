@@ -1,7 +1,7 @@
 /**
- * useDashboard — Unified dashboard hook (delegates to real Supabase implementation)
+ * useDashboard — Unified dashboard hook
  */
-export { useRealDashboardData as useDashboard } from './useRealDashboardData'
+export { useDashboardData as useDashboard } from './useDashboardData'
 
 // Re-export useChartData using DashboardService for backward compatibility
 import { useQuery } from '@tanstack/react-query';

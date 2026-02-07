@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from "sonner";
-import { logError } from "@/utils/consoleCleanup";
+import { productionLogger } from "@/utils/productionLogger";
 
 interface XMLFeedConfig {
   url: string
@@ -80,7 +80,7 @@ export const XMLFeedImporter = () => {
       })
 
     } catch (error) {
-      logError(error as Error, 'Error testing XML feed')
+      productionLogger.error('Error testing XML feed', error as Error)
       toast({
         title: "Erreur de test",
         description: "Impossible de lire le flux XML",
@@ -136,7 +136,7 @@ export const XMLFeedImporter = () => {
       }
 
     } catch (error) {
-      logError(error as Error, 'Error importing XML feed')
+      productionLogger.error('Error importing XML feed', error as Error)
       toast({
         title: "Erreur d'import",
         description: "Impossible d'importer le flux XML",

@@ -12,7 +12,7 @@ import { FileText, Upload, Settings, CheckCircle, AlertCircle } from 'lucide-rea
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from "sonner";
-import { logError } from "@/utils/consoleCleanup";
+import { productionLogger } from "@/utils/productionLogger";
 
 interface XMLMapping {
   productPath: string;
@@ -154,7 +154,7 @@ export const XMLImportInterface: React.FC<XMLImportInterfaceProps> = ({
         samples
       };
     } catch (error) {
-      logError(new Error(`XML parsing error: ${error}`), 'XMLImportInterface');
+      productionLogger.error(`XML parsing error: ${error}`);
       return null;
     }
   };

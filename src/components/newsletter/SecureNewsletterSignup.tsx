@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SecureInput } from '@/components/common/SecureInput';
 import { useToast } from '@/hooks/use-toast';
-import { logError } from "@/utils/consoleCleanup";
+import { productionLogger } from "@/utils/productionLogger";
 
 interface SecureNewsletterSignupProps {
   className?: string;
@@ -58,7 +58,7 @@ export const SecureNewsletterSignup = ({ className }: SecureNewsletterSignupProp
         setEmail('');
       }
     } catch (error) {
-      logError(error as Error, 'Error subscribing to newsletter');
+      productionLogger.error('Error subscribing to newsletter', error as Error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue. Veuillez réessayer plus tard.",

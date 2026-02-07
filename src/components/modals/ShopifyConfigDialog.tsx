@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useIntegrationsUnified, IntegrationTemplate } from "@/hooks/unified";
-import { logError } from "@/utils/consoleCleanup";
+import { productionLogger } from "@/utils/productionLogger";
 import { ShoppingBag, Key, Globe, Settings, CheckCircle } from "lucide-react";
 
 interface ShopifyConfigDialogProps {
@@ -83,7 +83,7 @@ export const ShopifyConfigDialog = ({ open, onOpenChange }: ShopifyConfigDialogP
         });
       }, 2000);
     } catch (error) {
-      logError(error as Error, 'Shopify connection error');
+      productionLogger.error('Shopify connection error', error as Error);
     }
   };
 
