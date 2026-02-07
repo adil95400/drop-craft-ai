@@ -136,14 +136,15 @@ export const ProductCard = ({
           )}
         </div>
 
-        {/* Rating (si disponible) */}
-        {/* Pour les produits réels, on peut simuler une note basée sur les performances */}
-        <div className="flex items-center gap-2">
-          <div className="flex">{renderStars(4)}</div>
-          <span className="text-xs text-muted-foreground">
-            4.0 (Simulé)
-          </span>
-        </div>
+        {/* Rating */}
+        {product.profit_margin != null && product.profit_margin > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="flex">{renderStars(Math.min(5, Math.round(product.profit_margin / 20)))}</div>
+            <span className="text-xs text-muted-foreground">
+              Score marge
+            </span>
+          </div>
+        )}
 
         {/* Price & Margin */}
         <div className="space-y-1">

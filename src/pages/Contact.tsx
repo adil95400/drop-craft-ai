@@ -5,19 +5,32 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Sparkles, Mail, Phone, Send } from 'lucide-react'
+import { ArrowRight, Sparkles, Mail, Phone, Send, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { PublicLayout } from '@/layouts/PublicLayout'
+import { supabase } from '@/integrations/supabase/client'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '', email: '', message: ''
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    toast.success("✅ Message envoyé ! Notre équipe vous recontactera sous 2h.")
-    setFormData({ name: '', email: '', message: '' })
+    setIsSubmitting(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('contact-form', {
+        body: { name: formData.name, email: formData.email, message: formData.message }
+      })
+      if (error) throw error
+      toast.success("✅ Message envoyé ! Notre équipe vous recontactera sous 2h.")
+      setFormData({ name: '', email: '', message: '' })
+    } catch (err) {
+      toast.error("❌ Erreur lors de l'envoi. Veuillez réessayer.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const jsonLd = {
@@ -86,9 +99,9 @@ const Contact = () => {
                     required
                     className="min-h-32"
                   />
-                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
-                    <Send className="w-4 h-4 mr-2" />
-                    Envoyer
+                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                    {isSubmitting ? 'Envoi en cours...' : 'Envoyer'}
                   </Button>
                 </form>
               </CardContent>
