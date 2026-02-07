@@ -24,8 +24,8 @@ export const ProductResearchConfig = () => {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('extension-product-research', {
-        body: { action: 'find_winners', criteria }
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
+        body: { handler: 'product-research', action: 'find_winners', criteria }
       });
 
       if (error) throw error;

@@ -22,8 +22,8 @@ export const AutoOrderConfig = () => {
   const handleSaveConfig = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('extension-auto-order', {
-        body: { action: 'configure', config }
+      const { error } = await supabase.functions.invoke('extension-hub', {
+        body: { handler: 'auto-order', action: 'configure', config }
       });
 
       if (error) throw error;
@@ -47,8 +47,9 @@ export const AutoOrderConfig = () => {
     setLoading(true);
     try {
       // Test avec une commande factice
-      const { data, error } = await supabase.functions.invoke('extension-auto-order', {
+      const { data, error } = await supabase.functions.invoke('extension-hub', {
         body: { 
+          handler: 'auto-order',
           action: 'process_order',
           orderId: 'test-order',
           config
