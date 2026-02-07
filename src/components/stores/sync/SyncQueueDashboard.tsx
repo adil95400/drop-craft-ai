@@ -225,7 +225,7 @@ export function SyncQueueDashboard() {
                         )}
 
                         {(job.status === 'failed' || job.status === 'cancelled') &&
-                          job.retry_count < job.max_retries && (
+                          (job.attempts || 0) < (job.max_attempts || 3) && (
                             <Button
                               size="sm"
                               variant="outline"

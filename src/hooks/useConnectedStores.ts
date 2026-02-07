@@ -120,48 +120,8 @@ export function useConnectedStores() {
       console.error('Error fetching stores:', err)
       setError('Erreur lors du chargement des boutiques')
       
-      // Fallback data for demo
-      setStores([
-        {
-          id: '1',
-          platform_name: 'Shopify Store',
-          platform_type: 'shopify',
-          shop_domain: 'monshop.myshopify.com',
-          connection_status: 'connected',
-          last_sync_at: new Date().toISOString(),
-          is_active: true,
-          store_config: {},
-          products_count: 234,
-          orders_count: 89,
-          sales_volume: 15420
-        },
-        {
-          id: '2',
-          platform_name: 'WooCommerce',
-          platform_type: 'woocommerce',
-          shop_domain: 'boutique-exemple.com',
-          connection_status: 'syncing',
-          last_sync_at: new Date(Date.now() - 300000).toISOString(),
-          is_active: true,
-          store_config: {},
-          products_count: 156,
-          orders_count: 45,
-          sales_volume: 8950
-        },
-        {
-          id: '3',
-          platform_name: 'PrestaShop',
-          platform_type: 'prestashop',
-          shop_domain: 'shop.exemple.fr',
-          connection_status: 'connected',
-          last_sync_at: new Date(Date.now() - 600000).toISOString(),
-          is_active: true,
-          store_config: {},
-          products_count: 89,
-          orders_count: 23,
-          sales_volume: 4560
-        }
-      ])
+      // No fallback mock data — show empty state
+      setStores([])
     } finally {
       setLoading(false)
     }
