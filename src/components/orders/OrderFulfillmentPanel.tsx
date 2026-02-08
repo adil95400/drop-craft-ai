@@ -179,10 +179,7 @@ export function OrderFulfillmentPanel({
     return colors[type] || 'bg-gray-500';
   };
 
-  // Mock events if none provided
-  const displayEvents = events.length > 0 ? events : [
-    { id: '1', type: 'created' as const, timestamp: new Date().toISOString(), description: 'Commande créée' },
-  ];
+  const displayEvents = events;
 
   return (
     <div className="space-y-6">
@@ -413,49 +410,44 @@ export function OrderFulfillmentPanel({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="relative">
-            {displayEvents.map((event, index) => (
-              <div key={event.id} className="flex gap-4 pb-6 last:pb-0">
-                {/* Timeline line */}
-                {index < displayEvents.length - 1 && (
-                  <div className="absolute left-[15px] top-8 w-0.5 h-[calc(100%-32px)] bg-border" />
-                )}
-                
-                {/* Status icon */}
-                <div className={cn(
-                  "relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-white",
-                  getStatusColor(event.type)
-                )}>
-                  {getStatusIcon(event.type)}
-                </div>
-
-                {/* Event content */}
-                <div className="flex-1 pt-1">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium">{event.description}</p>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(event.timestamp).toLocaleString('fr-FR', {
-                        day: '2-digit',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
+          {displayEvents.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>Aucun événement d'expédition</p>
+            </div>
+          ) : (
+            <div className="relative">
+              {displayEvents.map((event, index) => (
+                <div key={event.id} className="flex gap-4 pb-6 last:pb-0">
+                  {index < displayEvents.length - 1 && (
+                    <div className="absolute left-[15px] top-8 w-0.5 h-[calc(100%-32px)] bg-border" />
+                  )}
+                  <div className={cn(
+                    "relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-white",
+                    getStatusColor(event.type)
+                  )}>
+                    {getStatusIcon(event.type)}
                   </div>
-                  {event.tracking_number && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Suivi: {event.tracking_number}
-                    </p>
-                  )}
-                  {event.user && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Par: {event.user}
-                    </p>
-                  )}
+                  <div className="flex-1 pt-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium">{event.description}</p>
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(event.timestamp).toLocaleString('fr-FR', {
+                          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    {event.tracking_number && (
+                      <p className="text-sm text-muted-foreground mt-1">Suivi: {event.tracking_number}</p>
+                    )}
+                    {event.user && (
+                      <p className="text-xs text-muted-foreground mt-1">Par: {event.user}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
