@@ -113,11 +113,17 @@ Les fonctions suivantes ont été consolidées dans `extension-hub` :
 - `extension-price-monitor` → `extension-hub` handler: price-monitor
 - `extension-product-research` → `extension-hub` handler: product-research
 
+## Nettoyage du 2026-02-08 — 3 fonctions AI non-référencées supprimées
+
+- `ai-integration-recommendations` — jamais invoqué depuis src/
+- `ai-recommendations` — jamais invoqué depuis src/ (seul un queryKey string existait)
+- `ai-variant-mapper` — jamais invoqué depuis src/
+
 ## Résumé
 
 | Métrique | Avant | Après |
 |----------|-------|-------|
-| Edge Functions totales | ~285 | ~280 |
-| Fonctions supprimées (total) | 63 | 69 |
+| Edge Functions totales | ~285 | ~277 |
+| Fonctions supprimées (total) | 63 | 72 |
 | Doublons éliminés | 40+ | 40+ |
-| Hubs créés | 0 | 1 (extension-hub) |
+| Hubs créés | 0 | 1 (extension-hub, 9 handlers) |
