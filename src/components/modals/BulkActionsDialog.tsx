@@ -144,30 +144,15 @@ export function BulkActionsDialog({
   };
 
   const simulateDefaultAction = async (action: string, items: any[]) => {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        switch (action) {
-          case "delete":
-            toast.success(`${items.length} éléments supprimés`);
-            break;
-          case "archive":
-            toast.success(`${items.length} éléments archivés`);
-            break;
-          case "export":
-            toast.success(`Export de ${items.length} éléments lancé`);
-            break;
-          case "status":
-            toast.success(`Statut modifié pour ${items.length} éléments`);
-            break;
-          case "batch_edit":
-            toast.success(`Modification groupée appliquée à ${items.length} éléments`);
-            break;
-          default:
-            toast.success(`Action exécutée sur ${items.length} éléments`);
-        }
-        resolve(true);
-      }, 2000);
-    });
+    // Fallback: show toast for unhandled actions (no simulated delay)
+    const messages: Record<string, string> = {
+      delete: `${items.length} éléments supprimés`,
+      archive: `${items.length} éléments archivés`,
+      export: `Export de ${items.length} éléments lancé`,
+      status: `Statut modifié pour ${items.length} éléments`,
+      batch_edit: `Modification groupée appliquée à ${items.length} éléments`,
+    };
+    toast.warning(messages[action] || `Action "${action}" non implémentée — connectez le backend FastAPI`);
   };
 
   return (
