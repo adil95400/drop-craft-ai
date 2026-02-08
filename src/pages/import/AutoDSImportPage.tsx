@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -89,9 +89,18 @@ export default function AutoDSImportPage() {
     handleContinueImport,
   } = useImportSuccessAnimation()
 
+  // Read URL from query params (from QuickImportHero redirect)
+  const searchParams = new URLSearchParams(window.location.search)
+  const initialUrl = searchParams.get('url') || ''
+
   // URL Import State
-  const [urlInput, setUrlInput] = useState('')
-  const [queuedUrls, setQueuedUrls] = useState<QueuedUrl[]>([])
+  const [urlInput, setUrlInput] = useState(initialUrl)
+  const [queuedUrls, setQueuedUrls] = useState<QueuedUrl[]>(() => {
+    if (initialUrl) {
+      return [{ id: crypto.randomUUID(), url: initialUrl, status: 'pending' as const }]
+    }
+    return []
+  })
   const [isProcessingUrls, setIsProcessingUrls] = useState(false)
 
   // Image Import State
@@ -112,6 +121,17 @@ export default function AutoDSImportPage() {
   const [previewModalOpen, setPreviewModalOpen] = useState(false)
   const [selectedProductForPreview, setSelectedProductForPreview] = useState<QueuedUrl | null>(null)
   const [isImportingFromModal, setIsImportingFromModal] = useState(false)
+
+  // Auto-process if URL came from query params
+  const [autoProcessed, setAutoProcessed] = useState(false)
+  React.useEffect(() => {
+    if (initialUrl && queuedUrls.length > 0 && !autoProcessed) {
+      setAutoProcessed(true)
+      setUrlInput('')
+      // Auto-start analysis
+      processUrlQueue()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // === URL Import Functions ===
   const addUrlsToQueue = () => {
