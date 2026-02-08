@@ -76,7 +76,7 @@ export function OrderCentralization() {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*, customers(*)')
+        .select('*, customers(*), order_items(*)')
         .order('created_at', { ascending: false })
         .limit(50)
 
@@ -85,15 +85,24 @@ export function OrderCentralization() {
       const mappedOrders: CentralizedOrder[] = (data || []).map((order: any) => ({
         id: order.id,
         order_number: order.order_number || `ORD-${order.id.slice(-6)}`,
-        platform: 'shopify', // Default platform
-        customer_name: order.customers?.name || 'Client Inconnu',
-        customer_email: order.customers?.email || 'Non spécifié',
+        platform: order.source_platform || 'shopify',
+        customer_name: order.customers?.name || order.customer_name || 'Client Inconnu',
+        customer_email: order.customers?.email || order.customer_email || 'Non spécifié',
         total_amount: order.total_amount || 0,
         currency: order.currency || 'EUR',
         status: order.status || 'pending',
-        fulfillment_status: 'unfulfilled',
+        fulfillment_status: order.fulfillment_status || 'unfulfilled',
         payment_status: order.payment_status || 'pending',
-        items: Array.isArray(order.order_items) ? order.order_items : [],
+        items: (order.order_items || []).map((item: any) => ({
+          id: item.id,
+          product_name: item.product_name || 'Produit',
+          sku: item.supplier_sku || item.sku || '',
+          quantity: item.quantity || 1,
+          unit_price: item.unit_price || 0,
+          total_price: (item.unit_price || 0) * (item.quantity || 1),
+          supplier_id: item.supplier_id || null,
+          fulfillment_status: item.fulfillment_status || 'pending',
+        })),
         shipping_address: order.shipping_address || {},
         created_at: order.created_at,
         updated_at: order.updated_at,
@@ -154,16 +163,32 @@ export function OrderCentralization() {
 
   const handleOrderAction = async (orderId: string, action: string) => {
     try {
-      toast({
-        title: "Action exécutée",
-        description: `Action ${action} appliquée à la commande ${orderId}`
-      })
-      // Reload orders to reflect changes
+      const statusMap: Record<string, string> = {
+        confirm: 'confirmed',
+        process: 'processing',
+        ship: 'shipped',
+        deliver: 'delivered',
+        cancel: 'cancelled',
+      }
+      const newStatus = statusMap[action]
+      if (!newStatus) {
+        toast({ title: "Action inconnue", variant: "destructive" })
+        return
+      }
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', orderId)
+
+      if (error) throw error
+
+      toast({ title: "Statut mis à jour", description: `Commande passée en "${newStatus}"` })
       await loadOrders()
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erreur",
-        description: "Impossible d'exécuter l'action",
+        description: error?.message || "Impossible d'exécuter l'action",
         variant: "destructive"
       })
     }
@@ -402,12 +427,28 @@ function OrderDetailsView({ order, onUpdate }: { order: CentralizedOrder; onUpda
   }
   
   
-  const handleSupplierAction = async (action: string, orderId?: string) => {
-    toast({
-      title: "Action exécutée",
-      description: `${action} - Commande ${order.order_number}`
-    })
-    onUpdate()
+  const handleSupplierAction = async (action: string, supplierOrderId?: string) => {
+    try {
+      if (action === 'confirm_order' && supplierOrderId) {
+        const { error } = await supabase
+          .from('orders')
+          .update({ status: 'processing', updated_at: new Date().toISOString() })
+          .eq('id', order.id)
+        if (error) throw error
+        toast({ title: "Commande confirmée" })
+      } else if (action === 'auto_create_orders') {
+        const { error } = await supabase.functions.invoke('order-fulfillment-auto', {
+          body: { order_id: order.id }
+        })
+        if (error) throw error
+        toast({ title: "Fulfillment automatique déclenché" })
+      } else {
+        toast({ title: "Action en cours", description: `${action}` })
+      }
+      onUpdate()
+    } catch (error: any) {
+      toast({ title: "Erreur", description: error?.message || "Action échouée", variant: "destructive" })
+    }
   }
 
   return (
