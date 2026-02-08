@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react'
+import { ImportHistoryTab } from './ImportHistoryTab'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -88,59 +89,25 @@ export const AdvancedImportInterface = () => {
     isImportingSupplier 
   } = useImport()
 
-  // Mock data for demonstration
-  const mockImportedProducts: ImportedProduct[] = [
-    {
-      id: '1',
-      name: 'iPhone 15 Pro Max 256GB',
-      description: 'Latest Apple iPhone with advanced camera system',
-      price: 1199.99,
-      cost_price: 899.00,
-      currency: 'EUR',
-      sku: 'IPH-15-PM-256',
-      category: 'Électronique',
-      image_urls: ['https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=400'],
-      tags: ['smartphone', 'apple', 'premium'],
-      status: 'draft',
-      supplier_name: 'TechSupplier',
-      created_at: new Date().toISOString(),
-      ai_optimized: false
-    },
-    {
-      id: '2',
-      name: 'Samsung Galaxy S24 Ultra',
-      description: 'Flagship Samsung smartphone with S Pen',
-      price: 1099.99,
-      cost_price: 799.00,
-      currency: 'EUR',
-      sku: 'SAM-S24-U',
-      category: 'Électronique',
-      image_urls: ['https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'],
-      tags: ['smartphone', 'samsung', 'android'],
-      status: 'published',
-      supplier_name: 'TechSupplier',
-      created_at: new Date().toISOString(),
-      ai_optimized: true
-    },
-    {
-      id: '3',
-      name: 'AirPods Pro 2ème génération',
-      description: 'Écouteurs sans fil avec réduction de bruit active',
-      price: 279.99,
-      cost_price: 199.00,
-      currency: 'EUR',
-      sku: 'APP-GEN2',
-      category: 'Audio',
-      image_urls: ['https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400'],
-      tags: ['audio', 'apple', 'wireless'],
-      status: 'draft',
-      supplier_name: 'AudioMax',
-      created_at: new Date().toISOString(),
-      ai_optimized: false
-    }
-  ]
+  // Use real products from the import hook (no mocks)
+  const allProducts: ImportedProduct[] = (products || []).map((p: any) => ({
+    id: p.id,
+    name: p.name || 'Sans nom',
+    description: p.description,
+    price: p.price || 0,
+    cost_price: p.cost_price,
+    currency: p.currency || 'EUR',
+    sku: p.sku,
+    category: p.category,
+    image_urls: p.image_urls || p.images,
+    tags: p.tags,
+    status: p.status || 'draft',
+    supplier_name: p.supplier_name,
+    created_at: p.created_at || new Date().toISOString(),
+    ai_optimized: p.ai_optimized || false
+  }))
 
-  const filteredProducts = mockImportedProducts.filter(product => {
+  const filteredProducts = allProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || product.status === statusFilter
     return matchesSearch && matchesStatus
@@ -816,7 +783,7 @@ export const AdvancedImportInterface = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold">{mockImportedProducts.length}</div>
+                <div className="text-2xl font-bold">{allProducts.length}</div>
                 <p className="text-sm text-muted-foreground">Total Importé</p>
               </div>
               <Database className="h-8 w-8 text-blue-500" />
@@ -829,7 +796,7 @@ export const AdvancedImportInterface = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-green-600">
-                  {mockImportedProducts.filter(p => p.status === 'published').length}
+                  {allProducts.filter(p => p.status === 'published').length}
                 </div>
                 <p className="text-sm text-muted-foreground">Publié</p>
               </div>
@@ -843,7 +810,7 @@ export const AdvancedImportInterface = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-yellow-600">
-                  {mockImportedProducts.filter(p => p.status === 'draft').length}
+                  {allProducts.filter(p => p.status === 'draft').length}
                 </div>
                 <p className="text-sm text-muted-foreground">En Attente</p>
               </div>
@@ -857,7 +824,7 @@ export const AdvancedImportInterface = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-purple-600">
-                  {mockImportedProducts.filter(p => p.ai_optimized).length}
+                  {allProducts.filter(p => p.ai_optimized).length}
                 </div>
                 <p className="text-sm text-muted-foreground">IA Optimisé</p>
               </div>
@@ -1058,40 +1025,7 @@ export const AdvancedImportInterface = () => {
         </TabsContent>
 
         <TabsContent value="history">
-          <Card>
-            <CardHeader>
-              <CardTitle>Historique des Imports</CardTitle>
-              <CardDescription>
-                Consultez l'historique complet de vos imports avec statistiques détaillées
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { date: '2024-01-15', source: 'AliExpress', products: 150, status: 'completed' },
-                  { date: '2024-01-14', source: 'CSV Import', products: 75, status: 'completed' },
-                  { date: '2024-01-13', source: 'Shopify Sync', products: 200, status: 'failed' },
-                  { date: '2024-01-12', source: 'URL Import', products: 25, status: 'completed' },
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm text-muted-foreground">{item.date}</div>
-                      <div className="font-medium">{item.source}</div>
-                      <div className="text-sm">{item.products} produits</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={item.status === 'completed' ? 'default' : 'destructive'}>
-                        {item.status === 'completed' ? 'Terminé' : 'Échec'}
-                      </Badge>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <ImportHistoryTab />
         </TabsContent>
       </Tabs>
       {/* Platform Export Dialog */}
@@ -1099,7 +1033,7 @@ export const AdvancedImportInterface = () => {
         open={showShopifyExport}
         onOpenChange={setShowShopifyExport}
         productIds={selectedProducts}
-        productNames={[...products, ...mockImportedProducts]
+        productNames={allProducts
           .filter(p => selectedProducts.includes(p.id))
           .map(p => p.name)}
         onSuccess={() => {
