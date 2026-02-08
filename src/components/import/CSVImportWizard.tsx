@@ -17,6 +17,8 @@ import Papa from 'papaparse'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
+import { MappingPresets } from './MappingPresets'
+import { DuplicateDetector } from './DuplicateDetector'
 
 interface CSVData {
   headers: string[]
@@ -378,6 +380,8 @@ export function CSVImportWizard() {
   const [autoMappedCount, setAutoMappedCount] = useState(0)
   const [importOutcome, setImportOutcome] = useState<ImportOutcome | null>(null)
   const [searchFilter, setSearchFilter] = useState('')
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([])
+  const [detectedDuplicates, setDetectedDuplicates] = useState<any[]>([])
 
   // Filter errors by category
   const errorsByCategory = useMemo(() => {
@@ -735,6 +739,11 @@ export function CSVImportWizard() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <MappingPresets
+                      currentMapping={mapping}
+                      onApplyPreset={(preset) => setMapping(preset)}
+                      headers={csvData.headers}
+                    />
                     <Input
                       placeholder="Rechercher une colonne..."
                       value={searchFilter}
@@ -936,6 +945,15 @@ export function CSVImportWizard() {
               </Button>
             </div>
 
+            {/* Duplicate detection */}
+            <DuplicateDetector
+              products={validProducts}
+              onFilterDuplicates={(filtered, dups) => {
+                setFilteredProducts(filtered)
+                setDetectedDuplicates(dups)
+              }}
+            />
+
             {validationErrors.length > 0 && (
               <Card className="border-destructive/20">
                 <CardHeader className="pb-3">
@@ -1031,15 +1049,30 @@ export function CSVImportWizard() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-between">
-              <Button onClick={() => setStep('mapping')} variant="outline">
-                Retour
-              </Button>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <Button onClick={() => setStep('mapping')} variant="outline">
+                  Retour
+                </Button>
+                {detectedDuplicates.length > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {detectedDuplicates.length} doublons exclus
+                  </span>
+                )}
+              </div>
               <Button 
-                onClick={startImport} 
-                disabled={validProducts.length === 0 || validationErrors.some(e => e.severity === 'error')}
+                onClick={() => {
+                  // Use filtered products (without duplicates) if available
+                  const productsToImport = filteredProducts.length > 0 ? filteredProducts : validProducts
+                  setValidProducts(productsToImport)
+                  startImport()
+                }} 
+                disabled={
+                  (filteredProducts.length > 0 ? filteredProducts.length : validProducts.length) === 0 || 
+                  validationErrors.some(e => e.severity === 'error')
+                }
               >
-                Importer {validProducts.length} produits
+                Importer {filteredProducts.length > 0 ? filteredProducts.length : validProducts.length} produits
               </Button>
             </div>
           </TabsContent>
