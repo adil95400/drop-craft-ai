@@ -26,6 +26,7 @@ import {
   RotateCcw, Pause, Bolt
 } from 'lucide-react';
 import { useRealImportMethods } from '@/hooks/useRealImportMethods';
+import { ImportLiveTracker } from '@/components/import/ImportLiveTracker';
 import { useChannelConnections } from '@/hooks/useChannelConnections';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -311,6 +312,9 @@ function ImportHubContent() {
           </div>
         }
       >
+        {/* LIVE TRACKER - Progression temps réel */}
+        <ImportLiveTracker />
+
         {/* HERO: Quick Import en position premium */}
         <QuickImportHero className="mb-6" />
 

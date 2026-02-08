@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { ImportLiveTracker } from '@/components/import/ImportLiveTracker'
 
 export default function ImportHistoryPage() {
   const prefersReducedMotion = useReducedMotion()
@@ -270,6 +271,9 @@ export default function ImportHistoryPage() {
         showHexagons={!prefersReducedMotion}
         variant="compact"
       />
+
+      {/* Live Import Tracker */}
+      <ImportLiveTracker />
 
       {/* Filters Card */}
       <motion.div
