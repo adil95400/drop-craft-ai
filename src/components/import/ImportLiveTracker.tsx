@@ -38,6 +38,8 @@ interface ImportJob {
   output_data: any
 }
 
+import { Sparkles } from 'lucide-react'
+
 const STATUS_MAP: Record<string, { label: string; icon: typeof CheckCircle2; color: string; pulse?: boolean }> = {
   pending: { label: 'En attente', icon: Clock, color: 'text-amber-500' },
   running: { label: 'Import en cours', icon: Loader2, color: 'text-primary', pulse: true },
@@ -63,7 +65,7 @@ export function ImportLiveTracker() {
         .from('background_jobs')
         .select('*')
         .eq('user_id', user.id)
-        .in('job_type', ['import', 'bulk_import', 'csv_import', 'url_import'])
+        .in('job_type', ['import', 'bulk_import', 'csv_import', 'url_import', 'ai_enrich'])
         .order('created_at', { ascending: false })
         .limit(10)
 
@@ -215,8 +217,8 @@ function ImportJobRow({ job, onDismiss, onViewProducts }: {
           <span className="text-sm font-medium truncate">
             {job.progress_message || statusConfig.label}
           </span>
-          <Badge variant="outline" className="text-[10px] h-4 px-1.5 shrink-0">
-            {job.job_type?.replace(/_/g, ' ')}
+          <Badge variant="outline" className={cn("text-[10px] h-4 px-1.5 shrink-0", job.job_type === 'ai_enrich' && 'border-violet-300 text-violet-600')}>
+            {job.job_type === 'ai_enrich' ? '✨ IA' : job.job_type?.replace(/_/g, ' ')}
           </Badge>
         </div>
 
