@@ -6,7 +6,7 @@
  * - Onboarding guidé
  * - Terminologie FR unifiée
  */
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,8 @@ import { QuickImportHero } from '@/components/import/quick/QuickImportHero';
 import { ImportModeProvider, ImportModeToggle, useImportMode, ExpertOnly } from '@/components/import/mode/ImportModeContext';
 import { ImportOnboardingModal, useImportOnboarding } from '@/components/import/onboarding/ImportOnboardingModal';
 import { ImportCostAnalysis } from '@/components/import/cost/ImportCostAnalysis';
+
+const AliExpressConnectorLazy = lazy(() => import('@/components/import/AliExpressConnector').then(m => ({ default: m.AliExpressConnector })));
 
 // Logos des plateformes
 const platformLogos: Record<string, string> = {
@@ -527,6 +529,10 @@ function ImportHubContent() {
                 Canaux
                 {connectedChannels.length > 0 && <Badge variant="secondary" className="ml-1.5 h-5 px-1.5">{connectedChannels.length}</Badge>}
               </TabsTrigger>
+              <TabsTrigger value="aliexpress" className="data-[state=active]:bg-background">
+                <Rocket className="w-4 h-4 mr-2" />
+                AliExpress API
+              </TabsTrigger>
               <TabsTrigger value="historique" className="data-[state=active]:bg-background">
                 <History className="w-4 h-4 mr-2" />
                 Historique
@@ -965,6 +971,13 @@ function ImportHubContent() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* Onglet AliExpress API */}
+          <TabsContent value="aliexpress" className="space-y-6 mt-0">
+            <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>}>
+              <AliExpressConnectorLazy />
+            </Suspense>
           </TabsContent>
 
           {/* Onglet Historique */}
