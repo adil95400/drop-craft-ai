@@ -200,7 +200,7 @@ export function QuickImportHero({ className, onImportStart }: QuickImportHeroPro
                     <Badge
                       variant="secondary"
                       className="flex items-center gap-1.5 cursor-pointer hover:bg-secondary/80 transition-colors"
-                      onClick={() => navigate(`/import/${platform.name.toLowerCase().replace(' ', '-')}`)}
+                      onClick={() => navigate(`/import/${platform.name.toLowerCase().replace(/\s+/g, '-')}`)}
                     >
                       <img
                         src={platform.logo}
