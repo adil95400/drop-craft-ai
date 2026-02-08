@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useRealImportMethods } from '@/hooks/useRealImportMethods';
 import { ImportLiveTracker } from '@/components/import/ImportLiveTracker';
+import { ImportScheduler } from '@/components/import/ImportScheduler';
 import { useChannelConnections } from '@/hooks/useChannelConnections';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -314,6 +315,9 @@ function ImportHubContent() {
       >
         {/* LIVE TRACKER - Progression temps réel */}
         <ImportLiveTracker />
+
+        {/* PLANIFICATEUR - Imports récurrents */}
+        <ImportScheduler />
 
         {/* HERO: Quick Import en position premium */}
         <QuickImportHero className="mb-6" />
