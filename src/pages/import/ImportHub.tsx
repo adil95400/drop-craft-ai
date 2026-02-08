@@ -241,7 +241,12 @@ function ImportHubContent() {
     try {
       const importToRetry = importMethods.find(imp => imp.id === id);
       if (!importToRetry) throw new Error('Import non trouvé');
-      await executeImport({ source_type: importToRetry.source_type, mapping_config: importToRetry.mapping_config });
+      const sourceUrl = importToRetry.configuration?.url || importToRetry.configuration?.feed_url || importToRetry.configuration?.source_url;
+      if (!sourceUrl) {
+        toast({ title: "Impossible de relancer", description: "Aucune URL source trouvée pour cet import. Relancez manuellement.", variant: "destructive" });
+        return;
+      }
+      await executeImport({ source_type: importToRetry.source_type, source_url: sourceUrl });
       toast({ title: "Import relancé", description: "L'import est en cours de traitement" });
     } catch (error) {
       toast({ title: "Erreur", description: "Impossible de relancer l'import", variant: "destructive" });
@@ -663,7 +668,7 @@ function ImportHubContent() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setActiveTab('historique'); setSearchQuery(imp.source_type || ''); }}>
                                   <Eye className="w-4 h-4 mr-2" />
                                   Voir détails
                                 </DropdownMenuItem>
