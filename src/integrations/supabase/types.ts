@@ -6684,6 +6684,66 @@ export type Database = {
           },
         ]
       }
+      import_job_items: {
+        Row: {
+          created_at: string
+          errors: Json | null
+          id: string
+          job_id: string
+          mapped_data: Json | null
+          product_id: string | null
+          raw_data: Json | null
+          row_number: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          warnings: Json | null
+        }
+        Insert: {
+          created_at?: string
+          errors?: Json | null
+          id?: string
+          job_id: string
+          mapped_data?: Json | null
+          product_id?: string | null
+          raw_data?: Json | null
+          row_number?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          warnings?: Json | null
+        }
+        Update: {
+          created_at?: string
+          errors?: Json | null
+          id?: string
+          job_id?: string
+          mapped_data?: Json | null
+          product_id?: string | null
+          raw_data?: Json | null
+          row_number?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          warnings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_job_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "background_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_job_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_jobs: {
         Row: {
           completed_at: string | null
@@ -6806,6 +6866,69 @@ export type Database = {
           source_url?: string
           started_at?: string
           status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      import_uploads: {
+        Row: {
+          columns: string[] | null
+          columns_signature: string | null
+          created_at: string
+          delimiter: string | null
+          encoding: string | null
+          expires_at: string | null
+          file_path: string | null
+          file_size_bytes: number | null
+          filename: string
+          has_header: boolean | null
+          id: string
+          matching_presets: Json | null
+          mime_type: string | null
+          sample_rows: Json | null
+          status: string
+          suggested_mapping: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          columns?: string[] | null
+          columns_signature?: string | null
+          created_at?: string
+          delimiter?: string | null
+          encoding?: string | null
+          expires_at?: string | null
+          file_path?: string | null
+          file_size_bytes?: number | null
+          filename: string
+          has_header?: boolean | null
+          id?: string
+          matching_presets?: Json | null
+          mime_type?: string | null
+          sample_rows?: Json | null
+          status?: string
+          suggested_mapping?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          columns?: string[] | null
+          columns_signature?: string | null
+          created_at?: string
+          delimiter?: string | null
+          encoding?: string | null
+          expires_at?: string | null
+          file_path?: string | null
+          file_size_bytes?: number | null
+          filename?: string
+          has_header?: boolean | null
+          id?: string
+          matching_presets?: Json | null
+          mime_type?: string | null
+          sample_rows?: Json | null
+          status?: string
+          suggested_mapping?: Json | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
