@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { getProductList } from '@/services/api/productHelpers'
 
 export interface PredictiveInsight {
   id: string
@@ -44,11 +45,11 @@ export const useRealPredictiveAnalytics = () => {
       if (!user) throw new Error('User not authenticated')
 
       const [
-        { data: products },
+        products,
         { data: orders },
         { data: customers }
       ] = await Promise.all([
-        supabase.from('products').select('*').eq('user_id', user.id),
+        getProductList(500),
         supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         supabase.from('customers').select('*').eq('user_id', user.id)
       ])

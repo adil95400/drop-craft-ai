@@ -15,6 +15,7 @@ import {
   Clock
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { getProductCount } from '@/services/api/productHelpers';
 import { AdminService } from '@/services/adminServices';
 
 interface RealTimeMetrics {
@@ -65,7 +66,7 @@ export const RealTimeStats: React.FC = () => {
         supabase.from('activity_logs').select('*', { count: 'exact', head: true })
           .eq('severity', 'error')
           .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString()),
-        supabase.from('products').select('*', { count: 'exact', head: true }),
+        getProductCount().then(c => ({ count: c })),
         supabase.from('orders').select('*', { count: 'exact', head: true }),
         supabase.from('integrations').select('*', { count: 'exact', head: true })
           .eq('is_active', true),

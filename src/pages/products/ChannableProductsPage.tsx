@@ -31,6 +31,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { productsApi } from '@/services/api/client'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { ChannableCategory } from '@/components/channable/types'
 
@@ -259,16 +260,7 @@ export default function ChannableProductsPage() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const [productsResult, importedResult] = await Promise.all([
-        supabase.from('products').delete().eq('id', id).eq('user_id', user.id),
-        supabase.from('imported_products').delete().eq('id', id).eq('user_id', user.id)
-      ])
-
-      const hasError = productsResult.error && importedResult.error
-      if (hasError) throw productsResult.error || importedResult.error
+      await productsApi.delete(id)
       
       toast({ title: 'Produit supprimé', description: 'Le produit a été supprimé avec succès' })
       

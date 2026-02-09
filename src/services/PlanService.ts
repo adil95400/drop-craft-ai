@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { getProductCount } from '@/services/api/productHelpers';
 
 export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
 
@@ -149,8 +150,8 @@ export class PlanService {
 
   async refreshUsage(userId: string): Promise<void> {
     try {
-      const [products, stores, orders, aiTasks, apiCalls] = await Promise.all([
-        supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+      const [productCount, stores, orders, aiTasks, apiCalls] = await Promise.all([
+        getProductCount(),
         supabase.from('integrations').select('*', { count: 'exact', head: true }).eq('user_id', userId),
         supabase.from('orders').select('*', { count: 'exact', head: true }).eq('user_id', userId),
         (supabase.from('ai_optimization_jobs' as any) as any).select('*', { count: 'exact', head: true }).eq('user_id', userId),
@@ -158,7 +159,7 @@ export class PlanService {
       ]);
 
       this.usage = {
-        products: products.count || 0,
+        products: productCount,
         stores: stores.count || 0,
         orders: orders.count || 0,
         aiTasks: aiTasks.count || 0,

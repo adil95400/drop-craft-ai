@@ -5,6 +5,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client'
+import { getProductCount } from '@/services/api/productHelpers'
 import { realMarketingService } from './RealMarketingService'
 import { realCRMService } from './RealCRMService'
 import { orderAutomationService } from './OrderAutomationService'
@@ -232,16 +233,16 @@ export class PlatformOrchestrationService {
   private async getPlatformStats(): Promise<PlatformHealth['stats']> {
     try {
       // Récupérer les statistiques depuis Supabase
-      const [usersResult, productsResult, ordersResult] = await Promise.all([
+      const [usersResult, productCount, ordersResult] = await Promise.all([
         supabase.from('profiles').select('count'),
-        supabase.from('products').select('count'),
+        getProductCount(),
         supabase.from('orders').select('count')
       ])
 
       return {
         totalUsers: usersResult.data?.length || 0,
-        activeUsers: Math.floor((usersResult.data?.length || 0) * 0.3), // Simulation
-        totalProducts: productsResult.data?.length || 0,
+        activeUsers: Math.floor((usersResult.data?.length || 0) * 0.3),
+        totalProducts: productCount,
         totalOrders: ordersResult.data?.length || 0,
         systemLoad: Math.floor(Math.random() * 30) + 20 // Simulation de charge système
       }
