@@ -16,7 +16,7 @@ import { useApiProducts } from '@/hooks/api/useApiProducts'
 import { useApiSync } from '@/hooks/api/useApiSync'
 import { useApiAI } from '@/hooks/api/useApiAI'
 import { useApiJobs } from '@/hooks/api/useApiJobs'
-import { supabase } from '@/integrations/supabase/client'
+import { productsApi } from '@/services/api/client'
 
 // Job tracking UI
 import { ActiveJobsBanner } from '@/components/jobs/ActiveJobsBanner'
@@ -166,11 +166,7 @@ export default function CatalogProductsPage() {
     if (selectedProducts.length === 0) return
     setIsBulkDeleting(true)
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .in('id', selectedProducts)
-      if (error) throw error
+      await productsApi.bulkUpdate(selectedProducts, { status: 'deleted' } as any)
       toast({ 
         title: 'Produits supprimés', 
         description: `${selectedProducts.length} produit(s) supprimé(s)` 
