@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Bell, CheckCircle, AlertTriangle, Info, X, Clock } from 'lucide-react'
-import { useRealTimeUpdates } from '@/hooks/useRealTimeUpdates'
 
 interface Notification {
   id: string
@@ -13,54 +12,10 @@ interface Notification {
   message: string
   timestamp: string
   read: boolean
-  actionUrl?: string
 }
 
 export function NotificationCenter() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'success',
-      title: 'Import CSV terminé',
-      message: '45 produits ont été importés avec succès',
-      timestamp: new Date(Date.now() - 300000).toISOString(),
-      read: false
-    },
-    {
-      id: '2',
-      type: 'info',
-      title: 'Synchronisation en cours',
-      message: 'Sync bidirectionnelle avec BigBuy en cours...',
-      timestamp: new Date(Date.now() - 600000).toISOString(),
-      read: false
-    },
-    {
-      id: '3',
-      type: 'warning',
-      title: 'Stock faible détecté',
-      message: '12 produits ont un stock inférieur à 5 unités',
-      timestamp: new Date(Date.now() - 900000).toISOString(),
-      read: true
-    }
-  ])
-
-  // Real-time updates for notifications
-  useRealTimeUpdates({
-    table: 'activity_logs',
-    onUpdate: (payload) => {
-      if (payload.new) {
-        const newNotification: Notification = {
-          id: payload.new.id,
-          type: payload.new.severity === 'error' ? 'error' : 'info',
-          title: 'Nouvelle activité',
-          message: payload.new.description,
-          timestamp: payload.new.created_at,
-          read: false
-        }
-        setNotifications(prev => [newNotification, ...prev.slice(0, 19)])
-      }
-    }
-  })
+  const [notifications, setNotifications] = useState<Notification[]>([])
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -83,15 +38,11 @@ export function NotificationCenter() {
   }
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    )
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
   }
 
   const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id))
+    setNotifications(prev => prev.filter(n => n.id !== id))
   }
 
   const unreadCount = notifications.filter(n => !n.read).length
@@ -105,9 +56,7 @@ export function NotificationCenter() {
             Notifications
           </CardTitle>
           {unreadCount > 0 && (
-            <Badge variant="destructive" className="text-xs">
-              {unreadCount}
-            </Badge>
+            <Badge variant="destructive" className="text-xs">{unreadCount}</Badge>
           )}
         </div>
       </CardHeader>
@@ -116,51 +65,27 @@ export function NotificationCenter() {
           <div className="space-y-3">
             {notifications.map((notification) => {
               const IconComponent = getIcon(notification.type)
-              
               return (
-                <div 
-                  key={notification.id} 
-                  className={`p-3 border rounded-lg transition-colors ${
-                    !notification.read ? 'bg-muted/50' : ''
-                  }`}
-                >
+                <div key={notification.id} className={`p-3 border rounded-lg transition-colors ${!notification.read ? 'bg-muted/50' : ''}`}>
                   <div className="flex items-start gap-3">
                     <div className={`p-1.5 rounded-full bg-background ${getTypeColor(notification.type)}`}>
                       <IconComponent className="w-3 h-3" />
                     </div>
-                    
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
-                        <h4 className="text-sm font-medium">
-                          {notification.title}
-                        </h4>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0"
-                          onClick={() => removeNotification(notification.id)}
-                        >
+                        <h4 className="text-sm font-medium">{notification.title}</h4>
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => removeNotification(notification.id)}>
                           <X className="w-3 h-3" />
                         </Button>
                       </div>
-                      
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {notification.message}
-                      </p>
-                      
+                      <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
                           {new Date(notification.timestamp).toLocaleString()}
                         </div>
-                        
                         {!notification.read && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 text-xs px-2"
-                            onClick={() => markAsRead(notification.id)}
-                          >
+                          <Button size="sm" variant="ghost" className="h-6 text-xs px-2" onClick={() => markAsRead(notification.id)}>
                             Marquer lu
                           </Button>
                         )}
@@ -170,7 +95,6 @@ export function NotificationCenter() {
                 </div>
               )
             })}
-            
             {notifications.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
