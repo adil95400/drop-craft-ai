@@ -7648,40 +7648,67 @@ export type Database = {
       }
       mapping_presets: {
         Row: {
+          columns: string[] | null
+          columns_signature: string | null
           created_at: string
+          delimiter: string
+          encoding: string
+          has_header: boolean
           icon: string
           id: string
           is_default: boolean
           last_used_at: string | null
           mapping: Json
           name: string
+          platform: string
+          scope: string
+          store_id: string | null
           updated_at: string
           usage_count: number
           user_id: string
+          version: number
         }
         Insert: {
+          columns?: string[] | null
+          columns_signature?: string | null
           created_at?: string
+          delimiter?: string
+          encoding?: string
+          has_header?: boolean
           icon?: string
           id?: string
           is_default?: boolean
           last_used_at?: string | null
           mapping?: Json
           name: string
+          platform?: string
+          scope?: string
+          store_id?: string | null
           updated_at?: string
           usage_count?: number
           user_id: string
+          version?: number
         }
         Update: {
+          columns?: string[] | null
+          columns_signature?: string | null
           created_at?: string
+          delimiter?: string
+          encoding?: string
+          has_header?: boolean
           icon?: string
           id?: string
           is_default?: boolean
           last_used_at?: string | null
           mapping?: Json
           name?: string
+          platform?: string
+          scope?: string
+          store_id?: string | null
           updated_at?: string
           usage_count?: number
           user_id?: string
+          version?: number
         }
         Relationships: []
       }
