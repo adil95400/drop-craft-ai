@@ -47,6 +47,7 @@ import { ImportCostAnalysis } from '@/components/import/cost/ImportCostAnalysis'
 
 const AliExpressConnectorLazy = lazy(() => import('@/components/import/AliExpressConnector').then(m => ({ default: m.AliExpressConnector })));
 const CJConnectorLazy = lazy(() => import('@/components/import/CJConnector').then(m => ({ default: m.CJConnector })));
+const AmazonConnectorLazy = lazy(() => import('@/components/import/AmazonConnector').then(m => ({ default: m.AmazonConnector })));
 
 // Logos des plateformes
 const platformLogos: Record<string, string> = {
@@ -538,6 +539,10 @@ function ImportHubContent() {
                 <Package className="w-4 h-4 mr-2" />
                 CJ Dropshipping
               </TabsTrigger>
+              <TabsTrigger value="amazon" className="data-[state=active]:bg-background">
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Amazon API
+              </TabsTrigger>
               <TabsTrigger value="historique" className="data-[state=active]:bg-background">
                 <History className="w-4 h-4 mr-2" />
                 Historique
@@ -989,6 +994,13 @@ function ImportHubContent() {
           <TabsContent value="cj" className="space-y-6 mt-0">
             <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>}>
               <CJConnectorLazy />
+            </Suspense>
+          </TabsContent>
+
+          {/* Onglet Amazon */}
+          <TabsContent value="amazon" className="space-y-6 mt-0">
+            <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>}>
+              <AmazonConnectorLazy />
             </Suspense>
           </TabsContent>
 
