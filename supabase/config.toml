@@ -720,3 +720,6 @@ verify_jwt = false
 
 [functions.extension-gateway]
 verify_jwt = false
+
+[functions.supplier-sync-cron]
+verify_jwt = false
