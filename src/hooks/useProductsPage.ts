@@ -7,6 +7,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUnifiedProducts, UnifiedProduct } from '@/hooks/useUnifiedProducts'
+import { productsApi } from '@/services/api/client'
 import { useProductFilters } from '@/hooks/useProductFilters'
 import { useAuditFilters } from '@/hooks/useAuditFilters'
 import { useProductsAudit } from '@/hooks/useProductAuditEngine'
@@ -118,16 +119,7 @@ export function useProductsPage() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const [productsResult, importedResult] = await Promise.all([
-        supabase.from('products').delete().eq('id', id).eq('user_id', user.id),
-        supabase.from('imported_products').delete().eq('id', id).eq('user_id', user.id)
-      ])
-
-      const hasError = productsResult.error && importedResult.error
-      if (hasError) throw productsResult.error || importedResult.error
+      await productsApi.delete(id)
       
       toast({ title: 'Produit supprimé', description: 'Le produit a été supprimé avec succès' })
       

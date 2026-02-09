@@ -3,6 +3,7 @@
  * Toutes les opérations sont maintenant fonctionnelles
  */
 import { supabase } from '@/integrations/supabase/client';
+import { getProductCount, getProductList, getProductStats } from '@/services/api/productHelpers';
 
 export interface AdminActionResult {
   success: boolean;
@@ -138,17 +139,17 @@ export const AdminService = {
     const startTime = Date.now();
     
     // Actualiser vraiment les statistiques en recalculant les métriques
-    const [usersResult, ordersResult, productsResult] = await Promise.all([
+    const [usersResult, ordersResult, productCount] = await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact', head: true }),
       supabase.from('orders').select('id, total_amount'),
-      supabase.from('products').select('id', { count: 'exact', head: true })
+      getProductCount()
     ]);
 
     const stats = {
       total_users: usersResult.count || 0,
       total_orders: ordersResult.data?.length || 0,
       total_revenue: ordersResult.data?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0,
-      total_products: productsResult.count || 0,
+      total_products: productCount,
       updated_at: new Date().toISOString()
     };
 
@@ -181,14 +182,14 @@ export const AdminService = {
     };
 
     // Calculer taille estimée
-    const [profiles, products, orders] = await Promise.all([
+    const [profiles, productCount, orders] = await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact', head: true }),
-      supabase.from('products').select('id', { count: 'exact', head: true }),
+      getProductCount(),
       supabase.from('orders').select('id', { count: 'exact', head: true })
     ]);
 
     backupRecord.estimated_size_mb = Math.round(
-      ((profiles.count || 0) * 2 + (products.count || 0) * 5 + (orders.count || 0) * 1) / 1024
+      ((profiles.count || 0) * 2 + productCount * 5 + (orders.count || 0) * 1) / 1024
     );
 
     // Logger l'action
@@ -274,20 +275,20 @@ export const AdminService = {
     const startTime = Date.now();
     
     // Récupérer les données à exporter
-    const [users, products, orders] = await Promise.all([
+    const [users, productsList, orders] = await Promise.all([
       supabase.from('profiles').select('id, full_name, company_name, subscription_tier, created_at'),
-      supabase.from('products').select('id, title, sku, price, status, created_at'),
+      getProductList(500),
       supabase.from('orders').select('id, order_number, status, total_amount, created_at')
     ]);
 
     const exportData = {
       exported_at: new Date().toISOString(),
       users: users.data || [],
-      products: products.data || [],
+      products: productsList,
       orders: orders.data || [],
       summary: {
         total_users: users.data?.length || 0,
-        total_products: products.data?.length || 0,
+        total_products: productsList.length,
         total_orders: orders.data?.length || 0
       }
     };
@@ -332,7 +333,7 @@ export const AdminService = {
         'created_at', 
         new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
       ),
-      supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+      getProductStats().then(s => ({ count: s.active })),
       supabase.from('integrations').select('*', { count: 'exact', head: true }).eq('is_active', true)
     ]);
 
@@ -419,7 +420,7 @@ export const AdminService = {
     // Vérifier chaque table individuellement pour éviter les erreurs de type
     const [profilesCount, productsCount, ordersCount, logsCount] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
-      supabase.from('products').select('*', { count: 'exact', head: true }),
+      getProductCount().then(c => ({ count: c })),
       supabase.from('orders').select('*', { count: 'exact', head: true }),
       supabase.from('activity_logs').select('*', { count: 'exact', head: true })
     ]);
@@ -675,7 +676,7 @@ export const AdminService = {
       supabase.from('activity_logs').select('*', { count: 'exact', head: true })
         .eq('severity', 'error')
         .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString()),
-      supabase.from('products').select('*', { count: 'exact', head: true }),
+      getProductCount().then(c => ({ count: c })),
       supabase.from('orders').select('id, created_at').limit(100)
     ]);
 

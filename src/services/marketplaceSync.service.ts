@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { productsApi } from '@/services/api/client';
 import { ShopifyConnector } from './connectors/ShopifyConnector';
 import { AmazonConnector } from './connectors/AmazonConnector';
 import { EBayConnector } from './connectors/eBayConnector';
@@ -198,11 +199,8 @@ export class MarketplaceSyncService {
 
       if (connError || !connection) throw new Error('Connection not found');
 
-      const { data: products, error: prodError } = await (supabase.from('products') as any)
-        .select('*')
-        .in('id', productIds);
-
-      if (prodError) throw prodError;
+      const resp = await productsApi.list({ per_page: 500 });
+      const products = (resp.items ?? []).filter((p: any) => productIds.includes(p.id));
 
       let successCount = 0;
       let errorCount = 0;
