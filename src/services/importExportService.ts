@@ -215,12 +215,9 @@ class ImportExportService {
 
       console.log(`🗑️ Suppression en masse de ${productIds.length} produit(s):`, productIds)
 
-      // Supprimer de toutes les tables possibles en parallèle
-      const deletePromises = [
-        supabase.from('products').delete().in('id', productIds).eq('user_id', user.id),
-        supabase.from('imported_products').delete().in('id', productIds).eq('user_id', user.id),
-        (supabase.from('catalog_products') as any).delete().in('id', productIds).eq('user_id', user.id)
-      ]
+      // Delete via API
+      const { productsApi } = await import('@/services/api/client')
+      const deletePromises = productIds.map(id => productsApi.delete(id).catch(() => null))
 
       const results = await Promise.allSettled(deletePromises)
       

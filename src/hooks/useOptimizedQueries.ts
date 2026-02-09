@@ -203,24 +203,14 @@ export function useProductStats(userId?: string) {
   const calculateStats = useCallback(async () => {
     if (!userId) return null
 
-    const { supabase } = await import('@/integrations/supabase/client')
-
-    // Single optimized query for counts
-    const [
-      { count: totalCount },
-      { count: activeCount },
-      { count: lowStockCount }
-    ] = await Promise.all([
-      supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-      supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'active'),
-      supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', userId).lt('stock_quantity', 10)
-    ])
+    const { productsApi } = await import('@/services/api/client')
+    const stats = await productsApi.stats()
 
     return {
-      total: totalCount || 0,
-      active: activeCount || 0,
-      inactive: (totalCount || 0) - (activeCount || 0),
-      lowStock: lowStockCount || 0
+      total: stats.total || 0,
+      active: stats.active || 0,
+      inactive: stats.inactive || 0,
+      lowStock: stats.low_stock || 0
     }
   }, [userId])
 

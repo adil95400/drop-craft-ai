@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { getProductList } from '@/services/api/productHelpers'
 
 export interface AdminStats {
   totalUsers: number
@@ -35,14 +36,15 @@ export const useRealAdminStats = () => {
       const [
         { count: usersCount },
         { data: orders },
-        { data: products },
+        productsList,
         { data: integrations }
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('*'),
-        supabase.from('products').select('*'),
+        getProductList(500),
         supabase.from('integrations').select('*')
       ])
+      const products = productsList as any[]
 
       // Calculate active users (users with orders in last 30 days)
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)

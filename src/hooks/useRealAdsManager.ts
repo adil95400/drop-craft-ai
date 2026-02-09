@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { getProductList } from '@/services/api/productHelpers'
 
 export interface AdCampaign {
   id: string
@@ -52,13 +53,14 @@ export const useRealAdsManager = () => {
 
       const [
         { data: orders },
-        { data: products },
+        productsList,
         { data: integrations }
       ] = await Promise.all([
         supabase.from('orders').select('*').eq('user_id', user.id),
-        supabase.from('products').select('*').eq('user_id', user.id),
+        getProductList(500),
         supabase.from('integrations').select('*').eq('user_id', user.id)
       ])
+      const products = productsList as any[]
 
       // Generate ad campaigns based on product categories and integrations
       const campaigns: AdCampaign[] = []

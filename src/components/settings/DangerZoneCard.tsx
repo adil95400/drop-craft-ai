@@ -53,16 +53,17 @@ export function DangerZoneCard() {
     setIsExporting(true);
     try {
       // Fetch user data from multiple tables
-      const [profileResult, productsResult, ordersResult] = await Promise.all([
+      const { getProductList } = await import('@/services/api/productHelpers');
+      const [profileResult, productsList, ordersResult] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
-        supabase.from('products').select('*').eq('user_id', user.id),
+        getProductList(500),
         supabase.from('orders').select('*').eq('user_id', user.id)
       ]);
 
       const exportData = {
         exportDate: new Date().toISOString(),
         profile: profileResult.data,
-        products: productsResult.data || [],
+        products: productsList || [],
         orders: ordersResult.data || [],
       };
 
