@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface SEOIssue { type: string; severity: 'critical' | 'warning' | 'info'; message: string; recommendation?: string; }
 export interface PageScanResult { url: string; title: string; metaDescription: string; h1: string; score: number; issues: SEOIssue[]; optimized?: { title?: string; metaDescription?: string; h1?: string; keywords?: string[]; }; }
@@ -44,11 +45,38 @@ export function useGlobalSEO() {
   });
 
   const optimizeMutation = useMutation({
-    mutationFn: async (_language: 'fr' | 'en' | 'es') => {
-      toast.info('Optimisation SEO disponible prochainement via IA');
-      return scanResults;
+    mutationFn: async (language: 'fr' | 'en' | 'es') => {
+      if (scanResults.length === 0) throw new Error('Lancez un scan avant d\'optimiser');
+      const results: PageScanResult[] = [];
+      setOptimizeProgress({ current: 0, total: scanResults.length, message: 'Optimisation IA...' });
+
+      for (let i = 0; i < scanResults.length; i++) {
+        const page = scanResults[i];
+        setOptimizeProgress({ current: i + 1, total: scanResults.length, message: `Optimisation ${page.url}...` });
+        try {
+          const response = await supabase.functions.invoke('seo-optimizer', {
+            body: { url: page.url, language, title: page.title, metaDescription: page.metaDescription, h1: page.h1 }
+          });
+          if (response.error) {
+            results.push(page);
+          } else {
+            results.push({ ...page, score: response.data?.score || page.score, optimized: response.data?.optimized, issues: response.data?.issues || page.issues });
+          }
+        } catch {
+          results.push(page);
+        }
+      }
+      return results;
     },
-    onSuccess: () => setOptimizeProgress({ current: 0, total: 0, message: '' }),
+    onSuccess: (results) => {
+      setScanResults(results);
+      setOptimizeProgress({ current: 0, total: 0, message: '' });
+      toast.success('Optimisation terminée!', { description: `${results.length} pages optimisées par IA` });
+    },
+    onError: (error) => {
+      setOptimizeProgress({ current: 0, total: 0, message: '' });
+      toast.error('Erreur d\'optimisation', { description: error instanceof Error ? error.message : 'Erreur inconnue' });
+    },
   });
 
   const sitemapMutation = useMutation({

@@ -27,8 +27,15 @@ export const useRealMarketing = () => {
     enabled: !!user?.id,
   });
 
-  // Integration mutations - these are placeholders until real integrations are built
-  const noop = useMutation({ mutationFn: async (_: any) => { toast({ title: "Info", description: "Cette intégration sera disponible prochainement" }); } });
+  // Integration mutations — throw proper errors instead of fake toasts
+  const integrationNotConfigured = useMutation({
+    mutationFn: async (_: any) => {
+      throw new Error('Integration non configurée. Configurez vos identifiants dans Paramètres > Intégrations.');
+    },
+    onError: (error: Error) => {
+      toast({ title: "Integration requise", description: error.message, variant: "destructive" });
+    },
+  });
 
   const createEmailCampaign = useMutation({
     mutationFn: async (campaignData: any) => {
@@ -53,10 +60,10 @@ export const useRealMarketing = () => {
 
   return {
     campaigns, isLoadingCampaigns, error,
-    connectMailchimp: noop.mutate, connectKlaviyo: noop.mutate,
-    connectGoogleAds: noop.mutate, connectFacebookAds: noop.mutate,
+    connectMailchimp: integrationNotConfigured.mutate, connectKlaviyo: integrationNotConfigured.mutate,
+    connectGoogleAds: integrationNotConfigured.mutate, connectFacebookAds: integrationNotConfigured.mutate,
     createEmailCampaign: createEmailCampaign.mutate,
-    createGoogleAdsCampaign: noop.mutate, createFacebookAdsCampaign: noop.mutate,
+    createGoogleAdsCampaign: integrationNotConfigured.mutate, createFacebookAdsCampaign: integrationNotConfigured.mutate,
     syncCampaignPerformance: syncCampaignPerformance.mutate,
     isConnectingMailchimp: false, isConnectingKlaviyo: false,
     isConnectingGoogleAds: false, isConnectingFacebookAds: false,

@@ -34,8 +34,11 @@ export const useMarketing = () => {
   const { data: segments = [], isLoading: isLoadingSegments } = useQuery({
     queryKey: ['marketing-segments', user?.id],
     queryFn: async () => {
-      // No segments table exists yet - return empty
-      return [] as MarketingSegment[];
+      if (!user?.id) return [];
+      const { data, error } = await (supabase.from('marketing_segments') as any)
+        .select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as MarketingSegment[];
     },
     enabled: !!user?.id,
   });
@@ -69,9 +72,17 @@ export const useMarketing = () => {
   });
 
   const createSegment = useMutation({
-    mutationFn: async (_segment: Omit<MarketingSegment, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'contact_count'>) => {
-      toast({ title: "Info", description: "Les segments seront disponibles prochainement" });
-      return null;
+    mutationFn: async (segment: Omit<MarketingSegment, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'contact_count'>) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      const { data, error } = await (supabase.from('marketing_segments') as any)
+        .insert({ name: segment.name, description: segment.description, criteria: segment.criteria, is_dynamic: segment.is_dynamic, user_id: user.id })
+        .select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketing-segments'] });
+      toast({ title: "Segment créé" });
     },
   });
 

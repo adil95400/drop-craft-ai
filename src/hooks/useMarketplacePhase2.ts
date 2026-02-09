@@ -25,11 +25,22 @@ export function useDynamicRepricing(userId: string) {
 
   const executeRepricing = useMutation({
     mutationFn: async (ruleId: string) => {
-      toast.info('Repricing automatique disponible prochainement')
-      return null
+      // Activate the pricing rule by updating its status
+      const { data, error } = await (supabase.from('pricing_rules') as any)
+        .update({ is_active: true, last_applied_at: new Date().toISOString() })
+        .eq('id', ruleId)
+        .eq('user_id', userId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repricing-dashboard', userId] })
+      toast.success('Règle de repricing appliquée')
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur repricing: ${error.message}`)
     },
   })
 
@@ -133,8 +144,22 @@ export function usePredictiveAnalytics(userId: string) {
 
   const generateForecast = useMutation({
     mutationFn: async ({ productId, horizonDays }: { productId: string; horizonDays: number }) => {
-      toast.info('Prévisions IA disponibles prochainement')
-      return null
+      const response = await supabase.functions.invoke('seo-ai-generate', {
+        body: {
+          action: 'forecast',
+          productId,
+          horizonDays,
+          prompt: `Génère une prévision de ventes pour les ${horizonDays} prochains jours pour le produit ${productId}. Retourne un JSON avec les champs: predicted_sales, confidence, trend.`
+        }
+      })
+      if (response.error) throw new Error('Erreur lors de la génération de prévisions')
+      return response.data
+    },
+    onSuccess: () => {
+      toast.success('Prévisions générées avec succès')
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`)
     },
   })
 
