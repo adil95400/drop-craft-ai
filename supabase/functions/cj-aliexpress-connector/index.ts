@@ -361,6 +361,64 @@ Deno.serve(async (req) => {
         const result = await cjClient.getCategories();
         return jsonResponse({ success: true, categories: result.data || [] });
       }
+
+      if (action === 'import_products') {
+        const productIds = params.product_ids as string[];
+        if (!productIds || productIds.length === 0) {
+          return jsonResponse({ error: 'product_ids required' }, 400);
+        }
+
+        const imported: any[] = [];
+        for (const pid of productIds) {
+          try {
+            const result = await cjClient.getProductDetail(pid);
+            const p = result.data;
+            if (!p) continue;
+
+            const images: string[] = [];
+            if (p.productImage) images.push(p.productImage);
+            if (p.productImageSet) {
+              const imgSet = Array.isArray(p.productImageSet) ? p.productImageSet : [];
+              images.push(...imgSet.map((img: any) => img.imageUrl || img).filter(Boolean));
+            }
+
+            const { data, error } = await supabase
+              .from('products')
+              .insert({
+                user_id: user.id,
+                name: p.productNameEn || p.productName || pid,
+                description: p.description || p.productNameEn || '',
+                price: p.sellPrice || 0,
+                image_url: p.productImage || null,
+                images: images.length > 0 ? images : null,
+                source: 'cj_api',
+                external_id: pid,
+                status: 'draft',
+                category: p.categoryName || 'CJ Import',
+              })
+              .select('id, name')
+              .single();
+
+            if (!error && data) imported.push(data);
+          } catch (e) {
+            console.error(`[cj] Failed to import ${pid}:`, e);
+          }
+        }
+
+        await supabase.from('activity_logs').insert({
+          user_id: user.id,
+          action: 'cj_api_import',
+          entity_type: 'products',
+          description: `Imported ${imported.length} products via CJ API`,
+          source: 'cj-aliexpress-connector',
+        });
+
+        return jsonResponse({
+          success: true,
+          imported_count: imported.length,
+          products: imported,
+        });
+      }
     }
 
     return jsonResponse({ error: 'Unknown action or supplier' }, 400);
