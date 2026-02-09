@@ -11543,47 +11543,74 @@ export type Database = {
       }
       seo_ai_generations: {
         Row: {
+          actions: string[]
+          applied_at: string | null
           audit_id: string | null
           cost_usd: number | null
           created_at: string
+          duration_ms: number | null
+          error_message: string | null
           id: string
           input: Json
           language: string
           output: Json
           page_id: string | null
+          result: Json | null
+          status: string
+          target_id: string | null
+          target_type: string
           tokens_used: number | null
           tone: string
           type: string
+          updated_at: string
           url: string | null
           user_id: string
         }
         Insert: {
+          actions?: string[]
+          applied_at?: string | null
           audit_id?: string | null
           cost_usd?: number | null
           created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
           id?: string
           input?: Json
           language?: string
           output?: Json
           page_id?: string | null
+          result?: Json | null
+          status?: string
+          target_id?: string | null
+          target_type?: string
           tokens_used?: number | null
           tone?: string
           type: string
+          updated_at?: string
           url?: string | null
           user_id: string
         }
         Update: {
+          actions?: string[]
+          applied_at?: string | null
           audit_id?: string | null
           cost_usd?: number | null
           created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
           id?: string
           input?: Json
           language?: string
           output?: Json
           page_id?: string | null
+          result?: Json | null
+          status?: string
+          target_id?: string | null
+          target_type?: string
           tokens_used?: number | null
           tone?: string
           type?: string
+          updated_at?: string
           url?: string | null
           user_id?: string
         }
@@ -11713,19 +11740,26 @@ export type Database = {
           finished_at: string | null
           id: string
           include_query_params: boolean
+          language: string
           max_depth: number | null
           max_urls: number
           mode: string
           page_type_filters: Json
+          provider: string
           rate_limit_rps: number
           requested_by: string | null
           respect_robots: boolean
+          scope: string
+          score: number | null
           sitemap_url: string | null
           started_at: string | null
           status: string
           store_id: string | null
           summary: Json
+          target_id: string | null
+          target_type: string
           updated_at: string
+          url: string | null
           url_patterns_exclude: Json
           url_patterns_include: Json
           user_id: string
@@ -11737,19 +11771,26 @@ export type Database = {
           finished_at?: string | null
           id?: string
           include_query_params?: boolean
+          language?: string
           max_depth?: number | null
           max_urls?: number
           mode: string
           page_type_filters?: Json
+          provider?: string
           rate_limit_rps?: number
           requested_by?: string | null
           respect_robots?: boolean
+          scope?: string
+          score?: number | null
           sitemap_url?: string | null
           started_at?: string | null
           status?: string
           store_id?: string | null
           summary?: Json
+          target_id?: string | null
+          target_type?: string
           updated_at?: string
+          url?: string | null
           url_patterns_exclude?: Json
           url_patterns_include?: Json
           user_id: string
@@ -11761,19 +11802,26 @@ export type Database = {
           finished_at?: string | null
           id?: string
           include_query_params?: boolean
+          language?: string
           max_depth?: number | null
           max_urls?: number
           mode?: string
           page_type_filters?: Json
+          provider?: string
           rate_limit_rps?: number
           requested_by?: string | null
           respect_robots?: boolean
+          scope?: string
+          score?: number | null
           sitemap_url?: string | null
           started_at?: string | null
           status?: string
           store_id?: string | null
           summary?: Json
+          target_id?: string | null
+          target_type?: string
           updated_at?: string
+          url?: string | null
           url_patterns_exclude?: Json
           url_patterns_include?: Json
           user_id?: string

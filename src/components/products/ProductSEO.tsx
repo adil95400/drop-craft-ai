@@ -100,8 +100,11 @@ export function ProductSEO() {
     }
 
     startOptimization({
-      checkType: `product_${product.id}`,
-      recommendations
+      targetId: product.id,
+      fields: {
+        seo_title: recommendations.find(r => r.startsWith('Titre'))?.split(': ').slice(1).join(': '),
+        seo_description: recommendations.find(r => r.startsWith('Meta'))?.split(': ').slice(1).join(': '),
+      }
     })
   }
 

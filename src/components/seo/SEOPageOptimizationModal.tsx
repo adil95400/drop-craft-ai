@@ -130,8 +130,11 @@ export const SEOPageOptimizationModal = ({
     ];
     
     startOptimization({ 
-      checkType: `page_${page.url}`,
-      recommendations 
+      targetId: page.url,
+      fields: {
+        title: optimizedTitle,
+        meta_description: optimizedDescription,
+      }
     });
     
     onOpenChange(false);

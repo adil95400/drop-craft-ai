@@ -1111,6 +1111,381 @@ async function getProductStats(auth: NonNullable<Awaited<ReturnType<typeof authe
   }, 200, reqId);
 }
 
+// ── SEO Handlers ─────────────────────────────────────────────────────────────
+
+async function createSeoAudit(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.url) return errorResponse("VALIDATION_ERROR", "url is required", 400, reqId);
+
+  const admin = serviceClient();
+  const { data: audit, error } = await admin
+    .from("seo_audits")
+    .insert({
+      user_id: auth.user.id,
+      target_type: body.scope ?? body.target_type ?? "url",
+      target_id: body.target_id ?? null,
+      url: body.url,
+      base_url: body.url,
+      scope: body.options ? Object.keys(body.options).filter((k: string) => body.options[k]).join(",") : "full",
+      provider: body.provider ?? "internal",
+      language: body.language ?? "fr",
+      status: "pending",
+      mode: body.scope ?? "page",
+    })
+    .select("id, status")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  // Fire-and-forget: run the audit asynchronously
+  processSeoAudit(audit.id, auth.user.id, body).catch(console.error);
+
+  return json({ audit_id: audit.id, status: "pending" }, 201, reqId);
+}
+
+async function processSeoAudit(auditId: string, userId: string, params: any) {
+  const admin = serviceClient();
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+
+  await admin.from("seo_audits").update({ status: "running", started_at: new Date().toISOString() }).eq("id", auditId);
+
+  if (!apiKey) {
+    await admin.from("seo_audits").update({ status: "failed", error_message: "LOVABLE_API_KEY not configured" }).eq("id", auditId);
+    return;
+  }
+
+  try {
+    const prompt = `Tu es un expert SEO. Analyse l'URL suivante et retourne un audit SEO structuré.
+URL: ${params.url}
+Langue: ${params.language ?? "fr"}
+
+Retourne UNIQUEMENT un JSON avec cette structure:
+{
+  "score": <number 0-100>,
+  "checks": [
+    {
+      "check_type": "<meta_title|meta_description|h1|images_alt|content_length|mobile_friendly|page_speed|canonical|robots|sitemap|ssl|structured_data>",
+      "category": "<meta|content|structure|performance|mobile>",
+      "status": "<pass|warning|fail>",
+      "impact": "<critical|high|medium|low>",
+      "current_value": "<what you found or estimated>",
+      "expected_value": "<what is recommended>",
+      "recommendation": "<actionable fix>"
+    }
+  ]
+}
+Génère au moins 8 checks couvrant meta, content, structure et performance.`;
+
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    if (!aiResp.ok) {
+      const status = aiResp.status;
+      throw new Error(status === 429 ? "Rate limited" : status === 402 ? "Credits exhausted" : `AI error ${status}`);
+    }
+
+    const aiData = await aiResp.json();
+    const content = aiData.choices?.[0]?.message?.content ?? "";
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    const result = jsonMatch ? JSON.parse(jsonMatch[0]) : { score: 0, checks: [] };
+
+    // Insert audit items
+    const checks = result.checks ?? [];
+    if (checks.length > 0) {
+      const items = checks.map((c: any) => ({
+        audit_id: auditId,
+        severity: c.status === "fail" ? "error" : c.status === "warning" ? "warning" : "info",
+        code: c.check_type,
+        message: c.recommendation ?? "",
+        evidence: { current_value: c.current_value, expected_value: c.expected_value, impact: c.impact, category: c.category },
+        recommendation: c.recommendation,
+        is_fixable: c.status !== "pass",
+      }));
+      await admin.from("seo_issues").insert(items);
+    }
+
+    // Calculate summary scores by category
+    const summary: any = {};
+    for (const c of checks) {
+      const cat = c.category ?? "meta";
+      if (!summary[`${cat}_score`]) {
+        const catChecks = checks.filter((x: any) => x.category === cat);
+        const passed = catChecks.filter((x: any) => x.status === "pass").length;
+        summary[`${cat}_score`] = catChecks.length > 0 ? Math.round((passed / catChecks.length) * 100) : 0;
+      }
+    }
+
+    await admin.from("seo_audits").update({
+      status: "completed",
+      score: result.score ?? 0,
+      summary: { ...summary, total_checks: checks.length, passed: checks.filter((c: any) => c.status === "pass").length },
+      finished_at: new Date().toISOString(),
+    }).eq("id", auditId);
+
+  } catch (err: any) {
+    await admin.from("seo_audits").update({
+      status: "failed",
+      error_message: err.message,
+      finished_at: new Date().toISOString(),
+    }).eq("id", auditId);
+  }
+}
+
+async function listSeoAudits(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+
+  let query = admin
+    .from("seo_audits")
+    .select("*", { count: "exact" })
+    .eq("user_id", auth.user.id)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  const targetType = url.searchParams.get("target_type");
+  if (targetType) query = query.eq("target_type", targetType);
+
+  const status = url.searchParams.get("status");
+  if (status) query = query.eq("status", status);
+
+  const { data, count, error } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  const items = (data ?? []).map((r: any) => ({
+    audit_id: r.id,
+    target_type: r.target_type ?? r.mode ?? "url",
+    target_id: r.target_id,
+    url: r.url ?? r.base_url,
+    score: r.score,
+    status: r.status,
+    provider: r.provider ?? "internal",
+    language: r.language ?? "fr",
+    summary: r.summary,
+    created_at: r.created_at,
+    completed_at: r.finished_at,
+  }));
+
+  return json({ items, meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getSeoAudit(auditId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+
+  const { data: audit, error } = await admin
+    .from("seo_audits")
+    .select("*")
+    .eq("id", auditId)
+    .eq("user_id", auth.user.id)
+    .single();
+
+  if (error || !audit) return errorResponse("NOT_FOUND", "Audit not found", 404, reqId);
+
+  // Fetch issues for this audit
+  const { data: issues } = await admin
+    .from("seo_issues")
+    .select("*")
+    .eq("audit_id", auditId)
+    .order("created_at", { ascending: true });
+
+  return json({
+    audit_id: audit.id,
+    target_type: audit.target_type ?? audit.mode ?? "url",
+    target_id: audit.target_id,
+    url: audit.url ?? audit.base_url,
+    score: audit.score,
+    status: audit.status,
+    provider: audit.provider ?? "internal",
+    language: audit.language ?? "fr",
+    summary: audit.summary,
+    error_message: audit.error_message,
+    created_at: audit.created_at,
+    completed_at: audit.finished_at,
+    issues: (issues ?? []).map((i: any) => ({
+      id: i.id,
+      check_type: i.code,
+      category: i.evidence?.category ?? "meta",
+      status: i.severity === "error" ? "fail" : i.severity === "warning" ? "warning" : "pass",
+      impact: i.evidence?.impact ?? "medium",
+      current_value: i.evidence?.current_value,
+      expected_value: i.evidence?.expected_value,
+      recommendation: i.recommendation,
+    })),
+  }, 200, reqId);
+}
+
+async function createSeoGenerate(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.target_id) return errorResponse("VALIDATION_ERROR", "target_id is required", 400, reqId);
+
+  const admin = serviceClient();
+  const { data: job, error } = await admin
+    .from("seo_ai_generations")
+    .insert({
+      user_id: auth.user.id,
+      target_type: body.target_type ?? "product",
+      target_id: body.target_id,
+      type: (body.actions ?? ["title"]).join(","),
+      actions: body.actions ?? ["title", "description", "meta"],
+      tone: body.tone ?? "conversion",
+      language: body.language ?? "fr",
+      status: "pending",
+    })
+    .select("id, status")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  // Fire-and-forget: process generation asynchronously
+  processSeoGeneration(job.id, auth.user.id, body).catch(console.error);
+
+  return json({ job_id: job.id, status: "pending" }, 201, reqId);
+}
+
+async function processSeoGeneration(jobId: string, userId: string, params: any) {
+  const admin = serviceClient();
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  const startTime = Date.now();
+
+  await admin.from("seo_ai_generations").update({ status: "running" }).eq("id", jobId);
+
+  if (!apiKey) {
+    await admin.from("seo_ai_generations").update({ status: "failed", error_message: "LOVABLE_API_KEY not configured" }).eq("id", jobId);
+    return;
+  }
+
+  try {
+    // Fetch target content for snapshot
+    let currentContent: any = {};
+    if (params.target_type === "product" && params.target_id) {
+      const { data: product } = await admin.from("products").select("title, description, seo_title, seo_description, tags, sku, category, brand").eq("id", params.target_id).single();
+      if (product) currentContent = product;
+    }
+
+    // Save input snapshot
+    await admin.from("seo_ai_generations").update({ input: currentContent }).eq("id", jobId);
+
+    const actions = params.actions ?? ["title", "description", "meta"];
+    const prompt = `Tu es un expert SEO e-commerce. Génère du contenu SEO optimisé.
+Langue: ${params.language ?? "fr"}, Ton: ${params.tone ?? "conversion"}
+Type: ${params.target_type ?? "product"}
+Actions demandées: ${actions.join(", ")}
+
+Contenu actuel:
+${JSON.stringify(currentContent, null, 2)}
+
+Retourne UNIQUEMENT un JSON avec les champs suivants selon les actions demandées:
+{
+  ${actions.includes("title") ? '"title": "titre SEO optimisé (max 60 chars)",' : ""}
+  ${actions.includes("description") ? '"description": "description produit optimisée SEO",' : ""}
+  ${actions.includes("meta") ? '"meta_description": "meta description optimisée (max 155 chars)",' : ""}
+  ${actions.includes("keywords") ? '"keywords": ["mot-clé1", "mot-clé2", ...],' : ""}
+  ${actions.includes("tags") ? '"tags": ["tag1", "tag2", ...],' : ""}
+  ${actions.includes("categories") ? '"categories": ["catégorie suggérée"],' : ""}
+  "seo_score": <estimated score 0-100>
+}`;
+
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    if (!aiResp.ok) {
+      const status = aiResp.status;
+      throw new Error(status === 429 ? "Rate limited" : status === 402 ? "Credits exhausted" : `AI error ${status}`);
+    }
+
+    const aiData = await aiResp.json();
+    const content = aiData.choices?.[0]?.message?.content ?? "";
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    const generated = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+
+    const tokensUsed = aiData.usage?.total_tokens ?? 0;
+
+    await admin.from("seo_ai_generations").update({
+      status: "completed",
+      result: generated,
+      output: generated,
+      tokens_used: tokensUsed,
+      duration_ms: Date.now() - startTime,
+    }).eq("id", jobId);
+
+  } catch (err: any) {
+    await admin.from("seo_ai_generations").update({
+      status: "failed",
+      error_message: err.message,
+      duration_ms: Date.now() - startTime,
+    }).eq("id", jobId);
+  }
+}
+
+async function applySeoContent(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.target_id || !body.fields) return errorResponse("VALIDATION_ERROR", "target_id and fields are required", 400, reqId);
+
+  const admin = serviceClient();
+  const targetType = body.target_type ?? "product";
+
+  if (targetType === "product") {
+    // Map SEO fields to product columns
+    const updates: any = { updated_at: new Date().toISOString() };
+    if (body.fields.title) updates.seo_title = body.fields.title;
+    if (body.fields.meta_description) updates.seo_description = body.fields.meta_description;
+    if (body.fields.description) updates.description = body.fields.description;
+    if (body.fields.tags) updates.tags = body.fields.tags;
+
+    const { error } = await admin.from("products").update(updates).eq("id", body.target_id).eq("user_id", auth.user.id);
+    if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+    // If there's a job_id, mark it as applied
+    if (body.job_id) {
+      await admin.from("seo_ai_generations").update({ applied_at: new Date().toISOString() }).eq("id", body.job_id).eq("user_id", auth.user.id);
+    }
+
+    return json({ success: true, target_id: body.target_id, applied_fields: Object.keys(body.fields) }, 200, reqId);
+  }
+
+  return errorResponse("NOT_IMPLEMENTED", `Apply not supported for target_type: ${targetType}`, 400, reqId);
+}
+
+async function getSeoGeneration(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin
+    .from("seo_ai_generations")
+    .select("*")
+    .eq("id", jobId)
+    .eq("user_id", auth.user.id)
+    .single();
+
+  if (error || !data) return errorResponse("NOT_FOUND", "Generation job not found", 404, reqId);
+
+  return json({
+    job_id: data.id,
+    target_type: data.target_type ?? "product",
+    target_id: data.target_id,
+    actions: data.actions ?? [],
+    tone: data.tone ?? "conversion",
+    language: data.language ?? "fr",
+    status: data.status,
+    input: data.input,
+    result: data.result ?? data.output,
+    applied_at: data.applied_at,
+    error_message: data.error_message,
+    tokens_used: data.tokens_used,
+    duration_ms: data.duration_ms,
+    created_at: data.created_at,
+  }, 200, reqId);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -1195,6 +1570,20 @@ Deno.serve(async (req) => {
     // ── Drafts / Publish ────────────────────────────────────────
     if (req.method === "GET" && matchRoute("/v1/products/drafts", apiPath)) return await listDrafts(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/products/drafts/publish", apiPath)) return await publishDrafts(req, auth, reqId);
+
+    // ── SEO ────────────────────────────────────────────────────
+    if (req.method === "POST" && matchRoute("/v1/seo/audit", apiPath)) return await createSeoAudit(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/seo/audits", apiPath)) return await listSeoAudits(url, auth, reqId);
+
+    const seoAuditMatch = matchRoute("/v1/seo/audits/:auditId", apiPath);
+    if (req.method === "GET" && seoAuditMatch) return await getSeoAudit(seoAuditMatch.params.auditId, auth, reqId);
+
+    if (req.method === "POST" && matchRoute("/v1/seo/generate", apiPath)) return await createSeoGenerate(req, auth, reqId);
+
+    const seoGenMatch = matchRoute("/v1/seo/generate/:jobId", apiPath);
+    if (req.method === "GET" && seoGenMatch) return await getSeoGeneration(seoGenMatch.params.jobId, auth, reqId);
+
+    if (req.method === "POST" && matchRoute("/v1/seo/apply", apiPath)) return await applySeoContent(req, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
