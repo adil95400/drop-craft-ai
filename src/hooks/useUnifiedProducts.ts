@@ -70,16 +70,16 @@ export function useUnifiedProducts(filters?: ProductFilters) {
       ? products.filter(p => p.profit_margin).reduce((sum, p) => sum + (p.profit_margin || 0), 0) / products.filter(p => p.profit_margin).length
       : 0
 
-    // Statistiques par source
+    // Statistiques par source (all products come from unified API now)
     const bySource = {
-      products: products.filter(p => p.source === 'products').length,
-      imported: products.filter(p => p.source === 'imported').length,
-      premium: products.filter(p => p.source === 'premium').length,
-      catalog: products.filter(p => p.source === 'catalog').length,
-      shopify: products.filter(p => p.source === 'shopify').length,
-      published: products.filter(p => p.source === 'published').length,
-      feed: products.filter(p => p.source === 'feed').length,
-      supplier: products.filter(p => p.source === 'supplier').length
+      products: products.length,
+      imported: 0,
+      premium: 0,
+      catalog: 0,
+      shopify: 0,
+      published: 0,
+      feed: 0,
+      supplier: 0
     }
 
     // Top catégories
@@ -275,7 +275,6 @@ export function useProduct(productId: string) {
         .single()
       
       if (imported) {
-        // imported_products has limited fields, so we use defaults for missing ones
         return {
           id: imported.id,
           name: `Imported Product ${imported.id.slice(0, 8)}`,
@@ -293,7 +292,7 @@ export function useProduct(productId: string) {
           source: 'imported' as const,
           created_at: imported.created_at || new Date().toISOString(),
           updated_at: imported.created_at || new Date().toISOString()
-        } as UnifiedProduct
+        } as unknown as UnifiedProduct
       }
       
       throw new Error('Produit introuvable')

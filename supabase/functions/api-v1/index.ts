@@ -872,6 +872,245 @@ async function publishDrafts(req: Request, auth: NonNullable<Awaited<ReturnType<
   }, 200, reqId);
 }
 
+// ── Products CRUD Handlers ───────────────────────────────────────────────────
+
+function mapProductRow(row: any) {
+  const imagesArr = Array.isArray(row.images) ? row.images : [];
+  const allImages = [
+    ...imagesArr,
+    ...(row.image_url && !imagesArr.includes(row.image_url) ? [row.image_url] : []),
+  ].filter((img: string) => typeof img === "string" && img.startsWith("http"));
+
+  return {
+    id: row.id,
+    name: row.name || row.title || "Produit sans nom",
+    title: row.title,
+    description: row.description ?? null,
+    sku: row.sku ?? null,
+    barcode: row.barcode ?? null,
+    price: row.price ?? 0,
+    compare_at_price: row.compare_at_price ?? null,
+    cost_price: row.cost_price ?? 0,
+    category: row.category ?? null,
+    brand: row.brand ?? null,
+    supplier: row.supplier ?? null,
+    supplier_url: row.supplier_url ?? null,
+    supplier_product_id: row.supplier_product_id ?? null,
+    status: row.status ?? "draft",
+    stock_quantity: row.stock_quantity ?? 0,
+    weight: row.weight ?? null,
+    weight_unit: row.weight_unit ?? "kg",
+    images: allImages,
+    variants: Array.isArray(row.variants) ? row.variants : [],
+    tags: row.tags ?? [],
+    seo_title: row.seo_title ?? null,
+    seo_description: row.seo_description ?? null,
+    is_published: row.is_published ?? false,
+    product_type: row.product_type ?? null,
+    vendor: row.vendor ?? null,
+    view_count: row.view_count ?? 0,
+    profit_margin: row.cost_price && row.price > 0 ? Math.round(((row.price - row.cost_price) / row.price) * 10000) / 100 : null,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+async function listProducts(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+
+  let query = admin
+    .from("products")
+    .select("*", { count: "exact" })
+    .eq("user_id", auth.user.id)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  const status = url.searchParams.get("status");
+  if (status) query = query.eq("status", status);
+
+  const category = url.searchParams.get("category");
+  if (category) query = query.eq("category", category);
+
+  const search = url.searchParams.get("q");
+  if (search) query = query.or(`title.ilike.%${search}%,name.ilike.%${search}%,sku.ilike.%${search}%`);
+
+  const low_stock = url.searchParams.get("low_stock");
+  if (low_stock === "true") query = query.lt("stock_quantity", 10);
+
+  const { data, count, error } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({ items: (data ?? []).map(mapProductRow), meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getProduct(productId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin
+    .from("products")
+    .select("*")
+    .eq("id", productId)
+    .eq("user_id", auth.user.id)
+    .single();
+
+  if (error || !data) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+  return json(mapProductRow(data), 200, reqId);
+}
+
+async function createProduct(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.title && !body.name) return errorResponse("VALIDATION_ERROR", "title or name is required", 400, reqId);
+
+  const admin = serviceClient();
+  const { data, error } = await admin
+    .from("products")
+    .insert({
+      user_id: auth.user.id,
+      title: body.title ?? body.name,
+      name: body.name ?? body.title,
+      description: body.description ?? null,
+      sku: body.sku ?? null,
+      barcode: body.barcode ?? null,
+      price: body.price ?? 0,
+      compare_at_price: body.compare_at_price ?? null,
+      cost_price: body.cost_price ?? 0,
+      category: body.category ?? null,
+      brand: body.brand ?? null,
+      supplier: body.supplier ?? null,
+      supplier_url: body.supplier_url ?? null,
+      supplier_product_id: body.supplier_product_id ?? null,
+      status: body.status ?? "draft",
+      stock_quantity: body.stock_quantity ?? 0,
+      weight: body.weight ?? null,
+      weight_unit: body.weight_unit ?? "kg",
+      images: body.images ?? [],
+      image_url: Array.isArray(body.images) && body.images.length > 0 ? body.images[0] : body.image_url ?? null,
+      variants: body.variants ?? [],
+      tags: body.tags ?? [],
+      seo_title: body.seo_title ?? null,
+      seo_description: body.seo_description ?? null,
+      product_type: body.product_type ?? null,
+      vendor: body.vendor ?? null,
+    })
+    .select("id, status, created_at")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ id: data.id, status: data.status, created_at: data.created_at }, 201, reqId);
+}
+
+async function updateProduct(productId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+
+  // Verify ownership
+  const { data: existing } = await admin.from("products").select("id").eq("id", productId).eq("user_id", auth.user.id).single();
+  if (!existing) return errorResponse("NOT_FOUND", "Product not found", 404, reqId);
+
+  const updates: any = { updated_at: new Date().toISOString() };
+  const allowedFields = [
+    "title", "name", "description", "sku", "barcode", "price", "compare_at_price",
+    "cost_price", "category", "brand", "supplier", "supplier_url", "supplier_product_id",
+    "status", "stock_quantity", "weight", "weight_unit", "images", "variants", "tags",
+    "seo_title", "seo_description", "is_published", "product_type", "vendor",
+  ];
+
+  for (const field of allowedFields) {
+    if (body[field] !== undefined) updates[field] = body[field];
+  }
+
+  // Sync image_url with images array
+  if (body.images !== undefined) {
+    updates.image_url = Array.isArray(body.images) && body.images.length > 0 ? body.images[0] : null;
+  }
+
+  const { data, error } = await admin
+    .from("products")
+    .update(updates)
+    .eq("id", productId)
+    .eq("user_id", auth.user.id)
+    .select("id, status, updated_at")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ id: data.id, status: data.status, updated_at: data.updated_at }, 200, reqId);
+}
+
+async function deleteProduct(productId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("products").delete().eq("id", productId).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+async function bulkUpdateProducts(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.product_ids?.length) return errorResponse("VALIDATION_ERROR", "product_ids required", 400, reqId);
+  if (!body.updates || typeof body.updates !== "object") return errorResponse("VALIDATION_ERROR", "updates required", 400, reqId);
+
+  const admin = serviceClient();
+  const updates: any = { ...body.updates, updated_at: new Date().toISOString() };
+  // Prevent changing user_id or id
+  delete updates.id;
+  delete updates.user_id;
+
+  const { error, count } = await admin
+    .from("products")
+    .update(updates)
+    .eq("user_id", auth.user.id)
+    .in("id", body.product_ids);
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ updated: count ?? body.product_ids.length }, 200, reqId);
+}
+
+async function getProductStats(auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+
+  const [
+    { count: total },
+    { count: active },
+    { count: draft },
+    { count: lowStock },
+    { count: outOfStock },
+  ] = await Promise.all([
+    admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id),
+    admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("status", "active"),
+    admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("status", "draft"),
+    admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).lt("stock_quantity", 10).gt("stock_quantity", 0),
+    admin.from("products").select("*", { count: "exact", head: true }).eq("user_id", auth.user.id).eq("stock_quantity", 0),
+  ]);
+
+  // Aggregate values
+  const { data: agg } = await admin
+    .from("products")
+    .select("price, cost_price, stock_quantity")
+    .eq("user_id", auth.user.id);
+
+  let totalValue = 0, totalCost = 0, avgPrice = 0;
+  if (agg && agg.length > 0) {
+    for (const p of agg) {
+      totalValue += (p.price ?? 0) * (p.stock_quantity ?? 0);
+      totalCost += (p.cost_price ?? 0) * (p.stock_quantity ?? 0);
+    }
+    avgPrice = agg.reduce((s: number, p: any) => s + (p.price ?? 0), 0) / agg.length;
+  }
+
+  return json({
+    total: total ?? 0,
+    active: active ?? 0,
+    draft: draft ?? 0,
+    inactive: (total ?? 0) - (active ?? 0) - (draft ?? 0),
+    low_stock: lowStock ?? 0,
+    out_of_stock: outOfStock ?? 0,
+    total_value: Math.round(totalValue * 100) / 100,
+    total_cost: Math.round(totalCost * 100) / 100,
+    total_profit: Math.round((totalValue - totalCost) * 100) / 100,
+    avg_price: Math.round(avgPrice * 100) / 100,
+    profit_margin: totalValue > 0 ? Math.round(((totalValue - totalCost) / totalValue) * 10000) / 100 : 0,
+  }, 200, reqId);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -887,11 +1126,24 @@ Deno.serve(async (req) => {
   try {
     // ── Health (public) ───────────────────────────────────────
     if (req.method === "GET" && (apiPath === "/v1/health" || apiPath === "/v1")) {
-      return json({ status: "ok", version: "1.0.0", timestamp: new Date().toISOString() }, 200, reqId);
+      return json({ status: "ok", version: "1.1.0", timestamp: new Date().toISOString() }, 200, reqId);
     }
 
     const auth = await authenticate(req);
     if (!auth) return errorResponse("UNAUTHORIZED", "Valid Bearer token required", 401, reqId);
+
+    // ── Products CRUD ──────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/products/stats", apiPath)) return await getProductStats(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/products", apiPath)) return await listProducts(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/products", apiPath)) return await createProduct(req, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/products/bulk", apiPath)) return await bulkUpdateProducts(req, auth, reqId);
+
+    const productMatch = matchRoute("/v1/products/:productId", apiPath);
+    if (productMatch && productMatch.params.productId !== "drafts" && productMatch.params.productId !== "stats" && productMatch.params.productId !== "bulk") {
+      if (req.method === "GET") return await getProduct(productMatch.params.productId, auth, reqId);
+      if (req.method === "PUT") return await updateProduct(productMatch.params.productId, req, auth, reqId);
+      if (req.method === "DELETE") return await deleteProduct(productMatch.params.productId, auth, reqId);
+    }
 
     // ── Import Jobs ────────────────────────────────────────────
     if (req.method === "POST" && matchRoute("/v1/import/jobs", apiPath)) return await createImportJob(req, auth, reqId);
@@ -910,7 +1162,6 @@ Deno.serve(async (req) => {
     if (req.method === "POST" && cancelMatch) return await cancelJob(cancelMatch.params.jobId, auth, reqId);
 
     // ── Presets ─────────────────────────────────────────────────
-    // IMPORTANT: /import route must come before /:presetId to avoid matching "import" as a presetId
     if (req.method === "POST" && matchRoute("/v1/import/presets/import", apiPath)) return await importPreset(req, auth, reqId);
     if (req.method === "GET" && matchRoute("/v1/import/presets", apiPath)) return await listPresets(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/import/presets", apiPath)) return await createPreset(req, auth, reqId);

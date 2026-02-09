@@ -95,6 +95,80 @@ export const api = {
 
 // ── Typed API modules ───────────────────────────────────────────────────────
 
+// ── Products ────────────────────────────────────────────────────────────────
+
+export interface ProductRecord {
+  id: string
+  name: string
+  title: string | null
+  description: string | null
+  sku: string | null
+  barcode: string | null
+  price: number
+  compare_at_price: number | null
+  cost_price: number
+  category: string | null
+  brand: string | null
+  supplier: string | null
+  supplier_url: string | null
+  supplier_product_id: string | null
+  status: string
+  stock_quantity: number
+  weight: number | null
+  weight_unit: string
+  images: string[]
+  variants: any[]
+  tags: string[]
+  seo_title: string | null
+  seo_description: string | null
+  is_published: boolean
+  product_type: string | null
+  vendor: string | null
+  view_count: number
+  profit_margin: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ProductStats {
+  total: number
+  active: number
+  draft: number
+  inactive: number
+  low_stock: number
+  out_of_stock: number
+  total_value: number
+  total_cost: number
+  total_profit: number
+  avg_price: number
+  profit_margin: number
+}
+
+export const productsApi = {
+  list: (params?: PaginationParams & { status?: string; category?: string; q?: string; low_stock?: string }) =>
+    api.get<PaginatedResponse<ProductRecord>>('/products', params as any),
+
+  get: (id: string) =>
+    api.get<ProductRecord>(`/products/${id}`),
+
+  create: (body: Partial<ProductRecord>) =>
+    api.post<{ id: string; status: string; created_at: string }>('/products', body, crypto.randomUUID()),
+
+  update: (id: string, body: Partial<ProductRecord>) =>
+    api.put<{ id: string; status: string; updated_at: string }>(`/products/${id}`, body),
+
+  delete: (id: string) =>
+    api.delete<{ success: boolean }>(`/products/${id}`),
+
+  bulkUpdate: (productIds: string[], updates: Partial<ProductRecord>) =>
+    api.post<{ updated: number }>('/products/bulk', { product_ids: productIds, updates }),
+
+  stats: () =>
+    api.get<ProductStats>('/products/stats'),
+}
+
+// ── Import Jobs ─────────────────────────────────────────────────────────────
+
 export const importJobsApi = {
   create: (body: any, idempotencyKey?: string) =>
     api.post<{ job_id: string; status: string }>('/import/jobs', body, idempotencyKey ?? crypto.randomUUID()),
