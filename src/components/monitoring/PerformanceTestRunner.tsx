@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle, Clock, Play, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { productsApi } from '@/services/api/client';
 
 interface TestResult {
   name: string;
@@ -22,8 +23,7 @@ export function PerformanceTestRunner() {
     {
       name: 'Database Connection',
       run: async () => {
-        const { data, error } = await supabase.from('products').select('id').limit(1);
-        if (error) throw new Error(error.message);
+        await productsApi.list({ per_page: 1 });
         return true;
       }
     },
@@ -38,9 +38,8 @@ export function PerformanceTestRunner() {
       name: 'Products Query Performance',
       run: async () => {
         const start = performance.now();
-        const { data, error } = await supabase.from('products').select('*').limit(100);
+        await productsApi.list({ per_page: 100 });
         const duration = performance.now() - start;
-        if (error) throw new Error(error.message);
         if (duration > 2000) throw new Error(`Query too slow: ${duration.toFixed(0)}ms`);
         return true;
       }

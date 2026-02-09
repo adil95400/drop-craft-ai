@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts';
+import { duplicateProduct } from '@/services/api/productHelpers';
 import { 
   Eye, 
   Edit, 
@@ -119,27 +120,7 @@ export const EnhancedProductCard = memo(function EnhancedProductCard({
     }
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Vous devez être connecté');
-        return;
-      }
-
-      const { error } = await supabase.from('products').insert([{
-        user_id: user.id,
-        title: product.name,
-        name: `${product.name} (copie)`,
-        description: product.description,
-        price: product.price,
-        cost_price: product.cost_price,
-        sku: product.sku ? `${product.sku}-COPY` : null,
-        category: product.category,
-        stock_quantity: product.stock_quantity,
-        image_url: product.image_url,
-        status: 'draft'
-      }]);
-
-      if (error) throw error;
+      await duplicateProduct(product);
       toast.success('Produit dupliqué avec succès');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['unified-products'] });

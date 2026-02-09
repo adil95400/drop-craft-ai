@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { productsApi } from '@/services/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -157,8 +158,9 @@ export const TestDataGenerator = () => {
       };
     });
 
-    const { error } = await supabase.from('products').insert(products);
-    if (error) throw error;
+    for (const p of products) {
+      await productsApi.create(p as any);
+    }
 
     return count;
   };

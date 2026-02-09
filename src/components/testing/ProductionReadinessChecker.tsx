@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { productsApi } from '@/services/api/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -51,9 +52,8 @@ export function ProductionReadinessChecker() {
 
     // Products table check
     const productsCheck = await runCheck('Products Table', 'database', async () => {
-      const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true })
-      if (error) throw error
-      return `${count || 0} products found`
+      const stats = await productsApi.stats()
+      return `${stats.total || 0} products found`
     })
     allChecks.push(productsCheck)
     setChecks([...allChecks])
@@ -139,7 +139,7 @@ export function ProductionReadinessChecker() {
     // Performance check
     const perfCheck = await runCheck('Response Time', 'performance', async () => {
       const start = Date.now()
-      await supabase.from('products').select('id').limit(10)
+      await productsApi.list({ per_page: 10 })
       const duration = Date.now() - start
       if (duration > 1000) throw new Error(`Slow response: ${duration}ms`)
       return `${duration}ms (good)`

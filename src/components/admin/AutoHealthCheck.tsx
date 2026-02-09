@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { productsApi } from '@/services/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -143,8 +144,7 @@ export const AutoHealthCheck = () => {
     const errors: string[] = [];
 
     // Check each table explicitly to avoid dynamic table name issues
-    const { error: productsError } = await supabase.from('products').select('id').limit(1);
-    if (productsError) errors.push('products');
+    try { await productsApi.list({ per_page: 1 }); } catch { errors.push('products'); }
 
     const { error: ordersError } = await supabase.from('orders').select('id').limit(1);
     if (ordersError) errors.push('orders');

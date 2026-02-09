@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client'
+import { productsApi } from '@/services/api/client'
 import { ImportConfig } from '@/lib/validation/orderSchema'
 import Papa from 'papaparse'
 import * as XLSX from 'xlsx'
@@ -217,7 +218,9 @@ export class ImportService {
     switch (dataType) {
       case 'products':
         if (row.sku) {
-          query = supabase.from('products').select('id').eq('user_id', userId).eq('sku', row.sku).single()
+          const resp = await productsApi.list({ per_page: 1, q: row.sku })
+          const match = resp.items?.find((p: any) => p.sku === row.sku)
+          return match ? { id: match.id } : null
         } else {
           return null
         }
@@ -246,8 +249,11 @@ export class ImportService {
 
     switch (dataType) {
       case 'products': {
-        const result = await supabase.from('products').insert([{ ...cleanRow, user_id: userId } as any])
-        error = result.error
+        try {
+          await productsApi.create({ ...cleanRow, user_id: userId } as any)
+        } catch (e: any) {
+          error = e
+        }
         break
       }
       case 'customers': {
