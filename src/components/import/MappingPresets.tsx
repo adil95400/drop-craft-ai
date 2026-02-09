@@ -206,8 +206,8 @@ export function MappingPresets({ currentMapping, onApplyPreset, headers }: Mappi
                 <DropdownMenuItem key={preset.id} className="gap-2 group" onClick={() => applyCustomPreset(preset)}>
                   <FileSpreadsheet className="w-4 h-4 text-primary" />
                   <span className="flex-1">{preset.name}</span>
-                  {preset.usage_count > 0 && (
-                    <span className="text-[10px] text-muted-foreground">{preset.usage_count}×</span>
+                  {preset.use_count > 0 && (
+                    <span className="text-[10px] text-muted-foreground">{preset.use_count}×</span>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(preset.id) }}
