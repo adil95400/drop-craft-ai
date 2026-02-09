@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { importJobsApi } from '@/services/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,22 +86,14 @@ export function SupplierImportPanel() {
     }
   });
 
-  // Fetch import history
+  // Fetch import history via API V1
   const { data: importHistory = [] } = useQuery({
     queryKey: ['import-history'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
-
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      return data || [];
+      try {
+        const resp = await importJobsApi.list({ per_page: 10 });
+        return resp.items || [];
+      } catch { return []; }
     }
   });
 

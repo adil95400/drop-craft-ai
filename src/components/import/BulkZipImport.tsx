@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { importJobsApi } from '@/services/api/client'
 import { productionLogger } from '@/utils/productionLogger'
 
 interface ImportJob {
@@ -46,42 +47,31 @@ export const BulkZipImport = () => {
 
       if (uploadError) throw uploadError
 
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
+      // Create import job via API V1
+      const jobResp = await importJobsApi.create({
+        source: 'bulk_zip',
+        settings: {
+          filename: zipFile.name,
+          size: zipFile.size,
+          type: 'application/zip',
+          source_url: uploadData.path
+        }
+      })
 
-      // Create import job record
-      const { data: jobData, error: jobError } = await supabase
-        .from('import_jobs')
-        .insert({
-          user_id: user.id,
-          job_type: 'bulk',
-          supplier_id: 'bulk_zip',
-          status: 'processing',
-          import_settings: {
-            filename: zipFile.name,
-            size: zipFile.size,
-            type: 'application/zip',
-            source_url: uploadData.path
-          }
-        })
-        .select()
-        .single()
-
-      if (jobError) throw jobError
+      const jobId = jobResp.job_id
 
       // Process the ZIP file using edge function
       const { data: processData, error: processError } = await supabase.functions.invoke('bulk-zip-import', {
         body: {
           filePath: uploadData.path,
-          jobId: jobData.id
+          jobId: jobId
         }
       })
 
       if (processError) throw processError
 
       const newJob: ImportJob = {
-        id: jobData.id,
+        id: jobId,
         filename: zipFile.name,
         status: 'processing',
         progress: 0,

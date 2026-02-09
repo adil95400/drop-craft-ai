@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { importJobsApi } from '@/services/api/client'
 
 export interface ImportedProduct {
   id: string
@@ -92,7 +93,7 @@ export const useUnifiedImport = () => {
     }
   })
 
-  // Fetch import history
+  // Fetch import history via API V1
   const { 
     data: importHistory = [], 
     isLoading: isLoadingHistory,
@@ -100,18 +101,10 @@ export const useUnifiedImport = () => {
   } = useQuery({
     queryKey: ['import-history'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return []
-
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50)
-
-      if (error) throw error
-      return data || []
+      try {
+        const resp = await importJobsApi.list({ per_page: 50 })
+        return resp.items || []
+      } catch { return [] }
     }
   })
 
