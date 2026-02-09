@@ -6,6 +6,54 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// ── Versioned prompts (stored in code, not in DB) ──────────────────────
+const PROMPT_VERSION = "1.2.0";
+
+const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`;
+
+function buildUserPrompt(product: any, language: string, tone: string): string {
+  return `Enrichis ce produit pour le rendre attractif et SEO-optimisé.
+
+Produit actuel:
+- Titre: ${product.title || "N/A"}
+- Description: ${product.description || "N/A"}
+- Catégorie: ${product.category || "N/A"}
+- Prix: ${product.price || "N/A"}
+
+Langue cible: ${language}
+Ton de marque: ${tone}
+
+Génère un JSON avec:
+- title: titre optimisé (max 80 caractères, avec mots-clés pertinents)
+- description: description enrichie (150-300 mots, persuasive, SEO-friendly)
+- category: catégorie suggérée si manquante ou améliorée
+- seo_title: balise title SEO (max 60 caractères)
+- seo_description: meta description (max 160 caractères)
+- tags: tableau de 5-8 tags pertinents`;
+}
+
+const OPENAI_TOOL = {
+  type: "function" as const,
+  function: {
+    name: "enrich_product",
+    description: "Enrichit un produit e-commerce avec du contenu optimisé SEO",
+    parameters: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Titre optimisé (max 80 car.)" },
+        description: { type: "string", description: "Description enrichie (150-300 mots)" },
+        category: { type: "string", description: "Catégorie suggérée" },
+        seo_title: { type: "string", description: "Balise title SEO (max 60 car.)" },
+        seo_description: { type: "string", description: "Meta description (max 160 car.)" },
+        tags: { type: "array", items: { type: "string" }, description: "5-8 tags pertinents" },
+      },
+      required: ["title", "description"],
+      additionalProperties: false,
+    },
+  },
+};
+
+// ── Main handler ───────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -24,7 +72,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Auth from JWT
+    // Auth
     const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
@@ -44,9 +92,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "AI service not configured" }), {
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) {
+      return new Response(JSON.stringify({ error: "OPENAI_API_KEY not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -64,21 +112,24 @@ Deno.serve(async (req) => {
         items_succeeded: 0,
         items_failed: 0,
         progress_percent: 0,
-        name: `Enrichissement IA (${product_ids.length} produits)`,
+        name: `Enrichissement IA OpenAI (${product_ids.length} produits)`,
         started_at: new Date().toISOString(),
+        metadata: { prompt_version: PROMPT_VERSION, model: "gpt-4.1-mini", language, tone },
       })
       .select("id")
       .single();
 
     if (jobError) throw jobError;
 
-    // Process in background (non-blocking)
+    // ── Background processing ──────────────────────────────────────────
     const processProducts = async () => {
       let succeeded = 0;
       let failed = 0;
 
       for (let i = 0; i < product_ids.length; i++) {
         const productId = product_ids[i];
+        const startTime = Date.now();
+
         try {
           // Fetch product
           const { data: product } = await supabase
@@ -93,98 +144,91 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // AI enrichment call
-          const prompt = `Tu es un expert e-commerce. Enrichis ce produit pour le rendre attractif et SEO-optimisé.
+          const userPrompt = buildUserPrompt(product, language, tone);
 
-Produit actuel:
-- Titre: ${product.title || "N/A"}
-- Description: ${product.description || "N/A"}
-- Catégorie: ${product.category || "N/A"}
-- Prix: ${product.price || "N/A"}
-
-Langue: ${language}
-Ton: ${tone}
-
-Génère un JSON avec:
-- title: titre optimisé (max 80 caractères, avec mots-clés)
-- description: description enrichie (150-300 mots, persuasive, SEO)
-- category: catégorie suggérée si manquante
-- seo_title: balise title SEO (max 60 car.)
-- seo_description: meta description (max 160 car.)
-- tags: tableau de 5-8 tags pertinents`;
-
-          const aiResponse = await fetch(
-            "https://ai.gateway.lovable.dev/v1/chat/completions",
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "google/gemini-3-flash-preview",
-                messages: [
-                  { role: "system", content: "Tu retournes uniquement du JSON valide, sans markdown ni backticks." },
-                  { role: "user", content: prompt },
-                ],
-                tools: [
-                  {
-                    type: "function",
-                    function: {
-                      name: "enrich_product",
-                      description: "Enrichit un produit avec du contenu optimisé",
-                      parameters: {
-                        type: "object",
-                        properties: {
-                          title: { type: "string" },
-                          description: { type: "string" },
-                          category: { type: "string" },
-                          seo_title: { type: "string" },
-                          seo_description: { type: "string" },
-                          tags: { type: "array", items: { type: "string" } },
-                        },
-                        required: ["title", "description"],
-                        additionalProperties: false,
-                      },
-                    },
-                  },
-                ],
-                tool_choice: { type: "function", function: { name: "enrich_product" } },
-              }),
-            }
-          );
+          // Call OpenAI directly
+          const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${OPENAI_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "gpt-4.1-mini",
+              messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: userPrompt },
+              ],
+              tools: [OPENAI_TOOL],
+              tool_choice: { type: "function", function: { name: "enrich_product" } },
+              temperature: 0.7,
+            }),
+          });
 
           if (!aiResponse.ok) {
-            console.error(`AI error for ${productId}:`, aiResponse.status);
+            const errBody = await aiResponse.text();
+            console.error(`OpenAI error for ${productId}: ${aiResponse.status} ${errBody}`);
             failed++;
+
+            // Persist failure in ai_generated_content
+            await supabase.from("ai_generated_content").insert({
+              user_id: user.id,
+              product_id: productId,
+              content_type: "enrichment",
+              generated_content: "",
+              status: "failed",
+              variables_used: { error: errBody, model: "gpt-4.1-mini", prompt_version: PROMPT_VERSION },
+            });
+            continue;
+          }
+
+          const aiData = await aiResponse.json();
+          const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+          let enriched: any = {};
+
+          if (toolCall?.function?.arguments) {
+            enriched = JSON.parse(toolCall.function.arguments);
+          }
+
+          const durationMs = Date.now() - startTime;
+          const tokensUsed = aiData.usage?.total_tokens || null;
+
+          // Persist AI result in DB
+          await supabase.from("ai_generated_content").insert({
+            user_id: user.id,
+            product_id: productId,
+            content_type: "enrichment",
+            generated_content: JSON.stringify(enriched),
+            original_content: JSON.stringify({ title: product.title, description: product.description }),
+            status: "generated",
+            generation_time_ms: durationMs,
+            tokens_used: tokensUsed,
+            variables_used: {
+              model: "gpt-4.1-mini",
+              prompt_version: PROMPT_VERSION,
+              language,
+              tone,
+            },
+          });
+
+          // Update product
+          const updateData: any = {};
+          if (enriched.title) updateData.title = enriched.title;
+          if (enriched.description) updateData.description = enriched.description;
+          if (enriched.category) updateData.category = enriched.category;
+          if (enriched.seo_title) updateData.seo_title = enriched.seo_title;
+          if (enriched.seo_description) updateData.seo_description = enriched.seo_description;
+          if (enriched.tags) updateData.tags = enriched.tags;
+
+          if (Object.keys(updateData).length > 0) {
+            await supabase
+              .from("products")
+              .update(updateData)
+              .eq("id", productId)
+              .eq("user_id", user.id);
+            succeeded++;
           } else {
-            const aiData = await aiResponse.json();
-            const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-            let enriched: any = {};
-
-            if (toolCall?.function?.arguments) {
-              enriched = JSON.parse(toolCall.function.arguments);
-            }
-
-            // Update product
-            const updateData: any = {};
-            if (enriched.title) updateData.title = enriched.title;
-            if (enriched.description) updateData.description = enriched.description;
-            if (enriched.category) updateData.category = enriched.category;
-            if (enriched.seo_title) updateData.seo_title = enriched.seo_title;
-            if (enriched.seo_description) updateData.seo_description = enriched.seo_description;
-            if (enriched.tags) updateData.tags = enriched.tags;
-
-            if (Object.keys(updateData).length > 0) {
-              await supabase
-                .from("products")
-                .update(updateData)
-                .eq("id", productId)
-                .eq("user_id", user.id);
-              succeeded++;
-            } else {
-              failed++;
-            }
+            failed++;
           }
         } catch (err) {
           console.error(`Error enriching ${productId}:`, err);
@@ -225,7 +269,7 @@ Génère un JSON avec:
     );
 
     return new Response(
-      JSON.stringify({ success: true, job_id: job.id, message: "Enrichissement IA démarré" }),
+      JSON.stringify({ success: true, job_id: job.id, message: "Enrichissement IA OpenAI démarré" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
