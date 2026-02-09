@@ -648,6 +648,230 @@ function suggestMapping(columns: string[]): Record<string, { field: string }> {
   return mapping;
 }
 
+// ── AI Enrichment Handlers ───────────────────────────────────────────────────
+
+async function createAiEnrichment(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.product_ids?.length) return errorResponse("VALIDATION_ERROR", "product_ids required", 400, reqId, [{ field: "product_ids", reason: "required" }]);
+
+  const admin = serviceClient();
+  const { data: job, error } = await admin
+    .from("background_jobs")
+    .insert({
+      user_id: auth.user.id,
+      job_type: "ai_enrichment",
+      job_subtype: "seo",
+      status: "queued",
+      name: `AI Enrichment (${body.product_ids.length} products)`,
+      input_data: {
+        product_ids: body.product_ids,
+        language: body.language ?? "fr",
+        tone: body.tone ?? "premium",
+        targets: body.targets ?? ["seo_title", "meta_description", "tags"],
+        store_id: body.store_id,
+      },
+      metadata: { idempotency_key: req.headers.get("idempotency-key") },
+      items_total: body.product_ids.length,
+      items_processed: 0,
+      items_succeeded: 0,
+      items_failed: 0,
+      progress_percent: 0,
+    })
+    .select("id, status")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  // Create individual job items for each product
+  const items = body.product_ids.map((pid: string, i: number) => ({
+    job_id: job.id,
+    row_number: i + 1,
+    status: "pending",
+    raw_data: { product_id: pid },
+    mapped_data: null,
+    product_id: pid,
+  }));
+
+  await admin.from("import_job_items").insert(items);
+
+  // Fire-and-forget: process enrichments asynchronously
+  processAiEnrichments(job.id, auth.user.id, body).catch(console.error);
+
+  return json({ job_id: job.id, status: "queued" }, 201, reqId);
+}
+
+async function processAiEnrichments(jobId: string, userId: string, params: any) {
+  const admin = serviceClient();
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!apiKey) {
+    await admin.from("background_jobs").update({ status: "failed", error_message: "LOVABLE_API_KEY not configured" }).eq("id", jobId);
+    return;
+  }
+
+  await admin.from("background_jobs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", jobId);
+
+  const { product_ids, language, tone, targets } = params;
+  let succeeded = 0, failed = 0;
+
+  for (let i = 0; i < product_ids.length; i++) {
+    const productId = product_ids[i];
+    try {
+      // Fetch product
+      const { data: product } = await admin.from("products").select("title, description, tags, seo_title, seo_description, sku").eq("id", productId).single();
+      if (!product) throw new Error("Product not found");
+
+      const prompt = `Tu es un expert SEO e-commerce. Génère du contenu optimisé pour ce produit.
+Langue: ${language ?? "fr"}, Ton: ${tone ?? "premium"}
+Produit: ${product.title}
+Description actuelle: ${product.description ?? "aucune"}
+Tags actuels: ${(product.tags ?? []).join(", ") || "aucun"}
+SKU: ${product.sku ?? "N/A"}
+
+Retourne UNIQUEMENT un JSON avec les champs demandés: ${(targets ?? ["seo_title", "meta_description", "tags"]).join(", ")}
+Format: { "seo_title": "...", "meta_description": "...", "tags": ["..."] }`;
+
+      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+
+      if (!aiResp.ok) {
+        const status = aiResp.status;
+        throw new Error(status === 429 ? "Rate limited" : status === 402 ? "Credits exhausted" : `AI error ${status}`);
+      }
+
+      const aiData = await aiResp.json();
+      const content = aiData.choices?.[0]?.message?.content ?? "";
+
+      // Extract JSON from response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const generated = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+
+      // Update product with generated content
+      const updates: any = {};
+      if (generated.seo_title) updates.seo_title = generated.seo_title;
+      if (generated.meta_description) updates.seo_description = generated.meta_description;
+      if (generated.tags) updates.tags = generated.tags;
+
+      if (Object.keys(updates).length > 0) {
+        await admin.from("products").update(updates).eq("id", productId);
+      }
+
+      // Update job item
+      await admin.from("import_job_items").update({
+        status: "success",
+        mapped_data: generated,
+        updated_at: new Date().toISOString(),
+      }).eq("job_id", jobId).eq("product_id", productId);
+
+      succeeded++;
+    } catch (err: any) {
+      await admin.from("import_job_items").update({
+        status: "failed",
+        errors: [{ code: "AI_ERROR", message: err.message }],
+        updated_at: new Date().toISOString(),
+      }).eq("job_id", jobId).eq("product_id", productId);
+      failed++;
+    }
+
+    // Update progress
+    const processed = succeeded + failed;
+    await admin.from("background_jobs").update({
+      items_processed: processed,
+      items_succeeded: succeeded,
+      items_failed: failed,
+      progress_percent: Math.round((processed / product_ids.length) * 100),
+      updated_at: new Date().toISOString(),
+    }).eq("id", jobId);
+  }
+
+  await admin.from("background_jobs").update({
+    status: failed === product_ids.length ? "failed" : "completed",
+    completed_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }).eq("id", jobId);
+}
+
+async function getAiEnrichment(jobId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin
+    .from("background_jobs")
+    .select("*")
+    .eq("id", jobId)
+    .eq("user_id", auth.user.id)
+    .eq("job_type", "ai_enrichment")
+    .single();
+
+  if (error || !data) return errorResponse("NOT_FOUND", "Enrichment job not found", 404, reqId);
+  const job = mapJobRow(data);
+  return json(job, 200, reqId);
+}
+
+async function getAiEnrichmentItems(jobId: string, url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  // Reuse the same getJobItems logic — items are in import_job_items
+  return await getJobItems(jobId, url, auth, reqId);
+}
+
+// ── Drafts Handlers ──────────────────────────────────────────────────────────
+
+async function listDrafts(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+
+  const { data, count, error } = await admin
+    .from("products")
+    .select("id, title, description, sku, cost_price, status, images, tags, seo_title, seo_description, created_at, updated_at", { count: "exact" })
+    .eq("user_id", auth.user.id)
+    .eq("status", "draft")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({
+    items: data ?? [],
+    meta: { page, per_page: perPage, total: count ?? 0 },
+  }, 200, reqId);
+}
+
+async function publishDrafts(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.draft_ids?.length) return errorResponse("VALIDATION_ERROR", "draft_ids required", 400, reqId);
+
+  const admin = serviceClient();
+
+  // Verify ownership and draft status
+  const { data: drafts, error: fetchErr } = await admin
+    .from("products")
+    .select("id, status")
+    .eq("user_id", auth.user.id)
+    .in("id", body.draft_ids)
+    .eq("status", "draft");
+
+  if (fetchErr) return errorResponse("DB_ERROR", fetchErr.message, 500, reqId);
+
+  const validIds = (drafts ?? []).map((d: any) => d.id);
+  if (validIds.length === 0) return errorResponse("NOT_FOUND", "No valid drafts found", 404, reqId);
+
+  // Update status to active
+  const { error: updateErr } = await admin
+    .from("products")
+    .update({ status: "active", updated_at: new Date().toISOString() })
+    .in("id", validIds);
+
+  if (updateErr) return errorResponse("DB_ERROR", updateErr.message, 500, reqId);
+
+  return json({
+    published: validIds.length,
+    skipped: body.draft_ids.length - validIds.length,
+    product_ids: validIds,
+  }, 200, reqId);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -686,9 +910,10 @@ Deno.serve(async (req) => {
     if (req.method === "POST" && cancelMatch) return await cancelJob(cancelMatch.params.jobId, auth, reqId);
 
     // ── Presets ─────────────────────────────────────────────────
+    // IMPORTANT: /import route must come before /:presetId to avoid matching "import" as a presetId
+    if (req.method === "POST" && matchRoute("/v1/import/presets/import", apiPath)) return await importPreset(req, auth, reqId);
     if (req.method === "GET" && matchRoute("/v1/import/presets", apiPath)) return await listPresets(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/import/presets", apiPath)) return await createPreset(req, auth, reqId);
-    if (req.method === "POST" && matchRoute("/v1/import/presets/import", apiPath)) return await importPreset(req, auth, reqId);
 
     const presetMatch = matchRoute("/v1/import/presets/:presetId", apiPath);
     if (req.method === "GET" && presetMatch) return await getPreset(presetMatch.params.presetId, auth, reqId);
@@ -706,6 +931,19 @@ Deno.serve(async (req) => {
 
     const analyzeMatch = matchRoute("/v1/import/csv/uploads/:uploadId/analyze", apiPath);
     if (req.method === "POST" && analyzeMatch) return await analyzeUpload(analyzeMatch.params.uploadId, req, auth, reqId);
+
+    // ── AI Enrichments ──────────────────────────────────────────
+    if (req.method === "POST" && matchRoute("/v1/ai/enrichments", apiPath)) return await createAiEnrichment(req, auth, reqId);
+
+    const aiJobMatch = matchRoute("/v1/ai/enrichments/:jobId", apiPath);
+    if (req.method === "GET" && aiJobMatch) return await getAiEnrichment(aiJobMatch.params.jobId, auth, reqId);
+
+    const aiItemsMatch = matchRoute("/v1/ai/enrichments/:jobId/items", apiPath);
+    if (req.method === "GET" && aiItemsMatch) return await getAiEnrichmentItems(aiItemsMatch.params.jobId, url, auth, reqId);
+
+    // ── Drafts / Publish ────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/products/drafts", apiPath)) return await listDrafts(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/products/drafts/publish", apiPath)) return await publishDrafts(req, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
