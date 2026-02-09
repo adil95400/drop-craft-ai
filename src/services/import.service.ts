@@ -285,8 +285,11 @@ export class ImportService {
 
     switch (dataType) {
       case 'products': {
-        const result = await supabase.from('products').update(cleanRow).eq('id', id).eq('user_id', userId)
-        error = result.error
+        try {
+          await productsApi.update(id, cleanRow as any)
+        } catch (e: any) {
+          error = e
+        }
         break
       }
       case 'customers': {
