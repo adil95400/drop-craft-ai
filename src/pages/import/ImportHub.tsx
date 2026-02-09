@@ -46,6 +46,7 @@ import { ImportOnboardingModal, useImportOnboarding } from '@/components/import/
 import { ImportCostAnalysis } from '@/components/import/cost/ImportCostAnalysis';
 
 const AliExpressConnectorLazy = lazy(() => import('@/components/import/AliExpressConnector').then(m => ({ default: m.AliExpressConnector })));
+const CJConnectorLazy = lazy(() => import('@/components/import/CJConnector').then(m => ({ default: m.CJConnector })));
 
 // Logos des plateformes
 const platformLogos: Record<string, string> = {
@@ -533,6 +534,10 @@ function ImportHubContent() {
                 <Rocket className="w-4 h-4 mr-2" />
                 AliExpress API
               </TabsTrigger>
+              <TabsTrigger value="cj" className="data-[state=active]:bg-background">
+                <Package className="w-4 h-4 mr-2" />
+                CJ Dropshipping
+              </TabsTrigger>
               <TabsTrigger value="historique" className="data-[state=active]:bg-background">
                 <History className="w-4 h-4 mr-2" />
                 Historique
@@ -977,6 +982,13 @@ function ImportHubContent() {
           <TabsContent value="aliexpress" className="space-y-6 mt-0">
             <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>}>
               <AliExpressConnectorLazy />
+            </Suspense>
+          </TabsContent>
+
+          {/* Onglet CJ Dropshipping */}
+          <TabsContent value="cj" className="space-y-6 mt-0">
+            <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>}>
+              <CJConnectorLazy />
             </Suspense>
           </TabsContent>
 
