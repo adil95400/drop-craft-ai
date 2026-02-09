@@ -1,6 +1,7 @@
 /**
- * Import Manager Service - Uses existing import_jobs table schema
+ * Import Manager Service - Uses API V1 client
  */
+import { importJobsApi } from '@/services/api/client'
 import { supabase } from '@/integrations/supabase/client'
 
 export interface ImportJob {
@@ -35,122 +36,81 @@ export interface SyncSchedule {
   nextRun: Date;
 }
 
+function mapJobResponse(job: any): ImportJob {
+  const processed = (job.progress?.processed ?? 0)
+  const total = (job.progress?.total ?? 1)
+  return {
+    id: job.job_id || job.id,
+    type: (job.job_type || job.source || 'url') as ImportJob['type'],
+    status: job.status as ImportJob['status'],
+    progress: total > 0 ? Math.round((processed / total) * 100) : 0,
+    totalItems: job.progress?.total ?? 0,
+    processedItems: processed,
+    successItems: job.progress?.success ?? 0,
+    errorItems: job.progress?.failed ?? 0,
+    createdAt: new Date(job.created_at),
+    completedAt: job.completed_at ? new Date(job.completed_at) : undefined,
+    errors: [],
+    total_rows: job.progress?.total,
+    success_rows: job.progress?.success,
+  }
+}
+
 class ImportManagerService {
   async createImportJob(type: ImportJob['type'], data: any): Promise<ImportJob> {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) throw new Error('Non authentifié')
-
-    const totalItems = Array.isArray(data) ? data.length : 
-                       data?.products?.length || data?.items?.length || 0
-
-    const { data: jobData, error } = await supabase
-      .from('import_jobs')
-      .insert({
-        user_id: userData.user.id,
-        job_type: type,
-        source_platform: type,
-        source_url: data?.url || '',
-        status: 'pending',
-        total_products: totalItems,
-        successful_imports: 0,
-        failed_imports: 0,
-        error_log: []
-      })
-      .select()
-      .single()
-
-    if (error) throw new Error(`Échec de création: ${error.message}`)
+    const resp = await importJobsApi.create({
+      source: type,
+      url: data?.url,
+      settings: data,
+    })
 
     return {
-      id: jobData.id,
+      id: resp.job_id,
       type,
       status: 'pending',
       progress: 0,
-      totalItems,
+      totalItems: Array.isArray(data) ? data.length : data?.products?.length || 0,
       processedItems: 0,
       successItems: 0,
       errorItems: 0,
-      createdAt: new Date(jobData.created_at),
+      createdAt: new Date(),
       errors: [],
-      total_rows: totalItems,
-      success_rows: 0
+      total_rows: 0,
+      success_rows: 0,
     }
   }
 
   async getJob(id: string): Promise<ImportJob | undefined> {
-    const { data, error } = await supabase
-      .from('import_jobs')
-      .select('*')
-      .eq('id', id)
-      .single()
-
-    if (error || !data) return undefined
-
-    const processed = (data.successful_imports || 0) + (data.failed_imports || 0)
-    const total = data.total_products || 1
-    
-    return {
-      id: data.id,
-      type: data.job_type as ImportJob['type'],
-      status: data.status as ImportJob['status'],
-      progress: Math.round((processed / total) * 100),
-      totalItems: data.total_products || 0,
-      processedItems: processed,
-      successItems: data.successful_imports || 0,
-      errorItems: data.failed_imports || 0,
-      createdAt: new Date(data.created_at),
-      completedAt: data.completed_at ? new Date(data.completed_at) : undefined,
-      errors: (data.error_log as string[]) || [],
-      total_rows: data.total_products,
-      success_rows: data.successful_imports
+    try {
+      const job = await importJobsApi.get(id)
+      if (!job) return undefined
+      return mapJobResponse(job)
+    } catch {
+      return undefined
     }
   }
 
   async getAllJobs(): Promise<ImportJob[]> {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) return []
-
-    const { data, error } = await supabase
-      .from('import_jobs')
-      .select('*')
-      .eq('user_id', userData.user.id)
-      .order('created_at', { ascending: false })
-      .limit(50)
-
-    if (error || !data) return []
-
-    return data.map(job => {
-      const processed = (job.successful_imports || 0) + (job.failed_imports || 0)
-      const total = job.total_products || 1
-      return {
-        id: job.id,
-        type: job.job_type as ImportJob['type'],
-        status: job.status as ImportJob['status'],
-        progress: Math.round((processed / total) * 100),
-        totalItems: job.total_products || 0,
-        processedItems: processed,
-        successItems: job.successful_imports || 0,
-        errorItems: job.failed_imports || 0,
-        createdAt: new Date(job.created_at),
-        completedAt: job.completed_at ? new Date(job.completed_at) : undefined,
-        errors: (job.error_log as string[]) || [],
-        total_rows: job.total_products,
-        success_rows: job.successful_imports
-      }
-    })
+    try {
+      const resp = await importJobsApi.list({ per_page: 50 })
+      return (resp.items || []).map(mapJobResponse)
+    } catch {
+      return []
+    }
   }
 
   async cancelJob(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('import_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
-      .eq('id', id)
-    return !error
+    try {
+      await importJobsApi.cancel(id)
+      return true
+    } catch {
+      return false
+    }
   }
 
   getTemplates(): ImportTemplate[] { return [] }
   
-  async createTemplate(t: Omit<ImportTemplate, 'id' | 'created_at' | 'updated_at'>): Promise<ImportTemplate> { 
+  async createTemplate(t: Omit<ImportTemplate, 'id'>): Promise<ImportTemplate> { 
     return { ...t, id: crypto.randomUUID() } 
   }
   
@@ -176,26 +136,13 @@ class ImportManagerService {
   }
 
   async importFromFtp(
-    ftpUrl: string, 
-    username: string, 
-    password: string, 
-    filePath: string, 
-    templateId?: string, 
-    config?: any
+    ftpUrl: string, username: string, password: string, filePath: string,
+    templateId?: string, config?: any
   ): Promise<ImportJob> {
-    return this.createImportJob('api', { 
-      source: 'ftp', 
-      ftpUrl, 
-      username, 
-      filePath, 
-      templateId, 
-      ...config 
-    })
+    return this.createImportJob('api', { source: 'ftp', ftpUrl, username, filePath, templateId, ...config })
   }
 
-  autoDetectFields(sampleData: any[], fileType: string): any { 
-    return {} 
-  }
+  autoDetectFields(sampleData: any[], fileType: string): any { return {} }
 }
 
 export const importManager = new ImportManagerService()

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { importJobsApi } from '@/services/api/client'
 
 interface BulkImportOptions {
   auto_optimize?: boolean
@@ -30,11 +31,7 @@ export function useBulkImport() {
       toast.loading(`Import de ${products.length} produits en cours...`)
 
       const { data, error } = await supabase.functions.invoke('bulk-import-products', {
-        body: {
-          products,
-          source,
-          options
-        }
+        body: { products, source, options }
       })
 
       if (error) throw error
@@ -42,48 +39,38 @@ export function useBulkImport() {
       const jobId = data.job_id
       setCurrentJobId(jobId)
 
-      // Poll for progress
+      // Poll for progress via API V1
       const pollInterval = setInterval(async () => {
-        const { data: job, error: jobError } = await supabase
-          .from('import_jobs')
-          .select('*')
-          .eq('id', jobId)
-          .single()
+        try {
+          const job = await importJobsApi.get(jobId)
 
-        if (jobError) {
-          console.error('Error fetching job:', jobError)
-          clearInterval(pollInterval)
-          setIsImporting(false)
-          return
-        }
+          if (job) {
+            const processed = (job.progress?.processed ?? 0)
+            const total = (job.progress?.total ?? 1)
+            const calculatedProgress = total > 0 ? Math.round((processed / total) * 100) : 0
+            setProgress(calculatedProgress)
 
-        if (job) {
-          const processedProducts = job.successful_imports + job.failed_imports;
-          const calculatedProgress = job.total_products > 0 
-            ? Math.round((processedProducts / job.total_products) * 100)
-            : 0
-          
-          setProgress(calculatedProgress)
+            const status = job.status
+            if (status === 'completed' || status === 'failed' || status === 'partial') {
+              clearInterval(pollInterval)
+              setIsImporting(false)
+              setProgress(100)
 
-          if (job.status === 'completed' || job.status === 'failed' || job.status === 'partial') {
-            clearInterval(pollInterval)
-            setIsImporting(false)
-            setProgress(100)
-
-            const successCount = job.total_products - job.failed_imports
-            if (job.status === 'completed') {
-              toast.success(`${successCount} produits importés avec succès!`)
-            } else if (job.status === 'partial') {
-              toast.warning(
-                `${successCount} produits importés, ${job.failed_imports} erreurs`
-              )
-            } else {
-              const errorMsg = Array.isArray(job.error_log) && job.error_log.length > 0
-                ? String(job.error_log[0])
-                : 'Erreur inconnue'
-              toast.error(`Import échoué: ${errorMsg}`)
+              const successCount = job.progress?.success ?? 0
+              const failedCount = job.progress?.failed ?? 0
+              if (status === 'completed') {
+                toast.success(`${successCount} produits importés avec succès!`)
+              } else if (status === 'partial') {
+                toast.warning(`${successCount} produits importés, ${failedCount} erreurs`)
+              } else {
+                toast.error(`Import échoué`)
+              }
             }
           }
+        } catch (err) {
+          console.error('Error polling job:', err)
+          clearInterval(pollInterval)
+          setIsImporting(false)
         }
       }, 2000)
 
@@ -99,11 +86,7 @@ export function useBulkImport() {
   const cancelImport = async () => {
     if (currentJobId) {
       try {
-        await supabase
-          .from('import_jobs')
-          .update({ status: 'cancelled' })
-          .eq('id', currentJobId)
-
+        await importJobsApi.cancel(currentJobId)
         toast.info('Import annulé')
         setIsImporting(false)
         setCurrentJobId(null)
