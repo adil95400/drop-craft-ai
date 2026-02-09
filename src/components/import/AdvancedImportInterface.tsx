@@ -171,33 +171,22 @@ export const AdvancedImportInterface = () => {
     setTestingMethod(methodId)
     
     try {
-      // Simulation d'un test de connexion
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Real connectivity test via API health check
+      const { supabase } = await import('@/integrations/supabase/client')
+      const { data, error } = await supabase.functions.invoke('api-v1', {
+        body: {},
+        headers: { 'x-action': 'health' }
+      })
       
-      switch (methodId) {
-        case 'shopify':
-          toast.success('Connexion Shopify testée avec succès')
-          break
-        case 'woocommerce':
-          toast.success('Connexion WooCommerce testée avec succès')
-          break
-        case 'aliexpress':
-          toast.success('API AliExpress fonctionnelle')
-          break
-        case 'bigbuy':
-          toast.success('Connexion BigBuy établie')
-          break
-        case 'csv':
-          toast.success('Module CSV prêt à l\'utilisation')
-          break
-        case 'url':
-          toast.success('Extracteur URL opérationnel')
-          break
-        default:
-          toast.success('Test réussi')
+      if (error) throw error
+      
+      const labels: Record<string, string> = {
+        shopify: 'Shopify', woocommerce: 'WooCommerce', aliexpress: 'AliExpress',
+        bigbuy: 'BigBuy', csv: 'CSV', url: 'URL', xml: 'XML', googlesheets: 'Google Sheets'
       }
+      toast.success(`${labels[methodId] || methodId} — Backend opérationnel`)
     } catch (error) {
-      toast.error('Erreur lors du test de connexion')
+      toast.error('Erreur : le backend ne répond pas')
     } finally {
       setTestingMethod(null)
     }
@@ -244,8 +233,8 @@ export const AdvancedImportInterface = () => {
         });
         break
       default:
-        toast.info('Fonctionnalité disponible prochainement', {
-          description: 'Cette méthode d\'import sera disponible dans une future version'
+        toast.warning('Méthode non configurée', {
+          description: 'Configurez cette méthode d\'import dans Paramètres > Intégrations'
         });
     }
   }, [])
@@ -257,16 +246,11 @@ export const AdvancedImportInterface = () => {
     }
 
     setIsProcessing(true)
-    setImportProgress(0)
+    setImportProgress(10)
 
     try {
-      // Simulation du processus d'import
-      for (let i = 0; i <= 100; i += 20) {
-        setImportProgress(i)
-        await new Promise(resolve => setTimeout(resolve, 500))
-      }
-
       importFromUrl({ url, config: { auto_optimize: true } })
+      setImportProgress(100)
       setShowMapping(true)
     } catch (error) {
       toast.error('Erreur lors de l\'import URL')
