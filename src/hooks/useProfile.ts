@@ -77,8 +77,8 @@ export function useProfile() {
       }
 
       // Enrich with counts from other tables
-      const [productsResult, ordersResult] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      const [productStats, ordersResult] = await Promise.all([
+        import('@/services/api/productHelpers').then(m => m.getProductCount()),
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
       ])
 
@@ -98,7 +98,7 @@ export function useProfile() {
         github: data.github || null,
         subscription_plan: data.subscription_plan || 'free',
         email_verified: true,
-        products_count: productsResult.count || 0,
+        products_count: productStats || 0,
         orders_count: ordersResult.count || 0,
         imports_count: 0,
         sessions_count: 0,

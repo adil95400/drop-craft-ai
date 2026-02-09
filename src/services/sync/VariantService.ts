@@ -108,13 +108,13 @@ export class VariantService {
   }
 
   async getVariantStats(): Promise<any> {
-    const { data: products } = await (supabase.from('products') as any)
-      .select('sku, category')
-      .like('sku', '%-%')
+    const { getProductList } = await import('@/services/api/productHelpers')
+    const products = await getProductList(500)
+    const withVariants = products.filter((p: any) => p.sku && p.sku.includes('-'))
 
     return {
-      total_variants: products?.length || 0,
-      total_parent_products: new Set((products || []).map((p: any) => p.sku?.split('-')[0])).size
+      total_variants: withVariants.length,
+      total_parent_products: new Set(withVariants.map((p: any) => p.sku?.split('-')[0])).size
     }
   }
 }

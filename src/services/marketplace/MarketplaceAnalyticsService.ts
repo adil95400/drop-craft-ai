@@ -205,11 +205,10 @@ export class MarketplaceAnalyticsService {
    * Résumé alertes
    */
   private async getAlertSummary(userId: string): Promise<AlertSummary> {
-    // Produits faible stock (simplifié)
-    const { data: lowStockProducts } = await (supabase.from('products') as any)
-      .select('id')
-      .eq('user_id', userId)
-      .lt('stock_quantity', 10)
+    // Produits faible stock via API
+    const { productsApi } = await import('@/services/api/client')
+    const stats = await productsApi.stats()
+    const lowStockCount = stats.low_stock || 0
 
     // Intégrations en erreur (simplifié)
     const { data: failedIntegrations } = await (supabase.from('integrations') as any)
@@ -217,7 +216,6 @@ export class MarketplaceAnalyticsService {
       .eq('user_id', userId)
       .eq('is_active', false)
 
-    const lowStockCount = lowStockProducts?.length || 0
     const syncErrorsCount = failedIntegrations?.length || 0
 
     return {

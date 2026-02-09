@@ -209,12 +209,12 @@ export function MarketplaceIntegrationsHub() {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) throw new Error('Non authentifié')
 
-      const [productsResult, ordersResult] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', userData.user.id),
+      const { getProductCount } = await import('@/services/api/productHelpers')
+      const [productsCount, ordersResult] = await Promise.all([
+        getProductCount(),
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', userData.user.id)
       ])
 
-      const productsCount = productsResult.count || 0
       const ordersCount = ordersResult.count || 0
 
       // Update integration stats using 'integrations' table

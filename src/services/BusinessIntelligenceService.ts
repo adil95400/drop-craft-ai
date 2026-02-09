@@ -50,8 +50,9 @@ export class BusinessIntelligenceService {
 
     // Fetch real data from database
     const { data: orders } = await supabase.from('orders').select('*').eq('user_id', currentUser.user.id);
-    const { data: products } = await supabase.from('products').select('*').eq('user_id', currentUser.user.id);
     const { data: customers } = await supabase.from('customers').select('*').eq('user_id', currentUser.user.id);
+    const { getProductList } = await import('@/services/api/productHelpers')
+    const products = await getProductList(500) as any[]
 
     const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
     const totalOrders = orders?.length || 0;
@@ -100,8 +101,9 @@ export class BusinessIntelligenceService {
     if (!currentUser.user) throw new Error('Not authenticated');
 
     // Fetch real data to generate insights
+    const { getProductList } = await import('@/services/api/productHelpers')
     const { data: orders } = await supabase.from('orders').select('*').eq('user_id', currentUser.user.id);
-    const { data: products } = await supabase.from('products').select('*').eq('user_id', currentUser.user.id);
+    const products = await getProductList(500) as any[];
     const { data: customers } = await supabase.from('customers').select('*').eq('user_id', currentUser.user.id);
 
     const insights: BusinessInsight[] = [];

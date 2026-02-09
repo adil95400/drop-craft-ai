@@ -440,10 +440,11 @@ export const useAnalytics = () => {
       setLoading(true);
       
       // Fetch counts from tables directly
-      const [ordersRes, customersRes, productsRes] = await Promise.all([
+      const { getProductCount } = await import('@/services/api/productHelpers')
+      const [ordersRes, customersRes, productCount] = await Promise.all([
         supabase.from('orders').select('total_amount', { count: 'exact' }),
         supabase.from('customers').select('id', { count: 'exact' }),
-        supabase.from('products').select('id', { count: 'exact' })
+        getProductCount()
       ]);
 
       const totalRevenue = ordersRes.data?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
@@ -452,7 +453,7 @@ export const useAnalytics = () => {
         revenue: totalRevenue,
         orders: ordersRes.count || 0,
         customers: customersRes.count || 0,
-        products: productsRes.count || 0,
+        products: productCount,
         conversionRate: 3.2,
         revenueGrowth: 12.5,
         ordersGrowth: 8.3

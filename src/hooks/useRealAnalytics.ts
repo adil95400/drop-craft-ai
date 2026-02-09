@@ -1,9 +1,10 @@
 /**
- * Real Analytics Hook - Uses Supabase direct queries
+ * Real Analytics Hook - Uses API V1 for products, Supabase for orders
  */
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
+import { getProductCount } from '@/services/api/productHelpers'
 
 export interface RealAnalytics {
   revenue: number
@@ -25,14 +26,13 @@ export const useRealAnalytics = () => {
     queryFn: async (): Promise<RealAnalytics> => {
       if (!user?.id) return getEmptyAnalytics()
 
-      // Fetch real data from Supabase tables
-      const [ordersRes, productsRes] = await Promise.all([
+      // Fetch orders from Supabase, products count from API
+      const [ordersRes, productCount] = await Promise.all([
         supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100),
-        supabase.from('products').select('id, name, price').eq('user_id', user.id),
+        getProductCount(),
       ])
 
       const orders = ordersRes.data || []
-      const products = productsRes.data || []
       const totalRevenue = orders.reduce((s, o) => s + (o.total_amount || 0), 0)
       const totalOrders = orders.length
 
@@ -40,7 +40,7 @@ export const useRealAnalytics = () => {
         revenue: totalRevenue,
         orders: totalOrders,
         customers: new Set(orders.map(o => o.customer_email).filter(Boolean)).size,
-        products: products.length,
+        products: productCount,
         averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
         conversionRate: 0,
         topProducts: [],

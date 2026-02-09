@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { getProductList } from '@/services/api/productHelpers'
 
 export interface AIRecommendation {
   id: string
@@ -34,14 +35,15 @@ export const useRealAIRecommendations = (limit = 6, types?: string[]) => {
 
       // Fetch real data
       const [
-        { data: products },
+        productsList,
         { data: orders },
         { data: customers }
       ] = await Promise.all([
-        supabase.from('products').select('*').eq('user_id', user.id),
+        getProductList(500),
         supabase.from('orders').select('*').eq('user_id', user.id),
         supabase.from('customers').select('*').eq('user_id', user.id)
       ])
+      const products = productsList as any[]
 
       const recommendations: AIRecommendation[] = []
 

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { getProductCount, getProductList } from '@/services/api/productHelpers'
 
 // Real production data hooks
 export const useProductionData = () => {
@@ -12,22 +13,20 @@ export const useProductionData = () => {
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
       const [
-        { count: totalProducts },
+        totalProducts,
         { count: totalOrders },
         { count: totalCustomers },
         { data: recentOrders },
-        { data: topProducts }
+        topProducts
       ] = await Promise.all([
-        supabase.from('products').select('*', { count: 'exact', head: true }),
+        getProductCount(),
         supabase.from('orders').select('*', { count: 'exact', head: true }),
         supabase.from('customers').select('*', { count: 'exact', head: true }),
         supabase.from('orders')
           .select('*')
           .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
           .order('created_at', { ascending: false }),
-        supabase.from('products')
-          .select('*')
-          .limit(5)
+        getProductList(5)
       ])
 
       const revenue7d = recentOrders?.reduce((sum, order) => sum + Number(order.total_amount || 0), 0) || 0
@@ -43,18 +42,9 @@ export const useProductionData = () => {
     }
   })
 
-  // Products with real data
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({
     queryKey: ['production-products'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return data || []
-    }
+    queryFn: () => getProductList(500),
   })
 
   // Orders with real data

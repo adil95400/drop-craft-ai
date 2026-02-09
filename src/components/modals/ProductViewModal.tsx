@@ -759,27 +759,21 @@ export function ProductViewModal({
                           }
                           // Real duplicate logic
                           try {
-                            const { data: { user } } = await supabase.auth.getUser();
-                            if (!user) throw new Error('Not authenticated');
-                            
-                            const { error } = await supabase.from('products').insert([{
-                              user_id: user.id,
-                              title: product.name,
-                              name: `${product.name} (copie)`,
+                            const { duplicateProduct } = await import('@/services/api/productHelpers');
+                            await duplicateProduct({
+                              name: product.name,
                               description: product.description,
                               price: product.price,
                               cost_price: product.cost_price,
-                              sku: product.sku ? `${product.sku}-COPY` : null,
+                              sku: product.sku,
                               category: product.category,
                               stock_quantity: product.stock_quantity,
                               image_url: product.image_url,
-                              status: 'draft'
-                            }]);
-                            
-                            if (error) throw error;
+                            });
                             toast({ title: '✅ Produit dupliqué', description: 'Une copie a été créée avec succès' });
                             queryClient.invalidateQueries({ queryKey: ['products'] });
                             queryClient.invalidateQueries({ queryKey: ['unified-products'] });
+                            queryClient.invalidateQueries({ queryKey: ['products-unified'] });
                           } catch (error) {
                             toast({ title: 'Erreur', description: 'Impossible de dupliquer', variant: 'destructive' });
                           }

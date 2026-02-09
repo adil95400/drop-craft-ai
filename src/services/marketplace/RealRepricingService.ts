@@ -191,12 +191,10 @@ export class RealRepricingService {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    // Récupérer les produits monitorés
-    const { data: products } = await (supabase.from('products') as any)
-      .select('id, title, name, price, cost_price')
-      .eq('user_id', userId)
-      .not('cost_price', 'is', null)
-      .limit(500);
+    // Récupérer les produits monitorés via API
+    const { getProductList } = await import('@/services/api/productHelpers')
+    const allProducts = await getProductList(500)
+    const products = allProducts.filter((p: any) => p.cost_price != null)
 
     const activeRules = rules?.length || 0;
     const productsMonitored = products?.length || 0;

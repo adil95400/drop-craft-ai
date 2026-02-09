@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { getProductList } from '@/services/api/productHelpers'
 
 export interface SystemLog {
   id: string
@@ -45,13 +46,14 @@ export const useRealSystemMonitoring = () => {
       // Fetch recent data to analyze system health
       const [
         { data: recentOrders, error: ordersError },
-        { data: recentProducts, error: productsError },
+        recentProducts,
         { data: integrations }
       ] = await Promise.all([
         supabase.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100),
-        supabase.from('products').select('*').eq('user_id', user.id).limit(50),
+        getProductList(50),
         supabase.from('integrations').select('*').eq('user_id', user.id)
       ])
+      const productsError = null
 
       const logs: SystemLog[] = []
       const alerts: SystemAlert[] = []
