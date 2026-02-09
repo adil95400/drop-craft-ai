@@ -287,6 +287,367 @@ function mapJobRow(row: any) {
   };
 }
 
+function mapPresetRow(row: any) {
+  return {
+    id: row.id,
+    name: row.name,
+    scope: row.scope,
+    store_id: row.store_id,
+    platform: row.platform,
+    version: row.version,
+    is_default: row.is_default,
+    columns_signature: row.columns_signature,
+    columns: row.columns,
+    has_header: row.has_header,
+    delimiter: row.delimiter,
+    encoding: row.encoding,
+    mapping: row.mapping,
+    last_used_at: row.last_used_at,
+    use_count: row.usage_count,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+// ── Preset Handlers ──────────────────────────────────────────────────────────
+
+async function listPresets(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const platform = url.searchParams.get("platform");
+  const q = url.searchParams.get("q");
+
+  const admin = serviceClient();
+  let query = admin
+    .from("mapping_presets")
+    .select("*", { count: "exact" })
+    .eq("user_id", auth.user.id)
+    .order("usage_count", { ascending: false })
+    .range(from, to);
+
+  if (platform) query = query.eq("platform", platform);
+  if (q) query = query.ilike("name", `%${q}%`);
+
+  const { data, count, error } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({ items: (data ?? []).map(mapPresetRow), meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function createPreset(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.name) return errorResponse("VALIDATION_ERROR", "name is required", 400, reqId, [{ field: "name", reason: "required" }]);
+  if (!body.mapping || typeof body.mapping !== "object") return errorResponse("VALIDATION_ERROR", "mapping is required", 400, reqId, [{ field: "mapping", reason: "required" }]);
+
+  const admin = serviceClient();
+  const { data, error } = await admin
+    .from("mapping_presets")
+    .insert({
+      user_id: auth.user.id,
+      name: body.name,
+      mapping: body.mapping,
+      platform: body.platform ?? "generic",
+      scope: body.scope ?? "user",
+      store_id: body.store_id ?? null,
+      has_header: body.has_header ?? true,
+      delimiter: body.delimiter ?? ",",
+      encoding: body.encoding ?? "utf-8",
+      columns: body.columns ?? null,
+      columns_signature: body.columns ? await sha256(body.columns.sort().join("|")) : null,
+      icon: body.icon ?? "csv",
+    })
+    .select("id, version")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ id: data.id, version: data.version }, 201, reqId);
+}
+
+async function getPreset(presetId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin
+    .from("mapping_presets")
+    .select("*")
+    .eq("id", presetId)
+    .eq("user_id", auth.user.id)
+    .single();
+
+  if (error || !data) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+  return json(mapPresetRow(data), 200, reqId);
+}
+
+async function updatePreset(presetId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+
+  // Fetch current to increment version
+  const { data: current } = await admin.from("mapping_presets").select("version").eq("id", presetId).eq("user_id", auth.user.id).single();
+  if (!current) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+
+  const updates: any = { version: current.version + 1, updated_at: new Date().toISOString() };
+  if (body.name !== undefined) updates.name = body.name;
+  if (body.mapping !== undefined) updates.mapping = body.mapping;
+  if (body.platform !== undefined) updates.platform = body.platform;
+  if (body.columns !== undefined) {
+    updates.columns = body.columns;
+    updates.columns_signature = await sha256(body.columns.sort().join("|"));
+  }
+  if (body.has_header !== undefined) updates.has_header = body.has_header;
+  if (body.delimiter !== undefined) updates.delimiter = body.delimiter;
+  if (body.encoding !== undefined) updates.encoding = body.encoding;
+
+  const { data, error } = await admin
+    .from("mapping_presets")
+    .update(updates)
+    .eq("id", presetId)
+    .eq("user_id", auth.user.id)
+    .select("id, version")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ id: data.id, version: data.version }, 200, reqId);
+}
+
+async function deletePreset(presetId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("mapping_presets").delete().eq("id", presetId).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+async function setPresetDefault(presetId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json().catch(() => ({}));
+  const admin = serviceClient();
+
+  // Get preset to know platform
+  const { data: preset } = await admin.from("mapping_presets").select("platform").eq("id", presetId).eq("user_id", auth.user.id).single();
+  if (!preset) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+
+  // Unset current defaults for same user + platform
+  await admin.from("mapping_presets").update({ is_default: false }).eq("user_id", auth.user.id).eq("platform", preset.platform).eq("is_default", true);
+
+  // Set new default
+  await admin.from("mapping_presets").update({ is_default: true }).eq("id", presetId);
+
+  return json({ id: presetId, is_default: true }, 200, reqId);
+}
+
+async function exportPreset(presetId: string, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("mapping_presets").select("*").eq("id", presetId).eq("user_id", auth.user.id).single();
+  if (error || !data) return errorResponse("NOT_FOUND", "Preset not found", 404, reqId);
+
+  const { id, user_id, created_at, updated_at, usage_count, last_used_at, ...exportable } = data;
+  return json({ preset: exportable }, 200, reqId);
+}
+
+async function importPreset(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.preset) return errorResponse("VALIDATION_ERROR", "preset object required", 400, reqId);
+
+  const p = body.preset;
+  const admin = serviceClient();
+  const { data, error } = await admin
+    .from("mapping_presets")
+    .insert({
+      user_id: auth.user.id,
+      name: p.name ?? "Imported Preset",
+      mapping: p.mapping ?? {},
+      platform: p.platform ?? "generic",
+      scope: p.scope ?? "user",
+      store_id: p.store_id ?? null,
+      has_header: p.has_header ?? true,
+      delimiter: p.delimiter ?? ",",
+      encoding: p.encoding ?? "utf-8",
+      columns: p.columns ?? null,
+      columns_signature: p.columns_signature ?? null,
+      icon: p.icon ?? "csv",
+      version: 1,
+    })
+    .select("id, version")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ id: data.id, version: data.version }, 201, reqId);
+}
+
+// ── CSV Upload Handlers ──────────────────────────────────────────────────────
+
+async function createUploadSession(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  if (!body.filename) return errorResponse("VALIDATION_ERROR", "filename is required", 400, reqId);
+
+  const admin = serviceClient();
+  const uploadId = crypto.randomUUID();
+  const filePath = `imports/${auth.user.id}/${uploadId}/${body.filename}`;
+
+  // Create signed upload URL
+  const { data: signedData, error: signError } = await admin.storage
+    .from("import-files")
+    .createSignedUploadUrl(filePath);
+
+  // If bucket doesn't exist, create a record without signed URL (client can upload via other means)
+  const uploadUrl = signedData?.signedUrl ?? null;
+
+  const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+
+  const { data, error } = await admin
+    .from("import_uploads")
+    .insert({
+      id: uploadId,
+      user_id: auth.user.id,
+      filename: body.filename,
+      file_path: filePath,
+      status: "pending",
+      expires_at: expiresAt,
+    })
+    .select("id")
+    .single();
+
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({ upload_id: data.id, upload_url: uploadUrl, expires_at: expiresAt }, 201, reqId);
+}
+
+async function analyzeUpload(uploadId: string, req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json().catch(() => ({}));
+  const admin = serviceClient();
+
+  // Verify ownership
+  const { data: upload } = await admin.from("import_uploads").select("*").eq("id", uploadId).eq("user_id", auth.user.id).single();
+  if (!upload) return errorResponse("NOT_FOUND", "Upload not found", 404, reqId);
+
+  // Try to download and parse the file
+  let columns: string[] = upload.columns ?? [];
+  let sampleRows: any[] = [];
+  let signature: string | null = upload.columns_signature;
+
+  if (upload.file_path) {
+    const { data: fileData } = await admin.storage.from("import-files").download(upload.file_path);
+    if (fileData) {
+      const text = await fileData.text();
+      const delimiter = body.delimiter === "auto" ? detectDelimiter(text) : (body.delimiter ?? upload.delimiter ?? ",");
+      const hasHeader = body.has_header ?? upload.has_header ?? true;
+      const lines = text.split("\n").filter((l: string) => l.trim());
+
+      if (hasHeader && lines.length > 0) {
+        columns = lines[0].split(delimiter).map((c: string) => c.trim().replace(/^"|"$/g, ""));
+      }
+
+      // Sample rows (max 5)
+      const dataLines = hasHeader ? lines.slice(1, 6) : lines.slice(0, 5);
+      sampleRows = dataLines.map((line: string) => {
+        const values = line.split(delimiter).map((v: string) => v.trim().replace(/^"|"$/g, ""));
+        const row: Record<string, string> = {};
+        columns.forEach((col, i) => { row[col] = values[i] ?? ""; });
+        return row;
+      });
+
+      signature = await sha256(columns.sort().join("|"));
+
+      // Update upload record
+      await admin.from("import_uploads").update({
+        columns,
+        sample_rows: sampleRows,
+        columns_signature: signature,
+        has_header: hasHeader,
+        delimiter,
+        status: "analyzed",
+        updated_at: new Date().toISOString(),
+      }).eq("id", uploadId);
+    }
+  }
+
+  // Suggest mapping based on column names
+  const suggestedMapping = suggestMapping(columns);
+
+  // Find matching presets by signature
+  let matchingPresets: any[] = [];
+  if (signature) {
+    const { data: presets } = await admin
+      .from("mapping_presets")
+      .select("id, name, columns_signature, usage_count")
+      .eq("user_id", auth.user.id)
+      .eq("columns_signature", signature);
+
+    matchingPresets = (presets ?? []).map(p => ({
+      preset_id: p.id,
+      name: p.name,
+      confidence: 1.0,
+    }));
+  }
+
+  // Also find partial matches by platform heuristics
+  if (matchingPresets.length === 0 && columns.length > 0) {
+    const { data: allPresets } = await admin
+      .from("mapping_presets")
+      .select("id, name, columns")
+      .eq("user_id", auth.user.id)
+      .not("columns", "is", null);
+
+    for (const p of allPresets ?? []) {
+      if (!p.columns) continue;
+      const overlap = (p.columns as string[]).filter((c: string) => columns.includes(c)).length;
+      const confidence = overlap / Math.max(columns.length, (p.columns as string[]).length);
+      if (confidence > 0.5) {
+        matchingPresets.push({ preset_id: p.id, name: p.name, confidence: Math.round(confidence * 100) / 100 });
+      }
+    }
+    matchingPresets.sort((a: any, b: any) => b.confidence - a.confidence);
+  }
+
+  // Update matching presets in upload
+  await admin.from("import_uploads").update({
+    suggested_mapping: suggestedMapping,
+    matching_presets: matchingPresets,
+  }).eq("id", uploadId);
+
+  return json({ columns, sample_rows: sampleRows, signature, suggested_mapping: suggestedMapping, matching_presets: matchingPresets }, 200, reqId);
+}
+
+// ── Utility functions ────────────────────────────────────────────────────────
+
+async function sha256(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function detectDelimiter(text: string): string {
+  const firstLine = text.split("\n")[0] ?? "";
+  const counts: Record<string, number> = { ",": 0, ";": 0, "\t": 0, "|": 0 };
+  for (const char of Object.keys(counts)) {
+    counts[char] = firstLine.split(char).length - 1;
+  }
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+const FIELD_SYNONYMS: Record<string, string[]> = {
+  title: ["title", "product title", "product_title", "name", "product name", "product_name", "nom", "titre"],
+  sku: ["sku", "variant sku", "variant_sku", "reference", "ref", "code"],
+  price: ["price", "sale price", "sale_price", "prix", "prix_vente", "variant price"],
+  description: ["description", "body", "body_html", "body html", "desc"],
+  images: ["image", "image_url", "image url", "images", "image src", "image_src", "photo"],
+  stock: ["stock", "inventory", "quantity", "qty", "inventory_quantity"],
+  weight: ["weight", "poids", "weight_value"],
+  category: ["category", "type", "product type", "product_type", "categorie"],
+  brand: ["brand", "vendor", "marque", "manufacturer"],
+  barcode: ["barcode", "gtin", "ean", "upc", "isbn"],
+};
+
+function suggestMapping(columns: string[]): Record<string, { field: string }> {
+  const mapping: Record<string, { field: string }> = {};
+  for (const col of columns) {
+    const lower = col.toLowerCase().trim();
+    for (const [field, synonyms] of Object.entries(FIELD_SYNONYMS)) {
+      if (synonyms.includes(lower)) {
+        mapping[col] = { field };
+        break;
+      }
+    }
+  }
+  return mapping;
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -296,9 +657,6 @@ Deno.serve(async (req) => {
 
   const reqId = requestId(req);
   const url = new URL(req.url);
-
-  // Strip the function path prefix to get the API path
-  // Edge function URL: /api-v1/v1/import/jobs → path = /v1/import/jobs
   const fullPath = url.pathname;
   const apiPath = fullPath.replace(/^\/api-v1/, "") || "/";
 
@@ -308,42 +666,46 @@ Deno.serve(async (req) => {
       return json({ status: "ok", version: "1.0.0", timestamp: new Date().toISOString() }, 200, reqId);
     }
 
-    // Auth check for all other routes
     const auth = await authenticate(req);
-    if (!auth) {
-      return errorResponse("UNAUTHORIZED", "Valid Bearer token required", 401, reqId);
-    }
+    if (!auth) return errorResponse("UNAUTHORIZED", "Valid Bearer token required", 401, reqId);
 
     // ── Import Jobs ────────────────────────────────────────────
-    if (req.method === "POST" && matchRoute("/v1/import/jobs", apiPath)) {
-      return await createImportJob(req, auth, reqId);
-    }
-
-    if (req.method === "GET" && matchRoute("/v1/import/jobs", apiPath)) {
-      return await listImportJobs(url, auth, reqId);
-    }
+    if (req.method === "POST" && matchRoute("/v1/import/jobs", apiPath)) return await createImportJob(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/import/jobs", apiPath)) return await listImportJobs(url, auth, reqId);
 
     const jobMatch = matchRoute("/v1/import/jobs/:jobId", apiPath);
-    if (req.method === "GET" && jobMatch) {
-      return await getImportJob(jobMatch.params.jobId, auth, reqId);
-    }
+    if (req.method === "GET" && jobMatch) return await getImportJob(jobMatch.params.jobId, auth, reqId);
 
     const itemsMatch = matchRoute("/v1/import/jobs/:jobId/items", apiPath);
-    if (req.method === "GET" && itemsMatch) {
-      return await getJobItems(itemsMatch.params.jobId, url, auth, reqId);
-    }
+    if (req.method === "GET" && itemsMatch) return await getJobItems(itemsMatch.params.jobId, url, auth, reqId);
 
     const retryMatch = matchRoute("/v1/import/jobs/:jobId/retry", apiPath);
-    if (req.method === "POST" && retryMatch) {
-      return await retryJob(retryMatch.params.jobId, req, auth, reqId);
-    }
+    if (req.method === "POST" && retryMatch) return await retryJob(retryMatch.params.jobId, req, auth, reqId);
 
     const cancelMatch = matchRoute("/v1/import/jobs/:jobId/cancel", apiPath);
-    if (req.method === "POST" && cancelMatch) {
-      return await cancelJob(cancelMatch.params.jobId, auth, reqId);
-    }
+    if (req.method === "POST" && cancelMatch) return await cancelJob(cancelMatch.params.jobId, auth, reqId);
 
-    // ── Health already handled above ──────────────────────────
+    // ── Presets ─────────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/import/presets", apiPath)) return await listPresets(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/import/presets", apiPath)) return await createPreset(req, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/import/presets/import", apiPath)) return await importPreset(req, auth, reqId);
+
+    const presetMatch = matchRoute("/v1/import/presets/:presetId", apiPath);
+    if (req.method === "GET" && presetMatch) return await getPreset(presetMatch.params.presetId, auth, reqId);
+    if (req.method === "PUT" && presetMatch) return await updatePreset(presetMatch.params.presetId, req, auth, reqId);
+    if (req.method === "DELETE" && presetMatch) return await deletePreset(presetMatch.params.presetId, auth, reqId);
+
+    const defaultMatch = matchRoute("/v1/import/presets/:presetId/default", apiPath);
+    if (req.method === "POST" && defaultMatch) return await setPresetDefault(defaultMatch.params.presetId, req, auth, reqId);
+
+    const exportMatch = matchRoute("/v1/import/presets/:presetId/export", apiPath);
+    if (req.method === "GET" && exportMatch) return await exportPreset(exportMatch.params.presetId, auth, reqId);
+
+    // ── CSV Uploads ─────────────────────────────────────────────
+    if (req.method === "POST" && matchRoute("/v1/import/csv/uploads", apiPath)) return await createUploadSession(req, auth, reqId);
+
+    const analyzeMatch = matchRoute("/v1/import/csv/uploads/:uploadId/analyze", apiPath);
+    if (req.method === "POST" && analyzeMatch) return await analyzeUpload(analyzeMatch.params.uploadId, req, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
