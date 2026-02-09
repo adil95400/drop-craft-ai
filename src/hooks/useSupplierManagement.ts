@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { importJobsApi } from '@/services/api/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface Supplier {
@@ -370,32 +371,23 @@ export const useSupplierManagement = () => {
     }
   };
 
-  // Fetch import batches from import_jobs
+  // Fetch import batches via API V1
   const fetchImportBatches = async (supplierId?: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const resp = await importJobsApi.list({ per_page: 50 });
+      const data = resp.items || [];
 
-      let query = supabase
-        .from('import_jobs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const transformed: ImportBatch[] = (data || []).map(job => ({
-        id: job.id,
-        supplier_id: job.source_platform || '',
-        user_id: job.user_id,
+      const transformed: ImportBatch[] = data.map((job: any) => ({
+        id: job.job_id || job.id,
+        supplier_id: job.source || '',
+        user_id: '',
         batch_type: (job.job_type as any) || 'csv',
         status: (job.status as any) || 'pending',
-        total_products: job.total_products || 0,
-        processed_products: (job.successful_imports || 0) + (job.failed_imports || 0),
-        successful_imports: job.successful_imports || 0,
-        failed_imports: job.failed_imports || 0,
-        error_details: (job.error_log as any[]) || [],
+        total_products: job.progress?.total ?? 0,
+        processed_products: (job.progress?.processed ?? 0),
+        successful_imports: job.progress?.success ?? 0,
+        failed_imports: job.progress?.failed ?? 0,
+        error_details: [],
         started_at: job.started_at || job.created_at || new Date().toISOString(),
         completed_at: job.completed_at || undefined,
         created_at: job.created_at || new Date().toISOString()

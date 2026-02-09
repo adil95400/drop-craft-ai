@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { ImportMethodModal } from './ImportMethodModal'
-import { supabase } from '@/integrations/supabase/client'
+import { importJobsApi } from '@/services/api/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
@@ -147,60 +147,28 @@ export function AdvancedImportHub() {
   // Load real-time import data
   useEffect(() => {
     if (!user) return
-
     loadRecentImports()
     loadStats()
-
-    // Set up real-time subscription for import_jobs
-    const channel = supabase
-      .channel('import-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'import_jobs',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          loadRecentImports()
-          loadStats()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    const interval = setInterval(() => { loadRecentImports(); loadStats() }, 15000)
+    return () => clearInterval(interval)
   }, [user])
 
   const loadRecentImports = async () => {
     if (!user) return
-
     try {
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (error) {
-        console.error('Error loading imports:', error)
-        return
-      }
-
-      const formattedImports = data.map((job, index) => ({
-        id: index + 1, // Use index as number ID
-        source: job.source_platform || job.job_type || 'Source inconnue',
-        products: job.successful_imports || 0,
+      const resp = await importJobsApi.list({ per_page: 10 })
+      const data = resp.items || []
+      const formattedImports = data.map((job: any, index: number) => ({
+        id: index + 1,
+        source: job.source || job.job_type || 'Source inconnue',
+        products: job.progress?.success ?? 0,
         status: job.status,
-        time: job.completed_at && job.started_at 
+        time: job.completed_at && job.started_at
           ? `${Math.round((new Date(job.completed_at).getTime() - new Date(job.started_at).getTime()) / (1000 * 60))} min`
           : '-- min',
-        accuracy: job.total_products > 0 ? Math.round((job.successful_imports || 0) / job.total_products * 100) : 0
+        accuracy: (job.progress?.total ?? 0) > 0
+          ? Math.round((job.progress?.success ?? 0) / job.progress.total * 100) : 0
       }))
-
       setRecentImports(formattedImports)
     } catch (error) {
       console.error('Error loading recent imports:', error)
@@ -209,36 +177,17 @@ export function AdvancedImportHub() {
 
   const loadStats = async () => {
     if (!user) return
-
     try {
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .select('*')
-        .eq('user_id', user.id)
-
-      if (error) {
-        console.error('Error loading stats:', error)
-        return
-      }
-
+      const resp = await importJobsApi.list({ per_page: 100 })
+      const data = resp.items || []
       const thisMonth = new Date()
       thisMonth.setDate(1)
-      
-      const thisMonthImports = data.filter(job => 
-        new Date(job.created_at) >= thisMonth
-      )
-
-      const totalProducts = thisMonthImports.reduce((sum, job) => sum + (job.successful_imports || 0), 0)
+      const thisMonthImports = data.filter((job: any) => new Date(job.created_at) >= thisMonth)
+      const totalProducts = thisMonthImports.reduce((sum: number, job: any) => sum + (job.progress?.success ?? 0), 0)
       const totalJobs = data.length
-      const successfulJobs = data.filter(job => job.status === 'completed').length
+      const successfulJobs = data.filter((job: any) => job.status === 'completed').length
       const successRate = totalJobs > 0 ? Math.round(successfulJobs / totalJobs * 100) : 0
-
-      setStats({
-        sources: 150, // Keep static for now
-        productsThisMonth: totalProducts,
-        successRate,
-        avgTime: 4 // Keep static for now
-      })
+      setStats({ sources: 150, productsThisMonth: totalProducts, successRate, avgTime: 4 })
     } catch (error) {
       console.error('Error loading stats:', error)
     }
