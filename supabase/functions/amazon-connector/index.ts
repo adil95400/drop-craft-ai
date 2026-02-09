@@ -1,447 +1,309 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+/**
+ * Amazon Product Advertising API 5.0 Connector
+ * 
+ * Supports: search, product details, import to catalog
+ * Auth: AWS Signature v4 (HMAC-SHA256)
+ */
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+};
+
+// ==========================================
+// AWS SIGNATURE V4
+// ==========================================
+async function hmacSha256(key: ArrayBuffer | Uint8Array, message: string): Promise<ArrayBuffer> {
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', key instanceof Uint8Array ? key : new Uint8Array(key),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  return crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(message));
 }
 
-interface AmazonProduct {
-  asin: string
-  title: string
-  price: number
-  original_price: number
-  currency: string
-  rating: number
-  reviews_count: number
-  images: string[]
-  category: string
-  brand: string
-  description: string
-  features: string[]
-  availability: string
-  seller: string
-  url: string
+async function sha256(message: string): Promise<string> {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+async function getSignatureKey(key: string, dateStamp: string, region: string, service: string): Promise<ArrayBuffer> {
+  const kDate = await hmacSha256(new TextEncoder().encode('AWS4' + key), dateStamp);
+  const kRegion = await hmacSha256(kDate, region);
+  const kService = await hmacSha256(kRegion, service);
+  return hmacSha256(kService, 'aws4_request');
+}
+
+// ==========================================
+// AMAZON PA-API 5.0 CLIENT
+// ==========================================
+const MARKETPLACE_HOSTS: Record<string, { host: string; region: string }> = {
+  'www.amazon.fr': { host: 'webservices.amazon.fr', region: 'eu-west-1' },
+  'www.amazon.com': { host: 'webservices.amazon.com', region: 'us-east-1' },
+  'www.amazon.co.uk': { host: 'webservices.amazon.co.uk', region: 'eu-west-1' },
+  'www.amazon.de': { host: 'webservices.amazon.de', region: 'eu-west-1' },
+  'www.amazon.es': { host: 'webservices.amazon.es', region: 'eu-west-1' },
+  'www.amazon.it': { host: 'webservices.amazon.it', region: 'eu-west-1' },
+};
+
+class AmazonPAApiClient {
+  private accessKey: string;
+  private secretKey: string;
+  private partnerTag: string;
+  private host: string;
+  private region: string;
+  private marketplace: string;
+
+  constructor(accessKey: string, secretKey: string, partnerTag: string, marketplace = 'www.amazon.fr') {
+    this.accessKey = accessKey;
+    this.secretKey = secretKey;
+    this.partnerTag = partnerTag;
+    this.marketplace = marketplace;
+    const mp = MARKETPLACE_HOSTS[marketplace] || MARKETPLACE_HOSTS['www.amazon.fr'];
+    this.host = mp.host;
+    this.region = mp.region;
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY')
+  private async signedRequest(operation: string, payload: Record<string, any>): Promise<any> {
+    const service = 'ProductAdvertisingAPI';
+    const path = `/paapi5/${operation.toLowerCase()}`;
+    const url = `https://${this.host}${path}`;
 
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) throw new Error('Authorization required')
-    
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user } } = await supabase.auth.getUser(token)
-    if (!user) throw new Error('Unauthorized')
+    payload.PartnerTag = this.partnerTag;
+    payload.PartnerType = 'Associates';
+    payload.Marketplace = this.marketplace;
 
-    const { action, url, asin, keywords, category, marketplace = 'com', limit = 20 } = await req.json()
-    console.log(`[AMAZON] Action: ${action}, User: ${user.id}`)
+    const body = JSON.stringify(payload);
+    const now = new Date();
+    const amzDate = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const dateStamp = amzDate.slice(0, 8);
 
-    // Action: scrape_product - Scrape a product by URL or ASIN
-    if (action === 'scrape_product') {
-      if (!firecrawlApiKey) {
-        throw new Error('Firecrawl API key not configured')
-      }
+    const contentHash = await sha256(body);
+    const canonicalHeaders = `content-encoding:amz-1.0\ncontent-type:application/json; charset=utf-8\nhost:${this.host}\nx-amz-date:${amzDate}\nx-amz-target:com.amazon.paapi5.v1.ProductAdvertisingAPIv1.${operation}\n`;
+    const signedHeaders = 'content-encoding;content-type;host;x-amz-date;x-amz-target';
 
-      let productUrl = url
-      if (asin && !url) {
-        productUrl = `https://www.amazon.${marketplace}/dp/${asin}`
-      }
-      
-      if (!productUrl) throw new Error('URL or ASIN required')
+    const canonicalRequest = `POST\n${path}\n\n${canonicalHeaders}\n${signedHeaders}\n${contentHash}`;
+    const credentialScope = `${dateStamp}/${this.region}/${service}/aws4_request`;
+    const stringToSign = `AWS4-HMAC-SHA256\n${amzDate}\n${credentialScope}\n${await sha256(canonicalRequest)}`;
 
-      console.log('[AMAZON] Scraping:', productUrl)
+    const signingKey = await getSignatureKey(this.secretKey, dateStamp, this.region, service);
+    const signatureBuffer = await hmacSha256(signingKey, stringToSign);
+    const signature = Array.from(new Uint8Array(signatureBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-      const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: productUrl,
-          formats: ['markdown', 'html'],
-          onlyMainContent: true,
-          waitFor: 3000,
-        }),
-      })
+    const authHeader = `AWS4-HMAC-SHA256 Credential=${this.accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
-      if (!firecrawlResponse.ok) {
-        throw new Error(`Scraping failed: ${firecrawlResponse.status}`)
-      }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Encoding': 'amz-1.0',
+        'X-Amz-Date': amzDate,
+        'X-Amz-Target': `com.amazon.paapi5.v1.ProductAdvertisingAPIv1.${operation}`,
+        'Authorization': authHeader,
+        'Host': this.host,
+      },
+      body,
+    });
 
-      const firecrawlData = await firecrawlResponse.json()
-      const product = extractAmazonProduct(firecrawlData, productUrl)
-
-      // Save to catalog
-      const { data: savedProduct } = await supabase
-        .from('catalog_products')
-        .insert({
-          user_id: user.id,
-          title: product.title,
-          price: product.price,
-          compare_at_price: product.original_price,
-          description: product.description,
-          image_urls: product.images,
-          category: product.category,
-          source_platform: 'amazon',
-          source_url: productUrl,
-          supplier_name: product.seller || 'Amazon'
-        })
-        .select()
-        .single()
-
-      // Log activity
-      await supabase.from('activity_logs').insert({
-        user_id: user.id,
-        action: 'amazon_product_import',
-        description: `Imported product from Amazon: ${product.title}`,
-        entity_type: 'product',
-        metadata: { asin: product.asin, url: productUrl }
-      })
-
-      return new Response(JSON.stringify({
-        success: true,
-        product,
-        saved_id: savedProduct?.id
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Amazon PA-API ${response.status}: ${errText.slice(0, 200)}`);
     }
-
-    // Action: search_products - Search Amazon products
-    if (action === 'search_products') {
-      if (!firecrawlApiKey) {
-        throw new Error('Firecrawl API key not configured')
-      }
-
-      const searchQuery = keywords || 'bestseller products'
-      console.log('[AMAZON] Searching:', searchQuery)
-
-      const searchResponse = await fetch('https://api.firecrawl.dev/v1/search', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `site:amazon.${marketplace} ${searchQuery}`,
-          limit: Math.min(limit, 20),
-          scrapeOptions: { formats: ['markdown'] }
-        }),
-      })
-
-      if (!searchResponse.ok) {
-        throw new Error(`Search failed: ${searchResponse.status}`)
-      }
-
-      const searchData = await searchResponse.json()
-      const products = (searchData.data || [])
-        .filter((r: any) => r.url?.includes('/dp/'))
-        .map((result: any) => extractAmazonFromSearch(result, marketplace))
-        .filter((p: any) => p.title)
-
-      return new Response(JSON.stringify({
-        success: true,
-        products,
-        total: products.length
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
-    // Action: get_bestsellers - Get bestseller products by category
-    if (action === 'get_bestsellers') {
-      if (!firecrawlApiKey) {
-        throw new Error('Firecrawl API key not configured')
-      }
-
-      const categorySlug = category || 'electronics'
-      const bsUrl = `https://www.amazon.${marketplace}/Best-Sellers-${categorySlug}`
-      
-      console.log('[AMAZON] Fetching bestsellers:', bsUrl)
-
-      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: bsUrl,
-          formats: ['markdown', 'links'],
-          onlyMainContent: true,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch bestsellers: ${response.status}`)
-      }
-
-      const data = await response.json()
-      const links = (data.data?.links || [])
-        .filter((link: string) => link.includes('/dp/'))
-        .slice(0, limit)
-
-      const products = links.map((link: string) => {
-        const asinMatch = link.match(/\/dp\/([A-Z0-9]{10})/)
-        return {
-          asin: asinMatch?.[1] || '',
-          url: link,
-          title: 'Amazon Product',
-          price: 0
-        }
-      }).filter((p: any) => p.asin)
-
-      return new Response(JSON.stringify({
-        success: true,
-        products,
-        category: categorySlug,
-        total: products.length
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
-    // Action: bulk_import - Import multiple products by ASINs
-    if (action === 'bulk_import') {
-      const { asins } = await req.json()
-      
-      if (!asins || !Array.isArray(asins) || asins.length === 0) {
-        throw new Error('ASINs array required')
-      }
-
-      if (!firecrawlApiKey) {
-        throw new Error('Firecrawl API key not configured')
-      }
-
-      const results: AmazonProduct[] = []
-      const errors: Array<{ asin: string; error: string }> = []
-
-      for (const productAsin of asins.slice(0, 10)) {
-        try {
-          const productUrl = `https://www.amazon.${marketplace}/dp/${productAsin}`
-          
-          const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${firecrawlApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              url: productUrl,
-              formats: ['markdown', 'html'],
-              onlyMainContent: true,
-            }),
-          })
-
-          if (response.ok) {
-            const data = await response.json()
-            const product = extractAmazonProduct(data, productUrl)
-            results.push(product)
-          } else {
-            errors.push({ asin: productAsin, error: 'Scraping failed' })
-          }
-
-          // Rate limiting
-          await new Promise(resolve => setTimeout(resolve, 500))
-        } catch (error) {
-          errors.push({ asin: productAsin, error: error.message })
-        }
-      }
-
-      // Save all successful products
-      if (results.length > 0) {
-        const productsToInsert = results.map(p => ({
-          user_id: user.id,
-          title: p.title,
-          price: p.price,
-          description: p.description,
-          image_urls: p.images,
-          category: p.category,
-          source_platform: 'amazon',
-          source_url: p.url,
-          supplier_name: p.seller || 'Amazon'
-        }))
-
-        await supabase.from('catalog_products').insert(productsToInsert)
-      }
-
-      return new Response(JSON.stringify({
-        success: true,
-        imported: results.length,
-        failed: errors.length,
-        products: results,
-        errors
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
-    throw new Error('Invalid action. Use: scrape_product, search_products, get_bestsellers, bulk_import')
-
-  } catch (error) {
-    console.error('[AMAZON] Error:', error)
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
-  }
-})
-
-function extractAmazonProduct(firecrawlData: any, url: string): AmazonProduct {
-  const markdown = firecrawlData.data?.markdown || ''
-  const html = firecrawlData.data?.html || ''
-  const metadata = firecrawlData.data?.metadata || {}
-
-  // Extract ASIN from URL
-  const asinMatch = url.match(/\/dp\/([A-Z0-9]{10})/) || url.match(/\/gp\/product\/([A-Z0-9]{10})/)
-  const asin = asinMatch ? asinMatch[1] : `amz-${Date.now()}`
-
-  // Extract title
-  let title = metadata.title || ''
-  title = title.replace(/\s*:\s*Amazon.*$/i, '').replace(/\s*\|.*$/i, '').trim()
-  if (!title) {
-    const titleMatch = markdown.match(/^#\s*(.+)$/m)
-    title = titleMatch ? titleMatch[1] : 'Amazon Product'
+    return response.json();
   }
 
-  // Extract price
-  let price = 0
-  const pricePatterns = [
-    /\$(\d+\.?\d*)/,
-    /€(\d+\.?\d*)/,
-    /£(\d+\.?\d*)/,
-    /(\d+)[,.](\d{2})\s*(?:\$|€|£)/
-  ]
-  for (const pattern of pricePatterns) {
-    const match = markdown.match(pattern) || html.match(pattern)
-    if (match) {
-      price = parseFloat(match[1] + (match[2] ? `.${match[2]}` : ''))
-      break
-    }
+  async searchItems(keywords: string, category?: string, pageNum = 1): Promise<any> {
+    return this.signedRequest('SearchItems', {
+      Keywords: keywords,
+      SearchIndex: category || 'All',
+      ItemCount: 10,
+      ItemPage: pageNum,
+      Resources: [
+        'Images.Primary.Large',
+        'ItemInfo.Title',
+        'Offers.Listings.Price',
+        'ItemInfo.Features',
+        'ItemInfo.ByLineInfo',
+      ],
+    });
   }
 
-  // Extract original price (was price)
-  let originalPrice = price
-  const wasMatch = markdown.match(/(?:was|list|original)\s*:?\s*\$?(\d+\.?\d*)/i)
-  if (wasMatch) {
-    originalPrice = parseFloat(wasMatch[1])
+  async getItems(asinList: string[]): Promise<any> {
+    return this.signedRequest('GetItems', {
+      ItemIds: asinList,
+      Resources: [
+        'Images.Primary.Large',
+        'Images.Variants.Large',
+        'ItemInfo.Title',
+        'ItemInfo.Features',
+        'ItemInfo.ByLineInfo',
+        'Offers.Listings.Price',
+        'Offers.Listings.SavingBasis',
+      ],
+    });
   }
+}
 
-  // Extract rating
-  let rating = 0
-  const ratingMatch = markdown.match(/(\d+\.?\d*)\s*out of\s*5/i) ||
-                      markdown.match(/(\d+\.?\d*)\s*stars?/i)
-  if (ratingMatch) {
-    rating = parseFloat(ratingMatch[1])
-  }
-
-  // Extract reviews count
-  let reviewsCount = 0
-  const reviewsMatch = markdown.match(/(\d+(?:,\d+)*)\s*(?:ratings?|reviews?|customer)/i)
-  if (reviewsMatch) {
-    reviewsCount = parseInt(reviewsMatch[1].replace(/,/g, ''))
-  }
-
-  // Extract images
-  const images: string[] = []
-  const imgMatches = html.matchAll(/<img[^>]+src=["']([^"']+(?:images-amazon|m.media-amazon)[^"']+)["']/gi)
-  for (const match of imgMatches) {
-    if (match[1] && !match[1].includes('sprite') && images.length < 5) {
-      images.push(match[1])
-    }
-  }
-
-  // Extract brand
-  const brandMatch = markdown.match(/(?:brand|by)\s*:?\s*([A-Za-z0-9\s]+)/i)
-  const brand = brandMatch ? brandMatch[1].trim() : ''
-
-  // Extract features
-  const features: string[] = []
-  const featureMatches = markdown.matchAll(/[-•]\s*(.+)/g)
-  for (const match of featureMatches) {
-    if (match[1].length > 10 && match[1].length < 200 && features.length < 5) {
-      features.push(match[1].trim())
+// ==========================================
+// NORMALIZE
+// ==========================================
+function normalizeAmazonProduct(item: any): any {
+  const listing = item.Offers?.Listings?.[0];
+  const price = listing?.Price?.Amount || 0;
+  const originalPrice = listing?.SavingBasis?.Amount || price;
+  const images: string[] = [];
+  if (item.Images?.Primary?.Large?.URL) images.push(item.Images.Primary.Large.URL);
+  if (item.Images?.Variants) {
+    for (const v of item.Images.Variants) {
+      if (v.Large?.URL) images.push(v.Large.URL);
     }
   }
 
   return {
-    asin,
-    title,
+    asin: item.ASIN,
+    title: item.ItemInfo?.Title?.DisplayValue || '',
     price,
     original_price: originalPrice,
-    currency: 'USD',
-    rating,
-    reviews_count: reviewsCount,
+    currency: listing?.Price?.Currency || 'EUR',
+    image_url: images[0] || null,
     images,
-    category: extractCategory(markdown, title),
-    brand,
-    description: markdown.substring(0, 500),
-    features,
-    availability: 'In Stock',
-    seller: 'Amazon',
-    url
-  }
+    product_url: item.DetailPageURL || '',
+    brand: item.ItemInfo?.ByLineInfo?.Brand?.DisplayValue || '',
+    features: item.ItemInfo?.Features?.DisplayValues || [],
+  };
 }
 
-function extractAmazonFromSearch(result: any, marketplace: string): Partial<AmazonProduct> {
-  const url = result.url || ''
-  const title = result.title || ''
-  const markdown = result.markdown || ''
-
-  const asinMatch = url.match(/\/dp\/([A-Z0-9]{10})/)
-  const asin = asinMatch ? asinMatch[1] : ''
-
-  let price = 0
-  const priceMatch = markdown.match(/\$(\d+\.?\d*)/)
-  if (priceMatch) {
-    price = parseFloat(priceMatch[1])
+// ==========================================
+// MAIN HANDLER
+// ==========================================
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
   }
 
-  return {
-    asin,
-    title: title.replace(/\s*:\s*Amazon.*$/i, '').trim(),
-    price,
-    original_price: price,
-    currency: 'USD',
-    rating: 0,
-    reviews_count: 0,
-    images: [],
-    category: 'General',
-    brand: '',
-    description: '',
-    features: [],
-    availability: 'Unknown',
-    seller: 'Amazon',
-    url
-  }
-}
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-function extractCategory(markdown: string, title: string): string {
-  const categories = [
-    'Electronics', 'Home & Kitchen', 'Clothing', 'Beauty', 'Toys & Games',
-    'Sports & Outdoors', 'Automotive', 'Books', 'Health', 'Garden'
-  ]
-  
-  const lowerText = (markdown + title).toLowerCase()
-  
-  for (const cat of categories) {
-    if (lowerText.includes(cat.toLowerCase())) {
-      return cat
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return jsonResponse({ error: 'Authorization required' }, 401);
     }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return jsonResponse({ error: 'Unauthorized' }, 401);
+    }
+
+    const { action, ...params } = await req.json();
+    console.log(`[amazon] action=${action}, user=${user.id.slice(0, 8)}`);
+
+    const accessKey = Deno.env.get('AMAZON_ACCESS_KEY');
+    const secretKey = Deno.env.get('AMAZON_SECRET_KEY');
+    const partnerTag = Deno.env.get('AMAZON_PARTNER_TAG');
+
+    if (!accessKey || !secretKey || !partnerTag) {
+      return jsonResponse({
+        success: false,
+        error: 'Amazon PA-API credentials not configured. Add AMAZON_ACCESS_KEY, AMAZON_SECRET_KEY and AMAZON_PARTNER_TAG in your secrets.',
+        setup_required: true,
+      }, 400);
+    }
+
+    const marketplace = params.marketplace || 'www.amazon.fr';
+    const client = new AmazonPAApiClient(accessKey, secretKey, partnerTag, marketplace);
+
+    if (action === 'search_products') {
+      const result = await client.searchItems(params.keywords, params.category, params.pageNum || 1);
+      const items = result.SearchResult?.Items || [];
+      return jsonResponse({
+        success: true,
+        products: items.map(normalizeAmazonProduct),
+        total: result.SearchResult?.TotalResultCount || items.length,
+      });
+    }
+
+    if (action === 'get_product') {
+      const result = await client.getItems([params.asin]);
+      const items = result.ItemsResult?.Items || [];
+      return jsonResponse({
+        success: true,
+        product: items.length > 0 ? normalizeAmazonProduct(items[0]) : null,
+      });
+    }
+
+    if (action === 'import_products') {
+      const asins = params.asins as string[];
+      if (!asins || asins.length === 0) {
+        return jsonResponse({ error: 'asins required' }, 400);
+      }
+
+      const chunks: string[][] = [];
+      for (let i = 0; i < asins.length; i += 10) {
+        chunks.push(asins.slice(i, i + 10));
+      }
+
+      const imported: any[] = [];
+      for (const chunk of chunks) {
+        try {
+          const result = await client.getItems(chunk);
+          const items = result.ItemsResult?.Items || [];
+
+          for (const item of items) {
+            const norm = normalizeAmazonProduct(item);
+            const { data, error } = await supabase
+              .from('products')
+              .insert({
+                user_id: user.id,
+                name: norm.title,
+                description: norm.features?.join('\n') || norm.title,
+                price: norm.price,
+                compare_at_price: norm.original_price > norm.price ? norm.original_price : null,
+                image_url: norm.image_url,
+                images: norm.images.length > 0 ? norm.images : null,
+                source: 'amazon_api',
+                source_url: norm.product_url,
+                external_id: norm.asin,
+                status: 'draft',
+                category: 'Amazon Import',
+              })
+              .select('id, name')
+              .single();
+
+            if (!error && data) imported.push(data);
+          }
+        } catch (e) {
+          console.error('[amazon] chunk import error:', e);
+        }
+      }
+
+      await supabase.from('activity_logs').insert({
+        user_id: user.id,
+        action: 'amazon_api_import',
+        entity_type: 'products',
+        description: `Imported ${imported.length} products via Amazon PA-API`,
+        source: 'amazon-connector',
+      });
+
+      return jsonResponse({
+        success: true,
+        imported_count: imported.length,
+        products: imported,
+      });
+    }
+
+    return jsonResponse({ error: 'Unknown action' }, 400);
+
+  } catch (error) {
+    console.error('[amazon] Error:', error);
+    return jsonResponse({ success: false, error: (error as Error).message }, 500);
   }
-  
-  return 'General'
+});
+
+function jsonResponse(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 }
