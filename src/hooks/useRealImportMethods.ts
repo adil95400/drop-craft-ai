@@ -1,10 +1,12 @@
 /**
- * useRealImportMethods - Import jobs list & actions via Supabase direct
+ * useRealImportMethods - Migrated to API V1 /v1/import/jobs
+ * Falls back to quick-import-url for URL imports (existing scraper)
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { importJobsApi } from '@/services/api/client'
 
 export interface ImportMethod {
   id: string
@@ -33,37 +35,58 @@ export const useRealImportMethods = () => {
     queryKey: ['import-jobs', user?.id],
     queryFn: async () => {
       if (!user?.id) return []
-      const { data, error } = await supabase
-        .from('background_jobs')
-        .select('*')
-        .eq('user_id', user.id)
-        .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import'])
-        .order('created_at', { ascending: false })
-        .limit(100)
-      if (error) throw error
-      return (data || []).map((job: any) => ({
-        id: job.id,
-        user_id: job.user_id,
-        source_type: job.job_subtype || job.job_type,
-        method_name: job.name || job.job_type,
-        configuration: job.input_data,
-        status: job.status,
-        total_rows: job.items_total || 0,
-        processed_rows: job.items_processed || 0,
-        success_rows: job.items_succeeded || 0,
-        error_rows: job.items_failed || 0,
-        mapping_config: job.metadata,
-        created_at: job.created_at,
-        updated_at: job.updated_at,
-        started_at: job.started_at,
-        completed_at: job.completed_at,
-      })) as ImportMethod[]
+      try {
+        const resp = await importJobsApi.list({ per_page: 100 })
+        return resp.items.map((job: any) => ({
+          id: job.job_id,
+          user_id: user.id,
+          source_type: job.job_type,
+          method_name: job.name,
+          configuration: null,
+          status: job.status,
+          total_rows: job.progress?.total ?? 0,
+          processed_rows: job.progress?.processed ?? 0,
+          success_rows: job.progress?.success ?? 0,
+          error_rows: job.progress?.failed ?? 0,
+          mapping_config: null,
+          created_at: job.created_at,
+          updated_at: job.created_at,
+          started_at: job.started_at,
+          completed_at: job.completed_at,
+        })) as ImportMethod[]
+      } catch {
+        // Fallback to direct Supabase if API is unavailable
+        const { data } = await supabase
+          .from('background_jobs')
+          .select('*')
+          .eq('user_id', user.id)
+          .in('job_type', ['import', 'csv_import', 'url_import', 'feed_import'])
+          .order('created_at', { ascending: false })
+          .limit(100)
+        return (data || []).map((job: any) => ({
+          id: job.id,
+          user_id: job.user_id,
+          source_type: job.job_subtype || job.job_type,
+          method_name: job.name || job.job_type,
+          configuration: job.input_data,
+          status: job.status,
+          total_rows: job.items_total || 0,
+          processed_rows: job.items_processed || 0,
+          success_rows: job.items_succeeded || 0,
+          error_rows: job.items_failed || 0,
+          mapping_config: job.metadata,
+          created_at: job.created_at,
+          updated_at: job.updated_at,
+          started_at: job.started_at,
+          completed_at: job.completed_at,
+        })) as ImportMethod[]
+      }
     },
     enabled: !!user?.id,
     refetchInterval: (query) => {
       const jobs = query.state.data || []
       const hasActiveJobs = jobs.some(job =>
-        job.status === 'pending' || job.status === 'processing'
+        job.status === 'pending' || job.status === 'processing' || job.status === 'queued' || job.status === 'running'
       )
       return hasActiveJobs ? 3000 : false
     },
@@ -78,7 +101,7 @@ export const useRealImportMethods = () => {
     }) => {
       if (!user?.id) throw new Error('Non authentifié')
       if (jobData.source_url) {
-        // Use quick-import-url (the working scraper with full platform support)
+        // Use quick-import-url for URL imports (existing working scraper)
         const { data, error } = await supabase.functions.invoke('quick-import-url', {
           body: { 
             url: jobData.source_url, 
@@ -131,11 +154,7 @@ export const useRealImportMethods = () => {
 
   const deleteMethod = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('background_jobs')
-        .update({ status: 'cancelled' })
-        .eq('id', id)
-      if (error) throw error
+      await importJobsApi.cancel(id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
@@ -148,7 +167,7 @@ export const useRealImportMethods = () => {
     activeMethods: importMethods.filter(m => m.status === 'completed').length,
     recentJobs: importMethods.length,
     successfulJobs: importMethods.filter(j => j.status === 'completed').length,
-    pendingJobs: importMethods.filter(j => j.status === 'pending').length,
+    pendingJobs: importMethods.filter(j => j.status === 'pending' || j.status === 'queued').length,
     failedJobs: importMethods.filter(j => j.status === 'failed').length
   }
 
