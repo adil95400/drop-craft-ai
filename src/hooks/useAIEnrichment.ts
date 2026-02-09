@@ -1,53 +1,131 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useState, useEffect } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
 
-interface EnrichmentOptions {
-  language?: string;
-  tone?: string;
+export type EnrichLanguage = 'fr' | 'en' | 'es' | 'de' | 'nl'
+export type EnrichTone = 'professionnel' | 'créatif' | 'luxe' | 'décontracté' | 'technique'
+
+export interface EnrichmentJob {
+  id: string
+  status: string
+  items_total: number | null
+  items_processed: number | null
+  items_succeeded: number | null
+  items_failed: number | null
+  progress_percent: number | null
+  progress_message: string | null
+  created_at: string
+  completed_at: string | null
 }
 
 export function useAIEnrichment() {
-  const [isEnriching, setIsEnriching] = useState(false);
-  const [jobId, setJobId] = useState<string | null>(null);
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const [activeJobId, setActiveJobId] = useState<string | null>(null)
 
-  const enrichProducts = async (productIds: string[], options?: EnrichmentOptions) => {
-    if (productIds.length === 0) {
-      toast.error('Aucun produit sélectionné');
-      return null;
-    }
+  // Fetch enrichment jobs history
+  const { data: jobs = [], isLoading: isLoadingJobs } = useQuery({
+    queryKey: ['ai-enrich-jobs', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return []
+      const { data, error } = await supabase
+        .from('background_jobs')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('job_type', 'ai_enrich')
+        .order('created_at', { ascending: false })
+        .limit(10)
+      if (error) throw error
+      return (data || []) as EnrichmentJob[]
+    },
+    enabled: !!user?.id,
+    refetchInterval: (query) => {
+      const list = query.state.data || []
+      return list.some(j => j.status === 'running' || j.status === 'processing') ? 2000 : false
+    },
+  })
 
-    setIsEnriching(true);
-    try {
+  // Realtime progress for active job
+  useEffect(() => {
+    if (!activeJobId) return
+    const channel = supabase
+      .channel(`enrich-${activeJobId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'background_jobs',
+        filter: `id=eq.${activeJobId}`,
+      }, (payload) => {
+        queryClient.invalidateQueries({ queryKey: ['ai-enrich-jobs'] })
+        const job = payload.new as any
+        if (job.status === 'completed') {
+          toast.success(`Enrichissement terminé: ${job.items_succeeded} produits optimisés`)
+          setActiveJobId(null)
+          queryClient.invalidateQueries({ queryKey: ['products'] })
+          queryClient.invalidateQueries({ queryKey: ['catalog-products'] })
+        } else if (job.status === 'failed') {
+          toast.error('Enrichissement échoué')
+          setActiveJobId(null)
+        }
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [activeJobId, queryClient])
+
+  // Start enrichment
+  const enrichMutation = useMutation({
+    mutationFn: async (params: {
+      productIds: string[]
+      language?: EnrichLanguage
+      tone?: EnrichTone
+    }) => {
       const { data, error } = await supabase.functions.invoke('ai-enrich-import', {
         body: {
-          product_ids: productIds,
-          language: options?.language || 'fr',
-          tone: options?.tone || 'professionnel',
+          product_ids: params.productIds,
+          language: params.language || 'fr',
+          tone: params.tone || 'professionnel',
         },
-      });
+      })
+      if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Enrichment failed')
+      return data
+    },
+    onSuccess: (data) => {
+      setActiveJobId(data.job_id)
+      queryClient.invalidateQueries({ queryKey: ['ai-enrich-jobs'] })
+      toast.info('Enrichissement IA démarré', { description: 'Suivi en temps réel...' })
+    },
+    onError: (err: Error) => {
+      toast.error('Erreur enrichissement', { description: err.message })
+    },
+  })
 
-      if (error) throw error;
+  const activeJob = jobs.find(j => j.id === activeJobId) || jobs.find(j => j.status === 'running')
 
-      if (data?.job_id) {
-        setJobId(data.job_id);
-        toast.success('Enrichissement IA démarré', {
-          description: `${productIds.length} produit(s) en cours de traitement`,
-        });
-        return data.job_id;
-      }
-
-      throw new Error(data?.error || 'Erreur inconnue');
-    } catch (err: any) {
-      console.error('[useAIEnrichment] error:', err);
-      toast.error("Erreur d'enrichissement IA", {
-        description: err.message || 'Impossible de démarrer l\'enrichissement',
-      });
-      return null;
-    } finally {
-      setIsEnriching(false);
+  // Legacy API compatibility
+  const enrichProducts = async (productIds: string[], options?: { language?: string; tone?: string }): Promise<string | null> => {
+    try {
+      const data = await enrichMutation.mutateAsync({
+        productIds,
+        language: (options?.language || 'fr') as EnrichLanguage,
+        tone: (options?.tone || 'professionnel') as EnrichTone,
+      })
+      return data?.job_id || null
+    } catch {
+      return null
     }
-  };
+  }
 
-  return { enrichProducts, isEnriching, jobId };
+  return {
+    jobs,
+    activeJob,
+    isLoadingJobs,
+    isEnriching: enrichMutation.isPending || !!activeJob?.status?.match(/running|processing/),
+    enrich: enrichMutation.mutate,
+    enrichProducts,
+    jobId: activeJobId,
+  }
 }

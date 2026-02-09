@@ -723,3 +723,9 @@ verify_jwt = false
 
 [functions.supplier-sync-cron]
 verify_jwt = false
+
+[functions.bulk-import-parallel]
+verify_jwt = false
+
+[functions.ai-enrich-import]
+verify_jwt = false
