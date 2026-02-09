@@ -7523,6 +7523,45 @@ export type Database = {
           },
         ]
       }
+      mapping_presets: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          is_default: boolean
+          last_used_at: string | null
+          mapping: Json
+          name: string
+          updated_at: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_default?: boolean
+          last_used_at?: string | null
+          mapping?: Json
+          name: string
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_default?: boolean
+          last_used_at?: string | null
+          mapping?: Json
+          name?: string
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketing_ai_images: {
         Row: {
           category: string | null

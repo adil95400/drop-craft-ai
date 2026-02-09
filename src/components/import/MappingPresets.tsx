@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -17,17 +17,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Save, FolderOpen, Trash2, BookmarkPlus, ChevronDown, ShoppingCart, Globe, FileSpreadsheet } from 'lucide-react'
+import { Save, FolderOpen, Trash2, BookmarkPlus, ChevronDown, ShoppingCart, Globe, FileSpreadsheet, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface MappingPreset {
-  id: string
-  name: string
-  icon: string
-  mapping: Record<string, string>
-  createdAt: string
-  isBuiltIn?: boolean
-}
+import { useMappingPresets } from '@/hooks/useMappingPresets'
 
 interface MappingPresetsProps {
   currentMapping: Record<string, string>
@@ -35,16 +27,19 @@ interface MappingPresetsProps {
   headers: string[]
 }
 
-const STORAGE_KEY = 'shopopti_mapping_presets'
+interface BuiltInPreset {
+  id: string
+  name: string
+  icon: string
+  mapping: Record<string, string>
+}
 
-// Built-in presets
-const BUILT_IN_PRESETS: MappingPreset[] = [
+// Built-in presets (not persisted in DB)
+const BUILT_IN_PRESETS: BuiltInPreset[] = [
   {
     id: 'shopify-fr',
     name: 'Shopify FR',
     icon: 'shopify',
-    isBuiltIn: true,
-    createdAt: '',
     mapping: {
       'Title': 'name',
       'Handle': 'handle',
@@ -78,8 +73,6 @@ const BUILT_IN_PRESETS: MappingPreset[] = [
     id: 'woocommerce',
     name: 'WooCommerce',
     icon: 'woo',
-    isBuiltIn: true,
-    createdAt: '',
     mapping: {
       'Name': 'name',
       'Description': 'description',
@@ -98,8 +91,6 @@ const BUILT_IN_PRESETS: MappingPreset[] = [
     id: 'generic-csv',
     name: 'CSV Générique',
     icon: 'csv',
-    isBuiltIn: true,
-    createdAt: '',
     mapping: {
       'name': 'name',
       'title': 'name',
@@ -125,61 +116,53 @@ function getPresetIcon(icon: string) {
 }
 
 export function MappingPresets({ currentMapping, onApplyPreset, headers }: MappingPresetsProps) {
-  const [customPresets, setCustomPresets] = useState<MappingPreset[]>([])
+  const { presets: customPresets, isLoading, createPreset, deletePreset, trackUsage, isSaving } = useMappingPresets()
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
   const [presetName, setPresetName] = useState('')
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) setCustomPresets(JSON.parse(stored))
-    } catch { /* ignore */ }
-  }, [])
-
-  const savePresets = (presets: MappingPreset[]) => {
-    setCustomPresets(presets)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(presets))
-  }
-
   const handleSave = () => {
     if (!presetName.trim()) return
-
-    const newPreset: MappingPreset = {
-      id: `custom-${Date.now()}`,
+    createPreset({
       name: presetName.trim(),
       icon: 'csv',
       mapping: { ...currentMapping },
-      createdAt: new Date().toISOString(),
-    }
-
-    savePresets([...customPresets, newPreset])
+    })
     setSaveDialogOpen(false)
     setPresetName('')
-    toast.success(`Preset "${newPreset.name}" sauvegardé`)
   }
 
   const handleDelete = (id: string) => {
-    savePresets(customPresets.filter(p => p.id !== id))
-    toast.success('Preset supprimé')
+    deletePreset(id)
   }
 
-  const applyPreset = (preset: MappingPreset) => {
-    // Only apply mappings for headers that exist in current file
+  const applyBuiltInPreset = (preset: BuiltInPreset) => {
     const applicableMapping: Record<string, string> = {}
     let matched = 0
-
     headers.forEach(header => {
       if (preset.mapping[header]) {
         applicableMapping[header] = preset.mapping[header]
         matched++
       }
     })
-
     onApplyPreset(applicableMapping)
     toast.success(`Preset "${preset.name}" appliqué (${matched} colonnes mappées)`)
   }
 
-  const allPresets = [...BUILT_IN_PRESETS, ...customPresets]
+  const applyCustomPreset = (preset: { id: string; name: string; mapping: Record<string, string> }) => {
+    const applicableMapping: Record<string, string> = {}
+    let matched = 0
+    const mapping = (typeof preset.mapping === 'object' ? preset.mapping : {}) as Record<string, string>
+    headers.forEach(header => {
+      if (mapping[header]) {
+        applicableMapping[header] = mapping[header]
+        matched++
+      }
+    })
+    onApplyPreset(applicableMapping)
+    trackUsage(preset.id)
+    toast.success(`Preset "${preset.name}" appliqué (${matched} colonnes mappées)`)
+  }
+
   const hasMappings = Object.values(currentMapping).some(v => v && v !== 'ignore')
 
   return (
@@ -198,32 +181,42 @@ export function MappingPresets({ currentMapping, onApplyPreset, headers }: Mappi
               Templates prédéfinis
             </div>
             {BUILT_IN_PRESETS.map(preset => (
-              <DropdownMenuItem key={preset.id} onClick={() => applyPreset(preset)} className="gap-2">
+              <DropdownMenuItem key={preset.id} onClick={() => applyBuiltInPreset(preset)} className="gap-2">
                 {getPresetIcon(preset.icon)}
                 <span>{preset.name}</span>
                 <Badge variant="secondary" className="ml-auto text-[10px]">Intégré</Badge>
               </DropdownMenuItem>
             ))}
 
-            {customPresets.length > 0 && (
-              <>
-                <DropdownMenuSeparator />
-                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                  Mes presets
-                </div>
-                {customPresets.map(preset => (
-                  <DropdownMenuItem key={preset.id} className="gap-2 group">
-                    <FileSpreadsheet className="w-4 h-4 text-primary" />
-                    <span className="flex-1" onClick={() => applyPreset(preset)}>{preset.name}</span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDelete(preset.id) }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="w-3 h-3 text-destructive" />
-                    </button>
-                  </DropdownMenuItem>
-                ))}
-              </>
+            <DropdownMenuSeparator />
+            <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+              Mes presets
+            </div>
+
+            {isLoading ? (
+              <div className="flex items-center justify-center py-2">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : customPresets.length === 0 ? (
+              <div className="px-2 py-2 text-xs text-muted-foreground text-center">
+                Aucun preset sauvegardé
+              </div>
+            ) : (
+              customPresets.map(preset => (
+                <DropdownMenuItem key={preset.id} className="gap-2 group" onClick={() => applyCustomPreset(preset)}>
+                  <FileSpreadsheet className="w-4 h-4 text-primary" />
+                  <span className="flex-1">{preset.name}</span>
+                  {preset.usage_count > 0 && (
+                    <span className="text-[10px] text-muted-foreground">{preset.usage_count}×</span>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(preset.id) }}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="w-3 h-3 text-destructive" />
+                  </button>
+                </DropdownMenuItem>
+              ))
             )}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -244,7 +237,7 @@ export function MappingPresets({ currentMapping, onApplyPreset, headers }: Mappi
               Sauvegarder le mapping
             </DialogTitle>
             <DialogDescription>
-              Enregistrez ce mapping pour le réutiliser lors de futurs imports.
+              Enregistrez ce mapping pour le réutiliser lors de futurs imports, accessible depuis tous vos appareils.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -261,8 +254,8 @@ export function MappingPresets({ currentMapping, onApplyPreset, headers }: Mappi
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>Annuler</Button>
-            <Button onClick={handleSave} disabled={!presetName.trim()} className="gap-2">
-              <Save className="w-4 h-4" />
+            <Button onClick={handleSave} disabled={!presetName.trim() || isSaving} className="gap-2">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Sauvegarder
             </Button>
           </DialogFooter>
