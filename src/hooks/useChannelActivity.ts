@@ -1,9 +1,8 @@
 /**
- * Hook pour l'activité des canaux en temps réel
- * Utilise channel_sync_logs avec realtime
+ * Hook pour l'activité des canaux
+ * Utilise channel_sync_logs — pas de realtime, polling via staleTime/refetchInterval
  */
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 
 export interface ChannelActivityEvent {
@@ -18,7 +17,6 @@ export interface ChannelActivityEvent {
 }
 
 export function useChannelActivity() {
-  const queryClient = useQueryClient()
 
   const { data: events = [], isLoading, error } = useQuery({
     queryKey: ['channel-activity'],
@@ -85,32 +83,9 @@ export function useChannelActivity() {
 
       return allEvents
     },
-    staleTime: 30000
+    staleTime: 30000,
+    refetchInterval: 60000,
   })
-
-  // Realtime subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel('channel-activity-realtime')
-      .on(
-        'postgres_changes' as any,
-        {
-          event: '*',
-          schema: 'public',
-          table: 'channel_sync_logs'
-        } as any,
-        (payload) => {
-          console.log('Realtime sync log update:', payload)
-          queryClient.invalidateQueries({ queryKey: ['channel-activity'] })
-          queryClient.invalidateQueries({ queryKey: ['channel-health'] })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [queryClient])
 
   return {
     events,

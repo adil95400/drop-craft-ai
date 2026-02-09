@@ -33,7 +33,8 @@ import { ImportProgress } from './ImportProgress'
 import { ImportConfigModal } from './ImportConfigModal'
 import { RateLimitStatus } from './RateLimitStatus'
 import { ImportStatistics } from './ImportStatistics'
-import { useImportRealtime } from '@/hooks/useImportRealtime'
+import { useQuery } from '@tanstack/react-query'
+import { importJobsApi } from '@/services/api/client'
 import { supabase } from '@/integrations/supabase/client'
 
 interface LocalImportMethod {
@@ -215,8 +216,26 @@ export const AdvancedImportMethods: React.FC = () => {
     })
   }, [])
   
-  // Real-time monitoring des imports
-  const { activeJobs, isConnected } = useImportRealtime(userId || undefined)
+  // Active jobs via API V1 polling
+  const { data: activeJobs = [] } = useQuery({
+    queryKey: ['import-active-jobs-advanced'],
+    queryFn: async () => {
+      try {
+        const resp = await importJobsApi.list({ status: 'processing', per_page: 10 })
+        return (resp.items ?? []).map((j: any) => ({
+          id: j.job_id ?? j.id,
+          status: j.status,
+          progress: j.progress?.percent ?? 0,
+          total_products: j.progress?.total ?? j.items_total ?? 0,
+          source_type: j.source ?? 'import',
+          created_at: j.created_at ?? new Date().toISOString(),
+        }))
+      } catch { return [] }
+    },
+    refetchInterval: 5000,
+    enabled: !!userId,
+  })
+  const isConnected = true // API-based, always "connected" when online
   
   if (isLoading) {
     return <div className="flex justify-center p-8"><div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div></div>
