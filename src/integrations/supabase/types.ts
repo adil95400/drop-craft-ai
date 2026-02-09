@@ -9112,6 +9112,102 @@ export type Database = {
           },
         ]
       }
+      product_ai_enrichments: {
+        Row: {
+          applied_at: string | null
+          created_at: string
+          enriched_category: string | null
+          enriched_description: string | null
+          enriched_seo_description: string | null
+          enriched_seo_title: string | null
+          enriched_tags: string[] | null
+          enriched_title: string | null
+          error_message: string | null
+          generation_time_ms: number | null
+          id: string
+          job_id: string | null
+          language: string
+          model: string
+          original_category: string | null
+          original_description: string | null
+          original_title: string | null
+          product_id: string
+          prompt_version: string
+          status: string
+          tokens_used: number | null
+          tone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          created_at?: string
+          enriched_category?: string | null
+          enriched_description?: string | null
+          enriched_seo_description?: string | null
+          enriched_seo_title?: string | null
+          enriched_tags?: string[] | null
+          enriched_title?: string | null
+          error_message?: string | null
+          generation_time_ms?: number | null
+          id?: string
+          job_id?: string | null
+          language?: string
+          model?: string
+          original_category?: string | null
+          original_description?: string | null
+          original_title?: string | null
+          product_id: string
+          prompt_version: string
+          status?: string
+          tokens_used?: number | null
+          tone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          created_at?: string
+          enriched_category?: string | null
+          enriched_description?: string | null
+          enriched_seo_description?: string | null
+          enriched_seo_title?: string | null
+          enriched_tags?: string[] | null
+          enriched_title?: string | null
+          error_message?: string | null
+          generation_time_ms?: number | null
+          id?: string
+          job_id?: string | null
+          language?: string
+          model?: string
+          original_category?: string | null
+          original_description?: string | null
+          original_title?: string | null
+          product_id?: string
+          prompt_version?: string
+          status?: string
+          tokens_used?: number | null
+          tone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_ai_enrichments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "background_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_ai_enrichments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_channel_mappings: {
         Row: {
           channel_id: string | null

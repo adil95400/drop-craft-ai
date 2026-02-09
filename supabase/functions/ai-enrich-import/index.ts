@@ -6,8 +6,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// ── Versioned prompts (stored in code, not in DB) ──────────────────────
-const PROMPT_VERSION = "1.2.0";
+// ── Versioned prompts (stored in code) ─────────────────────────────────
+const PROMPT_VERSION = "1.3.0";
+const MODEL = "gpt-4.1-mini";
 
 const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`;
 
@@ -40,12 +41,12 @@ const OPENAI_TOOL = {
     parameters: {
       type: "object",
       properties: {
-        title: { type: "string", description: "Titre optimisé (max 80 car.)" },
-        description: { type: "string", description: "Description enrichie (150-300 mots)" },
-        category: { type: "string", description: "Catégorie suggérée" },
-        seo_title: { type: "string", description: "Balise title SEO (max 60 car.)" },
-        seo_description: { type: "string", description: "Meta description (max 160 car.)" },
-        tags: { type: "array", items: { type: "string" }, description: "5-8 tags pertinents" },
+        title: { type: "string" },
+        description: { type: "string" },
+        category: { type: "string" },
+        seo_title: { type: "string" },
+        seo_description: { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
       },
       required: ["title", "description"],
       additionalProperties: false,
@@ -69,10 +70,8 @@ Deno.serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    // Auth
     const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await anonClient.auth.getUser(token);
@@ -114,7 +113,7 @@ Deno.serve(async (req) => {
         progress_percent: 0,
         name: `Enrichissement IA OpenAI (${product_ids.length} produits)`,
         started_at: new Date().toISOString(),
-        metadata: { prompt_version: PROMPT_VERSION, model: "gpt-4.1-mini", language, tone },
+        metadata: { prompt_version: PROMPT_VERSION, model: MODEL, language, tone },
       })
       .select("id")
       .single();
@@ -131,7 +130,6 @@ Deno.serve(async (req) => {
         const startTime = Date.now();
 
         try {
-          // Fetch product
           const { data: product } = await supabase
             .from("products")
             .select("title, description, category, price, images")
@@ -140,13 +138,24 @@ Deno.serve(async (req) => {
             .single();
 
           if (!product) {
+            // Persist failure
+            await supabase.from("product_ai_enrichments").insert({
+              product_id: productId,
+              job_id: job.id,
+              user_id: user.id,
+              status: "failed",
+              error_message: "Product not found",
+              model: MODEL,
+              prompt_version: PROMPT_VERSION,
+              language,
+              tone,
+            });
             failed++;
             continue;
           }
 
           const userPrompt = buildUserPrompt(product, language, tone);
 
-          // Call OpenAI directly
           const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -154,7 +163,7 @@ Deno.serve(async (req) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: "gpt-4.1-mini",
+              model: MODEL,
               messages: [
                 { role: "system", content: SYSTEM_PROMPT },
                 { role: "user", content: userPrompt },
@@ -165,20 +174,27 @@ Deno.serve(async (req) => {
             }),
           });
 
+          const durationMs = Date.now() - startTime;
+
           if (!aiResponse.ok) {
             const errBody = await aiResponse.text();
             console.error(`OpenAI error for ${productId}: ${aiResponse.status} ${errBody}`);
-            failed++;
-
-            // Persist failure in ai_generated_content
-            await supabase.from("ai_generated_content").insert({
-              user_id: user.id,
+            await supabase.from("product_ai_enrichments").insert({
               product_id: productId,
-              content_type: "enrichment",
-              generated_content: "",
+              job_id: job.id,
+              user_id: user.id,
+              original_title: product.title,
+              original_description: product.description,
+              original_category: product.category,
               status: "failed",
-              variables_used: { error: errBody, model: "gpt-4.1-mini", prompt_version: PROMPT_VERSION },
+              error_message: `OpenAI ${aiResponse.status}: ${errBody.substring(0, 500)}`,
+              model: MODEL,
+              prompt_version: PROMPT_VERSION,
+              language,
+              tone,
+              generation_time_ms: durationMs,
             });
+            failed++;
             continue;
           }
 
@@ -190,28 +206,32 @@ Deno.serve(async (req) => {
             enriched = JSON.parse(toolCall.function.arguments);
           }
 
-          const durationMs = Date.now() - startTime;
           const tokensUsed = aiData.usage?.total_tokens || null;
 
-          // Persist AI result in DB
-          await supabase.from("ai_generated_content").insert({
-            user_id: user.id,
+          // ── Persist enrichment result in product_ai_enrichments ───────
+          await supabase.from("product_ai_enrichments").insert({
             product_id: productId,
-            content_type: "enrichment",
-            generated_content: JSON.stringify(enriched),
-            original_content: JSON.stringify({ title: product.title, description: product.description }),
-            status: "generated",
-            generation_time_ms: durationMs,
+            job_id: job.id,
+            user_id: user.id,
+            original_title: product.title,
+            original_description: product.description,
+            original_category: product.category,
+            enriched_title: enriched.title || null,
+            enriched_description: enriched.description || null,
+            enriched_category: enriched.category || null,
+            enriched_seo_title: enriched.seo_title || null,
+            enriched_seo_description: enriched.seo_description || null,
+            enriched_tags: enriched.tags || null,
+            model: MODEL,
+            prompt_version: PROMPT_VERSION,
+            language,
+            tone,
             tokens_used: tokensUsed,
-            variables_used: {
-              model: "gpt-4.1-mini",
-              prompt_version: PROMPT_VERSION,
-              language,
-              tone,
-            },
+            generation_time_ms: durationMs,
+            status: "generated",
           });
 
-          // Update product
+          // ── Apply to product ─────────────────────────────────────────
           const updateData: any = {};
           if (enriched.title) updateData.title = enriched.title;
           if (enriched.description) updateData.description = enriched.description;
@@ -226,6 +246,16 @@ Deno.serve(async (req) => {
               .update(updateData)
               .eq("id", productId)
               .eq("user_id", user.id);
+
+            // Mark enrichment as applied
+            // (we just inserted it, update the latest one)
+            await supabase
+              .from("product_ai_enrichments")
+              .update({ status: "applied", applied_at: new Date().toISOString() })
+              .eq("product_id", productId)
+              .eq("job_id", job.id)
+              .eq("status", "generated");
+
             succeeded++;
           } else {
             failed++;
@@ -250,7 +280,6 @@ Deno.serve(async (req) => {
           .eq("id", job.id);
       }
 
-      // Mark complete
       await supabase
         .from("background_jobs")
         .update({
@@ -263,7 +292,6 @@ Deno.serve(async (req) => {
         .eq("id", job.id);
     };
 
-    // Fire and forget
     processProducts().catch((err) =>
       console.error("[ai-enrich-import] background error:", err)
     );
