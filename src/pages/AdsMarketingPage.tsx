@@ -22,6 +22,7 @@ import {
   Pause
 } from 'lucide-react'
 import { useAdsMarketing } from '@/hooks/useAdsMarketing'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 const AdsMarketingPage = () => {
   const { 
@@ -84,80 +85,77 @@ const AdsMarketingPage = () => {
     setCampaignDialogOpen(false);
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Ads & Marketing</h1>
-          <p className="text-muted-foreground">Gestion des campagnes publicitaires et analyse ROI</p>
-        </div>
-        <div className="flex gap-2">
+    <ChannablePageWrapper
+      title="Ads & Marketing"
+      description="Gestion des campagnes publicitaires et analyse ROI"
+      heroImage="marketing"
+      badge={{ label: 'Ads', icon: Target }}
+      actions={
+        <>
           <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Exporter
           </Button>
-          <Dialog open={campaignDialogOpen} onOpenChange={setCampaignDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Target className="mr-2 h-4 w-4" />
-                Nouvelle campagne
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Créer une campagne</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label>Nom de la campagne</Label>
-                  <Input
-                    value={newCampaign.name}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })}
-                    placeholder="Ex: Promo été 2025"
-                  />
-                </div>
-                <div>
-                  <Label>Plateforme</Label>
-                  <Select 
-                    value={newCampaign.platform} 
-                    onValueChange={(v) => setNewCampaign({ ...newCampaign, platform: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="google">🔍 Google Ads</SelectItem>
-                      <SelectItem value="facebook">📘 Facebook Ads</SelectItem>
-                      <SelectItem value="tiktok">🎵 TikTok Ads</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Budget journalier (€)</Label>
-                  <Input
-                    type="number"
-                    value={newCampaign.budget}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, budget: Number(e.target.value) })}
-                  />
-                </div>
-                <Button onClick={handleCreateCampaign} className="w-full" disabled={isCreatingCampaign}>
-                  {isCreatingCampaign && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Créer la campagne
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+          <Button onClick={() => setCampaignDialogOpen(true)}>
+            <Target className="mr-2 h-4 w-4" />
+            Nouvelle campagne
+          </Button>
+        </>
+      }
+    >
+      <Dialog open={campaignDialogOpen} onOpenChange={setCampaignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Créer une campagne</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Nom de la campagne</Label>
+              <Input
+                value={newCampaign.name}
+                onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })}
+                placeholder="Ex: Promo été 2025"
+              />
+            </div>
+            <div>
+              <Label>Plateforme</Label>
+              <Select 
+                value={newCampaign.platform} 
+                onValueChange={(v) => setNewCampaign({ ...newCampaign, platform: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="google">🔍 Google Ads</SelectItem>
+                  <SelectItem value="facebook">📘 Facebook Ads</SelectItem>
+                  <SelectItem value="tiktok">🎵 TikTok Ads</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Budget journalier (€)</Label>
+              <Input
+                type="number"
+                value={newCampaign.budget}
+                onChange={(e) => setNewCampaign({ ...newCampaign, budget: Number(e.target.value) })}
+              />
+            </div>
+            <Button onClick={handleCreateCampaign} className="w-full" disabled={isCreatingCampaign}>
+              {isCreatingCampaign && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Créer la campagne
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -493,7 +491,9 @@ const AdsMarketingPage = () => {
           )}
         </TabsContent>
       </Tabs>
-    </div>
+        </>
+      )}
+    </ChannablePageWrapper>
   )
 }
 

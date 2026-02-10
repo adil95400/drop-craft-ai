@@ -10,6 +10,7 @@ import { ConnectMarketplaceDialog } from '@/components/marketplace/ConnectMarket
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { RefreshCw, CheckCircle, XCircle, Clock, Play, Settings, Store } from 'lucide-react'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 interface StoreIntegration {
   id: string
@@ -42,7 +43,6 @@ export default function SyncManagementPage() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      // Map is_active to connection_status for compatibility
       return (data || []).map((d: any) => ({
         ...d,
         connection_status: d.is_active ? 'connected' : 'disconnected'
@@ -95,115 +95,105 @@ export default function SyncManagementPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3" />
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="h-64 bg-muted rounded" />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <>
       <Helmet>
         <title>Gestion des Synchronisations - ShopOpti</title>
-        <meta 
-          name="description" 
-          content="Gérez la synchronisation automatique de vos marketplaces"
-        />
+        <meta name="description" content="Gérez la synchronisation automatique de vos marketplaces" />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <RefreshCw className="h-8 w-8 text-primary" />
-              Gestion des Synchronisations
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Configurez la synchronisation automatique de vos données
-            </p>
-          </div>
+      <ChannablePageWrapper
+        title="Gestion des Synchronisations"
+        description="Configurez la synchronisation automatique de vos données"
+        heroImage="integrations"
+        badge={{ label: 'Sync', icon: RefreshCw }}
+        actions={
           <Button onClick={() => navigate('/integrations/sync-config')}>
             <Settings className="mr-2 h-4 w-4" />
             Configuration Avancée
           </Button>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {connections.map((connection) => (
-            <Card key={connection.id} className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {getStatusIcon(connection.connection_status)}
-                  <div>
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <Store className="h-4 w-4" />
-                      {connection.store_name || connection.platform}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {connection.last_sync_at 
-                        ? `Dernière sync: ${new Date(connection.last_sync_at).toLocaleString('fr-FR')}`
-                        : 'Jamais synchronisé'}
-                    </p>
+        }
+      >
+        {isLoading ? (
+          <div className="animate-pulse space-y-4">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="h-64 bg-muted rounded" />
+              <div className="h-64 bg-muted rounded" />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-6 md:grid-cols-2">
+              {connections.map((connection) => (
+                <Card key={connection.id} className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {getStatusIcon(connection.connection_status)}
+                      <div>
+                        <h3 className="font-semibold flex items-center gap-2">
+                          <Store className="h-4 w-4" />
+                          {connection.store_name || connection.platform}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {connection.last_sync_at 
+                            ? `Dernière sync: ${new Date(connection.last_sync_at).toLocaleString('fr-FR')}`
+                            : 'Jamais synchronisé'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={connection.connection_status === 'connected' ? 'default' : 'destructive'}>
+                        {connection.connection_status}
+                      </Badge>
+                      {connection.product_count !== null && (
+                        <Badge variant="outline">{connection.product_count} produits</Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={connection.connection_status === 'connected' ? 'default' : 'destructive'}>
-                    {connection.connection_status}
-                  </Badge>
-                  {connection.product_count !== null && (
-                    <Badge variant="outline">{connection.product_count} produits</Badge>
-                  )}
-                </div>
-              </div>
 
-              <div className="text-sm text-muted-foreground">
-                <p>Fréquence: {getFrequencyLabel(connection.sync_frequency)}</p>
-                {connection.store_url && (
-                  <p className="truncate">URL: {connection.store_url}</p>
-                )}
-              </div>
+                  <div className="text-sm text-muted-foreground">
+                    <p>Fréquence: {getFrequencyLabel(connection.sync_frequency)}</p>
+                    {connection.store_url && (
+                      <p className="truncate">URL: {connection.store_url}</p>
+                    )}
+                  </div>
 
-              <Button
-                onClick={() => syncMutation.mutate(connection.id)}
-                disabled={syncMutation.isPending}
-                variant="outline"
-                className="w-full"
-              >
-                <Play className="mr-2 h-4 w-4" />
-                {syncMutation.isPending ? 'Synchronisation...' : 'Synchroniser maintenant'}
-              </Button>
+                  <Button
+                    onClick={() => syncMutation.mutate(connection.id)}
+                    disabled={syncMutation.isPending}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    {syncMutation.isPending ? 'Synchronisation...' : 'Synchroniser maintenant'}
+                  </Button>
 
-              <AutoSyncManager
-                connectionId={connection.id}
-                platform={connection.platform}
-                currentSettings={{
-                  enabled: connection.is_active,
-                  frequency: connection.sync_frequency || 'hourly',
-                  syncTypes: connection.sync_settings?.import_products ? ['products'] : []
-                }}
-              />
-            </Card>
-          ))}
-        </div>
+                  <AutoSyncManager
+                    connectionId={connection.id}
+                    platform={connection.platform}
+                    currentSettings={{
+                      enabled: connection.is_active,
+                      frequency: connection.sync_frequency || 'hourly',
+                      syncTypes: connection.sync_settings?.import_products ? ['products'] : []
+                    }}
+                  />
+                </Card>
+              ))}
+            </div>
 
-        {connections.length === 0 && (
-          <Card className="p-12 text-center">
-            <RefreshCw className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Aucune connexion</h3>
-            <p className="text-muted-foreground mb-4">
-              Connectez des boutiques pour gérer leur synchronisation
-            </p>
-            <ConnectMarketplaceDialog />
-          </Card>
+            {connections.length === 0 && (
+              <Card className="p-12 text-center">
+                <RefreshCw className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Aucune connexion</h3>
+                <p className="text-muted-foreground mb-4">
+                  Connectez des boutiques pour gérer leur synchronisation
+                </p>
+                <ConnectMarketplaceDialog />
+              </Card>
+            )}
+          </>
         )}
-      </div>
+      </ChannablePageWrapper>
     </>
   )
 }

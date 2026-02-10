@@ -25,6 +25,7 @@ import {
   Share
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 interface Affiliate {
   id: string
@@ -243,13 +244,13 @@ const AffiliationPage = () => {
   const totalSales = affiliates.reduce((sum, a) => sum + a.totalSales, 0)
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Affiliation & Influenceurs</h1>
-          <p className="text-muted-foreground">Programme d'affiliation et marketplace d'influenceurs</p>
-        </div>
-        <div className="flex gap-2">
+    <ChannablePageWrapper
+      title="Affiliation & Influenceurs"
+      description="Programme d'affiliation et marketplace d'influenceurs"
+      heroImage="marketing"
+      badge={{ label: 'Affiliation', icon: Users }}
+      actions={
+        <>
           <Button variant="outline">
             <Share className="mr-2 h-4 w-4" />
             Partager le programme
@@ -258,9 +259,9 @@ const AffiliationPage = () => {
             <Users className="mr-2 h-4 w-4" />
             Recruter des affiliés
           </Button>
-        </div>
-      </div>
-
+        </>
+      }
+    >
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -685,7 +686,7 @@ const AffiliationPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   )
 }
 

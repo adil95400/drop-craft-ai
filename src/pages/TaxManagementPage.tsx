@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, FileText, Globe, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const TaxManagementPage: React.FC = () => {
   const taxRates = [
@@ -19,19 +20,18 @@ const TaxManagementPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Gestion fiscale</h1>
-          <p className="text-muted-foreground">
-            Gérez vos taxes et obligations fiscales
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Gestion Fiscale"
+      description="Gérez vos taxes et obligations fiscales"
+      heroImage="settings"
+      badge={{ label: 'Taxes', icon: Calculator }}
+      actions={
         <Button>
           <Calculator className="mr-2 h-4 w-4" />
           Calculer les taxes
         </Button>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -286,7 +286,7 @@ const TaxManagementPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 
