@@ -34,6 +34,7 @@ export function AutomationRoutes() {
       <Route index element={<AutomationPage />} />
       <Route path="studio" element={<AutomationPage />} />
       <Route path="ai-hub" element={<AutomationPage />} />
+      <Route path="triggers" element={<AutomationPage />} />
       
       {/* AI Tools - Redirect to content generation */}
       <Route path="ai" element={<ContentGenerationPage />} />
