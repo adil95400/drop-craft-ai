@@ -1145,12 +1145,12 @@ async function createSeoAudit(req: Request, auth: NonNullable<Awaited<ReturnType
 
 async function processSeoAudit(auditId: string, userId: string, params: any) {
   const admin = serviceClient();
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
 
   await admin.from("seo_audits").update({ status: "running", started_at: new Date().toISOString() }).eq("id", auditId);
 
   if (!apiKey) {
-    await admin.from("seo_audits").update({ status: "failed", error_message: "LOVABLE_API_KEY not configured" }).eq("id", auditId);
+    await admin.from("seo_audits").update({ status: "failed", error_message: "OPENAI_API_KEY not configured" }).eq("id", auditId);
     return;
   }
 
@@ -1176,11 +1176,11 @@ Retourne UNIQUEMENT un JSON avec cette structure:
 }
 Génère au moins 8 checks couvrant meta, content, structure et performance.`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gpt-4.1-mini",
         messages: [
           { role: "system", content: "Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide." },
           { role: "user", content: prompt },
@@ -1353,13 +1353,13 @@ async function createSeoGenerate(req: Request, auth: NonNullable<Awaited<ReturnT
 
 async function processSeoGeneration(jobId: string, userId: string, params: any) {
   const admin = serviceClient();
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
   const startTime = Date.now();
 
   await admin.from("seo_ai_generations").update({ status: "running" }).eq("id", jobId);
 
   if (!apiKey) {
-    await admin.from("seo_ai_generations").update({ status: "failed", error_message: "LOVABLE_API_KEY not configured" }).eq("id", jobId);
+    await admin.from("seo_ai_generations").update({ status: "failed", error_message: "OPENAI_API_KEY not configured" }).eq("id", jobId);
     return;
   }
 
@@ -1394,11 +1394,11 @@ Retourne UNIQUEMENT un JSON avec les champs suivants selon les actions demandée
   "seo_score": <estimated score 0-100>
 }`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gpt-4.1-mini",
         messages: [
           { role: "system", content: "Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide." },
           { role: "user", content: prompt },
