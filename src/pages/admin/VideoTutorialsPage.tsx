@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -154,17 +155,12 @@ export default function VideoTutorialsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Vidéos Tutoriels
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Gérez les vidéos tutoriels de la marketplace ShopOpti
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Vidéos Tutoriels"
+      description="Gérez les vidéos tutoriels de la marketplace ShopOpti"
+      heroImage="support"
+      badge={{ label: 'Tutoriels', icon: Video }}
+    >
         <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
@@ -237,7 +233,6 @@ export default function VideoTutorialsPage() {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -407,6 +402,6 @@ export default function VideoTutorialsPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </ChannablePageWrapper>
   );
 }
