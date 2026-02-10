@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -150,7 +151,12 @@ export default function ProductPublishing() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <ChannablePageWrapper
+        title="Publication des Produits"
+        description="Gérez la publication de vos produits vers votre catalogue principal"
+        heroImage="products"
+        badge={{ label: 'Publication', icon: Upload }}
+      >
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-muted rounded w-1/3" />
           <div className="grid gap-4 md:grid-cols-3">
@@ -159,28 +165,22 @@ export default function ProductPublishing() {
             ))}
           </div>
         </div>
-      </div>
+      </ChannablePageWrapper>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Upload className="h-8 w-8 text-primary" />
-            Publication des Produits
-          </h1>
-          <p className="text-muted-foreground">
-            Gérez la publication de vos produits vers votre catalogue principal
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Publication des Produits"
+      description="Gérez la publication de vos produits vers votre catalogue principal"
+      heroImage="products"
+      badge={{ label: 'Publication', icon: Upload }}
+      actions={
         <Button onClick={() => refetch()}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Actualiser
+          <RefreshCw className="h-4 w-4 mr-2" />Actualiser
         </Button>
-      </div>
+      }
+    >
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
@@ -405,6 +405,6 @@ export default function ProductPublishing() {
           <PublishStatsCard />
         </div>
       </div>
-    </div>
+    </ChannablePageWrapper>
   );
 }

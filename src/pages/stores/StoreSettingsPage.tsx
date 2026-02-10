@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -45,14 +46,16 @@ export function StoreSettingsPage() {
 
   if (!store) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Boutique non trouvée</h1>
-          <Button onClick={() => navigate('/stores-channels')}>
-            Retour aux boutiques
-          </Button>
+      <ChannablePageWrapper
+        title="Boutique non trouvée"
+        description="La boutique demandée n'existe pas"
+        heroImage="integrations"
+        badge={{ label: 'Boutique', icon: Settings }}
+      >
+        <div className="text-center py-8">
+          <Button onClick={() => navigate('/stores-channels')}>Retour aux boutiques</Button>
         </div>
-      </div>
+      </ChannablePageWrapper>
     )
   }
 
@@ -75,34 +78,17 @@ export function StoreSettingsPage() {
   const webhookUrl = `${window.location.origin}/api/webhooks/stores/${store.id}`
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/stores-channels')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour
+    <ChannablePageWrapper
+      title={`Paramètres de ${store.name}`}
+      description="Configurez la synchronisation et les paramètres de votre boutique"
+      heroImage="settings"
+      badge={{ label: 'Paramètres', icon: Settings }}
+      actions={
+        <Button variant="ghost" size="sm" onClick={() => navigate('/stores-channels')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />Retour
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Paramètres de {store.name}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <Badge variant="outline">{store.platform}</Badge>
-            <Badge className={`${
-              store.status === 'connected' ? 'bg-success text-success-foreground' :
-              store.status === 'syncing' ? 'bg-warning text-warning-foreground' :
-              'bg-destructive text-destructive-foreground'
-            }`}>
-              {store.status === 'connected' ? 'Connectée' :
-               store.status === 'syncing' ? 'Synchronisation...' :
-               store.status === 'error' ? 'Erreur' : 'Déconnectée'}
-            </Badge>
-          </div>
-        </div>
-      </div>
-
+      }
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Settings */}
         <div className="lg:col-span-2 space-y-6">
@@ -492,6 +478,6 @@ export function StoreSettingsPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </ChannablePageWrapper>
   )
 }
