@@ -40,13 +40,15 @@ export function MarketingRoutes() {
       <Route index element={<CrmPage />} />
       <Route path="promotions" element={<PromotionsAutomationPage />} />
       
-      {/* CRM - Toutes les routes CRM redirigent vers CrmPage consolidé */}
+      {/* CRM - Toutes les routes CRM */}
       <Route path="crm" element={<CrmPage />} />
       <Route path="crm/leads" element={<CrmPage />} />
       <Route path="crm/activity" element={<CrmPage />} />
       <Route path="crm/emails" element={<CrmPage />} />
       <Route path="crm/calls" element={<CrmPage />} />
       <Route path="crm/calendar" element={<CrmPage />} />
+      <Route path="crm/pipeline" element={<CrmPage />} />
+      <Route path="crm/scoring" element={<CrmPage />} />
       
       {/* SEO */}
       <Route path="seo" element={<SEOManagerPage />} />
@@ -72,6 +74,9 @@ export function MarketingRoutes() {
       <Route path="seo/keywords" element={<KeywordResearch />} />
       <Route path="seo/rank-tracker" element={<RankTracker />} />
       <Route path="seo/schema" element={<SchemaGenerator />} />
+      
+      {/* Creative Studio */}
+      <Route path="creative-studio" element={<CreativeStudioPage />} />
       
       {/* Legacy redirects */}
       <Route path="crm-ultra-pro" element={<Navigate to="/marketing/crm" replace />} />

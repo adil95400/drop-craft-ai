@@ -18,34 +18,26 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   '/home-optimized': '/dashboard',
   
   // Profile & Subscription
-  '/profile': '/dashboard/profile',
-  '/subscription': '/dashboard/subscription',
-  '/subscription-dashboard': '/dashboard/subscription',
+  '/subscription-dashboard': '/subscription',
   
   // Orders
-  '/tracking': '/orders',
-  '/orders-center': '/orders',
-  '/dashboard/orders': '/orders',
   '/dashboard/orders/center': '/orders',
   
-  // Customers
-  '/dashboard/customers': '/customers',
-  
   // Settings  
-  '/dashboard/settings': '/settings',
   '/parametres': '/settings',
   
   // Stores
   '/stores': '/stores-channels',
-  '/dashboard/stores': '/stores-channels',
   
-  // CRM
+  // CRM (top-level redirects to marketing)
   '/crm': '/marketing/crm',
   '/crm/leads': '/marketing/crm/leads',
   '/crm/emails': '/marketing/crm/emails',
   '/crm/calls': '/marketing/crm/calls',
   '/crm/calendar': '/marketing/crm/calendar',
   '/crm/activity': '/marketing/crm/activity',
+  '/crm/pipeline': '/marketing/crm/pipeline',
+  '/crm/scoring': '/marketing/crm/scoring',
   
   // SEO  
   '/seo': '/marketing/seo',
@@ -62,17 +54,12 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   '/attributes': '/catalog/attributes',
   
   // API
-  '/api/documentation': '/integrations/api/documentation',
-  '/swagger': '/integrations/api/documentation',
+  '/swagger': '/api/documentation',
   
-  // Fulfillment
-  '/fulfillment': '/orders/fulfillment',
-  '/fulfillment/carriers': '/orders/fulfillment/carriers',
-  '/fulfillment/rules': '/orders/fulfillment/rules',
+  // Fulfillment (already handled by orders routes)
+  '/fulfillment/carriers': '/orders/fulfillment',
+  '/fulfillment/rules': '/orders/fulfillment',
   '/fulfillment/dashboard': '/orders/fulfillment',
-  
-  // Products (French aliases)
-  '/produits': '/products',
   
   // Suppliers (French aliases)
   '/fournisseurs': '/suppliers',
@@ -89,11 +76,12 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   // Import
   '/import/simplified': '/import',
   
-  // Rules
-  '/rules': '/products?tab=rules',
-  
   // Enrichment
-  '/enrichment/settings': '/enrichment',
+  '/enrichment/settings': '/catalog/attributes',
+  '/enrichment': '/catalog/attributes',
+  
+  // Repricing
+  '/repricing': '/pricing-manager/repricing',
 };
 
 /**
@@ -144,7 +132,7 @@ export function LegacyRedirectHandler({ children }: { children: React.ReactNode 
       { pattern: '/produits/', redirect: '/products/' },
       { pattern: '/fournisseurs/', redirect: '/suppliers/' },
       { pattern: '/attributes/', redirect: '/catalog/attributes/' },
-      { pattern: '/api/', redirect: '/integrations/api/' },
+      { pattern: '/seo/', redirect: '/marketing/seo/' },
       { pattern: '/modern/', redirect: '/dashboard' },
     ];
     

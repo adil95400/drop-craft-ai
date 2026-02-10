@@ -1,22 +1,20 @@
 /**
  * Mapping des anciennes routes vers les nouvelles
- * Consolidé v7.0 - Réduction de 128 à ~40 redirects essentiels
+ * Consolidé v8.0 - Source unique de vérité pour les redirections legacy
+ * Note: Les redirections étendues sont dans LegacyRedirectsHandler.tsx
  */
 export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
-  // Dashboard - Toutes les variantes vers /dashboard
+  // Dashboard
   '/dashboard-super': '/dashboard',
   '/dashboard-classic': '/dashboard',
   
-  // Products - Consolidation catalogue
+  // Products
   '/catalogue': '/products/catalogue',
   '/my-products': '/products',
   '/produits': '/products',
   
-  // Import - (routes actuelles: /import/*). Ne pas rediriger /import vers /products/import
-  // Anciennes routes /products/import* sont déjà gérées dans ProductRoutes.
-
-  // Orders - Routes uniformisées
-  '/orders-center': '/orders/center',
+  // Orders
+  '/orders-center': '/orders',
   '/dashboard/orders': '/orders',
   '/fulfillment': '/orders/fulfillment',
   
@@ -36,42 +34,38 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   // Automation
   '/ai-automation': '/automation/ai-hub',
   
-  // Marketing (CRM, SEO fusionnés)
+  // Marketing
   '/crm-prospects': '/marketing/crm/leads',
   '/seo-ultra-pro': '/marketing/seo',
   
-  // Inventory & Stock
-  '/stock': '/automation/stock-sync',
+  // Stock
+  '/inventory': '/stock',
   
   // Tracking
-  '/tracking': '/orders/tracking',
-  
-  // Reviews → Marketing CRM
-  '/reviews': '/marketing/crm',
+  '/tracking': '/orders',
   
   // Plugins & Extensions
-  '/plugins': '/integrations/extensions',
-  '/mobile': '/integrations/extensions',
+  '/plugins': '/extensions',
+  '/mobile': '/extensions',
   
-  // Admin & Enterprise
-  '/admin-panel': '/admin/dashboard',
+  // Admin
+  '/admin-panel': '/admin',
   '/supplier-admin': '/admin/suppliers',
-  '/multi-tenant-management': '/admin/multi-tenant/management',
   
   // API
-  '/api-docs': '/integrations/api/documentation',
+  '/api-docs': '/api/documentation',
   
-  // Support & Academy
-  '/academy': '/integrations/academy',
+  // Academy
+  '/academy': '/academy',
   
   // Marketplace
   '/marketplace-hub': '/integrations/marketplace/hub',
-  '/marketplace-sync': '/marketplace-sync',
-  '/feed-manager': '/integrations/marketplace/feed-manager',
+  '/marketplace-sync': '/integrations/marketplace/sync',
+  '/feed-manager': '/feeds',
   
   // Monitoring
   '/observability': '/admin/monitoring',
-  '/monitoring': '/admin/monitoring',
+  '/monitoring': '/monitoring',
 };
 
 /**
