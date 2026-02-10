@@ -11,6 +11,7 @@ import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections'
 import { useProductsUnified } from '@/hooks/unified'
 import { seedSampleProducts } from '@/lib/seedProducts'
 import { Search, Upload, Package, Loader2 } from 'lucide-react'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 const MARKETPLACE_ICONS: Record<string, string> = {
   amazon: '🛒',
@@ -33,7 +34,6 @@ export default function PublicationCenterPage() {
   const { products, isLoading } = useProductsUnified({ filters: { search: searchQuery, status: 'active' } })
 
   useEffect(() => {
-    // Seed products if none exist
     if (!isLoading && products.length === 0 && !seeding) {
       setSeeding(true)
       seedSampleProducts().finally(() => setSeeding(false))
@@ -65,20 +65,13 @@ export default function PublicationCenterPage() {
         />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Upload className="h-8 w-8 text-primary" />
-              Centre de Publication
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Gérez et publiez vos produits sur toutes vos marketplaces
-            </p>
-          </div>
-          <ConnectMarketplaceDialog />
-        </div>
-
+      <ChannablePageWrapper
+        title="Centre de Publication"
+        description={`${products.length} produits • ${connections.length} marketplaces connectées`}
+        heroImage="marketing"
+        badge={{ label: 'Publication', icon: Upload }}
+        actions={<ConnectMarketplaceDialog />}
+      >
         <Tabs defaultValue="single" className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="single">Publication individuelle</TabsTrigger>
@@ -212,7 +205,7 @@ export default function PublicationCenterPage() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   )
 }

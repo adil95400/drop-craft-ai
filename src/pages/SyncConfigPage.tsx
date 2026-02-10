@@ -12,7 +12,6 @@ import { Separator } from '@/components/ui/separator';
 import { 
   Settings, 
   Save, 
-  ArrowLeft, 
   Clock, 
   Filter, 
   Package, 
@@ -28,6 +27,7 @@ import { useSyncConfig, type SyncConfiguration, type SyncConfigFilters } from '@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function SyncConfigPage() {
   const navigate = useNavigate();
@@ -44,7 +44,6 @@ export default function SyncConfigPage() {
   const [selectedIntegration, setSelectedIntegration] = useState(connectorId || '');
   const [syncDirection, setSyncDirection] = useState<'import' | 'export' | 'bidirectional'>('import');
 
-  // Récupérer les intégrations disponibles
   const { data: integrations } = useQuery({
     queryKey: ['store-integrations'],
     queryFn: async () => {
@@ -57,7 +56,6 @@ export default function SyncConfigPage() {
     },
   });
 
-  // Charger la configuration existante
   useEffect(() => {
     if (existingConfig) {
       setEnabled(existingConfig.is_active);
@@ -113,33 +111,18 @@ export default function SyncConfigPage() {
         <meta name="description" content="Configurez les paramètres avancés de synchronisation" />
       </Helmet>
 
-      <div className="container mx-auto p-6 max-w-5xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold flex items-center gap-3">
-                <Settings className="h-8 w-8 text-primary" />
-                Configuration de Synchronisation
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Personnalisez les paramètres de synchronisation automatique
-              </p>
-            </div>
-          </div>
+      <ChannablePageWrapper
+        title="Configuration de Synchronisation"
+        description="Personnalisez les paramètres de synchronisation automatique"
+        heroImage="settings"
+        badge={{ label: 'Sync', icon: Settings }}
+        actions={
           <Button onClick={handleSave} disabled={isSaving}>
             <Save className="mr-2 h-4 w-4" />
             {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
           </Button>
-        </div>
-
+        }
+      >
         {/* Sélection de l'intégration */}
         <Card>
           <CardHeader>
@@ -336,7 +319,6 @@ export default function SyncConfigPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Filtres de prix */}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
@@ -366,7 +348,6 @@ export default function SyncConfigPage() {
 
             <Separator />
 
-            {/* Filtre de stock */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Boxes className="h-4 w-4" />
@@ -385,7 +366,6 @@ export default function SyncConfigPage() {
 
             <Separator />
 
-            {/* Filtre de catégories */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
@@ -403,7 +383,6 @@ export default function SyncConfigPage() {
 
             <Separator />
 
-            {/* Filtre de marques */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
@@ -418,7 +397,6 @@ export default function SyncConfigPage() {
 
             <Separator />
 
-            {/* Filtre de tags */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
@@ -454,23 +432,12 @@ export default function SyncConfigPage() {
             </div>
             {Object.keys(filters).length > 0 && (
               <p className="text-sm text-muted-foreground mt-2">
-                {Object.keys(filters).length} filtre(s) actif(s)
+                {Object.keys(filters).filter(k => (filters as any)[k] !== undefined).length} filtres actifs
               </p>
             )}
           </CardContent>
         </Card>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            Annuler
-          </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            <Save className="mr-2 h-4 w-4" />
-            {isSaving ? 'Sauvegarde...' : 'Sauvegarder la configuration'}
-          </Button>
-        </div>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }

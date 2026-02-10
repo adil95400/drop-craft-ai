@@ -29,6 +29,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 type ImportSource = 'all' | 'extension' | 'url' | 'csv' | 'manual';
 type ImportStatus = 'all' | 'active' | 'pending' | 'draft';
@@ -177,19 +178,12 @@ export default function ExtensionImportHistoryPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-            <Package className="h-7 w-7 text-primary" />
-            Historique des Imports
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Tous vos produits importés par source
-          </p>
-        </div>
-
+    <ChannablePageWrapper
+      title="Historique des Imports"
+      description={`${stats.total} produits importés • ${stats.activeCount} actifs`}
+      heroImage="import"
+      badge={{ label: 'Imports', icon: Package }}
+      actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -200,8 +194,8 @@ export default function ExtensionImportHistoryPage() {
             Nouvel import
           </Button>
         </div>
-      </div>
-
+      }
+    >
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
@@ -450,6 +444,6 @@ export default function ExtensionImportHistoryPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }
