@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, TrendingUp, ShoppingCart, Target, Zap, BarChart3 } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const ProductRecommendationsPage: React.FC = () => {
   const strategies = [
@@ -37,19 +38,18 @@ const ProductRecommendationsPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Recommandations produits</h1>
-          <p className="text-muted-foreground">
-            Augmentez vos ventes avec des recommandations IA
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Recommandations produits"
+      description="Augmentez vos ventes avec des recommandations IA"
+      heroImage="ai"
+      badge={{ label: 'Recommandations', icon: Sparkles }}
+      actions={
         <Button>
           <Sparkles className="mr-2 h-4 w-4" />
           Nouvelle stratégie
         </Button>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -336,7 +336,7 @@ const ProductRecommendationsPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 
