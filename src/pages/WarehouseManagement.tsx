@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Warehouse, Package, TrendingUp, AlertTriangle, MapPin, Users, Truck } from 'lucide-react'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function WarehouseManagement() {
   const warehouses = [
@@ -72,12 +73,13 @@ export default function WarehouseManagement() {
   ]
 
   return (
-    <div className="space-y-6">
+    <ChannablePageWrapper
+      title="Gestion des Entrepôts"
+      description="Gérez vos entrepôts et stocks multi-localisations"
+      heroImage="stock"
+      badge={{ label: 'Entrepôts', icon: Warehouse }}
+    >
       <AdvancedFeatureGuide {...ADVANCED_GUIDES.warehouse} />
-      <div>
-        <h1 className="text-3xl font-bold">Gestion des entrepôts</h1>
-        <p className="text-muted-foreground">Gérez vos entrepôts et stocks multi-localisations</p>
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -216,6 +218,6 @@ export default function WarehouseManagement() {
           </Card>
         </div>
       </div>
-    </div>
+    </ChannablePageWrapper>
   )
 }
