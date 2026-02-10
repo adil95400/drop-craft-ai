@@ -8,7 +8,7 @@ const corsHeaders = {
 
 // ── Versioned prompts (stored in code) ─────────────────────────────────
 const PROMPT_VERSION = "1.3.0";
-const MODEL = "gpt-4.1-mini";
+const MODEL = "google/gemini-3-flash-preview";
 
 const SYSTEM_PROMPT = `Tu es un expert en e-commerce et SEO. Tu enrichis les fiches produits pour maximiser les conversions et le référencement naturel. Tu retournes uniquement du JSON valide structuré.`;
 
@@ -91,9 +91,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!OPENAI_API_KEY) {
-      return new Response(JSON.stringify({ error: "OPENAI_API_KEY not configured" }), {
+      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
 
           const userPrompt = buildUserPrompt(product, language, tone);
 
-          const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${OPENAI_API_KEY}`,
