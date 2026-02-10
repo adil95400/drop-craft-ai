@@ -70,6 +70,7 @@ const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 const Reports = lazy(() => import('@/pages/Reports'));
+const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const DocumentationPage = lazy(() => import('@/pages/documentation/DocumentationPage'));
 
@@ -192,7 +193,7 @@ export function AppRoutes() {
           
           {/* Feature Pages */}
           <Route path="/sync-manager" element={<Protected><SyncManagerPage /></Protected>} />
-          <Route path="/reviews" element={<Navigate to="/marketing/crm" replace />} />
+          <Route path="/reviews" element={<Protected><ReviewsPage /></Protected>} />
           <Route path="/advanced" element={<Protected><AdvancedAnalyticsPage /></Protected>} />
           <Route path="/monitoring" element={<Protected><PerformanceMonitoringPage /></Protected>} />
           <Route path="/catalog-intelligence" element={<Protected><CatalogIntelligencePage /></Protected>} />

@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 
 const ChannableFeedManager = lazy(() => import('@/pages/feeds/ChannableFeedManager'))
 const FeedOptimizationPage = lazy(() => import('@/pages/feeds/FeedOptimizationPage'))
@@ -12,7 +12,7 @@ export function FeedRoutes() {
     <Routes>
       <Route index element={<ChannableFeedManager />} />
       <Route path="optimization" element={<FeedOptimizationPage />} />
-      <Route path="rules" element={<Navigate to="/products?tab=rules&subTab=feeds" replace />} />
+      <Route path="rules" element={<FeedRulesPage />} />
       <Route path="ppc-link" element={<PPCFeedLinkPage />} />
       <Route path="categories" element={<CategoryMappingPage />} />
     </Routes>
