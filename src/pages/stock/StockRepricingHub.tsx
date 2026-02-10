@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useStockSync } from '@/hooks/useStockSync';
 import { usePricingRules } from '@/hooks/usePricingRules';
-import { RefreshCw, AlertTriangle, DollarSign, TrendingUp, Settings, History, Zap } from 'lucide-react';
+import { RefreshCw, AlertTriangle, DollarSign, TrendingUp, History, Zap } from 'lucide-react';
 import { StockSyncConfigurator } from '@/components/stock/StockSyncConfigurator';
 import { PricingRulesManager } from '@/components/stock/PricingRulesManager';
 import { PriceHistoryView } from '@/components/stock/PriceHistoryView';
 import { StockAlertsPanel } from '@/components/stock/StockAlertsPanel';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function StockRepricingHub() {
   const stockSync = useStockSync();
@@ -23,103 +24,26 @@ export default function StockRepricingHub() {
         <meta name="description" content="Synchronisation stock temps réel et repricing automatique intelligent pour optimiser vos marges" />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        <AdvancedFeatureGuide {...ADVANCED_GUIDES.stockRepricing} />
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold flex items-center gap-3">
-              <TrendingUp className="h-10 w-10 text-primary" />
-              Stock Live & Repricing
-            </h1>
-            <p className="text-xl text-muted-foreground mt-2">
-              Synchronisation temps réel et optimisation automatique des prix
-            </p>
-          </div>
+      <ChannablePageWrapper
+        title="Stock Live & Repricing"
+        description={`${stockSync.stats.totalConfigs} configs • ${pricingRules.stats.totalRules} règles pricing • ${stockSync.stats.activeAlerts} alertes`}
+        heroImage="stock"
+        badge={{ label: 'Temps Réel', icon: TrendingUp }}
+        actions={
           <div className="flex gap-2">
-            <Button 
-              variant="outline"
-              onClick={() => stockSync.syncAll()}
-              disabled={stockSync.isSyncingAll}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${stockSync.isSyncingAll ? 'animate-spin' : ''}`} />
+            <Button variant="outline" onClick={() => stockSync.syncAll()} disabled={stockSync.isSyncingAll} className="gap-2 bg-background/80 backdrop-blur">
+              <RefreshCw className={`h-4 w-4 ${stockSync.isSyncingAll ? 'animate-spin' : ''}`} />
               Sync Stock
             </Button>
-            <Button
-              onClick={() => pricingRules.applyAllRules()}
-              disabled={pricingRules.isApplying}
-            >
-              <Zap className="h-4 w-4 mr-2" />
+            <Button onClick={() => pricingRules.applyAllRules()} disabled={pricingRules.isApplying} className="gap-2">
+              <Zap className="h-4 w-4" />
               Appliquer Pricing
             </Button>
           </div>
-        </div>
+        }
+      >
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.stockRepricing} />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Sync Configs</p>
-                  <p className="text-3xl font-bold">{stockSync.stats.totalConfigs}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stockSync.stats.activeConfigs} actifs
-                  </p>
-                </div>
-                <RefreshCw className="h-12 w-12 text-blue-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Règles Pricing</p>
-                  <p className="text-3xl font-bold">{pricingRules.stats.totalRules}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {pricingRules.stats.activeRules} actives
-                  </p>
-                </div>
-                <DollarSign className="h-12 w-12 text-green-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Alertes Actives</p>
-                  <p className="text-3xl font-bold text-orange-600">{stockSync.stats.activeAlerts}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stockSync.stats.criticalAlerts} critiques
-                  </p>
-                </div>
-                <AlertTriangle className="h-12 w-12 text-orange-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Changements 24h</p>
-                  <p className="text-3xl font-bold">{stockSync.stats.recentChanges}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    stock + prix
-                  </p>
-                </div>
-                <History className="h-12 w-12 text-purple-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tabs Navigation */}
         <Tabs defaultValue="alerts" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="alerts" className="flex items-center gap-2">
@@ -196,7 +120,7 @@ export default function StockRepricingHub() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }

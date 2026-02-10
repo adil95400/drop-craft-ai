@@ -4,18 +4,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { useCoupons } from '@/hooks/useCoupons'
-import { Plus, Ticket, TrendingUp, Users, Calendar } from 'lucide-react'
+import { Plus, Ticket } from 'lucide-react'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { CouponCreationDialog } from '@/components/promotions/CouponCreationDialog'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { Calendar } from 'lucide-react'
 
 export default function CouponsManagementPage() {
   const { coupons, isLoading, updateCoupon, deleteCoupon } = useCoupons()
@@ -25,9 +22,7 @@ export default function CouponsManagementPage() {
     total: coupons.length,
     active: coupons.filter((c) => c.is_active).length,
     totalUsage: coupons.reduce((sum, c) => sum + ((c as any).usage_count || 0), 0),
-    totalDiscount: coupons
-      .reduce((sum, c) => sum + c.discount_value * ((c as any).usage_count || 0), 0)
-      .toFixed(2),
+    totalDiscount: coupons.reduce((sum, c) => sum + c.discount_value * ((c as any).usage_count || 0), 0).toFixed(2),
   }
 
   const getTypeColor = (type: string) => {
@@ -49,72 +44,26 @@ export default function CouponsManagementPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Coupons de réduction</h1>
-          <p className="text-muted-foreground">
-            Gérez vos codes promo et essais gratuits
-          </p>
-        </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
+    <ChannablePageWrapper
+      title="Coupons de réduction"
+      description={`${stats.total} coupons • ${stats.active} actifs • ${stats.totalUsage} utilisations • ${stats.totalDiscount}€ de réductions`}
+      heroImage="marketing"
+      badge={{ label: 'Promotions', icon: Ticket }}
+      actions={
+        <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+          <Plus className="w-4 h-4" />
           Nouveau coupon
         </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Coupons</p>
-              <p className="text-2xl font-bold">{stats.total}</p>
-            </div>
-            <Ticket className="w-8 h-8 text-muted-foreground" />
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Actifs</p>
-              <p className="text-2xl font-bold text-green-500">{stats.active}</p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-green-500" />
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Utilisations</p>
-              <p className="text-2xl font-bold">{stats.totalUsage}</p>
-            </div>
-            <Users className="w-8 h-8 text-blue-500" />
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Réduction totale</p>
-              <p className="text-2xl font-bold text-purple-500">{stats.totalDiscount}€</p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-purple-500" />
-          </div>
-        </Card>
-      </div>
-
+      }
+    >
       {/* Coupons Table */}
       <Card className="p-6">
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Chargement des coupons...
-          </div>
+          <div className="text-center py-8 text-muted-foreground">Chargement des coupons...</div>
         ) : coupons.length === 0 ? (
           <div className="text-center py-8">
             <Ticket className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-4">
-              Aucun coupon créé pour le moment
-            </p>
+            <p className="text-muted-foreground mb-4">Aucun coupon créé pour le moment</p>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Créer votre premier coupon
@@ -139,11 +88,7 @@ export default function CouponsManagementPage() {
                   <TableCell>
                     <div>
                       <p className="font-medium font-mono">{coupon.code}</p>
-                      {coupon.description && (
-                        <p className="text-xs text-muted-foreground">
-                          {coupon.description}
-                        </p>
-                      )}
+                      {coupon.description && <p className="text-xs text-muted-foreground">{coupon.description}</p>}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -153,48 +98,30 @@ export default function CouponsManagementPage() {
                   </TableCell>
                   <TableCell>
                     {coupon.discount_type === 'percentage' && `${coupon.discount_value}%`}
-                    {coupon.discount_type === 'fixed_amount' &&
-                      `${coupon.discount_value}€`}
-                    {coupon.discount_type === 'free_trial' &&
-                      `${(coupon as any).trial_days || 0} jours`}
+                    {coupon.discount_type === 'fixed_amount' && `${coupon.discount_value}€`}
+                    {coupon.discount_type === 'free_trial' && `${(coupon as any).trial_days || 0} jours`}
                     {!coupon.discount_type && `${coupon.discount_value}%`}
                   </TableCell>
                   <TableCell>
                     <span className="font-medium">{(coupon as any).usage_count || 0}</span>
-                    {(coupon as any).usage_limit && (
-                      <span className="text-muted-foreground">
-                        {' '}
-                        / {(coupon as any).usage_limit}
-                      </span>
-                    )}
+                    {(coupon as any).usage_limit && <span className="text-muted-foreground"> / {(coupon as any).usage_limit}</span>}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="w-3 h-3" />
                       {coupon.expires_at
-                        ? formatDistanceToNow(new Date(coupon.expires_at), {
-                            addSuffix: true,
-                            locale: fr,
-                          })
+                        ? formatDistanceToNow(new Date(coupon.expires_at), { addSuffix: true, locale: fr })
                         : 'Illimité'}
                     </div>
                   </TableCell>
                   <TableCell>
                     <Switch
                       checked={coupon.is_active}
-                      onCheckedChange={(checked) =>
-                        updateCoupon({ id: coupon.id, updates: { is_active: checked } })
-                      }
+                      onCheckedChange={(checked) => updateCoupon({ id: coupon.id, updates: { is_active: checked } })}
                     />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteCoupon(coupon.id)}
-                    >
-                      Supprimer
-                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => deleteCoupon(coupon.id)}>Supprimer</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -203,10 +130,7 @@ export default function CouponsManagementPage() {
         )}
       </Card>
 
-      <CouponCreationDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-      />
-    </div>
+      <CouponCreationDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+    </ChannablePageWrapper>
   )
 }
