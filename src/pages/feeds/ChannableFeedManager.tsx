@@ -1,6 +1,6 @@
 /**
- * Channable-Style Feed Manager
- * Gestion professionnelle des feeds marketplace - Design ChannablePageWrapper
+ * Channable-Style Feed Manager — Inspired by Channable's Export Feeds UI
+ * Professional feed management with channel table, quality scores, and rules
  */
 import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -9,10 +9,11 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useProductFeeds, ProductFeed } from '@/hooks/useProductFeeds'
 import { useToast } from '@/hooks/use-toast'
 import { FeedSubNavigation } from '@/components/feeds/FeedSubNavigation'
@@ -22,94 +23,80 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Rss, Plus, RefreshCw, CheckCircle, AlertTriangle, XCircle,
   ExternalLink, Trash2, Clock, Package, TrendingUp, Search, Loader2, Store,
-  Sparkles, Zap, Globe, Filter, LayoutGrid, List, ArrowRight, ArrowLeft,
-  Check, Tag, Star
+  Sparkles, Zap, Globe, Filter, Settings, ArrowRight, ArrowLeft,
+  Check, Tag, Star, Shield, Eye, BarChart3, GitBranch, FolderTree,
+  AlertCircle, ChevronDown, MoreHorizontal, Download, Copy
 } from 'lucide-react'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 // Marketplace configurations
 const MARKETPLACE_CATEGORIES = [
-  { id: 'popular', name: 'Populaires', icon: Star, color: 'from-amber-500 to-orange-500' },
-  { id: 'shopping', name: 'Comparateurs', icon: Search, color: 'from-blue-500 to-cyan-500' },
-  { id: 'social', name: 'Social Commerce', icon: Globe, color: 'from-pink-500 to-rose-500' },
-  { id: 'europe', name: 'Europe', icon: Globe, color: 'from-indigo-500 to-purple-500' },
-  { id: 'international', name: 'International', icon: Globe, color: 'from-green-500 to-emerald-500' },
-  { id: 'niche', name: 'Niche', icon: Tag, color: 'from-violet-500 to-purple-500' },
-  { id: 'affiliate', name: 'Affiliation', icon: Zap, color: 'from-red-500 to-orange-500' },
+  { id: 'popular', name: 'Populaires', icon: Star },
+  { id: 'shopping', name: 'Comparateurs', icon: Search },
+  { id: 'social', name: 'Social Commerce', icon: Globe },
+  { id: 'europe', name: 'Europe', icon: Globe },
+  { id: 'international', name: 'International', icon: Globe },
+  { id: 'niche', name: 'Niche', icon: Tag },
+  { id: 'affiliate', name: 'Affiliation', icon: Zap },
 ]
 
 const getMarketplaceLogoPath = (id: string): string | null => {
   const logoMap: Record<string, string> = {
-    amazon: '/logos/amazon.svg',
-    ebay: '/logos/ebay.svg',
-    google_shopping: '/logos/google.svg',
-    meta: '/logos/meta-color.svg',
-    shopify: '/logos/shopify.svg',
-    woocommerce: '/logos/woocommerce.svg',
-    prestashop: '/logos/prestashop.svg',
-    magento: '/logos/magento.svg',
-    tiktok: '/logos/tiktok-shop.svg',
-    instagram: '/logos/instagram-color.svg',
-    pinterest: '/logos/pinterest.svg',
-    facebook: '/logos/facebook.svg',
-    cdiscount: '/logos/cdiscount.svg',
-    fnac: '/logos/fnac.svg',
-    zalando: '/logos/zalando.svg',
-    aliexpress: '/logos/aliexpress.svg',
-    rakuten: '/logos/rakuten.svg',
-    etsy: '/logos/etsy.svg',
-    google: '/logos/google.svg',
-    google_ads: '/logos/google-ads.svg',
+    amazon: '/logos/amazon.svg', ebay: '/logos/ebay.svg', google_shopping: '/logos/google.svg',
+    meta: '/logos/meta-color.svg', shopify: '/logos/shopify.svg', woocommerce: '/logos/woocommerce.svg',
+    prestashop: '/logos/prestashop.svg', magento: '/logos/magento.svg', tiktok: '/logos/tiktok-shop.svg',
+    instagram: '/logos/instagram-color.svg', pinterest: '/logos/pinterest.svg', facebook: '/logos/facebook.svg',
+    cdiscount: '/logos/cdiscount.svg', fnac: '/logos/fnac.svg', zalando: '/logos/zalando.svg',
+    aliexpress: '/logos/aliexpress.svg', rakuten: '/logos/rakuten.svg', etsy: '/logos/etsy.svg',
+    google: '/logos/google.svg', google_ads: '/logos/google-ads.svg',
   }
   return logoMap[id] || null
 }
 
 const MARKETPLACES = [
-  { id: 'amazon', name: 'Amazon', emoji: '🛒', category: 'popular', status: 'popular', color: 'from-orange-500 to-amber-500' },
-  { id: 'ebay', name: 'eBay', emoji: '🏷️', category: 'popular', status: 'popular', color: 'from-blue-500 to-indigo-500' },
-  { id: 'google_shopping', name: 'Google Shopping', emoji: '🔍', category: 'popular', status: 'popular', color: 'from-red-500 to-yellow-500' },
-  { id: 'meta', name: 'Meta Commerce', emoji: '📘', category: 'popular', status: 'popular', color: 'from-blue-600 to-blue-500' },
-  { id: 'shopify', name: 'Shopify', emoji: '🛍️', category: 'popular', status: 'popular', color: 'from-green-500 to-emerald-500' },
-  { id: 'woocommerce', name: 'WooCommerce', emoji: '🔮', category: 'popular', status: 'popular', color: 'from-purple-500 to-violet-500' },
-  { id: 'prestashop', name: 'PrestaShop', emoji: '🛒', category: 'popular', status: 'popular', color: 'from-pink-500 to-rose-500' },
-  { id: 'magento', name: 'Magento', emoji: '🧱', category: 'popular', status: 'popular', color: 'from-orange-600 to-red-500' },
-  { id: 'tiktok', name: 'TikTok Shop', emoji: '🎵', category: 'social', status: 'trending', color: 'from-black to-gray-800' },
-  { id: 'instagram', name: 'Instagram Shopping', emoji: '📸', category: 'social', status: 'trending', color: 'from-purple-500 to-pink-500' },
-  { id: 'pinterest', name: 'Pinterest', emoji: '📌', category: 'social', status: 'popular', color: 'from-red-500 to-red-600' },
-  { id: 'facebook', name: 'Facebook Shop', emoji: '📘', category: 'social', status: 'popular', color: 'from-blue-600 to-blue-700' },
-  { id: 'bing_shopping', name: 'Bing Shopping', emoji: '🔷', category: 'shopping', status: 'popular', color: 'from-cyan-500 to-blue-500' },
-  { id: 'idealo', name: 'Idealo', emoji: '💡', category: 'shopping', status: 'eu', color: 'from-orange-400 to-amber-500' },
-  { id: 'kelkoo', name: 'Kelkoo', emoji: '🔶', category: 'shopping', status: 'eu', color: 'from-orange-500 to-orange-600' },
-  { id: 'google_ads', name: 'Google Ads', emoji: '📢', category: 'shopping', status: 'popular', color: 'from-green-500 to-blue-500' },
-  { id: 'cdiscount', name: 'Cdiscount', emoji: '🇫🇷', category: 'europe', status: 'eu', color: 'from-red-500 to-red-600' },
-  { id: 'fnac', name: 'Fnac', emoji: '🇫🇷', category: 'europe', status: 'eu', color: 'from-yellow-500 to-amber-500' },
-  { id: 'zalando', name: 'Zalando', emoji: '👟', category: 'europe', status: 'eu', color: 'from-orange-500 to-amber-500' },
-  { id: 'manomano', name: 'ManoMano', emoji: '🔧', category: 'europe', status: 'eu', color: 'from-blue-500 to-blue-600' },
-  { id: 'walmart', name: 'Walmart', emoji: '🏪', category: 'international', status: 'popular', color: 'from-blue-600 to-blue-700' },
-  { id: 'aliexpress', name: 'AliExpress', emoji: '🇨🇳', category: 'international', status: 'popular', color: 'from-red-500 to-orange-500' },
-  { id: 'rakuten', name: 'Rakuten', emoji: '🇯🇵', category: 'international', status: 'popular', color: 'from-red-500 to-red-600' },
-  { id: 'shopee', name: 'Shopee', emoji: '🧡', category: 'international', status: 'trending', color: 'from-orange-500 to-orange-600' },
-  { id: 'etsy', name: 'Etsy', emoji: '🎨', category: 'niche', status: 'popular', color: 'from-orange-500 to-amber-500' },
-  { id: 'wayfair', name: 'Wayfair', emoji: '🏠', category: 'niche', status: 'popular', color: 'from-purple-500 to-indigo-500' },
-  { id: 'decathlon', name: 'Decathlon', emoji: '⚽', category: 'niche', status: 'eu', color: 'from-blue-500 to-blue-600' },
-  { id: 'awin', name: 'Awin', emoji: '🔗', category: 'affiliate', status: 'popular', color: 'from-teal-500 to-cyan-500' },
-  { id: 'cj', name: 'CJ Affiliate', emoji: '🤝', category: 'affiliate', status: 'popular', color: 'from-blue-600 to-indigo-600' },
-  { id: 'criteo', name: 'Criteo', emoji: '🎯', category: 'affiliate', status: 'popular', color: 'from-orange-500 to-red-500' },
+  { id: 'amazon', name: 'Amazon', emoji: '🛒', category: 'popular', status: 'popular' },
+  { id: 'ebay', name: 'eBay', emoji: '🏷️', category: 'popular', status: 'popular' },
+  { id: 'google_shopping', name: 'Google Shopping', emoji: '🔍', category: 'popular', status: 'popular' },
+  { id: 'meta', name: 'Meta Commerce', emoji: '📘', category: 'popular', status: 'popular' },
+  { id: 'shopify', name: 'Shopify', emoji: '🛍️', category: 'popular', status: 'popular' },
+  { id: 'woocommerce', name: 'WooCommerce', emoji: '🔮', category: 'popular', status: 'popular' },
+  { id: 'prestashop', name: 'PrestaShop', emoji: '🛒', category: 'popular', status: 'popular' },
+  { id: 'magento', name: 'Magento', emoji: '🧱', category: 'popular', status: 'popular' },
+  { id: 'tiktok', name: 'TikTok Shop', emoji: '🎵', category: 'social', status: 'trending' },
+  { id: 'instagram', name: 'Instagram Shopping', emoji: '📸', category: 'social', status: 'trending' },
+  { id: 'pinterest', name: 'Pinterest', emoji: '📌', category: 'social', status: 'popular' },
+  { id: 'facebook', name: 'Facebook Shop', emoji: '📘', category: 'social', status: 'popular' },
+  { id: 'bing_shopping', name: 'Bing Shopping', emoji: '🔷', category: 'shopping', status: 'popular' },
+  { id: 'idealo', name: 'Idealo', emoji: '💡', category: 'shopping', status: 'eu' },
+  { id: 'kelkoo', name: 'Kelkoo', emoji: '🔶', category: 'shopping', status: 'eu' },
+  { id: 'google_ads', name: 'Google Ads', emoji: '📢', category: 'shopping', status: 'popular' },
+  { id: 'cdiscount', name: 'Cdiscount', emoji: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'fnac', name: 'Fnac', emoji: '🇫🇷', category: 'europe', status: 'eu' },
+  { id: 'zalando', name: 'Zalando', emoji: '👟', category: 'europe', status: 'eu' },
+  { id: 'manomano', name: 'ManoMano', emoji: '🔧', category: 'europe', status: 'eu' },
+  { id: 'walmart', name: 'Walmart', emoji: '🏪', category: 'international', status: 'popular' },
+  { id: 'aliexpress', name: 'AliExpress', emoji: '🇨🇳', category: 'international', status: 'popular' },
+  { id: 'rakuten', name: 'Rakuten', emoji: '🇯🇵', category: 'international', status: 'popular' },
+  { id: 'shopee', name: 'Shopee', emoji: '🧡', category: 'international', status: 'trending' },
+  { id: 'etsy', name: 'Etsy', emoji: '🎨', category: 'niche', status: 'popular' },
+  { id: 'wayfair', name: 'Wayfair', emoji: '🏠', category: 'niche', status: 'popular' },
+  { id: 'decathlon', name: 'Decathlon', emoji: '⚽', category: 'niche', status: 'eu' },
+  { id: 'awin', name: 'Awin', emoji: '🔗', category: 'affiliate', status: 'popular' },
+  { id: 'cj', name: 'CJ Affiliate', emoji: '🤝', category: 'affiliate', status: 'popular' },
+  { id: 'criteo', name: 'Criteo', emoji: '🎯', category: 'affiliate', status: 'popular' },
 ]
 
 const MarketplaceLogo = ({ id, emoji, size = 24 }: { id: string; emoji: string; size?: number }) => {
   const logoPath = getMarketplaceLogoPath(id)
   if (logoPath) {
     return (
-      <img 
-        src={logoPath} 
-        alt={id} 
-        className="object-contain"
-        style={{ width: size, height: size }}
+      <img src={logoPath} alt={id} className="object-contain" style={{ width: size, height: size }}
         onError={(e) => {
           const parent = e.currentTarget.parentElement
-          if (parent) {
-            parent.innerHTML = `<span style="font-size: ${size}px">${emoji}</span>`
-          }
+          if (parent) parent.innerHTML = `<span style="font-size: ${size}px">${emoji}</span>`
         }}
       />
     )
@@ -117,83 +104,53 @@ const MarketplaceLogo = ({ id, emoji, size = 24 }: { id: string; emoji: string; 
   return <span style={{ fontSize: size }}>{emoji}</span>
 }
 
-const FeedCard = ({ 
-  feed, onGenerate, onDelete, isGenerating, getMarketplaceName, delay = 0
-}: { 
-  feed: ProductFeed; onGenerate: () => void; onDelete: () => void;
-  isGenerating: boolean; getMarketplaceName: (type: string) => string; delay?: number;
-}) => {
-  const mp = MARKETPLACES.find(m => m.id === feed.feed_type)
-  const getStatusConfig = (status: string | null) => {
-    const configs: Record<string, { color: string; bgColor: string; icon: any; label: string }> = {
-      completed: { color: 'text-green-600', bgColor: 'bg-green-500/10', icon: CheckCircle, label: 'Actif' },
-      pending: { color: 'text-amber-600', bgColor: 'bg-amber-500/10', icon: Clock, label: 'En attente' },
-      error: { color: 'text-red-600', bgColor: 'bg-red-500/10', icon: XCircle, label: 'Erreur' },
-      generating: { color: 'text-blue-600', bgColor: 'bg-blue-500/10', icon: RefreshCw, label: 'Génération...' },
-    }
-    return configs[status || 'pending'] || configs.pending
+// Quality score component — inspired by Channable's quality indicator
+const QualityScore = ({ score }: { score: number }) => {
+  const getColor = () => {
+    if (score >= 80) return 'text-green-600 bg-green-500/10 border-green-500/20'
+    if (score >= 50) return 'text-amber-600 bg-amber-500/10 border-amber-500/20'
+    return 'text-red-600 bg-red-500/10 border-red-500/20'
   }
-  const statusConfig = getStatusConfig(feed.generation_status)
-  const StatusIcon = statusConfig.icon
-
+  const getIcon = () => {
+    if (score >= 80) return <CheckCircle className="h-3.5 w-3.5" />
+    if (score >= 50) return <AlertCircle className="h-3.5 w-3.5" />
+    return <XCircle className="h-3.5 w-3.5" />
+  }
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ delay: delay * 0.05, duration: 0.2 }}
-    >
-      <Card className="group hover:shadow-xl transition-all duration-300 border-border/50 overflow-hidden">
-        <div className={cn("h-2 bg-gradient-to-r", mp?.color || "from-gray-400 to-gray-500")} />
-        <CardContent className="p-5">
-          <div className="flex items-start gap-4">
-            <div className={cn("p-3 rounded-xl bg-gradient-to-br shrink-0", mp?.color || "from-gray-400 to-gray-500")}>
-              <MarketplaceLogo id={feed.feed_type} emoji={mp?.emoji || '📦'} size={28} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-semibold truncate">{feed.name}</h3>
-                  <p className="text-sm text-muted-foreground">{getMarketplaceName(feed.feed_type)}</p>
-                </div>
-                <Badge variant="secondary" className={cn("shrink-0", statusConfig.bgColor, statusConfig.color)}>
-                  <StatusIcon className={cn("h-3 w-3 mr-1", feed.generation_status === 'generating' && "animate-spin")} />
-                  {statusConfig.label}
-                </Badge>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="p-2.5 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Produits</p>
-                  <p className="text-lg font-semibold">{(feed.product_count || 0).toLocaleString()}</p>
-                </div>
-                <div className="p-2.5 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">Dernière sync</p>
-                  <p className="text-sm font-medium truncate">
-                    {feed.last_generated_at ? new Date(feed.last_generated_at).toLocaleDateString('fr-FR') : 'Jamais'}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <Button size="sm" variant="default" onClick={onGenerate} disabled={isGenerating} className="flex-1">
-                  <RefreshCw className={cn("h-4 w-4 mr-1.5", isGenerating && "animate-spin")} />
-                  Synchroniser
-                </Button>
-                {feed.feed_url && (
-                  <Button size="sm" variant="outline" asChild>
-                    <a href={feed.feed_url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" onClick={onDelete} className="text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold", getColor())}>
+            {getIcon()}
+            {score}%
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Score de qualité du feed</p>
+          <p className="text-xs text-muted-foreground">
+            {score >= 80 ? 'Excellent — prêt pour la marketplace' : score >= 50 ? 'Moyen — améliorations recommandées' : 'Faible — corrections nécessaires'}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
+// Feed status chip
+const FeedStatusChip = ({ status }: { status: string | null }) => {
+  const configs: Record<string, { color: string; icon: any; label: string }> = {
+    completed: { color: 'bg-green-500/10 text-green-700 border-green-500/20', icon: CheckCircle, label: 'Actif' },
+    pending: { color: 'bg-amber-500/10 text-amber-700 border-amber-500/20', icon: Clock, label: 'En attente' },
+    error: { color: 'bg-red-500/10 text-red-700 border-red-500/20', icon: XCircle, label: 'Erreur' },
+    generating: { color: 'bg-blue-500/10 text-blue-700 border-blue-500/20', icon: RefreshCw, label: 'Génération...' },
+  }
+  const config = configs[status || 'pending'] || configs.pending
+  const Icon = config.icon
+  return (
+    <Badge variant="outline" className={cn("gap-1 border", config.color)}>
+      <Icon className={cn("h-3 w-3", status === 'generating' && "animate-spin")} />
+      {config.label}
+    </Badge>
   )
 }
 
@@ -203,11 +160,11 @@ export default function ChannableFeedManager() {
   
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [createStep, setCreateStep] = useState(1)
   const [selectedCategory, setSelectedCategory] = useState<string>('popular')
   const [newFeed, setNewFeed] = useState({ name: '', marketplace: '' })
+  const [expandedFeed, setExpandedFeed] = useState<string | null>(null)
 
   const filteredFeeds = useMemo(() => {
     return feeds.filter(feed => {
@@ -218,8 +175,18 @@ export default function ChannableFeedManager() {
   }, [feeds, searchTerm, statusFilter])
 
   const getMarketplaceName = (feedType: string) => {
-    const mp = MARKETPLACES.find(m => m.id === feedType)
-    return mp?.name || feedType
+    return MARKETPLACES.find(m => m.id === feedType)?.name || feedType
+  }
+
+  const getQualityScore = (feed: ProductFeed) => {
+    // Compute quality score based on feed completeness
+    let score = 0
+    if (feed.name) score += 15
+    if (feed.product_count && feed.product_count > 0) score += 25
+    if (feed.generation_status === 'completed') score += 25
+    if (feed.feed_url) score += 20
+    if (feed.last_generated_at) score += 15
+    return Math.min(score, 100)
   }
 
   const handleCreateFeed = () => {
@@ -239,40 +206,347 @@ export default function ChannableFeedManager() {
     setCreateStep(1)
   }
 
-  const filteredMarketplaces = MARKETPLACES.filter(mp => mp.category === selectedCategory)
   const selectedMp = MARKETPLACES.find(mp => mp.id === newFeed.marketplace)
 
   return (
     <ChannablePageWrapper
-      title="Feeds & Marketplaces"
-      subtitle="Ventes"
-      description={`${stats.totalFeeds} feeds • ${stats.activeFeeds} actifs • ${stats.totalProducts.toLocaleString()} produits synchronisés`}
+      title="Export Feeds"
+      subtitle="Canaux de vente"
+      description={`${stats.totalFeeds} feeds configurés • ${stats.activeFeeds} actifs • ${stats.totalProducts.toLocaleString()} produits synchronisés sur ${MARKETPLACES.length}+ marketplaces`}
       heroImage="integrations"
       badge={{ label: "Feeds", icon: Rss }}
       actions={
-        <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nouveau Feed
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2 bg-background/80 backdrop-blur" onClick={() => {/* refresh */}}>
+            <RefreshCw className="h-4 w-4" />
+            Actualiser
+          </Button>
+          <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nouveau Feed
+          </Button>
+        </div>
       }
     >
       <FeedSubNavigation />
 
-      {/* Quick Actions - Marketplace Categories */}
-      <Card className="border-border/50">
-        <CardHeader className="pb-4">
+      {/* Channable-style KPI Strip */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {[
+          { label: 'Feeds actifs', value: stats.activeFeeds, icon: Rss, color: 'text-primary' },
+          { label: 'Produits exportés', value: stats.totalProducts.toLocaleString(), icon: Package, color: 'text-blue-600' },
+          { label: 'Canaux connectés', value: new Set(feeds.map(f => f.feed_type)).size, icon: Globe, color: 'text-green-600' },
+          { label: 'Erreurs', value: feeds.filter(f => f.generation_status === 'error').length, icon: AlertTriangle, color: 'text-red-600' },
+          { label: 'Qualité moyenne', value: feeds.length > 0 ? `${Math.round(feeds.reduce((sum, f) => sum + getQualityScore(f), 0) / feeds.length)}%` : '--', icon: Shield, color: 'text-amber-600' },
+        ].map(kpi => (
+          <Card key={kpi.label} className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-muted">
+                <kpi.icon className={cn("h-4 w-4", kpi.color)} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{kpi.label}</p>
+                <p className="text-xl font-bold">{kpi.value}</p>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Filters Bar — Channable style */}
+      <Card className="p-3">
+        <div className="flex flex-col sm:flex-row gap-3 items-center">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Rechercher par nom, canal..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-9" />
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-40 h-9">
+                <Filter className="h-3.5 w-3.5 mr-2" />
+                <SelectValue placeholder="Statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="completed">Actifs</SelectItem>
+                <SelectItem value="pending">En attente</SelectItem>
+                <SelectItem value="error">En erreur</SelectItem>
+              </SelectContent>
+            </Select>
+            <Badge variant="secondary" className="h-9 px-3 flex items-center gap-1 whitespace-nowrap">
+              {filteredFeeds.length} feed{filteredFeeds.length !== 1 ? 's' : ''}
+            </Badge>
+          </div>
+        </div>
+      </Card>
+
+      {/* Feed Table — Channable's Export Feeds Style */}
+      <AnimatePresence mode="wait">
+        {isLoadingFeeds ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center space-y-4">
+              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+              <p className="text-muted-foreground">Chargement des feeds...</p>
+            </div>
+          </div>
+        ) : filteredFeeds.length === 0 ? (
+          <Card className="border-dashed border-2">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="p-4 rounded-2xl bg-primary/5 mb-4">
+                <Rss className="h-12 w-12 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Aucun feed configuré</h3>
+              <p className="text-muted-foreground text-center max-w-md mb-6">
+                Connectez vos premiers canaux de vente pour exporter vos produits vers 2,500+ marketplaces, plateformes publicitaires et comparateurs.
+              </p>
+              <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Ajouter un feed
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
+                  <TableHead className="w-12">Canal</TableHead>
+                  <TableHead>Nom du feed</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead className="text-center">Produits</TableHead>
+                  <TableHead className="text-center">Qualité</TableHead>
+                  <TableHead>Dernière mise à jour</TableHead>
+                  <TableHead className="text-right w-24">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredFeeds.map((feed, index) => {
+                  const mp = MARKETPLACES.find(m => m.id === feed.feed_type)
+                  const quality = getQualityScore(feed)
+                  const isExpanded = expandedFeed === feed.id
+
+                  return (
+                    <>
+                      <TableRow 
+                        key={feed.id}
+                        className={cn(
+                          "cursor-pointer transition-colors",
+                          isExpanded && "bg-muted/20 border-b-0"
+                        )}
+                        onClick={() => setExpandedFeed(isExpanded ? null : feed.id)}
+                      >
+                        <TableCell>
+                          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
+                            <MarketplaceLogo id={feed.feed_type} emoji={mp?.emoji || '📦'} size={28} />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-semibold text-sm">{feed.name}</p>
+                            <p className="text-xs text-muted-foreground">{getMarketplaceName(feed.feed_type)}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <FeedStatusChip status={feed.generation_status} />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="font-mono font-semibold text-sm">{(feed.product_count || 0).toLocaleString()}</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex justify-center">
+                            <QualityScore score={quality} />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground">
+                            {feed.last_generated_at 
+                              ? new Date(feed.last_generated_at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) 
+                              : 'Jamais'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex justify-end gap-1">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => generateFeed(feed.id)} disabled={isGenerating}>
+                                    <RefreshCw className={cn("h-4 w-4", isGenerating && "animate-spin")} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Synchroniser</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {feed.feed_url && (
+                                  <DropdownMenuItem asChild>
+                                    <a href={feed.feed_url} target="_blank" rel="noopener noreferrer">
+                                      <ExternalLink className="h-4 w-4 mr-2" />Ouvrir le feed
+                                    </a>
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(feed.feed_url || '')}>
+                                  <Copy className="h-4 w-4 mr-2" />Copier l'URL
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Download className="h-4 w-4 mr-2" />Télécharger
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Settings className="h-4 w-4 mr-2" />Paramètres
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive" onClick={() => deleteFeed(feed.id)}>
+                                  <Trash2 className="h-4 w-4 mr-2" />Supprimer
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Expanded row — Channable-style feed details with tabs */}
+                      {isExpanded && (
+                        <TableRow key={`${feed.id}-detail`} className="bg-muted/10 hover:bg-muted/10">
+                          <TableCell colSpan={7} className="p-0">
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <div className="p-5 border-t">
+                                <Tabs defaultValue="settings" className="w-full">
+                                  <TabsList className="h-9 bg-muted/50">
+                                    <TabsTrigger value="settings" className="text-xs gap-1.5"><Settings className="h-3.5 w-3.5" />Paramètres</TabsTrigger>
+                                    <TabsTrigger value="categories" className="text-xs gap-1.5"><FolderTree className="h-3.5 w-3.5" />Catégories</TabsTrigger>
+                                    <TabsTrigger value="rules" className="text-xs gap-1.5"><GitBranch className="h-3.5 w-3.5" />Règles</TabsTrigger>
+                                    <TabsTrigger value="quality" className="text-xs gap-1.5"><Shield className="h-3.5 w-3.5" />Qualité</TabsTrigger>
+                                    <TabsTrigger value="preview" className="text-xs gap-1.5"><Eye className="h-3.5 w-3.5" />Aperçu</TabsTrigger>
+                                  </TabsList>
+
+                                  <TabsContent value="settings" className="mt-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                      <div className="space-y-1">
+                                        <p className="text-xs text-muted-foreground font-medium">Format</p>
+                                        <Badge variant="outline">XML</Badge>
+                                      </div>
+                                      <div className="space-y-1">
+                                        <p className="text-xs text-muted-foreground font-medium">Fréquence</p>
+                                        <Badge variant="outline">Toutes les 24h</Badge>
+                                      </div>
+                                      <div className="space-y-1">
+                                        <p className="text-xs text-muted-foreground font-medium">Pays cible</p>
+                                        <Badge variant="outline">🇫🇷 France</Badge>
+                                      </div>
+                                      <div className="space-y-1">
+                                        <p className="text-xs text-muted-foreground font-medium">Optimisation IA</p>
+                                        <Badge className="bg-primary/10 text-primary border-primary/20">
+                                          <Sparkles className="h-3 w-3 mr-1" />Activée
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                    {feed.feed_url && (
+                                      <div className="mt-4 p-3 rounded-lg bg-muted/50 flex items-center gap-2">
+                                        <code className="text-xs flex-1 truncate text-muted-foreground">{feed.feed_url}</code>
+                                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigator.clipboard.writeText(feed.feed_url || '')}>
+                                          <Copy className="h-3 w-3 mr-1" />Copier
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </TabsContent>
+
+                                  <TabsContent value="categories" className="mt-4">
+                                    <div className="text-center py-6 text-muted-foreground">
+                                      <FolderTree className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                      <p className="text-sm font-medium">Smart Categorization</p>
+                                      <p className="text-xs">Mappez vos catégories vers la taxonomie {getMarketplaceName(feed.feed_type)}</p>
+                                      <Button variant="outline" size="sm" className="mt-3 gap-1">
+                                        <Sparkles className="h-3.5 w-3.5" />Auto-mapper
+                                      </Button>
+                                    </div>
+                                  </TabsContent>
+
+                                  <TabsContent value="rules" className="mt-4">
+                                    <div className="text-center py-6 text-muted-foreground">
+                                      <GitBranch className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                      <p className="text-sm font-medium">Règles IF/THEN</p>
+                                      <p className="text-xs">Transformez automatiquement vos données produit</p>
+                                      <Button variant="outline" size="sm" className="mt-3 gap-1">
+                                        <Plus className="h-3.5 w-3.5" />Ajouter une règle
+                                      </Button>
+                                    </div>
+                                  </TabsContent>
+
+                                  <TabsContent value="quality" className="mt-4">
+                                    <div className="space-y-3">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium">Score global</span>
+                                        <QualityScore score={quality} />
+                                      </div>
+                                      <Progress value={quality} className="h-2" />
+                                      <div className="grid grid-cols-2 gap-3 mt-3">
+                                        {[
+                                          { label: 'Titres optimisés', done: true },
+                                          { label: 'Images présentes', done: feed.product_count ? feed.product_count > 0 : false },
+                                          { label: 'Catégories mappées', done: false },
+                                          { label: 'Prix & disponibilité', done: feed.generation_status === 'completed' },
+                                        ].map(item => (
+                                          <div key={item.label} className="flex items-center gap-2 text-sm">
+                                            {item.done ? (
+                                              <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                                            ) : (
+                                              <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
+                                            )}
+                                            <span className={item.done ? '' : 'text-muted-foreground'}>{item.label}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </TabsContent>
+
+                                  <TabsContent value="preview" className="mt-4">
+                                    <div className="text-center py-6 text-muted-foreground">
+                                      <Eye className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                      <p className="text-sm font-medium">Aperçu du Feed</p>
+                                      <p className="text-xs">{feed.product_count || 0} produits • Format XML</p>
+                                      <Button variant="outline" size="sm" className="mt-3 gap-1" onClick={() => generateFeed(feed.id)} disabled={isGenerating}>
+                                        <RefreshCw className={cn("h-3.5 w-3.5", isGenerating && "animate-spin")} />
+                                        Générer l'aperçu
+                                      </Button>
+                                    </div>
+                                  </TabsContent>
+                                </Tabs>
+                              </div>
+                            </motion.div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
+      </AnimatePresence>
+
+      {/* Quick Add Marketplace Section */}
+      <Card>
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Store className="h-5 w-5 text-primary" />
-                Ajouter un Marketplace
+              <CardTitle className="text-base flex items-center gap-2">
+                <Store className="h-4 w-4 text-primary" />
+                Ajouter un canal
               </CardTitle>
-              <CardDescription>{MARKETPLACES.length}+ marketplaces et canaux de vente supportés</CardDescription>
+              <CardDescription>{MARKETPLACES.length}+ marketplaces et canaux supportés</CardDescription>
             </div>
-            <Badge variant="secondary" className="gap-1">
-              <Sparkles className="h-3 w-3" />
-              Intégration rapide
-            </Badge>
           </div>
         </CardHeader>
         <CardContent>
@@ -282,8 +556,8 @@ export default function ChannableFeedManager() {
                 const Icon = cat.icon
                 const count = MARKETPLACES.filter(mp => mp.category === cat.id).length
                 return (
-                  <TabsTrigger key={cat.id} value={cat.id} className="flex items-center gap-1.5 data-[state=active]:bg-background">
-                    <Icon className="h-3.5 w-3.5" />
+                  <TabsTrigger key={cat.id} value={cat.id} className="flex items-center gap-1.5 text-xs data-[state=active]:bg-background">
+                    <Icon className="h-3 w-3" />
                     <span className="hidden sm:inline">{cat.name}</span>
                     <Badge variant="outline" className="text-[10px] h-4 px-1">{count}</Badge>
                   </TabsTrigger>
@@ -291,8 +565,8 @@ export default function ChannableFeedManager() {
               })}
             </TabsList>
             {MARKETPLACE_CATEGORIES.map(cat => (
-              <TabsContent key={cat.id} value={cat.id} className="mt-4">
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+              <TabsContent key={cat.id} value={cat.id} className="mt-3">
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
                   {MARKETPLACES.filter(mp => mp.category === cat.id).map(mp => (
                     <motion.button
                       key={mp.id}
@@ -303,15 +577,12 @@ export default function ChannableFeedManager() {
                         setShowCreateDialog(true)
                         setCreateStep(2)
                       }}
-                      className={cn("flex flex-col items-center gap-2 p-3 rounded-xl border transition-all hover:border-primary hover:shadow-md bg-card")}
+                      className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all hover:border-primary hover:shadow-md bg-card"
                     >
-                      <div className={cn("p-2 rounded-lg bg-gradient-to-br", mp.color)}>
-                        <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={24} />
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                        <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={20} />
                       </div>
-                      <span className="text-[11px] font-medium text-center leading-tight">{mp.name}</span>
-                      {mp.status === 'trending' && (
-                        <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-[9px] px-1.5 py-0">🔥 Hot</Badge>
-                      )}
+                      <span className="text-[10px] font-medium text-center leading-tight">{mp.name}</span>
                     </motion.button>
                   ))}
                 </div>
@@ -321,264 +592,109 @@ export default function ChannableFeedManager() {
         </CardContent>
       </Card>
 
-      {/* Filters & View Toggle */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher un feed..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
-        </div>
-        <div className="flex gap-2">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-44">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Tous les statuts" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="completed">Actifs</SelectItem>
-              <SelectItem value="pending">En attente</SelectItem>
-              <SelectItem value="error">En erreur</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex border rounded-lg overflow-hidden">
-            <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className="rounded-none">
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')} className="rounded-none">
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Feeds Display */}
-      <AnimatePresence mode="wait">
-        {isLoadingFeeds ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-              <p className="text-muted-foreground">Chargement des feeds...</p>
-            </div>
-          </div>
-        ) : filteredFeeds.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="p-4 rounded-full bg-muted mb-4">
-                <Rss className="h-10 w-10 text-muted-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Aucun feed trouvé</h3>
-              <p className="text-muted-foreground text-center max-w-md mb-6">
-                Créez votre premier feed pour synchroniser vos produits sur les marketplaces
-              </p>
-              <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Créer votre premier feed
-              </Button>
-            </CardContent>
-          </Card>
-        ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filteredFeeds.map((feed, index) => (
-              <FeedCard
-                key={feed.id}
-                feed={feed}
-                onGenerate={() => generateFeed(feed.id)}
-                onDelete={() => deleteFeed(feed.id)}
-                isGenerating={isGenerating}
-                getMarketplaceName={getMarketplaceName}
-                delay={index}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Feed</TableHead>
-                  <TableHead>Marketplace</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Produits</TableHead>
-                  <TableHead>Dernière sync</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredFeeds.map(feed => {
-                  const mp = MARKETPLACES.find(m => m.id === feed.feed_type)
-                  const statusConfigs: Record<string, any> = {
-                    completed: { icon: CheckCircle, label: 'Actif', class: 'bg-green-500' },
-                    pending: { icon: Clock, label: 'En attente', class: 'bg-amber-500' },
-                    error: { icon: XCircle, label: 'Erreur', class: 'bg-red-500' },
-                    generating: { icon: RefreshCw, label: 'Génération...', class: 'bg-blue-500' },
-                  }
-                  const status = statusConfigs[feed.generation_status || 'pending']
-                  const StatusIcon = status.icon
-                  return (
-                    <TableRow key={feed.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className={cn("p-2 rounded-lg bg-gradient-to-br", mp?.color || "from-gray-400 to-gray-500")}>
-                            <MarketplaceLogo id={feed.feed_type} emoji={mp?.emoji || '📦'} size={20} />
-                          </div>
-                          <div>
-                            <p className="font-medium">{feed.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {feed.created_at && new Date(feed.created_at).toLocaleDateString('fr-FR')}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell><Badge variant="outline">{getMarketplaceName(feed.feed_type)}</Badge></TableCell>
-                      <TableCell>
-                        <Badge className={cn(status.class, "text-white")}>
-                          <StatusIcon className={cn("h-3 w-3 mr-1", feed.generation_status === 'generating' && "animate-spin")} />
-                          {status.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">{(feed.product_count || 0).toLocaleString()}</TableCell>
-                      <TableCell>
-                        {feed.last_generated_at ? (
-                          <span className="text-sm">{new Date(feed.last_generated_at).toLocaleString('fr-FR')}</span>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">Jamais</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => generateFeed(feed.id)} disabled={isGenerating}>
-                            <RefreshCw className={cn("h-4 w-4", isGenerating && "animate-spin")} />
-                          </Button>
-                          {feed.feed_url && (
-                            <Button variant="ghost" size="icon" asChild>
-                              <a href={feed.feed_url} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          )}
-                          <Button variant="ghost" size="icon" onClick={() => deleteFeed(feed.id)} className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </Card>
-        )}
-      </AnimatePresence>
-
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
-          <div className={cn("relative px-6 pt-6 pb-4 bg-gradient-to-r", selectedMp?.color || "from-primary to-primary/80")}>
-            <div className="absolute inset-0 bg-grid-white/10" />
-            <DialogHeader className="relative text-white">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                  {selectedMp ? <MarketplaceLogo id={selectedMp.id} emoji={selectedMp.emoji} size={24} /> : <Plus className="h-6 w-6" />}
-                </div>
-                <div>
-                  <DialogTitle className="text-xl font-semibold text-white">
-                    {createStep === 1 ? "Choisir un Marketplace" : "Configuration du Feed"}
-                  </DialogTitle>
-                  <p className="text-white/80 text-sm mt-0.5">Étape {createStep} sur 2</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Progress value={(createStep / 2) * 100} className="h-1.5 bg-white/20" />
-              </div>
-            </DialogHeader>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedMp ? (
+                <>
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                    <MarketplaceLogo id={selectedMp.id} emoji={selectedMp.emoji} size={20} />
+                  </div>
+                  {createStep === 1 ? "Choisir un canal" : `Configuration — ${selectedMp.name}`}
+                </>
+              ) : (
+                <><Plus className="h-5 w-5" />Nouveau feed</>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-2">
+            <div className="flex items-center gap-2 mb-4">
+              <div className={cn("flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold", createStep >= 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>1</div>
+              <div className={cn("h-0.5 flex-1", createStep >= 2 ? "bg-primary" : "bg-muted")} />
+              <div className={cn("flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold", createStep >= 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>2</div>
+            </div>
           </div>
 
-          <div className="p-6">
-            <AnimatePresence mode="wait">
-              {createStep === 1 ? (
-                <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                  <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1 w-full">
-                      {MARKETPLACE_CATEGORIES.slice(0, 4).map(cat => {
-                        const Icon = cat.icon
-                        return (
-                          <TabsTrigger key={cat.id} value={cat.id} className="flex-1 flex items-center justify-center gap-1.5">
-                            <Icon className="h-3.5 w-3.5" />{cat.name}
-                          </TabsTrigger>
-                        )
-                      })}
-                    </TabsList>
-                    {MARKETPLACE_CATEGORIES.map(cat => (
-                      <TabsContent key={cat.id} value={cat.id} className="mt-4">
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                          {MARKETPLACES.filter(mp => mp.category === cat.id).slice(0, 8).map(mp => (
-                            <motion.button
-                              key={mp.id}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => setNewFeed({ ...newFeed, marketplace: mp.id, name: `${mp.name} Feed` })}
-                              className={cn(
-                                "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                                newFeed.marketplace === mp.id ? "border-primary bg-primary/5 shadow-lg" : "border-border/50 hover:border-border bg-card"
-                              )}
-                            >
-                              <div className={cn("p-2.5 rounded-lg bg-gradient-to-br", mp.color)}>
-                                <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={28} />
-                              </div>
-                              <span className="text-sm font-medium text-center">{mp.name}</span>
-                            </motion.button>
-                          ))}
-                        </div>
-                      </TabsContent>
-                    ))}
-                  </Tabs>
-                </motion.div>
-              ) : (
-                <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
-                  {selectedMp && (
-                    <div className="p-4 rounded-xl border bg-gradient-to-r from-muted/50 to-muted/30">
-                      <div className="flex items-center gap-3">
-                        <div className={cn("p-2.5 rounded-lg bg-gradient-to-br", selectedMp.color)}>
-                          <MarketplaceLogo id={selectedMp.id} emoji={selectedMp.emoji} size={24} />
-                        </div>
-                        <div>
-                          <p className="font-medium">{selectedMp.name}</p>
-                          <p className="text-xs text-muted-foreground">Marketplace sélectionné</p>
-                        </div>
-                        <Badge className="ml-auto" variant="outline"><Check className="h-3 w-3 mr-1" />Sélectionné</Badge>
+          <AnimatePresence mode="wait">
+            {createStep === 1 ? (
+              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1 w-full">
+                    {MARKETPLACE_CATEGORIES.slice(0, 4).map(cat => {
+                      const Icon = cat.icon
+                      return (
+                        <TabsTrigger key={cat.id} value={cat.id} className="flex-1 flex items-center justify-center gap-1 text-xs">
+                          <Icon className="h-3 w-3" />{cat.name}
+                        </TabsTrigger>
+                      )
+                    })}
+                  </TabsList>
+                  {MARKETPLACE_CATEGORIES.map(cat => (
+                    <TabsContent key={cat.id} value={cat.id} className="mt-3">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        {MARKETPLACES.filter(mp => mp.category === cat.id).slice(0, 8).map(mp => (
+                          <button
+                            key={mp.id}
+                            onClick={() => setNewFeed({ ...newFeed, marketplace: mp.id, name: `${mp.name} Feed` })}
+                            className={cn(
+                              "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm",
+                              newFeed.marketplace === mp.id ? "border-primary bg-primary/5 shadow-md" : "border-border/50 hover:border-border bg-card"
+                            )}
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                              <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={24} />
+                            </div>
+                            <span className="text-xs font-medium">{mp.name}</span>
+                          </button>
+                        ))}
                       </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </motion.div>
+            ) : (
+              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                {selectedMp && (
+                  <div className="p-3 rounded-xl border bg-muted/30 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                      <MarketplaceLogo id={selectedMp.id} emoji={selectedMp.emoji} size={20} />
                     </div>
-                  )}
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <Rss className="h-4 w-4 text-primary" />Nom du feed
-                    </Label>
-                    <Input
-                      value={newFeed.name}
-                      onChange={(e) => setNewFeed({ ...newFeed, name: e.target.value })}
-                      placeholder={`Ex: ${selectedMp?.name || 'Amazon'} FR - Catalogue Principal`}
-                      className="h-11"
-                    />
-                    <p className="text-xs text-muted-foreground">Un nom unique pour identifier ce feed</p>
+                    <div>
+                      <p className="text-sm font-medium">{selectedMp.name}</p>
+                      <p className="text-xs text-muted-foreground">Canal sélectionné</p>
+                    </div>
+                    <Badge className="ml-auto" variant="outline"><Check className="h-3 w-3 mr-1" />OK</Badge>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+                <div className="space-y-2">
+                  <Label>Nom du feed</Label>
+                  <Input
+                    value={newFeed.name}
+                    onChange={(e) => setNewFeed({ ...newFeed, name: e.target.value })}
+                    placeholder={`Ex: ${selectedMp?.name || 'Amazon'} FR — Catalogue`}
+                    className="h-10"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-            <div className="flex items-center justify-between mt-6 pt-4 border-t">
-              <Button variant="ghost" onClick={createStep === 1 ? handleCloseDialog : () => setCreateStep(1)} className="gap-2">
-                {createStep === 1 ? 'Annuler' : <><ArrowLeft className="h-4 w-4" />Retour</>}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <Button variant="ghost" onClick={createStep === 1 ? handleCloseDialog : () => setCreateStep(1)} className="gap-2">
+              {createStep === 1 ? 'Annuler' : <><ArrowLeft className="h-4 w-4" />Retour</>}
+            </Button>
+            {createStep === 1 ? (
+              <Button onClick={() => setCreateStep(2)} disabled={!newFeed.marketplace} className="gap-2">
+                Continuer<ArrowRight className="h-4 w-4" />
               </Button>
-              {createStep === 1 ? (
-                <Button onClick={() => setCreateStep(2)} disabled={!newFeed.marketplace} className="gap-2">
-                  Continuer<ArrowRight className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button onClick={handleCreateFeed} disabled={isCreating || !newFeed.name} className="gap-2 min-w-[140px]">
-                  {isCreating ? <><Loader2 className="h-4 w-4 animate-spin" />Création...</> : <><Check className="h-4 w-4" />Créer le feed</>}
-                </Button>
-              )}
-            </div>
+            ) : (
+              <Button onClick={handleCreateFeed} disabled={isCreating || !newFeed.name} className="gap-2">
+                {isCreating ? <><Loader2 className="h-4 w-4 animate-spin" />Création...</> : <><Check className="h-4 w-4" />Créer le feed</>}
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
