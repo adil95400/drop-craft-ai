@@ -1,16 +1,24 @@
 /**
- * PPC Feed Link Page
+ * PPC Feed Link Page - ChannablePageWrapper Standard
  */
 import { PPCFeedLinkDashboard } from '@/components/ppc-feed-link';
 import { FeedSubNavigation } from '@/components/feeds/FeedSubNavigation';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
+import { Link2 } from 'lucide-react';
 
 export default function PPCFeedLinkPage() {
   return (
-    <div className="container mx-auto py-6 px-4 space-y-6">
+    <ChannablePageWrapper
+      title="PPC Feed Link"
+      subtitle="Feeds"
+      description="Connectez vos feeds aux campagnes publicitaires pour un suivi automatisé"
+      heroImage="analytics"
+      badge={{ label: "PPC", icon: Link2 }}
+    >
       <FeedSubNavigation />
       <AdvancedFeatureGuide {...ADVANCED_GUIDES.ppcFeedLink} />
       <PPCFeedLinkDashboard />
-    </div>
+    </ChannablePageWrapper>
   );
 }
