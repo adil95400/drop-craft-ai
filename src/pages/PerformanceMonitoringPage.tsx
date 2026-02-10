@@ -4,15 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PerformanceMonitoringPage() {
   const [metrics, setMetrics] = useState<any>(null);
 
   useEffect(() => {
-    // Collect performance metrics
     if ('performance' in window && performance.getEntriesByType) {
       const navigationTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      
       if (navigationTiming) {
         setMetrics({
           dns: navigationTiming.domainLookupEnd - navigationTiming.domainLookupStart,
@@ -27,26 +26,13 @@ export default function PerformanceMonitoringPage() {
     }
   }, []);
 
-  const getPerformanceScore = (value: number, threshold: { good: number; fair: number }) => {
-    if (value <= threshold.good) return { score: 100, label: 'Excellent', color: 'text-green-600' };
-    if (value <= threshold.fair) return { score: 75, label: 'Bon', color: 'text-yellow-600' };
-    return { score: 50, label: 'À améliorer', color: 'text-red-600' };
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Activity className="h-8 w-8 text-primary" />
-            Monitoring Performance
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Surveillez et optimisez les performances de votre application
-          </p>
-        </div>
-      </div>
-
+    <ChannablePageWrapper
+      title="Monitoring Performance"
+      description="Surveillez et optimisez les performances de votre application"
+      heroImage="analytics"
+      badge={{ label: 'Performance', icon: Activity }}
+    >
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -58,20 +44,16 @@ export default function PerformanceMonitoringPage() {
             <p className="text-xs text-muted-foreground">Excellent</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Temps de Chargement</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {metrics ? `${Math.round(metrics.total)}ms` : '-'}
-            </div>
+            <div className="text-2xl font-bold">{metrics ? `${Math.round(metrics.total)}ms` : '-'}</div>
             <p className="text-xs text-muted-foreground">Page complète</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Web Vitals</CardTitle>
@@ -82,7 +64,6 @@ export default function PerformanceMonitoringPage() {
             <p className="text-xs text-muted-foreground">LCP, FID, CLS</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Alertes</CardTitle>
@@ -106,60 +87,27 @@ export default function PerformanceMonitoringPage() {
           <Card>
             <CardHeader>
               <CardTitle>Métriques de Navigation</CardTitle>
-              <CardDescription>
-                Temps de chargement détaillés de la page actuelle
-              </CardDescription>
+              <CardDescription>Temps de chargement détaillés de la page actuelle</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {metrics ? (
                 <>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">DNS Lookup</span>
-                      <Badge variant="outline">{Math.round(metrics.dns)}ms</Badge>
+                  {[
+                    { label: 'DNS Lookup', value: metrics.dns },
+                    { label: 'TCP Connection', value: metrics.tcp },
+                    { label: 'Request Time', value: metrics.request },
+                    { label: 'Response Time', value: metrics.response },
+                    { label: 'DOM Processing', value: metrics.dom },
+                    { label: 'Load Complete', value: metrics.load },
+                  ].map((m) => (
+                    <div key={m.label} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{m.label}</span>
+                        <Badge variant="outline">{Math.round(m.value)}ms</Badge>
+                      </div>
+                      <Progress value={(m.value / metrics.total) * 100} className="h-2" />
                     </div>
-                    <Progress value={(metrics.dns / metrics.total) * 100} className="h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">TCP Connection</span>
-                      <Badge variant="outline">{Math.round(metrics.tcp)}ms</Badge>
-                    </div>
-                    <Progress value={(metrics.tcp / metrics.total) * 100} className="h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Request Time</span>
-                      <Badge variant="outline">{Math.round(metrics.request)}ms</Badge>
-                    </div>
-                    <Progress value={(metrics.request / metrics.total) * 100} className="h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Response Time</span>
-                      <Badge variant="outline">{Math.round(metrics.response)}ms</Badge>
-                    </div>
-                    <Progress value={(metrics.response / metrics.total) * 100} className="h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">DOM Processing</span>
-                      <Badge variant="outline">{Math.round(metrics.dom)}ms</Badge>
-                    </div>
-                    <Progress value={(metrics.dom / metrics.total) * 100} className="h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Load Complete</span>
-                      <Badge variant="outline">{Math.round(metrics.load)}ms</Badge>
-                    </div>
-                    <Progress value={(metrics.load / metrics.total) * 100} className="h-2" />
-                  </div>
+                  ))}
                 </>
               ) : (
                 <p className="text-muted-foreground">Chargement des métriques...</p>
@@ -172,50 +120,26 @@ export default function PerformanceMonitoringPage() {
           <Card>
             <CardHeader>
               <CardTitle>Web Vitals</CardTitle>
-              <CardDescription>
-                Core Web Vitals - Métriques de performance essentielles
-              </CardDescription>
+              <CardDescription>Core Web Vitals - Métriques de performance essentielles</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium">LCP</CardTitle>
-                    <CardDescription className="text-xs">
-                      Largest Contentful Paint
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">1.2s</div>
-                    <Badge variant="outline" className="mt-2 text-green-600">Excellent</Badge>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium">FID</CardTitle>
-                    <CardDescription className="text-xs">
-                      First Input Delay
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">8ms</div>
-                    <Badge variant="outline" className="mt-2 text-green-600">Excellent</Badge>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium">CLS</CardTitle>
-                    <CardDescription className="text-xs">
-                      Cumulative Layout Shift
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">0.05</div>
-                    <Badge variant="outline" className="mt-2 text-green-600">Excellent</Badge>
-                  </CardContent>
-                </Card>
+                {[
+                  { title: 'LCP', desc: 'Largest Contentful Paint', value: '1.2s' },
+                  { title: 'FID', desc: 'First Input Delay', value: '8ms' },
+                  { title: 'CLS', desc: 'Cumulative Layout Shift', value: '0.05' },
+                ].map((v) => (
+                  <Card key={v.title}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium">{v.title}</CardTitle>
+                      <CardDescription className="text-xs">{v.desc}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-green-600">{v.value}</div>
+                      <Badge variant="outline" className="mt-2 text-green-600">Excellent</Badge>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -223,9 +147,7 @@ export default function PerformanceMonitoringPage() {
           <Card>
             <CardHeader>
               <CardTitle>Utilisation Mémoire</CardTitle>
-              <CardDescription>
-                Consommation mémoire de l'application
-              </CardDescription>
+              <CardDescription>Consommation mémoire de l'application</CardDescription>
             </CardHeader>
             <CardContent>
               {(performance as any).memory ? (
@@ -233,38 +155,21 @@ export default function PerformanceMonitoringPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Used JS Heap</span>
-                      <Badge variant="outline">
-                        {((performance as any).memory.usedJSHeapSize / 1048576).toFixed(2)} MB
-                      </Badge>
+                      <Badge variant="outline">{((performance as any).memory.usedJSHeapSize / 1048576).toFixed(2)} MB</Badge>
                     </div>
-                    <Progress 
-                      value={((performance as any).memory.usedJSHeapSize / (performance as any).memory.jsHeapSizeLimit) * 100} 
-                      className="h-2" 
-                    />
+                    <Progress value={((performance as any).memory.usedJSHeapSize / (performance as any).memory.jsHeapSizeLimit) * 100} className="h-2" />
                   </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Total JS Heap</span>
-                      <Badge variant="outline">
-                        {((performance as any).memory.totalJSHeapSize / 1048576).toFixed(2)} MB
-                      </Badge>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Total JS Heap</span>
+                    <Badge variant="outline">{((performance as any).memory.totalJSHeapSize / 1048576).toFixed(2)} MB</Badge>
                   </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Heap Limit</span>
-                      <Badge variant="outline">
-                        {((performance as any).memory.jsHeapSizeLimit / 1048576).toFixed(2)} MB
-                      </Badge>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Heap Limit</span>
+                    <Badge variant="outline">{((performance as any).memory.jsHeapSizeLimit / 1048576).toFixed(2)} MB</Badge>
                   </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground">
-                  Métriques mémoire non disponibles dans ce navigateur
-                </p>
+                <p className="text-muted-foreground">Métriques mémoire non disponibles dans ce navigateur</p>
               )}
             </CardContent>
           </Card>
@@ -274,56 +179,29 @@ export default function PerformanceMonitoringPage() {
           <Card>
             <CardHeader>
               <CardTitle>Recommandations d'Optimisation</CardTitle>
-              <CardDescription>
-                Suggestions pour améliorer les performances
-              </CardDescription>
+              <CardDescription>Suggestions pour améliorer les performances</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Badge variant="outline" className="mt-0.5 text-green-600">✓</Badge>
-                  <div className="flex-1">
-                    <p className="font-medium">Lazy Loading Actif</p>
-                    <p className="text-sm text-muted-foreground">
-                      Les composants sont chargés à la demande
-                    </p>
+                {[
+                  { title: 'Lazy Loading Actif', desc: 'Les composants sont chargés à la demande' },
+                  { title: 'Memoization Optimale', desc: 'Les composants utilisent React.memo efficacement' },
+                  { title: 'Cache Configuré', desc: 'React Query avec stratégie de cache optimale' },
+                  { title: 'Images Optimisées', desc: 'Lazy loading des images actif' },
+                ].map((r) => (
+                  <div key={r.title} className="flex items-start gap-3 p-3 border rounded-lg">
+                    <Badge variant="outline" className="mt-0.5 text-green-600">✓</Badge>
+                    <div className="flex-1">
+                      <p className="font-medium">{r.title}</p>
+                      <p className="text-sm text-muted-foreground">{r.desc}</p>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Badge variant="outline" className="mt-0.5 text-green-600">✓</Badge>
-                  <div className="flex-1">
-                    <p className="font-medium">Memoization Optimale</p>
-                    <p className="text-sm text-muted-foreground">
-                      Les composants utilisent React.memo efficacement
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Badge variant="outline" className="mt-0.5 text-green-600">✓</Badge>
-                  <div className="flex-1">
-                    <p className="font-medium">Cache Configuré</p>
-                    <p className="text-sm text-muted-foreground">
-                      React Query avec stratégie de cache optimale
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Badge variant="outline" className="mt-0.5 text-green-600">✓</Badge>
-                  <div className="flex-1">
-                    <p className="font-medium">Images Optimisées</p>
-                    <p className="text-sm text-muted-foreground">
-                      Lazy loading des images actif
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }

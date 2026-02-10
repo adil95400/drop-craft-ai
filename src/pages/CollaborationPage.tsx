@@ -1,17 +1,16 @@
 import { TeamManager } from '@/components/teams/TeamManager';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, MessageSquare, Calendar, Bell } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function CollaborationPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Espace Collaboratif</h1>
-        <p className="text-muted-foreground text-lg">
-          Travaillez en équipe de manière efficace
-        </p>
-      </div>
-
+    <ChannablePageWrapper
+      title="Espace Collaboratif"
+      description="Travaillez en équipe de manière efficace"
+      heroImage="settings"
+      badge={{ label: 'Équipe', icon: Users }}
+    >
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-3">
@@ -80,6 +79,6 @@ export default function CollaborationPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }

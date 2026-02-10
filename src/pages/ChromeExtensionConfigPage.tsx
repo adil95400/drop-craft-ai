@@ -21,6 +21,7 @@ import {
   Settings,
   Zap
 } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ChromeExtensionConfigPage() {
   const { user } = useAuth();
@@ -107,29 +108,18 @@ export default function ChromeExtensionConfigPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      {/* Header */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-primary/10">
-            <Chrome className="h-8 w-8 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Extension Chrome - Import en 1 Clic</h1>
-            <p className="text-muted-foreground">
-              Des boutons d'importation automatiques sur chaque page produit
-            </p>
-          </div>
-        </div>
-        
-        {/* Highlight Box */}
-        <Alert className="border-primary/50 bg-primary/5">
-          <CheckCircle2 className="h-5 w-5 text-primary" />
-          <AlertDescription className="text-base">
-            <strong className="text-primary">Nouvelle fonctionnalité :</strong> L'extension injecte automatiquement des boutons <strong>"🚀 Importer"</strong> sur les pages produits de Temu, AliExpress, Amazon et plus. Plus besoin d'ouvrir le popup !
-          </AlertDescription>
-        </Alert>
-      </div>
+    <ChannablePageWrapper
+      title="Extension Chrome - Import en 1 Clic"
+      description="Des boutons d'importation automatiques sur chaque page produit"
+      heroImage="extensions"
+      badge={{ label: 'Extension', icon: Chrome }}
+    >
+      <Alert className="border-primary/50 bg-primary/5">
+        <CheckCircle2 className="h-5 w-5 text-primary" />
+        <AlertDescription className="text-base">
+          <strong className="text-primary">Nouvelle fonctionnalité :</strong> L'extension injecte automatiquement des boutons <strong>"🚀 Importer"</strong> sur les pages produits de Temu, AliExpress, Amazon et plus.
+        </AlertDescription>
+      </Alert>
 
       <Tabs defaultValue="install" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -574,6 +564,6 @@ export default function ChromeExtensionConfigPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }
