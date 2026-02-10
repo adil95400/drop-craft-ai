@@ -3,6 +3,7 @@
  * Via extension, URL, CSV ou manuellement
  */
 import { useState, useMemo } from 'react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   Star, Upload, FileSpreadsheet, Link as LinkIcon, Download, Filter,
   Search, Plus, Trash2, CheckCircle, XCircle, Loader2, RefreshCw,
@@ -170,30 +171,22 @@ export default function ReviewsImportPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-            <Star className="h-7 w-7 text-yellow-500" />
-            Import des Avis
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Importez et gérez les avis clients de vos produits
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2">
+    <ChannablePageWrapper
+      title="Import des Avis"
+      description="Importez et gérez les avis clients de vos produits"
+      heroImage="extensions"
+      badge={{ label: 'Avis', icon: Star }}
+      actions={
+        <>
           <Button variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
+            <RefreshCw className="h-4 w-4 mr-2" />Actualiser
           </Button>
           <Button onClick={() => setShowImportModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Importer des avis
+            <Plus className="h-4 w-4 mr-2" />Importer des avis
           </Button>
-        </div>
-      </div>
+        </>
+      }
+    >
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -463,6 +456,6 @@ export default function ReviewsImportPage() {
           setSelectedProduct(null);
         }}
       />
-    </div>
+    </ChannablePageWrapper>
   );
 }

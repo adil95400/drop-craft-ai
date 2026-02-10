@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -156,8 +157,12 @@ export default function CreateNotification() {
         <meta name="description" content="Créez et programmez une notification multicanale pour vos utilisateurs" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <ChannablePageWrapper
+        title="Créer une Notification"
+        description="Créez et programmez une notification multicanale"
+        heroImage="notifications"
+        badge={{ label: 'Notification', icon: Bell }}
+      >
           <div className="flex items-center justify-between mb-6">
             <Button
               variant="ghost"
@@ -686,8 +691,7 @@ export default function CreateNotification() {
               </div>
             </div>
           </form>
-        </div>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }
