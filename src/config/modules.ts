@@ -147,7 +147,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       { id: 'suppliers-catalog', name: 'Catalogue Unifié', route: '/suppliers/catalog', icon: 'Package', description: 'Tous les produits', features: ['catalog'], order: 2 },
       { id: 'suppliers-engine', name: 'Moteur Avancé', route: '/suppliers/engine', icon: 'Zap', description: 'Auto-import & fulfillment', features: ['advanced'], order: 3 },
       { id: 'suppliers-my', name: 'Mes Fournisseurs', route: '/suppliers/my', icon: 'Truck', description: 'Fournisseurs connectés', features: ['list'], order: 4 },
-      { id: 'suppliers-marketplaces', name: 'Marketplaces', route: '/suppliers/marketplaces', icon: 'Store', description: 'Connecter Amazon, eBay, etc.', features: ['marketplaces'], order: 5 },
+      { id: 'suppliers-analytics', name: 'Analytics', route: '/suppliers/analytics', icon: 'BarChart3', description: 'Performance fournisseurs', features: ['analytics'], order: 5 },
     ]
   },
 
@@ -462,7 +462,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Boxes',
     enabled: true,
     minPlan: 'standard',
-    route: '/inventory',
+    route: '/stock',
     features: ['stock-alerts', 'restock'],
     description: 'Gestion du stock',
     category: 'product',
@@ -569,19 +569,19 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Contact',
     enabled: true,
     minPlan: 'pro',
-    route: '/crm',
+    route: '/marketing/crm',
     features: ['leads', 'pipeline', 'contacts'],
     description: 'Gestion relation client',
     category: 'customer',
-    order: 8, // Positionné après Automatisation dans Ventes
-    groupId: 'sales', // Déplacé de 'performance' vers 'sales' pour cohérence
+    order: 8,
+    groupId: 'sales',
     badge: 'pro',
     subModules: [
-      { id: 'crm-dashboard', name: 'Dashboard', route: '/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
-      { id: 'crm-leads', name: 'Leads', route: '/crm/leads', icon: 'UserPlus', description: 'Gestion des leads', features: ['leads'], order: 2 },
-      { id: 'crm-pipeline', name: 'Pipeline', route: '/crm/pipeline', icon: 'GitBranch', description: 'Pipeline de ventes', features: ['pipeline'], order: 3 },
-      { id: 'crm-emails', name: 'Emails', route: '/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 4 },
-      { id: 'crm-scoring', name: 'Lead Scoring', route: '/crm/scoring', icon: 'Target', description: 'Notation des leads', features: ['scoring'], order: 5 },
+      { id: 'crm-dashboard', name: 'Dashboard', route: '/marketing/crm', icon: 'LayoutDashboard', description: 'Vue d\'ensemble', features: ['overview'], order: 1 },
+      { id: 'crm-leads', name: 'Leads', route: '/marketing/crm/leads', icon: 'UserPlus', description: 'Gestion des leads', features: ['leads'], order: 2 },
+      { id: 'crm-pipeline', name: 'Pipeline', route: '/marketing/crm/pipeline', icon: 'GitBranch', description: 'Pipeline de ventes', features: ['pipeline'], order: 3 },
+      { id: 'crm-emails', name: 'Emails', route: '/marketing/crm/emails', icon: 'Mail', description: 'Historique emails', features: ['emails'], order: 4 },
+      { id: 'crm-scoring', name: 'Lead Scoring', route: '/marketing/crm/scoring', icon: 'Target', description: 'Notation des leads', features: ['scoring'], order: 5 },
     ]
   },
 
@@ -591,16 +591,16 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Search',
     enabled: true,
     minPlan: 'standard',
-    route: '/seo',
+    route: '/marketing/seo',
     features: ['seo-audit', 'keywords', 'rankings'],
     description: 'Optimisation référencement',
     category: 'analytics',
     order: 4,
     groupId: 'performance',
     subModules: [
-      { id: 'seo-manager', name: 'Manager', route: '/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
-      { id: 'seo-keywords', name: 'Mots-clés', route: '/seo/keywords', icon: 'Key', description: 'Recherche mots-clés', features: ['keywords'], order: 2 },
-      { id: 'seo-rank', name: 'Rankings', route: '/seo/rank-tracker', icon: 'TrendingUp', description: 'Suivi positions', features: ['rankings'], order: 3 },
+      { id: 'seo-manager', name: 'Manager', route: '/marketing/seo', icon: 'Search', description: 'Gestion SEO', features: ['manager'], order: 1 },
+      { id: 'seo-keywords', name: 'Mots-clés', route: '/marketing/seo/keywords', icon: 'Key', description: 'Recherche mots-clés', features: ['keywords'], order: 2 },
+      { id: 'seo-rank', name: 'Rankings', route: '/marketing/seo/rank-tracker', icon: 'TrendingUp', description: 'Suivi positions', features: ['rankings'], order: 3 },
     ]
   },
 
