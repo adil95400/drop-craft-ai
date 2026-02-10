@@ -6,29 +6,25 @@ import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useMultiTenant } from '@/hooks/useMultiTenant';
 import { Loader2 } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function MultiTenantManagementPage() {
   const navigate = useNavigate();
   const { tenants, loading } = useMultiTenant();
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Building2 className="h-8 w-8 text-primary" />
-            Gestion Multi-Tenant
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Gérez vos tenants, leurs utilisateurs et leurs paramètres
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Gestion Multi-Tenant"
+      description={`${tenants.length} tenants • ${tenants.filter(t => t.status === 'active').length} actifs`}
+      heroImage="settings"
+      badge={{ label: 'Multi-Tenant', icon: Building2 }}
+      actions={
         <Button onClick={() => navigate('/tenants/new')}>
           <Plus className="mr-2 h-4 w-4" />
           Créer un Tenant
         </Button>
-      </div>
-
+      }
+    >
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
@@ -191,6 +187,6 @@ export default function MultiTenantManagementPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }

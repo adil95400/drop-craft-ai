@@ -36,6 +36,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PlatformLogo } from '@/components/ui/platform-logo';
 import { cn } from '@/lib/utils';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 interface Connector {
   id: string;
@@ -366,220 +367,198 @@ export default function MarketplaceConnectorsPage() {
         <meta name="description" content="Connectez toutes vos marketplaces, fournisseurs et canaux de vente" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        {/* Hero Section */}
-        <div className="border-b bg-gradient-to-br from-primary/5 via-background to-purple-500/5">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <h1 className="text-3xl font-bold flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Boxes className="h-5 w-5 text-primary" />
-                  </div>
-                  Connecteurs Marketplace
-                </h1>
-                <p className="text-muted-foreground mt-2">
-                  Connectez vos boutiques, marketplaces et fournisseurs en quelques clics
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-sm font-medium">{connectedCount} connectés</span>
-                </div>
-                <Badge variant="outline" className="px-3 py-1.5">
-                  {allConnectors.length} intégrations
-                </Badge>
-              </div>
+      <ChannablePageWrapper
+        title="Connecteurs Marketplace"
+        description={`${allConnectors.length} intégrations disponibles • ${connectedCount} connectés`}
+        heroImage="integrations"
+        badge={{ label: 'Intégrations', icon: Boxes }}
+        actions={
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="text-sm font-medium">{connectedCount} connectés</span>
             </div>
-
-            {/* Search & Filters */}
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher un connecteur..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-11"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <select 
-                  className="h-11 px-3 rounded-md border bg-background text-sm"
-                  value={selectedRegion || ''}
-                  onChange={(e) => setSelectedRegion(e.target.value || null)}
-                >
-                  <option value="">Toutes régions</option>
-                  {regions.map(region => (
-                    <option key={region} value={region}>{region}</option>
-                  ))}
-                </select>
-                <Button
-                  variant={showConnectedOnly ? "default" : "outline"}
-                  size="sm"
-                  className="h-11"
-                  onClick={() => setShowConnectedOnly(!showConnectedOnly)}
-                >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Connectés
-                </Button>
-                <div className="flex items-center border rounded-md">
-                  <Button
-                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    className="h-9 px-2.5"
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    className="h-9 px-2.5"
-                    onClick={() => setViewMode('list')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+          </div>
+        }
+      >
+        {/* Search & Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un connecteur..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-11"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <select 
+              className="h-11 px-3 rounded-md border bg-background text-sm"
+              value={selectedRegion || ''}
+              onChange={(e) => setSelectedRegion(e.target.value || null)}
+            >
+              <option value="">Toutes régions</option>
+              {regions.map(region => (
+                <option key={region} value={region}>{region}</option>
+              ))}
+            </select>
+            <Button
+              variant={showConnectedOnly ? "default" : "outline"}
+              size="sm"
+              className="h-11"
+              onClick={() => setShowConnectedOnly(!showConnectedOnly)}
+            >
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Connectés
+            </Button>
+            <div className="flex items-center border rounded-md">
+              <Button
+                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-9 px-2.5"
+                onClick={() => setViewMode('grid')}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-9 px-2.5"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex gap-6">
-            {/* Sidebar Categories */}
-            <aside className="hidden lg:block w-64 shrink-0">
-              <div className="sticky top-20">
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  Catégories
-                </h3>
-                <nav className="space-y-1">
-                  {categoriesWithCounts.map(category => (
-                    <button
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors",
-                        selectedCategory === category.id
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-accent text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <span className="flex items-center gap-2">
-                        {category.icon}
-                        {category.name}
-                      </span>
-                      <Badge variant="secondary" className="text-xs">
-                        {category.count}
-                      </Badge>
-                    </button>
-                  ))}
-                </nav>
+        <div className="flex gap-6">
+          {/* Sidebar Categories */}
+          <aside className="hidden lg:block w-64 shrink-0">
+            <div className="sticky top-20">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Catégories
+              </h3>
+              <nav className="space-y-1">
+                {categoriesWithCounts.map(category => (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors",
+                      selectedCategory === category.id
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span className="flex items-center gap-2">
+                      {category.icon}
+                      {category.name}
+                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      {category.count}
+                    </Badge>
+                  </button>
+                ))}
+              </nav>
 
-                {/* Quick Stats */}
-                <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-primary/5 to-purple-500/5 border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    <span className="font-medium text-sm">Statistiques</span>
+              {/* Quick Stats */}
+              <div className="mt-6 p-4 rounded-xl bg-primary/5 border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="font-medium text-sm">Statistiques</span>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Connecteurs</span>
+                    <span className="font-medium">{allConnectors.length}</span>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Connecteurs</span>
-                      <span className="font-medium">{allConnectors.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Connectés</span>
-                      <span className="font-medium text-green-600">{connectedCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Disponibles</span>
-                      <span className="font-medium">{allConnectors.length - connectedCount}</span>
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Connectés</span>
+                    <span className="font-medium text-primary">{connectedCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Disponibles</span>
+                    <span className="font-medium">{allConnectors.length - connectedCount}</span>
                   </div>
                 </div>
               </div>
-            </aside>
+            </div>
+          </aside>
 
-            {/* Connectors Grid/List */}
-            <div className="flex-1">
-              {/* Mobile Category Select */}
-              <div className="lg:hidden mb-4">
-                <select 
-                  className="w-full h-10 px-3 rounded-md border bg-background"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  {categoriesWithCounts.map(cat => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name} ({cat.count})
-                    </option>
-                  ))}
-                </select>
+          {/* Connectors Grid/List */}
+          <div className="flex-1">
+            {/* Mobile Category Select */}
+            <div className="lg:hidden mb-4">
+              <select 
+                className="w-full h-10 px-3 rounded-md border bg-background"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {categoriesWithCounts.map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name} ({cat.count})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Results Count */}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-muted-foreground">
+                {filteredConnectors.length} connecteur{filteredConnectors.length > 1 ? 's' : ''} trouvé{filteredConnectors.length > 1 ? 's' : ''}
+              </p>
+            </div>
+
+            {/* Connectors */}
+            {viewMode === 'grid' ? (
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredConnectors.map(connector => (
+                  <ConnectorGridCard key={connector.id} connector={connector} />
+                ))}
               </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredConnectors.map(connector => (
+                  <ConnectorListCard key={connector.id} connector={connector} />
+                ))}
+              </div>
+            )}
 
-              {/* Results Count */}
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-muted-foreground">
-                  {filteredConnectors.length} connecteur{filteredConnectors.length > 1 ? 's' : ''} trouvé{filteredConnectors.length > 1 ? 's' : ''}
+            {filteredConnectors.length === 0 && (
+              <div className="text-center py-12">
+                <Package className="h-12 w-12 mx-auto text-muted-foreground/50" />
+                <h3 className="mt-4 font-medium">Aucun connecteur trouvé</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Essayez de modifier vos filtres de recherche
                 </p>
               </div>
-
-              {/* Connectors */}
-              {viewMode === 'grid' ? (
-                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filteredConnectors.map(connector => (
-                    <ConnectorGridCard key={connector.id} connector={connector} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {filteredConnectors.map(connector => (
-                    <ConnectorListCard key={connector.id} connector={connector} />
-                  ))}
-                </div>
-              )}
-
-              {filteredConnectors.length === 0 && (
-                <div className="text-center py-12">
-                  <Package className="h-12 w-12 mx-auto text-muted-foreground/50" />
-                  <h3 className="mt-4 font-medium">Aucun connecteur trouvé</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Essayez de modifier vos filtres de recherche
-                  </p>
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
         {/* Bottom CTA */}
-        <div className="border-t bg-muted/30">
-          <div className="container mx-auto px-4 py-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-purple-500/10 border">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Link2 className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Connecteur personnalisé</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Besoin d'une intégration spécifique ? Contactez-nous
-                  </p>
-                </div>
-              </div>
-              <Button onClick={() => navigate('/support')}>
-                Demander une intégration
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-primary/5 border">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Link2 className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Connecteur personnalisé</h3>
+              <p className="text-sm text-muted-foreground">
+                Besoin d'une intégration spécifique ? Contactez-nous
+              </p>
             </div>
           </div>
+          <Button onClick={() => navigate('/support')}>
+            Demander une intégration
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
         </div>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }
