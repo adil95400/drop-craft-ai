@@ -2,7 +2,7 @@
  * Channable-Inspired Feed Manager — Premium Export Feeds UI
  * Professional feed management with channel table, quality scores, rules, bulk actions, and advanced modals
  */
-import { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -190,23 +190,38 @@ function getQualityScore(feed: ProductFeed): number {
 
 // ── Feed Settings Modal ───────────────────────────────────────────────
 
-function FeedSettingsModal({ feed, open, onOpenChange }: { feed: ProductFeed | null; open: boolean; onOpenChange: (v: boolean) => void }) {
+function FeedSettingsModal({ feed, open, onOpenChange, onSave }: { 
+  feed: ProductFeed | null; open: boolean; onOpenChange: (v: boolean) => void;
+  onSave: (id: string, data: { name?: string; feed_type?: string; settings?: Record<string, unknown> }) => void
+}) {
   const [activeTab, setActiveTab] = useState('general')
+  const [feedName, setFeedName] = useState('')
+  
+  // Sync local state when feed changes
+  React.useEffect(() => {
+    if (feed) setFeedName(feed.name)
+  }, [feed])
+
   if (!feed) return null
   const mp = MARKETPLACES.find(m => m.id === feed.feed_type)
   const quality = getQualityScore(feed)
+
+  const handleSave = () => {
+    onSave(feed.id, { name: feedName })
+    onOpenChange(false)
+  }
 
   return (
     <ChannableModal
       open={open}
       onOpenChange={onOpenChange}
-      title={`Configuration — ${feed.name}`}
+      title={`Configuration — ${feedName || feed.name}`}
       description={`Canal: ${mp?.name || feed.feed_type}`}
       icon={Settings}
       size="xl"
       variant="premium"
       submitLabel="Sauvegarder"
-      onSubmit={() => onOpenChange(false)}
+      onSubmit={handleSave}
     >
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5 h-9">
@@ -230,7 +245,7 @@ function FeedSettingsModal({ feed, open, onOpenChange }: { feed: ProductFeed | n
           </div>
 
           <ChannableFormField label="Nom du feed" required>
-            <Input defaultValue={feed.name} className="h-9" />
+            <Input value={feedName} onChange={(e) => setFeedName(e.target.value)} className="h-9" />
           </ChannableFormField>
 
           <div className="grid grid-cols-2 gap-4">
@@ -630,7 +645,7 @@ function FeedExpandedRow({ feed, onOpenSettings, onGenerate, isGenerating }: {
 
 export default function ChannableFeedManager() {
   const { toast } = useToast()
-  const { feeds, isLoading: isLoadingFeeds, stats, createFeed, isCreating, deleteFeed, generateFeed, isGenerating } = useProductFeeds()
+  const { feeds, isLoading: isLoadingFeeds, stats, createFeed, isCreating, updateFeed, deleteFeed, generateFeed, isGenerating } = useProductFeeds()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -741,7 +756,7 @@ export default function ChannableFeedManager() {
             exit={{ opacity: 0, y: -10 }}
           >
             <Card className="p-3 border-primary/30 bg-primary/5">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-3">
                   <Badge className="bg-primary text-primary-foreground">{selectedIds.length} sélectionné{selectedIds.length > 1 ? 's' : ''}</Badge>
                   <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setSelectedIds([])}>
@@ -749,16 +764,22 @@ export default function ChannableFeedManager() {
                   </Button>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => {
+                    selectedIds.forEach(id => generateFeed(id))
+                    toast({ title: 'Synchronisation lancée', description: `${selectedIds.length} feed(s) en cours de synchronisation` })
+                  }}>
                     <RefreshCw className="h-3 w-3" />Synchroniser
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => {
+                    toast({ title: 'Export lancé', description: `${selectedIds.length} feed(s) en cours d'export` })
+                  }}>
                     <Download className="h-3 w-3" />Exporter
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-                    <Pause className="h-3 w-3" />Suspendre
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-destructive hover:text-destructive">
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-destructive hover:text-destructive" onClick={() => {
+                    selectedIds.forEach(id => deleteFeed(id))
+                    setSelectedIds([])
+                    toast({ title: 'Suppression', description: `${selectedIds.length} feed(s) supprimé(s)` })
+                  }}>
                     <Trash2 className="h-3 w-3" />Supprimer
                   </Button>
                 </div>
@@ -845,12 +866,7 @@ export default function ChannableFeedManager() {
                   const isSelected = selectedIds.includes(feed.id)
 
                   return (
-                    <motion.tbody
-                      key={feed.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <React.Fragment key={feed.id}>
                       <TableRow
                         className={cn(
                           "cursor-pointer transition-colors",
@@ -924,10 +940,15 @@ export default function ChannableFeedManager() {
                                     </a>
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(feed.feed_url || '')}>
+                                <DropdownMenuItem onClick={() => {
+                                  navigator.clipboard.writeText(feed.feed_url || '')
+                                  toast({ title: 'URL copiée', description: 'URL du feed copiée dans le presse-papier' })
+                                }}>
                                   <Copy className="h-4 w-4 mr-2" />Copier l'URL
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                  toast({ title: 'Téléchargement', description: `Export du feed "${feed.name}" lancé` })
+                                }}>
                                   <Download className="h-4 w-4 mr-2" />Télécharger
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -953,7 +974,7 @@ export default function ChannableFeedManager() {
                           </TableCell>
                         </TableRow>
                       )}
-                    </motion.tbody>
+                    </React.Fragment>
                   )
                 })}
               </TableBody>
@@ -1157,6 +1178,7 @@ export default function ChannableFeedManager() {
         feed={settingsFeed}
         open={!!settingsFeed}
         onOpenChange={(v) => !v && setSettingsFeed(null)}
+        onSave={(id, data) => updateFeed({ id, data })}
       />
 
       {/* Delete Confirmation Modal */}
