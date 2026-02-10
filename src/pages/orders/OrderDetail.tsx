@@ -1,5 +1,6 @@
 /**
  * Composant amélioré pour OrderDetail avec Fulfillment Panel intégré
+ * Migré vers ChannablePageWrapper pour conformité Design System
  */
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -13,11 +14,12 @@ import { toast } from 'sonner';
 import { 
   ArrowLeft, Package, User, MapPin, CreditCard, 
   Truck, Calendar, Mail, Phone, FileText, Printer,
-  Box, Timer, Split, MapPinned
+  Box, Timer, Split, MapPinned, Loader2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { OrderFulfillmentPanel } from '@/components/orders/OrderFulfillmentPanel';
 import { TrackingTimeline } from '@/components/tracking';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function OrderDetail() {
   const { id } = useParams();
@@ -94,29 +96,27 @@ export default function OrderDetail() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <ChannablePageWrapper title="Commande" description="Chargement en cours…" heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
+        <div className="flex items-center justify-center min-h-[300px]">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      </ChannablePageWrapper>
     );
   }
 
   if (!order) {
     return (
-      <div className="container mx-auto py-8">
+      <ChannablePageWrapper title="Commande introuvable" description="La commande que vous recherchez n'existe pas ou a été supprimée." heroImage="orders" badge={{ label: 'Commandes', icon: Package }}>
         <Card>
           <CardContent className="text-center py-12">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Commande introuvable</h2>
-            <p className="text-muted-foreground mb-4">
-              La commande que vous recherchez n'existe pas ou a été supprimée.
-            </p>
             <Button onClick={() => navigate('/orders')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Retour aux commandes
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </ChannablePageWrapper>
     );
   }
 
@@ -154,45 +154,28 @@ export default function OrderDetail() {
         <meta name="description" content={`Détails de la commande ${order.order_number}`} />
       </Helmet>
 
-      <div className="container mx-auto py-8 px-4 max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate('/orders')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour aux commandes
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handlePrint}>
+      <ChannablePageWrapper
+        title={`Commande ${order.order_number}`}
+        description={`Créée le ${new Date(order.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+        heroImage="orders"
+        badge={{ label: statusLabels[order.status] || order.status, icon: Package }}
+        actions={
+          <>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/orders')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" />
               Imprimer
             </Button>
-            <Button variant="outline" onClick={handleGenerateLabel}>
+            <Button variant="outline" size="sm" onClick={handleGenerateLabel}>
               <FileText className="mr-2 h-4 w-4" />
               Étiquette
             </Button>
-          </div>
-        </div>
-
-        {/* Titre et statut */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Commande {order.order_number}</h1>
-            <p className="text-muted-foreground mt-1">
-              Créée le {new Date(order.created_at).toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </p>
-          </div>
-          <Badge className={statusColors[order.status] || 'bg-gray-500'}>
-            {statusLabels[order.status] || order.status}
-          </Badge>
-        </div>
-
-        {/* Main Content with Tabs */}
+          </>
+        }
+      >
         <Tabs defaultValue="details" className="space-y-6">
           <TabsList>
             <TabsTrigger value="details" className="gap-2">
@@ -277,7 +260,7 @@ export default function OrderDetail() {
 
               {/* Colonne latérale */}
               <div className="space-y-6">
-                {/* Informations client */}
+                {/* Client */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -310,7 +293,7 @@ export default function OrderDetail() {
                   </CardContent>
                 </Card>
 
-                {/* Adresse de livraison */}
+                {/* Adresse */}
                 {order.shipping_address && typeof order.shipping_address === 'object' && (
                   <Card>
                     <CardHeader>
@@ -373,25 +356,13 @@ export default function OrderDetail() {
                     <CardTitle>Actions rapides</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => handleUpdateStatus('processing')}
-                    >
+                    <Button className="w-full" variant="outline" onClick={() => handleUpdateStatus('processing')}>
                       Marquer en cours
                     </Button>
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => handleUpdateStatus('shipped')}
-                    >
+                    <Button className="w-full" variant="outline" onClick={() => handleUpdateStatus('shipped')}>
                       Marquer expédiée
                     </Button>
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => handleUpdateStatus('delivered')}
-                    >
+                    <Button className="w-full" variant="outline" onClick={() => handleUpdateStatus('delivered')}>
                       Marquer livrée
                     </Button>
                   </CardContent>
@@ -422,7 +393,7 @@ export default function OrderDetail() {
             />
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }
