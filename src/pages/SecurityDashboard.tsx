@@ -1,19 +1,16 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, Lock, AlertTriangle, CheckCircle2, Eye, Key } from "lucide-react";
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function SecurityDashboard() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Sécurité Avancée</h1>
-          <p className="text-muted-foreground mt-1">Sécurité et conformité enterprise</p>
-        </div>
-        <Badge variant="secondary">Ultra Pro</Badge>
-      </div>
-
+    <ChannablePageWrapper
+      title="Sécurité Avancée"
+      description="Sécurité et conformité enterprise"
+      heroImage="settings"
+      badge={{ label: 'Ultra Pro', icon: Shield }}
+    >
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="p-6">
           <div className="flex items-center gap-3">
@@ -115,6 +112,6 @@ export default function SecurityDashboard() {
           </div>
         </div>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }

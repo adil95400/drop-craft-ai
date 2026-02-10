@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 interface ComplianceFramework {
   id: string
@@ -261,66 +262,61 @@ export default function ComplianceCenter() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Centre de Conformité</h1>
-          <p className="text-muted-foreground">
-            Gestion et surveillance de la conformité réglementaire
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={showAddFramework} onOpenChange={setShowAddFramework}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Plus className="w-4 h-4" />
-                Référentiel
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Ajouter un référentiel</DialogTitle>
-                <DialogDescription>Créer un nouveau référentiel de conformité</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Nom</Label>
-                  <Input 
-                    value={newFramework.name}
-                    onChange={(e) => setNewFramework(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Ex: RGPD, ISO 27001..."
-                  />
-                </div>
-                <div>
-                  <Label>Description</Label>
-                  <Textarea 
-                    value={newFramework.description}
-                    onChange={(e) => setNewFramework(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Description du référentiel..."
-                  />
-                </div>
-                <div>
-                  <Label>Nombre d'exigences</Label>
-                  <Input 
-                    type="number"
-                    value={newFramework.requirements_total}
-                    onChange={(e) => setNewFramework(prev => ({ ...prev, requirements_total: parseInt(e.target.value) || 0 }))}
-                  />
-                </div>
-                <Button 
-                  onClick={() => addFrameworkMutation.mutate(newFramework)}
-                  disabled={!newFramework.name || addFrameworkMutation.isPending}
-                  className="w-full"
-                >
-                  {addFrameworkMutation.isPending ? 'Ajout...' : 'Ajouter'}
-                </Button>
+    <ChannablePageWrapper
+      title="Centre de Conformité"
+      description="Gestion et surveillance de la conformité réglementaire"
+      heroImage="settings"
+      badge={{ label: 'Compliance', icon: Shield }}
+      actions={
+        <Dialog open={showAddFramework} onOpenChange={setShowAddFramework}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Plus className="w-4 h-4" />
+              Référentiel
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ajouter un référentiel</DialogTitle>
+              <DialogDescription>Créer un nouveau référentiel de conformité</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Nom</Label>
+                <Input 
+                  value={newFramework.name}
+                  onChange={(e) => setNewFramework(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Ex: RGPD, ISO 27001..."
+                />
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      {/* Compliance Overview */}
+              <div>
+                <Label>Description</Label>
+                <Textarea 
+                  value={newFramework.description}
+                  onChange={(e) => setNewFramework(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Description du référentiel..."
+                />
+              </div>
+              <div>
+                <Label>Nombre d'exigences</Label>
+                <Input 
+                  type="number"
+                  value={newFramework.requirements_total}
+                  onChange={(e) => setNewFramework(prev => ({ ...prev, requirements_total: parseInt(e.target.value) || 0 }))}
+                />
+              </div>
+              <Button 
+                onClick={() => addFrameworkMutation.mutate(newFramework)}
+                disabled={!newFramework.name || addFrameworkMutation.isPending}
+                className="w-full"
+              >
+                {addFrameworkMutation.isPending ? 'Ajout...' : 'Ajouter'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      }
+    >
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -618,6 +614,6 @@ export default function ComplianceCenter() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   )
 }
