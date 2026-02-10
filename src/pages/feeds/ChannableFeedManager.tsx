@@ -1,23 +1,27 @@
 /**
- * Channable-Style Feed Manager — Inspired by Channable's Export Feeds UI
- * Professional feed management with channel table, quality scores, and rules
+ * Channable-Inspired Feed Manager — Premium Export Feeds UI
+ * Professional feed management with channel table, quality scores, rules, bulk actions, and advanced modals
  */
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
+import { Separator } from '@/components/ui/separator'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useProductFeeds, ProductFeed } from '@/hooks/useProductFeeds'
 import { useToast } from '@/hooks/use-toast'
 import { FeedSubNavigation } from '@/components/feeds/FeedSubNavigation'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { ChannableModal, ChannableFormField } from '@/components/channable/ChannableModal'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -25,14 +29,17 @@ import {
   ExternalLink, Trash2, Clock, Package, TrendingUp, Search, Loader2, Store,
   Sparkles, Zap, Globe, Filter, Settings, ArrowRight, ArrowLeft,
   Check, Tag, Star, Shield, Eye, BarChart3, GitBranch, FolderTree,
-  AlertCircle, ChevronDown, MoreHorizontal, Download, Copy
+  AlertCircle, ChevronDown, ChevronRight, MoreHorizontal, Download, Copy,
+  Play, Pause, Calendar, Link2, FileText, Code, Image, Type,
+  ListChecks, Workflow, Info, Edit, RotateCcw, Upload
 } from 'lucide-react'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 
-// Marketplace configurations
+// ── Marketplace Data ──────────────────────────────────────────────────
+
 const MARKETPLACE_CATEGORIES = [
   { id: 'popular', name: 'Populaires', icon: Star },
   { id: 'shopping', name: 'Comparateurs', icon: Search },
@@ -89,6 +96,8 @@ const MARKETPLACES = [
   { id: 'criteo', name: 'Criteo', emoji: '🎯', category: 'affiliate', status: 'popular' },
 ]
 
+// ── Reusable Components ───────────────────────────────────────────────
+
 const MarketplaceLogo = ({ id, emoji, size = 24 }: { id: string; emoji: string; size?: number }) => {
   const logoPath = getMarketplaceLogoPath(id)
   if (logoPath) {
@@ -104,29 +113,32 @@ const MarketplaceLogo = ({ id, emoji, size = 24 }: { id: string; emoji: string; 
   return <span style={{ fontSize: size }}>{emoji}</span>
 }
 
-// Quality score component — inspired by Channable's quality indicator
-const QualityScore = ({ score }: { score: number }) => {
+const QualityScore = ({ score, size = 'sm' }: { score: number; size?: 'sm' | 'lg' }) => {
   const getColor = () => {
     if (score >= 80) return 'text-green-600 bg-green-500/10 border-green-500/20'
     if (score >= 50) return 'text-amber-600 bg-amber-500/10 border-amber-500/20'
     return 'text-red-600 bg-red-500/10 border-red-500/20'
   }
   const getIcon = () => {
-    if (score >= 80) return <CheckCircle className="h-3.5 w-3.5" />
-    if (score >= 50) return <AlertCircle className="h-3.5 w-3.5" />
-    return <XCircle className="h-3.5 w-3.5" />
+    if (score >= 80) return <CheckCircle className={cn(size === 'lg' ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
+    if (score >= 50) return <AlertCircle className={cn(size === 'lg' ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
+    return <XCircle className={cn(size === 'lg' ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
   }
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
-          <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold", getColor())}>
+          <div className={cn(
+            "flex items-center gap-1.5 rounded-full border font-semibold",
+            getColor(),
+            size === 'lg' ? 'px-3 py-1.5 text-sm' : 'px-2.5 py-1 text-xs'
+          )}>
             {getIcon()}
             {score}%
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Score de qualité du feed</p>
+          <p className="font-medium">Score de qualité du feed</p>
           <p className="text-xs text-muted-foreground">
             {score >= 80 ? 'Excellent — prêt pour la marketplace' : score >= 50 ? 'Moyen — améliorations recommandées' : 'Faible — corrections nécessaires'}
           </p>
@@ -136,7 +148,6 @@ const QualityScore = ({ score }: { score: number }) => {
   )
 }
 
-// Feed status chip
 const FeedStatusChip = ({ status }: { status: string | null }) => {
   const configs: Record<string, { color: string; icon: any; label: string }> = {
     completed: { color: 'bg-green-500/10 text-green-700 border-green-500/20', icon: CheckCircle, label: 'Actif' },
@@ -154,10 +165,473 @@ const FeedStatusChip = ({ status }: { status: string | null }) => {
   )
 }
 
+// ── Quality Checklist Items ───────────────────────────────────────────
+
+interface QualityCheckItem {
+  label: string
+  description: string
+  icon: any
+  check: (feed: ProductFeed) => boolean
+  weight: number
+}
+
+const QUALITY_CHECKS: QualityCheckItem[] = [
+  { label: 'Titres optimisés', description: 'Titres de produits conformes aux exigences du canal', icon: Type, check: (f) => !!f.name, weight: 20 },
+  { label: 'Images HD présentes', description: 'Images haute résolution (min. 800×800px)', icon: Image, check: (f) => (f.product_count || 0) > 0, weight: 20 },
+  { label: 'Catégories mappées', description: 'Catégories produits mappées vers la taxonomie cible', icon: FolderTree, check: () => false, weight: 20 },
+  { label: 'Prix & disponibilité', description: 'Prix, devise et état du stock renseignés', icon: Tag, check: (f) => f.generation_status === 'completed', weight: 15 },
+  { label: 'Identifiants produits', description: 'GTIN, EAN, UPC ou MPN renseignés', icon: FileText, check: () => false, weight: 15 },
+  { label: 'Descriptions enrichies', description: 'Descriptions > 150 caractères avec mots-clés', icon: ListChecks, check: (f) => !!f.feed_url, weight: 10 },
+]
+
+function getQualityScore(feed: ProductFeed): number {
+  return QUALITY_CHECKS.reduce((score, item) => score + (item.check(feed) ? item.weight : 0), 0)
+}
+
+// ── Feed Settings Modal ───────────────────────────────────────────────
+
+function FeedSettingsModal({ feed, open, onOpenChange }: { feed: ProductFeed | null; open: boolean; onOpenChange: (v: boolean) => void }) {
+  const [activeTab, setActiveTab] = useState('general')
+  if (!feed) return null
+  const mp = MARKETPLACES.find(m => m.id === feed.feed_type)
+  const quality = getQualityScore(feed)
+
+  return (
+    <ChannableModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`Configuration — ${feed.name}`}
+      description={`Canal: ${mp?.name || feed.feed_type}`}
+      icon={Settings}
+      size="xl"
+      variant="premium"
+      submitLabel="Sauvegarder"
+      onSubmit={() => onOpenChange(false)}
+    >
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-5 h-9">
+          <TabsTrigger value="general" className="text-xs gap-1"><Settings className="h-3 w-3" />Général</TabsTrigger>
+          <TabsTrigger value="mapping" className="text-xs gap-1"><FolderTree className="h-3 w-3" />Mapping</TabsTrigger>
+          <TabsTrigger value="rules" className="text-xs gap-1"><GitBranch className="h-3 w-3" />Règles</TabsTrigger>
+          <TabsTrigger value="quality" className="text-xs gap-1"><Shield className="h-3 w-3" />Qualité</TabsTrigger>
+          <TabsTrigger value="schedule" className="text-xs gap-1"><Calendar className="h-3 w-3" />Planning</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="general" className="mt-4 space-y-4">
+          <div className="flex items-center gap-3 p-3 rounded-xl border bg-muted/30">
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              <MarketplaceLogo id={feed.feed_type} emoji={mp?.emoji || '📦'} size={24} />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-sm">{feed.name}</p>
+              <p className="text-xs text-muted-foreground">{mp?.name} • {(feed.product_count || 0).toLocaleString()} produits</p>
+            </div>
+            <QualityScore score={quality} />
+          </div>
+
+          <ChannableFormField label="Nom du feed" required>
+            <Input defaultValue={feed.name} className="h-9" />
+          </ChannableFormField>
+
+          <div className="grid grid-cols-2 gap-4">
+            <ChannableFormField label="Format d'export">
+              <Select defaultValue="xml">
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="xml">XML</SelectItem>
+                  <SelectItem value="csv">CSV</SelectItem>
+                  <SelectItem value="tsv">TSV</SelectItem>
+                  <SelectItem value="json">JSON</SelectItem>
+                </SelectContent>
+              </Select>
+            </ChannableFormField>
+            <ChannableFormField label="Pays cible">
+              <Select defaultValue="FR">
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="FR">🇫🇷 France</SelectItem>
+                  <SelectItem value="DE">🇩🇪 Allemagne</SelectItem>
+                  <SelectItem value="ES">🇪🇸 Espagne</SelectItem>
+                  <SelectItem value="IT">🇮🇹 Italie</SelectItem>
+                  <SelectItem value="UK">🇬🇧 Royaume-Uni</SelectItem>
+                  <SelectItem value="US">🇺🇸 États-Unis</SelectItem>
+                </SelectContent>
+              </Select>
+            </ChannableFormField>
+          </div>
+
+          {feed.feed_url && (
+            <ChannableFormField label="URL du feed" hint="Partagez cette URL avec votre marketplace">
+              <div className="flex gap-2">
+                <Input defaultValue={feed.feed_url} readOnly className="h-9 font-mono text-xs" />
+                <Button variant="outline" size="sm" className="h-9 shrink-0" onClick={() => navigator.clipboard.writeText(feed.feed_url || '')}>
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </ChannableFormField>
+          )}
+
+          <Separator />
+
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium">Options avancées</h4>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Optimisation IA</p>
+                <p className="text-xs text-muted-foreground">Améliorer automatiquement titres et descriptions</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Filtrer les ruptures</p>
+                <p className="text-xs text-muted-foreground">Exclure les produits en rupture de stock</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Enrichissement automatique</p>
+                <p className="text-xs text-muted-foreground">Ajouter GTIN, marque et catégories manquants</p>
+              </div>
+              <Switch />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="mapping" className="mt-4 space-y-4">
+          <div className="p-4 rounded-xl border border-dashed bg-muted/20 text-center">
+            <FolderTree className="h-10 w-10 mx-auto mb-3 text-primary/50" />
+            <h4 className="font-semibold text-sm mb-1">Mapping de catégories</h4>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-3">
+              Mappez vos catégories vers la taxonomie officielle {mp?.name || 'du canal'} pour maximiser la visibilité
+            </p>
+            <div className="flex justify-center gap-2">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Upload className="h-3.5 w-3.5" />Importer mapping
+              </Button>
+              <Button size="sm" className="gap-1.5">
+                <Sparkles className="h-3.5 w-3.5" />Auto-mapper par IA
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {['Électronique', 'Mode & Accessoires', 'Maison & Jardin', 'Sports & Loisirs'].map(cat => (
+              <div key={cat} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <FolderTree className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{cat}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">Non mappé</Badge>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs">Mapper</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="rules" className="mt-4 space-y-4">
+          <div className="p-4 rounded-xl border border-dashed bg-muted/20 text-center">
+            <GitBranch className="h-10 w-10 mx-auto mb-3 text-primary/50" />
+            <h4 className="font-semibold text-sm mb-1">Règles de transformation</h4>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-3">
+              Transformez automatiquement vos données produit avec des règles IF/THEN puissantes
+            </p>
+            <Button size="sm" className="gap-1.5">
+              <Plus className="h-3.5 w-3.5" />Nouvelle règle
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { name: 'Préfixer titre avec marque', type: 'Combinaison', active: true },
+              { name: 'Exclure prix < 5€', type: 'Exclusion', active: true },
+              { name: 'Arrondir prix à .99', type: 'Réécriture', active: false },
+            ].map(rule => (
+              <div key={rule.name} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className={cn("w-2 h-2 rounded-full", rule.active ? "bg-green-500" : "bg-muted-foreground/30")} />
+                  <div>
+                    <p className="text-sm font-medium">{rule.name}</p>
+                    <p className="text-xs text-muted-foreground">{rule.type}</p>
+                  </div>
+                </div>
+                <Switch defaultChecked={rule.active} />
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="quality" className="mt-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-semibold text-sm">Score de qualité</h4>
+              <p className="text-xs text-muted-foreground">Basé sur {QUALITY_CHECKS.length} critères</p>
+            </div>
+            <QualityScore score={quality} size="lg" />
+          </div>
+          <Progress value={quality} className="h-2.5" />
+
+          <div className="space-y-2">
+            {QUALITY_CHECKS.map(item => {
+              const passed = item.check(feed)
+              const ItemIcon = item.icon
+              return (
+                <div key={item.label} className={cn(
+                  "flex items-start gap-3 p-3 rounded-lg border transition-colors",
+                  passed ? "bg-green-500/5 border-green-500/20" : "bg-muted/30"
+                )}>
+                  <div className={cn(
+                    "p-1.5 rounded-lg mt-0.5",
+                    passed ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
+                  )}>
+                    <ItemIcon className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">{item.label}</p>
+                      <Badge variant="outline" className={cn("text-[10px]", passed ? "text-green-600 border-green-500/30" : "text-muted-foreground")}>
+                        {passed ? 'OK' : `+${item.weight}%`}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                  </div>
+                  {passed ? (
+                    <CheckCircle className="h-4 w-4 text-green-600 shrink-0 mt-1" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-1" />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="schedule" className="mt-4 space-y-4">
+          <ChannableFormField label="Fréquence de synchronisation">
+            <Select defaultValue="daily">
+              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="hourly">Toutes les heures</SelectItem>
+                <SelectItem value="6hours">Toutes les 6 heures</SelectItem>
+                <SelectItem value="12hours">Toutes les 12 heures</SelectItem>
+                <SelectItem value="daily">Quotidien</SelectItem>
+                <SelectItem value="weekly">Hebdomadaire</SelectItem>
+              </SelectContent>
+            </Select>
+          </ChannableFormField>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 rounded-lg border bg-muted/30 space-y-1">
+              <p className="text-xs text-muted-foreground">Dernière synchronisation</p>
+              <p className="text-sm font-semibold">
+                {feed.last_generated_at ? new Date(feed.last_generated_at).toLocaleString('fr-FR') : 'Jamais'}
+              </p>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 space-y-1">
+              <p className="text-xs text-muted-foreground">Prochaine synchronisation</p>
+              <p className="text-sm font-semibold">Dans 24h</p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg border">
+            <div>
+              <p className="text-sm font-medium">Notifications</p>
+              <p className="text-xs text-muted-foreground">Recevoir une alerte en cas d'erreur</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+        </TabsContent>
+      </Tabs>
+    </ChannableModal>
+  )
+}
+
+// ── Delete Confirmation Modal ─────────────────────────────────────────
+
+function DeleteFeedModal({ feed, open, onOpenChange, onConfirm }: {
+  feed: ProductFeed | null; open: boolean; onOpenChange: (v: boolean) => void; onConfirm: () => void
+}) {
+  if (!feed) return null
+  const mp = MARKETPLACES.find(m => m.id === feed.feed_type)
+  return (
+    <ChannableModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Supprimer le feed"
+      description="Cette action est irréversible"
+      icon={Trash2}
+      variant="danger"
+      size="sm"
+      submitLabel="Supprimer définitivement"
+      onSubmit={() => { onConfirm(); onOpenChange(false) }}
+    >
+      <div className="p-3 rounded-xl border bg-destructive/5 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+          <MarketplaceLogo id={feed.feed_type} emoji={mp?.emoji || '📦'} size={24} />
+        </div>
+        <div>
+          <p className="font-semibold text-sm">{feed.name}</p>
+          <p className="text-xs text-muted-foreground">{mp?.name} • {(feed.product_count || 0)} produits</p>
+        </div>
+      </div>
+      <p className="text-sm text-muted-foreground mt-3">
+        Tous les paramètres, règles et mappings associés à ce feed seront perdus. L'URL de feed deviendra inactive immédiatement.
+      </p>
+    </ChannableModal>
+  )
+}
+
+// ── Expanded Row Content ──────────────────────────────────────────────
+
+function FeedExpandedRow({ feed, onOpenSettings, onGenerate, isGenerating }: {
+  feed: ProductFeed; onOpenSettings: () => void; onGenerate: () => void; isGenerating: boolean
+}) {
+  const mp = MARKETPLACES.find(m => m.id === feed.feed_type)
+  const quality = getQualityScore(feed)
+
+  return (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.25 }}
+      className="overflow-hidden"
+    >
+      <div className="p-5 border-t bg-muted/5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Left — Overview Card */}
+          <Card className="border-dashed">
+            <CardContent className="p-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+                  <MarketplaceLogo id={feed.feed_type} emoji={mp?.emoji || '📦'} size={28} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">{mp?.name}</p>
+                  <FeedStatusChip status={feed.generation_status} />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground">Format</p>
+                  <p className="font-medium">XML</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Fréquence</p>
+                  <p className="font-medium">24h</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Pays</p>
+                  <p className="font-medium">🇫🇷 France</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">IA</p>
+                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px]">
+                    <Sparkles className="h-2.5 w-2.5 mr-0.5" />Activée
+                  </Badge>
+                </div>
+              </div>
+
+              {feed.feed_url && (
+                <div className="p-2.5 rounded-lg bg-muted/50 flex items-center gap-2">
+                  <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <code className="text-[10px] flex-1 truncate text-muted-foreground">{feed.feed_url}</code>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigator.clipboard.writeText(feed.feed_url || '')}>
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 gap-1.5 h-8 text-xs" onClick={onOpenSettings}>
+                  <Settings className="h-3.5 w-3.5" />Configurer
+                </Button>
+                <Button size="sm" className="flex-1 gap-1.5 h-8 text-xs" onClick={onGenerate} disabled={isGenerating}>
+                  <RefreshCw className={cn("h-3.5 w-3.5", isGenerating && "animate-spin")} />
+                  Synchroniser
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Center — Quality Breakdown */}
+          <Card className="border-dashed">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />Qualité du feed
+                </h4>
+                <QualityScore score={quality} />
+              </div>
+              <Progress value={quality} className="h-2" />
+              <div className="space-y-1.5">
+                {QUALITY_CHECKS.map(item => {
+                  const passed = item.check(feed)
+                  return (
+                    <div key={item.label} className="flex items-center gap-2 text-xs">
+                      {passed ? (
+                        <CheckCircle className="h-3.5 w-3.5 text-green-600 shrink-0" />
+                      ) : (
+                        <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      )}
+                      <span className={cn("flex-1", !passed && 'text-muted-foreground')}>{item.label}</span>
+                      <span className="text-muted-foreground font-mono">{item.weight}%</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Right — Quick Actions */}
+          <Card className="border-dashed">
+            <CardContent className="p-4 space-y-3">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />Actions rapides
+              </h4>
+              <div className="space-y-2">
+                {[
+                  { label: 'Optimiser titres avec IA', icon: Sparkles, desc: 'Améliorer SEO et pertinence' },
+                  { label: 'Auto-mapper catégories', icon: FolderTree, desc: 'Mapping intelligent par IA' },
+                  { label: 'Ajouter règles IF/THEN', icon: GitBranch, desc: 'Transformer les données' },
+                  { label: 'Prévisualiser le feed', icon: Eye, desc: `${feed.product_count || 0} produits • XML` },
+                  { label: 'Télécharger le feed', icon: Download, desc: 'Export XML / CSV / JSON' },
+                ].map(action => (
+                  <button
+                    key={action.label}
+                    className="w-full flex items-center gap-3 p-2.5 rounded-lg border hover:bg-muted/50 transition-colors text-left group"
+                  >
+                    <div className="p-1.5 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors">
+                      <action.icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium">{action.label}</p>
+                      <p className="text-[10px] text-muted-foreground">{action.desc}</p>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Main Component ────────────────────────────────────────────────────
+
 export default function ChannableFeedManager() {
   const { toast } = useToast()
   const { feeds, isLoading: isLoadingFeeds, stats, createFeed, isCreating, deleteFeed, generateFeed, isGenerating } = useProductFeeds()
-  
+
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -165,6 +639,9 @@ export default function ChannableFeedManager() {
   const [selectedCategory, setSelectedCategory] = useState<string>('popular')
   const [newFeed, setNewFeed] = useState({ name: '', marketplace: '' })
   const [expandedFeed, setExpandedFeed] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [settingsFeed, setSettingsFeed] = useState<ProductFeed | null>(null)
+  const [deletingFeed, setDeletingFeed] = useState<ProductFeed | null>(null)
 
   const filteredFeeds = useMemo(() => {
     return feeds.filter(feed => {
@@ -174,19 +651,16 @@ export default function ChannableFeedManager() {
     })
   }, [feeds, searchTerm, statusFilter])
 
-  const getMarketplaceName = (feedType: string) => {
-    return MARKETPLACES.find(m => m.id === feedType)?.name || feedType
+  const allSelected = filteredFeeds.length > 0 && selectedIds.length === filteredFeeds.length
+  const someSelected = selectedIds.length > 0
+
+  const toggleAll = () => {
+    if (allSelected) setSelectedIds([])
+    else setSelectedIds(filteredFeeds.map(f => f.id))
   }
 
-  const getQualityScore = (feed: ProductFeed) => {
-    // Compute quality score based on feed completeness
-    let score = 0
-    if (feed.name) score += 15
-    if (feed.product_count && feed.product_count > 0) score += 25
-    if (feed.generation_status === 'completed') score += 25
-    if (feed.feed_url) score += 20
-    if (feed.last_generated_at) score += 15
-    return Math.min(score, 100)
+  const toggleRow = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])
   }
 
   const handleCreateFeed = () => {
@@ -217,9 +691,9 @@ export default function ChannableFeedManager() {
       badge={{ label: "Feeds", icon: Rss }}
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2 bg-background/80 backdrop-blur" onClick={() => {/* refresh */}}>
+          <Button variant="outline" className="gap-2 bg-background/80 backdrop-blur" onClick={() => feeds.forEach(f => generateFeed(f.id))}>
             <RefreshCw className="h-4 w-4" />
-            Actualiser
+            Tout synchroniser
           </Button>
           <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -230,35 +704,76 @@ export default function ChannableFeedManager() {
     >
       <FeedSubNavigation />
 
-      {/* Channable-style KPI Strip */}
+      {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
-          { label: 'Feeds actifs', value: stats.activeFeeds, icon: Rss, color: 'text-primary' },
+          { label: 'Feeds actifs', value: stats.activeFeeds, total: stats.totalFeeds, icon: Rss, color: 'text-primary' },
           { label: 'Produits exportés', value: stats.totalProducts.toLocaleString(), icon: Package, color: 'text-blue-600' },
           { label: 'Canaux connectés', value: new Set(feeds.map(f => f.feed_type)).size, icon: Globe, color: 'text-green-600' },
-          { label: 'Erreurs', value: feeds.filter(f => f.generation_status === 'error').length, icon: AlertTriangle, color: 'text-red-600' },
-          { label: 'Qualité moyenne', value: feeds.length > 0 ? `${Math.round(feeds.reduce((sum, f) => sum + getQualityScore(f), 0) / feeds.length)}%` : '--', icon: Shield, color: 'text-amber-600' },
+          { label: 'Erreurs', value: stats.errorFeeds, icon: AlertTriangle, color: stats.errorFeeds > 0 ? 'text-red-600' : 'text-muted-foreground' },
+          { label: 'Qualité moy.', value: feeds.length > 0 ? `${Math.round(feeds.reduce((s, f) => s + getQualityScore(f), 0) / feeds.length)}%` : '--', icon: Shield, color: 'text-amber-600' },
         ].map(kpi => (
-          <Card key={kpi.label} className="p-4">
+          <Card key={kpi.label} className="p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-muted">
                 <kpi.icon className={cn("h-4 w-4", kpi.color)} />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{kpi.label}</p>
-                <p className="text-xl font-bold">{kpi.value}</p>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-xl font-bold">{kpi.value}</p>
+                  {'total' in kpi && kpi.total !== undefined && (
+                    <span className="text-xs text-muted-foreground">/{kpi.total}</span>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
         ))}
       </div>
 
-      {/* Filters Bar — Channable style */}
+      {/* Bulk Actions Bar */}
+      <AnimatePresence>
+        {someSelected && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <Card className="p-3 border-primary/30 bg-primary/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Badge className="bg-primary text-primary-foreground">{selectedIds.length} sélectionné{selectedIds.length > 1 ? 's' : ''}</Badge>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setSelectedIds([])}>
+                    Tout désélectionner
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+                    <RefreshCw className="h-3 w-3" />Synchroniser
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+                    <Download className="h-3 w-3" />Exporter
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+                    <Pause className="h-3 w-3" />Suspendre
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-destructive hover:text-destructive">
+                    <Trash2 className="h-3 w-3" />Supprimer
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Filters Bar */}
       <Card className="p-3">
         <div className="flex flex-col sm:flex-row gap-3 items-center">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Rechercher par nom, canal..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-9" />
+            <Input placeholder="Rechercher par nom, canal, format..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 h-9" />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -280,7 +795,7 @@ export default function ChannableFeedManager() {
         </div>
       </Card>
 
-      {/* Feed Table — Channable's Export Feeds Style */}
+      {/* Feed Table */}
       <AnimatePresence mode="wait">
         {isLoadingFeeds ? (
           <div className="flex items-center justify-center py-20">
@@ -310,31 +825,43 @@ export default function ChannableFeedManager() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableHead className="w-12">Canal</TableHead>
+                  <TableHead className="w-12">
+                    <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Tout sélectionner" />
+                  </TableHead>
+                  <TableHead className="w-14">Canal</TableHead>
                   <TableHead>Nom du feed</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-center">Produits</TableHead>
                   <TableHead className="text-center">Qualité</TableHead>
-                  <TableHead>Dernière mise à jour</TableHead>
-                  <TableHead className="text-right w-24">Actions</TableHead>
+                  <TableHead>Mise à jour</TableHead>
+                  <TableHead className="text-right w-28">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredFeeds.map((feed, index) => {
+                {filteredFeeds.map((feed) => {
                   const mp = MARKETPLACES.find(m => m.id === feed.feed_type)
                   const quality = getQualityScore(feed)
                   const isExpanded = expandedFeed === feed.id
+                  const isSelected = selectedIds.includes(feed.id)
 
                   return (
-                    <>
-                      <TableRow 
-                        key={feed.id}
+                    <motion.tbody
+                      key={feed.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <TableRow
                         className={cn(
                           "cursor-pointer transition-colors",
-                          isExpanded && "bg-muted/20 border-b-0"
+                          isExpanded && "bg-muted/20 border-b-0",
+                          isSelected && "bg-primary/5"
                         )}
                         onClick={() => setExpandedFeed(isExpanded ? null : feed.id)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox checked={isSelected} onCheckedChange={() => toggleRow(feed.id)} />
+                        </TableCell>
                         <TableCell>
                           <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
                             <MarketplaceLogo id={feed.feed_type} emoji={mp?.emoji || '📦'} size={28} />
@@ -343,7 +870,10 @@ export default function ChannableFeedManager() {
                         <TableCell>
                           <div>
                             <p className="font-semibold text-sm">{feed.name}</p>
-                            <p className="text-xs text-muted-foreground">{getMarketplaceName(feed.feed_type)}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              {mp?.name || feed.feed_type}
+                              <ChevronDown className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-180")} />
+                            </p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -359,8 +889,8 @@ export default function ChannableFeedManager() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {feed.last_generated_at 
-                              ? new Date(feed.last_generated_at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) 
+                            {feed.last_generated_at
+                              ? new Date(feed.last_generated_at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
                               : 'Jamais'}
                           </span>
                         </TableCell>
@@ -384,6 +914,9 @@ export default function ChannableFeedManager() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setSettingsFeed(feed)}>
+                                  <Settings className="h-4 w-4 mr-2" />Configurer
+                                </DropdownMenuItem>
                                 {feed.feed_url && (
                                   <DropdownMenuItem asChild>
                                     <a href={feed.feed_url} target="_blank" rel="noopener noreferrer">
@@ -397,11 +930,8 @@ export default function ChannableFeedManager() {
                                 <DropdownMenuItem>
                                   <Download className="h-4 w-4 mr-2" />Télécharger
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Settings className="h-4 w-4 mr-2" />Paramètres
-                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive" onClick={() => deleteFeed(feed.id)}>
+                                <DropdownMenuItem className="text-destructive" onClick={() => setDeletingFeed(feed)}>
                                   <Trash2 className="h-4 w-4 mr-2" />Supprimer
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -410,124 +940,20 @@ export default function ChannableFeedManager() {
                         </TableCell>
                       </TableRow>
 
-                      {/* Expanded row — Channable-style feed details with tabs */}
+                      {/* Expanded Row — 3-column layout */}
                       {isExpanded && (
-                        <TableRow key={`${feed.id}-detail`} className="bg-muted/10 hover:bg-muted/10">
-                          <TableCell colSpan={7} className="p-0">
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              <div className="p-5 border-t">
-                                <Tabs defaultValue="settings" className="w-full">
-                                  <TabsList className="h-9 bg-muted/50">
-                                    <TabsTrigger value="settings" className="text-xs gap-1.5"><Settings className="h-3.5 w-3.5" />Paramètres</TabsTrigger>
-                                    <TabsTrigger value="categories" className="text-xs gap-1.5"><FolderTree className="h-3.5 w-3.5" />Catégories</TabsTrigger>
-                                    <TabsTrigger value="rules" className="text-xs gap-1.5"><GitBranch className="h-3.5 w-3.5" />Règles</TabsTrigger>
-                                    <TabsTrigger value="quality" className="text-xs gap-1.5"><Shield className="h-3.5 w-3.5" />Qualité</TabsTrigger>
-                                    <TabsTrigger value="preview" className="text-xs gap-1.5"><Eye className="h-3.5 w-3.5" />Aperçu</TabsTrigger>
-                                  </TabsList>
-
-                                  <TabsContent value="settings" className="mt-4">
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                      <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground font-medium">Format</p>
-                                        <Badge variant="outline">XML</Badge>
-                                      </div>
-                                      <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground font-medium">Fréquence</p>
-                                        <Badge variant="outline">Toutes les 24h</Badge>
-                                      </div>
-                                      <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground font-medium">Pays cible</p>
-                                        <Badge variant="outline">🇫🇷 France</Badge>
-                                      </div>
-                                      <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground font-medium">Optimisation IA</p>
-                                        <Badge className="bg-primary/10 text-primary border-primary/20">
-                                          <Sparkles className="h-3 w-3 mr-1" />Activée
-                                        </Badge>
-                                      </div>
-                                    </div>
-                                    {feed.feed_url && (
-                                      <div className="mt-4 p-3 rounded-lg bg-muted/50 flex items-center gap-2">
-                                        <code className="text-xs flex-1 truncate text-muted-foreground">{feed.feed_url}</code>
-                                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigator.clipboard.writeText(feed.feed_url || '')}>
-                                          <Copy className="h-3 w-3 mr-1" />Copier
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </TabsContent>
-
-                                  <TabsContent value="categories" className="mt-4">
-                                    <div className="text-center py-6 text-muted-foreground">
-                                      <FolderTree className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                      <p className="text-sm font-medium">Smart Categorization</p>
-                                      <p className="text-xs">Mappez vos catégories vers la taxonomie {getMarketplaceName(feed.feed_type)}</p>
-                                      <Button variant="outline" size="sm" className="mt-3 gap-1">
-                                        <Sparkles className="h-3.5 w-3.5" />Auto-mapper
-                                      </Button>
-                                    </div>
-                                  </TabsContent>
-
-                                  <TabsContent value="rules" className="mt-4">
-                                    <div className="text-center py-6 text-muted-foreground">
-                                      <GitBranch className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                      <p className="text-sm font-medium">Règles IF/THEN</p>
-                                      <p className="text-xs">Transformez automatiquement vos données produit</p>
-                                      <Button variant="outline" size="sm" className="mt-3 gap-1">
-                                        <Plus className="h-3.5 w-3.5" />Ajouter une règle
-                                      </Button>
-                                    </div>
-                                  </TabsContent>
-
-                                  <TabsContent value="quality" className="mt-4">
-                                    <div className="space-y-3">
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">Score global</span>
-                                        <QualityScore score={quality} />
-                                      </div>
-                                      <Progress value={quality} className="h-2" />
-                                      <div className="grid grid-cols-2 gap-3 mt-3">
-                                        {[
-                                          { label: 'Titres optimisés', done: true },
-                                          { label: 'Images présentes', done: feed.product_count ? feed.product_count > 0 : false },
-                                          { label: 'Catégories mappées', done: false },
-                                          { label: 'Prix & disponibilité', done: feed.generation_status === 'completed' },
-                                        ].map(item => (
-                                          <div key={item.label} className="flex items-center gap-2 text-sm">
-                                            {item.done ? (
-                                              <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
-                                            ) : (
-                                              <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
-                                            )}
-                                            <span className={item.done ? '' : 'text-muted-foreground'}>{item.label}</span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </TabsContent>
-
-                                  <TabsContent value="preview" className="mt-4">
-                                    <div className="text-center py-6 text-muted-foreground">
-                                      <Eye className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                      <p className="text-sm font-medium">Aperçu du Feed</p>
-                                      <p className="text-xs">{feed.product_count || 0} produits • Format XML</p>
-                                      <Button variant="outline" size="sm" className="mt-3 gap-1" onClick={() => generateFeed(feed.id)} disabled={isGenerating}>
-                                        <RefreshCw className={cn("h-3.5 w-3.5", isGenerating && "animate-spin")} />
-                                        Générer l'aperçu
-                                      </Button>
-                                    </div>
-                                  </TabsContent>
-                                </Tabs>
-                              </div>
-                            </motion.div>
+                        <TableRow className="hover:bg-transparent">
+                          <TableCell colSpan={8} className="p-0">
+                            <FeedExpandedRow
+                              feed={feed}
+                              onOpenSettings={() => setSettingsFeed(feed)}
+                              onGenerate={() => generateFeed(feed.id)}
+                              isGenerating={isGenerating}
+                            />
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </motion.tbody>
                   )
                 })}
               </TableBody>
@@ -592,97 +1018,19 @@ export default function ChannableFeedManager() {
         </CardContent>
       </Card>
 
-      {/* Create Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {selectedMp ? (
-                <>
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                    <MarketplaceLogo id={selectedMp.id} emoji={selectedMp.emoji} size={20} />
-                  </div>
-                  {createStep === 1 ? "Choisir un canal" : `Configuration — ${selectedMp.name}`}
-                </>
-              ) : (
-                <><Plus className="h-5 w-5" />Nouveau feed</>
-              )}
-            </DialogTitle>
-          </DialogHeader>
+      {/* ── Modals ──────────────────────────────────────────────────── */}
 
-          <div className="mt-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className={cn("flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold", createStep >= 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>1</div>
-              <div className={cn("h-0.5 flex-1", createStep >= 2 ? "bg-primary" : "bg-muted")} />
-              <div className={cn("flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold", createStep >= 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>2</div>
-            </div>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {createStep === 1 ? (
-              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1 w-full">
-                    {MARKETPLACE_CATEGORIES.slice(0, 4).map(cat => {
-                      const Icon = cat.icon
-                      return (
-                        <TabsTrigger key={cat.id} value={cat.id} className="flex-1 flex items-center justify-center gap-1 text-xs">
-                          <Icon className="h-3 w-3" />{cat.name}
-                        </TabsTrigger>
-                      )
-                    })}
-                  </TabsList>
-                  {MARKETPLACE_CATEGORIES.map(cat => (
-                    <TabsContent key={cat.id} value={cat.id} className="mt-3">
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {MARKETPLACES.filter(mp => mp.category === cat.id).slice(0, 8).map(mp => (
-                          <button
-                            key={mp.id}
-                            onClick={() => setNewFeed({ ...newFeed, marketplace: mp.id, name: `${mp.name} Feed` })}
-                            className={cn(
-                              "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm",
-                              newFeed.marketplace === mp.id ? "border-primary bg-primary/5 shadow-md" : "border-border/50 hover:border-border bg-card"
-                            )}
-                          >
-                            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                              <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={24} />
-                            </div>
-                            <span className="text-xs font-medium">{mp.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </TabsContent>
-                  ))}
-                </Tabs>
-              </motion.div>
-            ) : (
-              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                {selectedMp && (
-                  <div className="p-3 rounded-xl border bg-muted/30 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                      <MarketplaceLogo id={selectedMp.id} emoji={selectedMp.emoji} size={20} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{selectedMp.name}</p>
-                      <p className="text-xs text-muted-foreground">Canal sélectionné</p>
-                    </div>
-                    <Badge className="ml-auto" variant="outline"><Check className="h-3 w-3 mr-1" />OK</Badge>
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <Label>Nom du feed</Label>
-                  <Input
-                    value={newFeed.name}
-                    onChange={(e) => setNewFeed({ ...newFeed, name: e.target.value })}
-                    placeholder={`Ex: ${selectedMp?.name || 'Amazon'} FR — Catalogue`}
-                    className="h-10"
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+      {/* Create Feed Modal */}
+      <ChannableModal
+        open={showCreateDialog}
+        onOpenChange={handleCloseDialog}
+        title={createStep === 1 ? 'Choisir un canal' : `Configuration — ${selectedMp?.name || ''}`}
+        description={createStep === 1 ? 'Sélectionnez le canal de vente cible' : 'Personnalisez les paramètres de votre feed'}
+        icon={createStep === 1 ? Store : Settings}
+        variant="premium"
+        size="lg"
+        footer={
+          <div className="flex items-center justify-between w-full">
             <Button variant="ghost" onClick={createStep === 1 ? handleCloseDialog : () => setCreateStep(1)} className="gap-2">
               {createStep === 1 ? 'Annuler' : <><ArrowLeft className="h-4 w-4" />Retour</>}
             </Button>
@@ -696,8 +1044,128 @@ export default function ChannableFeedManager() {
               </Button>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        }
+      >
+        {/* Step indicators */}
+        <div className="flex items-center gap-2 mb-5">
+          <div className={cn("flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold", createStep >= 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>1</div>
+          <div className={cn("h-0.5 flex-1", createStep >= 2 ? "bg-primary" : "bg-muted")} />
+          <div className={cn("flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold", createStep >= 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>2</div>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {createStep === 1 ? (
+            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+                <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1 w-full">
+                  {MARKETPLACE_CATEGORIES.slice(0, 4).map(cat => {
+                    const Icon = cat.icon
+                    return (
+                      <TabsTrigger key={cat.id} value={cat.id} className="flex-1 flex items-center justify-center gap-1 text-xs">
+                        <Icon className="h-3 w-3" />{cat.name}
+                      </TabsTrigger>
+                    )
+                  })}
+                </TabsList>
+                {MARKETPLACE_CATEGORIES.map(cat => (
+                  <TabsContent key={cat.id} value={cat.id} className="mt-3">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {MARKETPLACES.filter(mp => mp.category === cat.id).slice(0, 8).map(mp => (
+                        <button
+                          key={mp.id}
+                          onClick={() => setNewFeed({ ...newFeed, marketplace: mp.id, name: `${mp.name} Feed` })}
+                          className={cn(
+                            "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm",
+                            newFeed.marketplace === mp.id ? "border-primary bg-primary/5 shadow-md" : "border-border/50 hover:border-border bg-card"
+                          )}
+                        >
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                            <MarketplaceLogo id={mp.id} emoji={mp.emoji} size={24} />
+                          </div>
+                          <span className="text-xs font-medium">{mp.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </motion.div>
+          ) : (
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+              {selectedMp && (
+                <div className="p-3 rounded-xl border bg-muted/30 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                    <MarketplaceLogo id={selectedMp.id} emoji={selectedMp.emoji} size={20} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{selectedMp.name}</p>
+                    <p className="text-xs text-muted-foreground">Canal sélectionné</p>
+                  </div>
+                  <Badge className="ml-auto" variant="outline"><Check className="h-3 w-3 mr-1" />OK</Badge>
+                </div>
+              )}
+              <ChannableFormField label="Nom du feed" required hint="Identifiant unique pour ce flux d'export">
+                <Input
+                  value={newFeed.name}
+                  onChange={(e) => setNewFeed({ ...newFeed, name: e.target.value })}
+                  placeholder={`Ex: ${selectedMp?.name || 'Amazon'} FR — Catalogue`}
+                  className="h-10"
+                />
+              </ChannableFormField>
+
+              <div className="grid grid-cols-2 gap-4">
+                <ChannableFormField label="Format">
+                  <Select defaultValue="xml">
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="xml">XML</SelectItem>
+                      <SelectItem value="csv">CSV</SelectItem>
+                      <SelectItem value="json">JSON</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </ChannableFormField>
+                <ChannableFormField label="Pays cible">
+                  <Select defaultValue="FR">
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="FR">🇫🇷 France</SelectItem>
+                      <SelectItem value="DE">🇩🇪 Allemagne</SelectItem>
+                      <SelectItem value="ES">🇪🇸 Espagne</SelectItem>
+                      <SelectItem value="UK">🇬🇧 Royaume-Uni</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </ChannableFormField>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Optimisation IA</p>
+                    <p className="text-xs text-muted-foreground">Titres et descriptions optimisés automatiquement</p>
+                  </div>
+                </div>
+                <Switch defaultChecked />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </ChannableModal>
+
+      {/* Settings Modal */}
+      <FeedSettingsModal
+        feed={settingsFeed}
+        open={!!settingsFeed}
+        onOpenChange={(v) => !v && setSettingsFeed(null)}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteFeedModal
+        feed={deletingFeed}
+        open={!!deletingFeed}
+        onOpenChange={(v) => !v && setDeletingFeed(null)}
+        onConfirm={() => deletingFeed && deleteFeed(deletingFeed.id)}
+      />
     </ChannablePageWrapper>
   )
 }
