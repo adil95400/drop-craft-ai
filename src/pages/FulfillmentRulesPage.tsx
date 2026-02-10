@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Plus, Settings, Trash2, Play, Pause } from 'lucide-react'
 import { AdvancedFeatureGuide } from '@/components/guide'
 import { ADVANCED_GUIDES } from '@/components/guide'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import {
   Table,
   TableBody,
@@ -56,17 +57,10 @@ export default function FulfillmentRulesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fulfillment-rules'] })
-      toast({
-        title: '✅ Règle mise à jour',
-        description: 'Le statut de la règle a été modifié',
-      })
+      toast({ title: '✅ Règle mise à jour', description: 'Le statut de la règle a été modifié' })
     },
     onError: () => {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de modifier la règle',
-        variant: 'destructive',
-      })
+      toast({ title: 'Erreur', description: 'Impossible de modifier la règle', variant: 'destructive' })
     },
   })
 
@@ -81,46 +75,31 @@ export default function FulfillmentRulesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fulfillment-rules'] })
-      toast({
-        title: '✅ Règle supprimée',
-        description: 'La règle a été supprimée avec succès',
-      })
+      toast({ title: '✅ Règle supprimée', description: 'La règle a été supprimée avec succès' })
     },
   })
 
-  const getTriggerBadge = (trigger: string) => {
-    const colors: Record<string, string> = {
-      paid: 'bg-green-500/10 text-green-500',
-      confirmed: 'bg-blue-500/10 text-blue-500',
-      processing: 'bg-yellow-500/10 text-yellow-500',
-    }
-    return colors[trigger] || 'bg-muted'
-  }
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <AdvancedFeatureGuide {...ADVANCED_GUIDES.fulfillment} />
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Règles d'automatisation</h1>
-          <p className="text-muted-foreground">
-            Configurez les règles de fulfillment automatique
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Règles d'automatisation"
+      description="Configurez les règles de fulfillment automatique"
+      heroImage="automation"
+      badge={{ label: 'Fulfillment', icon: Settings }}
+      actions={
         <Button>
           <Plus className="w-4 h-4 mr-2" />
           Nouvelle règle
         </Button>
-      </div>
+      }
+    >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.fulfillment} />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Règles actives</p>
-              <p className="text-2xl font-bold">
-                {rules?.filter(r => r.is_active).length || 0}
-              </p>
+              <p className="text-2xl font-bold">{rules?.filter(r => r.is_active).length || 0}</p>
             </div>
             <Play className="w-8 h-8 text-green-500" />
           </div>
@@ -129,9 +108,7 @@ export default function FulfillmentRulesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Règles inactives</p>
-              <p className="text-2xl font-bold">
-                {rules?.filter(r => !r.is_active).length || 0}
-              </p>
+              <p className="text-2xl font-bold">{rules?.filter(r => !r.is_active).length || 0}</p>
             </div>
             <Pause className="w-8 h-8 text-muted-foreground" />
           </div>
@@ -140,9 +117,7 @@ export default function FulfillmentRulesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total règles</p>
-              <p className="text-2xl font-bold">
-                {rules?.length || 0}
-              </p>
+              <p className="text-2xl font-bold">{rules?.length || 0}</p>
             </div>
             <Settings className="w-8 h-8 text-blue-500" />
           </div>
@@ -151,14 +126,10 @@ export default function FulfillmentRulesPage() {
 
       <Card className="p-6">
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Chargement des règles...
-          </div>
+          <div className="text-center py-8 text-muted-foreground">Chargement des règles...</div>
         ) : rules?.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
-              Aucune règle d'automatisation configurée
-            </p>
+            <p className="text-muted-foreground mb-4">Aucune règle d'automatisation configurée</p>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
               Créer votre première règle
@@ -179,9 +150,7 @@ export default function FulfillmentRulesPage() {
                 <TableRow key={rule.id}>
                   <TableCell className="font-medium">{rule.name}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">
-                      {rule.priority}
-                    </Badge>
+                    <Badge variant="secondary">{rule.priority}</Badge>
                   </TableCell>
                   <TableCell>
                     <Switch
@@ -196,11 +165,7 @@ export default function FulfillmentRulesPage() {
                       <Button variant="ghost" size="sm">
                         <Settings className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteRuleMutation.mutate(rule.id)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => deleteRuleMutation.mutate(rule.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -211,6 +176,6 @@ export default function FulfillmentRulesPage() {
           </Table>
         )}
       </Card>
-    </div>
+    </ChannablePageWrapper>
   )
 }

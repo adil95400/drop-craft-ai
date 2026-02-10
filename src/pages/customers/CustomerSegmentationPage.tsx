@@ -1,6 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { CustomerSegmentationDashboard } from '@/components/customer-segmentation';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { Users } from 'lucide-react';
 
 export default function CustomerSegmentationPage() {
   return (
@@ -10,16 +12,14 @@ export default function CustomerSegmentationPage() {
         <meta name="description" content="Segmentez vos clients pour des campagnes ciblées" />
       </Helmet>
       
-      <div className="container mx-auto py-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Segmentation Clients</h1>
-          <p className="text-muted-foreground">
-            Analysez et segmentez vos clients avec l'analyse RFM
-          </p>
-        </div>
-
+      <ChannablePageWrapper
+        title="Segmentation Clients"
+        description="Analysez et segmentez vos clients avec l'analyse RFM"
+        heroImage="marketing"
+        badge={{ label: 'Segmentation', icon: Users }}
+      >
         <CustomerSegmentationDashboard />
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }

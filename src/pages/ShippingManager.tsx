@@ -1,47 +1,26 @@
-import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { 
-  Truck, 
-  Package, 
-  Clock, 
-  DollarSign,
-  Plus,
-  Settings,
-  Globe
-} from 'lucide-react'
+import { Truck, Package, Clock, DollarSign, Plus, Settings, Globe } from 'lucide-react'
 import { useShippingManager } from '@/hooks/useShippingManager'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function ShippingManager() {
-  const { 
-    carriers, 
-    isLoadingCarriers, 
-    shipments, 
-    isLoadingShipments, 
-    rules,
-    isLoadingRules,
-    stats,
-    toggleCarrier 
-  } = useShippingManager()
+  const { carriers, isLoadingCarriers, shipments, isLoadingShipments, rules, isLoadingRules, stats, toggleCarrier } = useShippingManager()
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
-      case 'delivered':
-        return <Badge>Livré</Badge>
+      case 'delivered': return <Badge>Livré</Badge>
       case 'in_transit':
-      case 'shipped':
-        return <Badge variant="secondary">En transit</Badge>
-      case 'pending':
-        return <Badge variant="outline">En attente</Badge>
-      default:
-        return <Badge variant="outline">{status || 'Inconnu'}</Badge>
+      case 'shipped': return <Badge variant="secondary">En transit</Badge>
+      case 'pending': return <Badge variant="outline">En attente</Badge>
+      default: return <Badge variant="outline">{status || 'Inconnu'}</Badge>
     }
   }
 
@@ -52,25 +31,20 @@ export default function ShippingManager() {
         <meta name="description" content="Gérez vos transporteurs, tarifs et suivez vos expéditions en temps réel" />
       </Helmet>
 
-      <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
-        <AdvancedFeatureGuide {...ADVANCED_GUIDES.shipping} />
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Gestion des Expéditions
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Multi-transporteurs et tracking
-            </p>
-          </div>
-          <Button size="sm" className="self-start sm:self-auto sm:size-default">
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="sm:hidden">Ajouter</span>
-            <span className="hidden sm:inline">Nouveau Transporteur</span>
+      <ChannablePageWrapper
+        title="Gestion des Expéditions"
+        description="Multi-transporteurs et tracking en temps réel"
+        heroImage="orders"
+        badge={{ label: 'Shipping', icon: Truck }}
+        actions={
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Nouveau Transporteur
           </Button>
-        </div>
+        }
+      >
+        <AdvancedFeatureGuide {...ADVANCED_GUIDES.shipping} />
 
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
             <CardContent className="p-3 sm:p-4 text-center">
@@ -79,7 +53,6 @@ export default function ShippingManager() {
               <div className="text-[10px] sm:text-sm text-muted-foreground">En transit</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardContent className="p-3 sm:p-4 text-center">
               <Truck className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 mx-auto mb-1 sm:mb-2" />
@@ -87,7 +60,6 @@ export default function ShippingManager() {
               <div className="text-[10px] sm:text-sm text-muted-foreground">Livrés</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardContent className="p-3 sm:p-4 text-center">
               <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 mx-auto mb-1 sm:mb-2" />
@@ -95,7 +67,6 @@ export default function ShippingManager() {
               <div className="text-[10px] sm:text-sm text-muted-foreground">Délai moyen</div>
             </CardContent>
           </Card>
-
           <Card>
             <CardContent className="p-3 sm:p-4 text-center">
               <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mx-auto mb-1 sm:mb-2" />
@@ -106,23 +77,17 @@ export default function ShippingManager() {
         </div>
 
         <Tabs defaultValue="carriers" className="space-y-4 sm:space-y-6">
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="w-max sm:w-auto">
-              <TabsTrigger value="carriers" className="text-xs sm:text-sm px-2 sm:px-3">Transporteurs</TabsTrigger>
-              <TabsTrigger value="rules" className="text-xs sm:text-sm px-2 sm:px-3">Règles</TabsTrigger>
-              <TabsTrigger value="tracking" className="text-xs sm:text-sm px-2 sm:px-3">Suivi</TabsTrigger>
-              <TabsTrigger value="zones" className="text-xs sm:text-sm px-2 sm:px-3">Zones</TabsTrigger>
-            </TabsList>
-          </div>
+          <TabsList>
+            <TabsTrigger value="carriers">Transporteurs</TabsTrigger>
+            <TabsTrigger value="rules">Règles</TabsTrigger>
+            <TabsTrigger value="tracking">Suivi</TabsTrigger>
+            <TabsTrigger value="zones">Zones</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="carriers" className="space-y-3 sm:space-y-4">
             {isLoadingCarriers ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-4 sm:p-6">
-                    <Skeleton className="h-16 w-full" />
-                  </CardContent>
-                </Card>
+                <Card key={i}><CardContent className="p-4 sm:p-6"><Skeleton className="h-16 w-full" /></CardContent></Card>
               ))
             ) : carriers && carriers.length > 0 ? (
               carriers.map((carrier) => (
@@ -148,12 +113,7 @@ export default function ShippingManager() {
                           <div className="text-[10px] sm:text-sm text-muted-foreground">Service</div>
                           <div className="text-xs sm:text-base font-medium">{carrier.default_service || 'Standard'}</div>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="shrink-0"
-                          onClick={() => toggleCarrier(carrier.id, !carrier.is_active)}
-                        >
+                        <Button variant="outline" size="sm" className="shrink-0" onClick={() => toggleCarrier(carrier.id, !carrier.is_active)}>
                           <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </div>
@@ -166,13 +126,8 @@ export default function ShippingManager() {
                 <CardContent className="p-12 text-center">
                   <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Aucun transporteur configuré</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Ajoutez vos transporteurs pour commencer à gérer vos expéditions
-                  </p>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Ajouter un transporteur
-                  </Button>
+                  <p className="text-muted-foreground mb-4">Ajoutez vos transporteurs pour commencer</p>
+                  <Button><Plus className="h-4 w-4 mr-2" />Ajouter un transporteur</Button>
                 </CardContent>
               </Card>
             )}
@@ -180,37 +135,22 @@ export default function ShippingManager() {
 
           <TabsContent value="rules" className="space-y-4">
             <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-base sm:text-lg">Règles d'Expédition</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Automatisez le choix du transporteur
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-3 sm:space-y-4">
-                {isLoadingRules ? (
-                  <Skeleton className="h-24 w-full" />
-                ) : rules && rules.length > 0 ? (
+              <CardHeader><CardTitle>Règles d'Expédition</CardTitle><CardDescription>Automatisez le choix du transporteur</CardDescription></CardHeader>
+              <CardContent className="space-y-3 sm:space-y-4">
+                {isLoadingRules ? <Skeleton className="h-24 w-full" /> : rules && rules.length > 0 ? (
                   rules.map((rule) => (
                     <div key={rule.id} className="p-3 sm:p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm sm:text-base font-medium">{rule.name}</h4>
-                        <Badge className="text-xs" variant={rule.is_active ? 'default' : 'secondary'}>
-                          {rule.is_active ? 'Actif' : 'Inactif'}
-                        </Badge>
+                        <Badge className="text-xs" variant={rule.is_active ? 'default' : 'secondary'}>{rule.is_active ? 'Actif' : 'Inactif'}</Badge>
                       </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">
-                        {rule.description || 'Aucune description'}
-                      </p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{rule.description || 'Aucune description'}</p>
                     </div>
                   ))
                 ) : (
                   <p className="text-center text-muted-foreground py-4">Aucune règle configurée</p>
                 )}
-
-                <Button className="w-full" size="sm">
-                  <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                  Créer une Règle
-                </Button>
+                <Button className="w-full" size="sm"><Plus className="h-4 w-4 mr-2" />Créer une Règle</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -218,57 +158,36 @@ export default function ShippingManager() {
           <TabsContent value="tracking" className="space-y-3 sm:space-y-4">
             {isLoadingShipments ? (
               Array.from({ length: 2 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-4 sm:p-6">
-                    <Skeleton className="h-24 w-full" />
-                  </CardContent>
-                </Card>
+                <Card key={i}><CardContent className="p-4 sm:p-6"><Skeleton className="h-24 w-full" /></CardContent></Card>
               ))
             ) : shipments && shipments.length > 0 ? (
               shipments.map((shipment) => (
                 <Card key={shipment.id}>
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="space-y-3 sm:space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm sm:text-base font-semibold">
-                            {shipment.tracking_number || 'N/A'}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            {shipment.carrier_code || 'Transporteur inconnu'}
-                          </p>
-                        </div>
-                        {getStatusBadge(shipment.status)}
+                  <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm sm:text-base font-semibold">{shipment.tracking_number || 'N/A'}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{shipment.carrier_code || 'Transporteur inconnu'}</p>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Expédié le</p>
-                          <p className="font-medium">
-                            {shipment.shipped_at 
-                              ? format(new Date(shipment.shipped_at), 'dd/MM/yyyy', { locale: fr })
-                              : 'Non expédié'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Coût</p>
-                          <p className="font-medium">{shipment.shipping_cost?.toFixed(2) || '0.00'}€</p>
-                        </div>
-                      </div>
-
-                      {shipment.estimated_delivery && (
-                        <div className="bg-muted p-2 sm:p-3 rounded-lg">
-                          <p className="text-xs sm:text-sm font-medium mb-1">Livraison estimée</p>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            {format(new Date(shipment.estimated_delivery), 'dd MMMM yyyy', { locale: fr })}
-                          </p>
-                        </div>
-                      )}
-
-                      <Button variant="outline" className="w-full" size="sm">
-                        Voir le Suivi
-                      </Button>
+                      {getStatusBadge(shipment.status)}
                     </div>
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Expédié le</p>
+                        <p className="font-medium">{shipment.shipped_at ? format(new Date(shipment.shipped_at), 'dd/MM/yyyy', { locale: fr }) : 'Non expédié'}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Coût</p>
+                        <p className="font-medium">{shipment.shipping_cost?.toFixed(2) || '0.00'}€</p>
+                      </div>
+                    </div>
+                    {shipment.estimated_delivery && (
+                      <div className="bg-muted p-2 sm:p-3 rounded-lg">
+                        <p className="text-xs sm:text-sm font-medium mb-1">Livraison estimée</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{format(new Date(shipment.estimated_delivery), 'dd MMMM yyyy', { locale: fr })}</p>
+                      </div>
+                    )}
+                    <Button variant="outline" className="w-full" size="sm">Voir le Suivi</Button>
                   </CardContent>
                 </Card>
               ))
@@ -277,9 +196,7 @@ export default function ShippingManager() {
                 <CardContent className="p-12 text-center">
                   <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Aucune expédition</h3>
-                  <p className="text-muted-foreground">
-                    Les expéditions apparaîtront ici une fois créées
-                  </p>
+                  <p className="text-muted-foreground">Les expéditions apparaîtront ici une fois créées</p>
                 </CardContent>
               </Card>
             )}
@@ -287,13 +204,8 @@ export default function ShippingManager() {
 
           <TabsContent value="zones" className="space-y-4">
             <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-base sm:text-lg">Zones de Livraison</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Tarifs par zone géographique
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-3 sm:space-y-4">
+              <CardHeader><CardTitle>Zones de Livraison</CardTitle><CardDescription>Tarifs par zone géographique</CardDescription></CardHeader>
+              <CardContent className="space-y-3 sm:space-y-4">
                 {[
                   { name: 'France Métro', countries: 1, cost: '4.99€' },
                   { name: 'Union Européenne', countries: 27, cost: '7.99€' },
@@ -310,9 +222,7 @@ export default function ShippingManager() {
                     </div>
                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                       <span className="text-sm sm:text-base font-bold text-primary">{zone.cost}</span>
-                      <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                        Modifier
-                      </Button>
+                      <Button variant="outline" size="sm" className="hidden sm:inline-flex">Modifier</Button>
                     </div>
                   </div>
                 ))}
@@ -320,7 +230,7 @@ export default function ShippingManager() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   )
 }
