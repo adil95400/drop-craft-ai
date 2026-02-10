@@ -7,17 +7,16 @@ import { Switch } from '@/components/ui/switch';
 import { useProductImports } from '@/hooks/useProductImports';
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections';
 import { toast } from 'sonner';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { 
   Store, 
   Globe, 
   ShoppingCart, 
   Package, 
   Settings,
-  ArrowLeft,
   RefreshCw,
   CheckCircle,
   XCircle,
-  TrendingUp,
   Loader2
 } from 'lucide-react';
 
@@ -69,81 +68,17 @@ export default function ImportMarketplacePage() {
   const totalSynced = connections.reduce((sum, c) => sum + (c.total_products_synced || 0), 0);
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Marketplaces</h1>
-            <p className="text-muted-foreground">
-              Synchronisez vos produits avec les principales plateformes de vente
-            </p>
-          </div>
-        </div>
-        <Button 
-          variant="outline" 
-          size="icon"
-          onClick={() => window.location.reload()}
-        >
+    <ChannablePageWrapper
+      title="Marketplaces"
+      description={`${publishedProducts.length} produits disponibles • ${connectedCount} connectées • ${totalSynced} synchronisés`}
+      heroImage="integrations"
+      badge={{ label: 'Multi-Canal', icon: Globe }}
+      actions={
+        <Button variant="outline" size="icon" onClick={() => window.location.reload()} className="bg-background/80 backdrop-blur">
           <RefreshCw className="w-4 h-4" />
         </Button>
-      </div>
-
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Produits Disponibles</p>
-                <p className="text-2xl font-bold">{publishedProducts.length}</p>
-              </div>
-              <Package className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Marketplaces Connectées</p>
-                <p className="text-2xl font-bold">{connectedCount}</p>
-              </div>
-              <Store className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Produits Synchronisés</p>
-                <p className="text-2xl font-bold">{totalSynced}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-emerald-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Taux de Succès</p>
-                <p className="text-2xl font-bold">
-                  {totalSynced > 0 ? '100%' : '--%'}
-                </p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+      }
+    >
       {/* Marketplaces Grid */}
       {loadingConnections ? (
         <div className="flex justify-center py-12">
@@ -185,7 +120,6 @@ export default function ImportMarketplacePage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Stats */}
                   <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-600">{stats.published}</p>
@@ -201,7 +135,6 @@ export default function ImportMarketplacePage() {
                     </div>
                   </div>
 
-                  {/* Sync Toggle */}
                   <div className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-2">
                       <RefreshCw className="w-4 h-4 text-muted-foreground" />
@@ -210,48 +143,26 @@ export default function ImportMarketplacePage() {
                     <Switch
                       checked={connection?.is_active ?? false}
                       onCheckedChange={(checked) => {
-                        if (connection) {
-                          handleToggleSync(connection.id, checked);
-                        }
+                        if (connection) handleToggleSync(connection.id, checked);
                       }}
                       disabled={!isConnected}
                     />
                   </div>
 
-                  {/* Actions */}
                   <div className="flex gap-2">
                     {isConnected ? (
                       <>
-                        <Button 
-                          className="flex-1"
-                          onClick={() => connection && handleSync(connection.id)}
-                          disabled={syncingNow || publishedProducts.length === 0}
-                        >
-                          {syncingNow ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : (
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                          )}
+                        <Button className="flex-1" onClick={() => connection && handleSync(connection.id)} disabled={syncingNow || publishedProducts.length === 0}>
+                          {syncingNow ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
                           Synchroniser
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => connection && handleDisconnect(connection.id)}
-                        >
+                        <Button variant="outline" size="icon" onClick={() => connection && handleDisconnect(connection.id)}>
                           <Settings className="w-4 h-4" />
                         </Button>
                       </>
                     ) : (
-                      <Button 
-                        className="flex-1"
-                        variant="outline"
-                        onClick={() => handleConnect(marketplace)}
-                        disabled={isConnecting}
-                      >
-                        {isConnecting ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : null}
+                      <Button className="flex-1" variant="outline" onClick={() => handleConnect(marketplace)} disabled={isConnecting}>
+                        {isConnecting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                         Connecter
                       </Button>
                     )}
@@ -262,6 +173,6 @@ export default function ImportMarketplacePage() {
           })}
         </div>
       )}
-    </div>
+    </ChannablePageWrapper>
   );
 }

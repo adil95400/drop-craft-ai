@@ -8,11 +8,11 @@ import { RealTimeProfitChart } from '@/components/profit/RealTimeProfitChart'
 import { ROICalculator } from '@/components/profit/ROICalculator'
 import { ExpenseTracker } from '@/components/profit/ExpenseTracker'
 import { TrendingUp, DollarSign, Percent, AlertTriangle } from 'lucide-react'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function ProfitDashboard() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d')
 
-  // Fetch profit data
   const { data: profitData, isLoading } = useQuery({
     queryKey: ['profit-data', timeRange],
     queryFn: async () => {
@@ -20,7 +20,6 @@ export default function ProfitDashboard() {
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - daysAgo)
 
-      // Fetch orders
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('*, order_items(*)')
@@ -28,7 +27,6 @@ export default function ProfitDashboard() {
 
       if (ordersError) throw ordersError
 
-      // Fetch expenses
       const { data: expenses, error: expensesError } = await (supabase as any)
         .from('expenses')
         .select('*')
@@ -36,20 +34,17 @@ export default function ProfitDashboard() {
 
       if (expensesError) throw expensesError
 
-      // Calculate metrics
       const totalRevenue = orders?.reduce((sum, order) => sum + order.total_amount, 0) || 0
       const totalExpenses = (expenses as Expense[])?.reduce((sum, exp) => sum + Number(exp.amount || 0), 0) || 0
       const netProfit = totalRevenue - totalExpenses
       const avgMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100) : 0
 
-      // Calculate daily profit
       const dailyProfit: Array<{ date: string; revenue: number; expenses: number; profit: number }> = []
       
       if (orders) {
         orders.forEach(order => {
           const date = new Date(order.created_at).toLocaleDateString('fr-FR')
           const existing = dailyProfit.find(d => d.date === date)
-          
           if (existing) {
             existing.revenue += order.total_amount
           } else {
@@ -58,12 +53,10 @@ export default function ProfitDashboard() {
         })
       }
 
-      // Add expenses to daily profit
       if (expenses) {
         (expenses as Expense[]).forEach(expense => {
           const date = new Date(expense.date).toLocaleDateString('fr-FR')
           const existing = dailyProfit.find(d => d.date === date)
-          
           if (existing) {
             existing.expenses += Number(expense.amount || 0)
           } else {
@@ -72,45 +65,19 @@ export default function ProfitDashboard() {
         })
       }
 
-      // Calculate daily net profit
-      dailyProfit.forEach(day => {
-        day.profit = day.revenue - day.expenses
-      })
+      dailyProfit.forEach(day => { day.profit = day.revenue - day.expenses })
 
-      return {
-        totalRevenue,
-        totalExpenses,
-        netProfit,
-        avgMargin,
-        dailyProfit: dailyProfit || [],
-        orders: orders || [],
-        expenses: expenses || []
-      }
+      return { totalRevenue, totalExpenses, netProfit, avgMargin, dailyProfit: dailyProfit || [], orders: orders || [], expenses: expenses || [] }
     }
   })
 
-  const KPICard = ({ 
-    title, 
-    value, 
-    icon: Icon, 
-    trend, 
-    format = 'currency' 
-  }: { 
-    title: string
-    value: number
-    icon: any
-    trend?: number
-    format?: 'currency' | 'percent'
-  }) => (
+  const KPICard = ({ title, value, icon: Icon, trend, format = 'currency' }: { title: string; value: number; icon: any; trend?: number; format?: 'currency' | 'percent' }) => (
     <Card className="p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground mb-1">{title}</p>
           <p className="text-3xl font-bold">
-            {format === 'currency' 
-              ? `${value.toFixed(2)} €` 
-              : `${value.toFixed(1)} %`
-            }
+            {format === 'currency' ? `${value.toFixed(2)} €` : `${value.toFixed(1)} %`}
           </p>
           {trend !== undefined && (
             <p className={`text-sm mt-2 flex items-center gap-1 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -119,9 +86,7 @@ export default function ProfitDashboard() {
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-full ${
-          value > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-        }`}>
+        <div className={`p-3 rounded-full ${value > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
           <Icon className="w-6 h-6" />
         </div>
       </div>
@@ -137,51 +102,27 @@ export default function ProfitDashboard() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold">Dashboard Profit</h1>
-          <p className="text-muted-foreground mt-2">
-            Suivi temps réel de vos marges et rentabilité
-          </p>
-        </div>
-
+    <ChannablePageWrapper
+      title="Dashboard Profit"
+      description={`Profit net: ${(profitData?.netProfit || 0).toFixed(2)} € • Marge: ${(profitData?.avgMargin || 0).toFixed(1)}%`}
+      heroImage="analytics"
+      badge={{ label: 'Rentabilité', icon: DollarSign }}
+      actions={
         <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
-          <TabsList>
+          <TabsList className="bg-background/80 backdrop-blur">
             <TabsTrigger value="7d">7 jours</TabsTrigger>
             <TabsTrigger value="30d">30 jours</TabsTrigger>
             <TabsTrigger value="90d">90 jours</TabsTrigger>
           </TabsList>
         </Tabs>
-      </div>
-
+      }
+    >
       {/* KPI Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <KPICard
-          title="Revenu Total"
-          value={profitData?.totalRevenue || 0}
-          icon={DollarSign}
-          trend={12.5}
-        />
-        <KPICard
-          title="Dépenses Totales"
-          value={profitData?.totalExpenses || 0}
-          icon={AlertTriangle}
-          trend={-5.2}
-        />
-        <KPICard
-          title="Profit Net"
-          value={profitData?.netProfit || 0}
-          icon={TrendingUp}
-          trend={18.3}
-        />
-        <KPICard
-          title="Marge Moyenne"
-          value={profitData?.avgMargin || 0}
-          icon={Percent}
-          format="percent"
-          trend={3.7}
-        />
+        <KPICard title="Revenu Total" value={profitData?.totalRevenue || 0} icon={DollarSign} trend={12.5} />
+        <KPICard title="Dépenses Totales" value={profitData?.totalExpenses || 0} icon={AlertTriangle} trend={-5.2} />
+        <KPICard title="Profit Net" value={profitData?.netProfit || 0} icon={TrendingUp} trend={18.3} />
+        <KPICard title="Marge Moyenne" value={profitData?.avgMargin || 0} icon={Percent} format="percent" trend={3.7} />
       </div>
 
       {/* Main Content Tabs */}
@@ -204,6 +145,6 @@ export default function ProfitDashboard() {
           <ExpenseTracker expenses={(profitData?.expenses as Expense[]) || []} />
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   )
 }
