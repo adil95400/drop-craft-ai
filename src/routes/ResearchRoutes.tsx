@@ -8,6 +8,7 @@ import { lazy } from 'react';
 // Research Hub - Page principale
 const ResearchHub = lazy(() => import('@/pages/research/ResearchHub'));
 const WinningProductsPage = lazy(() => import('@/pages/research/WinningProductsPage'));
+const AIWinningProductScanner = lazy(() => import('@/pages/research/AIWinningProductScanner'));
 
 // Research pages
 const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage'));
@@ -29,8 +30,11 @@ export function ResearchRoutes() {
       <Route path="sourcing" element={<ProductSourcingPage />} />
       <Route path="intelligence" element={<CompetitiveIntelligenceHub />} />
       
+      {/* AI Winning Product Scanner - TikTok Ads */}
+      <Route path="ai-scanner" element={<AIWinningProductScanner />} />
+      
       {/* Backward compatibility - scanner redirect */}
-      <Route path="scanner" element={<Navigate to="/research" replace />} />
+      <Route path="scanner" element={<Navigate to="/research/ai-scanner" replace />} />
       
       {/* Legacy redirects */}
       <Route path="products" element={<Navigate to="/research/winning" replace />} />
