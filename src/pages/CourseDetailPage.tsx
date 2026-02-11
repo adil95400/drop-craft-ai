@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import { academyService } from '@/services/academy.service';
@@ -94,7 +95,12 @@ export default function CourseDetailPage() {
 
   if (courseLoading || lessonsLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
+      <ChannablePageWrapper
+        title="Chargement…"
+        description="Chargement du cours"
+        heroImage="support"
+        badge={{ label: 'Academy', icon: BookOpen }}
+      >
         <Skeleton className="h-10 w-48" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -109,18 +115,25 @@ export default function CourseDetailPage() {
             </Card>
           </div>
         </div>
-      </div>
+      </ChannablePageWrapper>
     );
   }
 
   if (!course) {
     return (
-      <div className="container mx-auto p-6 text-center">
-        <h1 className="text-2xl font-bold">Cours non trouvé</h1>
-        <Button asChild className="mt-4">
-          <Link to="/academy">Retour à l'Academy</Link>
-        </Button>
-      </div>
+      <ChannablePageWrapper
+        title="Cours non trouvé"
+        description="Le cours demandé n'existe pas"
+        heroImage="support"
+        badge={{ label: 'Academy', icon: BookOpen }}
+      >
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Cours non trouvé</h1>
+          <Button asChild className="mt-4">
+            <Link to="/academy">Retour à l'Academy</Link>
+          </Button>
+        </div>
+      </ChannablePageWrapper>
     );
   }
 
@@ -137,14 +150,12 @@ export default function CourseDetailPage() {
         <meta name="description" content={course.description} />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Breadcrumb */}
-        <Button variant="ghost" asChild className="gap-2">
-          <Link to="/academy">
-            <ArrowLeft className="h-4 w-4" />
-            Retour à l'Academy
-          </Link>
-        </Button>
+      <ChannablePageWrapper
+        title={course.title}
+        description={course.description}
+        heroImage="support"
+        badge={{ label: levelText[course.level] || 'Academy', icon: BookOpen }}
+      >
 
         {/* Course Header */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -403,7 +414,7 @@ export default function CourseDetailPage() {
             </Card>
           </div>
         </div>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -172,15 +173,20 @@ export default function SupplierImportPage() {
 
   if (!supplier) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-12">
+      <ChannablePageWrapper
+        title="Fournisseur introuvable"
+        description="Le fournisseur demandé n'existe pas"
+        heroImage="suppliers"
+        badge={{ label: 'Import', icon: Upload }}
+      >
+        <Card className="p-12 text-center">
           <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Fournisseur introuvable</h2>
           <Button onClick={() => navigate('/suppliers')}>
             Retour aux fournisseurs
           </Button>
-        </div>
-      </div>
+        </Card>
+      </ChannablePageWrapper>
     )
   }
 
@@ -191,27 +197,20 @@ export default function SupplierImportPage() {
         <meta name="description" content={`Importez des produits depuis ${supplier.name}`} />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" onClick={() => navigate(`/suppliers/${supplierId}`)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Import depuis {supplier.name}</h1>
-              <p className="text-muted-foreground mt-1">
-                Synchronisez les produits de ce fournisseur
-              </p>
-            </div>
-          </div>
+      <ChannablePageWrapper
+        title={`Import depuis ${supplier.name}`}
+        description="Synchronisez les produits de ce fournisseur"
+        heroImage="import"
+        badge={{ label: 'Import', icon: Upload }}
+        actions={
           <Link to="/import/history">
             <Button variant="outline">
               <Eye className="h-4 w-4 mr-2" />
               Historique global
             </Button>
           </Link>
-        </div>
+        }
+      >
 
         {/* Configuration Import */}
         <Card>
@@ -408,7 +407,7 @@ export default function SupplierImportPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </ChannablePageWrapper>
     </>
   )
 }

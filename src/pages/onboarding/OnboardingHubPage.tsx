@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { 
   Play, 
   BookOpen, 
@@ -40,86 +41,12 @@ export default function OnboardingHubPage() {
   }).length
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Header */}
-      <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b">
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex items-start justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <GraduationCap className="w-8 h-8 text-primary" />
-                </div>
-                <Badge variant="secondary" className="text-xs">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Centre de formation
-                </Badge>
-              </div>
-              <h1 className="text-4xl font-bold tracking-tight">
-                Guide de démarrage
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-xl">
-                Maîtrisez toutes les fonctionnalités de la plateforme avec nos tutoriels interactifs et vidéos guidées.
-              </p>
-            </div>
-
-            {/* Global Progress Card */}
-            <Card className="w-80 shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="relative">
-                    <svg className="w-20 h-20 transform -rotate-90">
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r="35"
-                        stroke="currentColor"
-                        strokeWidth="6"
-                        fill="none"
-                        className="text-muted"
-                      />
-                      <circle
-                        cx="40"
-                        cy="40"
-                        r="35"
-                        stroke="currentColor"
-                        strokeWidth="6"
-                        fill="none"
-                        strokeDasharray={220}
-                        strokeDashoffset={220 - (220 * globalProgress) / 100}
-                        className="text-primary transition-all duration-500"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-xl font-bold">
-                      {globalProgress}%
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Progression globale</p>
-                    <p className="text-sm text-muted-foreground">
-                      {completedTutorials}/{TUTORIALS.length} tutoriels terminés
-                    </p>
-                  </div>
-                </div>
-                {globalProgress === 100 ? (
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400">
-                    <Trophy className="w-5 h-5" />
-                    <span className="font-medium">Formation complète !</span>
-                  </div>
-                ) : (
-                  <Button className="w-full" onClick={() => setSelectedTutorial(TUTORIALS[0])}>
-                    Continuer la formation
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
+    <ChannablePageWrapper
+      title="Guide de démarrage"
+      description="Maîtrisez toutes les fonctionnalités avec nos tutoriels interactifs et vidéos guidées."
+      heroImage="support"
+      badge={{ label: 'Formation', icon: GraduationCap }}
+    >
         <Tabs defaultValue="tutorials" className="space-y-8">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="tutorials" className="flex items-center gap-2">
@@ -258,7 +185,6 @@ export default function OnboardingHubPage() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
 
       {/* Tutorial Detail Modal */}
       <AnimatePresence>
@@ -375,6 +301,6 @@ export default function OnboardingHubPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </ChannablePageWrapper>
   )
 }
