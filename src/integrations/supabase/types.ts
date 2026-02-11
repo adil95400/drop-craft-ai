@@ -14760,6 +14760,63 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_counters: {
+        Row: {
+          counter_key: string
+          counter_value: number
+          id: string
+          period_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          counter_key: string
+          counter_value?: number
+          id?: string
+          period_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          counter_key?: string
+          counter_value?: number
+          id?: string
+          period_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      usage_events: {
+        Row: {
+          created_at: string
+          event_category: string
+          event_data: Json | null
+          event_name: string
+          id: string
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_category?: string
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_category?: string
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_kpis: {
         Row: {
           created_at: string
@@ -15776,6 +15833,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_usage_counter: {
+        Args: { p_counter_key: string; p_increment?: number; p_user_id: string }
+        Returns: number
       }
       increment_user_quota: {
         Args: { p_increment?: number; p_quota_key: string; p_user_id: string }
