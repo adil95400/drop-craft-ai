@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/card';
 import { SupplierPricingRules } from '@/components/suppliers/SupplierPricingRules';
 import { MultiSupplierStockManager } from '@/components/suppliers/MultiSupplierStockManager';
 import { WebhookMonitor } from '@/components/suppliers/WebhookMonitor';
-import { DollarSign, Package, Webhook } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { DollarSign, Package, Webhook, Settings } from 'lucide-react';
 
 export default function SupplierAdvancedPage() {
   const { supplierId } = useParams();
@@ -13,23 +14,26 @@ export default function SupplierAdvancedPage() {
 
   if (!supplierId) {
     return (
-      <div className="container mx-auto p-6">
+      <ChannablePageWrapper
+        title="Gestion avancée"
+        description="Identifiant fournisseur manquant"
+        heroImage="suppliers"
+        badge={{ label: 'Fournisseur', icon: Settings }}
+      >
         <Card className="p-12 text-center">
           <p className="text-muted-foreground">Identifiant fournisseur manquant</p>
         </Card>
-      </div>
+      </ChannablePageWrapper>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Gestion avancée du fournisseur</h1>
-        <p className="text-muted-foreground">
-          Configurez la tarification dynamique, le monitoring du stock et les webhooks temps réel
-        </p>
-      </div>
-
+    <ChannablePageWrapper
+      title="Gestion avancée du fournisseur"
+      description="Tarification dynamique, monitoring du stock et webhooks temps réel"
+      heroImage="suppliers"
+      badge={{ label: 'Avancé', icon: Settings }}
+    >
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="pricing" className="flex items-center gap-2">
@@ -58,6 +62,6 @@ export default function SupplierAdvancedPage() {
           <WebhookMonitor />
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }

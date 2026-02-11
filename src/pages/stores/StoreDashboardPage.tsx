@@ -1,4 +1,5 @@
 import { useParams, NavLink, useNavigate } from 'react-router-dom'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -52,13 +53,18 @@ export function StoreDashboardPage() {
 
   if (!store) {
     return (
-      <div className="container mx-auto p-6">
+      <ChannablePageWrapper
+        title="Boutique non trouvée"
+        description="La boutique demandée n'existe pas"
+        heroImage="integrations"
+        badge={{ label: 'Boutique', icon: Package }}
+      >
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground">Boutique non trouvée</p>
           </CardContent>
         </Card>
-      </div>
+      </ChannablePageWrapper>
     )
   }
 
@@ -91,41 +97,13 @@ export function StoreDashboardPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" asChild>
-            <NavLink to="/stores-channels">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour aux boutiques
-            </NavLink>
-          </Button>
-          <div className="flex items-center space-x-3">
-            {store.logo_url ? (
-              <img 
-                src={store.logo_url} 
-                alt={store.name}
-                className="w-12 h-12 rounded-lg object-cover"
-              />
-            ) : (
-              <div className={`w-12 h-12 rounded-lg ${platformColors[store.platform]} flex items-center justify-center text-white font-semibold text-lg`}>
-                {store.name.charAt(0)}
-              </div>
-            )}
-            <div>
-              <h1 className="text-2xl font-bold">{store.name}</h1>
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline">{store.platform}</Badge>
-                <Badge className={statusColors[store.status]}>
-                  {statusLabels[store.status]}
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
+    <ChannablePageWrapper
+      title={store.name}
+      description={`${store.platform} — ${statusLabels[store.status]}`}
+      heroImage="integrations"
+      badge={{ label: store.platform, icon: Package }}
+      actions={
+        <>
           <Button 
             variant="outline" 
             size="sm" 
@@ -149,8 +127,9 @@ export function StoreDashboardPage() {
               Paramètres
             </NavLink>
           </Button>
-        </div>
-      </div>
+        </>
+      }
+    >
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -247,6 +226,6 @@ export function StoreDashboardPage() {
           <StoreOrders />
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   )
 }

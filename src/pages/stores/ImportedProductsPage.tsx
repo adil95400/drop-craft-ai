@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Package, Search, ExternalLink, RefreshCw, Filter, X, Trash2, Download, CheckSquare, ChevronLeft, ChevronRight } from 'lucide-react'
 import { BackButton } from '@/components/navigation/BackButton'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
@@ -292,36 +293,32 @@ export default function ImportedProductsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
+      <ChannablePageWrapper
+        title="Produits Importés"
+        description="Chargement…"
+        heroImage="products"
+        badge={{ label: 'Imports', icon: Package }}
+      >
         <div className="flex items-center justify-center min-h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </div>
+      </ChannablePageWrapper>
     )
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <div className="mb-4">
-        <BackButton to="/stores-channels/integrations" label="Retour aux intégrations" />
-      </div>
-
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              <Package className="h-8 w-8 text-primary" />
-              Produits Importés
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              {filteredProducts.length} produits synchronisés depuis vos intégrations
-            </p>
-          </div>
-          <Button onClick={handleRefresh} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualiser
-          </Button>
-        </div>
+    <ChannablePageWrapper
+      title="Produits Importés"
+      description={`${filteredProducts.length} produits synchronisés depuis vos intégrations`}
+      heroImage="products"
+      badge={{ label: 'Imports', icon: Package }}
+      actions={
+        <Button onClick={handleRefresh} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Actualiser
+        </Button>
+      }
+    >
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -523,7 +520,6 @@ export default function ImportedProductsPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
       {/* Products Grid */}
       {paginatedProducts.length === 0 && filteredProducts.length === 0 ? (
@@ -774,6 +770,6 @@ export default function ImportedProductsPage() {
           }
         }}
       />
-    </div>
+    </ChannablePageWrapper>
   )
 }
