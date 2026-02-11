@@ -19,6 +19,21 @@ export default defineConfig({
   },
 
   projects: [
+    /* ── Smoke suite (CI gate) ── */
+    {
+      name: 'smoke',
+      testDir: './tests/smoke',
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    /* ── Auth tests ── */
+    {
+      name: 'auth',
+      testDir: './tests/auth',
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    /* ── Full suite (all browsers) ── */
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
