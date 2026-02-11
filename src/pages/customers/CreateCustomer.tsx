@@ -16,6 +16,7 @@ import {
   Tag, Plus, X, UserCircle2, Globe, Calendar
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 interface Address {
   id: string;
@@ -166,53 +167,52 @@ export default function CreateCustomer() {
     return `${formData.firstName.charAt(0)}${formData.lastName.charAt(0)}`.toUpperCase();
   };
 
-  return (
+   return (
     <>
       <Helmet>
         <title>Créer un Client - ShopOpti</title>
         <meta name="description" content="Ajoutez un nouveau client avec profil complet et historique" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto py-8 px-4 max-w-7xl">
-          <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/customers')}
-            >
+      <ChannablePageWrapper
+        title="Créer un Client"
+        description="Ajoutez un nouveau client avec profil complet"
+        heroImage="orders"
+        badge={{ label: 'CRM', icon: UserCircle2 }}
+        actions={
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={() => navigate('/customers')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour aux clients
+              Retour
             </Button>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={async () => {
-                try {
-                  const { supabase } = await import('@/integrations/supabase/client');
-                  const { data: { user } } = await supabase.auth.getUser();
-                  if (!user) {
-                    toast.error('Non authentifié');
-                    return;
-                  }
-                  // Sauvegarder le brouillon dans localStorage
-                  const draftData = {
-                    ...formData,
-                    addresses,
-                    avatarUrl,
-                    savedAt: new Date().toISOString()
-                  };
-                  localStorage.setItem(`customer_draft_${user.id}`, JSON.stringify(draftData));
-                  toast.success('Brouillon sauvegardé localement');
-                } catch (error) {
-                  toast.error('Erreur lors de la sauvegarde');
+            <Button variant="outline" onClick={async () => {
+              try {
+                const { supabase } = await import('@/integrations/supabase/client');
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                  toast.error('Non authentifié');
+                  return;
                 }
-              }}>
-                Sauvegarder
-              </Button>
-              <Button onClick={handleSubmit}>
-                Créer le client
-              </Button>
-            </div>
+                const draftData = {
+                  ...formData,
+                  addresses,
+                  avatarUrl,
+                  savedAt: new Date().toISOString()
+                };
+                localStorage.setItem(`customer_draft_${user.id}`, JSON.stringify(draftData));
+                toast.success('Brouillon sauvegardé localement');
+              } catch (error) {
+                toast.error('Erreur lors de la sauvegarde');
+              }
+            }}>
+              Sauvegarder
+            </Button>
+            <Button onClick={handleSubmit}>
+              Créer le client
+            </Button>
           </div>
-
+        }
+      >
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Colonne principale */}
@@ -664,8 +664,7 @@ export default function CreateCustomer() {
               </div>
             </div>
           </form>
-        </div>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }
