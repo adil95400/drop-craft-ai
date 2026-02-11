@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Home, ArrowLeft, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
@@ -14,11 +15,15 @@ export default function NotFoundPage() {
         <meta name="description" content="La page que vous recherchez n'existe pas ou a été déplacée." />
       </Helmet>
       
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <ChannablePageWrapper
+        title="Page non trouvée"
+        description="La page que vous recherchez n'existe pas ou a été déplacée."
+        heroImage="settings"
+      >
+        <Card className="max-w-md mx-auto">
           <CardContent className="p-8 text-center">
             <div className="text-6xl font-bold text-primary mb-4">404</div>
-            <h1 className="text-2xl font-semibold mb-2">Page non trouvée</h1>
+            <h2 className="text-2xl font-semibold mb-2">Oups !</h2>
             <p className="text-muted-foreground mb-6">
               La page que vous recherchez n'existe pas ou a été déplacée.
             </p>
@@ -52,7 +57,7 @@ export default function NotFoundPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }
