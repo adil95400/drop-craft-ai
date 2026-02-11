@@ -2,6 +2,7 @@
  * Chrome Extension Page - Installation et configuration complète
  */
 import { useState, useEffect } from 'react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { ExtensionTokenGenerator } from '@/components/extensions/ExtensionTokenGenerator';
 import { 
   Chrome, Download, Play, CheckCircle, Settings, Zap, Star,
@@ -352,7 +353,12 @@ export default function ChromeExtensionPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
+    <ChannablePageWrapper
+      title="Extension Navigateur"
+      description="Importez des produits directement depuis votre navigateur en un clic"
+      heroImage="extensions"
+      badge={{ label: 'Extension', icon: Chrome }}
+    >
       <AdvancedFeatureGuide {...ADVANCED_GUIDES.chromeExtension} />
 
       {/* Hero Section */}
@@ -1267,6 +1273,6 @@ export default function ChromeExtensionPage() {
         onOpenChange={setShowWelcomeModal}
         version={extensionVersion}
       />
-    </div>
+    </ChannablePageWrapper>
   );
 }
