@@ -10,8 +10,7 @@ import {
   MoreVertical, Edit, Trash2, CheckCircle, AlertCircle, Search,
   RefreshCw, Timer, Zap, Copy, ExternalLink, Loader2
 } from 'lucide-react'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useReducedMotion, getMotionProps } from '@/hooks/useReducedMotion'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -197,30 +196,22 @@ export default function ImportScheduledPage() {
   }
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Imports Planifiés"
-      metaTitle="Imports Planifiés"
-      metaDescription="Automatisez vos imports avec des plannings récurrents"
-      maxWidth="2xl"
-      padding="md"
-      backTo="/import"
-      backLabel="Retour à l'import"
+      description="Planifiez vos imports pour qu'ils s'exécutent automatiquement. Gagnez du temps avec l'automatisation."
+      heroImage="automation"
+      badge={{ label: 'Automatisation', icon: Calendar }}
+      actions={
+        <Button 
+          className="bg-gradient-to-r from-primary to-purple-600"
+          onClick={() => setIsCreateDialogOpen(true)}
+          disabled={isCreating}
+        >
+          {isCreating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+          Nouveau Planning
+        </Button>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        badge={{ label: "Automatisation", icon: Calendar }}
-        title="Imports planifiés"
-        subtitle="automatisation complète"
-        description="Planifiez vos imports pour qu'ils s'exécutent automatiquement selon vos besoins. Gagnez du temps avec l'automatisation."
-        primaryAction={{
-          label: "Nouveau planning",
-          onClick: () => setIsCreateDialogOpen(true),
-          icon: Plus
-        }}
-        stats={heroStats}
-        showHexagons={!prefersReducedMotion}
-        variant="compact"
-      />
 
       {/* Search & Actions */}
       <motion.div
@@ -502,6 +493,6 @@ export default function ImportScheduledPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

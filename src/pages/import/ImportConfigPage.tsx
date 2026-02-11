@@ -13,8 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useImportConfig } from '@/hooks/useImportConfig'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 
@@ -172,36 +171,24 @@ export default function ImportConfigPage() {
   }
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Configurations d'Import"
-      metaTitle="Configurations d'Import"
-      metaDescription="Configurez vos sources d'import et automatisez vos flux de produits"
-      maxWidth="2xl"
-      padding="md"
-      backTo="/import"
-      backLabel="Retour à l'Import"
+      description="Personnalisez vos sources et automatisez vos flux de produits avec des règles intelligentes."
+      heroImage="settings"
+      badge={{ icon: Settings, label: 'Configuration' }}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/import/history')}>
+            <History className="w-4 h-4 mr-2" />
+            Historique
+          </Button>
+          <Button onClick={() => navigate('/import/autods')}>
+            <Zap className="w-4 h-4 mr-2" />
+            Import rapide
+          </Button>
+        </div>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        badge={{ icon: Settings, label: 'Configuration' }}
-        title="Configurez vos imports"
-        subtitle="Personnalisez vos sources et automatisez vos flux de produits avec des règles intelligentes"
-        variant="compact"
-        showHexagons={!prefersReducedMotion}
-        stats={[
-          { label: 'Sources', value: '6', icon: Package },
-          { label: 'Auto-sync', value: 'Actif', icon: RefreshCw },
-          { label: 'Optimisé', value: 'IA', icon: Sparkles },
-        ]}
-        primaryAction={{
-          label: 'Import rapide',
-          onClick: () => navigate('/import/autods'),
-        }}
-        secondaryAction={{
-          label: 'Historique',
-          onClick: () => navigate('/import/history'),
-        }}
-      />
 
       {/* Configuration Options */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
@@ -412,6 +399,6 @@ export default function ImportConfigPage() {
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }
