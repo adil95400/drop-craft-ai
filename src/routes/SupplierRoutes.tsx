@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy } from 'react'
 
+const SupplierMarketplace = lazy(() => import('@/pages/SupplierMarketplace'))
+
 // Lazy loading des pages - Architecture simplifiée et optimisée
 const ChannableStyleSuppliersPage = lazy(() => import('@/pages/suppliers/ChannableStyleSuppliersPage'))
 const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'))
@@ -62,8 +64,8 @@ export default function SupplierRoutes() {
       {/* Import BTS CSV */}
       <Route path="bts/import" element={<BTSImportPage />} />
 
-      {/* Marketplace - Redirige vers catalogue */}
-      <Route path="marketplace" element={<Navigate to="/suppliers/catalog" replace />} />
+      {/* Marketplace de fournisseurs */}
+      <Route path="marketplace" element={<SupplierMarketplace />} />
 
       {/* Ancienne route connectors - Redirige vers catalogue */}
       <Route path="connectors" element={<Navigate to="/suppliers/catalog" replace />} />

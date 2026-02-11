@@ -113,6 +113,15 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   // Notifications (French aliases)
   '/alertes': '/notifications',
   
+  // Fulfillment & Tracking (French aliases)
+  '/fulfillment': '/automation/fulfillment',
+  '/auto-fulfillment': '/automation/fulfillment',
+  '/suivi-colis': '/automation/tracking',
+  '/tracking': '/automation/tracking',
+  
+  // Marketplace fournisseurs
+  '/marketplace-fournisseurs': '/suppliers/marketplace',
+  
   // Enrichment
   '/enrichment/settings': '/catalog/attributes',
   '/enrichment': '/catalog/attributes',

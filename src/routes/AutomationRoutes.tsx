@@ -5,6 +5,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
+// Fulfillment & Tracking
+const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
+const AutoTrackingPage = lazy(() => import('@/pages/AutoTrackingPage'));
+
 // Automation
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
@@ -39,9 +43,10 @@ export function AutomationRoutes() {
       <Route path="ai" element={<ContentGenerationPage />} />
       <Route path="ai-studio" element={<ContentGenerationPage />} />
       
-      {/* Auto-Fulfillment - Redirect to automation */}
-      <Route path="fulfillment" element={<AutomationPage />} />
-      <Route path="fulfillment/dashboard" element={<AutomationPage />} />
+      {/* Auto-Fulfillment */}
+      <Route path="fulfillment" element={<AutoFulfillmentPage />} />
+      <Route path="fulfillment/dashboard" element={<AutoFulfillmentPage />} />
+      <Route path="tracking" element={<AutoTrackingPage />} />
       
       {/* Phase 2 - Marketplace Avancée - Redirect to pricing-manager */}
       <Route path="repricing" element={<Navigate to="/pricing-manager/repricing" replace />} />

@@ -1,6 +1,8 @@
 import { useGlobalModals } from "@/hooks/useGlobalModals";
 import { AIAlertsModal } from "@/components/modals/AIAlertsModal";
 import { CarrierDetailsModal } from "@/components/modals/CarrierDetailsModal";
+import { WelcomeOnboardingModal } from "@/components/onboarding/WelcomeOnboardingModal";
+import { FloatingChatWidget } from "@/components/support/FloatingChatWidget";
 
 export function GlobalModals() {
   const { modals, closeAIAlerts, closeCarrierDetails } = useGlobalModals();
@@ -19,6 +21,9 @@ export function GlobalModals() {
         carrier={modals.carrierDetails.carrier}
         metrics={modals.carrierDetails.metrics}
       />
+
+      <WelcomeOnboardingModal />
+      <FloatingChatWidget />
     </>
   );
 }
