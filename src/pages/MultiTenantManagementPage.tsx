@@ -172,17 +172,85 @@ export default function MultiTenantManagementPage() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Revenu Global</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tenants.reduce((sum, t) => sum + (t.settings as any)?.revenue || 0, 0).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                </div>
+                <p className="text-xs text-muted-foreground">Tous les tenants combinés</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Taux de Rétention</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tenants.length > 0 ? Math.round((tenants.filter(t => t.status === 'active').length / tenants.length) * 100) : 0}%
+                </div>
+                <p className="text-xs text-muted-foreground">Tenants actifs / total</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Plans Distribution</CardTitle>
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Standard</span>
+                    <span className="font-medium">{tenants.filter(t => t.plan_type === 'standard').length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Pro</span>
+                    <span className="font-medium">{tenants.filter(t => t.plan_type === 'pro').length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Ultra</span>
+                    <span className="font-medium">{tenants.filter(t => t.plan_type === 'ultra').length}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Analytics Multi-Tenant</CardTitle>
-              <CardDescription>
-                Statistiques et métriques de performance globales
-              </CardDescription>
+              <CardTitle>Performance par Tenant</CardTitle>
+              <CardDescription>Activité et métriques de chaque tenant</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Les analytics détaillées seront disponibles prochainement
-              </p>
+              {loading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : tenants.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Aucun tenant pour afficher les analytics</p>
+              ) : (
+                <div className="space-y-3">
+                  {tenants.map((tenant) => (
+                    <div key={tenant.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{tenant.name}</p>
+                        <p className="text-xs text-muted-foreground">{tenant.domain || 'Pas de domaine'}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge variant={tenant.status === 'active' ? 'default' : 'secondary'}>
+                          {tenant.status}
+                        </Badge>
+                        <Badge variant="outline">{tenant.plan_type}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
