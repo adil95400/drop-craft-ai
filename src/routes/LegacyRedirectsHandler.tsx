@@ -23,8 +23,6 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   // Orders
   '/dashboard/orders/center': '/orders',
   
-  // Settings  
-  '/parametres': '/settings',
   
   // Stores
   '/stores': '/stores-channels',
@@ -73,8 +71,47 @@ const EXTENDED_REDIRECTS: Record<string, string> = {
   '/centre-d-aide': '/help-center',
   '/centre-d-aide/documentation': '/help-center/documentation',
   
-  // Import
+  // Import (French aliases)
+  '/import/historique': '/import/history',
+  '/import/planifies': '/import/scheduled',
+  '/import/configuration': '/import/config',
+  '/import/masse': '/import/bulk',
+  '/import/rapide': '/import/autods',
   '/import/simplified': '/import',
+  
+  // Products (French aliases)
+  '/produits': '/products',
+  '/produits/creer': '/products/create',
+  
+  // Orders (French aliases)
+  '/commandes': '/orders',
+  '/commandes/creer': '/orders/create',
+  '/commandes/masse': '/orders/bulk',
+  '/commandes/fulfillment': '/orders/fulfillment',
+  
+  // Customers (French aliases)
+  '/clients': '/customers',
+  '/clients/creer': '/customers/create',
+  '/clients/segmentation': '/customers/segmentation',
+  
+  // Stock (French aliases)
+  '/inventaire': '/stock',
+  
+  // Analytics (French aliases)
+  '/statistiques': '/analytics',
+  '/rapports': '/reports',
+  
+  // Marketing (French aliases)
+  '/publicites': '/marketing/ads',
+  '/promotions': '/marketing/promotions',
+  
+  // Settings (French aliases)
+  '/parametres': '/settings',
+  '/profil': '/profile',
+  '/abonnement': '/subscription',
+  
+  // Notifications (French aliases)
+  '/alertes': '/notifications',
   
   // Enrichment
   '/enrichment/settings': '/catalog/attributes',
@@ -134,6 +171,8 @@ export function LegacyRedirectHandler({ children }: { children: React.ReactNode 
       { pattern: '/attributes/', redirect: '/catalog/attributes/' },
       { pattern: '/seo/', redirect: '/marketing/seo/' },
       { pattern: '/modern/', redirect: '/dashboard' },
+      { pattern: '/commandes/', redirect: '/orders/' },
+      { pattern: '/clients/', redirect: '/customers/' },
     ];
     
     for (const { pattern, redirect } of wildcardPatterns) {
