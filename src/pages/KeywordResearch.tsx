@@ -14,13 +14,13 @@ import {
   Plus,
   ArrowUp,
   ArrowDown,
-  Minus,
-  ArrowLeft
+  Minus
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SEO } from "@/components/SEO";
 import { useKeywordResearch, useSEOKeywords } from "@/hooks/useSEOKeywords";
 import { useNavigate } from "react-router-dom";
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const KeywordResearch = () => {
   const navigate = useNavigate();
@@ -97,26 +97,12 @@ const KeywordResearch = () => {
         keywords="recherche mots-clés, volume recherche, difficulté SEO, positionnement Google"
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-6">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour
-              </Button>
-              <h1 className="text-4xl font-bold flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                  <Search className="w-6 h-6 text-white" />
-                </div>
-                Recherche de Mots-clés
-              </h1>
-              <p className="text-lg text-muted-foreground mt-2">
-                Découvrez les mots-clés les plus performants pour votre secteur
-              </p>
-            </div>
-          </div>
+      <ChannablePageWrapper
+        title="Recherche de Mots-clés"
+        description="Découvrez les mots-clés les plus performants pour votre secteur"
+        heroImage="research"
+        badge={{ label: 'SEO', icon: Search }}
+      >
 
           {/* Recherche */}
           <Card className="border-2 border-primary/20">
@@ -305,8 +291,7 @@ const KeywordResearch = () => {
               </CardContent>
             </Card>
           )}
-        </div>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 };

@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle, Loader2, ArrowRight, CreditCard } from 'lucide-react';
 import { useStripeSubscription } from '@/hooks/useStripeSubscription';
 import { useAuth } from '@/contexts/AuthContext';
 import { Helmet } from 'react-helmet-async';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
@@ -47,8 +48,13 @@ export default function PaymentSuccess() {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
-        <Card className="max-w-2xl w-full">
+      <ChannablePageWrapper
+        title="Paiement Réussi"
+        description="Votre abonnement a été activé avec succès"
+        heroImage="settings"
+        badge={{ label: 'Abonnement', icon: CreditCard }}
+      >
+        <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex flex-col items-center space-y-4">
               {verifying ? (
@@ -74,7 +80,7 @@ export default function PaymentSuccess() {
           <CardContent className="space-y-6">
             {verifying ? (
               <div className="text-center text-muted-foreground">
-                <p>Nous vérifions votre paiement avec Stripe...</p>
+                <p>Nous vérifions votre paiement...</p>
                 <p className="text-sm mt-2">Cela ne prendra que quelques secondes.</p>
               </div>
             ) : (
@@ -84,7 +90,6 @@ export default function PaymentSuccess() {
                   <p className="text-sm text-muted-foreground">
                     Votre abonnement a été activé avec succès. Vous avez maintenant accès à toutes les fonctionnalités premium.
                   </p>
-                  
                   {sessionId && (
                     <p className="text-xs text-muted-foreground font-mono bg-white p-2 rounded border">
                       Session: {sessionId.substring(0, 20)}...
@@ -132,7 +137,7 @@ export default function PaymentSuccess() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }
