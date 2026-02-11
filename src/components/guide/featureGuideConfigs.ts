@@ -2165,5 +2165,275 @@ export const ADVANCED_GUIDES: Record<string, GuideConfig> = {
       { question: 'Puis-je recevoir des alertes par email ?', answer: 'Oui, activez les notifications email dans l\'onglet Préférences pour chaque catégorie.' }
     ],
     academyPath: '/academy'
+  },
+
+  // ========== NEW MODULES ==========
+
+  'pre-import-rules': {
+    featureName: 'Règles de Pré-Import',
+    description: 'Définissez des filtres et règles automatiques avant l\'import dans votre catalogue.',
+    level: 'intermediate',
+    keyFeatures: ['Filtrage par marge', 'Seuil de stock', 'Auto-catégorisation', 'Mode simulation'],
+    steps: [
+      { title: 'Accéder aux règles', description: 'Naviguez vers Import > Règles de pré-import' },
+      { title: 'Créer une règle', description: 'Définissez le type : marge, stock, catégorie ou pricing' },
+      { title: 'Configurer les conditions', description: 'Paramétrez seuils, mots-clés et formules' },
+      { title: 'Tester en simulation', description: 'Vérifiez l\'impact sans modifier de données' },
+      { title: 'Activer la règle', description: 'Basculez le switch pour appliquer aux prochains imports' }
+    ],
+    tips: [
+      { text: 'Commencez par une règle de marge minimum à 30% pour filtrer les produits non rentables', type: 'pro' },
+      { text: 'Testez toujours en mode simulation avant d\'activer une règle en production', type: 'warning' },
+      { text: 'Utilisez des priorités en multiples de 10 pour pouvoir insérer des règles entre deux existantes', type: 'info' }
+    ],
+    videos: [
+      { title: 'Pipeline d\'import automatisé', description: 'Créez un pipeline de règles en cascade', youtubeId: 'dQw4w9WgXcQ', duration: '7:00' }
+    ],
+    faqs: [
+      { question: 'Les règles s\'appliquent-elles aux produits existants ?', answer: 'Non, uniquement aux nouveaux imports. Utilisez les règles de catalogue pour les produits existants.' },
+      { question: 'Puis-je avoir des règles par fournisseur ?', answer: 'Oui, chaque règle peut être conditionnée par le fournisseur source.' },
+      { question: 'Le mode simulation consomme-t-il des crédits ?', answer: 'Non, la simulation est gratuite et illimitée.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'item-retry': {
+    featureName: 'Retry Granulaire par Élément',
+    description: 'Relancez individuellement les éléments échoués d\'un job batch.',
+    level: 'intermediate',
+    keyFeatures: ['Retry individuel', 'Retry en lot', 'Log d\'erreur détaillé', 'Export erreurs'],
+    steps: [
+      { title: 'Ouvrir le job concerné', description: 'Cliquez sur le job partiellement échoué dans la liste' },
+      { title: 'Filtrer les éléments échoués', description: 'Utilisez le filtre Statut: Échoué' },
+      { title: 'Analyser les erreurs', description: 'Consultez le message d\'erreur de chaque item' },
+      { title: 'Corriger et relancer', description: 'Cliquez Retry sur un item ou Retry All Failed' }
+    ],
+    tips: [
+      { text: 'Analysez la cause d\'erreur avant de retenter — un retry sans correction échouera à nouveau', type: 'warning' },
+      { text: 'Quand 10%+ des items échouent avec le même message, c\'est un problème systémique', type: 'pro' },
+      { text: 'Exportez la liste des erreurs pour une analyse hors-ligne', type: 'info' }
+    ],
+    videos: [
+      { title: 'Résoudre les erreurs d\'import', description: 'Diagnostic et retry efficace', youtubeId: 'dQw4w9WgXcQ', duration: '4:00' }
+    ],
+    faqs: [
+      { question: 'Combien de fois puis-je retenter un item ?', answer: 'Par défaut 3 tentatives, configurable jusqu\'à 10 dans les paramètres avancés.' },
+      { question: 'Le retry est-il facturé ?', answer: 'Non, les retry ne consomment pas de crédits supplémentaires.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'enrichment-snapshots': {
+    featureName: 'Snapshots d\'Enrichissement IA',
+    description: 'Comparez les versions avant/après de vos fiches produit enrichies par l\'IA.',
+    level: 'advanced',
+    keyFeatures: ['Diff côte-à-côte', 'Score qualité', 'Restauration 1-clic', 'Historique complet'],
+    steps: [
+      { title: 'Accéder aux Snapshots', description: 'Naviguez vers IA > Snapshots d\'enrichissement' },
+      { title: 'Sélectionner un snapshot', description: 'Cliquez sur une ligne pour voir le diff complet' },
+      { title: 'Comparer avant/après', description: 'Vue côte-à-côte avec changements surlignés' },
+      { title: 'Restaurer si nécessaire', description: 'Revenez à la version précédente en un clic' }
+    ],
+    tips: [
+      { text: 'Vérifiez au moins 10% des produits enrichis via les snapshots pour un contrôle qualité', type: 'pro' },
+      { text: 'Les icônes de couleur indiquent le type de changement : vert = ajout, orange = modification', type: 'info' },
+      { text: 'L\'IA peut parfois produire des résultats inadaptés — un contrôle régulier est essentiel', type: 'warning' }
+    ],
+    videos: [
+      { title: 'Contrôle qualité IA', description: 'Validez vos enrichissements IA efficacement', youtubeId: 'dQw4w9WgXcQ', duration: '5:00' }
+    ],
+    faqs: [
+      { question: 'Les snapshots sont-ils conservés indéfiniment ?', answer: 'Oui, l\'historique complet est conservé sans limite de temps.' },
+      { question: 'Puis-je restaurer partiellement ?', answer: 'Oui, vous pouvez restaurer un champ spécifique sans affecter les autres.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'revenue-forecasting': {
+    featureName: 'Prévisions de Revenus',
+    description: 'Projetez vos revenus futurs avec 3 scénarios : optimiste, réaliste, pessimiste.',
+    level: 'advanced',
+    keyFeatures: ['Projections 30-60-90j', '3 scénarios', 'Graphiques interactifs', 'Export PDF'],
+    steps: [
+      { title: 'Accéder au cockpit financier', description: 'Naviguez vers Analytics > Prévisions de revenus' },
+      { title: 'Choisir la période', description: 'Sélectionnez 30, 60 ou 90 jours de projection' },
+      { title: 'Analyser les scénarios', description: 'Optimiste (vert), Réaliste (bleu), Pessimiste (orange)' },
+      { title: 'Consulter les KPIs', description: 'Revenu projeté, croissance, marge par scénario' },
+      { title: 'Exporter ou partager', description: 'Générez un PDF pour vos rapports' }
+    ],
+    tips: [
+      { text: 'Basez vos décisions sur le scénario réaliste, gardez l\'optimiste comme objectif', type: 'pro' },
+      { text: 'Les projections deviennent fiables après 3 mois d\'historique de ventes', type: 'info' },
+      { text: 'Comparez chaque mois vos prévisions passées avec le réalisé pour calibrer le modèle', type: 'pro' }
+    ],
+    videos: [
+      { title: 'Cockpit financier', description: 'Anticipez vos revenus avec l\'IA', youtubeId: 'dQw4w9WgXcQ', duration: '6:00' }
+    ],
+    faqs: [
+      { question: 'Les prévisions incluent-elles les frais ?', answer: 'Les projections affichent le revenu brut. La marge est calculée séparément.' },
+      { question: 'La saisonnalité est-elle prise en compte ?', answer: 'Oui, après 12 mois d\'historique, le modèle intègre les variations saisonnières.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'image-deduplication': {
+    featureName: 'Déduplication d\'Images',
+    description: 'Détectez et fusionnez les images dupliquées grâce au hashing perceptuel.',
+    level: 'intermediate',
+    keyFeatures: ['Hashing perceptuel', 'Score similarité', 'Fusion 1-clic', 'Espace récupéré'],
+    steps: [
+      { title: 'Accéder à la déduplication', description: 'Naviguez vers Catalogue > Déduplication d\'images' },
+      { title: 'Lancer le scan', description: 'Analysez toutes les images du catalogue' },
+      { title: 'Ajuster le seuil', description: '95% = quasi-identiques, 80% = très similaires' },
+      { title: 'Vérifier les résultats', description: 'Prévisualisation côte-à-côte avec score de similarité' },
+      { title: 'Fusionner ou supprimer', description: 'Conservez la meilleure qualité et fusionnez les doublons' }
+    ],
+    tips: [
+      { text: 'Commencez avec un seuil élevé (95%) — les images à ce niveau sont presque toujours de vrais doublons', type: 'pro' },
+      { text: 'Un seuil < 75% peut détecter des faux positifs (variantes de couleur)', type: 'warning' },
+      { text: 'Scannez après chaque gros import multi-fournisseurs', type: 'info' }
+    ],
+    videos: [
+      { title: 'Nettoyage d\'images', description: 'Éliminez les doublons en 5 minutes', youtubeId: 'dQw4w9WgXcQ', duration: '4:00' }
+    ],
+    faqs: [
+      { question: 'Le scan supprime-t-il automatiquement ?', answer: 'Non, le scan détecte uniquement. Vous confirmez chaque fusion manuellement.' },
+      { question: 'Quelle est la différence avec un hash MD5 ?', answer: 'Le pHash détecte les images visuellement similaires même avec des résolutions différentes, contrairement au MD5.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'domain-registration': {
+    featureName: 'Enregistrement de Domaines',
+    description: 'Achetez et gérez vos noms de domaine directement depuis ShopOpti+.',
+    level: 'beginner',
+    keyFeatures: ['Recherche instantanée', '+20 extensions', 'SSL inclus', 'DNS automatique'],
+    steps: [
+      { title: 'Rechercher un domaine', description: 'Saisissez le nom souhaité dans la barre de recherche' },
+      { title: 'Comparer les prix', description: 'Prix de première année vs renouvellement par extension' },
+      { title: 'Acheter le domaine', description: 'Sélectionnez et procédez au paiement' },
+      { title: 'Configurer les DNS', description: 'DNS préconfigurés pour pointer vers votre boutique' },
+      { title: 'Connecter à une boutique', description: 'Assignez le domaine à votre boutique' }
+    ],
+    tips: [
+      { text: 'Les extensions .store et .shop ont un CTR 15% supérieur pour le e-commerce', type: 'pro' },
+      { text: 'Activez le renouvellement automatique pour ne pas perdre votre domaine', type: 'warning' },
+      { text: 'Protégez votre marque en enregistrant les principales extensions (.com, .fr, .store)', type: 'pro' }
+    ],
+    videos: [
+      { title: 'Votre domaine en 5 min', description: 'Achat et configuration complète', youtubeId: 'dQw4w9WgXcQ', duration: '5:00' }
+    ],
+    faqs: [
+      { question: 'Puis-je transférer un domaine existant ?', answer: 'Oui, le transfert prend 5-7 jours et nécessite le code de transfert de votre registraire.' },
+      { question: 'Le SSL est-il inclus ?', answer: 'Oui, un certificat SSL Let\'s Encrypt est provisionné et renouvelé automatiquement.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'sourcing-agent': {
+    featureName: 'Agent de Sourcing IA',
+    description: 'Automatisez vos demandes de devis fournisseurs avec l\'intelligence artificielle.',
+    level: 'advanced',
+    keyFeatures: ['Devis automatisés', 'Relances IA', 'Comparaison multi-fournisseurs', 'Export PDF'],
+    steps: [
+      { title: 'Créer une requête', description: 'Décrivez le produit avec spécifications et quantités' },
+      { title: 'Sélectionner les fournisseurs', description: 'Choisissez ou laissez l\'IA sélectionner les plus pertinents' },
+      { title: 'Envoyer les demandes', description: 'L\'IA rédige et envoie les demandes personnalisées' },
+      { title: 'Suivre les réponses', description: 'Dashboard avec relances automatiques après 48h' },
+      { title: 'Comparer et choisir', description: 'Tableau comparatif par prix, qualité et délai' }
+    ],
+    tips: [
+      { text: 'Plus la description est précise, meilleures seront les réponses fournisseurs', type: 'pro' },
+      { text: 'Contactez minimum 3 fournisseurs pour un benchmark prix fiable', type: 'info' },
+      { text: 'Les fournisseurs sont plus négociables en mars-avril et septembre', type: 'pro' }
+    ],
+    videos: [
+      { title: 'Sourcing automatisé', description: 'Trouvez les meilleurs prix fournisseurs', youtubeId: 'dQw4w9WgXcQ', duration: '6:00' }
+    ],
+    faqs: [
+      { question: 'L\'IA contacte-t-elle directement les fournisseurs ?', answer: 'L\'IA prépare les messages, vous pouvez prévisualiser et modifier avant l\'envoi.' },
+      { question: 'Combien de requêtes par mois ?', answer: 'Pro: 20/mois, Ultra Pro: illimité.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'webhook-management': {
+    featureName: 'Gestion des Webhooks',
+    description: 'Connectez ShopOpti+ à vos outils tiers avec des notifications en temps réel.',
+    level: 'advanced',
+    keyFeatures: ['12 types d\'événements', 'Signature HMAC', 'Outil de test', 'Retry automatique'],
+    steps: [
+      { title: 'Créer un webhook', description: 'Nommez et renseignez l\'URL de destination' },
+      { title: 'Sélectionner les événements', description: 'Cochez : order.*, product.*, stock.*, etc.' },
+      { title: 'Configurer la sécurité', description: 'Définissez un secret HMAC pour signer les payloads' },
+      { title: 'Tester le webhook', description: 'Envoyez un payload d\'exemple à votre endpoint' },
+      { title: 'Activer et monitorer', description: 'Consultez les logs de livraison en temps réel' }
+    ],
+    tips: [
+      { text: 'Validez toujours la signature HMAC côté serveur pour éviter les injections', type: 'warning' },
+      { text: 'Votre endpoint doit répondre 200 en < 5 secondes — traitez de manière asynchrone', type: 'pro' },
+      { text: 'Utilisez webhook.site pour tester avant de connecter votre vrai endpoint', type: 'info' }
+    ],
+    videos: [
+      { title: 'Intégration Webhooks', description: 'Connectez vos outils en temps réel', youtubeId: 'dQw4w9WgXcQ', duration: '8:00' }
+    ],
+    faqs: [
+      { question: 'Combien de webhooks puis-je créer ?', answer: 'Pro: 5, Ultra Pro: illimité. Chaque webhook peut écouter plusieurs événements.' },
+      { question: 'Les retry sont-ils automatiques ?', answer: 'Oui, 3 tentatives avec backoff exponentiel (1min, 5min, 30min).' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'data-export': {
+    featureName: 'Centre d\'Export de Données',
+    description: 'Exportez vos données en CSV, XLSX, JSON ou XML avec filtres et planification.',
+    level: 'beginner',
+    keyFeatures: ['4 formats', 'Filtres avancés', 'Export planifié', 'Compression ZIP'],
+    steps: [
+      { title: 'Choisir le type de données', description: 'Produits, Commandes, Clients ou Analytics' },
+      { title: 'Appliquer les filtres', description: 'Date, statut, catégorie ou autre critère' },
+      { title: 'Sélectionner le format', description: 'CSV, XLSX, JSON ou XML selon votre besoin' },
+      { title: 'Lancer l\'export', description: 'Cliquez Exporter — les gros volumes sont traités en arrière-plan' },
+      { title: 'Télécharger', description: 'Le fichier est disponible dans l\'historique (expire après 7 jours)' }
+    ],
+    tips: [
+      { text: 'CSV est le format le plus universel. XLSX si vous utilisez Excel pour l\'analyse.', type: 'info' },
+      { text: 'Planifiez des exports récurrents pour vos rapports hebdomadaires', type: 'pro' },
+      { text: 'Les exports 100 000+ lignes sont plus rapides en CSV qu\'en XLSX', type: 'info' }
+    ],
+    videos: [
+      { title: 'Exporter ses données', description: 'Guide complet multi-format', youtubeId: 'dQw4w9WgXcQ', duration: '4:00' }
+    ],
+    faqs: [
+      { question: 'Y a-t-il une limite de lignes ?', answer: 'Non, mais les exports 50 000+ lignes sont compressés en ZIP automatiquement.' },
+      { question: 'Puis-je choisir les colonnes ?', answer: 'Oui, sélectionnez les colonnes spécifiques pour chaque type de données.' }
+    ],
+    academyPath: '/academy'
+  },
+
+  'notification-preferences': {
+    featureName: 'Préférences de Notifications',
+    description: 'Contrôlez finement vos alertes par canal et catégorie.',
+    level: 'beginner',
+    keyFeatures: ['9 catégories', '3 canaux', 'Ne pas déranger', 'Résumé quotidien'],
+    steps: [
+      { title: 'Accéder aux préférences', description: 'Paramètres > Préférences de notifications' },
+      { title: 'Configurer par catégorie', description: 'Activez/désactivez Email, Push, In-App pour chaque catégorie' },
+      { title: 'Utiliser les raccourcis', description: '"Tout activer" / "Tout désactiver" par canal' },
+      { title: 'Sauvegarder', description: 'Les préférences prennent effet immédiatement' }
+    ],
+    tips: [
+      { text: 'Gardez Commandes, Stock et Sécurité toujours activés sur au moins un canal', type: 'warning' },
+      { text: 'Push pour l\'urgent, email pour le suivi, in-app pour l\'historique', type: 'pro' },
+      { text: 'Activez le résumé quotidien email pour un récapitulatif chaque matin', type: 'info' }
+    ],
+    videos: [
+      { title: 'Configurer ses alertes', description: 'Ne manquez plus rien d\'important', youtubeId: 'dQw4w9WgXcQ', duration: '3:00' }
+    ],
+    faqs: [
+      { question: 'Les push ne fonctionnent pas', answer: 'Vérifiez les autorisations du navigateur dans les paramètres système.' },
+      { question: 'Puis-je configurer des horaires ?', answer: 'Oui, le mode "Ne pas déranger" permet de définir des plages sans push.' }
+    ],
+    academyPath: '/academy'
   }
 }
