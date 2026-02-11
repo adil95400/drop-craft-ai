@@ -11,8 +11,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
-// Pricing pages - using PriceRulesPage as hub
+// Pricing pages
 const PriceRulesPage = lazy(() => import('@/pages/products/PriceRulesPage'));
+const LiveRepricingPage = lazy(() => import('@/pages/pricing/LiveRepricingPage'));
 
 export function PricingRoutes() {
   return (
@@ -24,10 +25,10 @@ export function PricingRoutes() {
       <Route path="rules" element={<PriceRulesPage />} />
       
       {/* Repricing Auto - Temps réel + Sync boutiques */}
-      <Route path="repricing" element={<PriceRulesPage />} />
+      <Route path="repricing" element={<LiveRepricingPage />} />
       
       {/* Veille Prix - Surveillance concurrence */}
-      <Route path="monitoring" element={<PriceRulesPage />} />
+      <Route path="monitoring" element={<LiveRepricingPage />} />
       
       {/* Optimisation IA - Recommandations */}
       <Route path="optimization" element={<PriceRulesPage />} />
