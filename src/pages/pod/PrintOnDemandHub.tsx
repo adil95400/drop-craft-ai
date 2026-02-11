@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Sparkles, Package, Image as ImageIcon, Palette, Plus, TrendingUp } from 'lucide-react';
 import { usePOD } from '@/hooks/usePOD';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PrintOnDemandHub() {
   const [productName, setProductName] = useState('');
@@ -26,23 +27,16 @@ export default function PrintOnDemandHub() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <AdvancedFeatureGuide {...ADVANCED_GUIDES.printOnDemand} />
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Palette className="h-8 w-8 text-primary" />
-            Print On Demand
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Créez des produits personnalisés avec génération IA
-          </p>
-        </div>
-
+    <ChannablePageWrapper
+      title="Print On Demand"
+      description="Créez des produits personnalisés avec génération IA"
+      heroImage="products"
+      badge={{ label: 'POD', icon: Palette }}
+      actions={
         <div className="flex gap-2">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" size="sm">
                 <Sparkles className="h-4 w-4 mr-2" />
                 Générer un design IA
               </Button>
@@ -67,13 +61,14 @@ export default function PrintOnDemandHub() {
               </div>
             </DialogContent>
           </Dialog>
-
-          <Button className="bg-gradient-primary">
+          <Button size="sm">
             <Plus className="h-4 w-4 mr-2" />
             Nouveau produit POD
           </Button>
         </div>
-      </div>
+      }
+    >
+      <AdvancedFeatureGuide {...ADVANCED_GUIDES.printOnDemand} />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4">
@@ -201,6 +196,6 @@ export default function PrintOnDemandHub() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }

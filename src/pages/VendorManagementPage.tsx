@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Store, Users, DollarSign, Package, TrendingUp, Star } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const VendorManagementPage: React.FC = () => {
   const vendors = [
@@ -43,19 +44,18 @@ const VendorManagementPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Gestion des vendeurs</h1>
-          <p className="text-muted-foreground">
-            Administrez votre marketplace multi-vendeurs
-          </p>
-        </div>
-        <Button>
+    <ChannablePageWrapper
+      title="Gestion des vendeurs"
+      description="Administrez votre marketplace multi-vendeurs"
+      heroImage="suppliers"
+      badge={{ label: 'Marketplace', icon: Store }}
+      actions={
+        <Button size="sm">
           <Users className="mr-2 h-4 w-4" />
           Inviter un vendeur
         </Button>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -319,7 +319,7 @@ const VendorManagementPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 
