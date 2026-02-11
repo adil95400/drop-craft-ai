@@ -10,6 +10,7 @@ const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage')
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 const AIContentPage = lazy(() => import('@/pages/products/AIContentPage'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
+const EnrichmentSnapshotsPage = lazy(() => import('@/pages/ai/EnrichmentSnapshotsPage'));
 
 export function AIRoutes() {
   return (
@@ -24,6 +25,8 @@ export function AIRoutes() {
       <Route path="catalog" element={<CatalogIntelligencePage />} />
       <Route path="rewrite" element={<AIContentPage />} />
       <Route path="studio" element={<ContentGenerationPage />} />
+      <Route path="snapshots" element={<EnrichmentSnapshotsPage />} />
+      <Route path="enrichment-history" element={<EnrichmentSnapshotsPage />} />
       
       {/* Legacy redirects */}
       <Route path="hub" element={<Navigate to="/ai" replace />} />
