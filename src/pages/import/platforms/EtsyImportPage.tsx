@@ -7,10 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { 
-  ArrowLeft, Link, Search, Package, Zap, CheckCircle2,
+  Link, Search, Package, Zap, CheckCircle2,
   RefreshCw, Download, Star, Heart, Palette, Gift, Sparkles, Store
 } from 'lucide-react';
 import { useUrlImport } from '@/hooks/useUrlImport';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function EtsyImportPage() {
   const navigate = useNavigate();
@@ -27,28 +28,12 @@ export default function EtsyImportPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="bg-gradient-to-r from-[#F1641E] to-[#D5451F] text-white">
-        <div className="container mx-auto px-4 py-8">
-          <Button variant="ghost" className="text-white hover:bg-white/20 mb-4" onClick={() => navigate('/import')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />Retour au Hub
-          </Button>
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white rounded-xl p-2 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-[#F1641E]" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Import Etsy</h1>
-              <p className="text-white/80">Produits artisanaux et faits main uniques</p>
-            </div>
-          </div>
-          <div className="flex gap-4 mt-6">
-            <Badge className="bg-white/20 text-white border-0"><Sparkles className="w-3 h-3 mr-1" /> Fait Main</Badge>
-            <Badge className="bg-white/20 text-white border-0"><Package className="w-3 h-3 mr-1" /> 100M+ Produits</Badge>
-            <Badge className="bg-white/20 text-white border-0"><Heart className="w-3 h-3 mr-1" /> Unique & Original</Badge>
-          </div>
-        </div>
-      </div>
+    <ChannablePageWrapper
+      title="Import Etsy"
+      description="Produits artisanaux et faits main uniques"
+      heroImage="import"
+      badge={{ label: 'Etsy', icon: Sparkles }}
+    >
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="url" className="space-y-6">
@@ -156,7 +141,7 @@ export default function EtsyImportPage() {
             </Card>
           ))}
         </div>
-      </div>
-    </div>
+        </div>
+    </ChannablePageWrapper>
   );
 }

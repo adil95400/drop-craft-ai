@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { XCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { XCircle, ArrowLeft, RefreshCw, CreditCard } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PaymentCancelled() {
   const navigate = useNavigate();
@@ -14,8 +15,13 @@ export default function PaymentCancelled() {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
-        <Card className="max-w-2xl w-full">
+      <ChannablePageWrapper
+        title="Paiement Annulé"
+        description="Aucun montant n'a été débité de votre compte"
+        heroImage="settings"
+        badge={{ label: 'Abonnement', icon: CreditCard }}
+      >
+        <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex flex-col items-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
@@ -97,7 +103,7 @@ export default function PaymentCancelled() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }
