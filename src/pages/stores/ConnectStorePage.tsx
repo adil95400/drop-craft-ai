@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast'
 import { useStoreConnection } from '@/hooks/useStoreConnection'
 import { PlatformGridSelector } from './components/PlatformGridSelector'
-import { BackButton } from '@/components/navigation/BackButton'
 import { StoreConnectionDialog } from '@/components/stores/connection/StoreConnectionDialog'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 const ConnectStorePage = () => {
   const navigate = useNavigate()
@@ -61,21 +61,12 @@ const ConnectStorePage = () => {
   }
 
   return (
-    <div className="container py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <BackButton />
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Store className="h-8 w-8" />
-              Connecter une boutique
-            </h1>
-          </div>
-          <p className="text-muted-foreground">
-            Sélectionnez une plateforme pour connecter votre boutique
-          </p>
-        </div>
-      </div>
+    <ChannablePageWrapper
+      title="Connecter une boutique"
+      description="Sélectionnez une plateforme pour connecter votre boutique"
+      heroImage="integrations"
+      badge={{ label: 'Connexion', icon: Store }}
+    >
 
       <Card>
         <CardHeader>
@@ -99,7 +90,7 @@ const ConnectStorePage = () => {
           onConnect={handleConnect}
         />
       )}
-    </div>
+    </ChannablePageWrapper>
   )
 }
 

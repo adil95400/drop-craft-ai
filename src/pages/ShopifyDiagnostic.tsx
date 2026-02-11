@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle2, XCircle, AlertCircle, RefreshCw, Store, Link2, RotateCcw, Settings } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ShopifyCredentialsDialog } from '@/components/stores/ShopifyCredentialsDialog';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ShopifyDiagnostic() {
   const [isTesting, setIsTesting] = useState(false);
@@ -164,7 +165,7 @@ export default function ShopifyDiagnostic() {
 
   if (!integration) {
     return (
-      <div className="container mx-auto p-6">
+      <ChannablePageWrapper title="Diagnostic Shopify" heroImage="integrations" badge={{ label: 'Shopify', icon: Store }}>
         <Card className="border-dashed">
           <CardHeader className="text-center">
             <Store className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -180,7 +181,7 @@ export default function ShopifyDiagnostic() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </ChannablePageWrapper>
     );
   }
 
@@ -197,23 +198,15 @@ export default function ShopifyDiagnostic() {
     false;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Diagnostic Shopify</h1>
-          <p className="text-muted-foreground">État de votre intégration Shopify</p>
-        </div>
+    <ChannablePageWrapper
+      title="Diagnostic Shopify"
+      description="État de votre intégration Shopify"
+      heroImage="integrations"
+      badge={{ label: 'Shopify', icon: Store }}
+      actions={
         <div className="flex gap-2">
-          <Button 
-            variant="outline"
-            onClick={() => testConnectionMutation.mutate()}
-            disabled={testConnectionMutation.isPending}
-          >
-            {testConnectionMutation.isPending ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-            )}
+          <Button variant="outline" onClick={() => testConnectionMutation.mutate()} disabled={testConnectionMutation.isPending}>
+            {testConnectionMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
             Tester
           </Button>
           <Button onClick={syncProducts} disabled={isTesting}>
@@ -221,7 +214,8 @@ export default function ShopifyDiagnostic() {
             Synchroniser
           </Button>
         </div>
-      </div>
+      }
+    >
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -336,6 +330,6 @@ export default function ShopifyDiagnostic() {
           }}
         />
       )}
-    </div>
+    </ChannablePageWrapper>
   );
 }

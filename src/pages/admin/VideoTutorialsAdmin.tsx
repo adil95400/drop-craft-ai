@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { VideoTutorialForm } from '@/components/admin/VideoTutorialForm'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -164,21 +165,18 @@ export default function VideoTutorialsAdmin() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold">Gestion des Vidéos Tutoriels</h1>
-            <p className="text-muted-foreground">
-              Ajoutez et gérez les vidéos tutoriels pour les guides d'intégration
-            </p>
-          </div>
-          <Button onClick={() => { setEditingVideo(null); setShowForm(true) }}>
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter une vidéo
-          </Button>
-        </div>
-      </div>
+    <ChannablePageWrapper
+      title="Gestion des Vidéos Tutoriels"
+      description="Ajoutez et gérez les vidéos tutoriels pour les guides d'intégration"
+      heroImage="support"
+      badge={{ label: 'Admin', icon: Video }}
+      actions={
+        <Button onClick={() => { setEditingVideo(null); setShowForm(true) }}>
+          <Plus className="h-4 w-4 mr-2" />
+          Ajouter une vidéo
+        </Button>
+      }
+    >
 
       <Tabs value={selectedPlatform} onValueChange={setSelectedPlatform}>
         <TabsList className="grid grid-cols-3 md:grid-cols-6 mb-6">
@@ -335,6 +333,6 @@ export default function VideoTutorialsAdmin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </ChannablePageWrapper>
   )
 }
