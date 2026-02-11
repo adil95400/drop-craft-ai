@@ -7,6 +7,7 @@ import { lazy } from 'react';
 
 // Research Hub - Page principale
 const ResearchHub = lazy(() => import('@/pages/research/ResearchHub'));
+const WinningProductsPage = lazy(() => import('@/pages/research/WinningProductsPage'));
 
 // Research pages
 const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage'));
@@ -21,7 +22,7 @@ export function ResearchRoutes() {
       <Route index element={<ResearchHub />} />
       
       {/* Research Modules */}
-      <Route path="winning" element={<ResearchHub />} />
+      <Route path="winning" element={<WinningProductsPage />} />
       <Route path="competitors" element={<CompetitorAnalysisPage />} />
       <Route path="ads" element={<ResearchHub />} />
       <Route path="trends" element={<ProductResearchPage />} />

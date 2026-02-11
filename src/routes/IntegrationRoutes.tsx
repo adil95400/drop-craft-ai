@@ -36,6 +36,7 @@ const ContentManagementPage = lazy(() => import('@/pages/ContentManagementPage')
 
 // Multi-Channel
 const MultiChannelPage = lazy(() => import('@/pages/integrations/MultiChannelPage'));
+const MultiStoreSyncPage = lazy(() => import('@/pages/integrations/MultiStoreSyncPage'));
 
 export function IntegrationRoutes() {
   return (
@@ -80,6 +81,9 @@ export function IntegrationRoutes() {
       
       {/* Multi-Channel */}
       <Route path="multi-channel" element={<MultiChannelPage />} />
+      
+      {/* Multi-Store Sync */}
+      <Route path="multi-store-sync" element={<MultiStoreSyncPage />} />
     </Routes>
   );
 }
