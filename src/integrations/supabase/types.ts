@@ -15390,6 +15390,8 @@ export type Database = {
           platform: string
           processed: boolean | null
           processed_at: string | null
+          status: string | null
+          stripe_event_id: string | null
           user_id: string | null
           webhook_data: Json | null
         }
@@ -15403,6 +15405,8 @@ export type Database = {
           platform: string
           processed?: boolean | null
           processed_at?: string | null
+          status?: string | null
+          stripe_event_id?: string | null
           user_id?: string | null
           webhook_data?: Json | null
         }
@@ -15416,6 +15420,8 @@ export type Database = {
           platform?: string
           processed?: boolean | null
           processed_at?: string | null
+          status?: string | null
+          stripe_event_id?: string | null
           user_id?: string | null
           webhook_data?: Json | null
         }
