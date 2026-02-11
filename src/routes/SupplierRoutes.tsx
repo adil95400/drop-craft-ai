@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy } from 'react'
 
 const SupplierMarketplace = lazy(() => import('@/pages/SupplierMarketplace'))
+const SourcingAgentPage = lazy(() => import('@/pages/suppliers/SourcingAgentPage'))
 
 // Lazy loading des pages - Architecture simplifiée et optimisée
 const ChannableStyleSuppliersPage = lazy(() => import('@/pages/suppliers/ChannableStyleSuppliersPage'))
@@ -93,6 +94,9 @@ export default function SupplierRoutes() {
       <Route path="b2b" element={<AdvancedSupplierEnginePage />} />
       <Route path="b2b/connect" element={<AdvancedSupplierEnginePage />} />
       <Route path="b2b/compare" element={<AdvancedSupplierEnginePage />} />
+      
+      {/* Sourcing Agent IA */}
+      <Route path="sourcing-agent" element={<SourcingAgentPage />} />
     </Routes>
   )
 }
