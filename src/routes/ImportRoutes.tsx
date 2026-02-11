@@ -48,6 +48,10 @@ const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMar
 // Historique simplifié
 const SimpleHistoryPage = lazy(() => import('@/pages/import/history/SimpleHistoryPage'))
 
+// Rules & Retry
+const PreImportRulesPage = lazy(() => import('@/pages/import/PreImportRulesPage'))
+const ItemRetryPage = lazy(() => import('@/pages/import/ItemRetryPage'))
+
 export function ImportRoutes() {
   return (
     <Routes>
@@ -101,6 +105,12 @@ export function ImportRoutes() {
       <Route path="manage/products" element={<ImportedProductsList />} />
       <Route path="manage/publishing" element={<ImportPublishingPage />} />
       <Route path="manage/marketplace" element={<ImportMarketplacePage />} />
+      
+      {/* Rules & Retry */}
+      <Route path="rules" element={<PreImportRulesPage />} />
+      <Route path="pre-import-rules" element={<PreImportRulesPage />} />
+      <Route path="item-retry" element={<ItemRetryPage />} />
+      <Route path="item-retry/:jobId" element={<ItemRetryPage />} />
       
       {/* Legacy redirects */}
       <Route path="csv" element={<Navigate to="/import/quick" replace />} />

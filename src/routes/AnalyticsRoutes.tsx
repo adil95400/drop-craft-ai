@@ -24,6 +24,9 @@ const AdvancedAnalyticsDashboardPage = lazy(() => import('@/pages/analytics/Adva
 // Real Data Analytics
 const RealDataAnalyticsPage = lazy(() => import('@/pages/analytics/RealDataAnalyticsPage'));
 
+// Revenue Forecasting
+const RevenueForecastingPage = lazy(() => import('@/pages/analytics/RevenueForecastingPage'));
+
 export function AnalyticsRoutes() {
   return (
     <Routes>
@@ -58,6 +61,11 @@ export function AnalyticsRoutes() {
       <Route path="customer-segmentation" element={<CustomerSegmentationPage />} />
       <Route path="product-intelligence" element={<PredictiveAnalyticsPage />} />
       <Route path="advanced-dashboard" element={<AdvancedAnalyticsDashboardPage />} />
+      
+      {/* Revenue Forecasting */}
+      <Route path="forecasting" element={<RevenueForecastingPage />} />
+      <Route path="revenue-forecast" element={<RevenueForecastingPage />} />
+      <Route path="projections" element={<RevenueForecastingPage />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/analytics/advanced" replace />} />

@@ -54,7 +54,7 @@ export class PWAService {
       const registration = await navigator.serviceWorker.ready;
       
       // Use a simple dummy key for now (would need real VAPID keys in production)
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true
       });
 

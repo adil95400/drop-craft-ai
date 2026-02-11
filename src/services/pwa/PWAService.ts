@@ -64,7 +64,7 @@ class PWAService {
       }
 
       // S'abonner aux notifications push
-      const subscription = await this.registration.pushManager.subscribe({
+      const subscription = await (this.registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: this.urlBase64ToUint8Array(
           // Clé publique VAPID (à configurer avec Firebase)

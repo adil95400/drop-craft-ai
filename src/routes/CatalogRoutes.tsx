@@ -13,6 +13,7 @@ const MediaPage = lazy(() => import('@/pages/catalog/MediaPage'));
 const AttributesPage = lazy(() => import('@/pages/catalog/AttributesPage'));
 const CategoriesBrandsPage = lazy(() => import('@/pages/catalog/CategoriesBrandsPage'));
 const CatalogHealthPage = lazy(() => import('@/pages/catalog/CatalogHealthPage'));
+const ImageDeduplicationPage = lazy(() => import('@/pages/catalog/ImageDeduplicationPage'));
 
 // Composant de chargement
 const CatalogLoadingSkeleton = () => (
@@ -41,6 +42,8 @@ export function CatalogRoutes() {
         <Route path="attributes" element={<AttributesPage />} />
         <Route path="categories-brands" element={<CategoriesBrandsPage />} />
         <Route path="health" element={<CatalogHealthPage />} />
+        <Route path="image-dedup" element={<ImageDeduplicationPage />} />
+        <Route path="image-deduplication" element={<ImageDeduplicationPage />} />
         
         {/* Redirections legacy */}
         <Route path="*" element={<Navigate to="/catalog/to-process" replace />} />
