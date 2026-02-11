@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Sparkles, Store, Layout, Palette, FileText, TrendingUp, Settings } from 'lucide-react';
 import { useStoreBuilder } from '@/hooks/useStoreBuilder';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function AIStoreBuilderHub() {
   const [storeName, setStoreName] = useState('');
@@ -25,69 +26,66 @@ export default function AIStoreBuilderHub() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Sparkles className="h-8 w-8 text-primary" />
-            AI Store Builder
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Générez une boutique complète en quelques clics avec IA
-          </p>
-        </div>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-primary">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Créer une boutique
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Nouvelle boutique IA</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Nom de la boutique</Label>
-                <Input
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                  placeholder="Ma Boutique Premium"
-                />
-              </div>
-
-              <div>
-                <Label className="mb-3 block">Choisir un thème</Label>
-                <div className="grid grid-cols-3 gap-4">
-                  {themes.map((theme: any) => (
-                    <Card
-                      key={theme.id}
-                      className={`p-4 cursor-pointer hover:border-primary transition-all ${
-                        selectedTheme === theme.id ? 'border-primary bg-primary/5' : ''
-                      }`}
-                      onClick={() => setSelectedTheme(theme.id)}
-                    >
-                      <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mb-3" />
-                      <p className="font-semibold">{theme.name}</p>
-                      <Badge variant="outline" className="mt-2">{theme.category}</Badge>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              <Button
-                onClick={handleGenerate}
-                disabled={!storeName || !selectedTheme || generateStore.isPending}
-                className="w-full"
-              >
-                {generateStore.isPending ? 'Génération...' : 'Générer ma boutique'}
-              </Button>
+    <ChannablePageWrapper
+      title="AI Store Builder"
+      description="Générez une boutique complète en quelques clics avec IA"
+      heroImage="ai"
+      badge={{ label: 'IA', icon: Sparkles }}
+      actions={
+        <Button size="sm" onClick={() => {
+          const dialog = document.getElementById('store-dialog-trigger') as HTMLButtonElement;
+          dialog?.click();
+        }}>
+          <Sparkles className="h-4 w-4 mr-2" />
+          Créer une boutique
+        </Button>
+      }
+    >
+      <Dialog>
+        <DialogTrigger asChild>
+          <button id="store-dialog-trigger" className="hidden" />
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Nouvelle boutique IA</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nom de la boutique</Label>
+              <Input
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                placeholder="Ma Boutique Premium"
+              />
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <div>
+              <Label className="mb-3 block">Choisir un thème</Label>
+              <div className="grid grid-cols-3 gap-4">
+                {themes.map((theme: any) => (
+                  <Card
+                    key={theme.id}
+                    className={`p-4 cursor-pointer hover:border-primary transition-all ${
+                      selectedTheme === theme.id ? 'border-primary bg-primary/5' : ''
+                    }`}
+                    onClick={() => setSelectedTheme(theme.id)}
+                  >
+                    <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mb-3" />
+                    <p className="font-semibold">{theme.name}</p>
+                    <Badge variant="outline" className="mt-2">{theme.category}</Badge>
+                  </Card>
+                ))}
+              </div>
+            </div>
+            <Button
+              onClick={handleGenerate}
+              disabled={!storeName || !selectedTheme || generateStore.isPending}
+              className="w-full"
+            >
+              {generateStore.isPending ? 'Génération...' : 'Générer ma boutique'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Tabs defaultValue="stores">
         <TabsList>
@@ -207,6 +205,6 @@ export default function AIStoreBuilderHub() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 }

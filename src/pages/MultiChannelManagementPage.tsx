@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Store, ShoppingBag, TrendingUp, RefreshCw, Globe, BarChart3 } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const MultiChannelManagementPage: React.FC = () => {
   const channels = [
@@ -46,19 +47,18 @@ const MultiChannelManagementPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Gestion Multi-Canal</h1>
-          <p className="text-muted-foreground">
-            Gérez tous vos canaux de vente depuis un seul endroit
-          </p>
-        </div>
-        <Button>
+    <ChannablePageWrapper
+      title="Gestion Multi-Canal"
+      description="Gérez tous vos canaux de vente depuis un seul endroit"
+      heroImage="integrations"
+      badge={{ label: 'Multi-Canal', icon: Globe }}
+      actions={
+        <Button size="sm">
           <Store className="mr-2 h-4 w-4" />
           Connecter un canal
         </Button>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -339,7 +339,7 @@ const MultiChannelManagementPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 

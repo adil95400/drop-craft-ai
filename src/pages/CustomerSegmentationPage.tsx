@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Target, TrendingUp, DollarSign, Plus } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const CustomerSegmentationPage: React.FC = () => {
   const segments = [
@@ -45,19 +46,18 @@ const CustomerSegmentationPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Segmentation clients</h1>
-          <p className="text-muted-foreground">
-            Analysez et ciblez vos groupes de clients
-          </p>
-        </div>
-        <Button>
+    <ChannablePageWrapper
+      title="Segmentation clients"
+      description="Analysez et ciblez vos groupes de clients"
+      heroImage="analytics"
+      badge={{ label: 'CRM', icon: Target }}
+      actions={
+        <Button size="sm">
           <Plus className="mr-2 h-4 w-4" />
           Créer un segment
         </Button>
-      </div>
+      }
+    >
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -193,7 +193,7 @@ const CustomerSegmentationPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 };
 

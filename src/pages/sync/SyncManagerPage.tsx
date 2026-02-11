@@ -12,6 +12,7 @@ import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 interface SyncConnection {
   id: string;
@@ -152,23 +153,18 @@ export default function SyncManagerPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Gestionnaire de Synchronisation</h1>
-          <p className="text-muted-foreground">
-            Gérez la synchronisation de vos produits entre plateformes
-          </p>
-        </div>
-        <Button className="ml-auto" onClick={loadConnections}>
+    <ChannablePageWrapper
+      title="Gestionnaire de Synchronisation"
+      description="Gérez la synchronisation de vos produits entre plateformes"
+      heroImage="integrations"
+      badge={{ label: 'Sync', icon: RefreshCw }}
+      actions={
+        <Button size="sm" onClick={loadConnections}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Actualiser
         </Button>
-      </div>
+      }
+    >
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -366,6 +362,6 @@ export default function SyncManagerPage() {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }

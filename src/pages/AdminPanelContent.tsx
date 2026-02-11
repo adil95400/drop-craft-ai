@@ -15,6 +15,7 @@ import { QuickActionsPanel } from '@/components/admin/QuickActionsPanel'
 import { SystemAlertsPanel } from '@/components/admin/SystemAlertsPanel'
 import { MaintenanceDashboard } from '@/components/admin/MaintenanceDashboard'
 import { AdminNotificationsCenter } from '@/components/admin/AdminNotificationsCenter'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -165,18 +166,17 @@ const AdminPanelContent = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
-            Administration
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Gérez votre plateforme et surveillez les activités
-          </p>
-        </div>
-      </div>
+    <ChannablePageWrapper
+      title="Administration"
+      description="Gérez votre plateforme et surveillez les activités"
+      heroImage="settings"
+      badge={{ label: 'Admin', icon: Shield }}
+      actions={
+        <Button variant="outline" size="sm" onClick={() => loadRealDashboardData()}>
+          <RefreshCw className="h-4 w-4 mr-2" />Actualiser
+        </Button>
+      }
+    >
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-9">
@@ -428,7 +428,7 @@ const AdminPanelContent = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   )
 }
 
