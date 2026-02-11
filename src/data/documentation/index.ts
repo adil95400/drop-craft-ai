@@ -18,6 +18,16 @@ import { marketingDocumentation } from './modules/marketing';
 import { integrationsDocumentation } from './modules/integrations';
 import { settingsDocumentation } from './modules/settings';
 import { enterpriseDocumentation } from './modules/enterprise';
+import { preImportRulesDocumentation } from './modules/preImportRules';
+import { itemRetryDocumentation } from './modules/itemRetry';
+import { enrichmentSnapshotsDocumentation } from './modules/enrichmentSnapshots';
+import { revenueForecastingDocumentation } from './modules/revenueForecasting';
+import { imageDeduplicationDocumentation } from './modules/imageDeduplication';
+import { domainRegistrationDocumentation } from './modules/domainRegistration';
+import { sourcingAgentDocumentation } from './modules/sourcingAgent';
+import { webhookManagementDocumentation } from './modules/webhookManagement';
+import { dataExportDocumentation } from './modules/dataExport';
+import { notificationPreferencesDocumentation } from './modules/notificationPreferences';
 
 import type { ModuleDocumentation, DocumentationSearchResult, PlanType, UserLevel, DOCUMENTATION_CATEGORIES } from './types';
 
@@ -38,6 +48,16 @@ export const ALL_DOCUMENTATION: ModuleDocumentation[] = [
   integrationsDocumentation,
   settingsDocumentation,
   enterpriseDocumentation,
+  preImportRulesDocumentation,
+  itemRetryDocumentation,
+  enrichmentSnapshotsDocumentation,
+  revenueForecastingDocumentation,
+  imageDeduplicationDocumentation,
+  domainRegistrationDocumentation,
+  sourcingAgentDocumentation,
+  webhookManagementDocumentation,
+  dataExportDocumentation,
+  notificationPreferencesDocumentation,
 ];
 
 // Export individual modules
@@ -57,6 +77,16 @@ export {
   integrationsDocumentation,
   settingsDocumentation,
   enterpriseDocumentation,
+  preImportRulesDocumentation,
+  itemRetryDocumentation,
+  enrichmentSnapshotsDocumentation,
+  revenueForecastingDocumentation,
+  imageDeduplicationDocumentation,
+  domainRegistrationDocumentation,
+  sourcingAgentDocumentation,
+  webhookManagementDocumentation,
+  dataExportDocumentation,
+  notificationPreferencesDocumentation,
 };
 
 // Re-export types
