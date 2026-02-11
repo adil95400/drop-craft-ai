@@ -18,12 +18,12 @@ export default function TikTokShopPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return null
 
-      const { data } = await (supabase
-        .from('integrations') as any)
+      const { data } = await (supabase as any)
+        .from('marketplace_integrations')
         .select('*')
         .eq('user_id', user.id)
         .eq('platform', 'tiktok_shop')
-        .eq('connection_status', 'connected')
+        .eq('status', 'connected')
         .maybeSingle()
 
       return data
