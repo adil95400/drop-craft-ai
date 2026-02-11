@@ -4,6 +4,7 @@
  */
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -45,6 +46,7 @@ export default function SupplierSettingsPage() {
     endpoint: ''
   })
   const [testingId, setTestingId] = useState<string | null>(null)
+  const [deleteCredentialId, setDeleteCredentialId] = useState<string | null>(null)
 
   // Fetch credentials
   const { data: credentials = [], isLoading } = useQuery({
@@ -312,11 +314,7 @@ export default function SupplierSettingsPage() {
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            onClick={() => {
-                              if (confirm('Supprimer cette clé API ?')) {
-                                deleteCredentialMutation.mutate(cred.id)
-                              }
-                            }}
+                            onClick={() => setDeleteCredentialId(cred.id)}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -539,6 +537,16 @@ export default function SupplierSettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteCredentialId}
+        onOpenChange={(open) => { if (!open) setDeleteCredentialId(null) }}
+        title="Supprimer cette clé API ?"
+        description="Cette action est irréversible."
+        confirmText="Supprimer"
+        variant="destructive"
+        onConfirm={() => { if (deleteCredentialId) { deleteCredentialMutation.mutate(deleteCredentialId); setDeleteCredentialId(null) } }}
+      />
     </ChannablePageLayout>
   )
 }

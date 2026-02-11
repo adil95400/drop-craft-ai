@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
@@ -31,6 +32,7 @@ export default function ChannelDetailPage() {
   const queryClient = useQueryClient()
   const [retryCount, setRetryCount] = useState([3])
   const [activeTab, setActiveTab] = useState('overview')
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
   
   // Data sync settings state
   const [syncSettings, setSyncSettings] = useState({
@@ -445,11 +447,7 @@ export default function ChannelDetailPage() {
                   <Button 
                     variant="destructive"
                     className="gap-2 shrink-0 rounded-xl"
-                    onClick={() => {
-                      if (confirm('Êtes-vous sûr de vouloir déconnecter ce canal ?')) {
-                        disconnectMutation.mutate()
-                      }
-                    }}
+                    onClick={() => setShowDisconnectConfirm(true)}
                   >
                     <Unplug className="h-4 w-4" />
                     Déconnecter
@@ -460,6 +458,15 @@ export default function ChannelDetailPage() {
           </TabsContent>
         </Tabs>
       </ChannablePageLayout>
+      <ConfirmDialog
+        open={showDisconnectConfirm}
+        onOpenChange={setShowDisconnectConfirm}
+        title="Déconnecter ce canal ?"
+        description="Cette action est irréversible. Toutes les données seront perdues."
+        confirmText="Déconnecter"
+        variant="destructive"
+        onConfirm={() => { disconnectMutation.mutate(); setShowDisconnectConfirm(false) }}
+      />
     </>
   )
 }

@@ -1,8 +1,10 @@
 /**
  * StoresPage - Boutiques connectées
  */
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { StatCard } from '@/components/shared'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useIntegrationsUnified } from '@/hooks/unified'
@@ -17,9 +19,14 @@ export default function StoresPage() {
   const { syncStores, deleteStores, isSyncing, isDeleting } = useApiStores()
 
   const handleSync = (integrationId: string) => { syncStores.mutate([integrationId]) }
+  const [disconnectId, setDisconnectId] = useState<string | null>(null)
   const handleDisconnect = (integrationId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir déconnecter cette boutique ?')) {
-      deleteStores.mutate([integrationId])
+    setDisconnectId(integrationId)
+  }
+  const confirmDisconnect = () => {
+    if (disconnectId) {
+      deleteStores.mutate([disconnectId])
+      setDisconnectId(null)
     }
   }
 
@@ -125,6 +132,15 @@ export default function StoresPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={!!disconnectId}
+        onOpenChange={(open) => { if (!open) setDisconnectId(null) }}
+        title="Déconnecter cette boutique ?"
+        description="Êtes-vous sûr de vouloir déconnecter cette boutique ?"
+        confirmText="Déconnecter"
+        variant="destructive"
+        onConfirm={confirmDisconnect}
+      />
     </ChannablePageWrapper>
   )
 }

@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
@@ -510,6 +511,7 @@ export default function StoresAndChannelsHub() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [filters, setFilters] = useState<FilterConfig>({})
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
 
   // Hooks with real data
   const { connections, stats, isLoading, syncMutation, deleteMutation, toggleAutoSyncMutation, exportChannels } = useChannelConnections()
@@ -563,7 +565,7 @@ export default function StoresAndChannelsHub() {
     { id: 'enable-autosync', label: 'Auto-Sync On', icon: Zap, onClick: () => toggleAutoSyncMutation.mutate({ connectionIds: Array.from(selectedIds), enabled: true }) },
     { id: 'disable-autosync', label: 'Auto-Sync Off', icon: EyeOff, variant: 'outline' as const, onClick: () => toggleAutoSyncMutation.mutate({ connectionIds: Array.from(selectedIds), enabled: false }) },
     { id: 'export', label: 'Exporter', icon: Download, onClick: () => { exportChannels(Array.from(selectedIds)); deselectAll() } },
-    { id: 'delete', label: 'Supprimer', icon: Trash2, variant: 'destructive' as const, onClick: () => { if (confirm(`Supprimer ${selectedIds.size} canal(aux) ?`)) { deleteMutation.mutate(Array.from(selectedIds)); deselectAll() } } }
+    { id: 'delete', label: 'Supprimer', icon: Trash2, variant: 'destructive' as const, onClick: () => setShowBulkDeleteConfirm(true) }
   ], [selectedIds, syncMutation, toggleAutoSyncMutation, deleteMutation, exportChannels, deselectAll])
 
   // Available platforms
@@ -908,6 +910,15 @@ export default function StoresAndChannelsHub() {
           </div>
         </div>
       </ChannablePageWrapper>
+      <ConfirmDialog
+        open={showBulkDeleteConfirm}
+        onOpenChange={setShowBulkDeleteConfirm}
+        title={`Supprimer ${selectedIds.size} canal(aux) ?`}
+        description="Cette action est irréversible."
+        confirmText="Supprimer"
+        variant="destructive"
+        onConfirm={() => { deleteMutation.mutate(Array.from(selectedIds)); deselectAll(); setShowBulkDeleteConfirm(false) }}
+      />
     </>
   )
 }

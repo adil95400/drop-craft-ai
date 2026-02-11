@@ -4,6 +4,7 @@
  */
 import { useState, useMemo } from 'react';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { 
   Star, Upload, FileSpreadsheet, Link as LinkIcon, Download, Filter,
   Search, Plus, Trash2, CheckCircle, XCircle, Loader2, RefreshCw,
@@ -134,8 +135,14 @@ export default function ReviewsImportPage() {
     }
   };
 
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
   const handleBulkDelete = async () => {
-    if (!confirm(`Supprimer ${filteredReviews.length} avis ?`)) return;
+    setShowBulkDeleteConfirm(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    setShowBulkDeleteConfirm(false);
     
     try {
       const ids = filteredReviews.map(r => r.id);
@@ -455,6 +462,16 @@ export default function ReviewsImportPage() {
           refetch();
           setSelectedProduct(null);
         }}
+      />
+
+      <ConfirmDialog
+        open={showBulkDeleteConfirm}
+        onOpenChange={setShowBulkDeleteConfirm}
+        title={`Supprimer ${filteredReviews.length} avis ?`}
+        description="Cette action est irréversible."
+        confirmText="Supprimer tout"
+        variant="destructive"
+        onConfirm={confirmBulkDelete}
       />
     </ChannablePageWrapper>
   );

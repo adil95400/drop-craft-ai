@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -160,14 +161,20 @@ export default function ExtensionImportHistoryPage() {
     return emojis[platform?.toLowerCase()] || '📦';
   };
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    if (!confirm('Supprimer ce produit importé ?')) return;
+    setDeleteConfirmId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
 
     try {
       const { error } = await supabase
         .from('catalog_products')
         .delete()
-        .eq('id', id);
+        .eq('id', deleteConfirmId);
 
       if (error) throw error;
       toast.success('Produit supprimé');
@@ -444,6 +451,16 @@ export default function ExtensionImportHistoryPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => { if (!open) setDeleteConfirmId(null) }}
+        title="Supprimer ce produit importé ?"
+        description="Cette action est irréversible."
+        confirmText="Supprimer"
+        variant="destructive"
+        onConfirm={confirmDelete}
+      />
     </ChannablePageWrapper>
   );
 }

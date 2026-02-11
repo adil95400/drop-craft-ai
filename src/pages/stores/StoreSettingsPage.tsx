@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -68,11 +69,16 @@ export function StoreSettingsPage() {
     }
   }
 
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
+
   const handleDisconnectStore = async () => {
-    if (confirm('Êtes-vous sûr de vouloir déconnecter cette boutique ? Cette action est irréversible.')) {
-      await disconnectStore(store.id)
-      navigate('/stores-channels')
-    }
+    setShowDisconnectConfirm(true)
+  }
+
+  const confirmDisconnect = async () => {
+    await disconnectStore(store.id)
+    navigate('/stores-channels')
+    setShowDisconnectConfirm(false)
   }
 
   const webhookUrl = `${window.location.origin}/api/webhooks/stores/${store.id}`
@@ -478,6 +484,15 @@ export function StoreSettingsPage() {
           </Card>
         </div>
       </div>
+      <ConfirmDialog
+        open={showDisconnectConfirm}
+        onOpenChange={setShowDisconnectConfirm}
+        title="Déconnecter cette boutique ?"
+        description="Cette action est irréversible. Toutes les données seront perdues."
+        confirmText="Déconnecter"
+        variant="destructive"
+        onConfirm={confirmDisconnect}
+      />
     </ChannablePageWrapper>
   )
 }

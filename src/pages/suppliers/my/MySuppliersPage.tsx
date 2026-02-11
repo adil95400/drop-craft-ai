@@ -4,6 +4,7 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -38,10 +39,16 @@ export default function MySuppliersPage() {
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const [disconnectTarget, setDisconnectTarget] = useState<{id: string, name: string} | null>(null)
+
   const handleDisconnect = async (supplierId: string, supplierName: string) => {
-    if (confirm(`Voulez-vous vraiment déconnecter ${supplierName} ?`)) {
-      await disconnectSupplier(supplierId)
-    }
+    setDisconnectTarget({ id: supplierId, name: supplierName })
+  }
+
+  const confirmDisconnect = async () => {
+    if (!disconnectTarget) return
+    await disconnectSupplier(disconnectTarget.id)
+    setDisconnectTarget(null)
   }
 
   const getStatusBadge = (status: string) => {
@@ -221,6 +228,15 @@ export default function MySuppliersPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={!!disconnectTarget}
+        onOpenChange={(open) => { if (!open) setDisconnectTarget(null) }}
+        title={`Déconnecter ${disconnectTarget?.name} ?`}
+        description="Le fournisseur sera déconnecté de votre compte."
+        confirmText="Déconnecter"
+        variant="destructive"
+        onConfirm={confirmDisconnect}
+      />
     </ChannablePageWrapper>
   )
 }

@@ -3,6 +3,7 @@
  * All mutations via FastAPI (useApiProducts, useApiAI)
  */
 import { useState, useMemo } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductTranslations, ProductReviews } from '@/components/products'
 import { ProductImageManager } from '@/components/products/ProductImageManager'
@@ -95,15 +96,22 @@ export default function ProductDetailsPage() {
     optimizeSeo.mutate({ productIds: [id] })
   }
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
   const handleDelete = () => {
     if (!id) return
-    if (!confirm('Supprimer ce produit définitivement ?')) return
+    setShowDeleteConfirm(true)
+  }
+
+  const confirmDelete = () => {
+    if (!id) return
     deleteProduct.mutate(id, {
       onSuccess: () => {
         toast.success('Produit supprimé')
         navigate('/products')
       },
     })
+    setShowDeleteConfirm(false)
   }
 
   if (isLoading) {
@@ -514,6 +522,15 @@ export default function ProductDetailsPage() {
           </motion.div>
         </div>
       </div>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Supprimer ce produit ?"
+        description="Cette action est irréversible. Le produit sera définitivement supprimé."
+        confirmText="Supprimer"
+        variant="destructive"
+        onConfirm={confirmDelete}
+      />
     </MainLayout>
   )
 }

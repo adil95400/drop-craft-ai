@@ -111,8 +111,8 @@ export default function MultiStoreSyncPage() {
             <RefreshCw className={`mr-2 h-4 w-4 ${syncingAll ? 'animate-spin' : ''}`} />
             {syncingAll ? 'Sync en cours...' : 'Tout synchroniser'}
           </Button>
-          <Button variant="outline" onClick={() => toast({ title: 'Connecter une boutique', description: 'Assistant de connexion bientôt disponible.' })}>
-            <Plus className="mr-2 h-4 w-4" /> Ajouter une boutique
+          <Button variant="outline" disabled>
+            <Plus className="mr-2 h-4 w-4" /> Ajouter une boutique (bientôt)
           </Button>
         </>
       }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -35,7 +36,9 @@ export default function IntegrationsPage() {
 
   const handleSync = (integrationId: string) => { syncIntegration(integrationId); };
   const handleTest = (integrationId: string) => { testConnection(integrationId); };
-  const handleDelete = (integrationId: string) => { if (confirm('Êtes-vous sûr de vouloir supprimer cette intégration ?')) { deleteIntegration(integrationId); } };
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const handleDelete = (integrationId: string) => { setDeleteConfirmId(integrationId); };
+  const confirmDelete = () => { if (deleteConfirmId) { deleteIntegration(deleteConfirmId); setDeleteConfirmId(null); } };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -174,6 +177,16 @@ export default function IntegrationsPage() {
       {selectedPlatform && (
         <AutoConfigWizard open={wizardOpen} onOpenChange={setWizardOpen} platformName={selectedPlatform.name} platformType={selectedPlatform.type} onComplete={handleWizardComplete} />
       )}
+
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => { if (!open) setDeleteConfirmId(null) }}
+        title="Supprimer cette intégration ?"
+        description="Êtes-vous sûr de vouloir supprimer cette intégration ?"
+        confirmText="Supprimer"
+        variant="destructive"
+        onConfirm={confirmDelete}
+      />
     </ChannablePageWrapper>
   )
 }
