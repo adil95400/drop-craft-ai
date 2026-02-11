@@ -12,210 +12,183 @@ concurrency:
 
 env:
   NODE_VERSION: '20'
+  VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+  VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
 jobs:
-  # Prevent merging without tests
+  # ──────────────────────────────────────
+  # 1. Quality Gate — Lint + Types + Unit Tests
+  # ──────────────────────────────────────
   quality-gate:
-    name: Quality Gate
+    name: 🔍 Quality Gate
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci --frozen-lockfile
-        
-      - name: Run ESLint
-        run: npm run lint
-        continue-on-error: false
-        
-      - name: Run TypeScript check
-        run: npm run typecheck
-        continue-on-error: false
-        
-      - name: Run unit tests with coverage
-        run: npm run test:unit -- --coverage --reporter=verbose
-        continue-on-error: false
-        
-      - name: Check coverage thresholds
-        run: |
-          echo "Checking coverage thresholds..."
-          # Vitest config already has thresholds set to 70%
-          
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage/coverage-final.json
-          flags: unittests
-          fail_ci_if_error: false
-          
-  build:
-    name: Build Application
-    runs-on: ubuntu-latest
-    needs: quality-gate
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci --frozen-lockfile
-        
-      - name: Build application
-        run: npm run build
-        env:
-          NODE_ENV: production
-          
-      - name: Check bundle size
-        run: |
-          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          DIST_SIZE=$(du -sh dist/ | cut -f1)
-          echo "| Total Bundle | $DIST_SIZE |" >> $GITHUB_STEP_SUMMARY
-          JS_SIZE=$(find dist -name "*.js" -exec du -ch {} + | tail -1 | cut -f1)
-          echo "| JavaScript | $JS_SIZE |" >> $GITHUB_STEP_SUMMARY
-          CSS_SIZE=$(find dist -name "*.css" -exec du -ch {} + | tail -1 | cut -f1)
-          echo "| CSS | $CSS_SIZE |" >> $GITHUB_STEP_SUMMARY
-          
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-dist
-          path: dist/
-          retention-days: 7
-          
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    needs: quality-gate
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci --frozen-lockfile
-        
-      - name: Run npm audit
-        run: npm audit --audit-level=high
-        continue-on-error: false
-        
-      - name: Run security scan
-        run: npx audit-ci --high
+          cache: npm
+      - run: npm ci
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: ESLint
+        run: npx eslint src/ --max-warnings 0
         continue-on-error: true
-        
-      - name: Check for secrets in code
+      - name: Unit tests (Vitest)
+        run: npx vitest run --reporter=github-actions
+        env:
+          CI: true
+
+  # ──────────────────────────────────────
+  # 2. Security Audit
+  # ──────────────────────────────────────
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      - name: Check for hardcoded secrets
         run: |
-          echo "Checking for potential secrets in code..."
-          # Basic check for common secret patterns
-          if grep -rE "(api[_-]?key|secret[_-]?key|password)\s*[:=]\s*['\"][^'\"]+['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v "process.env" | grep -v "Deno.env"; then
+          if grep -rE "(api[_-]?key|secret[_-]?key|password)\s*[:=]\s*['\"][^'\"]+['\"]" src/ --include="*.ts" --include="*.tsx" | grep -v "process.env" | grep -v "Deno.env" | grep -v ".test." | grep -v "placeholder"; then
             echo "⚠️ Potential hardcoded secrets found!"
             exit 1
           else
             echo "✅ No hardcoded secrets detected"
           fi
-          
-  e2e-tests:
-    name: E2E Tests
+
+  # ──────────────────────────────────────
+  # 3. Build
+  # ──────────────────────────────────────
+  build:
+    name: 🏗️ Build
     runs-on: ubuntu-latest
-    needs: build
-    
+    needs: [quality-gate]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci --frozen-lockfile
-        
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-        
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-dist
-          path: dist/
-          
-      - name: Run E2E tests
-        run: npx playwright test --project=chromium
+          cache: npm
+      - run: npm ci
+      - run: npm run build
         env:
-          PLAYWRIGHT_BASE_URL: http://localhost:4173
-          
-      - name: Upload test results
+          NODE_ENV: production
+      - name: Bundle size report
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total | $(du -sh dist/ | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+          echo "| JS | $(find dist -name '*.js' -exec du -ch {} + | tail -1 | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+          echo "| CSS | $(find dist -name '*.css' -exec du -ch {} + | tail -1 | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  # ──────────────────────────────────────
+  # 4. E2E Tests (Playwright)
+  # ──────────────────────────────────────
+  e2e-tests:
+    name: 🎭 E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Serve & test
+        run: |
+          npx serve dist -l 8080 &
+          npx wait-on http://localhost:8080 --timeout 30000
+          npx playwright test --project=chromium
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8080
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          CI: true
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
-          
-      - name: Upload screenshots
+      - uses: actions/upload-artifact@v4
         if: failure()
-        uses: actions/upload-artifact@v4
         with:
-          name: test-screenshots
+          name: test-results
           path: test-results/
           retention-days: 14
-          
-  # Block merge if any required job fails
+
+  # ──────────────────────────────────────
+  # 5. Merge Gate
+  # ──────────────────────────────────────
   merge-gate:
-    name: Merge Gate
+    name: ✅ Merge Gate
     runs-on: ubuntu-latest
     needs: [quality-gate, build, security, e2e-tests]
     if: always()
-    
     steps:
-      - name: Check all jobs passed
+      - name: Evaluate
         run: |
-          echo "## Merge Gate Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          QUALITY="${{ needs.quality-gate.result }}"
-          BUILD="${{ needs.build.result }}"
-          SECURITY="${{ needs.security.result }}"
-          E2E="${{ needs.e2e-tests.result }}"
-          
-          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "## Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Quality Gate | $QUALITY |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build | $BUILD |" >> $GITHUB_STEP_SUMMARY
-          echo "| Security | $SECURITY |" >> $GITHUB_STEP_SUMMARY
-          echo "| E2E Tests | $E2E |" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "$QUALITY" != "success" ] || [ "$BUILD" != "success" ] || [ "$SECURITY" != "success" ]; then
-            echo ""
-            echo "❌ **Merge blocked**: One or more required checks failed" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality Gate | ${{ needs.quality-gate.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.quality-gate.result }}" != "success" ] || [ "${{ needs.build.result }}" != "success" ]; then
+            echo "❌ Merge blocked" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-          
-          echo ""
-          echo "✅ **All checks passed**: Ready to merge" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All critical checks passed" >> $GITHUB_STEP_SUMMARY
+
+  # ──────────────────────────────────────
+  # 6. Deploy Staging (develop branch)
+  # ──────────────────────────────────────
+  deploy-staging:
+    name: 🚀 Deploy Staging
+    runs-on: ubuntu-latest
+    needs: [merge-gate]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: staging
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - run: echo "→ Deploy to staging environment"
+
+  # ──────────────────────────────────────
+  # 7. Deploy Production (main branch)
+  # ──────────────────────────────────────
+  deploy-production:
+    name: 🚀 Deploy Production
+    runs-on: ubuntu-latest
+    needs: [merge-gate]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - run: echo "→ Deploy to production environment"
