@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,30 +42,12 @@ export default function AmazonImportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="bg-gradient-to-r from-[#FF9900] to-[#146EB4] text-white">
-        <div className="container mx-auto px-4 py-8">
-          <Button variant="ghost" className="text-white hover:bg-white/20 mb-4" onClick={() => navigate('/import')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />Retour au Hub
-          </Button>
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white rounded-xl p-2 flex items-center justify-center">
-              <ShoppingCart className="w-8 h-8 text-[#FF9900]" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Import Amazon</h1>
-              <p className="text-white/80">Importez des produits depuis tous les marketplaces Amazon</p>
-            </div>
-          </div>
-          <div className="flex gap-4 mt-6">
-            <Badge className="bg-white/20 text-white border-0"><Globe className="w-3 h-3 mr-1" /> 6 Marketplaces</Badge>
-            <Badge className="bg-white/20 text-white border-0"><Star className="w-3 h-3 mr-1" /> Avis Inclus</Badge>
-            <Badge className="bg-white/20 text-white border-0"><Package className="w-3 h-3 mr-1" /> 350M+ Produits</Badge>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
+    <ChannablePageWrapper
+      title="Import Amazon"
+      description="Importez des produits depuis tous les marketplaces Amazon"
+      heroImage="import"
+      badge={{ label: 'Amazon', icon: ShoppingCart }}
+    >
         <Tabs defaultValue="url" className="space-y-6">
           <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="url">Par URL</TabsTrigger>
@@ -206,7 +189,6 @@ export default function AmazonImportPage() {
             </Card>
           ))}
         </div>
-      </div>
-    </div>
+    </ChannablePageWrapper>
   );
 }

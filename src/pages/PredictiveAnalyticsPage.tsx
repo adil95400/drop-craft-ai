@@ -5,6 +5,7 @@ import { usePredictiveAnalytics } from '@/hooks/useMarketplacePhase2';
 import { TrendingUp, TrendingDown, AlertTriangle, DollarSign } from 'lucide-react';
 import { useAuthOptimized } from '@/shared';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function PredictiveAnalyticsPage() {
   const { user } = useAuthOptimized()
@@ -17,16 +18,13 @@ export default function PredictiveAnalyticsPage() {
         <meta name="description" content="Anticipez vos ventes et optimisez votre stock avec l'IA" />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
+      <ChannablePageWrapper
+        title="Analytics Prédictive"
+        description="Anticipez vos ventes et optimisez votre stratégie avec l'intelligence artificielle"
+        heroImage="analytics"
+        badge={{ label: 'Prédictif', icon: TrendingUp }}
+      >
         <AdvancedFeatureGuide {...ADVANCED_GUIDES.predictiveAnalytics} />
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">
-            🔮 Analytics Prédictive
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Anticipez vos ventes et optimisez votre stratégie avec l'intelligence artificielle
-          </p>
-        </div>
 
         {/* Forecast Cards */}
         {dashboard && (
@@ -240,7 +238,7 @@ export default function PredictiveAnalyticsPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 }

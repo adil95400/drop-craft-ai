@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -149,13 +150,12 @@ export default function ProductSourcingAssistant() {
         <meta name="description" content="Trouvez les meilleurs fournisseurs pour vos produits avec comparaison intelligente et recommandations IA" />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Product Sourcing Assistant</h1>
-          <p className="text-muted-foreground mt-2">
-            Trouvez et comparez les meilleurs fournisseurs pour vos produits
-          </p>
-        </div>
+      <ChannablePageWrapper
+        title="Product Sourcing Assistant"
+        description="Trouvez et comparez les meilleurs fournisseurs pour vos produits"
+        heroImage="suppliers"
+        badge={{ label: 'Sourcing', icon: Search }}
+      >
 
         {/* Search Section */}
         <Card>
@@ -372,7 +372,6 @@ export default function ProductSourcingAssistant() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
       {/* Contact Supplier Modal */}
       <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
@@ -404,6 +403,7 @@ export default function ProductSourcingAssistant() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </ChannablePageWrapper>
     </>
   );
 }

@@ -3,17 +3,18 @@
  */
 
 import { AdminConsumptionDashboard } from '@/components/consumption';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
+import { CreditCard } from 'lucide-react';
 
 export default function AdminConsumptionPage() {
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Suivi de consommation</h1>
-        <p className="text-muted-foreground mt-1">
-          Vue globale de la consommation de tous les utilisateurs
-        </p>
-      </div>
+    <ChannablePageWrapper
+      title="Suivi de consommation"
+      description="Vue globale de la consommation de tous les utilisateurs"
+      heroImage="analytics"
+      badge={{ label: 'Admin', icon: CreditCard }}
+    >
       <AdminConsumptionDashboard />
-    </div>
+    </ChannablePageWrapper>
   );
 }

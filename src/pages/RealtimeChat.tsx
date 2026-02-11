@@ -11,34 +11,26 @@ import {
   Zap, 
   Globe,
   Phone,
-  Video,
   Settings
 } from 'lucide-react'
 import { RealtimeChatInterface } from '@/components/realtime/RealtimeChatInterface'
 import { RealtimePresence } from '@/components/realtime/RealtimePresence'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 const RealtimeChat: React.FC = () => {
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Chat IA Temps Réel</h1>
-          <p className="text-muted-foreground">
-            Communiquez avec l'assistant IA par voix ou texte en temps réel
-          </p>
-        </div>
-        <Badge variant="outline" className="flex items-center gap-2">
-          <Zap className="w-4 h-4" />
-          Fonctionnalité Ultra Pro
-        </Badge>
-      </div>
-
+    <ChannablePageWrapper
+      title="Chat IA Temps Réel"
+      description="Communiquez avec l'assistant IA par voix ou texte en temps réel"
+      heroImage="ai"
+      badge={{ label: 'Ultra Pro', icon: Zap }}
+    >
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Bot className="w-5 h-5 text-blue-600" />
+              <Bot className="w-5 h-5 text-primary" />
               <div>
                 <div className="text-2xl font-bold">GPT-4o</div>
                 <p className="text-xs text-muted-foreground">Modèle IA</p>
@@ -46,11 +38,10 @@ const RealtimeChat: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Mic className="w-5 h-5 text-green-600" />
+              <Mic className="w-5 h-5 text-primary" />
               <div>
                 <div className="text-2xl font-bold">24kHz</div>
                 <p className="text-xs text-muted-foreground">Audio HD</p>
@@ -58,11 +49,10 @@ const RealtimeChat: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Volume2 className="w-5 h-5 text-purple-600" />
+              <Volume2 className="w-5 h-5 text-primary" />
               <div>
                 <div className="text-2xl font-bold">Alloy</div>
                 <p className="text-xs text-muted-foreground">Voix IA</p>
@@ -70,11 +60,10 @@ const RealtimeChat: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-orange-600" />
+              <Globe className="w-5 h-5 text-primary" />
               <div>
                 <div className="text-2xl font-bold">&lt;100ms</div>
                 <p className="text-xs text-muted-foreground">Latence</p>
@@ -102,12 +91,9 @@ const RealtimeChat: React.FC = () => {
 
         <TabsContent value="chat" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Chat Interface */}
             <div className="lg:col-span-3">
               <RealtimeChatInterface />
             </div>
-
-            {/* Sidebar */}
             <div className="space-y-4">
               <Card>
                 <CardHeader className="pb-3">
@@ -115,23 +101,21 @@ const RealtimeChat: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-green-600" />
+                    <Phone className="w-5 h-5 text-primary" />
                     <div>
                       <p className="font-medium text-sm">Audio Bidirectionnel</p>
                       <p className="text-xs text-muted-foreground">Parlez et écoutez en temps réel</p>
                     </div>
                   </div>
-                  
                   <div className="flex items-center gap-3">
-                    <Bot className="w-5 h-5 text-blue-600" />
+                    <Bot className="w-5 h-5 text-primary" />
                     <div>
                       <p className="font-medium text-sm">IA Contextuelle</p>
                       <p className="text-xs text-muted-foreground">Comprend Shopopti Pro</p>
                     </div>
                   </div>
-                  
                   <div className="flex items-center gap-3">
-                    <Zap className="w-5 h-5 text-purple-600" />
+                    <Zap className="w-5 h-5 text-primary" />
                     <div>
                       <p className="font-medium text-sm">Fonctions Avancées</p>
                       <p className="text-xs text-muted-foreground">Recherche produits, stats</p>
@@ -139,7 +123,6 @@ const RealtimeChat: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">Commandes Vocales</CardTitle>
@@ -160,26 +143,22 @@ const RealtimeChat: React.FC = () => {
         <TabsContent value="presence" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <RealtimePresence channelName="global" showCurrentPage={true} />
-            
             <Card>
               <CardHeader>
                 <CardTitle>Activité Globale</CardTitle>
-                <CardDescription>
-                  Statistiques d'utilisation en temps réel
-                </CardDescription>
+                <CardDescription>Statistiques d'utilisation en temps réel</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-muted rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">15</div>
+                    <div className="text-2xl font-bold text-primary">15</div>
                     <p className="text-sm text-muted-foreground">Sessions actives</p>
                   </div>
                   <div className="text-center p-4 bg-muted rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">247</div>
+                    <div className="text-2xl font-bold text-primary">247</div>
                     <p className="text-sm text-muted-foreground">Messages aujourd'hui</p>
                   </div>
                 </div>
-                
                 <div className="space-y-2">
                   <h4 className="font-medium">Pages populaires</h4>
                   <div className="space-y-1">
@@ -207,9 +186,7 @@ const RealtimeChat: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Paramètres Audio</CardTitle>
-                <CardDescription>
-                  Configuration de l'audio et du microphone
-                </CardDescription>
+                <CardDescription>Configuration de l'audio et du microphone</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -220,7 +197,6 @@ const RealtimeChat: React.FC = () => {
                     <option>Économique (8kHz)</option>
                   </select>
                 </div>
-                
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Suppression du bruit</label>
                   <div className="flex items-center space-x-2">
@@ -228,7 +204,6 @@ const RealtimeChat: React.FC = () => {
                     <span className="text-sm">Activer la suppression du bruit</span>
                   </div>
                 </div>
-                
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Contrôle automatique du gain</label>
                   <div className="flex items-center space-x-2">
@@ -238,13 +213,10 @@ const RealtimeChat: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle>Paramètres IA</CardTitle>
-                <CardDescription>
-                  Configuration de l'assistant intelligent
-                </CardDescription>
+                <CardDescription>Configuration de l'assistant intelligent</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -256,7 +228,6 @@ const RealtimeChat: React.FC = () => {
                     <option>Nova</option>
                   </select>
                 </div>
-                
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Détection de fin de parole</label>
                   <select className="w-full p-2 border rounded-md">
@@ -264,7 +235,6 @@ const RealtimeChat: React.FC = () => {
                     <option>Manuel</option>
                   </select>
                 </div>
-                
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Contexte Shopopti</label>
                   <div className="flex items-center space-x-2">
@@ -277,7 +247,7 @@ const RealtimeChat: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </ChannablePageWrapper>
   )
 }
 
