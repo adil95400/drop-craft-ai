@@ -14,8 +14,7 @@ import {
 import { format, formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { unifiedImportService, ImportJobStatus } from '@/services/UnifiedImportService'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { useReducedMotion, getMotionProps } from '@/hooks/useReducedMotion'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -252,25 +251,18 @@ export default function ImportHistoryPage() {
   }, [cancelMutation])
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Historique des Imports"
-      metaTitle="Historique des Imports"
-      metaDescription="Suivez tous vos imports en détail avec statistiques et filtres avancés"
-      maxWidth="2xl"
-      padding="md"
-      backTo="/import"
-      backLabel="Retour à l'import"
+      description="Consultez l'historique complet de vos imports avec des statistiques détaillées et des filtres avancés."
+      heroImage="import"
+      badge={{ label: 'Historique', icon: Clock }}
+      actions={
+        <Button variant="outline" size="sm" onClick={handleExportCSV}>
+          <Download className="w-4 h-4 mr-2" />
+          Exporter CSV
+        </Button>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        badge={{ label: "Historique", icon: Clock }}
-        title="Historique des imports"
-        subtitle="suivi en temps réel"
-        description="Consultez l'historique complet de vos imports avec des statistiques détaillées et des filtres avancés."
-        stats={stats}
-        showHexagons={!prefersReducedMotion}
-        variant="compact"
-      />
 
       {/* Live Import Tracker */}
       <ImportLiveTracker />
@@ -928,6 +920,6 @@ export default function ImportHistoryPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }

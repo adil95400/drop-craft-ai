@@ -11,8 +11,7 @@ import {
   CheckCircle, AlertCircle, Clock, RefreshCw,
   Package, Zap
 } from 'lucide-react'
-import { ChannablePageLayout } from '@/components/channable/ChannablePageLayout'
-import { ChannableHeroSection } from '@/components/channable/ChannableHeroSection'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { BulkZipImport } from '@/components/import/BulkZipImport'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -93,30 +92,18 @@ export default function BulkImportPage() {
   ]
 
   return (
-    <ChannablePageLayout
+    <ChannablePageWrapper
       title="Import en Masse"
-      metaTitle="Import en Masse - ShopOpti"
-      metaDescription="Importez des centaines de produits depuis AliExpress, Amazon, eBay et autres plateformes"
-      maxWidth="2xl"
-      padding="md"
-      backTo="/import"
-      backLabel="Retour à l'Import"
+      description="Collez jusqu'à 500 URLs de produits et importez-les tous en une seule opération. Notre IA optimise automatiquement chaque fiche."
+      heroImage="import"
+      badge={{ label: 'Ultra Pro', icon: Sparkles }}
+      actions={
+        <Button variant="outline" onClick={() => navigate('/import/history')}>
+          <Clock className="w-4 h-4 mr-2" />
+          Historique
+        </Button>
+      }
     >
-      {/* Hero Section */}
-      <ChannableHeroSection
-        badge={{ label: "Ultra Pro", icon: Sparkles }}
-        title="Import en Masse"
-        subtitle="des centaines de produits en quelques clics"
-        description="Collez jusqu'à 500 URLs de produits et importez-les tous en une seule opération. Notre IA optimise automatiquement chaque fiche produit."
-        primaryAction={{
-          label: "Historique",
-          onClick: () => navigate('/import/history'),
-          icon: Clock
-        }}
-        stats={heroStats}
-        showHexagons={!prefersReducedMotion}
-        variant="default"
-      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -236,6 +223,6 @@ export default function BulkImportPage() {
           )}
         </CardContent>
       </Card>
-    </ChannablePageLayout>
+    </ChannablePageWrapper>
   )
 }
