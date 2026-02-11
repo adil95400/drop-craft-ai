@@ -13,6 +13,7 @@ import {
 } from '@/services/import/types'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { useLogAction } from '@/hooks/useTrackedAction'
 
 export interface UseImportGatewayState {
   isImporting: boolean
@@ -33,7 +34,7 @@ export interface UseImportGatewayActions {
 
 export function useImportGateway(): UseImportGatewayState & UseImportGatewayActions {
   const { toast } = useToast()
-  
+  const logAction = useLogAction()
   const [isImporting, setIsImporting] = useState(false)
   const [progress, setProgress] = useState(0)
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle')
@@ -65,6 +66,11 @@ export function useImportGateway(): UseImportGatewayState & UseImportGatewayActi
         setImportedProducts(result.products)
         setStatus('success')
         setProgress(100)
+        
+        logAction('imports_monthly', 'product_import', { 
+          count: result.products.length, 
+          source: request.source 
+        })
         
         toast({
           title: '✅ Import réussi',

@@ -18,6 +18,7 @@ import {
   Package, ShoppingCart, BarChart3, Upload, Check,
   MessageSquare, ArrowLeft
 } from "lucide-react"
+import { ConsumptionAlertBadge } from "@/components/consumption/ConsumptionAlertBadge"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -722,6 +723,7 @@ export const ChannableHeader = memo(() => {
         <div className="flex items-center gap-2">
           <GlobalSearch />
           <QuickActionsButton />
+          <ConsumptionAlertBadge />
           <NotificationsDropdown />
           <Separator orientation="vertical" className="h-6 mx-1 hidden sm:block bg-border/40" aria-hidden="true" />
           <UserMenuDropdown />

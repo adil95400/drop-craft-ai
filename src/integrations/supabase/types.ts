@@ -3930,6 +3930,54 @@ export type Database = {
           },
         ]
       }
+      credit_addons: {
+        Row: {
+          created_at: string
+          credits_purchased: number
+          credits_remaining: number
+          currency: string
+          expires_at: string | null
+          id: string
+          price_paid: number
+          purchased_at: string
+          quota_key: string
+          status: string
+          stripe_payment_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_purchased: number
+          credits_remaining: number
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          price_paid?: number
+          purchased_at?: string
+          quota_key?: string
+          status?: string
+          stripe_payment_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_purchased?: number
+          credits_remaining?: number
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          price_paid?: number
+          purchased_at?: string
+          quota_key?: string
+          status?: string
+          stripe_payment_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       crm_activities: {
         Row: {
           activity_type: string
