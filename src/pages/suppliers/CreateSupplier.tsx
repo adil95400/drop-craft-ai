@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Helmet } from 'react-helmet-async'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -115,18 +116,12 @@ export default function CreateSupplier() {
         <meta name="description" content="Ajoutez un nouveau fournisseur à votre réseau" />
       </Helmet>
 
-      <div className="container mx-auto p-6 max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={() => navigate('/suppliers')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold">Nouveau Fournisseur</h1>
-            <p className="text-muted-foreground">
-              Ajoutez un nouveau partenaire à votre réseau de fournisseurs
-            </p>
-          </div>
+      <ChannablePageWrapper
+        title="Nouveau Fournisseur"
+        description="Ajoutez un nouveau partenaire à votre réseau de fournisseurs"
+        heroImage="suppliers"
+        badge={{ label: 'Fournisseurs', icon: Building2 }}
+        actions={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate('/suppliers')}>
               Annuler
@@ -136,7 +131,8 @@ export default function CreateSupplier() {
               {isAdding ? 'Création...' : 'Créer le fournisseur'}
             </Button>
           </div>
-        </div>
+        }
+      >
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Tabs defaultValue="general" className="space-y-4">
@@ -668,7 +664,7 @@ export default function CreateSupplier() {
             </TabsContent>
           </Tabs>
         </form>
-      </div>
+      </ChannablePageWrapper>
     </>
   )
 }

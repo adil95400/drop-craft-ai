@@ -13,7 +13,6 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
-  ArrowLeft,
   Trash2
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,6 +20,7 @@ import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { SEO } from "@/components/SEO";
 import { useSEOKeywords } from "@/hooks/useSEOKeywords";
 import { useNavigate } from "react-router-dom";
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const RankTracker = () => {
   const navigate = useNavigate();
@@ -78,43 +78,22 @@ const RankTracker = () => {
         keywords="suivi positions, ranking Google, monitoring SEO, SERP tracker"
       />
 
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-6">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Retour
-              </Button>
-              <h1 className="text-4xl font-bold flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                  <BarChart3 className="w-6 h-6 text-white" />
-                </div>
-                Suivi Positions
-              </h1>
-              <p className="text-lg text-muted-foreground mt-2">
-                Suivez vos positions dans les moteurs de recherche
-              </p>
-            </div>
-            <Button 
-              onClick={() => refreshPositions()}
-              disabled={isRefreshing || trackedKeywords.length === 0}
-              variant="outline"
-            >
-              {isRefreshing ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Actualisation...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Actualiser
-                </>
-              )}
-            </Button>
-          </div>
+      <ChannablePageWrapper
+        title="Suivi Positions"
+        description="Suivez vos positions dans les moteurs de recherche"
+        heroImage="research"
+        badge={{ label: 'SEO', icon: BarChart3 }}
+        actions={
+          <Button 
+            onClick={() => refreshPositions()}
+            disabled={isRefreshing || trackedKeywords.length === 0}
+            variant="outline"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Actualisation...' : 'Actualiser'}
+          </Button>
+        }
+      >
 
           {/* Statistiques */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -326,8 +305,7 @@ const RankTracker = () => {
               </CardContent>
             </Card>
           )}
-        </div>
-      </div>
+      </ChannablePageWrapper>
     </>
   );
 };
