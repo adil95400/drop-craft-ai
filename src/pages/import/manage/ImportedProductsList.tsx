@@ -2,11 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AdvancedImportResults } from '@/components/import/AdvancedImportResults'
 import { useNavigate } from 'react-router-dom'
-import { Package, ArrowLeft, RefreshCw } from 'lucide-react'
+import { Package, RefreshCw } from 'lucide-react'
 import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useState } from 'react'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function ImportedProductsList() {
   const navigate = useNavigate()
@@ -55,35 +56,23 @@ export default function ImportedProductsList() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/import/manage')}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Produits Importés</h1>
-            <p className="text-muted-foreground">
-              Liste complète de tous vos produits importés
-            </p>
-          </div>
-        </div>
+    <ChannablePageWrapper
+      title="Produits Importés"
+      description="Liste complète de tous vos produits importés"
+      heroImage="import"
+      badge={{ label: 'Catalogue', icon: Package }}
+      actions={
         <div className="flex gap-2">
           {shopifyIntegration && (
-            <Button 
-              onClick={handleShopifySync}
-              disabled={isSyncing}
-              variant="outline"
-            >
+            <Button onClick={handleShopifySync} disabled={isSyncing} variant="outline">
               <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
               {isSyncing ? 'Synchronisation...' : 'Sync Shopify'}
             </Button>
           )}
-          <Button onClick={() => navigate('/import/quick')}>
-            Nouvel import
-          </Button>
+          <Button onClick={() => navigate('/import/quick')}>Nouvel import</Button>
         </div>
-      </div>
+      }
+    >
 
       <Card>
         <CardHeader>
@@ -96,6 +85,6 @@ export default function ImportedProductsList() {
           <AdvancedImportResults />
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   )
 }

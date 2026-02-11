@@ -7,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { 
-  ArrowLeft, Link, Search, Package, Zap, CheckCircle2,
-  RefreshCw, Download, Star, TrendingUp, DollarSign,
+  Link, Search, Package, Zap, CheckCircle2,
+  RefreshCw, Download, Star, TrendingUp,
   Percent, Flame, ShoppingBag
 } from 'lucide-react';
 import { useUrlImport } from '@/hooks/useUrlImport';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function TemuImportPage() {
   const navigate = useNavigate();
@@ -28,30 +29,12 @@ export default function TemuImportPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="bg-gradient-to-r from-[#FB7701] to-[#FF4D00] text-white">
-        <div className="container mx-auto px-4 py-8">
-          <Button variant="ghost" className="text-white hover:bg-white/20 mb-4" onClick={() => navigate('/import')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />Retour au Hub
-          </Button>
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white rounded-xl p-2 flex items-center justify-center">
-              <Flame className="w-8 h-8 text-[#FB7701]" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Import Temu</h1>
-              <p className="text-white/80">Les meilleurs prix du marché</p>
-            </div>
-          </div>
-          <div className="flex gap-4 mt-6">
-            <Badge className="bg-white/20 text-white border-0"><Percent className="w-3 h-3 mr-1" /> Prix ultra-bas</Badge>
-            <Badge className="bg-white/20 text-white border-0"><Package className="w-3 h-3 mr-1" /> 100M+ Produits</Badge>
-            <Badge className="bg-white/20 text-white border-0"><Flame className="w-3 h-3 mr-1" /> Tendances</Badge>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
+    <ChannablePageWrapper
+      title="Import Temu"
+      description="Les meilleurs prix du marché — 100M+ produits disponibles"
+      heroImage="import"
+      badge={{ label: 'Temu', icon: Flame }}
+    >
         <Tabs defaultValue="url" className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="url">Par URL</TabsTrigger>
@@ -168,7 +151,6 @@ export default function TemuImportPage() {
             </Card>
           ))}
         </div>
-      </div>
-    </div>
+    </ChannablePageWrapper>
   );
 }

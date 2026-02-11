@@ -15,9 +15,9 @@ import {
   Package, 
   TrendingUp,
   AlertCircle,
-  ArrowLeft,
   RefreshCw
 } from 'lucide-react';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 export default function ImportPublishingPage() {
   const navigate = useNavigate();
@@ -124,23 +124,17 @@ export default function ImportPublishingPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Publication de Produits</h1>
-            <p className="text-muted-foreground">
-              Publiez vos produits importés vers votre boutique et les marketplaces
-            </p>
-          </div>
-        </div>
+    <ChannablePageWrapper
+      title="Publication de Produits"
+      description="Publiez vos produits importés vers votre boutique et les marketplaces"
+      heroImage="import"
+      badge={{ label: 'Publication', icon: Upload }}
+      actions={
         <Button onClick={() => fetchImportedProducts()} variant="outline" size="icon">
           <RefreshCw className="w-4 h-4" />
         </Button>
-      </div>
+      }
+    >
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -456,6 +450,6 @@ export default function ImportPublishingPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   );
 }

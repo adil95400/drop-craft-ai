@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingBag, RefreshCw, AlertCircle, CheckCircle2, Clock, ArrowLeft } from 'lucide-react'
+import { ShoppingBag, RefreshCw, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +8,7 @@ import { useIntegrationsUnified } from '@/hooks/unified'
 import { useShopifySync } from '@/hooks/useShopifySync'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 const ShopifyManagementPage = () => {
   const navigate = useNavigate()
@@ -69,26 +70,12 @@ const ShopifyManagementPage = () => {
   const recentLogs = logs?.slice(0, 5) || []
 
   return (
-    <div className="container py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/stores-channels/integrations')}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <ShoppingBag className="h-8 w-8" />
-            Gestion Shopify
-          </h1>
-          <p className="text-muted-foreground">
-            Gérez votre connexion et synchronisation Shopify
-          </p>
-        </div>
-      </div>
+    <ChannablePageWrapper
+      title="Gestion Shopify"
+      description="Gérez votre connexion et synchronisation Shopify"
+      heroImage="integrations"
+      badge={{ label: 'Shopify', icon: ShoppingBag }}
+    >
 
       {/* Status Card */}
       <Card>
@@ -268,7 +255,7 @@ const ShopifyManagementPage = () => {
           </CardContent>
         </Card>
       )}
-    </div>
+    </ChannablePageWrapper>
   )
 }
 

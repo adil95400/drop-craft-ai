@@ -2,7 +2,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
-  ArrowLeft, 
   Clock, 
   CheckCircle2, 
   AlertCircle, 
@@ -13,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useUnifiedImport } from '@/hooks/useUnifiedImport'
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 
 export default function SimpleHistoryPage() {
   const navigate = useNavigate()
@@ -44,30 +44,21 @@ export default function SimpleHistoryPage() {
 
   if (isLoadingHistory) {
     return (
-      <div className="container mx-auto p-6">
+      <ChannablePageWrapper title="Historique des imports" heroImage="import" badge={{ label: 'Historique', icon: Clock }}>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      </div>
+      </ChannablePageWrapper>
     )
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/import/manage')}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Historique des imports</h1>
-            <p className="text-muted-foreground">
-              Tous vos imports récents
-            </p>
-          </div>
-        </div>
-      </div>
+    <ChannablePageWrapper
+      title="Historique des imports"
+      description="Tous vos imports récents"
+      heroImage="import"
+      badge={{ label: 'Historique', icon: Clock }}
+    >
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-4">
@@ -167,6 +158,6 @@ export default function SimpleHistoryPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </ChannablePageWrapper>
   )
 }
