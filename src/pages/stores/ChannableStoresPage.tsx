@@ -3,6 +3,7 @@
  */
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Link, useNavigate } from 'react-router-dom'
 import { useIntegrationsUnified } from '@/hooks/unified'
 import { 
@@ -62,10 +63,16 @@ export default function ChannableStoresPage() {
     await syncIntegration(integrationId)
   }
 
+  const [disconnectId, setDisconnectId] = useState<string | null>(null)
+
   const handleDisconnect = async (integrationId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir déconnecter cette boutique ?')) {
-      await disconnectIntegration(integrationId)
-    }
+    setDisconnectId(integrationId)
+  }
+
+  const confirmDisconnect = async () => {
+    if (!disconnectId) return
+    await disconnectIntegration(disconnectId)
+    setDisconnectId(null)
   }
 
   // Stats
@@ -313,6 +320,15 @@ export default function ChannableStoresPage() {
           </CardContent>
         </Card>
       </motion.div>
+      <ConfirmDialog
+        open={!!disconnectId}
+        onOpenChange={(open) => { if (!open) setDisconnectId(null) }}
+        title="Déconnecter cette boutique ?"
+        description="Êtes-vous sûr de vouloir déconnecter cette boutique ?"
+        confirmText="Déconnecter"
+        variant="destructive"
+        onConfirm={confirmDisconnect}
+      />
     </ChannablePageLayout>
   )
 }

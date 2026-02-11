@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { ExtensionCard } from './ExtensionCard'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
+import { toast } from 'sonner'
 
 interface Extension {
   id: string
@@ -162,7 +163,7 @@ export const ExtensionMarketplace: React.FC = () => {
     if (!extension) return
 
     if (extension.minPlan && !hasFeature(`plan_${extension.minPlan}`)) {
-      alert(`Cette extension nécessite le plan ${extension.minPlan} ou supérieur`)
+      toast.warning(`Cette extension nécessite le plan ${extension.minPlan} ou supérieur`)
       return
     }
 

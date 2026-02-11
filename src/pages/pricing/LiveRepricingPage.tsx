@@ -239,8 +239,8 @@ export default function LiveRepricingPage() {
               </Card>
             ))}
           </div>
-          <Button variant="outline" className="w-full" onClick={() => toast({ title: 'Nouvelle règle', description: 'Formulaire de création bientôt disponible.' })}>
-            + Créer une règle de repricing
+          <Button variant="outline" className="w-full" disabled>
+            + Créer une règle de repricing (bientôt)
           </Button>
         </TabsContent>
 

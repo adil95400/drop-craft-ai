@@ -4,6 +4,7 @@
  */
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts'
@@ -256,11 +257,17 @@ export default function ChannableProductsPage() {
     navigate(`/products/${product.id}/edit`)
   }, [navigate])
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
   const handleDelete = useCallback(async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return
+    setDeleteConfirmId(id)
+  }, [])
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteConfirmId) return
 
     try {
-      await productsApi.delete(id)
+      await productsApi.delete(deleteConfirmId)
       
       toast({ title: 'Produit supprimé', description: 'Le produit a été supprimé avec succès' })
       
@@ -275,7 +282,8 @@ export default function ChannableProductsPage() {
         variant: 'destructive'
       })
     }
-  }, [toast, refetch, queryClient])
+    setDeleteConfirmId(null)
+  }, [deleteConfirmId, toast, refetch, queryClient])
 
   const handleView = useCallback((product: UnifiedProduct) => {
     setViewModalProduct(product)
@@ -967,6 +975,16 @@ export default function ChannableProductsPage() {
         onClear={handleClearSelection}
         onAction={handleBulkAction}
         isVisible={selectedProducts.length > 0}
+      />
+
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => { if (!open) setDeleteConfirmId(null) }}
+        title="Supprimer ce produit ?"
+        description="Le produit sera définitivement supprimé."
+        confirmText="Supprimer"
+        variant="destructive"
+        onConfirm={confirmDelete}
       />
     </ChannablePageWrapper>
   )

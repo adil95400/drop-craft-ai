@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ const WorkflowTemplates = lazy(() => import('@/components/automation/WorkflowTem
 
 export default function AutomationPage() {
   const [activeTab, setActiveTab] = useState('list');
+  const [deleteWorkflowId, setDeleteWorkflowId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { 
@@ -243,11 +245,7 @@ export default function AutomationPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              if (confirm('Supprimer cette automation ?')) {
-                                deleteWorkflow(workflow.id);
-                              }
-                            }}
+                            onClick={() => setDeleteWorkflowId(workflow.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -374,6 +372,15 @@ export default function AutomationPage() {
             </Card>
           </TabsContent>
         </Tabs>
+      <ConfirmDialog
+        open={!!deleteWorkflowId}
+        onOpenChange={(open) => { if (!open) setDeleteWorkflowId(null) }}
+        title="Supprimer cette automation ?"
+        description="Cette action est irréversible."
+        confirmText="Supprimer"
+        variant="destructive"
+        onConfirm={() => { if (deleteWorkflowId) { deleteWorkflow(deleteWorkflowId); setDeleteWorkflowId(null) } }}
+      />
       </ChannablePageWrapper>
   );
 }

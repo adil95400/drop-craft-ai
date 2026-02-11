@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
@@ -140,12 +141,19 @@ export default function CatalogProductsPage() {
     if (unified) setViewModalProduct(unified)
   }, [products])
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
   const handleDelete = useCallback((id: string) => {
-    if (!confirm('Supprimer ce produit ?')) return
-    deleteProduct.mutate(id, {
+    setDeleteConfirmId(id)
+  }, [])
+
+  const confirmDelete = useCallback(() => {
+    if (!deleteConfirmId) return
+    deleteProduct.mutate(deleteConfirmId, {
       onSuccess: () => handleRefresh(),
     })
-  }, [deleteProduct, handleRefresh])
+    setDeleteConfirmId(null)
+  }, [deleteConfirmId, deleteProduct, handleRefresh])
 
   const handleDuplicate = useCallback((product: any) => {
     const p = products.find(x => x.id === product.id)
@@ -494,6 +502,16 @@ export default function CatalogProductsPage() {
         productIds={selectedProducts}
         productNames={products.filter(p => selectedProducts.includes(p.id)).map(p => p.name)}
         onSuccess={() => { setShowPlatformExport(false); toast({ title: 'Export réussi' }) }}
+      />
+
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => { if (!open) setDeleteConfirmId(null) }}
+        title="Supprimer ce produit ?"
+        description="Cette action est irréversible."
+        confirmText="Supprimer"
+        variant="destructive"
+        onConfirm={confirmDelete}
       />
     </ChannablePageWrapper>
   )
