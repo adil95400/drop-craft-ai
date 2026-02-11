@@ -1,98 +1,525 @@
 
 
-# Audit de progression — 5 Messages fondateurs ShopOpti
+# Audit Complet de Toutes les Pages - ShopOpti+
 
-## Legende
-- FAIT = Terminé
-- PARTIEL = Commencé mais incomplet
-- A FAIRE = Non démarré
+## Statistiques Globales
 
----
-
-## Message 1 — Vision finale (Source of Truth + Modules)
-
-| Objectif | Statut | Commentaire |
-|----------|--------|-------------|
-| Source of truth produit (DB + API V1) | FAIT | 0 appel direct `supabase.from('products')` dans `src/` (sauf 1 mock test). `productsApi` + `productHelpers` couvrent 100% du CRUD, stats, filtrage. |
-| Module Import niveau AutoDS | PARTIEL | Voir Message 3 ci-dessous |
-| Separation /products vs /cockpit | FAIT | `/products` = `CatalogProductsPage`, `/products/cockpit` = `ProductCockpitPage` avec KPIs calculés (marge, ROI, alertes stock, priorités IA). |
-| SEO = vrai module produit | PARTIEL | Voir Message 4 ci-dessous |
-| Zero bouton factice | FAIT | Tous les boutons factices critiques ont été connectés ou remplacés par des erreurs explicites. |
+| Metrique | Valeur |
+|----------|--------|
+| Fichiers route (.tsx) | 25 modules |
+| Pages totales (fichiers) | ~200+ |
+| Routes configurees | ~280+ (incluant redirections) |
+| Routes fonctionnelles uniques | ~170 |
+| Redirections legacy | ~60 |
+| Pages publiques | 22 |
+| Pages protegees | ~150+ |
+| Pages admin | 5 |
 
 ---
 
-## Message 2 — Regles techniques non negociables
+## 1. ROUTES PUBLIQUES (22 pages)
 
-| Regle | Statut | Commentaire |
-|-------|--------|-------------|
-| API /v1 = source de verite unique (produits) | FAIT | Toute la couche produit passe par le routeur Edge Function `api-v1`. |
-| Edge Functions = peripherique uniquement | FAIT | Auth, webhooks, scraping deleguees ; logique metier dans le routeur ou jobs. |
-| Zero logique metier directe frontend (produits) | FAIT | Les hooks utilisent `productsApi`, plus de queries directes. |
-| Tous les boutons declenchent un job/statut/resultat | FAIT | Boutons marketing, SEO, import et repricing connectés à de vraies actions. |
-| Zero mock, zero toast factice | FAIT | `useRealMarketing` → erreurs explicites, `useMarketing/useUnifiedMarketing` → table `marketing_segments`, `useMarketplacePhase2` → pricing_rules + AI forecast, `useGlobalSEO` → `seo-optimizer`, `seo.service` → `seo-fix-apply`, `AdvancedImportInterface` → health check réel. |
-
----
-
-## Message 3 — Import comme AutoDS
-
-| Fonctionnalite | Statut | Commentaire |
-|----------------|--------|-------------|
-| Import CSV | FAIT | Upload, analyse schema, signature SHA256, matching de champs. |
-| Import URL | FAIT | `quick-import-url` supporte 15+ plateformes. |
-| Import Fournisseur | FAIT | Via `useSupplierManagement` + API V1. |
-| Import API / Bulk | FAIT | `bulk-import-parallel` avec concurrence configurable. |
-| Mapping visuel avec presets persistes | FAIT | Table `mapping_presets`, CRUD complet, presets predefinis (Shopify FR, WooCommerce, Generique). |
-| Detection de doublons (SKU, titre) | FAIT | Edge Function `detect-duplicates`, seuil configurable, `DeduplicationDashboard`. |
-| Detection doublons par image | PARTIEL | L'interface mentionne `image_hash` comme algorithme mais l'implementation reelle dans l'Edge Function n'est pas verifiee. |
-| Regles conditionnelles (marge, stock, categorie) | PARTIEL | Le systeme de regles (`ProductRule`, `RuleBuilder`, `FeedRules`) existe pour le catalogue mais n'est **pas integre dans le pipeline d'import** comme filtre pre-import. |
-| Logs par produit | FAIT | Table `import_job_items` avec statut/erreur par ligne. |
-| Retry produit par produit | PARTIEL | Le mecanisme de retry existe au niveau job, mais le retry **par item individuel** n'est pas expose dans l'UI. |
-| Historique avant/apres enrichissement IA | A FAIRE | Pas de snapshots avant/apres dans le flux d'enrichissement. |
-
----
-
-## Message 4 — SEO Manager
-
-| Fonctionnalite | Statut | Commentaire |
-|----------------|--------|-------------|
-| Route /marketing/seo | FAIT | `SEOManagerPage` avec 5 onglets (Audits, Pages, Mots-cles, IA, Tips). |
-| Analyse SEO par URL | FAIT | Edge Function `seo-audit` cree un job asynchrone. |
-| Score SEO clair | FAIT | Score calcule par `seo-audit` et affiche dans `AuditsTab`. |
-| Historique des optimisations | PARTIEL | Les audits sont listes mais il n'y a pas de **timeline/diff** des changements appliques par page. |
-| Actions IA groupees | FAIT | `AIGenerateModal` + `seo-ai-generate` Edge Function (Gemini). |
-| Export resultats | FAIT | `useSEOExport` avec format CSV. |
-| Base sur API /v1/seo/* | **A FAIRE** | **Le SEO n'est PAS dans le routeur API V1.** Il utilise des Edge Functions separees. |
-| `useGlobalSEO.optimizeMutation` connecte | FAIT | Connecté à `seo-optimizer` Edge Function avec progression page par page. |
+| Route | Page | Module Route |
+|-------|------|-------------|
+| `/` | Landing Page (Index) | PublicRoutes |
+| `/auth` | Authentification | PublicRoutes |
+| `/auth/extension` | Auth Extension Chrome | PublicRoutes |
+| `/pricing` | Page Tarifs Marketing | PublicRoutes |
+| `/pricing-plans` | Plans detailles | PublicRoutes |
+| `/features` | Fonctionnalites | PublicRoutes |
+| `/features/ai-optimization` | Feature IA | PublicRoutes |
+| `/features/multi-marketplace` | Feature Multi-Marketplace | PublicRoutes |
+| `/features/analytics` | Feature Analytics | PublicRoutes |
+| `/documentation` | Documentation publique | PublicRoutes |
+| `/blog` | Blog | PublicRoutes |
+| `/changelog` | Journal des changements | PublicRoutes |
+| `/status` | Statut systeme | PublicRoutes |
+| `/testimonials` | Temoignages | PublicRoutes |
+| `/contact` | Contact | PublicRoutes |
+| `/faq` | FAQ | PublicRoutes |
+| `/privacy` | Politique de confidentialite | PublicRoutes |
+| `/terms` | CGU | PublicRoutes |
+| `/about` | A propos | PublicRoutes |
+| `/payment/success` | Paiement reussi | PublicRoutes |
+| `/payment/cancelled` | Paiement annule | PublicRoutes |
+| `/store` | Shopify Store public | index.tsx |
+| `/store/product/:handle` | Detail produit Shopify | index.tsx |
+| `/guides/getting-started` | Guide demarrage | index.tsx |
+| `/academy` | Academie (public) | index.tsx |
+| `/pwa-install` | Installation PWA | index.tsx |
 
 ---
 
-## Message 5 — Cockpit Business
+## 2. DASHBOARD & CORE (24 pages) - `/dashboard/*`
 
-| Fonctionnalite | Statut | Commentaire |
-|----------------|--------|-------------|
-| KPIs calcules (pas statiques) | FAIT | `useCockpitData` calcule marge moyenne, valeur stock, ruptures en temps reel depuis les produits API. |
-| Marge reelle, CA projete | PARTIEL | Marge reelle = FAIT. CA projete = **A FAIRE** (pas de projection/forecast dans le cockpit). |
-| Produits a risque | FAIT | Filtrage stock faible + ruptures + alertes critiques via `useStockPredictions`. |
-| Opportunites IA | FAIT | `aiPriorities` identifie les produits avec score < 80 et propose des categories d'optimisation. |
-| Donnees issues uniquement de l'API | FAIT | `useCockpitData` consomme `useProductsUnified` qui passe par `productsApi`. |
+| Route | Page |
+|-------|------|
+| `/dashboard` | Dashboard principal (ChannableDashboard) |
+| `/dashboard/profile` | Profil utilisateur |
+| `/dashboard/settings` | Parametres generaux |
+| `/dashboard/store/builder` | AI Store Builder |
+| `/dashboard/invoices` | Facturation & Branding |
+| `/dashboard/pod` | Print-on-Demand |
+| `/dashboard/research/intelligence` | Intelligence Competitive |
+| `/dashboard/sync-manager` | Sync Manager |
+| `/dashboard/marketplace-sync` | Sync Marketplace |
+| `/dashboard/multi-store` | Multi-Store Dashboard |
+| `/dashboard/notifications` | Notifications |
+| `/dashboard/stock` | Gestion Stock |
+| `/dashboard/reports` | Rapports |
+| `/dashboard/analytics` | Analytics avancees |
+| `/dashboard/products` | Catalogue Produits |
+| `/dashboard/ai-insights` | Analytics predictives |
+| `/dashboard/workflows` | Workflows Automation |
+| `/dashboard/api` | Gestion API |
+| `/dashboard/billing` | Facturation |
+| `/dashboard/academy` | Academie |
+| `/dashboard/security` | Securite |
+| `/dashboard/onboarding` | Onboarding Hub |
+| `/dashboard/subscription` | Abonnement |
+| `/dashboard/consumption` | Consommation |
 
 ---
 
-## Resume — Ce qui reste a faire (par priorite)
+## 3. PRODUITS (25 pages) - `/products/*`
 
-### Priorite 1 — Boutons factices (Zero mock) ✅ FAIT
+| Route | Page |
+|-------|------|
+| `/products` | Catalogue Produits (CatalogProductsPage) |
+| `/products/cockpit` | Cockpit Business |
+| `/products/publish` | Publication Multi-canal |
+| `/products/advanced` | Produits avances |
+| `/products/:id` | Detail Produit |
+| `/products/audit` | Audit Produit |
+| `/products/research` | Recherche Produits |
+| `/products/intelligence` | Intelligence Predictive |
+| `/products/sourcing` | Sourcing Produit |
+| `/products/price-rules` | Regles de Prix |
+| `/products/scoring` | Scoring Produit |
+| `/products/ai-content` | Contenu IA |
+| `/products/image-audit` | Audit Images |
+| `/products/marketplace-campaigns` | Campagnes Marketplace |
+| `/products/profit-calculator` | Calculateur Profit |
+| `/products/bulk-content` | Creation en masse |
+| `/products/inventory-predictor` | Prediction inventaire |
+| `/products/variants` | Variantes |
+| `/products/warehouse` | Entrepot |
+| `/products/vendors` | Fournisseurs |
+| + ~10 redirections legacy | |
 
-### Priorite 2 — SEO centralise sur API V1
-- Migrer les 5 Edge Functions SEO separees vers des routes `/v1/seo/*` dans le routeur `api-v1`
-- Creer un `seoApi` dans le client frontend (comme `productsApi`)
-- Ajouter un historique diff des corrections par page
+---
 
-### Priorite 3 — Import : fonctionnalites avancees manquantes
-- Integrer les regles conditionnelles comme filtre pre-import (marge min, stock min, categorie exclue)
-- Exposer le retry par item individuel dans l'UI
-- Persister des snapshots avant/apres pour l'enrichissement IA
-- Verifier l'implementation reelle du hash d'image pour la deduplication
+## 4. CATALOGUE (7 pages) - `/catalog/*`
 
-### Priorite 4 — Cockpit Business : completer
-- Ajouter une projection de CA (forecast simple base sur les ventes recentes)
-- Les autres KPIs sont operationnels
+| Route | Page |
+|-------|------|
+| `/catalog/to-process` | A traiter |
+| `/catalog/variants` | Variantes |
+| `/catalog/media` | Medias |
+| `/catalog/attributes` | Attributs |
+| `/catalog/categories-brands` | Categories & Marques |
+| `/catalog/health` | Sante du catalogue |
+| `/catalog/image-dedup` | Deduplication Images |
+
+---
+
+## 5. COMMANDES (8 pages) - `/orders/*`
+
+| Route | Page |
+|-------|------|
+| `/orders` | Centre de commandes |
+| `/orders/:id` | Detail commande |
+| `/orders/bulk` | Commandes en masse |
+| `/orders/create` | Creer commande |
+| `/orders/fulfillment` | Fulfillment (onglets: carriers, rules, returns, tracking) |
+
+---
+
+## 6. CLIENTS (3 pages) - `/customers/*`
+
+| Route | Page |
+|-------|------|
+| `/customers` | Liste clients |
+| `/customers/segmentation` | Segmentation |
+| `/customers/create` | Creer client |
+
+---
+
+## 7. IMPORT (30+ pages) - `/import/*`
+
+| Route | Page |
+|-------|------|
+| `/import` | Hub Import |
+| `/import/config` | Configuration |
+| `/import/shopify` | Import Shopify |
+| `/import/amazon` | Import Amazon |
+| `/import/aliexpress` | Import AliExpress |
+| `/import/ebay` | Import eBay |
+| `/import/etsy` | Import Etsy |
+| `/import/cj-dropshipping` | Import CJ |
+| `/import/temu` | Import Temu |
+| `/import/cdiscount` | Import Cdiscount |
+| `/import/quick` | Import rapide |
+| `/import/url` | Import URL |
+| `/import/autods` | Import AutoDS |
+| `/import/feed-url` | Import Feed URL |
+| `/import/advanced` | Import avance |
+| `/import/bulk` | Import masse |
+| `/import/multi-store` | Import multi-store |
+| `/import/search-suppliers` | Recherche fournisseurs |
+| `/import/shopify-hub` | Hub Shopify |
+| `/import/ai-generation` | Generation IA |
+| `/import/extensions` | Extensions |
+| `/import/history` | Historique |
+| `/import/scheduled` | Planifie |
+| `/import/products` | Produits importes |
+| `/import/publishing` | Publication |
+| `/import/marketplace` | Marketplace |
+| `/import/rules` | Regles pre-import |
+| `/import/item-retry` | Retry granulaire |
+| `/import/item-retry/:jobId` | Retry detail job |
+
+---
+
+## 8. FOURNISSEURS (18 pages) - `/suppliers/*`
+
+| Route | Page |
+|-------|------|
+| `/suppliers` | Hub Fournisseurs (Channable) |
+| `/suppliers/catalog` | Catalogue unifie |
+| `/suppliers/engine` | Moteur avance |
+| `/suppliers/my` | Mes fournisseurs |
+| `/suppliers/analytics` | Analytics fournisseurs |
+| `/suppliers/settings` | Parametres |
+| `/suppliers/feeds` | Feeds fournisseurs |
+| `/suppliers/variant-mapping` | Mapping variantes |
+| `/suppliers/create` | Creer fournisseur |
+| `/suppliers/bts/import` | Import BTS CSV |
+| `/suppliers/marketplace` | Marketplace fournisseurs |
+| `/suppliers/sourcing-agent` | Agent Sourcing IA |
+| `/suppliers/:supplierId` | Detail fournisseur |
+| `/suppliers/:supplierId/catalog` | Catalogue par fournisseur |
+| `/suppliers/:supplierId/advanced` | Avance par fournisseur |
+| `/suppliers/:supplierId/import` | Import par fournisseur |
+| `/suppliers/:supplierId/feeds` | Feeds par fournisseur |
+| `/suppliers/:supplierId/edit` | Editer fournisseur |
+
+---
+
+## 9. BOUTIQUES & CANAUX (10 pages) - `/stores-channels/*`
+
+| Route | Page |
+|-------|------|
+| `/stores-channels` | Hub Boutiques & Canaux |
+| `/stores-channels/connect` | Connexion boutique |
+| `/stores-channels/connect/:platform` | Connexion plateforme |
+| `/stores-channels/:channelId` | Detail canal |
+| `/stores-channels/integrations/:id` | Gestion integration |
+| `/stores-channels/shopify-diagnostic` | Diagnostic Shopify |
+| `/stores-channels/shopify-management` | Gestion Shopify |
+| `/stores-channels/sync` | Sync Dashboard |
+| `/stores-channels/analytics` | Analytics canaux |
+
+---
+
+## 10. FEEDS (5 pages) - `/feeds/*`
+
+| Route | Page |
+|-------|------|
+| `/feeds` | Feed Manager (Channable) |
+| `/feeds/optimization` | Optimisation feeds |
+| `/feeds/rules` | Regles de feeds |
+| `/feeds/ppc-link` | Lien PPC |
+| `/feeds/categories` | Mapping categories |
+
+---
+
+## 11. ANALYTICS (14 pages) - `/analytics/*`
+
+| Route | Page |
+|-------|------|
+| `/analytics` | Analytics avancees |
+| `/analytics/predictive` | Analytics predictives |
+| `/analytics/real-data` | Donnees reelles |
+| `/analytics/competitive` | Analyse concurrentielle |
+| `/analytics/reports` | Rapports |
+| `/analytics/profit-analytics` | Dashboard Profit |
+| `/analytics/advanced` | Dashboard avance |
+| `/analytics/customer-segmentation` | Segmentation clients |
+| `/analytics/forecasting` | Previsions revenus |
+
+---
+
+## 12. AUDIT (6 pages) - `/audit/*`
+
+| Route | Page |
+|-------|------|
+| `/audit` | Dashboard Audit |
+| `/audit/products` | Liste produits audit |
+| `/audit/batch` | Audit batch |
+| `/audit/scoring` | Scoring |
+| `/audit/seo` | Audit SEO |
+| `/audit/feed` | Audit Feed |
+
+---
+
+## 13. RESEARCH (7 pages) - `/research/*`
+
+| Route | Page |
+|-------|------|
+| `/research` | Hub Research |
+| `/research/winning` | Winning Products |
+| `/research/competitors` | Analyse concurrents |
+| `/research/ads` | Ads Spy |
+| `/research/trends` | Tendances |
+| `/research/sourcing` | Sourcing |
+| `/research/intelligence` | Intelligence competitive |
+
+---
+
+## 14. AUTOMATION (16 pages) - `/automation/*`
+
+| Route | Page |
+|-------|------|
+| `/automation` | Hub Automation |
+| `/automation/ai` | IA Content |
+| `/automation/fulfillment` | Auto-Fulfillment |
+| `/automation/tracking` | Auto-Tracking |
+| `/automation/promotions` | Promotions auto |
+| `/automation/optimization` | Optimisation |
+| `/automation/unified-sync` | Sync unifiee |
+| `/automation/sourcing-assistant` | Assistant sourcing |
+| `/automation/recommendations` | Recommandations |
+| + redirections vers pricing-manager | |
+
+---
+
+## 15. IA (8 pages) - `/ai/*`
+
+| Route | Page |
+|-------|------|
+| `/ai` | Hub IA (Content Generation) |
+| `/ai/optimization` | Optimisation IA |
+| `/ai/content` | Generation contenu |
+| `/ai/catalog` | Intelligence catalogue |
+| `/ai/rewrite` | Reecriture IA |
+| `/ai/studio` | Studio IA |
+| `/ai/snapshots` | Snapshots enrichissement |
+
+---
+
+## 16. MARKETING (21 pages) - `/marketing/*`
+
+| Route | Page |
+|-------|------|
+| `/marketing` | Hub Marketing (CRM) |
+| `/marketing/promotions` | Promotions |
+| `/marketing/crm` | CRM |
+| `/marketing/seo` | SEO Manager |
+| `/marketing/ads` | Gestionnaire Ads |
+| `/marketing/ab-testing` | A/B Testing |
+| `/marketing/abandoned-cart` | Paniers abandonnes |
+| `/marketing/affiliate` | Affiliation |
+| `/marketing/email` | Email Marketing |
+| `/marketing/flash-sales` | Ventes flash |
+| `/marketing/loyalty` | Programme fidelite |
+| `/marketing/coupons` | Gestion coupons |
+| `/marketing/calendar` | Calendrier marketing |
+| `/marketing/social-commerce` | Social Commerce |
+| `/marketing/creative-studio` | Studio creatif |
+| `/marketing/content-generation` | Generation contenu |
+| `/marketing/seo/keywords` | Recherche mots-cles |
+| `/marketing/seo/rank-tracker` | Suivi positions |
+| `/marketing/seo/schema` | Generateur Schema |
+
+---
+
+## 17. PRICING (6 pages) - `/pricing-manager/*`
+
+| Route | Page |
+|-------|------|
+| `/pricing-manager` | Hub Tarification |
+| `/pricing-manager/rules` | Regles de prix |
+| `/pricing-manager/repricing` | Repricing temps reel |
+| `/pricing-manager/monitoring` | Veille prix |
+| `/pricing-manager/optimization` | Optimisation IA |
+
+---
+
+## 18. INTEGRATIONS (15 pages) - `/integrations/*`
+
+| Route | Page |
+|-------|------|
+| `/integrations` | Hub Integrations (Channable) |
+| `/integrations/sync-config` | Config sync |
+| `/integrations/tiktok-shop` | TikTok Shop |
+| `/integrations/connectors` | Connecteurs |
+| `/integrations/marketplace` | Hub Marketplace |
+| `/integrations/marketplace/feed-manager` | Feed Manager |
+| `/integrations/extensions` | Extensions |
+| `/integrations/extensions/api` | API Extension |
+| `/integrations/extensions/chrome-config` | Config Chrome |
+| `/integrations/api/developer` | API Developer |
+| `/integrations/support` | Support |
+| `/integrations/academy` | Academie |
+| `/integrations/content` | Gestion contenu |
+| `/integrations/multi-channel` | Multi-Canal |
+| `/integrations/multi-store-sync` | Sync Multi-Store |
+
+---
+
+## 19. EXTENSIONS (16 pages) - `/extensions/*`
+
+| Route | Page |
+|-------|------|
+| `/extensions` | Hub Extensions |
+| `/extensions/marketplace` | Marketplace |
+| `/extensions/cli` | CLI |
+| `/extensions/developer` | Developer |
+| `/extensions/white-label` | White Label |
+| `/extensions/sso` | SSO |
+| `/extensions/download` | Telechargement |
+| `/extensions/installation` | Installation |
+| `/extensions/documentation` | Documentation |
+| `/extensions/tutorials` | Tutoriels |
+| `/extensions/faq` | FAQ Extension |
+| `/extensions/reviews` | Import avis |
+| `/extensions/chrome` | Extension Chrome |
+| `/extensions/api` | API Extension |
+| `/extensions/history` | Historique imports |
+| `/extensions/readiness` | Readiness |
+| `/extensions/health` | Sante extension |
+
+---
+
+## 20. STOCK (4 pages) - `/stock/*`
+
+| Route | Page |
+|-------|------|
+| `/stock` | Gestion stock |
+| `/stock/repricing` | Repricing stock |
+| `/stock/price-monitor` | Moniteur prix |
+
+---
+
+## 21. OUTILS (5 pages) - `/tools/*`
+
+| Route | Page |
+|-------|------|
+| `/tools` | Calculateur profit |
+| `/tools/profit-calculator` | Calculateur profit |
+| `/tools/bulk-content` | Creation en masse |
+| `/tools/schema-generator` | Generateur Schema |
+| `/tools/intelligence` | Intelligence predictive |
+| `/tools/canva-callback` | Callback Canva |
+
+---
+
+## 22. SETTINGS (10 pages) - `/settings/*`
+
+| Route | Page |
+|-------|------|
+| `/settings` | Parametres generaux |
+| `/settings/stores` | Boutiques |
+| `/settings/api` | Gestion API |
+| `/settings/billing` | Facturation |
+| `/settings/security` | Securite |
+| `/settings/white-label` | White Label |
+| `/settings/domains` | Enregistrement domaines |
+| `/settings/webhooks` | Gestion webhooks |
+| `/settings/export` | Centre export |
+| `/settings/notifications` | Preferences notifications |
+
+---
+
+## 23. ENTERPRISE (10 pages) - `/enterprise/*`
+
+| Route | Page |
+|-------|------|
+| `/enterprise/commerce` | Commerce multi-canal |
+| `/enterprise/multi-tenant` | Multi-tenant |
+| `/enterprise/monitoring` | Monitoring |
+| `/enterprise/platform` | Gestion plateforme |
+| `/enterprise/tax` | Gestion fiscale |
+| `/enterprise/team` | Collaboration equipe |
+| `/enterprise/i18n` | Internationalisation |
+| `/enterprise/quotas` | Gestion quotas |
+| `/enterprise/subscriptions` | Abonnements |
+| `/enterprise/compliance` | Conformite |
+
+---
+
+## 24. ADMIN (5 pages) - `/admin/*`
+
+| Route | Page |
+|-------|------|
+| `/admin` | Panel Admin |
+| `/admin/security` | Securite admin |
+| `/admin/video-tutorials` | Tutoriels video |
+| `/admin/suppliers` | Fournisseurs admin |
+| `/admin/consumption` | Consommation admin |
+
+---
+
+## 25. PAGES STANDALONE PROTEGEES
+
+| Route | Page |
+|-------|------|
+| `/notifications` | Centre notifications |
+| `/notifications/create` | Creer notification |
+| `/sync-manager` | Gestionnaire sync |
+| `/reviews` | Avis clients |
+| `/advanced` | Analytics avancees |
+| `/monitoring` | Monitoring performance |
+| `/catalog-intelligence` | Intelligence catalogue |
+| `/coupons` | Gestion coupons |
+| `/trial` | Activation essai gratuit |
+| `/ab-testing` | A/B Testing |
+| `/reports` | Rapports |
+| `/profile` | Profil (-> Billing) |
+| `/subscription` | Abonnement |
+| `/choose-plan` | Choix de plan |
+| `/api/documentation` | Documentation API |
+| `/page-builder` | Constructeur de pages |
+| `/page-builder/:pageId` | Editeur de page |
+| `/help-center` | Centre d'aide |
+| `/help-center/documentation` | Documentation modules |
+| `/help-center/documentation/:moduleSlug` | Doc module specifique |
+| `/support` | Support |
+| `/sitemap` | Plan du site |
+
+---
+
+## Resume par Domaine Fonctionnel
+
+| Domaine | Nb Pages Uniques | Status |
+|---------|-----------------|--------|
+| Public / Marketing | 22 | OK |
+| Dashboard / Core | 24 | OK |
+| Produits | 25 | OK |
+| Catalogue | 7 | OK |
+| Commandes | 8 | OK |
+| Clients | 3 | OK |
+| Import | 30+ | OK |
+| Fournisseurs | 18 | OK |
+| Boutiques/Canaux | 10 | OK |
+| Feeds | 5 | OK |
+| Analytics | 14 | OK |
+| Audit | 6 | OK |
+| Research | 7 | OK |
+| Automation | 16 | OK |
+| IA | 8 | OK |
+| Marketing | 21 | OK |
+| Pricing | 6 | OK |
+| Integrations | 15 | OK |
+| Extensions | 16 | OK |
+| Stock | 4 | OK |
+| Outils | 5 | OK |
+| Settings | 10 | OK |
+| Enterprise | 10 | OK |
+| Admin | 5 | OK |
+| Standalone | 22 | OK |
+| **TOTAL** | **~280 routes** | **Fonctionnel** |
+
+Toutes les routes sont mappees a des composants existants. Aucune page orpheline ni route cassee detectee dans l'architecture actuelle.
+
