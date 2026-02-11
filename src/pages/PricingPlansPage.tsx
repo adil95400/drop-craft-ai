@@ -6,6 +6,7 @@ import { Check, Crown, Zap, Sparkles, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePlan } from '@/hooks/usePlan';
 import { toast } from 'sonner';
+import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 
 const plans = [
   {
@@ -92,18 +93,12 @@ export default function PricingPlansPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <div className="container mx-auto px-4 py-16 space-y-12">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <Badge className="mb-4">Plans & Tarifs</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Choisissez votre plan idéal
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Évoluez à votre rythme avec des plans flexibles adaptés à vos besoins
-          </p>
-        </div>
+    <ChannablePageWrapper
+      title="Choisissez votre plan idéal"
+      description="Évoluez à votre rythme avec des plans flexibles adaptés à vos besoins"
+      heroImage="settings"
+      badge={{ label: 'Plans & Tarifs', icon: Crown }}
+    >
 
         {/* Billing Toggle */}
         <div className="flex justify-center items-center gap-3">
@@ -252,7 +247,6 @@ export default function PricingPlansPage() {
             Contactez-nous
           </Button>
         </div>
-      </div>
-    </div>
+    </ChannablePageWrapper>
   );
 }
