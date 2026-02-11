@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { InternalKPIDashboard } from '@/components/admin/InternalKPIDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -326,8 +327,9 @@ const SuperAdminDashboard = () => {
 
       {/* Onglets principaux */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="kpis">KPIs & Funnel</TabsTrigger>
           <TabsTrigger value="system">Système</TabsTrigger>
           <TabsTrigger value="security">Sécurité</TabsTrigger>
           <TabsTrigger value="actions">Actions</TabsTrigger>
@@ -417,6 +419,10 @@ const SuperAdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="kpis" className="space-y-6">
+          <InternalKPIDashboard />
         </TabsContent>
 
         <TabsContent value="system" className="space-y-6">
