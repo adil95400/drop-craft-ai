@@ -27,6 +27,7 @@ import {
 import { useUnifiedQuotas, QuotaKey } from '@/hooks/useUnifiedQuotas';
 import { useConsumptionTracking } from '@/hooks/useConsumptionTracking';
 import { useNavigate } from 'react-router-dom';
+import { CreditPurchaseCard } from './CreditPurchaseCard';
 import { cn } from '@/lib/utils';
 import {
   AreaChart,
@@ -373,7 +374,10 @@ export function UserConsumptionDashboard() {
         </TabsContent>
       </Tabs>
 
-      {/* Upsell Card */}
+      {/* Credit Purchase Card - Upsell */}
+      <CreditPurchaseCard />
+
+      {/* Upsell Plan Card */}
       {nearLimitQuotas.length > 0 && currentPlan !== 'ultra_pro' && (
         <Card className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/30">
           <CardContent className="pt-6">

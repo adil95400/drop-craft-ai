@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AIContentService, AIContentTemplate, AIGeneratedContent } from '@/services/AIContentService';
+import { useLogAction } from '@/hooks/useTrackedAction';
 
 export type ContentType = 'product_description' | 'blog_article' | 'seo_content' | 'ad_copy' | 'email_marketing';
 
@@ -16,6 +17,7 @@ export interface AIContentRequest {
 export function useAIContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [content, setContent] = useState<string | null>(null);
+  const logAction = useLogAction();
 
   const generateContent = async (request: AIContentRequest) => {
     setIsGenerating(true);
@@ -36,6 +38,7 @@ export function useAIContent() {
       }
 
       setContent(data.content);
+      logAction('ai_generations', 'content_generation', { type: request.type, language: request.language || 'fr' });
       toast.success('Contenu généré avec succès');
       return data;
     } catch (error) {
@@ -70,6 +73,7 @@ export function useAIContent() {
         throw error;
       }
 
+      logAction('ai_generations', 'product_description', { product: params.productName });
       toast.success('Description générée avec succès');
       return data;
     } catch (error) {
