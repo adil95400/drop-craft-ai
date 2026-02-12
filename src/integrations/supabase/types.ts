@@ -10063,6 +10063,80 @@ export type Database = {
         }
         Relationships: []
       }
+      product_metrics: {
+        Row: {
+          add_to_cart: number
+          avg_rating: number | null
+          clicks: number
+          conversion_rate: number | null
+          cost: number
+          created_at: string
+          id: string
+          orders: number
+          period_start: string
+          period_type: string
+          product_id: string
+          profit: number
+          return_rate: number | null
+          revenue: number
+          review_count: number
+          units_sold: number
+          updated_at: string
+          user_id: string
+          views: number
+        }
+        Insert: {
+          add_to_cart?: number
+          avg_rating?: number | null
+          clicks?: number
+          conversion_rate?: number | null
+          cost?: number
+          created_at?: string
+          id?: string
+          orders?: number
+          period_start: string
+          period_type?: string
+          product_id: string
+          profit?: number
+          return_rate?: number | null
+          revenue?: number
+          review_count?: number
+          units_sold?: number
+          updated_at?: string
+          user_id: string
+          views?: number
+        }
+        Update: {
+          add_to_cart?: number
+          avg_rating?: number | null
+          clicks?: number
+          conversion_rate?: number | null
+          cost?: number
+          created_at?: string
+          id?: string
+          orders?: number
+          period_start?: string
+          period_type?: string
+          product_id?: string
+          profit?: number
+          return_rate?: number | null
+          revenue?: number
+          review_count?: number
+          units_sold?: number
+          updated_at?: string
+          user_id?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_metrics_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_price_conversions: {
         Row: {
           conversion_type: string | null
@@ -13374,6 +13448,70 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_snapshots: {
+        Row: {
+          available_quantity: number | null
+          id: string
+          location_id: string | null
+          metadata: Json | null
+          product_id: string
+          quantity: number
+          recorded_at: string
+          reserved_quantity: number
+          snapshot_type: string
+          user_id: string
+          variant_id: string | null
+        }
+        Insert: {
+          available_quantity?: number | null
+          id?: string
+          location_id?: string | null
+          metadata?: Json | null
+          product_id: string
+          quantity?: number
+          recorded_at?: string
+          reserved_quantity?: number
+          snapshot_type?: string
+          user_id: string
+          variant_id?: string | null
+        }
+        Update: {
+          available_quantity?: number | null
+          id?: string
+          location_id?: string | null
+          metadata?: Json | null
+          product_id?: string
+          quantity?: number
+          recorded_at?: string
+          reserved_quantity?: number
+          snapshot_type?: string
+          user_id?: string
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_snapshots_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_snapshots_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_snapshots_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_sync_jobs: {
         Row: {
           completed_at: string | null
@@ -13578,6 +13716,81 @@ export type Database = {
           webhook_secret?: string | null
         }
         Relationships: []
+      }
+      store_products: {
+        Row: {
+          channel_specific_data: Json | null
+          compare_at_price_override: number | null
+          created_at: string
+          description_override: string | null
+          external_product_id: string | null
+          external_variant_id: string | null
+          id: string
+          is_synced: boolean
+          last_synced_at: string | null
+          price_override: number | null
+          product_id: string
+          status: string
+          store_id: string
+          sync_error: string | null
+          title_override: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_specific_data?: Json | null
+          compare_at_price_override?: number | null
+          created_at?: string
+          description_override?: string | null
+          external_product_id?: string | null
+          external_variant_id?: string | null
+          id?: string
+          is_synced?: boolean
+          last_synced_at?: string | null
+          price_override?: number | null
+          product_id: string
+          status?: string
+          store_id: string
+          sync_error?: string | null
+          title_override?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_specific_data?: Json | null
+          compare_at_price_override?: number | null
+          created_at?: string
+          description_override?: string | null
+          external_product_id?: string | null
+          external_variant_id?: string | null
+          id?: string
+          is_synced?: boolean
+          last_synced_at?: string | null
+          price_override?: number | null
+          product_id?: string
+          status?: string
+          store_id?: string
+          sync_error?: string | null
+          title_override?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "store_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       store_variants: {
         Row: {
