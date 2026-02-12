@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { marketingApi, api } from '@/services/api/client';
 
 export interface MarketingCampaign {
   id: string; name: string; description?: string; type: 'email' | 'sms' | 'social' | 'ads' | 'retargeting';
@@ -30,11 +30,8 @@ export const useUnifiedMarketing = () => {
   const { data: campaigns = [], isLoading: isLoadingCampaigns } = useQuery({
     queryKey: ['marketing-campaigns-unified', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase.from('marketing_campaigns')
-        .select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []).map((c: any) => ({ ...c, budget_spent: c.spent || 0 })) as MarketingCampaign[];
+      const resp = await marketingApi.listCampaigns({ per_page: 100 });
+      return (resp.items ?? []).map((c: any) => ({ ...c, budget_spent: c.spent || 0 })) as MarketingCampaign[];
     },
     enabled: !!user?.id,
   });
@@ -42,11 +39,12 @@ export const useUnifiedMarketing = () => {
   const { data: segments = [], isLoading: isLoadingSegments } = useQuery({
     queryKey: ['marketing-segments-unified', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await (supabase.from('marketing_segments') as any)
-        .select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as MarketingSegment[];
+      try {
+        const resp = await api.get<{ items: any[] }>('/marketing/segments');
+        return (resp.items ?? []) as MarketingSegment[];
+      } catch {
+        return [] as MarketingSegment[];
+      }
     },
     enabled: !!user?.id,
   });
@@ -54,58 +52,33 @@ export const useUnifiedMarketing = () => {
   const { data: contacts = [], isLoading: isLoadingContacts } = useQuery({
     queryKey: ['crm-contacts-unified', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data } = await (supabase.from('crm_leads') as any)
-        .select('*').eq('user_id', user.id);
-      return (data || []).map((l: any) => ({ ...l, lifecycle_stage: l.status, lead_score: l.lead_score || 0 })) as CRMContact[];
+      try {
+        const resp = await api.get<{ items: any[] }>('/crm/contacts');
+        return (resp.items ?? []).map((l: any) => ({ ...l, lifecycle_stage: l.status, lead_score: l.lead_score || 0 })) as CRMContact[];
+      } catch {
+        return [] as CRMContact[];
+      }
     },
     enabled: !!user?.id,
   });
 
   const createCampaign = useMutation({
-    mutationFn: async (campaign: any) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase.from('marketing_campaigns')
-        .insert({ name: campaign.name, description: campaign.description, status: campaign.status || 'draft', budget: campaign.budget_total, user_id: user.id })
-        .select().single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async (campaign: any) => marketingApi.createCampaign({ name: campaign.name, description: campaign.description, status: campaign.status || 'draft', budget: campaign.budget_total }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['marketing-campaigns-unified'] }); toast({ title: "Campagne créée" }); },
   });
 
   const updateCampaign = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
-      const { data, error } = await supabase.from('marketing_campaigns').update(updates).eq('id', id).select().single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => marketingApi.updateCampaign(id, updates),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['marketing-campaigns-unified'] }); toast({ title: "Campagne mise à jour" }); },
   });
 
   const createSegment = useMutation({
-    mutationFn: async (segment: any) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await (supabase.from('marketing_segments') as any)
-        .insert({ name: segment.name, description: segment.description, criteria: segment.criteria, is_dynamic: segment.is_dynamic, user_id: user.id })
-        .select().single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketing-segments-unified'] });
-      toast({ title: "Segment créé" });
-    },
+    mutationFn: async (segment: any) => api.post('/marketing/segments', { name: segment.name, description: segment.description, criteria: segment.criteria, is_dynamic: segment.is_dynamic }, crypto.randomUUID()),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['marketing-segments-unified'] }); toast({ title: "Segment créé" }); },
   });
+
   const createContact = useMutation({
-    mutationFn: async (contact: any) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await (supabase.from('crm_leads') as any)
-        .insert({ name: contact.name, email: contact.email, phone: contact.phone, company: contact.company, user_id: user.id })
-        .select().single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async (contact: any) => api.post('/crm/contacts', { name: contact.name, email: contact.email, phone: contact.phone, company: contact.company }, crypto.randomUUID()),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['crm-contacts-unified'] }); toast({ title: "Contact créé" }); },
   });
 

@@ -466,8 +466,71 @@ export const marketingApi = {
   createCampaign: (body: any) =>
     api.post<any>('/marketing/campaigns', body, crypto.randomUUID()),
 
+  updateCampaign: (id: string, body: any) =>
+    api.put<any>(`/marketing/campaigns/${id}`, body),
+
+  deleteCampaign: (id: string) =>
+    api.delete<{ success: boolean }>(`/marketing/campaigns/${id}`),
+
   stats: () =>
     api.get<any>('/marketing/stats'),
+
+  dashboardStats: () =>
+    api.get<any>('/marketing/dashboard-stats'),
+
+  // Automations
+  listAutomations: () =>
+    api.get<{ items: any[] }>('/marketing/automations'),
+
+  createAutomation: (body: any) =>
+    api.post<any>('/marketing/automations', body, crypto.randomUUID()),
+
+  updateAutomation: (id: string, body: any) =>
+    api.put<any>(`/marketing/automations/${id}`, body),
+
+  toggleAutomation: (id: string, is_active: boolean) =>
+    api.post<any>(`/marketing/automations/${id}/toggle`, { is_active }),
+}
+
+// ── Ads ─────────────────────────────────────────────────────────────────────
+
+export const adsApi = {
+  listAccounts: () =>
+    api.get<{ items: any[] }>('/ads/accounts'),
+
+  createAccount: (body: any) =>
+    api.post<any>('/ads/accounts', body, crypto.randomUUID()),
+
+  updateAccount: (id: string, body: any) =>
+    api.put<any>(`/ads/accounts/${id}`, body),
+
+  listCampaigns: () =>
+    api.get<{ items: any[] }>('/ads/campaigns'),
+
+  createCampaign: (body: any) =>
+    api.post<any>('/ads/campaigns', body, crypto.randomUUID()),
+
+  updateCampaign: (id: string, body: any) =>
+    api.put<any>(`/ads/campaigns/${id}`, body),
+
+  deleteCampaign: (id: string) =>
+    api.delete<{ success: boolean }>(`/ads/campaigns/${id}`),
+}
+
+// ── Business Intelligence / Insights ────────────────────────────────────────
+
+export const insightsApi = {
+  list: (params?: { limit?: number }) =>
+    api.get<{ items: any[] }>('/insights', params as any),
+
+  metrics: () =>
+    api.get<any>('/insights/metrics'),
+
+  acknowledge: (id: string) =>
+    api.post<any>(`/insights/${id}/acknowledge`, {}),
+
+  dismiss: (id: string) =>
+    api.delete<{ success: boolean }>(`/insights/${id}`),
 }
 
 // ── CRM ─────────────────────────────────────────────────────────────────────
