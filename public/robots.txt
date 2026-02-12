@@ -1,5 +1,5 @@
 # Robots.txt for ShopOpti+
-# https://www.shopopti.io
+# https://shopopti.io
 
 User-agent: *
 Allow: /
@@ -8,6 +8,10 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /auth/
 Disallow: /settings/
+Disallow: /*?sort=
+Disallow: /*?filter=
+Disallow: /*?page=
+Disallow: /*?search=
 
 # Allow search engines to index public pages
 Allow: /pricing
@@ -18,9 +22,13 @@ Allow: /blog
 Allow: /documentation
 Allow: /faq
 Allow: /integrations
+Allow: /logiciel-dropshipping
+Allow: /alternative-autods
+Allow: /optimisation-shopify
+Allow: /gestion-catalogue-ecommerce
 
 # Sitemaps
-Sitemap: https://www.shopopti.io/sitemap.xml
+Sitemap: https://shopopti.io/sitemap.xml
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1

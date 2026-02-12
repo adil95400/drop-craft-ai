@@ -12,17 +12,21 @@ export interface SitemapUrl {
 
 // Static pages for the public website
 export const staticPages: SitemapUrl[] = [
-  { loc: 'https://www.shopopti.io/', changefreq: 'daily', priority: 1.0 },
-  { loc: 'https://www.shopopti.io/features', changefreq: 'weekly', priority: 0.9 },
-  { loc: 'https://www.shopopti.io/pricing', changefreq: 'weekly', priority: 0.9 },
-  { loc: 'https://www.shopopti.io/about', changefreq: 'monthly', priority: 0.7 },
-  { loc: 'https://www.shopopti.io/contact', changefreq: 'monthly', priority: 0.6 },
-  { loc: 'https://www.shopopti.io/blog', changefreq: 'daily', priority: 0.8 },
-  { loc: 'https://www.shopopti.io/documentation', changefreq: 'weekly', priority: 0.7 },
-  { loc: 'https://www.shopopti.io/faq', changefreq: 'monthly', priority: 0.6 },
-  { loc: 'https://www.shopopti.io/integrations', changefreq: 'weekly', priority: 0.7 },
-  { loc: 'https://www.shopopti.io/privacy-policy', changefreq: 'yearly', priority: 0.3 },
-  { loc: 'https://www.shopopti.io/terms-of-service', changefreq: 'yearly', priority: 0.3 },
+  { loc: 'https://shopopti.io/', changefreq: 'daily', priority: 1.0 },
+  { loc: 'https://shopopti.io/features', changefreq: 'weekly', priority: 0.9 },
+  { loc: 'https://shopopti.io/pricing', changefreq: 'weekly', priority: 0.9 },
+  { loc: 'https://shopopti.io/about', changefreq: 'monthly', priority: 0.7 },
+  { loc: 'https://shopopti.io/contact', changefreq: 'monthly', priority: 0.6 },
+  { loc: 'https://shopopti.io/blog', changefreq: 'daily', priority: 0.8 },
+  { loc: 'https://shopopti.io/documentation', changefreq: 'weekly', priority: 0.7 },
+  { loc: 'https://shopopti.io/faq', changefreq: 'monthly', priority: 0.6 },
+  { loc: 'https://shopopti.io/integrations', changefreq: 'weekly', priority: 0.7 },
+  { loc: 'https://shopopti.io/logiciel-dropshipping', changefreq: 'monthly', priority: 0.9 },
+  { loc: 'https://shopopti.io/alternative-autods', changefreq: 'monthly', priority: 0.9 },
+  { loc: 'https://shopopti.io/optimisation-shopify', changefreq: 'monthly', priority: 0.9 },
+  { loc: 'https://shopopti.io/gestion-catalogue-ecommerce', changefreq: 'monthly', priority: 0.9 },
+  { loc: 'https://shopopti.io/privacy-policy', changefreq: 'yearly', priority: 0.3 },
+  { loc: 'https://shopopti.io/terms-of-service', changefreq: 'yearly', priority: 0.3 },
 ];
 
 export function generateSitemapXML(urls: SitemapUrl[]): string {
@@ -47,7 +51,7 @@ ${urlEntries}
 
 export function generateRobotsTxt(): string {
   return `# Robots.txt for ShopOpti+
-# https://www.shopopti.io
+# https://shopopti.io
 
 User-agent: *
 Allow: /
@@ -57,7 +61,7 @@ Disallow: /api/
 Disallow: /auth/
 
 # Sitemaps
-Sitemap: https://www.shopopti.io/sitemap.xml
+Sitemap: https://shopopti.io/sitemap.xml
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1

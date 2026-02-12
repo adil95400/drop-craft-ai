@@ -21,11 +21,18 @@ const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const About = lazy(() => import('@/pages/About'));
 const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
 const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
+const BlogArticlePage = lazy(() => import('@/pages/public/BlogArticlePage'));
 const DocumentationPage = lazy(() => import('@/pages/public/DocumentationPage'));
 const TestimonialsPage = lazy(() => import('@/pages/public/TestimonialsPage'));
 const ChangelogPage = lazy(() => import('@/pages/public/ChangelogPage'));
 const StatusPage = lazy(() => import('@/pages/public/StatusPage'));
 const Integrations = lazy(() => import('@/pages/integrations/ChannableStyleIntegrationsPage'));
+
+// SEO SaaS pages
+const LogicielDropshippingPage = lazy(() => import('@/pages/public/LogicielDropshippingPage'));
+const AlternativeAutodsPage = lazy(() => import('@/pages/public/AlternativeAutodsPage'));
+const OptimisationShopifyPage = lazy(() => import('@/pages/public/OptimisationShopifyPage'));
+const GestionCatalogueEcommercePage = lazy(() => import('@/pages/public/GestionCatalogueEcommercePage'));
 
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
@@ -56,10 +63,17 @@ export function PublicRoutes() {
       <Route path="documentation" element={<DocumentationPage />} />
       <Route path="docs" element={<DocumentationPage />} />
       <Route path="blog" element={<BlogPage />} />
+      <Route path="blog/:slug" element={<BlogArticlePage />} />
       <Route path="changelog" element={<ChangelogPage />} />
       <Route path="status" element={<StatusPage />} />
       <Route path="testimonials" element={<TestimonialsPage />} />
       <Route path="integrations" element={<Integrations />} />
+      
+      {/* SEO SaaS Pages */}
+      <Route path="logiciel-dropshipping" element={<LogicielDropshippingPage />} />
+      <Route path="alternative-autods" element={<AlternativeAutodsPage />} />
+      <Route path="optimisation-shopify" element={<OptimisationShopifyPage />} />
+      <Route path="gestion-catalogue-ecommerce" element={<GestionCatalogueEcommercePage />} />
       
       {/* Support */}
       <Route path="contact" element={<Contact />} />

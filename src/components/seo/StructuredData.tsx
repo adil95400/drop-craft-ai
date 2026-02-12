@@ -9,8 +9,8 @@ interface OrganizationSchemaProps {
 
 export const OrganizationSchema = ({
   name = "ShopOpti+",
-  url = "https://www.shopopti.io",
-  logo = "https://www.shopopti.io/logo.png",
+  url = "https://shopopti.io",
+  logo = "https://shopopti.io/logo.png",
   sameAs = [
     "https://twitter.com/shopopti",
     "https://www.linkedin.com/company/shopopti",
@@ -170,7 +170,7 @@ export const ArticleSchema = ({
       "name": "ShopOpti+",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://www.shopopti.io/logo.png"
+        "url": "https://shopopti.io/logo.png"
       }
     },
     "datePublished": datePublished,
@@ -221,7 +221,7 @@ export const LocalBusinessSchema = ({
     },
     "telephone": telephone,
     "email": email,
-    "url": "https://www.shopopti.io",
+    "url": "https://shopopti.io",
     "priceRange": "€€"
   };
 
