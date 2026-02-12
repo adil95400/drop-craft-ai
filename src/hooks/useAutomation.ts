@@ -1,16 +1,15 @@
 /**
- * useAutomation — Unified automation hook
- * Combines trigger-based (legacy) and workflow-based (useRealAutomation) automation
+ * useAutomation — Unified automation hook (API V1)
+ * All CRUD delegated to /v1/automation/* endpoints
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { automationApi } from '@/services/api/client';
 
 // Re-export workflow-based automation as named export
 export { useRealAutomation as useAutomationWorkflows } from './useRealAutomation'
 export type { AutomationWorkflow } from './useRealAutomation'
-// Avoid re-exporting AutomationExecution from useRealAutomation to prevent conflict
 
 export interface AutomationTrigger {
   id: string; user_id: string; name: string; description?: string;
@@ -38,11 +37,8 @@ export const useAutomation = () => {
   const { data: triggers = [], isLoading: isLoadingTriggers } = useQuery({
     queryKey: ['automation-triggers', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase.from('automation_triggers')
-        .select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as AutomationTrigger[];
+      const res = await automationApi.listTriggers();
+      return (res.items || []) as AutomationTrigger[];
     },
     enabled: !!user?.id,
   });
@@ -50,11 +46,8 @@ export const useAutomation = () => {
   const { data: actions = [], isLoading: isLoadingActions } = useQuery({
     queryKey: ['automation-actions', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase.from('automation_actions')
-        .select('*').eq('user_id', user.id).order('execution_order', { ascending: true });
-      if (error) throw error;
-      return (data || []) as AutomationAction[];
+      const res = await automationApi.listActions();
+      return (res.items || []) as AutomationAction[];
     },
     enabled: !!user?.id,
   });
@@ -62,22 +55,15 @@ export const useAutomation = () => {
   const { data: executions = [], isLoading: isLoadingExecutions } = useQuery({
     queryKey: ['automation-executions', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase.from('automation_execution_logs')
-        .select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100);
-      if (error) throw error;
-      return (data || []) as AutomationExecution[];
+      const res = await automationApi.listExecutions({ limit: 100 });
+      return (res.items || []) as AutomationExecution[];
     },
     enabled: !!user?.id,
   });
 
   const createTrigger = useMutation({
     mutationFn: async (newTrigger: Omit<AutomationTrigger, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase.from('automation_triggers')
-        .insert({ ...newTrigger, user_id: user.id }).select().single();
-      if (error) throw error;
-      return data;
+      return await automationApi.createTrigger(newTrigger);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
@@ -87,10 +73,7 @@ export const useAutomation = () => {
 
   const updateTrigger = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<AutomationTrigger> }) => {
-      const { data, error } = await supabase.from('automation_triggers')
-        .update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id).select().single();
-      if (error) throw error;
-      return data;
+      return await automationApi.updateTrigger(id, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
@@ -100,8 +83,7 @@ export const useAutomation = () => {
 
   const deleteTrigger = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('automation_triggers').delete().eq('id', id);
-      if (error) throw error;
+      return await automationApi.deleteTrigger(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
@@ -112,11 +94,7 @@ export const useAutomation = () => {
 
   const createAction = useMutation({
     mutationFn: async (newAction: Omit<AutomationAction, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase.from('automation_actions')
-        .insert({ ...newAction, user_id: user.id, name: newAction.action_type, config: newAction.action_config }).select().single();
-      if (error) throw error;
-      return data;
+      return await automationApi.createAction(newAction);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-actions'] });
@@ -126,12 +104,7 @@ export const useAutomation = () => {
 
   const processTrigger = useMutation({
     mutationFn: async ({ triggerId, contextData }: { triggerId: string; contextData?: any }) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase.from('automation_execution_logs')
-        .insert({ user_id: user.id, trigger_id: triggerId, status: 'completed', input_data: contextData || {} })
-        .select().single();
-      if (error) throw error;
-      return data;
+      return await automationApi.execute(triggerId, contextData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-executions'] });

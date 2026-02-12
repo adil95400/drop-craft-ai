@@ -384,3 +384,75 @@ export const dashboardApi = {
   activity: (params?: { limit?: number }) =>
     api.get<{ items: any[] }>('/dashboard/activity', params as any),
 }
+
+// ── Integrations ────────────────────────────────────────────────────────────
+
+export const integrationsApi = {
+  list: (params?: PaginationParams) =>
+    api.get<PaginatedResponse<any>>('/integrations', params as any),
+
+  get: (id: string) =>
+    api.get<any>(`/integrations/${id}`),
+
+  create: (body: any) =>
+    api.post<any>('/integrations', body, crypto.randomUUID()),
+
+  update: (id: string, body: any) =>
+    api.put<any>(`/integrations/${id}`, body),
+
+  delete: (id: string) =>
+    api.delete<{ success: boolean }>(`/integrations/${id}`),
+
+  stats: () =>
+    api.get<any>('/integrations/stats'),
+
+  sync: (id: string, body?: { sync_type?: string }) =>
+    api.post<any>(`/integrations/${id}/sync`, body || {}),
+
+  test: (id: string) =>
+    api.post<any>(`/integrations/${id}/test`, {}),
+}
+
+// ── Suppliers ───────────────────────────────────────────────────────────────
+
+export const suppliersApi = {
+  list: (params?: PaginationParams & { category?: string; status?: string; q?: string }) =>
+    api.get<PaginatedResponse<any>>('/suppliers', params as any),
+
+  get: (id: string) =>
+    api.get<any>(`/suppliers/${id}`),
+
+  stats: () =>
+    api.get<any>('/suppliers/stats'),
+}
+
+// ── Automation ──────────────────────────────────────────────────────────────
+
+export const automationApi = {
+  listTriggers: (params?: PaginationParams) =>
+    api.get<{ items: any[] }>('/automation/triggers', params as any),
+
+  createTrigger: (body: any) =>
+    api.post<any>('/automation/triggers', body, crypto.randomUUID()),
+
+  updateTrigger: (id: string, body: any) =>
+    api.put<any>(`/automation/triggers/${id}`, body),
+
+  deleteTrigger: (id: string) =>
+    api.delete<{ success: boolean }>(`/automation/triggers/${id}`),
+
+  listActions: (params?: PaginationParams) =>
+    api.get<{ items: any[] }>('/automation/actions', params as any),
+
+  createAction: (body: any) =>
+    api.post<any>('/automation/actions', body, crypto.randomUUID()),
+
+  listExecutions: (params?: { limit?: number; status?: string }) =>
+    api.get<{ items: any[] }>('/automation/executions', params as any),
+
+  execute: (triggerId: string, contextData?: any) =>
+    api.post<any>('/automation/execute', { trigger_id: triggerId, context_data: contextData }),
+
+  stats: () =>
+    api.get<any>('/automation/stats'),
+}
