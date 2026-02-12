@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react'
+import { cn } from '@/lib/utils'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
@@ -27,6 +28,7 @@ import { JobTrackerPanel } from '@/components/jobs/JobTrackerPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -49,11 +51,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { 
   Plus, Search, Upload, Download, RefreshCw, Trash2, 
   Edit3, Loader2, Package, Filter, X, Brain, Zap,
-  ChevronDown
+  ChevronDown, LayoutGrid, List, DollarSign, TrendingUp,
+  BarChart3, AlertTriangle, ArrowUpDown
 } from 'lucide-react'
 
 // Product components
 import { ResponsiveProductsTable } from '@/components/products/ResponsiveProductsTable'
+import { ProductsGridView } from '@/components/products/ProductsGridView'
 import { ProductsPagination } from '@/components/products/ProductsPagination'
 import { BulkEditPanel } from '@/components/products/BulkEditPanel'
 import { ProductViewModal } from '@/components/modals/ProductViewModal'
@@ -62,6 +66,9 @@ import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrappe
 
 // ============= Types =============
 type StatusFilter = 'all' | 'active' | 'inactive' | 'draft' | 'archived'
+type ViewMode = 'table' | 'grid'
+type SortField = 'name' | 'price' | 'stock_quantity' | 'margin' | 'created_at'
+type SortDirection = 'asc' | 'desc'
 
 export default function CatalogProductsPage() {
   const navigate = useNavigate()
@@ -72,6 +79,12 @@ export default function CatalogProductsPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [sourceFilter, setSourceFilter] = useState('all')
+  
+  // === VIEW & SORT STATE ===
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
+  const [sortField, setSortField] = useState<SortField>('created_at')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   
   // === UI STATE ===
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
@@ -97,6 +110,33 @@ export default function CatalogProductsPage() {
     return Array.from(cats).sort() as string[]
   }, [products])
 
+  const sources = useMemo(() => {
+    const srcs = new Set(products.map(p => p.source).filter(Boolean))
+    return Array.from(srcs).sort() as string[]
+  }, [products])
+
+  // === KPI CALCULATIONS ===
+  const kpis = useMemo(() => {
+    const totalStock = products.reduce((sum, p) => sum + (p.stock_quantity || 0), 0)
+    const totalValue = products.reduce((sum, p) => sum + (p.price * (p.stock_quantity || 0)), 0)
+    const productsWithMargin = products.filter(p => p.cost_price && p.price > 0)
+    const avgMargin = productsWithMargin.length > 0
+      ? productsWithMargin.reduce((sum, p) => {
+          const margin = ((p.price - (p.cost_price || 0)) / p.price) * 100
+          return sum + margin
+        }, 0) / productsWithMargin.length
+      : 0
+    const lowStockCount = products.filter(p => (p.stock_quantity || 0) < 10 && (p.stock_quantity || 0) > 0).length
+
+    return { totalStock, totalValue, avgMargin, lowStockCount }
+  }, [products])
+
+  // Helper: compute margin for a product
+  const getMargin = (p: UnifiedProduct) => {
+    if (!p.cost_price || p.price <= 0) return null
+    return ((p.price - p.cost_price) / p.price) * 100
+  }
+
   const filteredProducts = useMemo(() => {
     let result = [...products]
     if (search) {
@@ -113,8 +153,45 @@ export default function CatalogProductsPage() {
     if (categoryFilter !== 'all') {
       result = result.filter(p => p.category === categoryFilter)
     }
+    if (sourceFilter !== 'all') {
+      result = result.filter(p => p.source === sourceFilter)
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      let valA: number | string = 0
+      let valB: number | string = 0
+
+      switch (sortField) {
+        case 'name':
+          valA = a.name.toLowerCase()
+          valB = b.name.toLowerCase()
+          break
+        case 'price':
+          valA = a.price || 0
+          valB = b.price || 0
+          break
+        case 'stock_quantity':
+          valA = a.stock_quantity || 0
+          valB = b.stock_quantity || 0
+          break
+        case 'margin':
+          valA = getMargin(a) ?? -999
+          valB = getMargin(b) ?? -999
+          break
+        case 'created_at':
+          valA = a.created_at || ''
+          valB = b.created_at || ''
+          break
+      }
+
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+
     return result
-  }, [products, search, statusFilter, categoryFilter])
+  }, [products, search, statusFilter, categoryFilter, sourceFilter, sortField, sortDirection])
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = useMemo(() => {
@@ -122,7 +199,18 @@ export default function CatalogProductsPage() {
     return filteredProducts.slice(start, start + itemsPerPage)
   }, [filteredProducts, currentPage, itemsPerPage])
 
-  const hasActiveFilters = search !== '' || statusFilter !== 'all' || categoryFilter !== 'all'
+  const hasActiveFilters = search !== '' || statusFilter !== 'all' || categoryFilter !== 'all' || sourceFilter !== 'all'
+
+  // Sort handler
+  const handleSort = useCallback((field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+    setCurrentPage(1)
+  }, [sortField])
 
   // === HANDLERS (100% FastAPI) ===
   const handleRefresh = useCallback(() => {
@@ -194,8 +282,11 @@ export default function CatalogProductsPage() {
     setIsExporting(true)
     try {
       const items = products || []
-      const headers = ['Nom', 'SKU', 'Prix', 'Stock', 'Statut', 'Catégorie']
-      const rows = items.map(p => [p.name || '', p.sku || '', p.price || 0, p.stock_quantity || 0, p.status || '', p.category || ''])
+      const headers = ['Nom', 'SKU', 'Prix', 'Coût', 'Marge %', 'Stock', 'Statut', 'Catégorie', 'Source']
+      const rows = items.map(p => {
+        const margin = getMargin(p)
+        return [p.name || '', p.sku || '', p.price || 0, p.cost_price || '', margin !== null ? margin.toFixed(1) : '', p.stock_quantity || 0, p.status || '', p.category || '', p.source || '']
+      })
       const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
       const blob = new Blob([csv], { type: 'text/csv' })
       const url = window.URL.createObjectURL(blob)
@@ -231,6 +322,7 @@ export default function CatalogProductsPage() {
     setSearch('')
     setStatusFilter('all')
     setCategoryFilter('all')
+    setSourceFilter('all')
     setCurrentPage(1)
   }, [])
 
@@ -246,6 +338,66 @@ export default function CatalogProductsPage() {
       <div className="space-y-4">
         {/* === ACTIVE JOBS BANNER === */}
         <ActiveJobsBanner />
+
+        {/* === KPI STAT CARDS === */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <Card className="border-border/50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Package className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold leading-none">{stats.total}</p>
+                <p className="text-xs text-muted-foreground mt-1">Produits total</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                <BarChart3 className="h-5 w-5 text-blue-500" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold leading-none">{kpis.totalStock.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">Stock total</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold leading-none">{kpis.totalValue.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} €</p>
+                <p className="text-xs text-muted-foreground mt-1">Valeur stock</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className={cn(
+                "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
+                kpis.avgMargin >= 30 ? 'bg-emerald-500/10' : kpis.avgMargin >= 15 ? 'bg-amber-500/10' : 'bg-destructive/10'
+              )}>
+                <TrendingUp className={cn(
+                  "h-5 w-5",
+                  kpis.avgMargin >= 30 ? 'text-emerald-500' : kpis.avgMargin >= 15 ? 'text-amber-500' : 'text-destructive'
+                )} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-2xl font-bold leading-none">{kpis.avgMargin.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground mt-1">Marge moyenne</p>
+              </div>
+              {kpis.lowStockCount > 0 && (
+                <Badge variant="destructive" className="ml-auto text-[10px] shrink-0">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {kpis.lowStockCount}
+                </Badge>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* === TOOLBAR === */}
         <div className="flex flex-col gap-3">
@@ -286,6 +438,25 @@ export default function CatalogProductsPage() {
               </Button>
             </div>
             <div className="flex items-center gap-2">
+              {/* View Toggle */}
+              <div className="inline-flex items-center rounded-lg border bg-background p-0.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className={`h-7 px-2.5 ${viewMode === 'table' ? 'bg-muted' : ''}`}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={`h-7 px-2.5 ${viewMode === 'grid' ? 'bg-muted' : ''}`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
               {/* Jobs tracker toggle */}
               {activeJobs.length > 0 && (
                 <Button 
@@ -323,11 +494,11 @@ export default function CatalogProductsPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as StatusFilter); setCurrentPage(1) }}>
-              <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectTrigger className="w-full sm:w-[140px]">
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="all">Tous statuts</SelectItem>
                 <SelectItem value="active">Actif</SelectItem>
                 <SelectItem value="inactive">Inactif</SelectItem>
                 <SelectItem value="draft">Brouillon</SelectItem>
@@ -335,7 +506,7 @@ export default function CatalogProductsPage() {
               </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setCurrentPage(1) }}>
-              <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="Catégorie" />
               </SelectTrigger>
               <SelectContent>
@@ -343,6 +514,26 @@ export default function CatalogProductsPage() {
                 {categories.map(cat => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            {/* Feature #6: Source Filter */}
+            <Select value={sourceFilter} onValueChange={(v) => { setSourceFilter(v); setCurrentPage(1) }}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="Source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes sources</SelectItem>
+                {sources.map(src => (
+                  <SelectItem key={src} value={src}>{src}</SelectItem>
+                ))}
+                {sources.length === 0 && (
+                  <>
+                    <SelectItem value="manual">Manuel</SelectItem>
+                    <SelectItem value="csv">CSV</SelectItem>
+                    <SelectItem value="shopify">Shopify</SelectItem>
+                    <SelectItem value="api">API</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
             {hasActiveFilters && (
@@ -353,7 +544,7 @@ export default function CatalogProductsPage() {
             )}
           </div>
 
-          {/* Résultats count */}
+          {/* Résultats count + Sort indicator */}
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
               {filteredProducts.length === stats.total 
@@ -361,12 +552,21 @@ export default function CatalogProductsPage() {
                 : `${filteredProducts.length} sur ${stats.total} produit(s)`
               }
             </span>
-            {hasActiveFilters && (
-              <Badge variant="secondary" className="gap-1">
-                <Filter className="h-3 w-3" />
-                Filtres actifs
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {sortField !== 'created_at' && (
+                <Badge variant="outline" className="gap-1 text-xs">
+                  <ArrowUpDown className="h-3 w-3" />
+                  {sortField === 'name' ? 'Nom' : sortField === 'price' ? 'Prix' : sortField === 'stock_quantity' ? 'Stock' : 'Marge'}
+                  {sortDirection === 'asc' ? ' ↑' : ' ↓'}
+                </Badge>
+              )}
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="gap-1">
+                  <Filter className="h-3 w-3" />
+                  Filtres actifs
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
@@ -407,17 +607,31 @@ export default function CatalogProductsPage() {
           </motion.div>
         )}
 
-        {/* === TABLE === */}
-        <ResponsiveProductsTable
-          products={paginatedProducts}
-          isLoading={isLoading}
-          selectedProducts={selectedProducts}
-          onSelectionChange={setSelectedProducts}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onView={handleView}
-          onDuplicate={handleDuplicate}
-        />
+        {/* === TABLE OR GRID === */}
+        {viewMode === 'table' ? (
+          <ResponsiveProductsTable
+            products={paginatedProducts}
+            isLoading={isLoading}
+            selectedProducts={selectedProducts}
+            onSelectionChange={setSelectedProducts}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+            onDuplicate={handleDuplicate}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+          />
+        ) : (
+          <ProductsGridView
+            products={paginatedProducts}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+            selectedProducts={selectedProducts}
+            onSelectionChange={setSelectedProducts}
+          />
+        )}
 
         {/* === PAGINATION === */}
         {totalPages > 1 && (
