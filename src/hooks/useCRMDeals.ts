@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { crmApi } from '@/services/api/client';
 
 export interface CRMDeal {
   id: string; user_id: string; name: string; contact_id?: string; lead_id?: string;
@@ -18,42 +18,25 @@ export function useCRMDeals() {
   const { data: deals = [], isLoading } = useQuery({
     queryKey: ['crm-deals', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await (supabase.from('crm_deals') as any)
-        .select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as CRMDeal[];
+      const res = await crmApi.listDeals();
+      return (res.items || []) as CRMDeal[];
     },
     enabled: !!user?.id,
   });
 
   const createDeal = useMutation({
-    mutationFn: async (dealData: Partial<CRMDeal>) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await (supabase.from('crm_deals') as any)
-        .insert({ ...dealData, user_id: user.id }).select().single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async (dealData: Partial<CRMDeal>) => crmApi.createDeal(dealData),
     onSuccess: () => { toast.success('Deal créé'); queryClient.invalidateQueries({ queryKey: ['crm-deals'] }); },
     onError: () => toast.error('Erreur lors de la création'),
   });
 
   const updateDeal = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<CRMDeal> & { id: string }) => {
-      const { data, error } = await (supabase.from('crm_deals') as any)
-        .update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id).select().single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: async ({ id, ...updates }: Partial<CRMDeal> & { id: string }) => crmApi.updateDeal(id, updates),
     onSuccess: () => { toast.success('Deal mis à jour'); queryClient.invalidateQueries({ queryKey: ['crm-deals'] }); },
   });
 
   const deleteDeal = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (supabase.from('crm_deals') as any).delete().eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: async (id: string) => crmApi.deleteDeal(id),
     onSuccess: () => { toast.success('Deal supprimé'); queryClient.invalidateQueries({ queryKey: ['crm-deals'] }); },
   });
 

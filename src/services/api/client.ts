@@ -456,3 +456,67 @@ export const automationApi = {
   stats: () =>
     api.get<any>('/automation/stats'),
 }
+
+// ── Marketing ───────────────────────────────────────────────────────────────
+
+export const marketingApi = {
+  listCampaigns: (params?: PaginationParams) =>
+    api.get<PaginatedResponse<any>>('/marketing/campaigns', params as any),
+
+  createCampaign: (body: any) =>
+    api.post<any>('/marketing/campaigns', body, crypto.randomUUID()),
+
+  stats: () =>
+    api.get<any>('/marketing/stats'),
+}
+
+// ── CRM ─────────────────────────────────────────────────────────────────────
+
+export const crmApi = {
+  listTasks: () =>
+    api.get<{ items: any[] }>('/crm/tasks'),
+
+  createTask: (body: any) =>
+    api.post<any>('/crm/tasks', body, crypto.randomUUID()),
+
+  updateTask: (id: string, body: any) =>
+    api.put<any>(`/crm/tasks/${id}`, body),
+
+  deleteTask: (id: string) =>
+    api.delete<{ success: boolean }>(`/crm/tasks/${id}`),
+
+  listDeals: () =>
+    api.get<{ items: any[] }>('/crm/deals'),
+
+  createDeal: (body: any) =>
+    api.post<any>('/crm/deals', body, crypto.randomUUID()),
+
+  updateDeal: (id: string, body: any) =>
+    api.put<any>(`/crm/deals/${id}`, body),
+
+  deleteDeal: (id: string) =>
+    api.delete<{ success: boolean }>(`/crm/deals/${id}`),
+}
+
+// ── Pricing ─────────────────────────────────────────────────────────────────
+
+export const pricingApi = {
+  listRules: () =>
+    api.get<{ items: any[] }>('/pricing/rules'),
+
+  createRule: (body: any) =>
+    api.post<any>('/pricing/rules', body, crypto.randomUUID()),
+
+  updateRule: (id: string, body: any) =>
+    api.put<any>(`/pricing/rules/${id}`, body),
+
+  deleteRule: (id: string) =>
+    api.delete<{ success: boolean }>(`/pricing/rules/${id}`),
+}
+
+// ── Finance ─────────────────────────────────────────────────────────────────
+
+export const financeApi = {
+  stats: () =>
+    api.get<any>('/finance/stats'),
+}
