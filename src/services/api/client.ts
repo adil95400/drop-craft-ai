@@ -330,3 +330,57 @@ export const aiGenerationsApi = {
   create: (body: any) =>
     api.post<any>('/ai/generations', body, crypto.randomUUID()),
 }
+
+// ── Orders ──────────────────────────────────────────────────────────────────
+
+export const ordersApi = {
+  list: (params?: PaginationParams & { status?: string; q?: string }) =>
+    api.get<PaginatedResponse<any>>('/orders', params as any),
+
+  get: (id: string) =>
+    api.get<any>(`/orders/${id}`),
+
+  create: (body: any) =>
+    api.post<any>('/orders', body, crypto.randomUUID()),
+
+  update: (id: string, body: any) =>
+    api.put<any>(`/orders/${id}`, body),
+
+  delete: (id: string) =>
+    api.delete<{ success: boolean }>(`/orders/${id}`),
+
+  stats: () =>
+    api.get<any>('/orders/stats'),
+}
+
+// ── Customers ───────────────────────────────────────────────────────────────
+
+export const customersApi = {
+  list: (params?: PaginationParams & { q?: string }) =>
+    api.get<PaginatedResponse<any>>('/customers', params as any),
+
+  get: (id: string) =>
+    api.get<any>(`/customers/${id}`),
+
+  create: (body: any) =>
+    api.post<any>('/customers', body, crypto.randomUUID()),
+
+  update: (id: string, body: any) =>
+    api.put<any>(`/customers/${id}`, body),
+
+  delete: (id: string) =>
+    api.delete<{ success: boolean }>(`/customers/${id}`),
+
+  stats: () =>
+    api.get<any>('/customers/stats'),
+}
+
+// ── Dashboard ───────────────────────────────────────────────────────────────
+
+export const dashboardApi = {
+  stats: () =>
+    api.get<any>('/dashboard/stats'),
+
+  activity: (params?: { limit?: number }) =>
+    api.get<{ items: any[] }>('/dashboard/activity', params as any),
+}

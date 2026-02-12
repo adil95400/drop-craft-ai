@@ -2085,6 +2085,282 @@ async function createAiGeneration(req: Request, auth: any, reqId: string) {
   return json(data, 201, reqId);
 }
 
+// ── Orders CRUD ──────────────────────────────────────────────────────────────
+
+async function listOrders(url: URL, auth: any, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const status = url.searchParams.get("status");
+  const q_search = url.searchParams.get("q");
+
+  let q = auth.supabase.from("orders").select("*, customer:customers(*), order_items(*)", { count: "exact" }).eq("user_id", auth.user.id);
+  if (status) q = q.eq("status", status);
+  if (q_search) q = q.or(`order_number.ilike.%${q_search}%,customer_email.ilike.%${q_search}%,customer_name.ilike.%${q_search}%`);
+
+  const { data, count, error } = await q.order("created_at", { ascending: false }).range(from, to);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getOrder(orderId: string, auth: any, reqId: string) {
+  const { data, error } = await auth.supabase
+    .from("orders")
+    .select("*, customer:customers(*), order_items(*, product:products(*))")
+    .eq("id", orderId)
+    .eq("user_id", auth.user.id)
+    .single();
+  if (error) return errorResponse("NOT_FOUND", "Order not found", 404, reqId);
+  return json(data, 200, reqId);
+}
+
+async function createOrder(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const orderNumber = body.order_number || `ORD-${Date.now()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+
+  const order = {
+    user_id: auth.user.id,
+    order_number: orderNumber,
+    customer_id: body.customer_id || null,
+    customer_name: body.customer_name || null,
+    customer_email: body.customer_email || null,
+    status: body.status || "pending",
+    payment_status: body.payment_status || "pending",
+    subtotal: body.subtotal || 0,
+    shipping_cost: body.shipping_cost || 0,
+    total_amount: body.total_amount || 0,
+    shipping_address: body.shipping_address || null,
+    carrier: body.carrier || null,
+    notes: body.notes || null,
+    currency: body.currency || "EUR",
+  };
+
+  const { data: newOrder, error: orderError } = await auth.supabase.from("orders").insert(order).select().single();
+  if (orderError) return errorResponse("DB_ERROR", orderError.message, 500, reqId);
+
+  if (body.items && body.items.length > 0) {
+    const items = body.items.map((item: any) => ({
+      order_id: newOrder.id,
+      product_id: item.product_id || null,
+      product_name: item.product_name || "Produit",
+      product_sku: item.product_sku || null,
+      qty: item.quantity || item.qty || 1,
+      unit_price: item.unit_price || item.price || 0,
+      total_price: (item.quantity || item.qty || 1) * (item.unit_price || item.price || 0),
+      variant_title: item.variant_title || null,
+    }));
+    await auth.supabase.from("order_items").insert(items);
+  }
+
+  return json(newOrder, 201, reqId);
+}
+
+async function updateOrder(orderId: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const { data, error } = await auth.supabase
+    .from("orders")
+    .update({ ...body, updated_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .eq("user_id", auth.user.id)
+    .select()
+    .single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function deleteOrder(orderId: string, auth: any, reqId: string) {
+  await auth.supabase.from("order_items").delete().eq("order_id", orderId);
+  const { error } = await auth.supabase.from("orders").delete().eq("id", orderId).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+async function getOrderStats(auth: any, reqId: string) {
+  const { data: orders, error } = await auth.supabase
+    .from("orders")
+    .select("total_amount, status, payment_status, fulfillment_status, created_at")
+    .eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  const now = new Date();
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const ordersThisMonth = orders.filter((o: any) => new Date(o.created_at) >= thisMonth);
+  const ordersLastMonth = orders.filter((o: any) => new Date(o.created_at) >= lastMonth && new Date(o.created_at) < thisMonth);
+
+  const revenue = orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+  const revenueThisMonth = ordersThisMonth.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+  const revenueLastMonth = ordersLastMonth.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+
+  return json({
+    total: orders.length,
+    pending: orders.filter((o: any) => o.status === "pending").length,
+    processing: orders.filter((o: any) => o.status === "processing").length,
+    shipped: orders.filter((o: any) => o.status === "shipped").length,
+    delivered: orders.filter((o: any) => o.status === "delivered").length,
+    cancelled: orders.filter((o: any) => o.status === "cancelled").length,
+    toFulfill: orders.filter((o: any) => !o.fulfillment_status || o.fulfillment_status === "unfulfilled").length,
+    paid: orders.filter((o: any) => o.payment_status === "paid").length,
+    revenue,
+    avgOrderValue: orders.length > 0 ? revenue / orders.length : 0,
+    revenueThisMonth,
+    revenueLastMonth,
+    ordersThisMonth: ordersThisMonth.length,
+    ordersLastMonth: ordersLastMonth.length,
+    revenueGrowth: revenueLastMonth > 0 ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100 : 0,
+    ordersGrowth: ordersLastMonth.length > 0 ? ((ordersThisMonth.length - ordersLastMonth.length) / ordersLastMonth.length) * 100 : 0,
+  }, 200, reqId);
+}
+
+// ── Customers CRUD ───────────────────────────────────────────────────────────
+
+async function listCustomers(url: URL, auth: any, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const q_search = url.searchParams.get("q");
+
+  let q = auth.supabase.from("customers").select("*, orders:orders(count)", { count: "exact" }).eq("user_id", auth.user.id);
+  if (q_search) q = q.or(`email.ilike.%${q_search}%,name.ilike.%${q_search}%`);
+
+  const { data, count, error } = await q.order("created_at", { ascending: false }).range(from, to);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function getCustomer(customerId: string, auth: any, reqId: string) {
+  const { data, error } = await auth.supabase
+    .from("customers")
+    .select("*, orders:orders(*)")
+    .eq("id", customerId)
+    .eq("user_id", auth.user.id)
+    .single();
+  if (error) return errorResponse("NOT_FOUND", "Customer not found", 404, reqId);
+  return json(data, 200, reqId);
+}
+
+async function createCustomer(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const { data, error } = await auth.supabase.from("customers").insert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function updateCustomer(customerId: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const { data, error } = await auth.supabase
+    .from("customers")
+    .update({ ...body, updated_at: new Date().toISOString() })
+    .eq("id", customerId)
+    .eq("user_id", auth.user.id)
+    .select()
+    .single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function deleteCustomer(customerId: string, auth: any, reqId: string) {
+  const { error } = await auth.supabase.from("customers").delete().eq("id", customerId).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+async function getCustomerStats(auth: any, reqId: string) {
+  const { data: customers, error } = await auth.supabase
+    .from("customers")
+    .select("id, total_spent, total_orders, created_at")
+    .eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  const now = new Date();
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const customersThisMonth = customers.filter((c: any) => new Date(c.created_at || "") >= thisMonth);
+  const customersLastMonth = customers.filter((c: any) => new Date(c.created_at || "") >= lastMonth && new Date(c.created_at || "") < thisMonth);
+  const active = customers.filter((c: any) => (c.total_orders || 0) > 0);
+
+  const totalRevenue = customers.reduce((s: number, c: any) => s + (c.total_spent || 0), 0);
+  const totalOrders = customers.reduce((s: number, c: any) => s + (c.total_orders || 0), 0);
+
+  return json({
+    total: customers.length,
+    active: active.length,
+    inactive: customers.length - active.length,
+    totalRevenue,
+    avgOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
+    avgLifetimeValue: customers.length > 0 ? totalRevenue / customers.length : 0,
+    newCustomersThisMonth: customersThisMonth.length,
+    newCustomersLastMonth: customersLastMonth.length,
+    customerGrowth: customersLastMonth.length > 0 ? ((customersThisMonth.length - customersLastMonth.length) / customersLastMonth.length) * 100 : 0,
+  }, 200, reqId);
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+
+async function getDashboardStats(url: URL, auth: any, reqId: string) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 86400000);
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const [ordersRes, productsRes, customersRes, alertsRes] = await Promise.all([
+    auth.supabase.from("orders").select("total_amount, status, created_at").eq("user_id", auth.user.id),
+    auth.supabase.from("products").select("id, status, created_at").eq("user_id", auth.user.id),
+    auth.supabase.from("customers").select("id, total_orders, created_at").eq("user_id", auth.user.id),
+    auth.supabase.from("active_alerts").select("id, acknowledged, status").eq("user_id", auth.user.id),
+  ]);
+
+  const orders = ordersRes.data || [];
+  const products = productsRes.data || [];
+  const customers = customersRes.data || [];
+  const alerts = alertsRes.data || [];
+
+  const ordersToday = orders.filter((o: any) => new Date(o.created_at) >= today);
+  const ordersYesterday = orders.filter((o: any) => new Date(o.created_at) >= yesterday && new Date(o.created_at) < today);
+
+  const validStatuses = ["delivered", "completed", "processing", "shipped"];
+  const revenueToday = ordersToday.filter((o: any) => validStatuses.includes(o.status || "")).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+  const revenueYesterday = ordersYesterday.filter((o: any) => validStatuses.includes(o.status || "")).reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
+
+  const activeProducts = products.filter((p: any) => p.status === "active").length;
+  const productsThisMonth = products.filter((p: any) => new Date(p.created_at) >= thisMonth).length;
+  const activeCustomers = customers.filter((c: any) => (c.total_orders || 0) > 0).length;
+  const customersThisMonth = customers.filter((c: any) => new Date(c.created_at) >= thisMonth).length;
+  const customersLastMonth = customers.filter((c: any) => new Date(c.created_at) >= lastMonth && new Date(c.created_at) < thisMonth).length;
+
+  return json({
+    revenue: { today: revenueToday, change: revenueYesterday > 0 ? ((revenueToday - revenueYesterday) / revenueYesterday) * 100 : 0 },
+    orders: { today: ordersToday.length, change: ordersYesterday.length > 0 ? ((ordersToday.length - ordersYesterday.length) / ordersYesterday.length) * 100 : 0 },
+    customers: { active: activeCustomers, change: customersLastMonth > 0 ? ((customersThisMonth - customersLastMonth) / customersLastMonth) * 100 : 0 },
+    conversionRate: { rate: customers.length > 0 ? (orders.length / customers.length) * 100 : 0, change: 0 },
+    products: { active: activeProducts, change: productsThisMonth },
+    alerts: { count: alerts.filter((a: any) => !a.acknowledged && a.status === "active").length, resolved: alerts.filter((a: any) => a.acknowledged).length },
+  }, 200, reqId);
+}
+
+async function getDashboardActivity(url: URL, auth: any, reqId: string) {
+  const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "10", 10), 50);
+
+  const [ordersRes, productsRes, alertsRes] = await Promise.all([
+    auth.supabase.from("orders").select("id, order_number, total_amount, status, created_at").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit),
+    auth.supabase.from("products").select("id, title, price, created_at").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(5),
+    auth.supabase.from("active_alerts").select("id, title, message, severity, created_at").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(5),
+  ]);
+
+  const events: any[] = [];
+  for (const o of ordersRes.data || []) {
+    events.push({ id: `order-${o.id}`, type: "order", action: "new_order", title: `Commande ${o.order_number}`, description: `${(o.total_amount || 0).toFixed(2)} €`, timestamp: o.created_at, status: o.status === "delivered" ? "success" : "info" });
+  }
+  for (const p of productsRes.data || []) {
+    events.push({ id: `product-${p.id}`, type: "product", action: "product_added", title: "Produit ajouté", description: p.title || "Sans titre", timestamp: p.created_at, status: "success" });
+  }
+  for (const a of alertsRes.data || []) {
+    events.push({ id: `alert-${a.id}`, type: "alert", action: "alert", title: a.title, description: a.message, timestamp: a.created_at, status: a.severity === "critical" ? "error" : "warning" });
+  }
+
+  events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return json({ items: events.slice(0, limit) }, 200, reqId);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -2231,6 +2507,34 @@ Deno.serve(async (req) => {
     // ── AI Generations ──────────────────────────────────────────
     if (req.method === "GET" && matchRoute("/v1/ai/generations", apiPath)) return await listAiGenerations(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/ai/generations", apiPath)) return await createAiGeneration(req, auth, reqId);
+
+    // ── Orders ──────────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/orders", apiPath)) return await listOrders(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/orders", apiPath)) return await createOrder(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/orders/stats", apiPath)) return await getOrderStats(auth, reqId);
+
+    const orderMatch = matchRoute("/v1/orders/:orderId", apiPath);
+    if (orderMatch && orderMatch.params.orderId !== "stats") {
+      if (req.method === "GET") return await getOrder(orderMatch.params.orderId, auth, reqId);
+      if (req.method === "PUT") return await updateOrder(orderMatch.params.orderId, req, auth, reqId);
+      if (req.method === "DELETE") return await deleteOrder(orderMatch.params.orderId, auth, reqId);
+    }
+
+    // ── Customers ───────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/customers", apiPath)) return await listCustomers(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/customers", apiPath)) return await createCustomer(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/customers/stats", apiPath)) return await getCustomerStats(auth, reqId);
+
+    const customerMatch = matchRoute("/v1/customers/:customerId", apiPath);
+    if (customerMatch && customerMatch.params.customerId !== "stats") {
+      if (req.method === "GET") return await getCustomer(customerMatch.params.customerId, auth, reqId);
+      if (req.method === "PUT") return await updateCustomer(customerMatch.params.customerId, req, auth, reqId);
+      if (req.method === "DELETE") return await deleteCustomer(customerMatch.params.customerId, auth, reqId);
+    }
+
+    // ── Dashboard ───────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/dashboard/stats", apiPath)) return await getDashboardStats(url, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/dashboard/activity", apiPath)) return await getDashboardActivity(url, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
