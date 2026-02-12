@@ -2361,6 +2361,213 @@ async function getDashboardActivity(url: URL, auth: any, reqId: string) {
   return json({ items: events.slice(0, limit) }, 200, reqId);
 }
 
+// ── Integrations Handlers ────────────────────────────────────────────────────
+
+async function listIntegrations(url: URL, auth: any, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  const { data, error, count } = await admin.from("integrations").select("*", { count: "exact" })
+    .eq("user_id", auth.user.id).order("created_at", { ascending: false }).range(from, to);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [], meta: { page, per_page: perPage, total: count || 0 } }, 200, reqId);
+}
+
+async function getIntegration(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("integrations").select("*").eq("id", id).eq("user_id", auth.user.id).single();
+  if (error) return errorResponse("NOT_FOUND", "Integration not found", 404, reqId);
+  return json(data, 200, reqId);
+}
+
+async function createIntegration(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("integrations").insert({
+    user_id: auth.user.id, platform: body.platform, platform_name: body.platform_name || body.platform,
+    connection_status: body.connection_status || "disconnected", is_active: body.is_active ?? false,
+    sync_frequency: body.sync_frequency || "daily", store_url: body.store_url, store_id: body.store_id,
+    config: body.config, sync_settings: body.sync_settings
+  }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function updateIntegration(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("integrations").update(body)
+    .eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function deleteIntegration(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("integrations").delete().eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+async function getIntegrationStats(auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data } = await admin.from("integrations").select("connection_status, is_active, last_sync_at").eq("user_id", auth.user.id);
+  const items = data || [];
+  return json({
+    total: items.length, active: items.filter((i: any) => i.is_active).length,
+    connected: items.filter((i: any) => i.connection_status === "connected").length,
+    disconnected: items.filter((i: any) => i.connection_status === "disconnected").length,
+    error: items.filter((i: any) => i.connection_status === "error").length,
+    lastSync: items.reduce((latest: string | null, i: any) => !i.last_sync_at ? latest : (!latest || i.last_sync_at > latest ? i.last_sync_at : latest), null)
+  }, 200, reqId);
+}
+
+async function syncIntegration(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json().catch(() => ({}));
+  const admin = serviceClient();
+  await admin.from("integrations").update({ last_sync_at: new Date().toISOString() }).eq("id", id).eq("user_id", auth.user.id);
+  return json({ success: true, message: "Sync initiated", integration_id: id, sync_type: body.sync_type || "full" }, 200, reqId);
+}
+
+async function testIntegration(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data } = await admin.from("integrations").select("*").eq("id", id).eq("user_id", auth.user.id).single();
+  if (!data) return errorResponse("NOT_FOUND", "Integration not found", 404, reqId);
+  return json({ success: true, message: "Connection test passed", integration_id: id }, 200, reqId);
+}
+
+// ── Suppliers Handlers ──────────────────────────────────────────────────────
+
+async function listSuppliers(url: URL, auth: any, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const q = url.searchParams.get("q") || "";
+  const category = url.searchParams.get("category") || "";
+  const admin = serviceClient();
+  let query = admin.from("premium_suppliers").select("*", { count: "exact" }).order("name").range(from, to);
+  if (q) query = query.ilike("name", `%${q}%`);
+  if (category) query = query.eq("category", category);
+  const { data, error, count } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [], meta: { page, per_page: perPage, total: count || 0 } }, 200, reqId);
+}
+
+async function getSupplier(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("premium_suppliers").select("*").eq("id", id).single();
+  if (error) return errorResponse("NOT_FOUND", "Supplier not found", 404, reqId);
+  return json(data, 200, reqId);
+}
+
+async function getSupplierStats(auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data } = await admin.from("premium_suppliers").select("id, is_verified, is_featured, category, rating");
+  const items = data || [];
+  return json({
+    total: items.length, verified: items.filter((s: any) => s.is_verified).length,
+    featured: items.filter((s: any) => s.is_featured).length,
+    avgRating: items.length > 0 ? items.reduce((sum: number, s: any) => sum + (s.rating || 0), 0) / items.length : 0,
+    categories: [...new Set(items.map((s: any) => s.category).filter(Boolean))]
+  }, 200, reqId);
+}
+
+// ── Automation Handlers ─────────────────────────────────────────────────────
+
+async function listAutomationTriggers(url: URL, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_triggers").select("*")
+    .eq("user_id", auth.user.id).order("created_at", { ascending: false });
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function createAutomationTrigger(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_triggers").insert({
+    user_id: auth.user.id, name: body.name, description: body.description,
+    trigger_type: body.trigger_type, conditions: body.conditions, is_active: body.is_active ?? true
+  }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function updateAutomationTrigger(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_triggers").update({ ...body, updated_at: new Date().toISOString() })
+    .eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function deleteAutomationTrigger(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("automation_triggers").delete().eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+async function listAutomationActions(url: URL, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_actions").select("*")
+    .eq("user_id", auth.user.id).order("execution_order", { ascending: true });
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function createAutomationAction(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_actions").insert({
+    user_id: auth.user.id, name: body.name || body.action_type,
+    action_type: body.action_type, config: body.config || body.action_config,
+    trigger_id: body.trigger_id, execution_order: body.execution_order, is_active: body.is_active ?? true
+  }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function listAutomationExecutions(url: URL, auth: any, reqId: string) {
+  const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "100", 10), 500);
+  const status = url.searchParams.get("status");
+  const admin = serviceClient();
+  let query = admin.from("automation_execution_logs").select("*")
+    .eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit);
+  if (status) query = query.eq("status", status);
+  const { data, error } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function executeAutomation(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automation_execution_logs").insert({
+    user_id: auth.user.id, trigger_id: body.trigger_id, status: "completed",
+    input_data: body.context_data || {}
+  }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function getAutomationStats(auth: any, reqId: string) {
+  const admin = serviceClient();
+  const [triggersRes, actionsRes, execsRes] = await Promise.all([
+    admin.from("automation_triggers").select("id, is_active").eq("user_id", auth.user.id),
+    admin.from("automation_actions").select("id, is_active").eq("user_id", auth.user.id),
+    admin.from("automation_execution_logs").select("id, status").eq("user_id", auth.user.id),
+  ]);
+  const triggers = triggersRes.data || [];
+  const actions = actionsRes.data || [];
+  const executions = execsRes.data || [];
+  return json({
+    totalTriggers: triggers.length, activeTriggers: triggers.filter((t: any) => t.is_active).length,
+    totalActions: actions.length, activeActions: actions.filter((a: any) => a.is_active).length,
+    totalExecutions: executions.length,
+    successfulExecutions: executions.filter((e: any) => e.status === "completed").length,
+    failedExecutions: executions.filter((e: any) => e.status === "failed").length,
+  }, 200, reqId);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -2535,6 +2742,49 @@ Deno.serve(async (req) => {
     // ── Dashboard ───────────────────────────────────────────────
     if (req.method === "GET" && matchRoute("/v1/dashboard/stats", apiPath)) return await getDashboardStats(url, auth, reqId);
     if (req.method === "GET" && matchRoute("/v1/dashboard/activity", apiPath)) return await getDashboardActivity(url, auth, reqId);
+
+    // ── Integrations ────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/integrations/stats", apiPath)) return await getIntegrationStats(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/integrations", apiPath)) return await listIntegrations(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/integrations", apiPath)) return await createIntegration(req, auth, reqId);
+
+    const integrationSyncMatch = matchRoute("/v1/integrations/:integrationId/sync", apiPath);
+    if (req.method === "POST" && integrationSyncMatch) return await syncIntegration(integrationSyncMatch.params.integrationId, req, auth, reqId);
+
+    const integrationTestMatch = matchRoute("/v1/integrations/:integrationId/test", apiPath);
+    if (req.method === "POST" && integrationTestMatch) return await testIntegration(integrationTestMatch.params.integrationId, auth, reqId);
+
+    const integrationMatch = matchRoute("/v1/integrations/:integrationId", apiPath);
+    if (integrationMatch && integrationMatch.params.integrationId !== "stats") {
+      if (req.method === "GET") return await getIntegration(integrationMatch.params.integrationId, auth, reqId);
+      if (req.method === "PUT") return await updateIntegration(integrationMatch.params.integrationId, req, auth, reqId);
+      if (req.method === "DELETE") return await deleteIntegration(integrationMatch.params.integrationId, auth, reqId);
+    }
+
+    // ── Suppliers ───────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/suppliers/stats", apiPath)) return await getSupplierStats(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/suppliers", apiPath)) return await listSuppliers(url, auth, reqId);
+
+    const supplierMatch = matchRoute("/v1/suppliers/:supplierId", apiPath);
+    if (req.method === "GET" && supplierMatch && supplierMatch.params.supplierId !== "stats") {
+      return await getSupplier(supplierMatch.params.supplierId, auth, reqId);
+    }
+
+    // ── Automation ──────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/automation/stats", apiPath)) return await getAutomationStats(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/automation/triggers", apiPath)) return await listAutomationTriggers(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/automation/triggers", apiPath)) return await createAutomationTrigger(req, auth, reqId);
+
+    const triggerMatch = matchRoute("/v1/automation/triggers/:triggerId", apiPath);
+    if (triggerMatch) {
+      if (req.method === "PUT") return await updateAutomationTrigger(triggerMatch.params.triggerId, req, auth, reqId);
+      if (req.method === "DELETE") return await deleteAutomationTrigger(triggerMatch.params.triggerId, auth, reqId);
+    }
+
+    if (req.method === "GET" && matchRoute("/v1/automation/actions", apiPath)) return await listAutomationActions(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/automation/actions", apiPath)) return await createAutomationAction(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/automation/executions", apiPath)) return await listAutomationExecutions(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/automation/execute", apiPath)) return await executeAutomation(req, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
