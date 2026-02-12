@@ -52,6 +52,11 @@ const QUOTA_ICONS: Record<QuotaKey, React.ReactNode> = {
   seo_audits: <BarChart3 className="h-5 w-5 text-indigo-500" />,
   seo_generations: <Sparkles className="h-5 w-5 text-violet-500" />,
   seo_applies: <TrendingUp className="h-5 w-5 text-emerald-500" />,
+  seo_category_audits: <BarChart3 className="h-5 w-5 text-indigo-400" />,
+  seo_site_audits: <BarChart3 className="h-5 w-5 text-indigo-600" />,
+  seo_languages: <Sparkles className="h-5 w-5 text-teal-500" />,
+  seo_bulk_limit: <Package className="h-5 w-5 text-amber-500" />,
+  seo_history_days: <TrendingUp className="h-5 w-5 text-slate-500" />,
 };
 
 const PLAN_LABELS: Record<string, { label: string; color: string; badge: string }> = {
