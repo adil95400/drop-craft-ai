@@ -49,6 +49,9 @@ const QUOTA_ICONS: Record<QuotaKey, React.ReactNode> = {
   suppliers: <Truck className="h-5 w-5 text-cyan-500" />,
   workflows: <Workflow className="h-5 w-5 text-pink-500" />,
   storage_mb: <HardDrive className="h-5 w-5 text-gray-500" />,
+  seo_audits: <BarChart3 className="h-5 w-5 text-indigo-500" />,
+  seo_generations: <Sparkles className="h-5 w-5 text-violet-500" />,
+  seo_applies: <TrendingUp className="h-5 w-5 text-emerald-500" />,
 };
 
 const PLAN_LABELS: Record<string, { label: string; color: string; badge: string }> = {

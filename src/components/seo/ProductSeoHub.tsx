@@ -1,20 +1,19 @@
 /**
  * ProductSeoHub — Channable-style SEO product dashboard
- * Shows product cards with scores, badges, filters, actions, and timeline
+ * Shows product cards with scores, badges, filters, actions, timeline, and quota usage
  */
 import { useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Search, Play, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
   BarChart3, Sparkles, Eye, Clock, ArrowRight, XCircle, AlertCircle,
-  Target, Zap, ChevronRight, History
+  Target, Zap, ChevronRight, History, ShieldAlert, Gauge
 } from 'lucide-react'
 import {
   useProductSeoScores, useAuditProductsSeo, useGenerateProductSeo,
@@ -23,6 +22,9 @@ import {
 import type { ProductSeoResult, ProductSeoHistoryItem } from '@/services/api/seoApi'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { useUnifiedQuotas } from '@/hooks/useUnifiedQuotas'
+import { useNavigate } from 'react-router-dom'
+import { cn } from '@/lib/utils'
 
 function ScoreBadge({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' | 'lg' }) {
   const config = score >= 70
@@ -213,6 +215,8 @@ export function ProductSeoHub() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [sortOrder, setSortOrder] = useState<string>('score_asc')
   const [historyProduct, setHistoryProduct] = useState<{ id: string; name: string } | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const navigate = useNavigate()
 
   const { data, isLoading } = useProductSeoScores({
     per_page: 50,
@@ -222,6 +226,11 @@ export function ProductSeoHub() {
 
   const auditMutation = useAuditProductsSeo()
   const generateMutation = useGenerateProductSeo()
+  const { getQuotaInfo, canPerformAction, currentPlan } = useUnifiedQuotas()
+
+  const seoAuditsQuota = getQuotaInfo('seo_audits')
+  const seoGensQuota = getQuotaInfo('seo_generations')
+  const seoAppliesQuota = getQuotaInfo('seo_applies')
 
   const items = data?.items ?? []
   const stats = data?.stats ?? { avg_score: 0, critical: 0, needs_work: 0, optimized: 0, total: 0 }
@@ -239,8 +248,57 @@ export function ProductSeoHub() {
     generateMutation.mutate({ productId: id })
   }, [generateMutation])
 
+  const handleBulkGenerate = useCallback(() => {
+    const ids = statusFilter === 'all' 
+      ? items.filter(p => p.status !== 'optimized').slice(0, 20).map(p => p.product_id)
+      : items.slice(0, 20).map(p => p.product_id)
+    ids.forEach(id => generateMutation.mutate({ productId: id }))
+  }, [items, generateMutation, statusFilter])
+
   return (
     <div className="space-y-6">
+      {/* SEO Quota Usage Bar */}
+      <Card className="border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Gauge className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Quotas SEO — Plan {currentPlan}</span>
+            </div>
+            {(seoAuditsQuota.percentage >= 80 || seoGensQuota.percentage >= 80) && (
+              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => navigate('/dashboard/subscription')}>
+                <Zap className="h-3 w-3 mr-1" />Upgrader
+              </Button>
+            )}
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: 'Audits', quota: seoAuditsQuota, icon: Search },
+              { label: 'Générations IA', quota: seoGensQuota, icon: Sparkles },
+              { label: 'Applications', quota: seoAppliesQuota, icon: CheckCircle2 },
+            ].map(({ label, quota, icon: Icon }) => (
+              <div key={label} className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1 text-muted-foreground"><Icon className="h-3 w-3" />{label}</span>
+                  <span className="font-medium">
+                    {quota.isUnlimited ? '∞' : `${quota.current}/${quota.limit}`}
+                  </span>
+                </div>
+                {!quota.isUnlimited && (
+                  <Progress 
+                    value={quota.percentage} 
+                    className={cn('h-1.5', 
+                      quota.percentage >= 100 && '[&>div]:bg-destructive',
+                      quota.percentage >= 80 && quota.percentage < 100 && '[&>div]:bg-yellow-500'
+                    )} 
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* KPI Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card>
@@ -291,7 +349,7 @@ export function ProductSeoHub() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[160px] h-9 text-sm">
@@ -314,11 +372,40 @@ export function ProductSeoHub() {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={handleAuditAll} disabled={auditMutation.isPending || items.length === 0} size="sm">
-          <Play className="h-4 w-4 mr-1.5" />
-          {auditMutation.isPending ? 'Audit en cours...' : 'Auditer tous les produits'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" size="sm" 
+            onClick={handleBulkGenerate} 
+            disabled={generateMutation.isPending || items.filter(p => p.status !== 'optimized').length === 0 || !canPerformAction('seo_generations')}
+          >
+            <Sparkles className="h-4 w-4 mr-1.5" />
+            {generateMutation.isPending ? 'Génération...' : 'Bulk Optimiser IA'}
+          </Button>
+          <Button 
+            onClick={handleAuditAll} 
+            disabled={auditMutation.isPending || items.length === 0 || !canPerformAction('seo_audits')} 
+            size="sm"
+          >
+            <Play className="h-4 w-4 mr-1.5" />
+            {auditMutation.isPending ? 'Audit en cours...' : 'Auditer tous'}
+          </Button>
+        </div>
       </div>
+
+      {/* Quota warning */}
+      {!seoAuditsQuota.isUnlimited && seoAuditsQuota.percentage >= 80 && (
+        <Card className="border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20">
+          <CardContent className="p-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm">
+              <ShieldAlert className="h-4 w-4 text-yellow-600" />
+              <span>Quota audits SEO à {Math.round(seoAuditsQuota.percentage)}% — {Math.max(0, seoAuditsQuota.limit - seoAuditsQuota.current)} restants</span>
+            </div>
+            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => navigate('/dashboard/consumption')}>
+              Acheter des crédits
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Product List */}
       {isLoading ? (

@@ -15,7 +15,10 @@ export type QuotaKey =
   | 'stores' 
   | 'suppliers' 
   | 'workflows' 
-  | 'storage_mb';
+  | 'storage_mb'
+  | 'seo_audits'
+  | 'seo_generations'
+  | 'seo_applies';
 
 export type PlanName = 'free' | 'standard' | 'pro' | 'ultra_pro';
 
@@ -42,7 +45,10 @@ const QUOTA_LABELS: Record<QuotaKey, string> = {
   stores: 'Boutiques',
   suppliers: 'Fournisseurs',
   workflows: 'Workflows',
-  storage_mb: 'Stockage (Mo)'
+  storage_mb: 'Stockage (Mo)',
+  seo_audits: 'Audits SEO',
+  seo_generations: 'Générations SEO',
+  seo_applies: 'Applications SEO',
 };
 
 export function useUnifiedQuotas() {
