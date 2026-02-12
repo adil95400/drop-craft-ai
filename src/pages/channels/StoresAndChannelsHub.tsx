@@ -94,17 +94,20 @@ interface PremiumStatCardProps {
   icon: React.ElementType
   gradient: string
   delay?: number
+  onClick?: () => void
 }
 
-function PremiumStatCard({ label, value, change, trend, icon: Icon, gradient, delay = 0 }: PremiumStatCardProps) {
+function PremiumStatCard({ label, value, change, trend, icon: Icon, gradient, delay = 0, onClick }: PremiumStatCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: delay * 0.05, duration: 0.4, ease: 'easeOut' }}
       whileHover={{ scale: 1.03, y: -4 }}
+      onClick={onClick}
       className={cn(
-        "relative group cursor-default overflow-hidden rounded-2xl border border-border/40",
+        "relative group overflow-hidden rounded-2xl border border-border/40",
+        onClick ? "cursor-pointer" : "cursor-default",
         "bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl",
         "shadow-lg hover:shadow-xl transition-all duration-300"
       )}
@@ -648,6 +651,7 @@ export default function StoresAndChannelsHub() {
             icon={Link2}
             gradient="bg-gradient-to-r from-primary to-primary/70"
             delay={0}
+            onClick={() => setActiveTab('all')}
           />
           <PremiumStatCard
             label="Boutiques"
@@ -655,6 +659,7 @@ export default function StoresAndChannelsHub() {
             icon={Store}
             gradient="bg-gradient-to-r from-violet-500 to-violet-400"
             delay={1}
+            onClick={() => setActiveTab('stores')}
           />
           <PremiumStatCard
             label="Marketplaces"
@@ -662,6 +667,7 @@ export default function StoresAndChannelsHub() {
             icon={Globe}
             gradient="bg-gradient-to-r from-amber-500 to-amber-400"
             delay={2}
+            onClick={() => setActiveTab('marketplaces')}
           />
           <PremiumStatCard
             label="Produits Sync"
@@ -671,6 +677,7 @@ export default function StoresAndChannelsHub() {
             icon={Package}
             gradient="bg-gradient-to-r from-blue-500 to-blue-400"
             delay={3}
+            onClick={() => navigate('/products')}
           />
           <PremiumStatCard
             label="Commandes"
@@ -680,6 +687,7 @@ export default function StoresAndChannelsHub() {
             icon={TrendingUp}
             gradient="bg-gradient-to-r from-emerald-500 to-emerald-400"
             delay={4}
+            onClick={() => navigate('/orders')}
           />
           <PremiumStatCard
             label="Auto-Sync"
@@ -687,6 +695,7 @@ export default function StoresAndChannelsHub() {
             icon={Zap}
             gradient="bg-gradient-to-r from-orange-500 to-orange-400"
             delay={5}
+            onClick={() => navigate('/sync-manager')}
           />
         </div>
 
