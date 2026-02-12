@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { trackingApi } from '@/services/api/client'
 
 export function useProductTracking() {
   const trackView = useMutation({
@@ -12,12 +12,7 @@ export function useProductTracking() {
       userId: string
       source?: string 
     }) => {
-      const { data, error } = await supabase.functions.invoke('track-product-view', {
-        body: { productId, userId, source }
-      })
-
-      if (error) throw error
-      return data
+      return trackingApi.trackView({ productId, source })
     }
   })
 

@@ -1,17 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
-
-// Define the row type locally since the table doesn't exist in schema
-interface CustomerBehaviorRow {
-  id: string;
-  customer_id: string | null;
-  behavioral_score: number;
-  lifetime_value: number | null;
-  churn_probability: number | null;
-  recommendations: any;
-  analysis_data: any;
-  created_at: string;
-  updated_at: string;
-}
+import { behaviorApi } from '@/services/api/client';
 
 export interface BehaviorAnalysisRequest {
   customer_id: string;
@@ -24,7 +11,6 @@ export interface BehaviorAnalysisRequest {
   first_order_date?: string;
 }
 
-// Map database row to a more usable format
 export interface CustomerBehaviorData {
   id: string;
   customer_id: string | null;
@@ -60,8 +46,8 @@ export class CustomerBehaviorAnalytics {
     return CustomerBehaviorAnalytics.instance;
   }
 
-  private mapRowToData(row: CustomerBehaviorRow): CustomerBehaviorData {
-    const analysisData = row.analysis_data as any || {};
+  private mapRowToData(row: any): CustomerBehaviorData {
+    const analysisData = row.analysis_data || {};
     return {
       id: row.id,
       customer_id: row.customer_id,
@@ -89,42 +75,22 @@ export class CustomerBehaviorAnalytics {
   }
 
   async analyzeBehavior(params: BehaviorAnalysisRequest): Promise<CustomerBehaviorData> {
-    const { data, error } = await supabase.functions.invoke('customer-intelligence', {
-      body: { customerData: params }
-    });
-
-    if (error) throw error;
+    const data = await behaviorApi.analyze(params);
     return data.analysis;
   }
 
   async getBehaviorHistory(): Promise<CustomerBehaviorData[]> {
-    const { data, error } = await (supabase
-      .from('customer_behavior_analytics' as any) as any)
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return (data || []).map((row: any) => this.mapRowToData(row as CustomerBehaviorRow));
+    const resp = await behaviorApi.history();
+    return (resp.items || []).map((row: any) => this.mapRowToData(row));
   }
 
   async getBehaviorById(id: string): Promise<CustomerBehaviorData> {
-    const { data, error } = await (supabase
-      .from('customer_behavior_analytics' as any) as any)
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return this.mapRowToData(data as CustomerBehaviorRow);
+    const data = await behaviorApi.getById(id);
+    return this.mapRowToData(data);
   }
 
   async deleteBehaviorAnalysis(id: string): Promise<void> {
-    const { error } = await (supabase
-      .from('customer_behavior_analytics' as any) as any)
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await behaviorApi.delete(id);
   }
 
   getSegmentColor(segment: string): string {

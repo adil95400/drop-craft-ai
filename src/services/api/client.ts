@@ -583,3 +583,62 @@ export const financeApi = {
   stats: () =>
     api.get<any>('/finance/stats'),
 }
+
+// ── Conversion ──────────────────────────────────────────────────────────────
+
+export const conversionApi = {
+  listBundles: () => api.get<{ items: any[] }>('/conversion/bundles'),
+  createBundle: (body: any) => api.post<any>('/conversion/bundles', body, crypto.randomUUID()),
+  listUpsells: () => api.get<{ items: any[] }>('/conversion/upsells'),
+  createUpsell: (body: any) => api.post<any>('/conversion/upsells', body, crypto.randomUUID()),
+  listDiscounts: () => api.get<{ items: any[] }>('/conversion/discounts'),
+  createDiscount: (body: any) => api.post<any>('/conversion/discounts', body, crypto.randomUUID()),
+  listTimers: () => api.get<{ items: any[] }>('/conversion/timers'),
+  createTimer: (body: any) => api.post<any>('/conversion/timers', body, crypto.randomUUID()),
+  listSocialProof: () => api.get<{ items: any[] }>('/conversion/social-proof'),
+  createSocialProof: (body: any) => api.post<any>('/conversion/social-proof', body, crypto.randomUUID()),
+  trackEvent: (body: any) => api.post<any>('/conversion/track', body),
+  analytics: () => api.get<any>('/conversion/analytics'),
+}
+
+// ── Advanced Analytics ──────────────────────────────────────────────────────
+
+export const advancedAnalyticsApi = {
+  performanceMetrics: () => api.get<{ items: any[] }>('/analytics/performance'),
+  listReports: () => api.get<{ items: any[] }>('/analytics/reports'),
+  generateReport: (body: any) => api.post<any>('/analytics/reports', body, crypto.randomUUID()),
+  predictiveAnalytics: () => api.get<{ items: any[] }>('/analytics/predictive'),
+  runPredictive: () => api.post<any>('/analytics/predictive', {}),
+  listABTests: () => api.get<{ items: any[] }>('/analytics/ab-tests'),
+  createABTest: (body: any) => api.post<any>('/analytics/ab-tests', body, crypto.randomUUID()),
+}
+
+// ── Promotions ──────────────────────────────────────────────────────────────
+
+export const promotionsApi = {
+  listCampaigns: (status?: string) => api.get<{ items: any[] }>('/promotions/campaigns', status ? { status } : undefined),
+  createCampaign: (body: any) => api.post<any>('/promotions/campaigns', body, crypto.randomUUID()),
+  updateCampaign: (id: string, body: any) => api.put<any>(`/promotions/campaigns/${id}`, body),
+  deleteCampaign: (id: string) => api.delete<{ success: boolean }>(`/promotions/campaigns/${id}`),
+  listRules: () => api.get<{ items: any[] }>('/promotions/rules'),
+  createRule: (body: any) => api.post<any>('/promotions/rules', body, crypto.randomUUID()),
+  toggleRule: (id: string, isActive: boolean) => api.put<{ success: boolean }>(`/promotions/rules/${id}`, { is_active: isActive }),
+  deleteRule: (id: string) => api.delete<{ success: boolean }>(`/promotions/rules/${id}`),
+  stats: () => api.get<any>('/promotions/stats'),
+}
+
+// ── Customer Behavior ───────────────────────────────────────────────────────
+
+export const behaviorApi = {
+  history: () => api.get<{ items: any[] }>('/behavior/history'),
+  analyze: (body: any) => api.post<any>('/behavior/analyze', body),
+  getById: (id: string) => api.get<any>(`/behavior/${id}`),
+  delete: (id: string) => api.delete<{ success: boolean }>(`/behavior/${id}`),
+}
+
+// ── Product Tracking ────────────────────────────────────────────────────────
+
+export const trackingApi = {
+  trackView: (body: { productId: string; source?: string }) => api.post<any>('/tracking/product-view', body),
+  compareSuppliers: (body: { productId: string }) => api.post<any>('/tracking/supplier-compare', body),
+}
