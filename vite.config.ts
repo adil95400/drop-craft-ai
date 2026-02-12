@@ -95,7 +95,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null, // Defer SW registration to avoid render-blocking
-      includeAssets: ['icons/*.png', 'og-image.png'],
+      includeAssets: ['logos/*.png', 'logos/*.svg', 'og-image.png'],
       manifest: {
         name: 'ShopOpti+',
         short_name: 'ShopOpti',
@@ -107,13 +107,19 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         icons: [
           {
-            src: '/icons/icon-192x192.png',
+            src: '/logos/shopopti-logo.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
+            src: '/logos/shopopti-icon-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'maskable any'
           },
           {
-            src: '/icons/icon-512x512.png',
+            src: '/logos/shopopti-icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable any'
@@ -125,21 +131,21 @@ export default defineConfig(({ mode }) => ({
             short_name: 'Dashboard',
             description: 'Accès rapide au tableau de bord',
             url: '/dashboard',
-            icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }]
+            icons: [{ src: '/logos/shopopti-icon-192.png', sizes: '192x192' }]
           },
           {
             name: 'Produits',
             short_name: 'Produits',
             description: 'Gérer mes produits',
             url: '/products',
-            icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }]
+            icons: [{ src: '/logos/shopopti-icon-192.png', sizes: '192x192' }]
           },
           {
             name: 'Commandes',
             short_name: 'Commandes',
             description: 'Suivre mes commandes',
             url: '/dashboard/orders',
-            icons: [{ src: '/icons/icon-96x96.png', sizes: '96x96' }]
+            icons: [{ src: '/logos/shopopti-icon-192.png', sizes: '192x192' }]
           }
         ]
       },
