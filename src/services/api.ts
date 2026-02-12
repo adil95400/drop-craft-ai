@@ -1,11 +1,10 @@
 /**
- * ApiService — Legacy facade, delegates product operations to productsApi.
- * Non-product operations remain as-is until their respective API modules are built.
+ * ApiService — Legacy facade, delegates ALL operations to API V1 client.
+ * No direct Supabase table queries.
  */
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from '@/hooks/use-toast'
-import { productsApi } from '@/services/api/client'
-import { fetchAllWithQuery } from '@/utils/supabaseUnlimited'
+import { productsApi, ordersApi, customersApi, integrationsApi } from '@/services/api/client'
 
 export class ApiService {
   // Products — delegates to API V1
@@ -59,20 +58,13 @@ export class ApiService {
     }
   }
 
-  // ── Non-product operations (unchanged, still direct Supabase) ─────────────
-
+  // Orders — delegates to API V1
   static async getOrders(filters?: any) {
     try {
-      const { data, error } = await fetchAllWithQuery(async (offset, limit) => {
-        let query = supabase.from('orders').select('*, order_items(*)')
-        if (filters?.status) query = query.eq('status', filters.status)
-        if (filters?.dateFrom) query = query.gte('created_at', filters.dateFrom)
-        if (filters?.dateTo) query = query.lte('created_at', filters.dateTo)
-        query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
-        return query
-      })
-      if (error) throw error
-      return data || []
+      const params: any = { per_page: 500 }
+      if (filters?.status) params.status = filters.status
+      const resp = await ordersApi.list(params)
+      return resp.items ?? []
     } catch (error) {
       console.error('Error fetching orders:', error)
       toast({ title: 'Erreur', description: 'Impossible de charger les commandes', variant: 'destructive' })
@@ -84,10 +76,9 @@ export class ApiService {
     try {
       const updates: any = { status }
       if (trackingNumber) updates.tracking_number = trackingNumber
-      const { data, error } = await supabase.from('orders').update(updates).eq('id', id).select().single()
-      if (error) throw error
+      const resp = await ordersApi.update(id, updates)
       toast({ title: 'Succès', description: 'Statut de commande mis à jour' })
-      return data
+      return resp
     } catch (error) {
       console.error('Error updating order:', error)
       toast({ title: 'Erreur', description: 'Impossible de mettre à jour la commande', variant: 'destructive' })
@@ -95,16 +86,13 @@ export class ApiService {
     }
   }
 
+  // Customers — delegates to API V1
   static async getCustomers(filters?: any) {
     try {
-      const { data, error } = await fetchAllWithQuery(async (offset, limit) => {
-        let query = (supabase.from('customers') as any).select('*')
-        if (filters?.search) query = query.or(`email.ilike.%${filters.search}%,first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%`)
-        query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
-        return query
-      })
-      if (error) throw error
-      return data || []
+      const params: any = { per_page: 500 }
+      if (filters?.search) params.q = filters.search
+      const resp = await customersApi.list(params)
+      return resp.items ?? []
     } catch (error) {
       console.error('Error fetching customers:', error)
       toast({ title: 'Erreur', description: 'Impossible de charger les clients', variant: 'destructive' })
@@ -114,10 +102,9 @@ export class ApiService {
 
   static async createCustomer(customer: any) {
     try {
-      const { data, error } = await supabase.from('customers').insert([customer]).select().single()
-      if (error) throw error
+      const resp = await customersApi.create(customer)
       toast({ title: 'Succès', description: 'Client créé avec succès' })
-      return data
+      return resp
     } catch (error) {
       console.error('Error creating customer:', error)
       toast({ title: 'Erreur', description: 'Impossible de créer le client', variant: 'destructive' })
@@ -127,10 +114,9 @@ export class ApiService {
 
   static async updateCustomer(id: string, updates: any) {
     try {
-      const { data, error } = await supabase.from('customers').update(updates).eq('id', id).select().single()
-      if (error) throw error
+      const resp = await customersApi.update(id, updates)
       toast({ title: 'Succès', description: 'Client mis à jour avec succès' })
-      return data
+      return resp
     } catch (error) {
       console.error('Error updating customer:', error)
       toast({ title: 'Erreur', description: 'Impossible de mettre à jour le client', variant: 'destructive' })
@@ -138,11 +124,11 @@ export class ApiService {
     }
   }
 
+  // Integrations — delegates to API V1
   static async getIntegrations() {
     try {
-      const { data, error } = await supabase.from('integrations').select('*').order('created_at', { ascending: false })
-      if (error) throw error
-      return data || []
+      const resp = await integrationsApi.list({ per_page: 100 })
+      return resp.items ?? []
     } catch (error) {
       console.error('Error fetching integrations:', error)
       toast({ title: 'Erreur', description: 'Impossible de charger les intégrations', variant: 'destructive' })
@@ -152,10 +138,9 @@ export class ApiService {
 
   static async createIntegration(integration: any) {
     try {
-      const { data, error } = await supabase.from('integrations').insert([integration]).select().single()
-      if (error) throw error
+      const resp = await integrationsApi.create(integration)
       toast({ title: 'Succès', description: 'Intégration créée avec succès' })
-      return data
+      return resp
     } catch (error) {
       console.error('Error creating integration:', error)
       toast({ title: 'Erreur', description: "Impossible de créer l'intégration", variant: 'destructive' })
@@ -165,10 +150,9 @@ export class ApiService {
 
   static async updateIntegration(id: string, updates: any) {
     try {
-      const { data, error } = await supabase.from('integrations').update(updates).eq('id', id).select().single()
-      if (error) throw error
+      const resp = await integrationsApi.update(id, updates)
       toast({ title: 'Succès', description: 'Intégration mise à jour avec succès' })
-      return data
+      return resp
     } catch (error) {
       console.error('Error updating integration:', error)
       toast({ title: 'Erreur', description: "Impossible de mettre à jour l'intégration", variant: 'destructive' })
@@ -176,6 +160,7 @@ export class ApiService {
     }
   }
 
+  // Storage — remains direct (not a REST resource)
   static async uploadFile(file: File, bucket: string, path: string) {
     try {
       const { data, error } = await supabase.storage.from(bucket).upload(path, file)

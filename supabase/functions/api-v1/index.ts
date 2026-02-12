@@ -2740,6 +2740,178 @@ async function getFinanceStats(auth: any, reqId: string) {
   }, 200, reqId);
 }
 
+// ── Ads Handlers ────────────────────────────────────────────────────────────
+
+async function listAdAccounts(auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("ad_accounts").select("*").eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function createAdAccount(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("ad_accounts").insert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function updateAdAccount(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("ad_accounts").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function listAdCampaigns(url: URL, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("ad_campaigns").select("*").eq("user_id", auth.user.id).order("created_at", { ascending: false });
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function createAdCampaign(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("ad_campaigns").insert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function updateAdCampaign(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("ad_campaigns").update(body).eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function deleteAdCampaign(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("ad_campaigns").delete().eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+// ── Marketing Campaign CRUD (update/delete) ─────────────────────────────────
+
+async function updateMarketingCampaign(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("marketing_campaigns").update({ ...body, updated_at: new Date().toISOString() })
+    .eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function deleteMarketingCampaign(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("marketing_campaigns").delete().eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+// ── Marketing Automations Handlers ──────────────────────────────────────────
+
+async function listMarketingAutomations(url: URL, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automated_campaigns").select("*")
+    .eq("user_id", auth.user.id).order("created_at", { ascending: false });
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function createMarketingAutomation(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automated_campaigns").insert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
+async function updateMarketingAutomation(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("automated_campaigns").update({ ...body, updated_at: new Date().toISOString() })
+    .eq("id", id).eq("user_id", auth.user.id).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+async function toggleMarketingAutomation(id: string, req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { error } = await admin.from("automated_campaigns").update({ is_active: body.is_active }).eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+// ── Marketing Dashboard Stats ───────────────────────────────────────────────
+
+async function getMarketingDashboardStats(auth: any, reqId: string) {
+  const admin = serviceClient();
+  const [campaignsRes, automationsRes, segmentsRes] = await Promise.all([
+    admin.from("marketing_campaigns").select("*").eq("user_id", auth.user.id),
+    admin.from("automated_campaigns").select("id, is_active").eq("user_id", auth.user.id),
+    admin.from("marketing_segments").select("id").eq("user_id", auth.user.id),
+  ]);
+  const c = campaignsRes.data || [];
+  const a = automationsRes.data || [];
+  const s = segmentsRes.data || [];
+  const active = c.filter((x: any) => x.status === "active");
+  return json({
+    activeCampaigns: active.length, totalCampaigns: c.length,
+    openRate: 0, clickRate: 0,
+    conversions: c.reduce((sum: number, x: any) => sum + (x.conversions || 0), 0),
+    conversionRate: 0, avgROI: 0,
+    totalRevenue: c.reduce((sum: number, x: any) => sum + (x.revenue || 0), 0),
+    totalSpend: c.reduce((sum: number, x: any) => sum + (x.spent || 0), 0),
+    emailsSent: 0, automationsActive: a.filter((x: any) => x.is_active).length,
+    segmentsCount: s.length, isDemo: c.length === 0,
+  }, 200, reqId);
+}
+
+// ── Business Intelligence / Insights Handlers ───────────────────────────────
+
+async function listInsights(url: URL, auth: any, reqId: string) {
+  const limit = parseInt(url.searchParams.get("limit") ?? "10", 10);
+  const admin = serviceClient();
+  const { data, error } = await admin.from("analytics_insights").select("*")
+    .eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(limit);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data || [] }, 200, reqId);
+}
+
+async function getInsightMetrics(auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("analytics_insights").select("*").eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  const d = data || [];
+  return json({
+    total: d.length,
+    critical: d.filter((x: any) => x.trend === "critical").length,
+    acknowledged: d.filter((x: any) => x.metadata && typeof x.metadata === "object" && (x.metadata as any).acknowledged).length,
+  }, 200, reqId);
+}
+
+async function acknowledgeInsight(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("analytics_insights")
+    .update({ metadata: { acknowledged: true, acknowledged_at: new Date().toISOString() } })
+    .eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
+async function dismissInsight(id: string, auth: any, reqId: string) {
+  const admin = serviceClient();
+  const { error } = await admin.from("analytics_insights").delete().eq("id", id).eq("user_id", auth.user.id);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ success: true }, 200, reqId);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -2960,8 +3132,53 @@ Deno.serve(async (req) => {
 
     // ── Marketing ──────────────────────────────────────────────
     if (req.method === "GET" && matchRoute("/v1/marketing/stats", apiPath)) return await getMarketingStats(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/marketing/dashboard-stats", apiPath)) return await getMarketingDashboardStats(auth, reqId);
     if (req.method === "GET" && matchRoute("/v1/marketing/campaigns", apiPath)) return await listMarketingCampaigns(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/marketing/campaigns", apiPath)) return await createMarketingCampaign(req, auth, reqId);
+
+    const mktCampaignMatch = matchRoute("/v1/marketing/campaigns/:campaignId", apiPath);
+    if (mktCampaignMatch) {
+      if (req.method === "PUT") return await updateMarketingCampaign(mktCampaignMatch.params.campaignId, req, auth, reqId);
+      if (req.method === "DELETE") return await deleteMarketingCampaign(mktCampaignMatch.params.campaignId, auth, reqId);
+    }
+
+    // ── Marketing Automations ──────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/marketing/automations", apiPath)) return await listMarketingAutomations(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/marketing/automations", apiPath)) return await createMarketingAutomation(req, auth, reqId);
+
+    const mktAutoMatch = matchRoute("/v1/marketing/automations/:autoId", apiPath);
+    if (mktAutoMatch) {
+      if (req.method === "PUT") return await updateMarketingAutomation(mktAutoMatch.params.autoId, req, auth, reqId);
+    }
+
+    const mktAutoToggleMatch = matchRoute("/v1/marketing/automations/:autoId/toggle", apiPath);
+    if (req.method === "POST" && mktAutoToggleMatch) return await toggleMarketingAutomation(mktAutoToggleMatch.params.autoId, req, auth, reqId);
+
+    // ── Ads ─────────────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/ads/accounts", apiPath)) return await listAdAccounts(auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/ads/accounts", apiPath)) return await createAdAccount(req, auth, reqId);
+
+    const adAccountMatch = matchRoute("/v1/ads/accounts/:accountId", apiPath);
+    if (req.method === "PUT" && adAccountMatch) return await updateAdAccount(adAccountMatch.params.accountId, req, auth, reqId);
+
+    if (req.method === "GET" && matchRoute("/v1/ads/campaigns", apiPath)) return await listAdCampaigns(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/ads/campaigns", apiPath)) return await createAdCampaign(req, auth, reqId);
+
+    const adCampaignMatch = matchRoute("/v1/ads/campaigns/:campaignId", apiPath);
+    if (adCampaignMatch) {
+      if (req.method === "PUT") return await updateAdCampaign(adCampaignMatch.params.campaignId, req, auth, reqId);
+      if (req.method === "DELETE") return await deleteAdCampaign(adCampaignMatch.params.campaignId, auth, reqId);
+    }
+
+    // ── Business Intelligence / Insights ────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/insights", apiPath)) return await listInsights(url, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/insights/metrics", apiPath)) return await getInsightMetrics(auth, reqId);
+
+    const insightAckMatch = matchRoute("/v1/insights/:insightId/acknowledge", apiPath);
+    if (req.method === "POST" && insightAckMatch) return await acknowledgeInsight(insightAckMatch.params.insightId, auth, reqId);
+
+    const insightDismissMatch = matchRoute("/v1/insights/:insightId", apiPath);
+    if (req.method === "DELETE" && insightDismissMatch && insightDismissMatch.params.insightId !== "metrics") return await dismissInsight(insightDismissMatch.params.insightId, auth, reqId);
 
     // ── CRM ────────────────────────────────────────────────────
     if (req.method === "GET" && matchRoute("/v1/crm/tasks", apiPath)) return await listCRMTasks(url, auth, reqId);

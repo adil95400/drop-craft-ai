@@ -1,12 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Database } from '@/integrations/supabase/types';
-
-type MarketingCampaign = Database['public']['Tables']['marketing_campaigns']['Row'];
-type MarketingCampaignInsert = Database['public']['Tables']['marketing_campaigns']['Insert'];
-type MarketingCampaignUpdate = Database['public']['Tables']['marketing_campaigns']['Update'];
+import { marketingApi } from '@/services/api/client';
 
 export const useMarketingCampaigns = () => {
   const { toast } = useToast();
@@ -15,23 +10,16 @@ export const useMarketingCampaigns = () => {
 
   const { data: campaigns = [], isLoading, error } = useQuery({
     queryKey: ['marketing-campaigns', user?.id],
-    queryFn: async (): Promise<MarketingCampaign[]> => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase.from('marketing_campaigns')
-        .select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
+    queryFn: async () => {
+      const resp = await marketingApi.listCampaigns({ per_page: 100 });
+      return resp.items ?? [];
     },
     enabled: !!user?.id,
   });
 
   const createCampaign = useMutation({
-    mutationFn: async (campaignData: Omit<MarketingCampaignInsert, 'user_id'>) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase.from('marketing_campaigns')
-        .insert({ ...campaignData, user_id: user.id }).select().single();
-      if (error) throw error;
-      return data;
+    mutationFn: async (campaignData: any) => {
+      return await marketingApi.createCampaign(campaignData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] });
@@ -40,11 +28,8 @@ export const useMarketingCampaigns = () => {
   });
 
   const updateCampaign = useMutation({
-    mutationFn: async ({ id, ...updates }: MarketingCampaignUpdate & { id: string }) => {
-      const { data, error } = await supabase.from('marketing_campaigns')
-        .update(updates).eq('id', id).select().single();
-      if (error) throw error;
-      return data;
+    mutationFn: async ({ id, ...updates }: any) => {
+      return await marketingApi.updateCampaign(id, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] });
@@ -54,8 +39,7 @@ export const useMarketingCampaigns = () => {
 
   const deleteCampaign = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('marketing_campaigns').delete().eq('id', id);
-      if (error) throw error;
+      await marketingApi.deleteCampaign(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] });
