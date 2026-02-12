@@ -1,86 +1,131 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
-    <loc>https://www.shopopti.io/</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/features</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/features</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/pricing</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/features/ai-optimization</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/features/multi-marketplace</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/features/analytics</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/pricing</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/blog</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/blog</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/about</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/about</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/documentation</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/documentation</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/contact</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/contact</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/faq</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/faq</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/integrations</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/integrations</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/features/ai-optimization</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/testimonials</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/features/multi-marketplace</loc>
-    <lastmod>2024-12-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://shopopti.io/changelog</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/features/analytics</loc>
-    <lastmod>2024-12-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://shopopti.io/status</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/privacy-policy</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/logiciel-dropshipping</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/alternative-autods</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/optimisation-shopify</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/gestion-catalogue-ecommerce</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://shopopti.io/privacy-policy</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://www.shopopti.io/terms-of-service</loc>
-    <lastmod>2024-12-07</lastmod>
+    <loc>https://shopopti.io/terms-of-service</loc>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

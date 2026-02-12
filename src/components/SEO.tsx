@@ -9,11 +9,10 @@ type SEOProps = {
 };
 
 export const SEO = ({ title, description, path = "/", keywords, jsonLd }: SEOProps) => {
-  const url = `https://www.shopopti.io${path}`;
-  const ogImg = "https://www.shopopti.io/og-image.png";
+  const url = `https://shopopti.io${path}`;
+  const ogImg = "https://shopopti.io/og-image.png";
 
-  // Ensure title is always a valid string for Helmet
-  const safeTitle = title && typeof title === 'string' ? title : "Drop Craft AI";
+  const safeTitle = title && typeof title === 'string' ? title : "ShopOpti+";
   const safeDescription = description && typeof description === 'string' ? description : "Plateforme e-commerce intelligente";
 
   return (
@@ -21,7 +20,7 @@ export const SEO = ({ title, description, path = "/", keywords, jsonLd }: SEOPro
       <title>{safeTitle}</title>
       <meta name="description" content={safeDescription} />
       {keywords && <meta name="keywords" content={keywords} />}
-      <meta name="author" content="Drop Craft AI" />
+      <meta name="author" content="ShopOpti+" />
       <meta name="robots" content="index, follow" />
 
       <link rel="canonical" href={url} />
@@ -31,7 +30,7 @@ export const SEO = ({ title, description, path = "/", keywords, jsonLd }: SEOPro
       <meta property="og:image" content={ogImg} />
       <meta property="og:url" content={url} />
       <meta property="og:type" content="website" />
-      <meta property="og:site_name" content="Drop Craft AI" />
+      <meta property="og:site_name" content="ShopOpti+" />
 
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={safeTitle} />

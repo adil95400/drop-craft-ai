@@ -89,7 +89,7 @@ const Features = () => {
     "@type": "WebPage",
     "name": "Fonctionnalités ShopOpti+",
     "description": "Découvrez toutes les fonctionnalités de ShopOpti+ : IA, multi-marketplace, analytics avancés, import automatique.",
-    "url": "https://www.shopopti.io/features",
+    "url": "https://shopopti.io/features",
     "mainEntity": {
       "@type": "SoftwareApplication",
       "name": "ShopOpti+",
@@ -104,11 +104,11 @@ const Features = () => {
         <title>Fonctionnalités E-commerce | ShopOpti+ - IA, Multi-Marketplace, Analytics</title>
         <meta name="description" content="Découvrez toutes les fonctionnalités de ShopOpti+ : IA d'optimisation, multi-marketplace (Shopify, Amazon, eBay), analytics avancés, import automatique de 99+ fournisseurs." />
         <meta name="keywords" content="fonctionnalités e-commerce, IA dropshipping, multi-marketplace, analytics e-commerce, import automatique" />
-        <link rel="canonical" href="https://www.shopopti.io/features" />
+        <link rel="canonical" href="https://shopopti.io/features" />
         <meta property="og:title" content="Fonctionnalités ShopOpti+ | Automatisation E-commerce" />
         <meta property="og:description" content="IA d'optimisation, multi-marketplace, analytics avancés et plus." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.shopopti.io/features" />
+        <meta property="og:url" content="https://shopopti.io/features" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
           {/* Hero Section */}

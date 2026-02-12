@@ -6,6 +6,7 @@
  * to improve initial page load for public pages like the landing page.
  */
 import { memo, useEffect, lazy, Suspense } from 'react';
+import { GoogleTracking } from '@/components/seo/GoogleTracking';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -55,6 +56,7 @@ const AppContent = memo(() => {
         </a>
         
         {/* Lightweight offline status indicator (no framer-motion) */}
+        <GoogleTracking />
         <OfflineIndicatorLite />
         
         <div className="pb-20 md:pb-0">

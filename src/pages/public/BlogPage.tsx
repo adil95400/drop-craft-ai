@@ -111,13 +111,13 @@ const BlogPage = () => {
     "@type": "Blog",
     "name": "Blog ShopOpti+",
     "description": "Conseils, guides et actualités sur le dropshipping, l'e-commerce et l'automatisation avec l'IA",
-    "url": "https://www.shopopti.io/blog",
+    "url": "https://shopopti.io/blog",
     "publisher": {
       "@type": "Organization",
       "name": "ShopOpti+",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://www.shopopti.io/logo.png"
+        "url": "https://shopopti.io/logo.png"
       }
     },
     "blogPost": blogPosts.map(post => ({
@@ -139,12 +139,12 @@ const BlogPage = () => {
         <title>Blog E-commerce & Dropshipping | ShopOpti+ - Guides et Conseils</title>
         <meta name="description" content="Découvrez nos guides, conseils et actualités sur le dropshipping, l'e-commerce et l'automatisation avec l'IA. Stratégies pour développer votre business en ligne." />
         <meta name="keywords" content="blog dropshipping, conseils e-commerce, guide IA, stratégie vente en ligne, optimisation boutique" />
-        <link rel="canonical" href="https://www.shopopti.io/blog" />
+        <link rel="canonical" href="https://shopopti.io/blog" />
         
         <meta property="og:title" content="Blog E-commerce & Dropshipping | ShopOpti+" />
         <meta property="og:description" content="Guides, conseils et actualités sur le dropshipping et l'e-commerce avec IA." />
         <meta property="og:type" content="blog" />
-        <meta property="og:url" content="https://www.shopopti.io/blog" />
+        <meta property="og:url" content="https://shopopti.io/blog" />
         
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
@@ -244,9 +244,11 @@ const BlogPage = () => {
                       <Calendar className="h-4 w-4" />
                       <span>{new Date(post.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
                     </div>
-                    <Button variant="ghost" size="sm" className="group-hover:translate-x-1 transition-transform">
-                      Lire <ArrowRight className="h-4 w-4 ml-1" />
-                    </Button>
+                    <Link to={`/blog/${post.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}>
+                      <Button variant="ghost" size="sm" className="group-hover:translate-x-1 transition-transform">
+                        Lire <ArrowRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </Link>
                   </CardFooter>
                 </Card>
               ))}
