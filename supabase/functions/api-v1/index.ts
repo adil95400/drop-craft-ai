@@ -1242,6 +1242,151 @@ async function getProductStockHistory(productId: string, url: URL, auth: NonNull
   return json({ product_id: productId, snapshots: (data ?? []).reverse() }, 200, reqId);
 }
 
+// ── Inventory Handlers ───────────────────────────────────────────────────────
+
+async function listInventoryLocations(auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const { data, error } = await admin.from("inventory_locations").select("*").eq("user_id", auth.user.id).order("name");
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [] }, 200, reqId);
+}
+
+async function listInventoryLevels(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  let query = admin.from("inventory_levels").select("*").eq("user_id", auth.user.id);
+  const variantId = url.searchParams.get("variant_id");
+  const locationId = url.searchParams.get("location_id");
+  if (variantId) query = query.eq("variant_id", variantId);
+  if (locationId) query = query.eq("location_id", locationId);
+  const { data, error } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [] }, 200, reqId);
+}
+
+async function upsertInventoryLevel(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("inventory_levels")
+    .upsert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+// ── Product Prices Handlers ──────────────────────────────────────────────────
+
+async function listProductPrices(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  let query = admin.from("product_prices").select("*").eq("user_id", auth.user.id);
+  const variantId = url.searchParams.get("variant_id");
+  const storeId = url.searchParams.get("store_id");
+  if (variantId) query = query.eq("variant_id", variantId);
+  if (storeId) query = query.eq("store_id", storeId);
+  const { data, error } = await query.order("updated_at", { ascending: false });
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [] }, 200, reqId);
+}
+
+async function upsertProductPrice(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("product_prices")
+    .upsert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
+// ── Product Events Handler ───────────────────────────────────────────────────
+
+async function listProductEvents(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const productId = url.searchParams.get("product_id");
+  const limit = Math.min(100, parseInt(url.searchParams.get("limit") ?? "50", 10));
+  let query = admin.from("product_events").select("*").eq("user_id", auth.user.id);
+  if (productId) query = query.eq("product_id", productId);
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(limit);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [] }, 200, reqId);
+}
+
+// ── Product SEO CRUD Handler ─────────────────────────────────────────────────
+
+async function getProductSeoData(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const productId = url.searchParams.get("product_id");
+  const storeId = url.searchParams.get("store_id");
+  const language = url.searchParams.get("language") ?? "fr";
+  if (!productId) return errorResponse("VALIDATION_ERROR", "product_id required", 400, reqId);
+
+  let query = admin.from("product_seo").select("*").eq("user_id", auth.user.id).eq("product_id", productId).eq("language", language);
+  if (storeId) query = query.eq("store_id", storeId);
+  else query = query.is("store_id", null);
+  const { data, error } = await query.maybeSingle();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ seo: data }, 200, reqId);
+}
+
+async function upsertProductSeoData(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const language = body.language ?? "fr";
+
+  const { data, error } = await admin.from("product_seo")
+    .upsert({ ...body, user_id: auth.user.id, language }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  // Create version snapshot
+  await admin.from("product_seo_versions").insert({
+    user_id: auth.user.id,
+    product_id: body.product_id,
+    store_id: body.store_id || null,
+    language,
+    version: Date.now(),
+    fields_json: { seo_title: body.seo_title, meta_description: body.meta_description, handle: body.handle },
+    source: body.source ?? "manual",
+  }).catch(() => {});
+
+  return json(data, 200, reqId);
+}
+
+async function listProductSeoVersions(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const admin = serviceClient();
+  const productId = url.searchParams.get("product_id");
+  if (!productId) return errorResponse("VALIDATION_ERROR", "product_id required", 400, reqId);
+
+  const { data, error } = await admin.from("product_seo_versions").select("*")
+    .eq("user_id", auth.user.id).eq("product_id", productId)
+    .order("created_at", { ascending: false }).limit(50);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [] }, 200, reqId);
+}
+
+// ── Store Products Handler ───────────────────────────────────────────────────
+
+async function listStoreProducts(url: URL, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const admin = serviceClient();
+  const storeId = url.searchParams.get("store_id");
+  const status = url.searchParams.get("status");
+
+  let query = admin.from("store_products").select("*", { count: "exact" }).eq("user_id", auth.user.id);
+  if (storeId) query = query.eq("store_id", storeId);
+  if (status) query = query.eq("status", status);
+  query = query.order("created_at", { ascending: false }).range(from, to);
+
+  const { data, count, error } = await query;
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function upsertStoreProduct(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
+  const body = await req.json();
+  const admin = serviceClient();
+  const { data, error } = await admin.from("store_products")
+    .upsert({ ...body, user_id: auth.user.id }).select().single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 200, reqId);
+}
+
 // ── SEO Handlers ─────────────────────────────────────────────────────────────
 
 async function createSeoAudit(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
@@ -2032,6 +2177,27 @@ Deno.serve(async (req) => {
 
     const seoHistoryMatch = matchRoute("/v1/seo/products/:productId/history", apiPath);
     if (req.method === "GET" && seoHistoryMatch) return await getProductSeoHistory(seoHistoryMatch.params.productId, url, auth, reqId);
+
+    // ── Inventory ──────────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/inventory/locations", apiPath)) return await listInventoryLocations(auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/inventory/levels", apiPath)) return await listInventoryLevels(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/inventory/levels", apiPath)) return await upsertInventoryLevel(req, auth, reqId);
+
+    // ── Product Prices ─────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/prices", apiPath)) return await listProductPrices(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/prices", apiPath)) return await upsertProductPrice(req, auth, reqId);
+
+    // ── Product Events ─────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/events", apiPath)) return await listProductEvents(url, auth, reqId);
+
+    // ── Product SEO CRUD ───────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/product-seo", apiPath)) return await getProductSeoData(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/product-seo", apiPath)) return await upsertProductSeoData(req, auth, reqId);
+    if (req.method === "GET" && matchRoute("/v1/product-seo/versions", apiPath)) return await listProductSeoVersions(url, auth, reqId);
+
+    // ── Store Products ─────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/store-products", apiPath)) return await listStoreProducts(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/store-products", apiPath)) return await upsertStoreProduct(req, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {

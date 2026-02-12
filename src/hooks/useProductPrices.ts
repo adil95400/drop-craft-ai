@@ -1,8 +1,8 @@
 /**
- * Hook: useProductPrices — Prix multi-boutiques par variante
+ * Hook: useProductPrices — Prix multi-boutiques par variante (via API V1)
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { pricesApi } from '@/services/api/client'
 import type { ProductPrice } from '@/domains/commerce/types'
 
 export function useProductPrices(userId?: string, variantId?: string, storeId?: string) {
@@ -13,24 +13,14 @@ export function useProductPrices(userId?: string, variantId?: string, storeId?: 
     queryKey: key,
     enabled: !!userId,
     queryFn: async () => {
-      let q = supabase.from('product_prices').select('*').eq('user_id', userId!)
-      if (variantId) q = q.eq('variant_id', variantId)
-      if (storeId) q = q.eq('store_id', storeId)
-      const { data, error } = await q.order('updated_at', { ascending: false })
-      if (error) throw error
-      return data as ProductPrice[]
+      const resp = await pricesApi.list({ variant_id: variantId, store_id: storeId })
+      return (resp.items ?? []) as ProductPrice[]
     },
   })
 
   const upsert = useMutation({
     mutationFn: async (input: Omit<ProductPrice, 'id' | 'updated_at'> & { id?: string }) => {
-      const { data, error } = await supabase
-        .from('product_prices')
-        .upsert({ ...input, user_id: userId! })
-        .select()
-        .single()
-      if (error) throw error
-      return data as ProductPrice
+      return pricesApi.upsert(input) as Promise<ProductPrice>
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   })
