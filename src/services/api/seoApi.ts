@@ -59,6 +59,59 @@ export interface SeoApplyResult {
   applied_fields: string[]
 }
 
+// ── Product SEO Score types ──────────────────────────────────────────────────
+
+export interface ProductSeoScoreDetail {
+  global: number
+  seo: number
+  content: number
+  images: number
+  data: number
+  ai_readiness: number
+}
+
+export interface ProductSeoIssue {
+  id: string
+  severity: 'critical' | 'warning' | 'info'
+  category: string
+  message: string
+  field?: string
+  recommendation?: string
+}
+
+export interface ProductSeoBusinessImpact {
+  traffic_impact: 'high' | 'medium' | 'low' | 'minimal'
+  conversion_impact: 'high' | 'medium' | 'low'
+  estimated_traffic_gain_percent: number
+  estimated_conversion_gain_percent: number
+  priority: 'urgent' | 'high' | 'normal'
+}
+
+export interface ProductSeoResult {
+  product_id: string
+  product_name: string
+  current: { seo_title?: string; seo_description?: string; title?: string; description?: string }
+  score: ProductSeoScoreDetail
+  status: 'optimized' | 'needs_work' | 'critical'
+  issues: ProductSeoIssue[]
+  strengths: string[]
+  business_impact: ProductSeoBusinessImpact
+}
+
+export interface ProductSeoScoresResponse {
+  items: ProductSeoResult[]
+  stats: { avg_score: number; critical: number; needs_work: number; optimized: number; total: number }
+  meta: { page: number; per_page: number; total: number }
+}
+
+export interface ProductSeoHistoryItem {
+  id: string
+  version: number
+  source: string
+  fields: Record<string, any>
+  created_at: string
+}
+
 // ── API methods ──────────────────────────────────────────────────────────────
 
 export const seoApi = {
@@ -103,4 +156,22 @@ export const seoApi = {
     job_id?: string
   }) =>
     api.post<SeoApplyResult>('/seo/apply', params),
+
+  // ── Product SEO Scoring ─────────────────────────────────────
+
+  /** Audit products SEO (score + issues + impact) */
+  auditProducts: (params: { product_ids: string[]; language?: string }) =>
+    api.post<{ products: ProductSeoResult[]; total: number; audited_at: string }>('/seo/products/audit', params, crypto.randomUUID()),
+
+  /** List all product SEO scores with filters */
+  listProductScores: (params?: PaginationParams & { status?: string; min_score?: number; max_score?: number; sort?: string }) =>
+    api.get<ProductSeoScoresResponse>('/seo/products/scores', params as any),
+
+  /** Get single product SEO score */
+  getProductScore: (productId: string) =>
+    api.get<ProductSeoResult>(`/seo/products/${productId}/score`),
+
+  /** Get product SEO version history */
+  getProductHistory: (productId: string, params?: PaginationParams) =>
+    api.get<PaginatedResponse<ProductSeoHistoryItem>>(`/seo/products/${productId}/history`, params as any),
 }
