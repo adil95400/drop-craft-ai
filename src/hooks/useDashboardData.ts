@@ -3,6 +3,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { dashboardApi } from '@/services/api/client'
 import { ActivityEvent } from '@/components/channable/ChannableActivityFeed'
@@ -30,6 +31,7 @@ interface ChannelHealthMetric {
 
 export function useDashboardData() {
   const { user } = useUnifiedAuth()
+  const navigate = useNavigate()
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['dashboard-real-stats', user?.id],
@@ -63,7 +65,8 @@ export function useDashboardData() {
       color: 'success',
       change: Math.round(stats.revenue.change * 10) / 10,
       trend: stats.revenue.change >= 0 ? 'up' : 'down',
-      changeLabel: 'vs hier'
+      changeLabel: 'vs hier',
+      onClick: () => navigate('/analytics')
     },
     {
       label: 'Commandes',
@@ -72,7 +75,8 @@ export function useDashboardData() {
       color: 'primary',
       change: Math.round(stats.orders.change * 10) / 10,
       trend: stats.orders.change >= 0 ? 'up' : 'down',
-      changeLabel: 'vs hier'
+      changeLabel: 'vs hier',
+      onClick: () => navigate('/orders')
     },
     {
       label: 'Clients actifs',
@@ -81,7 +85,8 @@ export function useDashboardData() {
       color: 'info',
       change: Math.round(stats.customers.change * 10) / 10,
       trend: stats.customers.change >= 0 ? 'up' : 'down',
-      changeLabel: 'ce mois'
+      changeLabel: 'ce mois',
+      onClick: () => navigate('/customers')
     },
     {
       label: 'Taux conversion',
@@ -90,7 +95,8 @@ export function useDashboardData() {
       color: 'warning',
       change: stats.conversionRate.change,
       trend: stats.conversionRate.change >= 0 ? 'up' : 'down',
-      changeLabel: 'vs hier'
+      changeLabel: 'vs hier',
+      onClick: () => navigate('/analytics')
     },
     {
       label: 'Produits actifs',
@@ -99,7 +105,8 @@ export function useDashboardData() {
       color: 'primary',
       change: stats.products.change,
       trend: 'up',
-      changeLabel: 'nouveaux'
+      changeLabel: 'nouveaux',
+      onClick: () => navigate('/products')
     },
     {
       label: 'Alertes',
@@ -108,7 +115,8 @@ export function useDashboardData() {
       color: stats.alerts.count > 0 ? 'destructive' : 'success',
       change: -stats.alerts.resolved,
       trend: 'down',
-      changeLabel: 'résolues'
+      changeLabel: 'résolues',
+      onClick: () => navigate('/notifications')
     }
   ] : []
 

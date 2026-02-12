@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,6 +39,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AdvancedFeatureGuide, ADVANCED_GUIDES } from '@/components/guide';
 
 export default function StockManagementPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
@@ -57,7 +59,8 @@ export default function StockManagementPage() {
       color: 'primary',
       change: 5,
       trend: 'up',
-      changeLabel: 'ce mois'
+      changeLabel: 'ce mois',
+      onClick: () => navigate('/products')
     },
     {
       label: 'Entrepôts actifs',
@@ -73,14 +76,16 @@ export default function StockManagementPage() {
       color: 'info',
       change: 12,
       trend: 'up',
-      changeLabel: 'vs mois dernier'
+      changeLabel: 'vs mois dernier',
+      onClick: () => navigate('/analytics')
     },
     {
       label: 'Alertes actives',
       value: (stats?.active_alerts || 0).toString(),
       icon: AlertTriangle,
       color: unresolvedAlerts > 0 ? 'destructive' : 'success',
-      changeLabel: unresolvedAlerts > 0 ? 'à traiter' : 'tout va bien'
+      changeLabel: unresolvedAlerts > 0 ? 'à traiter' : 'tout va bien',
+      onClick: () => setActiveTab('alerts')
     }
   ];
 

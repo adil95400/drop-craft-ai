@@ -19,6 +19,7 @@ export interface ChannableStat {
   icon: LucideIcon
   trend?: string
   color?: 'primary' | 'success' | 'warning' | 'destructive' | 'info'
+  onClick?: () => void
 }
 
 export interface ChannableQuickAction {

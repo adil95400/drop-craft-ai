@@ -51,7 +51,13 @@ export function ChannableStatsGrid({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
           >
-            <Card className="relative overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <Card 
+              className={cn(
+                "relative overflow-hidden hover:shadow-lg transition-shadow duration-300",
+                stat.onClick && "cursor-pointer hover:border-primary/30"
+              )}
+              onClick={stat.onClick}
+            >
               {/* Gradient accent */}
               <div className={cn(
                 "absolute top-0 left-0 w-1 h-full",
