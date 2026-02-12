@@ -2,6 +2,7 @@
  * Page Analytics avec design Channable
  */
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
@@ -76,6 +77,7 @@ const topProducts = [
 ]
 
 export default function ChannableAnalyticsPage() {
+  const navigate = useNavigate()
   const [selectedPeriod, setSelectedPeriod] = useState('30d')
 
   const stats = [
@@ -84,14 +86,16 @@ export default function ChannableAnalyticsPage() {
       value: '45,231€',
       icon: DollarSign,
       trend: '+12.5%',
-      color: 'primary' as const
+      color: 'primary' as const,
+      onClick: () => navigate('/reports')
     },
     {
       label: 'Commandes',
       value: '1,234',
       icon: ShoppingCart,
       trend: '+8.2%',
-      color: 'success' as const
+      color: 'success' as const,
+      onClick: () => navigate('/orders')
     },
     {
       label: 'Visiteurs',

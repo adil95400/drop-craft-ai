@@ -3,6 +3,7 @@
  * Gestion centralisée des avis clients multi-plateformes
  */
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { Star, Download, Filter, MessageSquare, ThumbsUp, ThumbsDown, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,9 +34,9 @@ const MOCK_REVIEWS: Review[] = [
   { id: '5', product: 'Support Téléphone Voiture', author: 'Emma B.', rating: 3, comment: 'Correct mais la ventouse lâche parfois.', date: '2026-02-04', platform: 'Amazon', status: 'pending' },
 ];
 
-function StatCard({ label, value, icon: Icon, trend }: { label: string; value: string; icon: React.ElementType; trend?: string }) {
+function StatCard({ label, value, icon: Icon, trend, onClick }: { label: string; value: string; icon: React.ElementType; trend?: string; onClick?: () => void }) {
   return (
-    <Card>
+    <Card className={cn(onClick && "cursor-pointer hover:shadow-md transition-shadow")} onClick={onClick}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>

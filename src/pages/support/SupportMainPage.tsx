@@ -98,9 +98,10 @@ interface StatCardProps {
   icon: React.ElementType;
   color: 'primary' | 'success' | 'warning' | 'info';
   delay?: number;
+  onClick?: () => void;
 }
 
-function StatCard({ label, value, icon: Icon, color, delay = 0 }: StatCardProps) {
+function StatCard({ label, value, icon: Icon, color, delay = 0, onClick }: StatCardProps) {
   const colorMap = {
     primary: {
       bg: 'bg-gradient-to-br from-primary/10 via-primary/5 to-transparent',
@@ -134,8 +135,9 @@ function StatCard({ label, value, icon: Icon, color, delay = 0 }: StatCardProps)
     >
       <Card className={cn(
         "group relative overflow-hidden border transition-all duration-300 hover:shadow-lg",
-        colors.bg, colors.border
-      )}>
+        colors.bg, colors.border,
+        onClick && "cursor-pointer"
+      )} onClick={onClick}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">

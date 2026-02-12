@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart3, Download, FileText, TrendingUp, DollarSign, Package, Users, Trash2, Loader2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useReports } from '@/hooks/useReports';
 import { format } from 'date-fns';
@@ -24,6 +25,7 @@ import { PDFExportButton } from '@/components/reports/PDFExportButton';
 // Reports now use Supabase directly via useReports hook
 
 export default function ReportsPage() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [dateRange, setDateRange] = useState('30');
@@ -70,28 +72,32 @@ export default function ReportsPage() {
       color: 'success',
       change: stats?.revenueChange,
       trend: (stats?.revenueChange || 0) >= 0 ? 'up' : 'down',
-      changeLabel: 'vs période précédente'
+      changeLabel: 'vs période précédente',
+      onClick: () => navigate('/analytics')
     },
     {
       label: 'Commandes',
       value: (stats?.orders || 0).toString(),
       icon: TrendingUp,
       color: 'primary',
-      changeLabel: `${dateRange} derniers jours`
+      changeLabel: `${dateRange} derniers jours`,
+      onClick: () => navigate('/orders')
     },
     {
       label: 'Produits',
       value: (stats?.products || 0).toString(),
       icon: Package,
       color: 'info',
-      changeLabel: 'en catalogue'
+      changeLabel: 'en catalogue',
+      onClick: () => navigate('/products')
     },
     {
       label: 'Clients',
       value: (stats?.customers || 0).toString(),
       icon: Users,
       color: 'warning',
-      changeLabel: 'actifs'
+      changeLabel: 'actifs',
+      onClick: () => navigate('/customers')
     }
   ];
 

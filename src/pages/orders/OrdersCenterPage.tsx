@@ -51,13 +51,15 @@ function StatCard({
   label, 
   value, 
   trend, 
-  color = 'primary' 
+  color = 'primary',
+  onClick
 }: { 
   icon: React.ElementType; 
   label: string; 
   value: string | number; 
   trend?: string;
   color?: 'primary' | 'success' | 'warning' | 'destructive';
+  onClick?: () => void;
 }) {
   const colorClasses = {
     primary: 'bg-primary/10 text-primary border-primary/20',
@@ -73,7 +75,7 @@ function StatCard({
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow">
+      <Card className={cn("relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow", onClick && "cursor-pointer")} onClick={onClick}>
         <div className={cn("absolute inset-0 opacity-5", colorClasses[color].split(' ')[0])} />
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -507,11 +509,11 @@ export default function OrdersCenterPage() {
         <TabsContent value="orders" className="mt-6 space-y-6">
           {/* Stats Grid */}
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
-            <StatCard icon={Package} label="Total" value={statusCounts.all} trend="+12%" color="primary" />
-            <StatCard icon={Clock} label="En attente" value={statusCounts.pending} color="warning" />
-            <StatCard icon={Package} label="Traitement" value={statusCounts.processing} color="primary" />
-            <StatCard icon={Truck} label="Expédiées" value={statusCounts.shipped} color="primary" />
-            <StatCard icon={DollarSign} label="CA Total" value={`${totalRevenue.toFixed(0)}€`} trend="+25%" color="success" />
+            <StatCard icon={Package} label="Total" value={statusCounts.all} trend="+12%" color="primary" onClick={() => setStatusFilter('all')} />
+            <StatCard icon={Clock} label="En attente" value={statusCounts.pending} color="warning" onClick={() => setStatusFilter('pending')} />
+            <StatCard icon={Package} label="Traitement" value={statusCounts.processing} color="primary" onClick={() => setStatusFilter('processing')} />
+            <StatCard icon={Truck} label="Expédiées" value={statusCounts.shipped} color="primary" onClick={() => setStatusFilter('shipped')} />
+            <StatCard icon={DollarSign} label="CA Total" value={`${totalRevenue.toFixed(0)}€`} trend="+25%" color="success" onClick={() => navigate('/analytics')} />
           </div>
           {/* Search & Filter */}
           <motion.div

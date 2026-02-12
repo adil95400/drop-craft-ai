@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -53,7 +54,8 @@ function SyncStatCard({
   value, 
   trend, 
   color,
-  isLoading 
+  isLoading,
+  onClick
 }: { 
   icon: any; 
   label: string; 
@@ -61,6 +63,7 @@ function SyncStatCard({
   trend?: string;
   color: string;
   isLoading?: boolean;
+  onClick?: () => void;
 }) {
   const colorClasses: Record<string, string> = {
     blue: 'from-blue-500/20 to-blue-600/10 text-blue-500',
@@ -78,7 +81,7 @@ function SyncStatCard({
       whileHover={{ scale: 1.02, y: -2 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="relative overflow-hidden bg-card/60 backdrop-blur-xl border-border/50 p-5">
+      <Card className={cn("relative overflow-hidden bg-card/60 backdrop-blur-xl border-border/50 p-5", onClick && "cursor-pointer")} onClick={onClick}>
         <div className={cn(
           "absolute inset-0 bg-gradient-to-br opacity-50",
           colorClasses[color]
@@ -308,6 +311,7 @@ function ModuleSyncButton({
 }
 
 export default function StoreSyncDashboard() {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('overview');
   
@@ -414,6 +418,7 @@ export default function StoreSyncDashboard() {
           value={channelStats?.totalConnected || 0}
           color="primary"
           isLoading={isLoadingConnections}
+          onClick={() => navigate('/stores-channels')}
         />
         <SyncStatCard
           icon={Package}
@@ -422,6 +427,7 @@ export default function StoreSyncDashboard() {
           trend={syncStats?.totalSucceeded ? `+${syncStats.totalSucceeded}` : undefined}
           color="blue"
           isLoading={isLoadingConnections}
+          onClick={() => navigate('/products')}
         />
         <SyncStatCard
           icon={ShoppingCart}
@@ -429,6 +435,7 @@ export default function StoreSyncDashboard() {
           value={channelStats?.totalOrders || 0}
           color="green"
           isLoading={isLoadingConnections}
+          onClick={() => navigate('/orders')}
         />
         <SyncStatCard
           icon={Activity}

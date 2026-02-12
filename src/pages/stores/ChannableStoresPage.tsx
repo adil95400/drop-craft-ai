@@ -82,28 +82,32 @@ export default function ChannableStoresPage() {
       value: integrations.length,
       icon: Store,
       trend: '+2',
-      color: 'primary' as const
+      color: 'primary' as const,
+      onClick: () => setSelectedCategory('all')
     },
     {
       label: 'Connectées',
       value: integrations.filter(i => i.connection_status === 'connected').length,
       icon: CheckCircle,
       trend: '+1',
-      color: 'success' as const
+      color: 'success' as const,
+      onClick: () => setSelectedCategory('connected')
     },
     {
       label: 'Produits synchronisés',
       value: '2,847',
       icon: Package,
       trend: '+156',
-      color: 'warning' as const
+      color: 'warning' as const,
+      onClick: () => navigate('/products')
     },
     {
       label: 'Commandes sync',
       value: '1,234',
       icon: ShoppingBag,
       trend: '+89',
-      color: 'primary' as const
+      color: 'primary' as const,
+      onClick: () => navigate('/orders')
     }
   ]
 
