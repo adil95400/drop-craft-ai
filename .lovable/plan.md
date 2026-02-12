@@ -1,143 +1,81 @@
 
 
-# Migration DB "Produit Final" -- Schema AutoDS/Channable
+# Analyse Gap : /products vs Concurrents (AutoDS, Channable, Minea)
 
-## Situation actuelle
-
-**Tables existantes deja alignees :**
-| Table | Colonnes | RLS | Donnees |
-|-------|----------|-----|---------|
-| `products` | 33 colonnes (id, user_id, title, sku, barcode, price, cost_price, status, images jsonb, variants jsonb, tags, seo_title, seo_description, brand, product_type, vendor, weight...) | Oui | 0 lignes |
-| `product_variants` | 21 colonnes (id, product_id, user_id, sku, price, cost_price, stock_quantity, option1-3 name/value, image_url, status) | Oui | 0 lignes |
-| `product_images` | 12 colonnes (id, product_id, variant_id, url, alt_text, position, is_primary, width, height, file_size, user_id) | Oui | 0 lignes |
-| `product_store_links` | 12 colonnes (id, product_id, store_id, external_product_id, sync_status, published, last_sync_at) | Oui | 0 lignes |
-| `product_sources` | 11 colonnes (id, user_id, product_id, source_platform, external_product_id, source_url, source_data jsonb) | Oui | 0 lignes |
-| `stores` | 9 colonnes (id, user_id, platform, name, domain, status, metadata) | Oui | 0 lignes |
-| `pricing_rules` | 17 colonnes existantes | Oui | - |
-| `product_pricing_state` | 11 colonnes existantes | - | - |
-| `imported_products` | 41 colonnes | - | **25 lignes** |
-
-**Tables a CREER (aucune n'existe) :**
-1. `product_tags` -- Tags normalises
-2. `product_tag_links` -- Lien produit-tags
-3. `product_collections` -- Categories/collections canoniques
-4. `product_collection_links` -- Lien produit-collections
-5. `product_costs` -- Cout fournisseur par variante
-6. `pricing_rulesets` -- Regles pricing par boutique
-7. `product_prices` -- Prix canonique et par boutique
-8. `inventory_locations` -- Emplacements (entrepots, fournisseurs, boutiques)
-9. `inventory_levels` -- Stock par variante par location
-10. `product_seo` -- SEO applique canonique ou par boutique/langue
-11. `product_seo_versions` -- Historique SEO (audit trail)
-12. `ai_generations` -- Generations IA generiques (overlay)
-13. `store_variants` -- Mapping variant canonique vers variant boutique
-14. `product_events` -- Audit log produit
-
-**Tables existantes a ENRICHIR (ALTER) :**
-- `products` : ajouter `default_language`, `description_html`, `primary_image_url` (3 colonnes)
-- `product_variants` : ajouter `barcode`, `weight_unit`, `is_active` (3 colonnes)
-- `stores` : ajouter `access_token_encrypted` (1 colonne, pour completude)
+## Ce que tu as deja (bien)
+- Tableau responsive desktop/mobile avec lazy-loading images
+- Filtres (recherche, statut, categorie)
+- Actions bulk (supprimer, enrichir IA, exporter)
+- Pagination
+- Job tracker integre
+- Import/Export CSV
+- Duplication produit
 
 ---
 
-## Plan d'execution
+## 7 fonctionnalites manquantes
 
-### Phase 1 -- ALTER tables existantes (3 colonnes sur `products`, 3 sur `product_variants`)
+### 1. Colonnes "Marge" et "Profit" dans le tableau
+**Concurrents** : AutoDS et Channable affichent directement la marge brute et le profit par produit dans chaque ligne du tableau.
+**Actuellement** : Le tableau montre Prix + Cout, mais ne calcule PAS la marge automatiquement.
+**Correction** : Ajouter une colonne "Marge" avec badge colore (vert > 30%, jaune 15-30%, rouge < 15%).
 
-Ajouter les colonnes manquantes du schema cible aux tables existantes, sans casser le code actuel.
+### 2. Toggle Vue Grille / Vue Liste
+**Concurrents** : Tous offrent un switch entre vue tableau et vue grille (cards visuelles avec grandes images).
+**Actuellement** : Seule la vue tableau existe (desktop) ou cards basiques (mobile auto).
+**Correction** : Ajouter un toggle `LayoutGrid / List` en haut a droite pour basculer entre les deux vues.
 
-### Phase 2 -- CREATE 14 nouvelles tables + index + RLS
+### 3. Tri par colonnes (Sort)
+**Concurrents** : Clic sur l'en-tete de colonne pour trier par prix, stock, marge, date.
+**Actuellement** : Aucun tri, juste du filtrage.
+**Correction** : Ajouter des headers cliquables avec indicateur de direction (fleche haut/bas).
 
-Chaque table sera creee avec :
-- Cle primaire UUID `gen_random_uuid()`
-- `user_id UUID NOT NULL` pour le RLS (remplace `tenant_id` du schema car user_id = tenant dans ShopOpti)
-- Index sur les colonnes de recherche
-- Contraintes UNIQUE la ou necessaire
-- RLS activee + policies SELECT/INSERT/UPDATE/DELETE
+### 4. KPI Cards en haut de page (Mini Dashboard)
+**Concurrents** : AutoDS affiche 4 StatCards au-dessus du tableau : Total produits, Stock total, Valeur stock, Marge moyenne.
+**Actuellement** : Un seul badge "X produits" dans le header. Les KPIs sont dans /products/cockpit mais pas dans la vue catalogue.
+**Correction** : Ajouter une rangee de 4 StatCards compactes entre le header et la toolbar.
 
-Ordre de creation (respect des FK) :
-1. `product_tags` (standalone)
-2. `product_tag_links` (FK products, product_tags)
-3. `product_collections` (self-referencing parent_id)
-4. `product_collection_links` (FK products, product_collections)
-5. `product_costs` (FK product_variants)
-6. `pricing_rulesets` (FK stores nullable)
-7. `product_prices` (FK product_variants, stores, pricing_rulesets)
-8. `inventory_locations` (FK stores nullable)
-9. `inventory_levels` (FK product_variants, inventory_locations)
-10. `product_seo` (FK products, stores)
-11. `product_seo_versions` (FK products, stores)
-12. `ai_generations` (standalone, generic target)
-13. `store_variants` (FK stores, product_variants)
-14. `product_events` (FK products nullable, product_variants nullable)
+### 5. Indicateur de Sante Produit (Health Score)
+**Concurrents** : Channable affiche un score de completude par produit (titre, images, description, SEO).
+**Actuellement** : Le health score existe dans la page detail mais n'est PAS visible dans le listing.
+**Correction** : Ajouter un petit indicateur circulaire (0-100) ou une barre de progression dans chaque ligne.
 
-### Phase 3 -- Migrer les 25 produits importes
+### 6. Filtre par Source / Canal
+**Concurrents** : AutoDS filtre par source d'importation (Shopify, AliExpress, Manuel, CSV).
+**Actuellement** : Le champ `source` existe dans le modele de donnees mais aucun filtre n'est expose.
+**Correction** : Ajouter un Select "Source" a cote des filtres existants.
 
-Script SQL de migration pour copier les 25 lignes de `imported_products` vers `products` + creer les variantes dans `product_variants` + lier les sources dans `product_sources`.
-
-### Phase 4 -- Mettre a jour les types TypeScript
-
-Fichiers a modifier :
-- `src/domains/commerce/types.ts` -- aligner sur le nouveau schema
-- `src/types/catalog.ts` -- aligner CatalogProduct
-- `src/services/ProductsUnifiedService.ts` -- aligner UnifiedProduct + mapRecordToUnified
-- `src/services/products.service.ts` -- adapter les appels si necessaire
-
-### Phase 5 -- Creer les hooks d'acces
-
-Nouveaux hooks React Query :
-- `useProductTags` -- CRUD tags
-- `useProductCollections` -- CRUD collections
-- `useProductCosts` -- Couts fournisseurs
-- `useProductPrices` -- Prix multi-boutiques
-- `useInventoryLevels` -- Stock multi-locations
-- `useProductSEO` -- SEO + versions
-- `useAIGenerations` -- Overlay IA
-- `useProductEvents` -- Audit log lecture
-- `useStoreVariants` -- Mapping variantes boutiques
+### 7. Quick Actions Inline (sans menu)
+**Concurrents** : AutoDS affiche des icones d'action rapide (edit, publish, optimize) directement visibles sans ouvrir le menu "...".
+**Actuellement** : Toutes les actions sont cachees dans un DropdownMenu.
+**Correction** : Afficher 2-3 icones d'action rapide (Modifier, Voir) en ligne, et garder le reste dans le menu "...".
 
 ---
 
-## Details techniques -- Schema SQL
+## Plan d'implementation technique
 
-### Nouvelles tables
+### Fichiers a modifier
+1. **`src/pages/products/CatalogProductsPage.tsx`**
+   - Ajouter 4 StatCards (Total, Stock, Valeur, Marge moyenne) sous le header
+   - Ajouter un toggle vue grille/liste
+   - Ajouter un state `sortField` / `sortDirection` et la logique de tri
+   - Ajouter un Select filtre par source
 
-```text
-product_tags (id, user_id, name UNIQUE per user, created_at)
-product_tag_links (product_id, tag_id, PK composite)
-product_collections (id, user_id, name, parent_id self-ref, created_at)
-product_collection_links (product_id, collection_id, PK composite)
-product_costs (id, user_id, variant_id FK, currency, cost_amount, shipping_cost, landed_cost, source enum, updated_at)
-pricing_rulesets (id, user_id, store_id FK nullable, name, rules_json, is_default, created_at)
-product_prices (id, user_id, variant_id FK, store_id nullable, currency, price_amount, compare_at_amount, pricing_ruleset_id FK nullable, updated_at)
-inventory_locations (id, user_id, store_id FK nullable, name, type enum, created_at)
-inventory_levels (id, user_id, variant_id FK, location_id FK, qty_available, qty_reserved default 0, updated_at)
-product_seo (id, user_id, product_id FK, store_id nullable, language, handle, seo_title, meta_description, canonical_url, updated_at) UNIQUE(product_id, store_id, language)
-product_seo_versions (id, user_id, product_id FK, store_id nullable, language, version int, fields_json, source enum, created_at)
-ai_generations (id, user_id, target_type enum, target_id, task enum, language, provider, model, prompt_hash, input_json, output_json, cost_usd, tokens_in, tokens_out, created_at)
-store_variants (id, user_id, store_id FK, variant_id FK, external_variant_id, external_inventory_item_id, last_synced_at)
-product_events (id, user_id, product_id nullable, variant_id nullable, event_type enum, actor_type enum, actor_id, payload jsonb, created_at)
-```
+2. **`src/components/products/ResponsiveProductsTable.tsx`**
+   - Ajouter colonne "Marge" avec calcul `((price - cost) / price * 100)`
+   - Rendre les headers cliquables pour le tri (avec icones ArrowUp/ArrowDown)
+   - Ajouter 2 icones d'action inline (Edit, Eye) avant le menu "..."
+   - Ajouter mini indicateur health score (barre ou cercle)
 
-### Index cles
+3. **Nouveau : `src/components/products/ProductsGridView.tsx`**
+   - Vue grille avec cards visuelles (grande image, nom, prix, marge, stock)
+   - Checkbox de selection integree
+   - Actions rapides au hover
 
-- `product_tags`: UNIQUE(user_id, name)
-- `product_costs`: (user_id, variant_id)
-- `product_prices`: (user_id, variant_id), (store_id, variant_id)
-- `inventory_levels`: (user_id, variant_id), (location_id)
-- `product_seo`: UNIQUE(product_id, store_id, language)
-- `ai_generations`: (user_id, target_type, target_id), (prompt_hash)
-- `product_events`: (user_id, product_id), (created_at DESC)
-
-### RLS
-
-Toutes les tables : `auth.uid() = user_id` pour SELECT/UPDATE/DELETE, `auth.uid()` check sur INSERT via WITH CHECK.
-
----
-
-## Impact sur le code existant
-
-- **Zero breaking change** : les tables existantes (products, product_variants, stores, product_store_links) gardent toutes leurs colonnes ; on ajoute seulement.
-- **Les 25 produits importes** seront migres vers `products` pour devenir source de verite.
-- **Les services API** (`ProductsUnifiedService`, `ProductsService`) continueront de fonctionner -- les nouveaux hooks seront utilises en complement pour les nouvelles fonctionnalites (tags, collections, pricing multi-store, SEO versionne, audit log).
+### Ordre d'execution
+1. StatCards KPI (impact visuel immediat)
+2. Colonne Marge + Tri colonnes (valeur fonctionnelle)
+3. Toggle Grille/Liste + composant GridView
+4. Filtre Source + Quick Actions inline
+5. Health Score inline
 
