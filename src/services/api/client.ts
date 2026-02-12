@@ -320,3 +320,13 @@ export const draftsApi = {
       { draft_ids: draftIds, store_id: storeId },
     ),
 }
+
+// ── AI Generations ──────────────────────────────────────────────────────────
+
+export const aiGenerationsApi = {
+  list: (params: { target_type?: string; target_id?: string; limit?: number }) =>
+    api.get<{ items: any[] }>('/ai/generations', params as any),
+
+  create: (body: any) =>
+    api.post<any>('/ai/generations', body, crypto.randomUUID()),
+}

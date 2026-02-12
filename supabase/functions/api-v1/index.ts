@@ -2056,6 +2056,35 @@ async function getProductSeoHistory(productId: string, url: URL, auth: NonNullab
   }, 200, reqId);
 }
 
+// ── AI Generations CRUD ──────────────────────────────────────────────────────
+
+async function listAiGenerations(url: URL, auth: any, reqId: string) {
+  const { page, perPage, from, to } = parsePagination(url);
+  const targetType = url.searchParams.get("target_type");
+  const targetId = url.searchParams.get("target_id");
+
+  let q = auth.supabase.from("ai_generations").select("*", { count: "exact" }).eq("user_id", auth.user.id);
+  if (targetType) q = q.eq("target_type", targetType);
+  if (targetId) q = q.eq("target_id", targetId);
+
+  const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
+  const { data, count, error } = await q.order("created_at", { ascending: false }).range(0, Math.min(limit, 100) - 1);
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+
+  return json({ items: data ?? [], meta: { page, per_page: perPage, total: count ?? 0 } }, 200, reqId);
+}
+
+async function createAiGeneration(req: Request, auth: any, reqId: string) {
+  const body = await req.json();
+  const { data, error } = await auth.supabase
+    .from("ai_generations")
+    .insert({ ...body, user_id: auth.user.id })
+    .select()
+    .single();
+  if (error) return errorResponse("DB_ERROR", error.message, 500, reqId);
+  return json(data, 201, reqId);
+}
+
 // ── Router ───────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -2198,6 +2227,10 @@ Deno.serve(async (req) => {
     // ── Store Products ─────────────────────────────────────────
     if (req.method === "GET" && matchRoute("/v1/store-products", apiPath)) return await listStoreProducts(url, auth, reqId);
     if (req.method === "POST" && matchRoute("/v1/store-products", apiPath)) return await upsertStoreProduct(req, auth, reqId);
+
+    // ── AI Generations ──────────────────────────────────────────
+    if (req.method === "GET" && matchRoute("/v1/ai/generations", apiPath)) return await listAiGenerations(url, auth, reqId);
+    if (req.method === "POST" && matchRoute("/v1/ai/generations", apiPath)) return await createAiGeneration(req, auth, reqId);
 
     return errorResponse("NOT_FOUND", `Route ${req.method} ${apiPath} not found`, 404, reqId);
   } catch (err) {
