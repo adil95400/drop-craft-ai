@@ -1494,6 +1494,42 @@ async function getSeoGeneration(jobId: string, auth: NonNullable<Awaited<ReturnT
   }, 200, reqId);
 }
 
+// ── Quota Enforcement Helper ─────────────────────────────────────────────────
+
+async function checkSeoQuota(admin: any, userId: string, quotaKey: string, count: number, reqId: string): Promise<Response | null> {
+  // Get user plan
+  const { data: profile } = await admin.from("profiles").select("subscription_plan").eq("id", userId).single();
+  const plan = profile?.subscription_plan || "free";
+
+  // Get limit
+  const { data: limitRow } = await admin.from("plan_limits").select("limit_value").eq("plan_name", plan).eq("limit_key", quotaKey).single();
+  const limit = limitRow?.limit_value ?? 0;
+  if (limit === -1) return null; // unlimited
+
+  // Get current usage
+  const { data: usage } = await admin.from("quota_usage").select("current_usage").eq("user_id", userId).eq("quota_key", quotaKey).single();
+  const current = usage?.current_usage ?? 0;
+
+  if (current + count > limit) {
+    return errorResponse("QUOTA_EXCEEDED", `Limite ${quotaKey} atteinte (${current}/${limit}). Passez à un plan supérieur.`, 429, reqId, { quota_key: quotaKey, current, limit, plan });
+  }
+  return null;
+}
+
+async function incrementSeoQuota(admin: any, userId: string, quotaKey: string, count: number) {
+  const now = new Date();
+  const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+  await admin.from("quota_usage").upsert({
+    user_id: userId,
+    quota_key: quotaKey,
+    current_usage: count,
+    period_start: now.toISOString(),
+    period_end: periodEnd,
+  }, { onConflict: "user_id,quota_key" });
+  // Increment via SQL to be safe
+  await admin.rpc("increment_user_quota", { p_user_id: userId, p_quota_key: quotaKey, p_increment: count }).catch(() => {});
+}
+
 // ── SEO Product Audit Handlers ───────────────────────────────────────────────
 
 async function auditProductSeo(req: Request, auth: NonNullable<Awaited<ReturnType<typeof authenticate>>>, reqId: string) {
@@ -1503,6 +1539,10 @@ async function auditProductSeo(req: Request, auth: NonNullable<Awaited<ReturnTyp
   if (productIds.length > 50) return errorResponse("VALIDATION_ERROR", "Maximum 50 products per audit", 400, reqId);
 
   const admin = serviceClient();
+
+  // Enforce quota
+  const quotaBlock = await checkSeoQuota(admin, auth.user.id, "seo_audits", productIds.length, reqId);
+  if (quotaBlock) return quotaBlock;
   const { data: products, error } = await admin
     .from("products")
     .select("id, title, description, seo_title, seo_description, images, tags, sku, brand, category, barcode, weight, status")
@@ -1546,6 +1586,9 @@ async function auditProductSeo(req: Request, auth: NonNullable<Awaited<ReturnTyp
       source: "audit",
     });
   }
+
+  // Increment quota after success
+  await incrementSeoQuota(admin, auth.user.id, "seo_audits", results.length);
 
   return json({ products: results, total: results.length, audited_at: new Date().toISOString() }, 200, reqId);
 }
